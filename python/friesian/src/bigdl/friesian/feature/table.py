@@ -1666,26 +1666,26 @@ class FeatureTable(Table):
                the same as the number of bins.
                If labels is a dict, the key should be the input column(s) and the value should be a
                list of str as described above.
-        :param out_cols: str, a list of str or dict, the name of output bucketized column(s).
+        :param out_cols: str or a list of str, the name of output bucketized column(s).
                Default is None, and in this case the name of each output column will be "column_bin"
                for each input column.
-               If out_cols is a dict, the key should be the input column(s) and the value should be
-               the corresponding output column.
         :param drop: boolean, whether to drop the original column(s). Default is True.
 
         :return: A new FeatureTable with feature bucket column(s).
         """
         columns = str_to_list(columns, "columns")
+        if out_cols:
+            out_cols = str_to_list(out_cols, "out_cols")
+            assert len(columns) == len(out_cols), "columns and out_cols should have the same length"
         check_col_exists(self.df, columns)
         df_buck = self.df
-        for column in columns:
-            out_col = out_cols[column] if isinstance(out_cols, dict) else out_cols
+        for i in range(len(columns)):
+            column = columns[i]
+            temp_out_col = column + "_bin"
             bin = bins[column] if isinstance(bins, dict) else bins
             label = labels[column] if isinstance(labels, dict) else labels
             if not check_column_numeric(self.df, column):
                 raise ValueError("{} should be a numeric column".format(column))
-            if out_col is None:
-                out_col = column + "_bin"
             if isinstance(bin, int):
                 col_max = self.get_stats(column, "max")[column]
                 col_min = self.get_stats(column, "min")[column]
@@ -1694,8 +1694,11 @@ class FeatureTable(Table):
                 raise ValueError("bins should int, a list of int or dict with column name "
                                  "as the key and int or a list of int as the value")
             bin = [float("-inf")] + bin + [float("inf")]
-            bucketizer = Bucketizer(splits=bin, inputCol=column, outputCol=out_col)
+            # For Bucketizer, inputCol and outputCol must be different.
+            bucketizer = Bucketizer(splits=bin, inputCol=column, outputCol=temp_out_col)
             df_buck = bucketizer.setHandleInvalid("keep").transform(df_buck)
+            # The output of Buckerizer is float, cast to int.
+            df_buck = df_buck.withColumn(temp_out_col, pyspark_col(temp_out_col).cast("int"))
             if label is not None:
                 assert isinstance(label, list),\
                     "labels should be a list of str or a dict with column name as the " \
@@ -1704,9 +1707,16 @@ class FeatureTable(Table):
                     "labels should be of length {} to match bins".format(len(bin) - 1)
                 to_label = {i: l for (i, l) in enumerate(label)}
                 udf_label = udf(lambda i: to_label[i], StringType())
-                df_buck = df_buck.withColumn(out_col, udf_label(out_col))
-            if drop:
-                df_buck = df_buck.drop(column)
+                df_buck = df_buck.withColumn(temp_out_col, udf_label(temp_out_col))
+            if out_cols:
+                out_col = out_cols[i]
+                if out_col == column or drop:  # Replace the input column with the output column
+                    df_buck = df_buck.drop(column).withColumnRenamed(temp_out_col, out_col)
+                else:
+                    df_buck = df_buck.withColumnRenamed(temp_out_col, out_col)
+            else:
+                if drop:
+                    df_buck = df_buck.drop(column)
         return self._clone(df_buck)
 
 

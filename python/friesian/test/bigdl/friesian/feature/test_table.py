@@ -712,30 +712,29 @@ class TestTable(TestCase):
         # test drop false, name defined
         new_tbl = tbl.cut_bins(bins=splits, columns="ages", labels=labels,
                                out_cols="age_bucket", drop=False)
-        assert "age_bucket" in new_tbl.df.schema.names
-        assert "ages" in new_tbl.df.schema.names
+        assert "age_bucket" in new_tbl.columns
+        assert "ages" in new_tbl.columns
         assert new_tbl.df.select("age_bucket").rdd.flatMap(lambda x: x).collect() ==\
             ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
-        # test drop true, name defined
+        # test out_col equal to input column
         new_tbl = tbl.cut_bins(bins=splits, columns="ages", labels=labels,
-                               out_cols="age_bucket", drop=True)
-        assert "age_bucket" in new_tbl.df.schema.names
-        assert "ages" not in new_tbl.df.schema.names
-        assert new_tbl.df.select("age_bucket").rdd.flatMap(lambda x: x).collect() == \
+                               out_cols="ages", drop=True)
+        assert "ages" in new_tbl.columns
+        assert new_tbl.df.select("ages").rdd.flatMap(lambda x: x).collect() == \
             ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
         # test name not defined
         new_tbl = tbl.cut_bins(bins=splits, columns="ages", labels=labels, drop=True)
-        assert "ages_bin" in new_tbl.df.schema.names
+        assert "ages_bin" in new_tbl.columns
         assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() == \
             ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
         # test integer bins
         new_tbl = tbl.cut_bins(bins=2, columns="ages", labels=labels, drop=False)
-        assert "ages_bin" in new_tbl.df.schema.names
+        assert "ages_bin" in new_tbl.columns
         assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() \
             == ["minor", "adult", "minor", "senior", "adult", "minor", "minor", "adult", "adult"]
         # test label is None
         new_tbl = tbl.cut_bins(bins=4, columns="ages", drop=True)
-        assert "ages_bin" in new_tbl.df.schema.names
+        assert "ages_bin" in new_tbl.columns
         assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() \
             == [2, 3, 1, 5, 4, 1, 2, 3, 3]
         # test multiple columns
@@ -747,9 +746,9 @@ class TestTable(TestCase):
         labels = ["infant", "minor", "adult", "senior"]
         new_tbl = tbl.cut_bins(bins={'ages': splits, 'number': splits2}, columns=["ages", 'number'],
                                labels={'ages': labels, 'number': labels}, out_cols=None, drop=False)
-        assert "ages_bin" in new_tbl.df.schema.names
-        assert "ages" in new_tbl.df.schema.names
-        assert "number_bin" in new_tbl.df.schema.names
+        assert "ages_bin" in new_tbl.columns
+        assert "ages" in new_tbl.columns
+        assert "number_bin" in new_tbl.columns
         assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() ==\
             ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
 
