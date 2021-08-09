@@ -709,7 +709,7 @@ class TestTable(TestCase):
         tbl = FeatureTable(spark.createDataFrame(values, ["name", "ages"]))
         splits = [6, 18, 60]
         labels = ["infant", "minor", "adult", "senior"]
-        # test drop false, name defiend
+        # test drop false, name defined
         new_tbl = tbl.cut_bins(bins=splits, columns="ages", labels=labels,
                                out_cols="age_bucket", drop=False)
         assert "age_bucket" in new_tbl.df.schema.names
@@ -729,15 +729,15 @@ class TestTable(TestCase):
         assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() == \
             ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
         # test integer bins
-        new_tbl = tbl.cut_bins(bins=4, columns="ages", labels=labels, drop=True)
+        new_tbl = tbl.cut_bins(bins=2, columns="ages", labels=labels, drop=False)
         assert "ages_bin" in new_tbl.df.schema.names
         assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() \
-            == ["minor", "adult", "infant", "senior", "senior", "infant", "minor", "adult", "adult"]
+            == ["minor", "adult", "minor", "senior", "adult", "minor", "minor", "adult", "adult"]
         # test label is None
         new_tbl = tbl.cut_bins(bins=4, columns="ages", drop=True)
         assert "ages_bin" in new_tbl.df.schema.names
         assert new_tbl.df.select("ages_bin").rdd.flatMap(lambda x: x).collect() \
-            == [1, 2, 0, 3, 3, 0, 1, 2, 2]
+            == [2, 3, 1, 5, 4, 1, 2, 3, 3]
         # test multiple columns
         values = [("a", 23, 23), ("b", 45, 45), ("c", 10, 10), ("d", 60, 60), ("e", 56, 56),
                   ("f", 2, 2), ("g", 25, 25), ("h", 40, 40), ("j", 33, 33)]

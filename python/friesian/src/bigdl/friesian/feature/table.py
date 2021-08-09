@@ -244,8 +244,8 @@ class Table:
         Calculates the log of continuous columns.
 
         :param columns: str or a list of str, the target columns to calculate log.
-        :param clipping: boolean, if clipping=True, the negative values in columns will be
-               clipped to 0 and `log(x+1)` will be calculated. If clipping=False, `log(x)` will be
+        :param clipping: boolean. Default is True, and in this case the negative values in columns
+               will be clipped to 0 and `log(x+1)` will be calculated. If False, `log(x)` will be
                calculated.
 
         :return: A new Table that replaced value in columns with logged value.
@@ -540,7 +540,7 @@ class Table:
                overwrite: Overwrite the existing data.
                error: Throw an exception if the data already exists.
                ignore: Silently ignore this operation if the data already exists.
-        :param header: boolean. Whether to include the schema at the first line of the csv file.
+        :param header: boolean, whether to include the schema at the first line of the csv file.
                Default is False.
         :param num_partitions: positive int. The number of files to write.
         """
@@ -601,13 +601,14 @@ class Table:
         Return a new Table with duplicate rows removed.
 
         :param subset: str or a list of str, specifies which column(s) to be considered when
-               referring to duplication. If subset is None, all columns will be considered.
+               referring to duplication. If subset is None, all the columns will be considered.
         :param sort_cols: str or a list of str, specifies the column(s) to determine which
                item to keep when duplicated. If sort_cols is None, duplicate rows will be
                dropped randomly.
-        :param keep: str, either min and max. Default is min.
-               -min: rows which have smallest values in sort_cols will be kept.
-               -max: rows which have largest values in sort_cols will be kept.
+        :param keep: str, the strategy to keep the duplicate, either min and max. Default is min.
+               It will only take effect when sort_cols is not None.
+               If keep is min, rows with the smallest values in sort_cols will be kept.
+               If keep is max, rows with the largest values in sort_cols will be kept.
 
         :return: A new Table with duplicate rows removed.
         """
@@ -633,56 +634,6 @@ class Table:
             .withColumn('rank', rank().over(window))
         df = df.filter(pyspark_col('rank') == 1).drop('rank', 'id')
         return self._clone(df)
-
-    def cut_bins(self, bins, columns, labels=None, out_cols=None, drop=True):
-        """
-        Segment values of the target column into bins.
-
-        :param bins: int, a list of int or dict. If bins is a list, it defines the bins to be used.
-               With n splits, there are n+1 buckets. For example, if bins is [0, 6, 18, 60], splits
-               are[-inf,0) [0, 6), [6, 18), [18, 60), [60, inf].
-               If bins is an int, it defines the number of equal-width bins in the range of all
-               column values.
-               If bins is a dict, key(s) should be the input column name(s).
-        :param columns: str, a list of str or dict, specifies the name(s) of the input column(s).
-               If bins is a dict, key(s) should be the input column name(s).
-        :param labels: a list of str or dict, specifies the labels for the returned bins.
-               If lables is None, then the new bin column would use integer to encode categories.
-               If bins is a dict, key(s) should be the input column name(s).
-        :param out_cols: str or dict, specifies the name of output categorical column.
-               If out_col is None, the name of output column is "column_bin".
-               If bins is a dict, key(s) should be the input column name(s).
-        :param drop: boolean. Whether to drop the original column. Default is True.
-
-        :return: a new Table with the updated bin column.
-        """
-        if not isinstance(columns, list):
-            columns = [columns]
-        check_col_exists(self.df, columns)
-        df_buck = self.df
-        for column in columns:
-            out_col = out_cols[column] if isinstance(out_cols, dict) else out_cols
-            bin = bins[column] if isinstance(bins, dict) else bins
-            label = labels[column] if isinstance(labels, dict) else labels
-            if not check_column_numeric(self.df, column):
-                raise ValueError("Column should be numeric.")
-            if out_col is None:
-                out_col = column+"_bin"
-            if isinstance(bin, int):
-                max = self.get_stats(column, "max")[column]
-                min = self.get_stats(column, "min")[column]
-                bin = np.linspace(min, max, bin+1, endpoint=True).tolist()
-            elif isinstance(bin, list):
-                bin = [float("-inf")] + bin + [float("inf")]
-            bucketizer = Bucketizer(splits=bin, inputCol=column, outputCol=out_col)
-            df_buck = bucketizer.setHandleInvalid("keep").transform(df_buck)
-            if label is not None:
-                to_label = {i: l for (i, l) in enumerate(label)}
-                udf_label = udf(lambda i: to_label[i], StringType())
-                df_buck = df_buck.withColumn(out_col, udf_label(out_col))
-            if drop:
-                df_buck = df_buck.drop(column)
-        return self._clone(df_buck)
 
     def append_column(self, name, value):
         """
@@ -1323,7 +1274,7 @@ class FeatureTable(Table):
                agg=["last", "stddev"]
                agg={"*":"count"}
                agg={"col_1":"sum", "col_2":["count", "mean"]}
-        :param join: boolean. If join is True, join the aggregation result with original Table.
+        :param join: boolean. If True, join the aggregation result with original Table.
 
         :return: A new Table with aggregated column fields.
         """
@@ -1409,9 +1360,9 @@ class FeatureTable(Table):
         :param fold_col: str. Name of integer column used for splitting folds. If fold_col exists
                in the FeatureTable, then this column is used; otherwise, it is randomly generated
                within the range [0, kfold). Default is "__fold__".
-        :param drop_cat: boolean. Whether to drop the original categorical columns.
+        :param drop_cat: boolean, whether to drop the original categorical columns.
                Default is False.
-        :param drop_fold: boolean. Drop the fold column if it is true. Default is True.
+        :param drop_fold: boolean, whether to drop the fold column. Default is True.
         :param out_cols: str, a list of str or a nested list of str. When both cat_cols and
                target_cols has only one element, out_cols can be a single str. When cat_cols or
                target_cols has only one element, out_cols can be a list of str, and each element
@@ -1583,7 +1534,7 @@ class FeatureTable(Table):
         :param target_cols: str or a list of str. Selects part of target columns of which target
                encoding will be applied. Default is None and in this case all target columns
                contained in targets will be encoded.
-        :param drop_cat: boolean. Whether to drop the categorical columns. Default is True.
+        :param drop_cat: boolean, whether to drop the categorical column(s). Default is True.
 
         :return: A new FeatureTable which encodes each categorical column into group-specific
                  mean of target columns with provided TargetCodes.
@@ -1687,6 +1638,76 @@ class FeatureTable(Table):
                 result_df = result_df.withColumn(out, diff_func(column, out))
 
         return FeatureTable(result_df)
+
+    def cut_bins(self, columns, bins, labels=None, out_cols=None, drop=True):
+        """
+        Segment values of the target column(s) into bins, which is also known as bucketization.
+
+        :param columns: str or a list of str, the numeric column(s) to segment into intervals.
+        :param bins: int, a list of int or dict.
+               If bins is a list, it defines the bins to be used. **NOTE** that for bins of
+               length n, there will be **n+1** buckets.
+               For example, if bins is [0, 6, 18, 60], the resulting buckets are
+               (-inf, 0), [0, 6), [6, 18), [18, 60), [60, inf).
+               If bins is an int, it defines the number of equal-width bins in the range of all
+               the column values, i.e. from column min to max. **NOTE** that there will be
+               **bins+2** resulting buckets in total to take the values below min and beyond max
+               into consideration.
+               For examples, if bins is 2, the resulting buckets are
+               (-inf, col_min), [col_min, (col_min+col_max)/2), [(col_min+col_max)/2, col_max),
+               [col_max, inf).
+               If bins is a dict, the key should be the input column(s) and the value should be
+               int or a list of int to specify the bins as described above.
+        :param labels: a list of str or dict, the labels for the returned bins.
+               Default is None, and in this case the new bin column would use the integer index to
+               encode the interval. Index would start from 0.
+               If labels is a list of str, then the corresponding label would be used to replace
+               the integer index at the same position. The number of elements in labels should be
+               the same as the number of bins.
+               If labels is a dict, the key should be the input column(s) and the value should be a
+               list of str as described above.
+        :param out_cols: str, a list of str or dict, the name of output bucketized column(s).
+               Default is None, and in this case the name of each output column will be "column_bin"
+               for each input column.
+               If out_cols is a dict, the key should be the input column(s) and the value should be
+               the corresponding output column.
+        :param drop: boolean, whether to drop the original column(s). Default is True.
+
+        :return: A new FeatureTable with feature bucket column(s).
+        """
+        columns = str_to_list(columns, "columns")
+        check_col_exists(self.df, columns)
+        df_buck = self.df
+        for column in columns:
+            out_col = out_cols[column] if isinstance(out_cols, dict) else out_cols
+            bin = bins[column] if isinstance(bins, dict) else bins
+            label = labels[column] if isinstance(labels, dict) else labels
+            if not check_column_numeric(self.df, column):
+                raise ValueError("{} should be a numeric column".format(column))
+            if out_col is None:
+                out_col = column + "_bin"
+            if isinstance(bin, int):
+                col_max = self.get_stats(column, "max")[column]
+                col_min = self.get_stats(column, "min")[column]
+                bin = np.linspace(col_min, col_max, bin+1, endpoint=True).tolist()
+            elif not isinstance(bin, list):
+                raise ValueError("bins should int, a list of int or dict with column name "
+                                 "as the key and int or a list of int as the value")
+            bin = [float("-inf")] + bin + [float("inf")]
+            bucketizer = Bucketizer(splits=bin, inputCol=column, outputCol=out_col)
+            df_buck = bucketizer.setHandleInvalid("keep").transform(df_buck)
+            if label is not None:
+                assert isinstance(label, list),\
+                    "labels should be a list of str or a dict with column name as the " \
+                    "key and a list of str as the value"
+                assert len(label) == len(bin) - 1, \
+                    "labels should be of length {} to match bins".format(len(bin) - 1)
+                to_label = {i: l for (i, l) in enumerate(label)}
+                udf_label = udf(lambda i: to_label[i], StringType())
+                df_buck = df_buck.withColumn(out_col, udf_label(out_col))
+            if drop:
+                df_buck = df_buck.drop(column)
+        return self._clone(df_buck)
 
 
 class StringIndex(Table):
