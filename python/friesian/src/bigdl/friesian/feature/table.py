@@ -13,30 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import os
 import hashlib
+import numpy as np
+from functools import reduce
 
+import pyspark.sql.functions as F
+from pyspark.sql import Row, Window
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
     DoubleType, ArrayType, DataType, StructType, StringType, StructField
-from pyspark.ml import Pipeline
-from pyspark.ml.feature import MinMaxScaler
-from pyspark.ml.feature import VectorAssembler
-
 from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadcast, \
     lit, rank, monotonically_increasing_id
-from pyspark.sql import Row, Window
-import pyspark.sql.functions as F
-from pyspark.sql.window import Window
+
+from pyspark.ml import Pipeline
+from pyspark.ml.feature import MinMaxScaler, VectorAssembler, Bucketizer
 
 from zoo.orca import OrcaContext
 from zoo.friesian.feature.utils import *
-
-
-from functools import reduce
-from pyspark.ml.feature import Bucketizer
-
-import numpy as np
-import copy
 
 
 JAVA_INT_MIN = -2147483648
@@ -1023,15 +1017,18 @@ class FeatureTable(Table):
     def min_max_scale(self, columns, min=0.0, max=1.0):
         """
         Rescale each column individually to a common range [min, max] linearly using
-        column summary statistics, which is also known as min-max normalization or Rescaling.
+        column summary statistics, which is also known as min-max normalization or rescaling.
 
-        :param columns: list of column names
-        :param min: Lower bound after transformation, shared by all columns. 0.0 by default.
-        :param max: Upper bound after transformation, shared by all columns. 1.0 by default.
+        :param columns: str or a list of str, the column(s) to be rescaled.
+        :param min: int, the lower bound after transformation, shared by all columns.
+                    Default is 0.0.
+        :param max: int, the upper bound after transformation, shared by all columns.
+                    Default is 1.0.
 
-        :return: new FeatureTable with scaled columns,
-        and a dictionary of original min, original max values of each columns
+        :return: A tuple of a new FeatureTable with rescaled column(s), and a dict of the
+                 original min and max values of the input column(s).
         """
+        columns = str_to_list(columns, "columns")
         df = self.df
         types = [x[1] for x in self.df.select(*columns).dtypes]
         scalar_cols = [columns[i] for i in range(len(columns))
@@ -1054,12 +1051,11 @@ class FeatureTable(Table):
             # Pipeline of VectorAssembler and MinMaxScaler
             pipeline = Pipeline(stages=[assembler, scaler])
 
-            # Fitting pipeline on dataframe
+            # Fitting pipeline on DataFrame
             model = pipeline.fit(df)
             df = model.transform(df) \
                 .withColumn("scaled_list", tolist(pyspark_col("scaled"))) \
                 .drop("vect").drop("scaled")
-            # TODO: Save model.stages[1].originalMax/originalMin as mapping for inference
             for i in range(len(scalar_cols)):
                 df = df.withColumn(scalar_cols[i], pyspark_col("scaled_list")[i])
             df = df.drop("scaled_list")
@@ -1096,15 +1092,15 @@ class FeatureTable(Table):
 
     def transform_min_max_scale(self, columns, min_max_dict):
         """
-        Rescale each column individually with given [min, max] range of each column.
+        Rescale each column individually with the given [min, max] range of each column.
 
-        :param columns: str or a list of str. The column(s) to be rescaled.
-        :param min_max_dict: a dictionary of min, max values of each column.
-         The key is the column name, and the value is (min, max) of this column.
+        :param columns: str or a list of str, the column(s) to be rescaled.
+        :param min_max_dict: dict, the key is the column name, and the value is the
+               tuple of min and max values of this column.
+
         :return: A new FeatureTable with rescaled column(s).
         """
-        if not isinstance(columns, list):
-            columns = [columns]
+        columns = str_to_list(columns, "columns")
         types = [x[1] for x in self.df.select(*columns).dtypes]
         scalar_cols = [columns[i] for i in range(len(columns))
                        if types[i] == "int" or types[i] == "bigint"
@@ -1115,8 +1111,6 @@ class FeatureTable(Table):
         vector_cols = [columns[i] for i in range(len(columns)) if types[i] == "vector"]
 
         tbl = self
-        
-        import numpy as np
 
         def normalize_array(c_min, c_max):
 
@@ -1155,12 +1149,12 @@ class FeatureTable(Table):
         """
         Generate negative item visits for each positive item visit
 
-        :param item_size: integer, max of item.
-        :param item_col:  string, name of item column
-        :param label_col:  string, name of label column
-        :param neg_num:  integer, for each positive record, add neg_num of negative samples
+        :param item_size: int, max of item.
+        :param item_col: str, name of item column
+        :param label_col: str, name of label column
+        :param neg_num: int, for each positive record, add neg_num of negative samples
 
-        :return: FeatureTable
+        :return: A new FeatureTable with negative samples.
         """
         df = add_negative_samples(self.df, item_size, item_col, label_col, neg_num)
         return FeatureTable(df)
@@ -1169,11 +1163,11 @@ class FeatureTable(Table):
         """
         Generate a list of item visits in history
 
-        :param cols:  list of string, ctolumns need to be aggragated
-        :param user_col: string, user column.
-        :param sort_col:  string, sort by sort_col
-        :param min_len:  int, minimal length of a history list
-        :param max_len:  int, maximal length of a history list
+        :param cols: a list of str, columns need to be aggregated
+        :param user_col: str, user column.
+        :param sort_col: str, sort by sort_col
+        :param min_len: int, minimal length of a history list
+        :param max_len: int, maximal length of a history list
 
         :return: FeatureTable
         """
@@ -1185,9 +1179,9 @@ class FeatureTable(Table):
         Generate a list negative samples for each item in item_history_col
 
         :param item_size: int, max of item.
-        :param item2cat:  FeatureTable with a dataframe of item to catgory mapping
-        :param item_history_col:  string, this column should be a list of visits in history
-        :param neg_num:  int, for each positive record, add neg_num of negative samples
+        :param item2cat: FeatureTable with a dataframe of item to category mapping
+        :param item_history_col: str, this column should be a list of visits in history
+        :param neg_num: int, for each positive record, add neg_num of negative samples
 
         :return: FeatureTable
         """
@@ -1198,8 +1192,8 @@ class FeatureTable(Table):
         """
         Mask mask_cols columns
 
-        :param mask_cols: list of string, columns need to be masked with 1s and 0s.
-        :param seq_len:  int, length of masked column
+        :param mask_cols: a list of str, columns need to be masked with 1s and 0s.
+        :param seq_len: int, length of masked column
 
         :return: FeatureTable
         """
@@ -1210,9 +1204,9 @@ class FeatureTable(Table):
         """
         Pad and mask columns of the FeatureTable.
 
-        :param cols: list of str, columns need to be padded with 0s.
+        :param cols: a list of str, columns need to be padded with 0s.
         :param seq_len: int, the length of masked column. Default is 100.
-        :param mask_cols: list of string, columns need to be masked with 1s and 0s.
+        :param mask_cols: a list of str, columns need to be masked with 1s and 0s.
 
         :return: A new FeatureTable with padded columns.
         """
@@ -1239,7 +1233,7 @@ class FeatureTable(Table):
         Join a FeatureTable with another FeatureTable.
 
         :param table: A FeatureTable.
-        :param on: str or a list of str, name(s) of column(s) to join.
+        :param on: str or a list of str, the column(s) to join.
         :param how: str, default is inner. Must be one of: inner, cross, outer, full,
                fullouter, full_outer, left, leftouter, left_outer, right, rightouter,
                right_outer, semi, leftsemi, left_semi, anti, leftanti and left_anti.
@@ -1267,10 +1261,10 @@ class FeatureTable(Table):
          Add features based on key_cols and another key value table,
          for each col in key_cols, it adds a value_col using key-value pairs from tbl
 
-         :param key_cols: list[string]
+         :param key_cols: a list of str
          :param tbl: Table with only two columns [key, value]
-         :param key: string, name of key column in tbl
-         :param value: string, name of value column in tbl
+         :param key: str, name of key column in tbl
+         :param value: str, name of value column in tbl
 
          :return: FeatureTable
          """
@@ -1483,7 +1477,7 @@ class FeatureTable(Table):
                     "target column " + target_col + " should be in target_mean " + str(target_mean)
                 target_mean_dict[target_col] = target_mean[target_col]
         else:
-            global_mean_list = [F.mean(F.col(target_col)).alias(target_col)
+            global_mean_list = [F.mean(pyspark_col(target_col)).alias(target_col)
                                 for target_col in target_cols]
             target_mean_dict = self.df.select(*global_mean_list).collect()[0].asDict()
         for target_col in target_mean_dict:
@@ -1497,7 +1491,7 @@ class FeatureTable(Table):
                 if fold_seed is None:
                     result_df = result_df.withColumn(
                         fold_col,
-                        F.monotonically_increasing_id() % F.lit(kfold)
+                        monotonically_increasing_id() % lit(kfold)
                     )
                 else:
                     result_df = result_df.withColumn(
