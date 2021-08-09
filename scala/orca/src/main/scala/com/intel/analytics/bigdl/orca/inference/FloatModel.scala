@@ -32,6 +32,9 @@ class FloatModel(var model: AbstractModule[Activity, Activity, Float],
                  var metaModel: AbstractModule[Activity, Activity, Float],
                  var isOriginal: Boolean)
   extends AbstractModel with InferenceSupportive with Serializable {
+  override def predictNg(input: JList[JTensor]): JList[JTensor] = {
+    throw new Exception("Not implemented")
+  }
 
   override def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
     val batchSize = inputs.size()

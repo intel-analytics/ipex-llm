@@ -18,7 +18,9 @@ package com.intel.analytics.zoo.pipeline.inference
 
 import java.io.{File, IOException}
 import java.nio.file.{Files, Paths}
+import java.util
 import java.util.{ArrayList, Arrays, UUID, List => JList}
+
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.zoo.common.Utils.createTmpDir
 import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, RegistryMap, SerializationHolder}
@@ -29,11 +31,11 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
-class OpenVINOModel(var modelHolder: OpenVINOModelHolder,
+class OpenVINOModelNg(var modelHolder: OpenVINOModelHolder,
                     var isInt8: Boolean,
                     var batchSize: Int = -1,
                     var deviceType: DeviceTypeEnumVal = DeviceType.CPU)
-  extends AbstractModel with InferenceSupportive with Serializable {
+  extends AbstractModel with InferenceSupportiveNg with Serializable {
 
   private var isRelease: Boolean = false
 
@@ -77,50 +79,47 @@ class OpenVINOModel(var modelHolder: OpenVINOModelHolder,
     nativeRef
   }
 
-  override def predictNg(input: JList[JTensor]): JList[JTensor] = {
+  override def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
     throw new Exception("Not implemented")
   }
-  override def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
-    val outputs = new ArrayList[JList[JTensor]]()
-    inputs.asScala.map(input => {
-      val tensor = input.get(0)
-      val output = if (isInt8) {
-        supportive.predictInt8(executableNetworkReference,
-          tensor.getData, tensor.getShape)
-      } else {
-        supportive.predict(executableNetworkReference,
-          tensor.getData, tensor.getShape)
-      }
-      outputs.add(output)
-    })
-    outputs
+
+  override def predictNg(inputs: JList[JTensor]): JList[JTensor] = {
+    require(inputs.size() == 1, "Multiple inputs of OpenVINO model is not implemented yet")
+    val output = if (isInt8) {
+      supportive.predictInt8(executableNetworkReference,
+        inputs.get(0).getData, inputs.get(0).getShape)
+    } else {
+      supportive.predict(executableNetworkReference, inputs.get(0).getData, inputs.get(0).getShape)
+    }
+    output
   }
 
   override def predict(inputActivity: Activity): Activity = {
-    val (inputList, batchSize) = inputActivity.isTable match {
+    val inputList = inputActivity.isTable match {
       case true =>
         val inputTable = inputActivity.toTable
-        val batchSize = inputTable.length()
-        (transferBatchTableToJListOfJListOfJTensor(inputTable, batchSize), batchSize)
+        tableToJTensorList(inputTable)
       case false =>
         val inputTensor = inputActivity.toTensor[Float]
-        val batchSize = inputTensor.size(1)
-        (transferBatchTensorToJListOfJListOfJTensor(inputTensor, batchSize), batchSize)
+        val jTensorList = new util.ArrayList[JTensor]()
+        jTensorList.add(tensorToJTensor(inputTensor))
+        jTensorList
     }
-    val outputs = predict(inputList)
-    transferListOfActivityToActivityOfBatch(outputs, batchSize)
+    val outputs = predictNg(inputList)
+    jTensorListToActivity(outputs)
   }
 
   override def copy(num: Int): Array[AbstractModel] = {
     Array(this)
-//    val arr = new Array[AbstractModel](num)
-//    val modelBytes = this.modelHolder.modelBytes.clone()
-//    val weightBytes = this.modelHolder.weightBytes.clone()
-//    val modelHolder = new OpenVINOModelHolder(modelBytes, weightBytes)
-//    (0 until num).foreach(i => {
-//      arr(i) = new OpenVINOModel(modelHolder, isInt8, batchSize, DeviceType.CPU)
-//    })
-//    arr
+    //    add following lines if need to use multiple OpenVINO models
+    //    val arr = new Array[AbstractModel](num)
+    //    val modelBytes = this.modelHolder.modelBytes.clone()
+    //    val weightBytes = this.modelHolder.weightBytes.clone()
+    //    val modelHolder = new OpenVINOModelHolder(modelBytes, weightBytes)
+    //    (0 until num).foreach(i => {
+    //      arr(i) = new OpenVINOModel(modelHolder, isInt8, batchSize, DeviceType.CPU)
+    //    })
+    //    arr
   }
 
   override def release(): Unit = {
@@ -137,7 +136,7 @@ class OpenVINOModel(var modelHolder: OpenVINOModelHolder,
   }
 }
 
-object OpenVINOModel {
+object OpenVINOModelNg {
 
   private val modelBytesRegistry = new RegistryMap[(Array[Byte], Array[Byte])]()
 
@@ -146,7 +145,7 @@ object OpenVINOModel {
   @transient
   private lazy val inDriver = NetUtils.isDriver
 
-  class OpenVINOModelHolder(@transient var modelBytes: Array[Byte],
+  class OpenVINOModelNgHolder(@transient var modelBytes: Array[Byte],
                             @transient var weightBytes: Array[Byte],
                             private var id: String)
     extends SerializationHolder {
@@ -216,11 +215,11 @@ object OpenVINOModel {
     }
   }
 
-  def apply(modelHolder: OpenVINOModelHolder, isInt8: Boolean): OpenVINOModel = {
-    new OpenVINOModel(modelHolder, isInt8)
+  def apply(modelHolder: OpenVINOModelHolder, isInt8: Boolean): OpenVINOModelNg = {
+    new OpenVINOModelNg(modelHolder, isInt8)
   }
 
-  def apply(modelHolder: OpenVINOModelHolder, isInt8: Boolean, batchSize: Int): OpenVINOModel = {
-    new OpenVINOModel(modelHolder, isInt8, batchSize)
+  def apply(modelHolder: OpenVINOModelHolder, isInt8: Boolean, batchSize: Int): OpenVINOModelNg = {
+    new OpenVINOModelNg(modelHolder, isInt8, batchSize)
   }
 }

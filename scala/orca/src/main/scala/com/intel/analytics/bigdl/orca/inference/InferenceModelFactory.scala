@@ -144,6 +144,14 @@ object InferenceModelFactory extends InferenceSupportive {
       deviceType, batchSize)
   }
 
+  def loadOpenVINONgModelForIR(modelFilePath: String,
+                             weightFilePath: String,
+                             deviceType: DeviceTypeEnumVal,
+                             batchSize: Int = 0): OpenVINOModelNg = {
+    OpenVinoInferenceSupportive.loadOpenVinoNgIR(modelFilePath, weightFilePath,
+      deviceType, batchSize)
+  }
+
   def loadOpenVINOModelForIR(modelBytes: Array[Byte],
                              weightBytes: Array[Byte],
                              deviceType: DeviceTypeEnumVal,

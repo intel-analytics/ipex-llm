@@ -45,6 +45,12 @@ class OpenVinoInferenceSupportive extends InferenceSupportive with Serializable 
                       data: Array[Float],
                       shape: Array[Int]): JList[JTensor]
 
+  @native def predict(executableNetworkReference: Long,
+                      data: JList[JTensor]): JList[JTensor]
+
+  @native def predictInt8(executableNetworkReference: Long,
+                      data: JList[JTensor]): JList[JTensor]
+
   @native def predictInt8(executableNetworkReference: Long,
                       data: Array[Float],
                       shape: Array[Int]): JList[JTensor]
@@ -104,6 +110,25 @@ object OpenVinoInferenceSupportive extends InferenceSupportive with Serializable
         .count(_ matches ".*statistics.*|.*FakeQuantize.*") > 0
       buffer.close()
       new OpenVINOModel(new OpenVINOModelHolder(modelBytes, weightBytes),
+        isInt8, batchSize, deviceType)
+    }
+  }
+
+  def loadOpenVinoNgIR(modelFilePath: String,
+                     weightFilePath: String,
+                     deviceType: DeviceTypeEnumVal,
+                     batchSize: Int = 0): OpenVINOModelNg = {
+    timing("load OpenVINO IR") {
+      val modelBytes = Files.readAllBytes(Paths.get(modelFilePath))
+      val weightBytes = Files.readAllBytes(Paths.get(weightFilePath))
+      val buffer = Source.fromBytes(modelBytes)
+      // For OpenVINO model version 9 or previous, check statistics keyword
+      // For OpenVINO model version 10 or later, check FakeQuantize keyword
+      val isInt8 = buffer
+        .getLines()
+        .count(_ matches ".*statistics.*|.*FakeQuantize.*") > 0
+      buffer.close()
+      new OpenVINOModelNg(new OpenVINOModelHolder(modelBytes, weightBytes),
         isInt8, batchSize, deviceType)
     }
   }
