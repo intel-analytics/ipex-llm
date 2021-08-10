@@ -192,7 +192,7 @@ class TestTSDataset(ZooTestCase):
         with pytest.raises(RuntimeError):
             tsdata.to_numpy()
 
-        # roll train
+        # roll train, diff input.
         tsdata.roll(lookback=lookback, horizon=horizon)
         x, y = tsdata.to_numpy()
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
@@ -203,6 +203,7 @@ class TestTSDataset(ZooTestCase):
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
         assert y.shape == (len(df)-lookback-horizon+1, horizon, 1)
 
+        # add extra_feature_col.
         tsdata.roll(lookback=lookback, horizon=horizon,
                     feature_col=["extra feature"], target_col="value")
         x, y = tsdata.to_numpy()
@@ -227,7 +228,7 @@ class TestTSDataset(ZooTestCase):
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 1)
         assert y.shape == (len(df)-lookback-horizon+1, horizon, 1)
 
-        # roll test
+        # roll test.
         horizon = 0
         lookback = random.randint(1, 20)
 
@@ -260,6 +261,30 @@ class TestTSDataset(ZooTestCase):
         x, y = tsdata.to_numpy()
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
         assert y.shape == ((50-lookback-horizon+1)*2, horizon, 1)
+
+        # horizon list.
+        horizon_list = [1, 3, 5]
+        tsdata.roll(lookback=lookback, horizon=horizon_list)
+        x, y = tsdata.to_numpy()
+        assert x.shape == ((50-lookback-max(horizon_list)+1)*2, lookback, 2)
+        assert y.shape == ((50-lookback-max(horizon_list)+1)*2, len(horizon_list), 1)
+
+        horizon_list = [1, 5, 9]
+        tsdata.roll(lookback=lookback, horizon=horizon_list, id_sensitive=True)
+        x, y = tsdata.to_numpy()
+        assert x.shape == ((50-lookback-max(horizon_list)+1), lookback, 4)
+        assert y.shape == ((50-lookback-max(horizon_list)+1), len(horizon_list), 2)
+
+        # target multi.
+        tsdata = TSDataset.from_pandas(df,
+                                       dt_col="datetime",
+                                       target_col=["value", "extra feature"],
+                                       id_col="id")
+        tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=False)
+        x, y = tsdata.to_numpy()
+        assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
+        assert y.shape == ((50-lookback-horizon+1)*2, horizon, 2)
+
         tsdata._check_basic_invariants()
 
     def test_tsdataset_roll_order(self):
