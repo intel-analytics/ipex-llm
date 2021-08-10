@@ -132,7 +132,8 @@ def generate_global_features(input_df,
                              column_id,
                              column_sort,
                              default_fc_parameters=None,
-                             kind_to_fc_parameters=None):
+                             kind_to_fc_parameters=None,
+                             n_jobs=1):
     '''
     generate global features by tsfresh.
     :param input_df: input dataframe.
@@ -140,6 +141,7 @@ def generate_global_features(input_df,
     :param column_sort: time column name
     :param default_fc_parameters: same as tsfresh.
     :param kind_to_fc_parameters: same as tsfresh.
+    :param n_jobs: int. The number of processes to use for parallelization.
 
     :return : a new input_df that contains all generated feature.
     '''
@@ -147,12 +149,14 @@ def generate_global_features(input_df,
         global_feature = extract_features(input_df,
                                           column_id=column_id,
                                           column_sort=column_sort,
-                                          kind_to_fc_parameters=kind_to_fc_parameters)
+                                          kind_to_fc_parameters=kind_to_fc_parameters,
+                                          n_jobs=n_jobs)
     else:
         global_feature = extract_features(input_df,
                                           column_id=column_id,
                                           column_sort=column_sort,
-                                          default_fc_parameters=default_fc_parameters)
+                                          default_fc_parameters=default_fc_parameters,
+                                          n_jobs=n_jobs)
     res_df = input_df.copy()
     id_list = list(np.unique(input_df[column_id]))
     addtional_feature = []

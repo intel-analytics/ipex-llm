@@ -655,6 +655,10 @@ class TestTSDataset(ZooTestCase):
                                        extra_feature_col=["extra feature"], id_col="id")
         tsdata.gen_global_feature(settings="minimal")
         tsdata._check_basic_invariants()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        tsdata.gen_global_feature(settings="minimal", n_jobs=2)
+        tsdata._check_basic_invariants()
 
     def test_tsdataset_rolling_feature_multiple(self):
         df = get_multi_id_ts_df()
@@ -663,6 +667,10 @@ class TestTSDataset(ZooTestCase):
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
         tsdata.gen_rolling_feature(settings="minimal", window_size=lookback)
+        tsdata._check_basic_invariants()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        tsdata.gen_rolling_feature(settings="minimal", window_size=lookback, n_jobs=2)
         tsdata._check_basic_invariants()
 
         # roll train
