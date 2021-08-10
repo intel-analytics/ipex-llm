@@ -340,7 +340,7 @@ class TSDataset:
         self.feature_col += features_generated
         return self
 
-    def gen_global_feature(self, settings="comprehensive", full_settings=None):
+    def gen_global_feature(self, settings="comprehensive", full_settings=None, n_jobs=1):
         '''
         Generate per-time-series feature for each time series.
         This method will be implemented by tsfresh.
@@ -352,9 +352,9 @@ class TSDataset:
                for default_fc_parameters in tsfresh. The value is defaulted to "comprehensive".
         :param full_settings: dict. It should follow the instruction for kind_to_fc_parameters in
                tsfresh. The value is defaulted to None.
+        :param n_jobs: int. The number of processes to use for parallelization.
 
         :return: the tsdataset instance.
-
         '''
         assert not self._has_generate_agg_feature, \
             "Only one of gen_global_feature and gen_rolling_feature should be called."
@@ -364,7 +364,8 @@ class TSDataset:
                 generate_global_features(input_df=self.df,
                                          column_id=self.id_col,
                                          column_sort=self.dt_col,
-                                         kind_to_fc_parameters=full_settings)
+                                         kind_to_fc_parameters=full_settings,
+                                         n_jobs=n_jobs)
             self.feature_col += addtional_feature
             return self
 
@@ -381,7 +382,8 @@ class TSDataset:
             generate_global_features(input_df=self.df,
                                      column_id=self.id_col,
                                      column_sort=self.dt_col,
-                                     default_fc_parameters=default_fc_parameters)
+                                     default_fc_parameters=default_fc_parameters,
+                                     n_jobs=n_jobs)
 
         self.feature_col += addtional_feature
         self._has_generate_agg_feature = True
@@ -390,7 +392,8 @@ class TSDataset:
     def gen_rolling_feature(self,
                             window_size,
                             settings="comprehensive",
-                            full_settings=None):
+                            full_settings=None,
+                            n_jobs=1):
         '''
         Generate aggregation feature for each sample.
         This method will be implemented by tsfresh.
@@ -403,6 +406,7 @@ class TSDataset:
                for default_fc_parameters in tsfresh. The value is defaulted to "comprehensive".
         :param full_settings: dict. It should follow the instruction for kind_to_fc_parameters in
                tsfresh. The value is defaulted to None.
+        :param n_jobs: int. The number of processes to use for parallelization.
 
         :return: the tsdataset instance.
         '''
@@ -420,17 +424,20 @@ class TSDataset:
                                      column_id=self.id_col,
                                      column_sort=self.dt_col,
                                      max_timeshift=window_size - 1,
-                                     min_timeshift=window_size - 1)
+                                     min_timeshift=window_size - 1,
+                                     n_jobs=n_jobs)
         if not full_settings:
             self.roll_feature_df = extract_features(df_rolled,
                                                     column_id=self.id_col,
                                                     column_sort=self.dt_col,
-                                                    default_fc_parameters=default_fc_parameters)
+                                                    default_fc_parameters=default_fc_parameters,
+                                                    n_jobs=n_jobs)
         else:
             self.roll_feature_df = extract_features(df_rolled,
                                                     column_id=self.id_col,
                                                     column_sort=self.dt_col,
-                                                    kind_to_fc_parameters=full_settings)
+                                                    kind_to_fc_parameters=full_settings,
+                                                    n_jobs=n_jobs)
         impute_tsfresh(self.roll_feature_df)
 
         self.feature_col += list(self.roll_feature_df.columns)
