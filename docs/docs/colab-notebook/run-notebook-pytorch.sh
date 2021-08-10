@@ -4,7 +4,7 @@
 echo "Chronos test start"
 
 dir=${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/chronos
-pytorchFiles=("chronos_nyc_taxi_tsdataset_forecaster" "chronos_minn_traffic_anomaly_detector")
+pytorchFiles=("chronos_nyc_taxi_tsdataset_forecaster" "chronos_minn_traffic_anomaly_detector" "chronos_experimental_autots_nyc_taxi")
 index=1
 
 set -e
@@ -39,6 +39,7 @@ do
 	sed -i 's/version_info/#version_info/g' ${filename}.py
 	sed -i 's/python_version/#python_version/g' ${filename}.py
 	sed -i 's/exit()/#exit()/g' ${filename}.py
+	sed -i 's/plt.show()/#plt.show()/g' ${filename}.py
 
 	python ${filename}.py
 
