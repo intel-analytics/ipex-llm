@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.{N
 import com.intel.analytics.bigdl.dllib.tensor.{DenseType, QuantizedTensor, QuantizedType, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.serializer.SerializeContext
 import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{BigDLTensor, DataType, TensorStorage}
+import com.intel.analytics.bigdl.serialization.Bigdl.{BigDLTensor, DataType, TensorStorage}
 
 import scala.reflect.ClassTag
 

@@ -21,14 +21,16 @@ import com.intel.analytics.bigdl.dllib.nn.{Container, MklInt8Convertible}
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.AttrValue.ArrayValue
+//import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
+import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{ReflectionUtils, Table}
 import com.intel.analytics.bigdl.utils.{Shape => BigDLShape}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.{DataConverter, ShapeConverter, TensorConverter}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializer._
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl._
+//import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl._
+import com.intel.analytics.bigdl.serialization.Bigdl._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat.{NCHW, NHWC}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, DataType, InputDataFormat}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType, InputDataFormat}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe

@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, DataType}
+import com.intel.analytics.bigdl.serialization.Bigdl
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{Table, Util}

@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.reflect.runtime.universe
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 @SerialVersionUID(- 8008252944905538960L)
 private[bigdl] class SpatialConvolution[T: ClassTag](

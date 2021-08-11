@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 private[bigdl] class Linear[T: ClassTag](
   val inputSize: Int,
