@@ -1,7 +1,8 @@
 loader.preload = "file:$(GRAPHENEDIR)/Runtime/libsysdb.so"
 libos.entrypoint = "file:$(EXECDIR)/bash"
 
-loader.log_level = "debug"
+#loader.log_level = "debug"
+loader.log_level = "error"
 
 loader.insecure_disable_aslr = 1
 loader.insecure__use_cmdline_argv = 1
@@ -76,6 +77,14 @@ fs.mount.keras.type = "chroot"
 fs.mount.keras.path = "/root/.keras"
 fs.mount.keras.uri = "file:/root/.keras"
 
+fs.mount.m2.type = "chroot"
+fs.mount.m2.path = "/root/.m2"
+fs.mount.m2.uri = "file:/root/.m2"
+
+fs.mount.zinc.type = "chroot"
+fs.mount.zinc.path = "/root/.zinc"
+fs.mount.zinc.uri = "file:/root/.zinc"
+
 fs.mount.work.type = "chroot"
 fs.mount.work.path = "$(WORK_DIR)"
 fs.mount.work.uri = "file:$(WORK_DIR)"
@@ -104,6 +113,8 @@ sgx.trusted_files.java = "file:$(JDK_HOME)/bin/java"
 sgx.trusted_files.setsid = "file:/usr/bin/setsid"
 sgx.trusted_files.sh = "file:/bin/sh"
 sgx.trusted_files.stty = "file:/bin/stty"
+sgx.trusted_files.mvn = "file:/usr/bin/mvn"
+sgx.trusted_files.scala = "file:/opt/scala-2.11.8/bin/scala"
 
 # Glibc libraries
 sgx.trusted_files.ld = "file:$(GRAPHENEDIR)/Runtime/ld-linux-x86-64.so.2"
@@ -138,5 +149,7 @@ sgx.allowed_files.work      = "file:/ppml/trusted-big-data-ml/work"
 sgx.allowed_files.pyhome    = "file:/usr/lib/python3.6"
 sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.6/dist-packages"
 sgx.allowed_files.kerasdatas = "file:/root/.keras"
+sgx.allowed_files.m2        = "file:/root/.m2"
+sgx.allowed_files.zinc      = "file:/root/.zinc"
 
 sgx.nonpie_binary = 1
