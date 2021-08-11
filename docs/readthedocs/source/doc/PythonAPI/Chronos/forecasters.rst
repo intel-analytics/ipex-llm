@@ -1,8 +1,10 @@
 Forecasters
 =====================
 
-chronos.model.forecast.lstm_forecaster
+LSTMForecaster
 ----------------------------------------
+
+Please refer to BasePytorchForecaster for other methods other than initialization.
 
 Long short-term memory(LSTM) is a special type of recurrent neural network(RNN). We implement the basic version of LSTM - VanillaLSTM for this forecaster for time-series forecasting task. It has two LSTM layers, two dropout layer and a dense layer.
 
@@ -14,8 +16,10 @@ For the detailed algorithm description, please refer to `here <https://github.co
     :show-inheritance:
 
 
-chronos.model.forecast.seq2seq_forecaster
+Seq2SeqForecaster
 -------------------------------------------
+
+Please refer to BasePytorchForecaster for other methods other than initialization.
 
 Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suitable for multivariant & multistep time series forecasting.
 
@@ -25,8 +29,10 @@ Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suita
     :show-inheritance:
 
 
-chronos.model.forecast.tcn_forecaster
+TCNForecaster
 ----------------------------------------
+
+Please refer to BasePytorchForecaster for other methods other than initialization.
 
 Temporal Convolutional Networks (TCN) is a neural network that use convolutional architecture rather than recurrent networks. It supports multi-step and multi-variant cases. Causal Convolutions enables large scale parallel computing which makes TCN has less inference time than RNN based model such as LSTM.
 
@@ -36,7 +42,7 @@ Temporal Convolutional Networks (TCN) is a neural network that use convolutional
     :show-inheritance:
 
 
-chronos.model.forecast.tcmf_forecaster
+TCMFForecaster
 ----------------------------------------
 
 Analytics Zoo Chronos TCMFForecaster provides an efficient way to forecast high dimensional time series.
@@ -57,7 +63,7 @@ TCMFForecaster supports distributed training and inference. It is based on Orca 
     :show-inheritance:
 
 
-chronos.model.forecast.mtnet_forecaster
+MTNetForecaster
 ----------------------------------------
 
 MTNet is a memory-network based solution for multivariate time-series forecasting. In a specific task of multivariate time-series forecasting, we have several variables observed in time series and we want to forecast some or all of the variables' value in a future time stamp.
@@ -72,7 +78,7 @@ For the detailed algorithm description, please refer to `here <https://github.co
     :show-inheritance:
 
 
-chronos.model.forecast.arima_forecaster
+ARIMAForecaster
 ----------------------------------------
 
 AutoRegressive Integrated Moving Average (ARIMA) is a class of statistical models for analyzing and forecasting time series data. It consists of 3 components: AR (AutoRegressive), I (Integrated) and MA (Moving Average). In ARIMAForecaster we use the SARIMA model (Seasonal ARIMA), which is an extension of ARIMA that additionally supports the direct modeling of the seasonal component of the time series.
@@ -83,7 +89,7 @@ AutoRegressive Integrated Moving Average (ARIMA) is a class of statistical model
     :show-inheritance:
 
 
-chronos.model.forecast.prophet_forecaster
+ProphetForecaster
 ----------------------------------------
 
 Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well.
@@ -102,4 +108,11 @@ chronos.model.forecast.tfpark_forecaster
 .. automodule:: zoo.chronos.model.forecast.tfpark_forecaster
     :members:
     :undoc-members:
+    :show-inheritance:
+
+chronos.model.forecast.base_forecaster.BasePytorchForecaster
+----------------------------------------
+
+.. autoclass:: zoo.chronos.model.forecast.base_forecaster.BasePytorchForecaster
+    :members:
     :show-inheritance:
