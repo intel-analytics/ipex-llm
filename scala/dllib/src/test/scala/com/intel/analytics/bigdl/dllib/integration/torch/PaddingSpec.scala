@@ -15,8 +15,8 @@
  */
 package com.intel.analytics.bigdl.integration.torch
 
-import com.intel.analytics.bigdl.nn.Padding
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.Padding
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random

@@ -23,7 +23,7 @@ You can build one by refer to the
 Spark local mode, example command:
 ```{r, engine='sh'}
 spark-submit --master local[physical_core_number]\
-  --class com.intel.analytics.bigdl.models.autoencoder.Train \
+  --class com.intel.analytics.bigdl.dllib.models.autoencoder.Train \
   ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
   -b batch_size -f $DATA_FOLDER
 ```
@@ -32,7 +32,7 @@ Spark standalone mode, example command:
 spark-submit --master spark://... \
   --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
-  --class com.intel.analytics.bigdl.models.autoencoder.Train \
+  --class com.intel.analytics.bigdl.dllib.models.autoencoder.Train \
   ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
   -b batch_size -f $DATA_FOLDER
 ```
@@ -41,7 +41,7 @@ Spark yarn mode, example command:
 spark-submit --master yarn --deploy-mode client\
   --executor-cores cores_per_executor \
   --num-executors executors_number \
-  --class com.intel.analytics.bigdl.models.autoencoder.Train \
+  --class com.intel.analytics.bigdl.dllib.models.autoencoder.Train \
   ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
   -b batch_size -f $DATA_FOLDER
 ```

@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 class ClassNLLCriterionSpec extends KerasBaseSpec {
 

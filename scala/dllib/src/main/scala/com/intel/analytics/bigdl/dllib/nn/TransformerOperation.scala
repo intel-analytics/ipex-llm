@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
 import breeze.linalg.*
 import breeze.numerics.exp
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{EngineType, T}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.dllib.optim.Regularizer
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.{T}
+import com.intel.analytics.bigdl.utils.{EngineType}
 
 import scala.reflect.ClassTag
 

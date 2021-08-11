@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset
+package com.intel.analytics.bigdl.dllib.feature.dataset
 
-import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.LabeledBGRImage
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.reflect.ClassTag

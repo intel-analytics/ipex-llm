@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
 import com.intel.analytics.bigdl.{Criterion, DataSet}
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Container, StaticGraph, Sequential => TSequential}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.dataset._
+import com.intel.analytics.bigdl.dllib.nn.Graph._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.{Container, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.BigDLModule
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{LoggerFilter, Shape}
-import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.dllib.utils.serializer._
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
@@ -164,7 +164,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 
 
 @deprecated("`Model` is deprecated." +
-  "com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "com.intel.analytics.bigdl.dllib.keras is deprecated in BigDL 0.11, " +
   "and will be removed in future releases", "0.10.0")
 class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
       private val _outputs : Seq[ModuleNode[T]])(implicit ev: TensorNumeric[T])
@@ -264,7 +264,7 @@ object Model extends KerasLayerSerializable{
 }
 
 @deprecated("`Sequential` is deprecated." +
-  "com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+  "com.intel.analytics.bigdl.dllib.keras is deprecated in BigDL 0.11, " +
   "and will be removed in future releases", "0.10.0")
 class Sequential[T: ClassTag]()
 (implicit ev: TensorNumeric[T]) extends KerasModel[T] {

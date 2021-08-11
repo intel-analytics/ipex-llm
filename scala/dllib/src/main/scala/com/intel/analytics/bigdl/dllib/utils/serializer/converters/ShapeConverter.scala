@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.serializer.converters
+package com.intel.analytics.bigdl.dllib.utils.serializer.converters
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath
-import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, SerializeContext}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath
+import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
 import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
-import com.intel.analytics.bigdl.serialization.Bigdl
-import com.intel.analytics.bigdl.serialization.Bigdl.Shape.ShapeType
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule, DataType, Shape}
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.Shape.ShapeType
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, BigDLModule, DataType, Shape}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag

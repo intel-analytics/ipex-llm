@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.dllib.nn.ops
 
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.nn.Module
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, T}
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 

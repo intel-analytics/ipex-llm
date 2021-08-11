@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.label.roi
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi
 
-import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, BoundingBox}
-import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.{BboxUtil, BoundingBox}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
 
 import scala.collection.mutable.ArrayBuffer
 

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.MklInt8Convertible
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.intermediate.{IRElement, IROperator}
+import com.intel.analytics.bigdl.dllib.nn.MklInt8Convertible
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.intermediate.{IRElement, IROperator}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{currentMirror, universe}

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 object EvaluateMethods {
   def calcAccuracy[T](output: Tensor[T], target: Tensor[T]): (Int, Int) = {

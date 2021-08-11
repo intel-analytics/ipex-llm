@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.image
+package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import java.awt.color.ColorSpace
 import java.nio.file.{Files, Path}

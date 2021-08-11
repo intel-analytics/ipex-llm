@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantized
+package com.intel.analytics.bigdl.dllib.nn.quantized
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
-import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.ErrorInfo
-import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, SerializeContext}
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn.ErrorInfo
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{DataFormat, Initializable}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleData, SerializeContext}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.reflect.runtime.universe
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, BigDLModule}
 
 @SerialVersionUID(- 8008252944905538960L)
 private[bigdl] class SpatialConvolution[T: ClassTag](

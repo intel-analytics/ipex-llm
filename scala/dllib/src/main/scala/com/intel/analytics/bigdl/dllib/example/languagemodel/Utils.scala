@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.languagemodel
+package com.intel.analytics.bigdl.dllib.example.languagemodel
 
 import scopt.OptionParser
 import java.io._
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.text._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet
+import com.intel.analytics.bigdl.dllib.feature.dataset.text._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.util.Random
 import org.apache.log4j.Logger

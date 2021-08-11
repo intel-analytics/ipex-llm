@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image
 
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation._
-import com.intel.analytics.bigdl.transform.vision.image.label.roi._
-import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, BoundingBox}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.{BboxUtil, BoundingBox}
 import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 

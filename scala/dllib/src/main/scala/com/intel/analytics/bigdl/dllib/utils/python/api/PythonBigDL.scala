@@ -14,36 +14,38 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.python.api
+package com.intel.analytics.bigdl.dllib.python.api
 
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
-import com.intel.analytics.bigdl.nn.{PGCriterion, Sequential, Zeros, _}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{Identity => DIdentity, Sample => JSample, _}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn.{PGCriterion, Sequential, Zeros, _}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
-import com.intel.analytics.bigdl.optim.{Optimizer, _}
-import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Table, _}
-import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.dllib.optim.{Optimizer, _}
+import com.intel.analytics.bigdl.dllib.tensor.{DenseType, SparseType, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{Table, _}
+import com.intel.analytics.bigdl.dllib.utils.visualization.{Summary, TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.utils._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
 import java.lang.{Boolean => JBoolean}
 import java.nio.ByteOrder
 
-import com.intel.analytics.bigdl.dataset.image.{CropCenter, CropRandom, CropperMethod}
-import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
-import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.bigdl.transform.vision.image.augmentation._
-import com.intel.analytics.bigdl.transform.vision.image.label.roi._
-import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.utils.tf.TensorflowDataFormat
-import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.parse
-import com.intel.analytics.bigdl.utils.tf._
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{CropCenter, CropRandom, CropperMethod}
+import com.intel.analytics.bigdl.dllib.nn.Graph._
+import com.intel.analytics.bigdl.dllib.keras.{KerasLayer, KerasModel}
+import com.intel.analytics.bigdl.dllib.optim.SGD.{LearningRateSchedule, SequentialSchedule}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowDataFormat
+import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowLoader.parse
+import com.intel.analytics.bigdl.dllib.utils.tf._
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.log4j._
 import org.opencv.imgproc.Imgproc
@@ -55,7 +57,7 @@ import scala.reflect.ClassTag
 
 
 /**
- * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
+ * [[com.intel.analytics.bigdl.dllib.feature.dataset.Sample]] for python.
  * @param features features
  * @param labels labels
  * @param bigdlType bigdl numeric type
@@ -2696,7 +2698,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def showBigDlInfoLogs(): Unit = {
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
   }
 
   def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {

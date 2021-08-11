@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.{MeanAbsolutePercentageCriterion, MeanSquaredLogarithmicCriterion}
+import com.intel.analytics.bigdl.dllib.nn.{MeanAbsolutePercentageCriterion, MeanSquaredLogarithmicCriterion}
 
 class MeanSquaredLogarithmicCriterionSpec extends KerasBaseSpec {
   "MeanSquaredLogarithmicCriterion" should "be ok" in {

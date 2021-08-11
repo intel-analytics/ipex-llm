@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.udfpredictor
+package com.intel.analytics.bigdl.dllib.example.udfpredictor
 
-import com.intel.analytics.bigdl.example.utils.WordMeta
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
+import com.intel.analytics.bigdl.dllib.example.utils.WordMeta
+import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.LoggerFilter
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions._
 import org.apache.log4j.{Level, Logger}
@@ -25,7 +26,7 @@ import org.apache.spark.sql.SQLContext
 object DataframePredictor {
 
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.example").setLevel(Level.INFO)
+  Logger.getLogger("com.intel.analytics.bigdl.dllib.example").setLevel(Level.INFO)
 
   def main(args: Array[String]): Unit = {
 

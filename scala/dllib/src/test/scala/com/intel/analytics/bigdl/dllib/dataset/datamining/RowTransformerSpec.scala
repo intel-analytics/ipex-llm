@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.datamining
+package com.intel.analytics.bigdl.dllib.feature.dataset.datamining
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.NumericWildcard
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.NumericWildcard
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}

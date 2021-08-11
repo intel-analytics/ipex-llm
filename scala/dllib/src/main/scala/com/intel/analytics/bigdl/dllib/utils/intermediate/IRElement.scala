@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.intermediate
+package com.intel.analytics.bigdl.dllib.utils.intermediate
 
-import com.intel.analytics.bigdl.nn.MklInt8Convertible
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.MklInt8Convertible
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.dllib.optim.Regularizer
+import com.intel.analytics.bigdl.dllib.tensor.{Tensor, TensorNumericMath}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 

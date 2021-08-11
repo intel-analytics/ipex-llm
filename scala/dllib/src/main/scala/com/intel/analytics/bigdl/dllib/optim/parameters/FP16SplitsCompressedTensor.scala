@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.parameters
+package com.intel.analytics.bigdl.dllib.optim.parameters
 
 import java.nio.ByteBuffer
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.reflect._
 

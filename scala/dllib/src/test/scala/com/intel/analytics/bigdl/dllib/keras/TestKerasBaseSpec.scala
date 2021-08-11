@@ -15,8 +15,8 @@
  */
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, ReLU}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.{Linear, MSECriterion, ReLU}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 class TestKerasBaseSpec extends KerasBaseSpec{
 

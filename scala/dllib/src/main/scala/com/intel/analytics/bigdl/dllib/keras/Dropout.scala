@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, IdentityOutputShape}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, IdentityOutputShape}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
@@ -40,7 +40,7 @@ class Dropout[T: ClassTag](
     with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.Dropout(p)
+    val layer = com.intel.analytics.bigdl.dllib.nn.Dropout(p)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

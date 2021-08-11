@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
@@ -62,12 +62,12 @@ class Cropping3D[T: ClassTag](
     s"Cropping3D only supports format channel_first or channel_last, but got format $dimOrdering")
 
   private val format = dimOrdering.toLowerCase() match {
-    case "channel_first" => com.intel.analytics.bigdl.nn.Cropping3D.CHANNEL_FIRST
-    case "channel_last" => com.intel.analytics.bigdl.nn.Cropping3D.CHANNEL_LAST
+    case "channel_first" => com.intel.analytics.bigdl.dllib.nn.Cropping3D.CHANNEL_FIRST
+    case "channel_last" => com.intel.analytics.bigdl.dllib.nn.Cropping3D.CHANNEL_LAST
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.Cropping3D(
+    val layer = com.intel.analytics.bigdl.dllib.nn.Cropping3D(
       dim1Crop = dim1Crop,
       dim2Crop = dim2Crop,
       dim3Crop = dim3Crop,

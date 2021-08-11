@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
 import java.nio.ByteBuffer
 import java.util
@@ -21,9 +21,10 @@ import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.mkl.hardware.{Affinity, CpuInfo}
-import com.intel.analytics.bigdl.parameters.{CompressedTensor, FP16CompressedTensor, SerializerInstance}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.optim.parameters.{CompressedTensor, FP16CompressedTensor, SerializerInstance}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils._
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.sparkExtension.SparkExtension
@@ -66,7 +67,7 @@ trait DistriParameterSynchronizer[T] {
 class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val totalPartition: Int)
   (implicit ev: TensorNumeric[T]) extends DistriParameterSynchronizer[T]{
 
-  import com.intel.analytics.bigdl.utils.BlockManagerParameterSynchronizer.logger
+  import com.intel.analytics.bigdl.dllib.utils.BlockManagerParameterSynchronizer.logger
 
   @volatile private var shutdown = false
 

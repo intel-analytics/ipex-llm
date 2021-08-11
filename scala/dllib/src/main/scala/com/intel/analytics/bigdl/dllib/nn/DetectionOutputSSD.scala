@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.nn.BinaryTreeLSTM.{apply => _}
-import com.intel.analytics.bigdl.nn.Reshape.{apply => _, createBigDLModule => _, createSerializeBigDLModule => _, getClass => _}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Module => _, _}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
-import com.intel.analytics.bigdl.utils.{Shape, Table}
+import com.intel.analytics.bigdl.dllib.nn.BinaryTreeLSTM.{apply => _}
+import com.intel.analytics.bigdl.dllib.nn.Reshape.{apply => _, createBigDLModule => _, createSerializeBigDLModule => _, getClass => _}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.{Module => _, _}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BboxUtil
+import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.utils.Shape
 import org.apache.log4j.Logger
 import DetectionOutputSSD.logger
 

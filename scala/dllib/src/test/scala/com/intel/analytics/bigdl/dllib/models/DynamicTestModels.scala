@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.dllib.models
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.inception.Inception_Layer_v1
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.models.inception.Inception_Layer_v1
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 object DynamicTestModels {
 

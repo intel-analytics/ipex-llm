@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.tensor
+package com.intel.analytics.bigdl.dllib.tensor
 
 object DenseTensorDimApply {
   private[tensor] def dimApply2[@specialized(Float, Double) T](tensor1: DenseTensor[T],

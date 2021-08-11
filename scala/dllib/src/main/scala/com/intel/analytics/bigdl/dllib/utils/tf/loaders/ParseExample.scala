@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf.loaders
+package com.intel.analytics.bigdl.dllib.utils.tf.loaders
 
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.tf.{ParseExample => ParseExampleOperation}
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.Context
+import com.intel.analytics.bigdl.dllib.nn.tf.{ParseExample => ParseExampleOperation}
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
 import collection.JavaConverters._

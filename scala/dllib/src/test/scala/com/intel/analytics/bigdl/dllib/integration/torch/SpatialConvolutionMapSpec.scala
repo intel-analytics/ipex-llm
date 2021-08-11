@@ -16,12 +16,12 @@
 
 package com.intel.analytics.bigdl.integration.torch
 
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.optim.{L2Regularizer, SGD}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.utils.T
 
 import scala.util.Random
 

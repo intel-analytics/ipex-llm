@@ -18,7 +18,7 @@ coco
 * Generate the hadoop sequence files for COCO dataset
 The following command will transform the images and annotations into hadoop sequence files.
 ```bash
-java -cp com.intel.analytics.bigdl.models.utils.COCOSeqFileGenerator bigdl-VERSION-jar-with-dependencies.jar -f ./coco/coco_val2017 -m ./coco/annotations/instances_val2017.json -p 4 -o ./coco/output
+java -cp com.intel.analytics.bigdl.dllib.models.utils.COCOSeqFileGenerator bigdl-VERSION-jar-with-dependencies.jar -f ./coco/coco_val2017 -m ./coco/annotations/instances_val2017.json -p 4 -o ./coco/output
 ```
 In the above commands:
 -f: the COCO image files location
@@ -44,7 +44,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.maskrcnn.Test \
+--class com.intel.analytics.bigdl.dllib.models.maskrcnn.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 -f hdfs://.../coco/val \
@@ -58,7 +58,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.inception.Test \
+--class com.intel.analytics.bigdl.dllib.models.inception.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 -f hdfs://.../coco/val \

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.inception
+package com.intel.analytics.bigdl.dllib.models.inception
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.{Graph, _}
+import com.intel.analytics.bigdl.dllib.nn.{Graph, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.Module
 
 object Inception_Layer_v1 {

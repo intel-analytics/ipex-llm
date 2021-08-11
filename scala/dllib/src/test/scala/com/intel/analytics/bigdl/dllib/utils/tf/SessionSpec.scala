@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf
+package com.intel.analytics.bigdl.dllib.utils.tf
 
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.nn.MSECriterion
-import com.intel.analytics.bigdl.optim.{SGD, Trigger}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.dataset._
+import com.intel.analytics.bigdl.dllib.nn.MSECriterion
+import com.intel.analytics.bigdl.dllib.optim.{SGD, Trigger}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext

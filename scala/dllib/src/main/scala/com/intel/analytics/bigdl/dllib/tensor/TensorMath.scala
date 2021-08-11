@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.tensor
+package com.intel.analytics.bigdl.dllib.tensor
 
 /**
  * It provides multiple math operation functions for manipulating Tensor objects.

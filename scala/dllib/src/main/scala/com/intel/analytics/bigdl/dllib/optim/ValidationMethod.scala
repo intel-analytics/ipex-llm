@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, RLEMasks}
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.nn.AbsCriterion
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.{MaskUtils, RLEMasks}
+import com.intel.analytics.bigdl.dllib.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.dllib.nn.AbsCriterion
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.RoiImageInfo
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.utils.Table
 import org.apache.commons.lang3.SerializationUtils
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

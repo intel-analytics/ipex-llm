@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
-import com.intel.analytics.bigdl.tensor.{FloatType, LongType, StringType, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.{FloatType, LongType, StringType, Tensor}
 import com.google.protobuf.{ByteString, CodedOutputStream}
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
-import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
 
 class ParseSingleExampleSpec extends FlatSpec with Matchers {
 
@@ -75,7 +75,7 @@ class ParseSingleExampleSpec extends FlatSpec with Matchers {
 
 class ParseSingleExampleSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
 
     val floatBuilder = FloatList.newBuilder()
       .addValue(0.0f).addValue(1.0f).addValue(2.0f)

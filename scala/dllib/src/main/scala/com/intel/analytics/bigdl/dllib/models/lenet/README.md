@@ -26,7 +26,7 @@ Local mode, example command
 spark-submit \
 --master local[physical_core_number] \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.lenet.Train \
+--class com.intel.analytics.bigdl.dllib.models.lenet.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
@@ -39,7 +39,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.lenet.Train \
+--class com.intel.analytics.bigdl.dllib.models.lenet.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
@@ -53,7 +53,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.lenet.Train \
+--class com.intel.analytics.bigdl.dllib.models.lenet.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
@@ -76,7 +76,7 @@ Spark local mode, example command
 ```
 spark-submit \
 --master local[physical_core_number] \
---class com.intel.analytics.bigdl.models.lenet.Test \
+--class com.intel.analytics.bigdl.dllib.models.lenet.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 --model ./model/model.iteration \
@@ -88,7 +88,7 @@ spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---class com.intel.analytics.bigdl.models.lenet.Test \
+--class com.intel.analytics.bigdl.dllib.models.lenet.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 --model ./model/model.iteration_number \
@@ -101,7 +101,7 @@ spark-submit \
 --deploy-mode client \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
---class com.intel.analytics.bigdl.models.lenet.Test \
+--class com.intel.analytics.bigdl.dllib.models.lenet.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 --model ./model/model.iteration_number \

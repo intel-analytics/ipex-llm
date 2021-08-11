@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.keras
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils.BigDLSpecHelper
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, AbstractModule}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.utils.BigDLSpecHelper
 
 import scala.sys.process._
 

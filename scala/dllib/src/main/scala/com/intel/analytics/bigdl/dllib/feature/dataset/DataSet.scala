@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset
+package com.intel.analytics.bigdl.dllib.feature.dataset
 
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.image.{LabeledBGRImage, _}
-import com.intel.analytics.bigdl.dataset.segmentation.{COCODataset, COCODeserializer}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, RoiImageInfo}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{LabeledBGRImage, _}
+import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.{COCODataset, COCODeserializer}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, RoiImageInfo}
+import com.intel.analytics.bigdl.dllib.utils.{T}
+import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.io.ByteArrayInputStream

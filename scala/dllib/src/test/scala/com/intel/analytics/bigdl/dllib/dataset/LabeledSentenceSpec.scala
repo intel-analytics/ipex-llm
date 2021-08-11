@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset
+package com.intel.analytics.bigdl.dllib.feature.dataset
 
-import com.intel.analytics.bigdl.dataset.text.LabeledSentence
+import com.intel.analytics.bigdl.dllib.feature.dataset.text.LabeledSentence
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel

@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.utils.{TestUtils}
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.util.Random
 

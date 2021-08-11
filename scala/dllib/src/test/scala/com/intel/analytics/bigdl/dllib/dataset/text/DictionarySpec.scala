@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.text
+package com.intel.analytics.bigdl.dllib.feature.dataset.text
 
 import java.io.PrintWriter
 
-import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet
 import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
+import com.intel.analytics.bigdl.dllib.utils.SparkContextLifeCycle
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 

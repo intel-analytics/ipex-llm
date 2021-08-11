@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.serializer
+package com.intel.analytics.bigdl.dllib.utils.serializer
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.maskrcnn.MaskRCNN
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.ops.{RandomUniform => RandomUniformOps}
-import com.intel.analytics.bigdl.nn.tf.{DecodeRawSerializer, ParseExample, ParseSingleExample, StridedSlice}
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.ReflectionUtils
-import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.dllib.models.maskrcnn.MaskRCNN
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.dllib.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.ops.{RandomUniform => RandomUniformOps}
+import com.intel.analytics.bigdl.dllib.nn.tf.{DecodeRawSerializer, ParseExample, ParseSingleExample, StridedSlice}
+import com.intel.analytics.bigdl.dllib.optim.Regularizer
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.ReflectionUtils
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 
 import scala.collection.mutable
 import scala.language.existentials
@@ -192,7 +192,7 @@ object ModuleSerializer extends ModuleSerializable{
 
   private def initializeDeclaredTypes() : Unit = {
 
-    var wrapperCls = Class.forName("com.intel.analytics.bigdl.utils.serializer.GenericTypeWrapper")
+    var wrapperCls = Class.forName("com.intel.analytics.bigdl.dllib.utils.serializer.GenericTypeWrapper")
     val fullParams = ReflectionUtils.getPrimCtorMirror(wrapperCls).symbol.paramss
     fullParams.foreach(map => {
       map.foreach(param => {
@@ -222,54 +222,54 @@ object ModuleSerializer extends ModuleSerializable{
 
   private def registerModules : Unit = {
 
-    registerModule("com.intel.analytics.bigdl.nn.BatchNormalization", BatchNormalization)
-    registerModule("com.intel.analytics.bigdl.nn.SpatialBatchNormalization", BatchNormalization)
-    registerModule("com.intel.analytics.bigdl.nn.BinaryTreeLSTM", BinaryTreeLSTM)
-    registerModule("com.intel.analytics.bigdl.nn.BiRecurrent", BiRecurrent)
-    registerModule("com.intel.analytics.bigdl.nn.CAddTable", CAddTable)
-    registerModule("com.intel.analytics.bigdl.nn.StaticGraph", Graph)
-    registerModule("com.intel.analytics.bigdl.nn.DynamicGraph", Graph)
-    registerModule("com.intel.analytics.bigdl.nn.keras.Model", Model)
-    registerModule("com.intel.analytics.bigdl.nn.keras.Sequential", KSequential)
-    registerModule("com.intel.analytics.bigdl.nn.keras.KerasLayerWrapper", KerasLayerSerializer)
-    registerModule("com.intel.analytics.bigdl.nn.MapTable", MapTable)
-    registerModule("com.intel.analytics.bigdl.nn.Maxout", Maxout)
-    registerModule("com.intel.analytics.bigdl.nn.MaskedSelect", MaskedSelect)
-    registerModule("com.intel.analytics.bigdl.nn.Recurrent", Recurrent)
-    registerModule("com.intel.analytics.bigdl.nn.RecurrentDecoder", RecurrentDecoder)
-    registerModule("com.intel.analytics.bigdl.nn.Reshape", Reshape)
-    registerModule("com.intel.analytics.bigdl.nn.Scale", Scale)
-    registerModule("com.intel.analytics.bigdl.nn.SpatialContrastiveNormalization",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.BatchNormalization", BatchNormalization)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialBatchNormalization", BatchNormalization)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.BinaryTreeLSTM", BinaryTreeLSTM)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.BiRecurrent", BiRecurrent)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.CAddTable", CAddTable)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.StaticGraph", Graph)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.DynamicGraph", Graph)
+    registerModule("com.intel.analytics.bigdl.dllib.keras.Model", Model)
+    registerModule("com.intel.analytics.bigdl.dllib.keras.Sequential", KSequential)
+    registerModule("com.intel.analytics.bigdl.dllib.keras.KerasLayerWrapper", KerasLayerSerializer)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.MapTable", MapTable)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.Maxout", Maxout)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.MaskedSelect", MaskedSelect)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.Recurrent", Recurrent)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.RecurrentDecoder", RecurrentDecoder)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.Reshape", Reshape)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.Scale", Scale)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialContrastiveNormalization",
       SpatialContrastiveNormalization)
-    registerModule("com.intel.analytics.bigdl.nn.SpatialDivisiveNormalization",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialDivisiveNormalization",
       SpatialDivisiveNormalization)
-    registerModule("com.intel.analytics.bigdl.nn.SpatialFullConvolution",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialFullConvolution",
       SpatialFullConvolution)
-    registerModule("com.intel.analytics.bigdl.nn.SpatialMaxPooling",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialMaxPooling",
       SpatialMaxPooling)
-    registerModule("com.intel.analytics.bigdl.nn.SpatialSubtractiveNormalization",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialSubtractiveNormalization",
       SpatialSubtractiveNormalization)
-    registerModule("com.intel.analytics.bigdl.nn.Transpose", Transpose)
-    registerModule("com.intel.analytics.bigdl.nn.TimeDistributed", TimeDistributed)
-    registerModule("com.intel.analytics.bigdl.nn.VolumetricMaxPooling", VolumetricMaxPooling)
-    registerModule("com.intel.analytics.bigdl.nn.Echo", Echo)
-    registerModule("com.intel.analytics.bigdl.nn.quantized.SpatialConvolution",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.Transpose", Transpose)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.TimeDistributed", TimeDistributed)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.VolumetricMaxPooling", VolumetricMaxPooling)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.Echo", Echo)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.quantized.SpatialConvolution",
       quantized.SpatialConvolution)
-    registerModule("com.intel.analytics.bigdl.nn.quantized.SpatialDilatedConvolution",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.quantized.SpatialDilatedConvolution",
       quantized.SpatialDilatedConvolution)
-    registerModule("com.intel.analytics.bigdl.nn.quantized.Linear",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.quantized.Linear",
       quantized.Linear)
-    registerModule("com.intel.analytics.bigdl.nn.tf.ParseExample", ParseExample)
-    registerModule("com.intel.analytics.bigdl.nn.tf.ParseSingleExample", ParseSingleExample)
-    registerModule("com.intel.analytics.bigdl.nn.SReLU", SReLU)
-    registerModule("com.intel.analytics.bigdl.nn.tf.DecodeRaw", DecodeRawSerializer)
-    registerModule("com.intel.analytics.bigdl.nn.ops.RandomUniform", RandomUniformOps)
-    registerModule("com.intel.analytics.bigdl.nn.MultiRNNCell", MultiRNNCell)
-    registerModule("com.intel.analytics.bigdl.nn.SpatialSeparableConvolution",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.tf.ParseExample", ParseExample)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.tf.ParseSingleExample", ParseSingleExample)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SReLU", SReLU)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.tf.DecodeRaw", DecodeRawSerializer)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.ops.RandomUniform", RandomUniformOps)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.MultiRNNCell", MultiRNNCell)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialSeparableConvolution",
       SpatialSeparableConvolution)
-    registerModule("com.intel.analytics.bigdl.nn.Transformer",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.Transformer",
       Transformer)
-    registerModule("com.intel.analytics.bigdl.models.maskrcnn.MaskRCNN",
+    registerModule("com.intel.analytics.bigdl.dllib.models.maskrcnn.MaskRCNN",
       MaskRCNN)
   }
 }

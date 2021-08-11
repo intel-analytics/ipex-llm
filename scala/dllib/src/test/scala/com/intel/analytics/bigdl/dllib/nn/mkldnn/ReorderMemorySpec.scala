@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.{DataType, Memory}
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.tensor.{DnnTensor, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, Tensor}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -263,7 +263,7 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val input = Tensor[Float](4, 1, 28, 28).rand(-1, 1)
     val gradOutput = Tensor[Float](outputShape).rand(-1, 1)
 
-    val blas = com.intel.analytics.bigdl.nn.SpatialConvolution(1, 20, 5, 5)
+    val blas = com.intel.analytics.bigdl.dllib.nn.SpatialConvolution(1, 20, 5, 5)
     blas.forward(input)
     blas.backward(input, gradOutput)
 

@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl.{MKL, Memory, MklDnn}
-import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.nn.mkldnn.ResNet.DatasetType.ImageNet
-import com.intel.analytics.bigdl.nn.mkldnn.models.Vgg_16
+import com.intel.analytics.bigdl.dllib.nn.Graph._
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.ResNet.DatasetType.ImageNet
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.models.Vgg_16
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{Engine, T, Table, ThreadPool}
+import com.intel.analytics.bigdl.utils.ThreadPool
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2}
 import org.apache.log4j.Logger
 import scopt.OptionParser
 

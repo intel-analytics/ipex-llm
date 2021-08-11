@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import java.io.File
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.quantized.StorageManager
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.feature.dataset.{PaddingParam, Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dllib.models.inception.Inception_v1_NoAuxClassifier
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.quantized.StorageManager
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils._
 import org.apache.commons.io.FileUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -54,7 +55,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "predictImage" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageFrame = ImageFrame.read(resource.getFile) ->
@@ -74,7 +75,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "predictImage with more data" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val ims = (1 to 50).map(x => {
@@ -104,7 +105,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "predictImage with variant feature data" should "work" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val ims = (1 to 50).map(x => {
       val size = RNG.uniform(20, 30).toInt
@@ -132,7 +133,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "predictImage with quantize" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageFrame = ImageFrame.read(resource.getFile) ->
@@ -152,7 +153,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "predictImage empty" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val images = ImageFrame.array(Array[ImageFeature]())
     val imageFrame = images ->
@@ -167,7 +168,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "predictImage performance one by one" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageFrame = ImageFrame.read(resource.getFile) ->
@@ -194,7 +195,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "predictImage performance group" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/000025.jpg")
     val imageFeatures = (1 to 20).map(i => {
@@ -279,7 +280,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "predictImage with table output" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val ims = (1 to 50).map(x => {

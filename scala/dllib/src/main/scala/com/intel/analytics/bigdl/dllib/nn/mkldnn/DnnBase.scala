@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.DataType
-import com.intel.analytics.bigdl.nn.DynamicContainer
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.{DenseType, DnnTensor, MklDnnType, Tensor}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.nn.DynamicContainer
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.{DenseType, DnnTensor, MklDnnType, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.T
 
 import scala.collection.mutable.ArrayBuffer
 

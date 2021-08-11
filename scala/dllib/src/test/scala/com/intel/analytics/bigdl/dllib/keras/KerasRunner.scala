@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.keras
 
 import java.io.{File, PrintWriter}
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.io.Source
 import scala.sys.process._

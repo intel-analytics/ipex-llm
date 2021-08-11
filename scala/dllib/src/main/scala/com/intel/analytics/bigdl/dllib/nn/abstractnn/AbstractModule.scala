@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.abstractnn
+package com.intel.analytics.bigdl.dllib.nn.abstractnn
 
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.quantized.Quantization
-import com.intel.analytics.bigdl.nn.{Module, _}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor, TensorDataType}
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
-import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
+import com.intel.analytics.bigdl.dllib.feature.dataset._
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.quantized.Quantization
+import com.intel.analytics.bigdl.dllib.nn.{Module, _}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, Tensor, TensorDataType}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.dllib.utils.TorchObject.TYPE_MODULE
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.utils.caffe.CaffePersister
-import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
-import com.intel.analytics.bigdl.utils.serializer._
-import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.utils.caffe.CaffePersister
+import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils
+import com.intel.analytics.bigdl.dllib.utils.serializer._
+import com.intel.analytics.bigdl.dllib.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 

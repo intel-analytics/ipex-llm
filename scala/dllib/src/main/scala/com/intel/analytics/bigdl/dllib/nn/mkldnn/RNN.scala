@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat, Zeros}
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
-import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, RandomUniform, VariableFormat, Zeros}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, Initializable}
+import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 

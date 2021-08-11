@@ -15,9 +15,9 @@
  */
 package com.intel.analytics.bigdl.integration.torch
 
-import com.intel.analytics.bigdl.nn.{Bottle, Linear}
+import com.intel.analytics.bigdl.dllib.nn.{Bottle, Linear}
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random

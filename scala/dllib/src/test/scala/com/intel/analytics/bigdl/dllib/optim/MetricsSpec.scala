@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.{SparkConf, SparkContext, SparkException}

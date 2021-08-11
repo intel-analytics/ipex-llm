@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.ops.Operation
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable, SerializeContext}
-import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.ops.Operation
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleSerializable, SerializeContext}
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric._
 
 import org.tensorflow.example.{Example, Feature}
 

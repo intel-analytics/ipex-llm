@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
 import java.io.File
 import java.util.UUID
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.mkldnn.DnnGraph
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.DnnGraph
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 

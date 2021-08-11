@@ -40,7 +40,7 @@ Please update it according to your bigdl version. It can be found in the **lib**
 If you build from source, it can be found in the **dist/lib** folder.
 
 ```bash
-spark-submit --class com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator bigdl-VERSION-jar-with-dependencies.jar -f imagenet_folder -o output_folder -p cores_number
+spark-submit --class com.intel.analytics.bigdl.dllib.models.utils.ImageNetSeqFileGenerator bigdl-VERSION-jar-with-dependencies.jar -f imagenet_folder -o output_folder -p cores_number
 ```
 
 It will generate the hadoop sequence files in the output folder.
@@ -53,7 +53,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 \
+--class com.intel.analytics.bigdl.dllib.models.inception.TrainInceptionV1 \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 --learningRate learningRate \
@@ -68,7 +68,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 \
+--class com.intel.analytics.bigdl.dllib.models.inception.TrainInceptionV1 \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 --learningRate learningRate \
@@ -105,7 +105,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.inception.Test \
+--class com.intel.analytics.bigdl.dllib.models.inception.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 -f hdfs://.../imagenet/val \
@@ -119,7 +119,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.inception.Test \
+--class com.intel.analytics.bigdl.dllib.models.inception.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 -f hdfs://.../imagenet/val \

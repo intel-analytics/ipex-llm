@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.caffe
+package com.intel.analytics.bigdl.dllib.utils.caffe
 
 import org.apache.commons.lang.exception.ExceptionUtils
 

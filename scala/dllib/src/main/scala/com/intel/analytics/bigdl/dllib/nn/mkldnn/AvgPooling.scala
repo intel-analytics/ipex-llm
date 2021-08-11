@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.{Utils => NNUtils}
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.{Utils => NNUtils}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, DataFormat}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.InferencePhase
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 class AvgPooling(
   var kW: Int,

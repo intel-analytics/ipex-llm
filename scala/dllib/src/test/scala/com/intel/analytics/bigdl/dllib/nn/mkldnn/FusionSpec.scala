@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.{Module, StaticGraph}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
+import com.intel.analytics.bigdl.dllib.nn.{Module, StaticGraph}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.InferencePhase
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
-import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.utils.{Engine}
+import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils
 
 class FusionSpec extends FlatSpec with Matchers {
   "Conv with relu" should "work correctly" in {
@@ -376,7 +377,7 @@ class FusionSpec extends FlatSpec with Matchers {
   }
 
   "bn and scale fusion" should "work correctly" in {
-    import com.intel.analytics.bigdl.nn.{Scale => NNScale}
+    import com.intel.analytics.bigdl.dllib.nn.{Scale => NNScale}
     val inputShape = Array(4, 64, 3, 3)
     val input = Input(inputShape, Memory.Format.nchw).inputs()
     val bn1 = SpatialBatchNormalization(64).inputs(input)
@@ -408,7 +409,7 @@ class FusionSpec extends FlatSpec with Matchers {
   }
 
   "bn + scale + relu fusion" should "work correctly" in {
-    import com.intel.analytics.bigdl.nn.{Scale => NNScale}
+    import com.intel.analytics.bigdl.dllib.nn.{Scale => NNScale}
     val inputShape = Array(4, 64, 3, 3)
     val input = Input(inputShape, Memory.Format.nchw).inputs()
     val bn1 = SpatialBatchNormalization(64).inputs(input)

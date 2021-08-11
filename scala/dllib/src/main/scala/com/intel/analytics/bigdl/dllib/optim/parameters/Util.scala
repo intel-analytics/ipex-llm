@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.parameters
+package com.intel.analytics.bigdl.dllib.optim.parameters
 
 import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 private[bigdl] object Util {
   /** Get square sum of a tensor in parallel, which has better

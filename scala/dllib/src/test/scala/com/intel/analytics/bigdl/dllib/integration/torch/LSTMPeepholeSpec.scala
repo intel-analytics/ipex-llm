@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.integration.torch
 
 import java.io.PrintWriter
 
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.optim.SGD
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.TorchObject.TYPE_DOUBLE_TENSOR
-import com.intel.analytics.bigdl.utils.{T, Table, TorchFile}
+import com.intel.analytics.bigdl.dllib.utils.TorchObject.TYPE_DOUBLE_TENSOR
+import com.intel.analytics.bigdl.dllib.utils.{T, Table, TorchFile}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._

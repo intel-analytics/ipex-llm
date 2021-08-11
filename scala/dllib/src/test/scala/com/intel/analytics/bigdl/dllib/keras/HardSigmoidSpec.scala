@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.HardSigmoid
+import com.intel.analytics.bigdl.dllib.nn.HardSigmoid
 
 
 class HardSigmoidSpec extends KerasBaseSpec {

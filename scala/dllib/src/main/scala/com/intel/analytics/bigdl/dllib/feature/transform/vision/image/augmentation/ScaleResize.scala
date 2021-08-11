@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.augmentation
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.dataset.segmentation.PolyMasks
-import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
+import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.PolyMasks
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BboxUtil
 
 
 object ScaleResize {

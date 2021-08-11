@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.MarginCriterion
+import com.intel.analytics.bigdl.dllib.nn.MarginCriterion
 
 class MarginCriterionSpec extends KerasBaseSpec {
 

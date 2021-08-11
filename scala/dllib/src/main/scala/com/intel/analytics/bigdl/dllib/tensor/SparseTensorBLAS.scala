@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.tensor
+package com.intel.analytics.bigdl.dllib.tensor
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath._
 
 object SparseTensorBLAS {
 
