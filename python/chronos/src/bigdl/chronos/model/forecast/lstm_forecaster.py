@@ -14,71 +14,107 @@
 # limitations under the License.
 #
 
-from zoo.chronos.model.VanillaLSTM import VanillaLSTM as LSTMKerasModel
-from zoo.chronos.model.forecast.tfpark_forecaster import TFParkForecaster
+from zoo.chronos.model.forecast.base_forecaster import BasePytorchForecaster
+from zoo.chronos.model.forecast.utils import set_pytorch_seed
+from zoo.chronos.model.VanillaLSTM_pytorch import VanillaLSTMPytorch
+from zoo.chronos.model.VanillaLSTM_pytorch import model_creator, optimizer_creator, loss_creator
 
 
-class LSTMForecaster(TFParkForecaster):
+class LSTMForecaster(BasePytorchForecaster):
     """
     Example:
         >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
-        >>> model = LSTMForecaster(target_dim=1, feature_dim=x_train.shape[-1])
-        >>> model.fit(x_train,
-                  y_train,
-                  validation_data=(x_val, y_val),
-                  batch_size=8,
-                  distributed=False)
-        >>> predict_result = model.predict(x_test)
+        >>> forecaster = LSTMForecaster(past_seq_len=24,
+                                        input_feature_num=2,
+                                        output_feature_num=2,
+                                        ...)
+            >>> forecaster.fit((x_train, y_train))
+            >>> forecaster.to_local()  # if you set distributed=True
+            >>> test_pred = forecaster.predict(x_test)
+            >>> test_eval = forecaster.evaluate((x_test, y_test))
+            >>> forecaster.save({ckpt_name})
+            >>> forecaster.restore({ckpt_name})
     """
 
     def __init__(self,
-                 target_dim=1,
-                 feature_dim=1,
-                 lstm_units=(16, 8),
-                 dropouts=0.2,
-                 metric="mean_squared_error",
-                 lr=0.001,
-                 loss="mse",
+                 past_seq_len,
+                 input_feature_num,
+                 output_feature_num,
+                 hidden_dim=32,
+                 layer_num=1,
+                 dropout=0.1,
                  optimizer="Adam",
-                 ):
+                 loss="mse",
+                 lr=0.001,
+                 metrics=["mse"],
+                 seed=None,
+                 distributed=False,
+                 workers_per_node=1,
+                 distributed_backend="torch_distributed"):
         """
         Build a LSTM Forecast Model.
 
-        :param target_dim: dimension of model output
-        :param feature_dim: dimension of input feature
-        :param lstm_units: num of units for LSTM layers.
-            Positive int or a list/tuple of positive ints.
-        :param dropouts: dropout for the dropout layers. The same dropout rate will be set to all
-            layers if dropouts is a float while lstm_units has multiple elements.
-        :param metric: the metric for validation and evaluation. For regression, we support
-            Mean Squared Error: ("mean_squared_error", "MSE" or "mse"),
-            Mean Absolute Error: ("mean_absolute_error","MAE" or "mae"),
-            Mean Absolute Percentage Error: ("mean_absolute_percentage_error", "MAPE", "mape")
-            Cosine Proximity: ("cosine_proximity", "cosine")
-        :param lr: learning rate
-        :param loss: the target function you want to optimize on. Defaults to mse.
-        :param optimizer: the optimizer used for training. Defaults to Adam.
+        :param past_seq_len: Specify the history time steps (i.e. lookback).
+        :param input_feature_num: Specify the feature dimension.
+        :param output_feature_num: Specify the output dimension.
+        :param hidden_dim: Specify the hidden dim of each lstm layer. The value
+               defaults to 32.
+        :param layer_num: Specify the number of lstm layer to be used. The value
+               defaults to 1.
+        :param dropout: Specify the dropout close possibility (i.e. the close
+               possibility to a neuron). This value defaults to 0.1.
+        :param optimizer: Specify the optimizer used for training. This value
+               defaults to "Adam".
+        :param loss: Specify the loss function used for training. This value
+               defaults to "mse". You can choose from "mse", "mae" and
+               "huber_loss".
+        :param lr: Specify the learning rate. This value defaults to 0.001.
+        :param metrics: A list contains metrics for evaluating the quality of
+               forecasting. You may only choose from "mse" and "mae" for a
+               distributed forecaster. You may choose from "mse", "me", "mae",
+               "mse","rmse","msle","r2", "mpe", "mape", "mspe", "smape", "mdape"
+               and "smdape" for a non-distributed forecaster.
+        :param seed: int, random seed for training. This value defaults to None.
+        :param distributed: bool, if init the forecaster in a distributed
+               fashion. If True, the internal model will use an Orca Estimator.
+               If False, the internal model will use a pytorch model. The value
+               defaults to False.
+        :param workers_per_node: int, the number of worker you want to use.
+               The value defaults to 1. The param is only effective when
+               distributed is set to True.
+        :param distributed_backend: str, select from "torch_distributed" or
+               "horovod". The value defaults to "torch_distributed".
         """
-        self.check_optional_config = False
-
-        self.model_config = {
-            "input_dim": feature_dim,
-            "output_dim": target_dim,
-            "lr": lr,
-            "lstm_units": lstm_units,
-            "dropouts": dropouts,
-            "optim": optimizer,
-            "metric": metric,
-            "loss": loss,
+        # config setting
+        self.data_config = {
+            "past_seq_len": past_seq_len,
+            "future_seq_len": 1,  # lstm model only supports 1 step prediction
+            "input_feature_num": input_feature_num,
+            "output_feature_num": output_feature_num
         }
-        self.internal = None
+        self.config = {
+            "lr": lr,
+            "loss": loss,
+            "hidden_dim": hidden_dim,
+            "layer_num": layer_num,
+            "optim": optimizer,
+            "dropout": dropout
+        }
+
+        # model creator settings
+        self.local_model = VanillaLSTMPytorch
+        self.model_creator = model_creator
+        self.optimizer_creator = optimizer_creator
+        self.loss_creator = loss_creator
+
+        # distributed settings
+        self.distributed = distributed
+        self.distributed_backend = distributed_backend
+        self.workers_per_node = workers_per_node
+
+        # other settings
+        self.lr = lr
+        self.metrics = metrics
+        self.seed = seed
 
         super().__init__()
-
-    def _build(self):
-        """
-        Build LSTM Model in tf.keras
-        """
-        # build model with TF/Keras
-        self.internal = LSTMKerasModel(check_optional_config=self.check_optional_config)
-        return self.internal.model_creator(self.model_config)

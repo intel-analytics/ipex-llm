@@ -18,6 +18,8 @@ import torch
 import random
 import numpy
 from torch.utils.data import TensorDataset, DataLoader
+import numpy as np
+from zoo.orca.data import XShards
 
 
 def np_to_creator(data):
@@ -34,3 +36,49 @@ def set_pytorch_seed(seed):
         torch.manual_seed(seed)
         numpy.random.seed(seed)
         random.seed(seed)
+
+
+def xshard_to_np(shard, mode="fit", expand_dim=None):
+    if mode == "fit":
+        data_local = shard.collect()
+        return (np.concatenate([data_local[i]['x'] for i
+                                in range(len(data_local))], axis=0),
+                np.concatenate([data_local[i]['y'] for i
+                                in range(len(data_local))], axis=0))
+    if mode == "predict":
+        data_local = shard.collect()
+        return np.concatenate([data_local[i]['x'] for i
+                               in range(len(data_local))], axis=0)
+    if mode == "yhat":
+        yhat = shard.collect()
+        yhat = np.concatenate([yhat[i]['prediction'] for i in range(len(yhat))], axis=0)
+        if len(expand_dim) >= 1:
+            yhat = np.expand_dims(yhat, axis=expand_dim)
+        return yhat
+
+
+def np_to_xshard(x, prefix="x"):
+    x = XShards.partition(x)
+
+    def transform_to_dict(train_data):
+        return {prefix: train_data}
+    return x.transform_shard(transform_to_dict)
+
+
+def check_data(x, y, data_config):
+    assert data_config["past_seq_len"] == x.shape[-2], \
+        "The x shape should be (batch_size, past_seq_len, input_feature_num), \
+        Got past_seq_len of {} in config while x input shape of {}."\
+        .format(data_config["past_seq_len"], x.shape[-2])
+    assert data_config["future_seq_len"] == y.shape[-2], \
+        "The y shape should be (batch_size, future_seq_len, output_feature_num), \
+        Got future_seq_len of {} in config while y input shape of {}."\
+        .format(data_config["future_seq_len"], y.shape[-2])
+    assert data_config["input_feature_num"] == x.shape[-1],\
+        "The x shape should be (batch_size, past_seq_len, input_feature_num), \
+        Got input_feature_num of {} in config while x input shape of {}."\
+        .format(data_config["input_feature_num"], x.shape[-1])
+    assert data_config["output_feature_num"] == y.shape[-1], \
+        "The y shape should be (batch_size, future_seq_len, output_feature_num), \
+        Got output_feature_num of {} in config while y input shape of {}."\
+        .format(data_config["output_feature_num"], y.shape[-1])

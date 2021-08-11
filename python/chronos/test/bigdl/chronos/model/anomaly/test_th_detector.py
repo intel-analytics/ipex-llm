@@ -70,10 +70,15 @@ class TestThresholdDetector(ZooTestCase):
                                         target_col_indexes=[0])
 
         # create model, train on train data and predict on test
-        lstm_config = {"lstm_units": [32] * 2, "lr": 0.001}
-        forecaster = LSTMForecaster(target_dim=1, feature_dim=x_train.shape[-1], **lstm_config)
-        forecaster.fit(x=x_train, y=y_train, batch_size=1024, epochs=50, distributed=False)
+        y_train = np.expand_dims(y_train, 1)
+        forecaster = LSTMForecaster(past_seq_len=look_back,
+                                    input_feature_num=x_train.shape[-1],
+                                    output_feature_num=1,
+                                    hidden_dim=32,
+                                    layer_num=2)
+        forecaster.fit(data=(x_train, y_train), batch_size=1024, epochs=50)
         y_predict = forecaster.predict(x_test)
+        y_predict = np.squeeze(y_predict, axis=1)
 
         # find anomaly using a manual set threshold
         td = ThresholdDetector()
