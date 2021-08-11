@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, PaddingParam, Sample}
-import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
-import com.intel.analytics.bigdl.nn.{Container, Module}
-import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch, PaddingParam, Sample}
+import com.intel.analytics.bigdl.dllib.models.utils.{CachedModels, ModelBroadcast}
+import com.intel.analytics.bigdl.dllib.nn.{Container, Module}
+import com.intel.analytics.bigdl.dllib.optim.parameters.{AllReduceParameter, ParameterProcessor}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils
+import com.intel.analytics.bigdl.dllib.utils.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Module, _}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD

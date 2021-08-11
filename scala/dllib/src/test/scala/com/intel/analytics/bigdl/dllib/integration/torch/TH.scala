@@ -19,10 +19,10 @@ package com.intel.analytics.bigdl.integration.torch
 import java.io._
 import java.nio.file.{Files, Path, Paths}
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.TorchObject._
-import com.intel.analytics.bigdl.utils.{File, Table}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.TorchObject._
+import com.intel.analytics.bigdl.dllib.utils.{File, Table}
 import org.apache.commons.lang.SerializationUtils
 
 import scala.collection.immutable.ListMap

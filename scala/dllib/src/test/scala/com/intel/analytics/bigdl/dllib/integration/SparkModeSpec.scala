@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.integration
 
-import com.intel.analytics.bigdl.models.lenet
-import com.intel.analytics.bigdl.models.vgg
+import com.intel.analytics.bigdl.dllib.models.lenet
+import com.intel.analytics.bigdl.dllib.models.vgg
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Integration

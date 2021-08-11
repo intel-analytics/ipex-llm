@@ -146,7 +146,7 @@ $SPARK_HOME/bin/spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --driver-class-path $BIGDL_HOME/lib/bigdl-$BIGDL_VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.example.tensorflow.transferlearning.TransferLearning  \
+--class com.intel.analytics.bigdl.dllib.example.tensorflow.transferlearning.TransferLearning  \
 $BIGDL_HOME/lib/bigdl-$BIGDL_VERSION-jar-with-dependencies.jar \
 -t /tmp/tf_model_train/ -v /tmp/tf_model_validation/ \
 -b batch_size -e nEpochs

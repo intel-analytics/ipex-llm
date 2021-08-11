@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.serializer.converters
+package com.intel.analytics.bigdl.dllib.utils.serializer.converters
 
 import com.google.protobuf.ByteString
 
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.dllib.optim.Regularizer
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
-import com.intel.analytics.bigdl.serialization.Bigdl._
-import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl._
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.AttrValue.ArrayValue
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -172,7 +172,7 @@ object DataConverter extends DataConverter{
       } else if (valueType <:< universe.typeOf[Tensor[_]]) {
         TensorConverter.setAttributeValue(context, attributeBuilder, value)
       } else if (valueType.toString == ModuleSerializer.tType.toString) {
-        if (ev == com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble) {
+        if (ev == com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericDouble) {
           attributeBuilder.setDataType(DataType.DOUBLE)
           attributeBuilder.setDoubleValue(value.asInstanceOf[Double])
         } else {

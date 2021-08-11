@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.utils
+package com.intel.analytics.bigdl.dllib.example.utils
 
 object SimpleTokenizer {
   /**

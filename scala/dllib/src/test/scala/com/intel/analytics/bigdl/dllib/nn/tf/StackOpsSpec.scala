@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
-import com.intel.analytics.bigdl.nn.Graph
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.nn.Graph
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 class StackOpsSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val data = Const[Float, Float](Tensor.scalar[Float](1)).inputs()
     val stack = new StackCreator[Float, Float]().inputs()
     val push = new StackPush[Float, Float]().inputs(stack, data)
-    val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(push)
+    val ctr = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().inputs(push)
     val pop = new StackPop[Float, Float]().inputs(stack, ctr)
     val model = Graph.dynamic[Float](Array(stack), Array(pop))
 

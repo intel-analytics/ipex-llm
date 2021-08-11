@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.tensorflow.loadandsave
+package com.intel.analytics.bigdl.dllib.example.tensorflow.loadandsave
 
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.tf.TensorflowSaver
+import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowSaver
 
 /**
  * This example shows how to define a BigDL model and save it as tensorflow format

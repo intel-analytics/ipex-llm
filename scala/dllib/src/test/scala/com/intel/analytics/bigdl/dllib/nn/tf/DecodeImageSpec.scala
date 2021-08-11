@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
-import com.intel.analytics.bigdl.utils.tf.TFRecordIterator
+import com.intel.analytics.bigdl.dllib.utils.tf.TFRecordIterator
 import org.scalatest.{FlatSpec, Matchers}
 import java.io.{File => JFile}
 import java.nio.{ByteBuffer, ByteOrder}
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.tensor.{FloatType, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.tensorflow.example.Example
 import org.tensorflow.framework.DataType
-import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
 
 class DecodeImageSpec extends FlatSpec with Matchers {
 

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.models.resnet
+package com.intel.analytics.bigdl.dllib.models.resnet
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.dataset.image.{HFlip => JHFlip}
-import com.intel.analytics.bigdl.transform.vision.image.{MTImageFeatureToBatch, MatToTensor, PixelBytesToMat}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.dllib.feature.dataset._
+import com.intel.analytics.bigdl.dllib.feature.dataset.image._
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{HFlip => JHFlip}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{MTImageFeatureToBatch, MatToTensor, PixelBytesToMat}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation._
 import org.apache.spark.SparkContext
 
 /**

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.opencv
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv
 
 import java.io.{File, IOException, ObjectInputStream, ObjectOutputStream}
 
 import com.intel.analytics.bigdl.opencv.OpenCV
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BoundingBox
 import org.apache.commons.io.FileUtils
 import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs

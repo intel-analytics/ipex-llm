@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.text
+package com.intel.analytics.bigdl.dllib.feature.dataset.text
 
-import com.intel.analytics.bigdl.dataset.Transformer
-import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
+import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
+import com.intel.analytics.bigdl.dllib.feature.dataset.text.utils.SentenceToken
 
 import scala.collection.Iterator
 

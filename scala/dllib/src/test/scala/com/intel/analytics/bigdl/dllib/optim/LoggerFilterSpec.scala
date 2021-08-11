@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import java.io.StringWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dllib.nn.{Linear, MSECriterion, Sequential}
 import com.intel.analytics.bigdl.numeric.NumericDouble
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, TestUtils}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
+import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.{Level, Logger, PatternLayout, WriterAppender}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -59,7 +60,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A LoggerFilter" should "output correct info on console and bigdl.log" in {
     TestUtils.cancelOnWindows()
     val logFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
-    val optimClz = "com.intel.analytics.bigdl.optim"
+    val optimClz = "com.intel.analytics.bigdl.dllib.optim"
 
     val (writerAppender, writer) = writerAndAppender
     Logger.getLogger(optimClz).addAppender(writerAppender)
@@ -134,7 +135,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A LoggerFilter generate log " should "in correct place" in {
     TestUtils.cancelOnWindows()
     val logFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
-    val optimClz = "com.intel.analytics.bigdl.optim"
+    val optimClz = "com.intel.analytics.bigdl.dllib.optim"
 
     Files.deleteIfExists(Paths.get(logFile))
     Logger.getLogger("org").setLevel(Level.INFO)
@@ -160,7 +161,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A LoggerFilter generate log " should "under the place user gived" in {
     TestUtils.cancelOnWindows()
     val logFile = Paths.get(System.getProperty("java.io.tmpdir"), "bigdl.log").toString
-    val optimClz = "com.intel.analytics.bigdl.optim"
+    val optimClz = "com.intel.analytics.bigdl.dllib.optim"
     val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
 
     System.setProperty("bigdl.utils.LoggerFilter.logFile", logFile)
@@ -192,7 +193,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A LoggerFilter generate log" should "not modify log level user defined" in {
     TestUtils.cancelOnWindows()
-    val optimClz = "com.intel.analytics.bigdl.optim"
+    val optimClz = "com.intel.analytics.bigdl.dllib.optim"
     val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
 
     Files.deleteIfExists(Paths.get(defaultFile))
@@ -234,7 +235,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LoggerFilter generate log" should "be controled by the property" in {
-    val optimClz = "com.intel.analytics.bigdl.optim"
+    val optimClz = "com.intel.analytics.bigdl.dllib.optim"
     val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
 
     System.setProperty("bigdl.utils.LoggerFilter.disable", "true")

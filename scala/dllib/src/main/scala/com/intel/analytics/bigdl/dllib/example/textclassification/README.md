@@ -38,7 +38,7 @@
         ```shell
         BASE_DIR=${PWD} # where is the data
         spark-submit --master "local[physical_core_number]" --driver-memory 20g                     \
-                   --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
+                   --class com.intel.analytics.bigdl.dllib.example.textclassification.TextClassifier \
                    bigdl-VERSION-jar-with-dependencies.jar --batchSize 128              \
                    --baseDir ${BASE_DIR} --partitionNum 4
         ```
@@ -51,7 +51,7 @@
         BASE_DIR=${PWD} # where is the data
         spark-submit --master ${MASTER} --driver-memory 20g --executor-memory 20g  \
                    --total-executor-cores 32 --executor-cores 8                                \
-                   --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
+                   --class com.intel.analytics.bigdl.dllib.example.textclassification.TextClassifier \
                    bigdl-VERSION-jar-with-dependencies.jar --batchSize 128              \
                    --baseDir ${BASE_DIR} --partitionNum 32
         ```
@@ -61,7 +61,7 @@
                 BASE_DIR=${PWD} # where is the data
                 spark-submit --master yarn --driver-memory 20g --executor-memory 20g  \
                            --num-executor 4 --executor-cores 8                                \
-                           --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
+                           --class com.intel.analytics.bigdl.dllib.example.textclassification.TextClassifier \
                            bigdl-VERSION-jar-with-dependencies.jar --batchSize 128              \
                            --baseDir ${BASE_DIR} --partitionNum 32
                 ```

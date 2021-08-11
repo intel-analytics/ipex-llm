@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.MklInt8Convertible
+import com.intel.analytics.bigdl.dllib.nn.MklInt8Convertible
 
 class ReLU(value: Float = 0.0f) extends MklDnnLayer with MklInt8Convertible {
   private val UNDEFINED: Long = 0

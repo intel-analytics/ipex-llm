@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.util
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import org.apache.log4j.Logger
 
 object BboxUtil {

@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{SampleToMiniBatch, _}
-import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.quantized.QuantizedModule
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
-import com.intel.analytics.bigdl.utils.Util._
-import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, Util}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{SampleToMiniBatch, _}
+import com.intel.analytics.bigdl.dllib.nn.Container
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.quantized.QuantizedModule
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.dllib.utils.Util._
+import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils
+import com.intel.analytics.bigdl.dllib.utils.{Util}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag

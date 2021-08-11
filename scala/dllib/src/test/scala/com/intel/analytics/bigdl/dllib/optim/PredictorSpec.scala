@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
-import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample}
-import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.models.utils.CachedModels
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.quantized.{StorageInfo, StorageManager}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, Table, T}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{PaddingParam, Sample}
+import com.intel.analytics.bigdl.dllib.models.inception.Inception_v1_NoAuxClassifier
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.models.utils.CachedModels
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.quantized.{StorageInfo, StorageManager}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
+import com.intel.analytics.bigdl.dllib.utils.{Table, T}
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
+import com.intel.analytics.bigdl.dllib.utils.SparkContextLifeCycle
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -108,7 +109,7 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
   }
 
   "model.predictImage" should "be correct" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageFrame = ImageFrame.read(resource.getFile, sc) ->
@@ -128,7 +129,7 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
   }
 
   "model.predictImage with simple model" should "be correct" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageFrame = ImageFrame.read(resource.getFile, sc) ->
@@ -150,7 +151,7 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
   }
 
   "predictImage with variant feature data" should "work" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val ims = (1 to 50).map(x => {
       val size = RNG.uniform(20, 30).toInt
@@ -179,7 +180,7 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
   }
 
   "predictImage with table output" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val ims = (1 to 50).map(x => {
       val im = ImageFeature()
@@ -207,7 +208,7 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
 
   "predictImage with output " +
   "whose type is a table of 2 table and 1 tensor" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val ims = (1 to 50).map(x => {
       val im = ImageFeature()
@@ -252,9 +253,9 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
   }
 
   "model predict should have no memory leak" should "be correct" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageFrame = ImageFrame.read(resource.getFile, sc) ->

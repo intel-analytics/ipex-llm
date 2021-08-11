@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.resnet
+package com.intel.analytics.bigdl.dllib.models.resnet
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.CropCenter
-import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
-import com.intel.analytics.bigdl.nn.{Module, StaticGraph}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, MTImageFeatureToBatch, MatToTensor, PixelBytesToMat}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{ChannelScaledNormalizer, RandomCropper, RandomResize}
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.CropCenter
+import com.intel.analytics.bigdl.dllib.models.resnet.ResNet.DatasetType
+import com.intel.analytics.bigdl.dllib.nn.{Module, StaticGraph}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, MTImageFeatureToBatch, MatToTensor, PixelBytesToMat}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.{ChannelScaledNormalizer, RandomCropper, RandomResize}
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -35,7 +36,7 @@ import org.apache.spark.SparkContext
  */
 object TestImageNet {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
   val logger = Logger.getLogger(getClass)
 
   import Utils._

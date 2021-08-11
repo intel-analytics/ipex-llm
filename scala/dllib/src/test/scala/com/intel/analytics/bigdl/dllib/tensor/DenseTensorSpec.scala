@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.tensor
+package com.intel.analytics.bigdl.dllib.tensor
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
-import com.intel.analytics.bigdl.nn.Linear
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.nn.Linear
+import com.intel.analytics.bigdl.dllib.utils.T
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector}
 import org.scalatest.{FlatSpec, Matchers}
 import spire.syntax.module
@@ -499,13 +499,13 @@ class DenseTensorSpec extends FlatSpec with Matchers {
       "1.0\n" +
         "2.0\n" +
         "3.0\n" +
-        "[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3]"
+        "[com.intel.analytics.bigdl.dllib.tensor.DenseTensor$mcD$sp of size 3]"
     t.toString should be(OneD_STRING)
     val MATRIX_STRING =
       "1.0\t2.0\t3.0\t4.0\t\n" +
         "5.0\t6.0\t7.0\t8.0\t\n" +
         "9.0\t10.0\t11.0\t12.0\t\n" +
-        "[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x4]"
+        "[com.intel.analytics.bigdl.dllib.tensor.DenseTensor$mcD$sp of size 3x4]"
     t = new DenseTensor[Double](3, 4)
     var i = 0
     t.apply1(v => {
@@ -531,7 +531,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     })
     val OneD_STRING =
       "1.0\n2.0\n3.0\n...\n998.0\n999.0\n1000.0\n" +
-        "[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1000]"
+        "[com.intel.analytics.bigdl.dllib.tensor.DenseTensor$mcF$sp of size 1000]"
     t.toString should be(OneD_STRING)
     val s = new DenseTensor[Float](50, 50)
     i = 0
@@ -546,7 +546,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
         "2351.0\t2352.0\t2353.0\t...\t2398.0\t2399.0\t2400.0\t\n" +
         "2401.0\t2402.0\t2403.0\t...\t2448.0\t2449.0\t2450.0\t\n" +
         "2451.0\t2452.0\t2453.0\t...\t2498.0\t2499.0\t2500.0\t\n" +
-        "[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 50x50]"
+        "[com.intel.analytics.bigdl.dllib.tensor.DenseTensor$mcF$sp of size 50x50]"
     s.toString should be(MATRIX_STRING)
     val r = new DenseTensor[Float](1, 10, 50, 50)
     i = 0
@@ -587,7 +587,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
         "24851.0\t24852.0\t24853.0\t...\t24898.0\t24899.0\t24900.0\t\n" +
         "24901.0\t24902.0\t24903.0\t...\t24948.0\t24949.0\t24950.0\t\n" +
         "24951.0\t24952.0\t24953.0\t...\t24998.0\t24999.0\t25000.0\t\n\n" +
-    "[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x10x50x50]"
+    "[com.intel.analytics.bigdl.dllib.tensor.DenseTensor$mcF$sp of size 1x10x50x50]"
     r.toString should be(MULTIPLE_MATRIX_STRING)
   }
 

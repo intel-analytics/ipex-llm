@@ -26,7 +26,7 @@ To start with this example, you need prepare your model and dataset.
 ```bash
 mkdir -p val/images
 mv predict/* val/images/
-java -cp bigdl_folder/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f ./ --validationOnly --hasName
+java -cp bigdl_folder/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.dllib.models.utils.ImageNetSeqFileGenerator -f ./ --validationOnly --hasName
 mv val/*.seq predict/
 ```
 
@@ -38,7 +38,7 @@ Command to run the example in Spark local mode:
 spark-submit \
 --master local[physcial_core_number] \
 --driver-memory 10g --executor-memory 20g \
---class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor \
+--class com.intel.analytics.bigdl.dllib.example.imageclassification.ImagePredictor \
 ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --modelPath ./resnet-18.t7 \
 --folder ./predict \
@@ -52,7 +52,7 @@ spark-submit \
 --master spark://... \
 --executor-cores 8 \
 --total-executor-cores 32 \
---class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor \
+--class com.intel.analytics.bigdl.dllib.example.imageclassification.ImagePredictor \
 ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --modelPath ./resnet-18.t7 \
 --folder ./predict \
@@ -67,7 +67,7 @@ spark-submit \
 --deploy-mode client \
 --executor-cores 8 \
 --num-executors 4 \
---class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor \
+--class com.intel.analytics.bigdl.dllib.example.imageclassification.ImagePredictor \
 ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --modelPath ./resnet-18.t7 \
 --folder ./predict \

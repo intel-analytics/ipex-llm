@@ -13,7 +13,7 @@ You can build one by refer to the
 Example command for running in Spark cluster mode
 ```
 spark-submit --master local[physical_core_number] \
---class com.intel.analytics.bigdl.models.vgg.Train \
+--class com.intel.analytics.bigdl.dllib.models.vgg.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-folder \
 -b batch_size \
@@ -27,7 +27,7 @@ spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---class com.intel.analytics.bigdl.models.vgg.Train \
+--class com.intel.analytics.bigdl.dllib.models.vgg.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-folder \
 -b batchsize \
@@ -42,7 +42,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.vgg.Train \
+--class com.intel.analytics.bigdl.dllib.models.vgg.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-folder \
 -b batch_size \
@@ -63,7 +63,7 @@ safety of your model files.
 Example command for running in Spark local mode
 ```
 spark-submit --master local[physical_core_number] \
---class com.intel.analytics.bigdl.models.vgg.Test \
+--class com.intel.analytics.bigdl.dllib.models.vgg.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f cifar \
 --model model_file \
@@ -76,7 +76,7 @@ spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---class com.intel.analytics.bigdl.models.vgg.Test \
+--class com.intel.analytics.bigdl.dllib.models.vgg.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f cifar-folder \
 --model model_file \
@@ -89,7 +89,7 @@ spark-submit \
 --deploy-mode client \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
---class com.intel.analytics.bigdl.models.vgg.Test \
+--class com.intel.analytics.bigdl.dllib.models.vgg.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f cifar-folder \
 --model ./model/model.iteration_number \

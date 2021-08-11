@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf.loaders
+package com.intel.analytics.bigdl.dllib.utils.tf.loaders
 
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.tf.{MergeOps, SwitchOps, Enter => EnterOps, Exit => ExitOps,
+import com.intel.analytics.bigdl.dllib.nn.tf.{MergeOps, SwitchOps, Enter => EnterOps, Exit => ExitOps,
   LoopCondition => LoopConditionOps, NextIteration => NextIterationOps}
-import com.intel.analytics.bigdl.nn.tf.ControlDependency
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.Context
-import com.intel.analytics.bigdl.utils.tf.Tensorflow._
-import com.intel.analytics.bigdl.utils.tf.loaders.Utils.getType
+import com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.tf.Context
+import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow._
+import com.intel.analytics.bigdl.dllib.utils.tf.loaders.Utils.getType
 import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.reflect.ClassTag

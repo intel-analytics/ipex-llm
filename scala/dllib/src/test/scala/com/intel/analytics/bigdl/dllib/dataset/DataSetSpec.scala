@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset
+package com.intel.analytics.bigdl.dllib.feature.dataset
 
 import java.io.{ByteArrayInputStream, File, FileInputStream}
 import java.nio.file.Paths
 import java.util.concurrent.{Callable, Executors}
-import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.dataset.segmentation.{COCODataset, COCOPoly, COCORLE, PolyMasks, RLEMasks}
-import com.intel.analytics.bigdl.models.utils.COCOSeqFileGenerator
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, RoiImageInfo}
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, SparkContextLifeCycle, TestUtils}
+import com.intel.analytics.bigdl.dllib.feature.dataset.image._
+import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.{COCODataset, COCOPoly, COCORLE, PolyMasks, RLEMasks}
+import com.intel.analytics.bigdl.dllib.models.utils.COCOSeqFileGenerator
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, RoiImageInfo}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.utils.{SparkContextLifeCycle, TestUtils}
+import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils._
 import java.awt.image.DataBufferByte
 import javax.imageio.ImageIO
 import org.apache.hadoop.io.Text
@@ -106,7 +108,7 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
   "mnist data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("mnist")
 
-    val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
+    val dataSet = DataSet.array(com.intel.analytics.bigdl.dllib.models.lenet.Utils.load(
       processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
       processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte")
     )
@@ -120,7 +122,7 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
   "mnist rdd data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("mnist")
 
-    val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
+    val dataSet = DataSet.array(com.intel.analytics.bigdl.dllib.models.lenet.Utils.load(
       processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
       processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte"
     ), sc)
@@ -329,7 +331,7 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
 
       val resourceTorch = getClass().getClassLoader().getResource("torch")
       val tensor1Path = Paths.get(processPath(resourceTorch.getPath()), tensorFile)
-      val tensor1 = com.intel.analytics.bigdl.utils.File.loadTorch[Tensor[Float]](
+      val tensor1 = com.intel.analytics.bigdl.dllib.utils.File.loadTorch[Tensor[Float]](
         tensor1Path.toString).addSingletonDimension()
       image1.size() should be(tensor1.size())
       image1.map(tensor1, (a, b) => {

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.dllib.nn.Module
+import com.intel.analytics.bigdl.dllib.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import scopt.OptionParser
 

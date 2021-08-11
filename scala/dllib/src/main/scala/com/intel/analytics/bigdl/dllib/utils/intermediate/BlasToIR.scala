@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.intermediate
+package com.intel.analytics.bigdl.dllib.utils.intermediate
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.ReflectionUtils
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.ReflectionUtils
 
 import scala.reflect.ClassTag
 
@@ -27,7 +27,7 @@ private[bigdl] class BlasToIR[T: ClassTag] extends ConvertBase[Module[T], IRElem
 
   private def className(layer: Module[T]): String = {
     val name = layer.getClass.getSimpleName
-    s"com.intel.analytics.bigdl.utils.intermediate.IR$name"
+    s"com.intel.analytics.bigdl.dllib.utils.intermediate.IR$name"
   }
 
   // reminder: some undefined IR operations can be presented by IRGeneralModule

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
-import com.intel.analytics.bigdl.nn.{ConcatTable, Linear}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.nn.{ConcatTable, Linear}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Properties
@@ -89,12 +89,12 @@ class TableSpec extends FlatSpec with Matchers {
       state.toString() should be(" {\n\t2:  {\n\t   " +
         "\t2:  {\n\t   \t   \t1: d\n\t   \t    }\n\t   \t1: b\n\t    }" +
         "\n\t1: 0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   " +
-        "[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]\n }")
+        "[com.intel.analytics.bigdl.dllib.tensor.DenseTensor of size 3x3]\n }")
     } else if (Properties.versionNumberString.contains("2.12")) {
       state.toString() should be(" {\n\t2:  {\n\t   " +
         "\t2:  {\n\t   \t   \t1: d\n\t   \t    }\n\t   \t1: b\n\t    }" +
         "\n\t1: 0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   " +
-        "[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]\n }")
+        "[com.intel.analytics.bigdl.dllib.tensor.DenseTensor of size 3x3]\n }")
     }
   }
 

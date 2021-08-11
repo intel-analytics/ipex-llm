@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.augmentation
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
 import org.scalatest.{FlatSpec, Matchers}
 
 class RandomTransformerSpec extends FlatSpec with Matchers {

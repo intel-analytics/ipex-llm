@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.serializer
+package com.intel.analytics.bigdl.dllib.utils.serializer
 
 import java.io._
 import java.nio.ByteBuffer
@@ -21,14 +21,14 @@ import java.security.{DigestInputStream, DigestOutputStream, MessageDigest}
 
 import scala.collection.JavaConverters._
 import com.google.protobuf.CodedInputStream
-import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.converters.TensorConverter
-import com.intel.analytics.bigdl.utils.serializer.converters.DataReaderWriter
-import com.intel.analytics.bigdl.utils.{File, FileReader, FileWriter, Table}
-import com.intel.analytics.bigdl.serialization.Bigdl._
+import com.intel.analytics.bigdl.dllib.nn.Container
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.{DenseType, QuantizedTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.TensorConverter
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataReaderWriter
+import com.intel.analytics.bigdl.dllib.utils.{File, FileReader, FileWriter, Table}
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

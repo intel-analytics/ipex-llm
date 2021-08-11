@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.utils
+package com.intel.analytics.bigdl.dllib.models.utils
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import java.util.UUID
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.mkldnn.{MklDnnLayer, TensorMMap}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.dllib.nn.Container
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.{MklDnnLayer, TensorMMap}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
-import com.intel.analytics.bigdl.utils.Util._
-import com.intel.analytics.bigdl.utils.intermediate.IRGraph
+import com.intel.analytics.bigdl.dllib.utils.Util._
+import com.intel.analytics.bigdl.dllib.utils.intermediate.IRGraph
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast

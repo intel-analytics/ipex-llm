@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
-import com.intel.analytics.bigdl.nn.{InitializationMethod, MklInt8Convertible, RandomUniform, VariableFormat}
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, Initializable}
+import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, MklInt8Convertible, RandomUniform, VariableFormat}
+import com.intel.analytics.bigdl.dllib.optim.Regularizer
+import com.intel.analytics.bigdl.dllib.tensor._
 
 import scala.collection.mutable.ArrayBuffer
 

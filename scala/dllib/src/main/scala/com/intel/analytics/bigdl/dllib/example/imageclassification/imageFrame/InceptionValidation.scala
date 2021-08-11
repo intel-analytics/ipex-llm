@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.imageclassification.imageFrame
+package com.intel.analytics.bigdl.dllib.example.imageclassification.imageFrame
 
-import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
-import com.intel.analytics.bigdl.example.loadmodel.ModelValidator.{TestLocalParams, logger, testLocalParser}
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy}
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFrame, ImageFrameToSample, MatToTensor, PixelBytesToMat}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet.SeqFileFolder
+import com.intel.analytics.bigdl.dllib.example.loadmodel.ModelValidator.{TestLocalParams, logger, testLocalParser}
+import com.intel.analytics.bigdl.dllib.nn.Module
+import com.intel.analytics.bigdl.dllib.optim.{Top1Accuracy, Top5Accuracy}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFrame, ImageFrameToSample, MatToTensor, PixelBytesToMat}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
 import scopt.OptionParser

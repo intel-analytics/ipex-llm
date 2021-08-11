@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.autoencoder.Autoencoder
-import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.EmptyGradInput
-import com.intel.analytics.bigdl.nn.ops.{Ceil, Less}
-import com.intel.analytics.bigdl.nn.tf.{Const, ControlNodes}
+import com.intel.analytics.bigdl.dllib.models.autoencoder.Autoencoder
+import com.intel.analytics.bigdl.dllib.models.inception.Inception_v1_NoAuxClassifier
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.EmptyGradInput
+import com.intel.analytics.bigdl.dllib.nn.ops.{Ceil, Less}
+import com.intel.analytics.bigdl.dllib.nn.tf.{Const, ControlNodes}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.utils._
 
 import scala.reflect.ClassTag

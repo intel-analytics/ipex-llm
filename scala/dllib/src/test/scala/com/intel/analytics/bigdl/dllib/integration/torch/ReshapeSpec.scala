@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.integration.torch
 
-import com.intel.analytics.bigdl.nn.Reshape
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.Reshape
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.math._
 

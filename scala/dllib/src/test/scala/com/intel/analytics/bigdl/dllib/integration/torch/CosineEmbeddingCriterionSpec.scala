@@ -15,10 +15,11 @@
  */
 package com.intel.analytics.bigdl.integration.torch
 
-import com.intel.analytics.bigdl.nn.CosineEmbeddingCriterion
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.nn.CosineEmbeddingCriterion
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{RandomGenerator, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Table}
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 import scala.collection.mutable.HashMap
 

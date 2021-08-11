@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 class Input(shape: Array[Int], layout: Int) extends
   ReorderMemory(HeapData(shape, layout), NativeData(shape, layout),

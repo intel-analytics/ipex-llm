@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.lenet
+package com.intel.analytics.bigdl.dllib.models.lenet
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.mkldnn.DnnGraph
+import com.intel.analytics.bigdl.dllib.keras
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.DnnGraph
 
 object LeNet5 {
   def apply(classNum: Int): Module[Float] = {
@@ -56,8 +57,8 @@ object LeNet5 {
     Graph(input, output)
   }
 
-  def keras(classNum: Int): nn.keras.Sequential[Float] = {
-    import com.intel.analytics.bigdl.nn.keras._
+  def kerasLayer(classNum: Int): keras.Sequential[Float] = {
+    import com.intel.analytics.bigdl.dllib.keras._
     import com.intel.analytics.bigdl.utils.Shape
 
     val model = Sequential()
@@ -71,8 +72,8 @@ object LeNet5 {
     model.add(Dense(classNum, activation = "softmax").setName("fc2"))
   }
 
-  def kerasGraph(classNum: Int): nn.keras.Model[Float] = {
-    import com.intel.analytics.bigdl.nn.keras._
+  def kerasGraph(classNum: Int): keras.Model[Float] = {
+    import com.intel.analytics.bigdl.dllib.keras._
     import com.intel.analytics.bigdl.utils.Shape
 
     val input = Input(inputShape = Shape(28, 28, 1))

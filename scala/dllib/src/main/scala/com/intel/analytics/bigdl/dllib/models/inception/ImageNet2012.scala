@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.models.inception
+package com.intel.analytics.bigdl.dllib.models.inception
 
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.dataset.image.{BGRImgCropper, BGRImgNormalizer, BytesToBGRImg, CropCenter, CropRandom, MTLabeledBGRImgToBatch, HFlip => DatasetHFlip}
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.dllib.feature.dataset._
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BGRImgCropper, BGRImgNormalizer, BytesToBGRImg, CropCenter, CropRandom, MTLabeledBGRImgToBatch, HFlip => DatasetHFlip}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

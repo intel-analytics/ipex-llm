@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import breeze.numerics.log
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.{Graph, mkldnn}
-import com.intel.analytics.bigdl.{nn, _}
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.{Graph, mkldnn}
+import com.intel.analytics.bigdl.dllib.{nn, _}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, RandomGenerator}
+import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper}
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 class OutputSpec extends BigDLSpecHelper {
   def model(shape: Array[Int], layout: Int) : DnnGraph = {

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.models.utils
+package com.intel.analytics.bigdl.dllib.models.utils
 
 import java.nio.ByteOrder
 
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.tf.Const
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.nn.tf.Const
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.apache.commons.lang3.SerializationUtils
-import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
+import com.intel.analytics.bigdl.dllib.utils.SparkContextLifeCycle
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -52,7 +52,7 @@ class ModelBroadcastSpec extends SparkContextLifeCycle with Matchers {
     val output = CAddTable[Float]().inputs(input1, input2)
     val model = Graph(input1, output)
     System.setProperty("bigdl.ModelBroadcastFactory",
-      "com.intel.analytics.bigdl.models.utils.ProtoBufferModelBroadcastFactory")
+      "com.intel.analytics.bigdl.dllib.models.utils.ProtoBufferModelBroadcastFactory")
     val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
 
     val testModel = modelBroadCast.value()
@@ -95,7 +95,7 @@ class ModelBroadcastSpec extends SparkContextLifeCycle with Matchers {
     val model = LeNet5(10)
 
     System.setProperty("bigdl.ModelBroadcastFactory",
-      "com.intel.analytics.bigdl.models.utils.ProtoBufferModelBroadcastFactory")
+      "com.intel.analytics.bigdl.dllib.models.utils.ProtoBufferModelBroadcastFactory")
     val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
@@ -116,7 +116,7 @@ class ModelBroadcastSpec extends SparkContextLifeCycle with Matchers {
 
 
     System.setProperty("bigdl.ModelBroadcastFactory",
-      "com.intel.analytics.bigdl.models.utils.ProtoBufferModelBroadcastFactory")
+      "com.intel.analytics.bigdl.dllib.models.utils.ProtoBufferModelBroadcastFactory")
     val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
@@ -134,7 +134,7 @@ class ModelBroadcastSpec extends SparkContextLifeCycle with Matchers {
     val model = LeNet5(10).quantize()
 
     System.setProperty("bigdl.ModelBroadcastFactory",
-      "com.intel.analytics.bigdl.models.utils.ProtoBufferModelBroadcastFactory")
+      "com.intel.analytics.bigdl.dllib.models.utils.ProtoBufferModelBroadcastFactory")
     val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)

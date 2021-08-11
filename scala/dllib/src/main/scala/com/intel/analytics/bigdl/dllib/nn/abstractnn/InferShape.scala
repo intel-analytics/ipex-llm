@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.abstractnn
+package com.intel.analytics.bigdl.dllib.nn.abstractnn
 
-import com.intel.analytics.bigdl.nn.keras.{Input => KInput, Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.{Input => TInput}
+import com.intel.analytics.bigdl.dllib.keras.{Input => KInput, Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.{Input => TInput}
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.language.existentials

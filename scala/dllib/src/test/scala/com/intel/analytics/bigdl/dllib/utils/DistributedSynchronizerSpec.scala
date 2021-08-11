@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.utils._
 import org.apache.spark.{SparkContext, TaskContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.image
+package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, Transformer}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, Transformer}
 import org.apache.log4j.Logger
 
 import scala.collection.Iterator

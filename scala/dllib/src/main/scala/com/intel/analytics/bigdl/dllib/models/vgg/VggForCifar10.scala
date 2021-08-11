@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.models.vgg
+package com.intel.analytics.bigdl.dllib.models.vgg
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.nn.Graph._
+import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 object VggForCifar10 {

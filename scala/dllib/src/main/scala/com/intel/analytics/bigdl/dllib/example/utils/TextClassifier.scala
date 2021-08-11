@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.utils
+package com.intel.analytics.bigdl.dllib.example.utils
 
 import java.io.File
 import java.util
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
-import com.intel.analytics.bigdl.example.utils.SimpleTokenizer._
+import com.intel.analytics.bigdl.dllib.feature.dataset._
+import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, _}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{T}
+import com.intel.analytics.bigdl.utils.{Engine}
+import com.intel.analytics.bigdl.utils.LoggerFilter
+import com.intel.analytics.bigdl.dllib.example.utils.SimpleTokenizer._
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD

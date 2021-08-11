@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.segmentation
+package com.intel.analytics.bigdl.dllib.feature.dataset.segmentation
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, RoiImageInfo}
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, RoiImageInfo}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import java.awt.image.DataBufferByte
 import java.io.{File, FileInputStream}
 import javax.imageio.ImageIO

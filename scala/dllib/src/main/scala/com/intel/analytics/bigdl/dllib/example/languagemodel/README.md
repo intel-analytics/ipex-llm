@@ -29,7 +29,7 @@ spark-submit \
 --executor-memory 100g  \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM \
+--class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f $HOME/simple-examples/data -b 40 --checkpoint $HOME/model --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 20 --learningRateDecay 0.001 --keepProb 0.5 --overWrite --withTransformerModel
 ```

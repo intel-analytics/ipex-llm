@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.serializer
+package com.intel.analytics.bigdl.dllib.utils.serializer
 
 import java.io._
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.tensor.Storage
-import com.intel.analytics.bigdl.utils.serializer.converters._
+import com.intel.analytics.bigdl.dllib.tensor.Storage
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class DataReaderWriterSpec extends FlatSpec with Matchers with BeforeAndAfter {

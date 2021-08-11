@@ -69,7 +69,7 @@ Please build the source code with your specific version of spark referring the
    BASE_DIR=${PWD} # where is the data
    MASTER=local[*] # the master url
    spark-submit --master $MASTER --driver-memory 20g \
-       --class com.intel.analytics.bigdl.example.udfpredictor.DataframePredictor \
+       --class com.intel.analytics.bigdl.dllib.example.udfpredictor.DataframePredictor \
          ./dist/lib/bigdl-$VERSION-jar-with-dependencies.jar \
        --batchSize 32 \
        --baseDir $BASE_DIR \
@@ -101,7 +101,7 @@ Please build the source code with your specific version of spark referring the
    spark-submit --master $MASTER --driver-memory 20g \
        --executor-cores 8 \
        --total-executor-cores 32 \
-       --class com.intel.analytics.bigdl.example.udfpredictor.DataframePredictor \
+       --class com.intel.analytics.bigdl.dllib.example.udfpredictor.DataframePredictor \
          ./dist/lib/bigdl-$VERSION-jar-with-dependencies.jar \
        --batchSize 32 \
        --baseDir $BASE_DIR \
@@ -118,7 +118,7 @@ Please build the source code with your specific version of spark referring the
    BASE_DIR=${PWD} # where is the data
    MASTER=local[*] # the master url
    spark-submit --master $MASTER --driver-memory 5g \
-              --class com.intel.analytics.bigdl.example.udfpredictor.DataframePredictor \
+              --class com.intel.analytics.bigdl.dllib.example.udfpredictor.DataframePredictor \
                 bigdl-$VERSION-jar-with-dependencies.jar \
               --baseDir $BASE_DIR \
               --modelPath  $BASE_DIR/model/text/model.1 \

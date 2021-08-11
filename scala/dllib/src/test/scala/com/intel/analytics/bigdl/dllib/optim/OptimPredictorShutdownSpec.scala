@@ -17,20 +17,21 @@
 // NOTE: This spec is tested for native memory used. because we use singleton object to check
 // how many pointer allocated, so all them should be in one file and serial executed.
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl.Criterion
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
-import com.intel.analytics.bigdl.models.utils.CachedModels
-import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
-import com.intel.analytics.bigdl.nn.quantized.{StorageInfo, StorageManager}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dllib.models.inception.Inception_v1_NoAuxClassifier
+import com.intel.analytics.bigdl.dllib.models.utils.CachedModels
+import com.intel.analytics.bigdl.dllib.nn.CrossEntropyCriterion
+import com.intel.analytics.bigdl.dllib.nn.quantized.{StorageInfo, StorageManager}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.{DnnStorage, Storage, Tensor}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
+import com.intel.analytics.bigdl.dllib.tensor.{DnnStorage, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, RandomGenerator, SparkContextLifeCycle}
+import com.intel.analytics.bigdl.dllib.utils.{SparkContextLifeCycle}
+import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
@@ -43,7 +44,7 @@ class OptimPredictorShutdownSpec extends SparkContextLifeCycle with Matchers {
 
   "model predict should have no memory leak" should "be correct" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageFrame = ImageFrame.read(resource.getFile, sc) ->

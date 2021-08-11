@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.optim.DistriOptimizer.Cache
-import com.intel.analytics.bigdl.optim.SGD.{Default, LearningRateSchedule}
-import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor, Util}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.nn.Container
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.Cache
+import com.intel.analytics.bigdl.dllib.optim.SGD.{Default, LearningRateSchedule}
+import com.intel.analytics.bigdl.dllib.optim.parameters.{AllReduceParameter, ParameterProcessor, Util}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
 import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 

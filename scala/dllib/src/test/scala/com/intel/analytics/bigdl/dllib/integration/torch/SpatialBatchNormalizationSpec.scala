@@ -17,13 +17,13 @@
 package com.intel.analytics.bigdl.integration.torch
 
 import breeze.numerics.abs
-import com.intel.analytics.bigdl.nn.{BatchNormalization, GradientChecker, SpatialBatchNormalization}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.{BatchNormalization, GradientChecker, SpatialBatchNormalization}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialBatchNormalizationSpec extends TorchSpec {

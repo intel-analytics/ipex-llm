@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, PaddingParam, Sample}
-import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
-import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnContainer, MklDnnModule}
-import com.intel.analytics.bigdl.nn.{Container, Graph, Module, Utils}
-import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch, PaddingParam, Sample}
+import com.intel.analytics.bigdl.dllib.models.utils.{CachedModels, ModelBroadcast}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, MklDnnContainer, MklDnnModule}
+import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, Module, Utils}
+import com.intel.analytics.bigdl.dllib.optim.parameters.{AllReduceParameter, ParameterProcessor}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.utils.intermediate.{ConversionUtils, IRGraph}
+import com.intel.analytics.bigdl.dllib.utils.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.utils.intermediate.{ConversionUtils, IRGraph}
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Module, _}
 import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat

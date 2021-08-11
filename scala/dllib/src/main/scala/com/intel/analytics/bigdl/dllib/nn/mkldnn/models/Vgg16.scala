@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn.models
+package com.intel.analytics.bigdl.dllib.nn.mkldnn.models
 
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.{ConstInitMethod, Xavier, Zeros}
-import com.intel.analytics.bigdl.nn.mkldnn._
+import com.intel.analytics.bigdl.dllib.nn.{ConstInitMethod, Xavier, Zeros}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn._
 
 object Vgg_16 {
   def apply(batchSize: Int, classNum: Int, hasDropout: Boolean = true): Sequential = {

@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.serializer.converters
+package com.intel.analytics.bigdl.dllib.utils.serializer.converters
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.nn.quantized.{ConvData, ConvWeight, LinearData, LinearWeight}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericShort, NumericString}
-import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, QuantizedType, Tensor}
-import com.intel.analytics.bigdl.utils.serializer.SerializeContext
-import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
-import com.intel.analytics.bigdl.serialization.Bigdl.{BigDLTensor, DataType, TensorStorage}
+import com.intel.analytics.bigdl.dllib.nn.quantized.{ConvData, ConvWeight, LinearData, LinearWeight}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericShort, NumericString}
+import com.intel.analytics.bigdl.dllib.tensor.{DenseType, QuantizedTensor, QuantizedType, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.serializer.SerializeContext
+import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{BigDLTensor, DataType, TensorStorage}
 
 import scala.reflect.ClassTag
 

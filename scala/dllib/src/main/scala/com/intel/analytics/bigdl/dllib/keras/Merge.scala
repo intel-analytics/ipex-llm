@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{CAddTable, CAveTable, CMaxTable, CMulTable, CosineDistance, DotProduct, JoinTable, ParallelTable, Sequential => TSequential}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.{CAddTable, CAveTable, CMaxTable, CMulTable, CosineDistance, DotProduct, JoinTable, ParallelTable, Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape}
 
 import scala.reflect.ClassTag
@@ -131,12 +131,12 @@ class Merge[T: ClassTag](
       case "dot" =>
         val seq = TSequential[T]()
         seq.add(DotProduct())
-        seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1), Some(true)))
+        seq.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(1), Some(true)))
         seq
       case "cos" =>
         val seq = TSequential[T]()
         seq.add(CosineDistance())
-        seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1, 1), Some(true)))
+        seq.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(1, 1), Some(true)))
         seq
     }
     if (layers != null) { // In the case `layers != null`, return a ParallelTable to merge layers

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantized
+package com.intel.analytics.bigdl.dllib.nn.quantized
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
-import com.intel.analytics.bigdl.tensor.{FloatType, QuantizedTensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{FloatType, QuantizedTensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 sealed trait DescType extends Serializable

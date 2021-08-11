@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.abstractnn._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
@@ -57,7 +57,7 @@ class SpatialDropout3D[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val format = if (dimOrdering.toLowerCase() == "channel_first") DataFormat.NCHW
                  else DataFormat.NHWC
-    val layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
+    val layer = com.intel.analytics.bigdl.dllib.nn.SpatialDropout3D(
       initP = p,
       format = format)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]

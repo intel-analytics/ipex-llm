@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.PoissonCriterion
+import com.intel.analytics.bigdl.dllib.nn.PoissonCriterion
 
 class PoissonCriterionSpec extends KerasBaseSpec {
 

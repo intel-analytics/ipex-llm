@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
 import java.io._
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.tf.Const
-import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, CacheV1}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.dllib.nn.Container
+import com.intel.analytics.bigdl.dllib.nn.tf.Const
+import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.{Cache, CacheV1}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.dllib.tensor._
 import org.apache.commons.lang.SerializationUtils
 import org.apache.commons.lang3.SerializationException
 import org.apache.spark.rdd.RDD
