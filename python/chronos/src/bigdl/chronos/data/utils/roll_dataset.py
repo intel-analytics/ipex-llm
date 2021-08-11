@@ -24,12 +24,12 @@ from zoo.chronos.data.utils.utils import _check_cols_no_na, _to_list
 def get_roll_start_idx(df, id_col, window_size):
     import itertools
     if not id_col:
-        id_start_idxes = [0, len(df)]
+        id_start_idxes = [0, len(df.index)]
     else:
-        id_start_idxes = df.index[df[id_col] != df[id_col].shift(1)].tolist() + [len(df)]
+        id_start_idxes = df.index[df[id_col] != df[id_col].shift(1)].tolist() + [len(df.index)]
     roll_start_idx_iter = ((range(id_start_idxes[i], id_start_idxes[i+1] - window_size + 1))
                            for i in range(len(id_start_idxes) - 1))
-    roll_start_idxes = list(itertools.chain.from_iterable(roll_start_idx_iter))
+    roll_start_idxes = np.fromiter(itertools.chain.from_iterable(roll_start_idx_iter), np.int)
     return roll_start_idxes
 
 
@@ -46,7 +46,7 @@ class RollDataset(Dataset):
            if `horizon` is an int, we will sample `horizon` step
            continuously after the forecasting point.
            if `horizon` is an list, we will sample discretely according
-           to the input list. 1 means the timestampe just after the observed data.
+           to the input list. 1 means the timestamp just after the observed data.
         :param feature_col: list, indicate the feature col name.
         :param target_col: list, indicate the target col name.
         :param id_col: (optional) a str indicates the col name of dataframe id
@@ -54,10 +54,14 @@ class RollDataset(Dataset):
         :return:
 
         """
+        df.reset_index(drop=True, inplace=True)
         feature_col = _to_list(feature_col, "feature_col")
         target_col = _to_list(target_col, "target_col")
         _check_cols_no_na(df, col_names=target_col + feature_col)
-        self.arr = df.loc[:, target_col + feature_col].to_numpy(copy=False)
+        cols = target_col + feature_col
+        cols = cols[0] if len(cols) == 1 else cols
+        self.arr = df.loc[:, cols].to_numpy()
+        self.arr = np.expand_dims(self.arr, axis=1) if self.arr.ndim == 1 else self.arr
         max_horizon = horizon if isinstance(horizon, int) else max(horizon)
         window_size = lookback + max_horizon
         self.roll_start_idxes = get_roll_start_idx(df, id_col, window_size=window_size)
@@ -66,7 +70,7 @@ class RollDataset(Dataset):
         self.target_num = len(target_col)
 
     def __len__(self):
-        return len(self.roll_start_idxes)
+        return self.roll_start_idxes.size
 
     def __getitem__(self, idx):
         start_idx = self.roll_start_idxes[idx]
