@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat, Initializable}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.nn.{MklInt8Convertible, Ones, VariableFormat, Zeros}
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, DataFormat, Initializable}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.dllib.nn.{MklInt8Convertible, Ones, VariableFormat, Zeros}
+import com.intel.analytics.bigdl.dllib.tensor._
 
 import scala.collection.mutable.ArrayBuffer
 

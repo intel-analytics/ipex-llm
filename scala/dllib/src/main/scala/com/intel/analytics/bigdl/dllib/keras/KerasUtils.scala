@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
 import com.intel.analytics.bigdl.Criterion
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
@@ -69,7 +69,7 @@ object KerasUtils {
           case "sigmoid" => Sigmoid[T]()
           case "relu" => ReLU[T]()
           case "softmax" =>
-                com.intel.analytics.bigdl.nn.SoftMax[T]()
+                com.intel.analytics.bigdl.dllib.nn.SoftMax[T]()
           case "softplus" => SoftPlus[T]()
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.{Utils => NNUtils, _}
-import com.intel.analytics.bigdl.nn.abstractnn._
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.{DenseTensorMath, DnnTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.nn.{Utils => NNUtils, _}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn._
+import com.intel.analytics.bigdl.dllib.optim.Regularizer
+import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorMath, DnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 

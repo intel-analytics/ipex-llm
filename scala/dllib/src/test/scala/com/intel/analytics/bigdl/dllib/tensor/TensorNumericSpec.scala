@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.tensor
+package com.intel.analytics.bigdl.dllib.tensor
 
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -65,7 +65,7 @@ class TensorNumericSpec extends FlatSpec with Matchers {
     val b = Tensor[Boolean](T(true, true, false))
     val sum = Tensor[Boolean](T(true, false, false))
 
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
     a.map(b,
       (x, y) => TensorNumeric.NumericBoolean.and(x, y))

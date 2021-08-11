@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.augmentation
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, Transformer}
-import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
-import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.LabeledBGRImage
+import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, Transformer}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import org.apache.log4j.Logger
 
 import scala.collection.Iterator

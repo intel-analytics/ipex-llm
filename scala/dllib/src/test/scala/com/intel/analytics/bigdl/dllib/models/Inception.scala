@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.dllib.models
 
 import java.util
 
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.models.inception.Inception_Layer_v2
-import com.intel.analytics.bigdl.nn.Graph._
+import com.intel.analytics.bigdl.dllib.optim.SGD
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.models.inception.Inception_Layer_v2
+import com.intel.analytics.bigdl.dllib.nn.Graph._
 
 import scala.reflect.ClassTag
 

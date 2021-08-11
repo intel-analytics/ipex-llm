@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 class TanhGradSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.text
+package com.intel.analytics.bigdl.dllib.feature.dataset.text
 
 import java.io.{File, PrintWriter, Serializable}
 

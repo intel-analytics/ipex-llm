@@ -22,7 +22,7 @@ You can build one by refer to the
 Example command
 ```
 scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
-com.intel.analytics.bigdl.example.lenetLocal.Train \
+com.intel.analytics.bigdl.dllib.example.lenetLocal.Train \
 -f path_to_mnist_folder \
 -c core_number \
 -b batch_size \
@@ -46,7 +46,7 @@ use the model to do a validation.
 Example command
 ```
 scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
-com.intel.analytics.bigdl.example.lenetLocal.Test \
+com.intel.analytics.bigdl.dllib.example.lenetLocal.Test \
 -f path_to_mnist_folder \
 --model ./model/model.iteration \
 -c core_number \
@@ -64,7 +64,7 @@ The above commands will use the model in specified path(--checkpoint)to do a pre
 Example command
 ```
 scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
-com.intel.analytics.bigdl.example.lenetLocal.Predict \
+com.intel.analytics.bigdl.dllib.example.lenetLocal.Predict \
 -f path_to_mnist_folder \
 -c core_number \
 --model ./model/model.iteration

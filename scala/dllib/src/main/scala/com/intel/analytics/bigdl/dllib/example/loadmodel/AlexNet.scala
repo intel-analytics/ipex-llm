@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.loadmodel
+package com.intel.analytics.bigdl.dllib.example.loadmodel
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 object AlexNet_OWT {

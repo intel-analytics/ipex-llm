@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.augmentation
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import org.scalatest.{FlatSpec, Matchers}
 
 class ChannelNormalizeSpec extends FlatSpec with Matchers {

@@ -27,7 +27,7 @@ Local mode, example command
 spark-submit \
 --master local[physical_core_number] \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.example.keras.Train \
+--class com.intel.analytics.bigdl.dllib.example.keras.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
@@ -39,7 +39,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.example.keras.Train \
+--class com.intel.analytics.bigdl.dllib.example.keras.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
@@ -52,7 +52,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.example.keras.Train \
+--class com.intel.analytics.bigdl.dllib.example.keras.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.segmentation
+package com.intel.analytics.bigdl.dllib.feature.dataset.segmentation
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class SegmentationDatasetSpec extends FlatSpec with Matchers with BeforeAndAfter {

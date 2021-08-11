@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.text
+package com.intel.analytics.bigdl.dllib.feature.dataset.text
 
 import java.io.FileInputStream
 import java.net.{URI, URL}
 
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
 
 import scala.collection.Iterator
 import opennlp.tools.tokenize.{SimpleTokenizer, Tokenizer, TokenizerME, TokenizerModel}

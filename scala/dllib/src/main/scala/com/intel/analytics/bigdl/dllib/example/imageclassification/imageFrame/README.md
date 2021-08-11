@@ -32,7 +32,7 @@ Run the program as a spark application with below command in standalone mode
                --executor-cores 28                                                         \
                --total-executor-cores 112                                                  \
                --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
-               --class com.intel.analytics.bigdl.example.imageclassification.imageFrame.InceptionValidation          \
+               --class com.intel.analytics.bigdl.dllib.example.imageclassification.imageFrame.InceptionValidation          \
                        dist/lib/bigdl-VERSION-jar-with-dependencies.jar             \
               -f imageFolder --modelPath $pathToModel -b $batchSize
 ```

@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.python.api
+package com.intel.analytics.bigdl.dllib.python.api
 
 import java.util
 import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, T, Table, TestUtils}
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
+import com.intel.analytics.bigdl.dllib.utils.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.bigdl.api.python.BigDLSerDe
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.image
+package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
-import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
-import com.intel.analytics.bigdl.dataset.{ByteRecord, LocalSeqFilePath, Transformer}
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet.SeqFileFolder
+import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, LocalSeqFilePath, Transformer}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.SequenceFile.Reader
 import org.apache.hadoop.io.{SequenceFile, Text}

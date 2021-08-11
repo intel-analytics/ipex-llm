@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.utils.T
 import org.apache.log4j.Logger
 
 import scala.collection.{Set, mutable}

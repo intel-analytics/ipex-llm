@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.image
+package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}
@@ -24,7 +24,7 @@ import java.nio.channels.Channels
 import java.nio.file.Path
 import javax.imageio.ImageIO
 
-import com.intel.analytics.bigdl.dataset.{Image, LocalImagePath, Label}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{Image, LocalImagePath, Label}
 
 /**
  * Represent a local file path of a image file with a float label

@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.intermediate
+package com.intel.analytics.bigdl.dllib.utils.intermediate
 
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.keras._
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
-import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, Equivalent, Input, Output}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.keras
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, Equivalent, Input, Output}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.{Module, nn}
+import com.intel.analytics.bigdl.Module
 
 class IRconvertSpec extends BigDLSpecHelper {
 
@@ -92,8 +94,8 @@ class IRconvertSpec extends BigDLSpecHelper {
     Graph(conv1, output)
   }
 
-  def keras(classNum: Int, shape: Shape = Shape(28, 28, 3)): nn.keras.Sequential[Float] = {
-    import com.intel.analytics.bigdl.nn.keras._
+  def kerasLayer(classNum: Int, shape: Shape = Shape(28, 28, 3)): keras.Sequential[Float] = {
+    import com.intel.analytics.bigdl.dllib.keras._
     import com.intel.analytics.bigdl.utils.Shape
 
     val model = Sequential()

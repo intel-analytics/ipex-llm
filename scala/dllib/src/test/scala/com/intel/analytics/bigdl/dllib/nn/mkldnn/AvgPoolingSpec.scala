@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import breeze.numerics.ceil
 import com.intel.analytics.bigdl.mkl.{DataType, Memory}
-import com.intel.analytics.bigdl.nn.{SpatialAveragePooling, SpatialMaxPooling, StaticGraph}
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Engine, MklDnn}
+import com.intel.analytics.bigdl.dllib.nn.{SpatialAveragePooling, SpatialMaxPooling, StaticGraph}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.BigDLSpecHelper
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.intermediate.{BlasToIR, IRToDnn}
+import com.intel.analytics.bigdl.dllib.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.util.Random
@@ -83,7 +84,7 @@ class AvgPoolingSpec extends BigDLSpecHelper {
     val layer2 = SpatialAveragePooling[Float](3, 3, 2, 2,
       padH = pad, padW = pad).ceil()
 
-    import com.intel.analytics.bigdl.nn
+    import com.intel.analytics.bigdl.dllib.nn
     val static = nn.Sequential[Float]().add(layer2)
       .toGraph().asInstanceOf[StaticGraph[Float]]
     static.setInputFormats(Seq(Memory.Format.nhwc))

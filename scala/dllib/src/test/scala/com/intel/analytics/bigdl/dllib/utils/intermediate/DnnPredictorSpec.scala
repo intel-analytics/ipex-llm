@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.intermediate
+package com.intel.analytics.bigdl.dllib.utils.intermediate
 
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.models.inception.Inception_v1_NoAuxClassifier
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils._
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -48,7 +49,7 @@ class DnnPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "predict image for dnn" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageRead = ImageFrame.read(resource.getFile, sc) ->
@@ -174,7 +175,7 @@ class DnnPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Local predictor with dnn backend" should "work properly" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val ims = (1 to 50).map(x => {

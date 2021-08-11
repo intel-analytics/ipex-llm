@@ -16,9 +16,9 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.{Abs, MeanAbsolutePercentageCriterion}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.serializer.{ModuleLoader, ModulePersister}
+import com.intel.analytics.bigdl.dllib.nn.{Abs, MeanAbsolutePercentageCriterion}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.serializer.{ModuleLoader, ModulePersister}
 
 import scala.util.Random
 

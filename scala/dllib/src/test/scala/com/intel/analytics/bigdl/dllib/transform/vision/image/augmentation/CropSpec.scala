@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.augmentation
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.dllib.utils.T
 import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 

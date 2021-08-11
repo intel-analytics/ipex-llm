@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.TrainingPhase
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {

@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf
+package com.intel.analytics.bigdl.dllib.utils.tf
 
-import com.intel.analytics.bigdl.utils.TestUtils.processPath
+import com.intel.analytics.bigdl.dllib.utils.TestUtils.processPath
 import java.io.{OutputStream, File => JFile}
 import java.nio.ByteOrder
 
 import com.google.protobuf.CodedOutputStream
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, FileWriter, RandomGenerator, T}
-import com.intel.analytics.bigdl.utils.tf.Tensorflow.const
+import com.intel.analytics.bigdl.dllib.nn.Module
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
+import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, FileWriter, T}
+import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow.const
+import com.intel.analytics.bigdl.utils._
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
 import scala.language.postfixOps

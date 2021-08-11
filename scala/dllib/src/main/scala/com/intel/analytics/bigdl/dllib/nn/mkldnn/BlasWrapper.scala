@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import breeze.linalg.Axis._1
 import breeze.linalg.dim
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.MiniBatch
+import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
 import com.intel.analytics.bigdl.mkl.{MKL, Memory}
-import com.intel.analytics.bigdl.nn.{DetectionOutputSSD, PriorBox}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine._
-import com.intel.analytics.bigdl.utils.{Util => NNUtils, _}
+import com.intel.analytics.bigdl.dllib.nn.{DetectionOutputSSD, PriorBox}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Util => NNUtils, _}
+import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
 
 /**

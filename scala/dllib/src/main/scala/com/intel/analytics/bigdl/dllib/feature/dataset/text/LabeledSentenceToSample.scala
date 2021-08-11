@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.text
+package com.intel.analytics.bigdl.dllib.feature.dataset.text
 
-import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{Sample, Transformer}
 
 import scala.collection.Iterator
 import java.util
 
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 

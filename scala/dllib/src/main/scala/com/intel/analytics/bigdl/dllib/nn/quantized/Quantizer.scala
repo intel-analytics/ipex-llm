@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantized
+package com.intel.analytics.bigdl.dllib.nn.quantized
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.quantized.Utils._
-import com.intel.analytics.bigdl.nn.{Cell, Container, Graph}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.{Module, nn}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.quantized.Utils._
+import com.intel.analytics.bigdl.dllib.nn.{Cell, Container, Graph}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dllib.nn
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.reflect.ClassTag
 
@@ -71,11 +72,11 @@ object Quantizer extends Quantizable {
   }
 
   private def registerModules(): Unit = {
-    registerModule("com.intel.analytics.bigdl.nn.SpatialConvolution",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialConvolution",
       nn.SpatialConvolution)
-    registerModule("com.intel.analytics.bigdl.nn.SpatialDilatedConvolution",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialDilatedConvolution",
       nn.SpatialDilatedConvolution)
-    registerModule("com.intel.analytics.bigdl.nn.Linear", nn.Linear)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.Linear", nn.Linear)
   }
 }
 

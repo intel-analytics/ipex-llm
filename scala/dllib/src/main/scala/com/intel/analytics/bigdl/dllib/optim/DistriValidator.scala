@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
-import com.intel.analytics.bigdl.optim.DistriValidator._
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dllib.optim.DistriValidator._
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import org.apache.log4j.Logger
 

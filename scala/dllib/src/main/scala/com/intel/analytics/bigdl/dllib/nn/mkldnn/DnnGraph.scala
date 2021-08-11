@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import java.util
 
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
-import com.intel.analytics.bigdl.nn.{Graph, mkldnn, MklInt8Convertible}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Node, T}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.dllib.nn.tf.{ControlDependency, WithoutInput}
+import com.intel.analytics.bigdl.dllib.nn.{Graph, mkldnn, MklInt8Convertible}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{Node, T}
 
 import scala.collection.mutable
 

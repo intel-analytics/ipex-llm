@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, _}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, _}
 import com.intel.analytics.bigdl.{DataSet, Module}
-import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, logger}
-import com.intel.analytics.bigdl.optim.Optimizer.{saveModel, saveOptimMethod}
-import com.intel.analytics.bigdl.parameters.AllReduceParameter
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.intermediate.IRGraph
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, Table}
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.{Cache, logger}
+import com.intel.analytics.bigdl.dllib.optim.Optimizer.{saveModel, saveOptimMethod}
+import com.intel.analytics.bigdl.dllib.optim.parameters.AllReduceParameter
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.intermediate.IRGraph
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.dllib.utils.{Table}
+import com.intel.analytics.bigdl.dllib.utils.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
 
 import scala.reflect.ClassTag

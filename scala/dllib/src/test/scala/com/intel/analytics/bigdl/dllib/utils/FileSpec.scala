@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.example.loadmodel.AlexNet_OWT
+import com.intel.analytics.bigdl.dllib.nn._
 import org.scalatest.{FlatSpec, Matchers}
 
 

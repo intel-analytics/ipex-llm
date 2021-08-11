@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.{Dropout => NNDropout}
-import com.intel.analytics.bigdl.tensor.DnnTensor
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.{Dropout => NNDropout}
+import com.intel.analytics.bigdl.dllib.tensor.DnnTensor
 
 class Dropout(
   val initP: Double = 0.5,

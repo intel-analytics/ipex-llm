@@ -23,9 +23,9 @@ import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.python.api._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.python.api._
+import com.intel.analytics.bigdl.dllib.utils.Table
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.python.SerDeUtil

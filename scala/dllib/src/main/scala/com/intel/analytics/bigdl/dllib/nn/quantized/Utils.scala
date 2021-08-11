@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantized
+package com.intel.analytics.bigdl.dllib.nn.quantized
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.tf.WithoutInput
-import com.intel.analytics.bigdl.nn.{Cell, Container, Graph, Input, TimeDistributed, Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv}
-import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Node
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.dllib.nn.tf.WithoutInput
+import com.intel.analytics.bigdl.dllib.nn.{Cell, Container, Graph, Input, TimeDistributed, Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv}
+import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Node
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 

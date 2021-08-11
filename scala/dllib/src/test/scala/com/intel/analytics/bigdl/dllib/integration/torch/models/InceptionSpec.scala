@@ -16,15 +16,15 @@
 
 package com.intel.analytics.bigdl.integration.torch.models
 
-import com.intel.analytics.bigdl.models.inception._
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Graph, Input}
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.models.inception._
+import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, Graph, Input}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.dllib.optim.SGD
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.integration.torch.{TH, TorchSpec}
-import com.intel.analytics.bigdl.models.Inception
+import com.intel.analytics.bigdl.dllib.models.Inception
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.math._

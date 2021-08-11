@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
-import com.intel.analytics.bigdl.nn.ops.Less
-import com.intel.analytics.bigdl.nn.{AddConstant, Echo, Graph, Input}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.nn.ops.Less
+import com.intel.analytics.bigdl.dllib.nn.{AddConstant, Echo, Graph, Input}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 class ControlOpsSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val input = Input[Float]("input")
 
     val conditionInput = Input[Float]("conditionInput")
-    val const = new com.intel.analytics.bigdl.nn.tf.Const[Float, Float](Tensor(T(9))).inputs()
-    val constEnter = new com.intel.analytics.bigdl.nn.tf.Enter[Float]("test_frame").inputs(const)
+    val const = new com.intel.analytics.bigdl.dllib.nn.tf.Const[Float, Float](Tensor(T(9))).inputs()
+    val constEnter = new com.intel.analytics.bigdl.dllib.nn.tf.Enter[Float]("test_frame").inputs(const)
     val less = Less[Float]().inputs(constEnter, conditionInput)
 
     val updateInput = Input[Float]()
     val add = AddConstant[Float](1).inputs(updateInput)
-    val addEnter = new com.intel.analytics.bigdl.nn.tf.Enter[Float]("test_frame").inputs(add)
+    val addEnter = new com.intel.analytics.bigdl.dllib.nn.tf.Enter[Float]("test_frame").inputs(add)
     val echo = Echo[Float]().inputs(addEnter)
 
     val exit = ControlNodes.whileLoop[Float](
@@ -44,9 +44,9 @@ class ControlOpsSerialTest extends ModuleSerializationTest {
     val model = Graph.dynamic[Float](Array(input), Array(exit(0)), None, false)
     runSerializationTestWithMultiClass(model, Tensor.scalar[Float](1), Array(
       addEnter.element.getClass.asInstanceOf[Class[_]],
-      new com.intel.analytics.bigdl.nn.tf.NextIteration[Float, Float]().getClass,
-      new com.intel.analytics.bigdl.nn.tf.Exit[Float]().getClass,
-      new com.intel.analytics.bigdl.nn.tf.LoopCondition[Float]().getClass
+      new com.intel.analytics.bigdl.dllib.nn.tf.NextIteration[Float, Float]().getClass,
+      new com.intel.analytics.bigdl.dllib.nn.tf.Exit[Float]().getClass,
+      new com.intel.analytics.bigdl.dllib.nn.tf.LoopCondition[Float]().getClass
     ))
   }
 }

@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class SubstrSpec extends FlatSpec with Matchers {
   "Substr operation" should "works correctly" in {
-    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
     val data = Tensor.scalar(ByteString.copyFromUtf8("abc"))
     val pos = Tensor.scalar(0)
     val len = Tensor.scalar(2)
@@ -36,7 +36,7 @@ class SubstrSpec extends FlatSpec with Matchers {
 
 class SubstrSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
     val subStr = Substr[Float]().setName("subStr")
     val input = T(Tensor.scalar[ByteString](ByteString.copyFromUtf8("HelloBigDL")),
       Tensor.scalar[Int](0), Tensor.scalar[Int](5))

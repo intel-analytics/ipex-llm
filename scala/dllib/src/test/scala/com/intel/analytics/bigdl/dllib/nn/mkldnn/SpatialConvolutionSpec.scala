@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl._
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.nn.{Xavier, Zeros}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.dllib.nn.{Xavier, Zeros}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.{DnnStorage, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.{DnnStorage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
@@ -651,7 +652,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val inputShape = Array(4, 1, 28, 28)
     val outputShape = Array(4, 20, 24, 24)
     val dnn = SpatialConvolution(1, 20, 5, 5)
-    val blas = com.intel.analytics.bigdl.nn.SpatialConvolution[Float](1, 20, 5, 5)
+    val blas = com.intel.analytics.bigdl.dllib.nn.SpatialConvolution[Float](1, 20, 5, 5)
 
     val model = Sequential()
       .add(Input(inputShape, Memory.Format.nchw))

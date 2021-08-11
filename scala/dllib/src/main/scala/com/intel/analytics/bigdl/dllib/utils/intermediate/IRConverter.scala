@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.intermediate
+package com.intel.analytics.bigdl.dllib.utils.intermediate
 
-import com.intel.analytics.bigdl.nn.Graph
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.mkldnn._
-import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.{Module, utils}
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, Node}
+import com.intel.analytics.bigdl.dllib.nn.Graph
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn._
+import com.intel.analytics.bigdl.dllib.tensor.{FloatType, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dllib.utils
+import com.intel.analytics.bigdl.dllib.utils.{Node}
+import com.intel.analytics.bigdl.utils._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -59,11 +61,11 @@ private[bigdl] class IRConverter[T: ClassTag](IRgraph: IRGraph[T])(implicit ev: 
    * @return dnn graph or blas graph converted from ir graph
    */
   def toGraph() : Graph[T] = {
-    if (utils.Engine.getEngineType() == MklBlas) {
+    if (Engine.getEngineType() == MklBlas) {
       require(IRToBlas[T].convertingCheck(allNodes.toArray),
         "IR graph can not be converted to Blas layer")
       toBlasGraph()
-    } else if (utils.Engine.getEngineType() == MklDnn) {
+    } else if (Engine.getEngineType() == MklDnn) {
       require(ev.getType() == FloatType, "Mkldnn engine only supports float data")
       require(IRToDnn[Float].convertingCheck(
         allNodes.toArray.asInstanceOf[Array[Node[IRElement[Float]]]]),

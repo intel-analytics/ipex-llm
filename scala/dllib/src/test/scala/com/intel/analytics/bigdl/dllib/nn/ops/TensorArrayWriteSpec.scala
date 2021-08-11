@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.dllib.nn.ops
 
-import com.intel.analytics.bigdl.nn.{Graph, Identity}
-import com.intel.analytics.bigdl.nn.tf.Const
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.nn.{Graph, Identity}
+import com.intel.analytics.bigdl.dllib.nn.tf.Const
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 class TensorArraySerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     "TensorArray serializer R/W" should "work properly" in {
-      import com.intel.analytics.bigdl.nn.tf._
+      import com.intel.analytics.bigdl.dllib.nn.tf._
       val tensorArray = new TensorArrayCreator[Float, Float]().inputs()
       val data = Const[Float, Float](Tensor.scalar[Float](1)).inputs()
       val index = Const[Float, Int](Tensor.scalar[Int](0)).inputs()
       val write = new TensorArrayWrite[Float, Float]().inputs((tensorArray, 1),
         (index, 1), (data, 1))
-      val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(write)
+      val ctr = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().inputs(write)
       val read = new TensorArrayRead[Float, Float]().inputs((tensorArray, 1), (index, 1), (ctr, 1))
       val grad = new TensorArrayGrad[Float]("grad").inputs(tensorArray)
       val output = Identity[Float]().inputs((grad, 2))

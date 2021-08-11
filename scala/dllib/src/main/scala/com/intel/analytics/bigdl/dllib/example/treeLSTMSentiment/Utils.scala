@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.treeLSTMSentiment
+package com.intel.analytics.bigdl.dllib.example.treeLSTMSentiment
 
-import com.intel.analytics.bigdl.dataset.Sample
-import com.intel.analytics.bigdl.example.utils.AbstractTextClassificationParams
-import com.intel.analytics.bigdl.nn.TensorTree
+import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
+import com.intel.analytics.bigdl.dllib.example.utils.AbstractTextClassificationParams
+import com.intel.analytics.bigdl.dllib.nn.TensorTree
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast

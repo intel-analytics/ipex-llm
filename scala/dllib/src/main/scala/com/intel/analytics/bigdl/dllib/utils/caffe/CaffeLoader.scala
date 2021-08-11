@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.caffe
+package com.intel.analytics.bigdl.dllib.utils.caffe
 
 import java.io._
 
@@ -22,11 +22,11 @@ import caffe.Caffe._
 import com.google.protobuf.TextFormat.ParseException
 import com.google.protobuf.{CodedInputStream, GeneratedMessage, TextFormat}
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{FileReader, Table}
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{FileReader, Table}
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConverters._

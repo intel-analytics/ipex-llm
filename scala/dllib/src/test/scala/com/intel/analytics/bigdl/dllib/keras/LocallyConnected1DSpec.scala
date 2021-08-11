@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.LocallyConnected1D
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.LocallyConnected1D
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 
 class LocallyConnected1DSpec extends KerasBaseSpec {

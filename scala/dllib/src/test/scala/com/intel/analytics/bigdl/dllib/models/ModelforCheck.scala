@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.dllib.models
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.numeric.NumericDouble
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 /**
  * models in this file is only for gradient check

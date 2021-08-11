@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
 import java.util
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.tf._
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.utils.serializer._
-import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.tf.Tensorflow
-import com.intel.analytics.bigdl.visualization.tensorboard.{FileWriter => TFFileWriter}
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.tf._
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.utils.serializer._
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow
+import com.intel.analytics.bigdl.dllib.utils.visualization.tensorboard.{FileWriter => TFFileWriter}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

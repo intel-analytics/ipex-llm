@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.image
+package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.nio.ByteBuffer
 
-import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 

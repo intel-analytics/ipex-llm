@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -24,7 +24,7 @@ class TransformerCriterionSpec extends FlatSpec with Matchers {
 
   "TransformerCriterion" should "work correctly" in {
 
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
     val criterion = TransformerCriterion[Float](MSECriterion[Float](),
       Some(Square[Float]()), Some(Square[Float]()))

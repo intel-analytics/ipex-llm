@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
-import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BGRImgToBatch, LabeledBGRImage}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.mkldnn.HeapData
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
-import com.intel.analytics.bigdl.parameters.AllReduceParameter
-import com.intel.analytics.bigdl.tensor.{DenseTensor, DnnStorage, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.dllib.optim.parameters.AllReduceParameter
+import com.intel.analytics.bigdl.dllib.tensor.{DenseTensor, DnnStorage, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.utils.visualization.TrainSummary
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -657,7 +659,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Train with Plateau" should "work properly" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
     Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
 
     RandomGenerator.RNG.setSeed(10)
@@ -686,7 +688,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Train with Plateau Score" should "work properly" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
     Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
 
     RandomGenerator.RNG.setSeed(10)
@@ -717,7 +719,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Train with L1Regularization" should "work properly in DistriOptimizer" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
     Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
 
     RandomGenerator.RNG.setSeed(10)
@@ -867,7 +869,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "optimMethod state" should "be updated correctly after optimize" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
     Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
 
     val mm = Sequential[Double]().add(Linear(4, 1))
@@ -915,7 +917,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "reserve optimMethod for each worker" should "be correct" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
     Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
 
     val mm = Sequential[Double]().add(Linear(4, 1))

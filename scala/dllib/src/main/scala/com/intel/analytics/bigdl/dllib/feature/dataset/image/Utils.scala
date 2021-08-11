@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.image
+package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import java.awt.image.BufferedImage
 import java.awt.{BasicStroke, Color, Font, Graphics2D}
@@ -22,7 +22,7 @@ import java.io.File
 import java.nio.file.Paths
 import javax.imageio.ImageIO
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 /**
  * used for image object detection

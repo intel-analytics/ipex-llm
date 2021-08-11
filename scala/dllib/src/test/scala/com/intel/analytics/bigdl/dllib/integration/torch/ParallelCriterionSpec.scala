@@ -16,9 +16,10 @@
 
 package com.intel.analytics.bigdl.integration.torch
 
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, MSECriterion, ParallelCriterion}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, MSECriterion, ParallelCriterion}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.Engine
 
 import scala.util.Random
 

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.tensor
+package com.intel.analytics.bigdl.dllib.tensor
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.mkldnn.MemoryOwner
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.MemoryOwner
 import scala.reflect._
 
 /**

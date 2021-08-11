@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.image
+package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
-import com.intel.analytics.bigdl.dataset.Transformer
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 object BGRImgPixelNormalizer {
   def apply(means: Tensor[Float]): BGRImgPixelNormalizer

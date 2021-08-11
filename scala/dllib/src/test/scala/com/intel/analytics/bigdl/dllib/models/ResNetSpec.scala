@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.dllib.models
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.models.resnet.ResNet._
-import com.intel.analytics.bigdl.models.resnet.{Convolution, ResNet}
-import com.intel.analytics.bigdl.nn.Graph.{apply => _, _}
-import com.intel.analytics.bigdl.nn.{Graph, _}
+import com.intel.analytics.bigdl.dllib.models.resnet.ResNet._
+import com.intel.analytics.bigdl.dllib.models.resnet.{Convolution, ResNet}
+import com.intel.analytics.bigdl.dllib.nn.Graph.{apply => _, _}
+import com.intel.analytics.bigdl.dllib.nn.{Graph, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
+import com.intel.analytics.bigdl.dllib.utils.{T}
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import org.apache.log4j.Logger
 import org.scalatest.{FlatSpec, Matchers}
 

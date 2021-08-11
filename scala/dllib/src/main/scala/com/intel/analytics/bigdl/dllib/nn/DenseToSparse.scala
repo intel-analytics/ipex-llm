@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{TensorCriterion, TensorModule}
-import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{TensorCriterion, TensorModule}
+import com.intel.analytics.bigdl.dllib.tensor.{DenseType, SparseType, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.dllib.nn.ops
 
-import com.intel.analytics.bigdl.nn.{SpatialConvolution, SpatialSeparableConvolution}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.tf.loaders.Adapter
+import com.intel.analytics.bigdl.dllib.nn.{SpatialConvolution, SpatialSeparableConvolution}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.tf.loaders.Adapter
 
 import scala.reflect.ClassTag
 

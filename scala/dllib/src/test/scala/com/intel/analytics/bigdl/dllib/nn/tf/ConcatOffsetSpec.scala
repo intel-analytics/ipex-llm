@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
 class ConcatOffsetSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val module = new com.intel.analytics.bigdl.nn.tf.ConcatOffset[Float]()
+    val module = new com.intel.analytics.bigdl.dllib.nn.tf.ConcatOffset[Float]()
     runSerializationTest(module, T(Tensor.scalar[Int](1), Tensor[Int](T(2, 2, 5, 7)),
       Tensor[Int](T(2, 3, 5, 7)), Tensor[Int](T(2, 4, 5, 7))))
   }

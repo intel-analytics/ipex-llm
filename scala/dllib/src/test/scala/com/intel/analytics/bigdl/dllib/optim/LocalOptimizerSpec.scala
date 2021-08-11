@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.mkldnn.HeapData
-import com.intel.analytics.bigdl.tensor.{DnnStorage, Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
-import com.intel.analytics.bigdl.visualization.TrainSummary
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.dllib.tensor.{DnnStorage, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.{T}
+import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils.visualization.TrainSummary
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {

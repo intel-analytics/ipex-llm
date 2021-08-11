@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
 
-import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
-import com.intel.analytics.bigdl.models.Inception
-import com.intel.analytics.bigdl.models.resnet.ResNet
-import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.example.loadmodel.AlexNet_OWT
+import com.intel.analytics.bigdl.dllib.models.Inception
+import com.intel.analytics.bigdl.dllib.models.resnet.ResNet
+import com.intel.analytics.bigdl.dllib.models.resnet.ResNet.{DatasetType, ShortcutType}
+import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.util.Random
 

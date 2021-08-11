@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.abstractnn
+package com.intel.analytics.bigdl.dllib.nn.abstractnn
 
 /**
  * DataFormat are used to specify the data format of the input and output data when data is

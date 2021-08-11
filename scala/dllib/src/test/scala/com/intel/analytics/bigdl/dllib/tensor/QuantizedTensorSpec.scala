@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.tensor
+package com.intel.analytics.bigdl.dllib.tensor
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
+import com.intel.analytics.bigdl.dllib.nn.quantized.{LinearWeight, LinearWeightParams}
 import org.apache.commons.lang.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 

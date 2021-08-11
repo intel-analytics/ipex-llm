@@ -15,8 +15,8 @@
  */
 package com.intel.analytics.bigdl.integration.torch
 
-import com.intel.analytics.bigdl.nn.MultiLabelSoftMarginCriterion
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.MultiLabelSoftMarginCriterion
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 @com.intel.analytics.bigdl.tags.Serial
 class MultiLabelSoftMarginCriterionSpec extends TorchSpec {

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -30,7 +30,7 @@ class Substr[T: ClassTag]()
     val data = input[Tensor[ByteString]](1).value()
     val pos = input[Tensor[Int]](2).value()
     val len = input[Tensor[Int]](3).value()
-    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
 
     output = Tensor.scalar(data.substring(pos, pos + len))
     output

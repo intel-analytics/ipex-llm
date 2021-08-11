@@ -15,12 +15,13 @@
  */
 package com.intel.analytics.bigdl.keras.nn
 
-import com.intel.analytics.bigdl.dataset.Sample
-import com.intel.analytics.bigdl.nn.MSECriterion
-import com.intel.analytics.bigdl.nn.keras._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, Shape}
-import com.intel.analytics.bigdl.optim.{DummyDataSet, SGD, Top1Accuracy}
+import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
+import com.intel.analytics.bigdl.dllib.nn.MSECriterion
+import com.intel.analytics.bigdl.dllib.keras._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.utils.{Engine}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.optim.{DummyDataSet, SGD, Top1Accuracy}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}

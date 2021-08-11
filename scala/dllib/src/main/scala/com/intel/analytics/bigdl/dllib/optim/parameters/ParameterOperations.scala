@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.parameters
+package com.intel.analytics.bigdl.dllib.optim.parameters
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch}
 import org.apache.spark.rdd.RDD
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.optim.DistriOptimizer.Cache
-import com.intel.analytics.bigdl.optim.Metrics
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.Cache
+import com.intel.analytics.bigdl.dllib.optim.Metrics
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
 import org.apache.spark.broadcast.Broadcast
 
 import scala.collection.mutable

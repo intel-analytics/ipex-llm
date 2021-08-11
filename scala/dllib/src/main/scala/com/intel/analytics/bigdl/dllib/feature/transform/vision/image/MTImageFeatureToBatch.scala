@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.transform.vision.image
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image
 
-import com.intel.analytics.bigdl.dataset.segmentation.RLEMasks
+import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.RLEMasks
 import java.util.concurrent.atomic.AtomicInteger
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer, Utils}
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch, Sample, Transformer, Utils}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.Engine
 
 object MTImageFeatureToBatch {
   /**

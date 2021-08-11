@@ -16,14 +16,14 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class LeNetSpec extends FlatSpec with Matchers {
 
   "LeNet sequential" should "generate the correct outputShape" in {
-    val lenet = LeNet5.keras(classNum = 10)
+    val lenet = LeNet5.kerasLayer(classNum = 10)
     lenet.getOutputShape().toSingle().toArray should be (Array(-1, 10))
   }
 
@@ -33,7 +33,7 @@ class LeNetSpec extends FlatSpec with Matchers {
   }
 
   "LeNet sequential forward and backward" should "work properly" in {
-    val lenet = LeNet5.keras(classNum = 10)
+    val lenet = LeNet5.kerasLayer(classNum = 10)
     val input = Tensor[Float](Array(2, 28, 28, 1)).rand()
     val output = lenet.forward(input)
     val gradInput = lenet.backward(input, output)
@@ -48,7 +48,7 @@ class LeNetSpec extends FlatSpec with Matchers {
 
   "LeNet forward with incompatible input tensor" should "raise an exception" in {
     intercept[RuntimeException] {
-      val lenet = LeNet5.keras(classNum = 10)
+      val lenet = LeNet5.kerasLayer(classNum = 10)
       val input = Tensor[Float](Array(28, 28, 1)).rand()
       val output = lenet.forward(input)
     }

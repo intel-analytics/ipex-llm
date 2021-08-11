@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.segmentation
+package com.intel.analytics.bigdl.dllib.feature.dataset.segmentation
 
 import com.google.gson.{Gson, GsonBuilder, JsonDeserializationContext, JsonDeserializer, JsonElement, TypeAdapter}
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.{JsonReader, JsonWriter}
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, RoiImageInfo}
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet.SeqFileFolder
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, RoiImageInfo}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import java.io.{BufferedReader, FileReader}
 import java.lang.reflect.Type
 import java.nio.ByteBuffer

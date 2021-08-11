@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{IdentityOutputShape, TensorModule}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.math.tanh
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag

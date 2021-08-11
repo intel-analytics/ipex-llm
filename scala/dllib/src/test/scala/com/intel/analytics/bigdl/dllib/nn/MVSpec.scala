@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -30,7 +30,7 @@ class MVSpec extends FlatSpec with Matchers {
     val m3 = new MV[Double](true)
     val m4 = new MV[Double]()
     val log = new Log[Double]()
-    com.intel.analytics.bigdl.tensor.Tensor
+    com.intel.analytics.bigdl.dllib.tensor.Tensor
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3).randn()
     val input = T(1 -> input1, 2 -> input2)
@@ -50,7 +50,7 @@ class MVSpec extends FlatSpec with Matchers {
     val m3 = new MV[Double](true)
     val m4 = new MV[Double]()
     val log = new Log[Double]()
-    com.intel.analytics.bigdl.tensor.Tensor
+    com.intel.analytics.bigdl.dllib.tensor.Tensor
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3).randn()
     val input = T(1 -> input1, 2 -> input2)

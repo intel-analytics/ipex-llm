@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image
 
-import com.intel.analytics.bigdl.dataset.{ChainedTransformer, Transformer}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{ChainedTransformer, Transformer}
 import com.intel.analytics.bigdl.opencv.OpenCV
-import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import org.apache.log4j.Logger
 
 /**

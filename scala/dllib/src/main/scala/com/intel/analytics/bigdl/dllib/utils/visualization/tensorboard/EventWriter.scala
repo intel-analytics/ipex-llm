@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.visualization.tensorboard
+package com.intel.analytics.bigdl.dllib.utils.visualization.tensorboard
 
 import java.net.InetAddress
 import java.util.concurrent.{LinkedBlockingDeque, TimeUnit}

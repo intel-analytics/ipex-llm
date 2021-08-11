@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf
+package com.intel.analytics.bigdl.dllib.utils.tf
 
 import java.nio.charset.Charset
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util
 
 import collection.JavaConverters._
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
-import com.intel.analytics.bigdl.nn.ops._
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.nn.ops._
+import com.intel.analytics.bigdl.dllib.tensor._
 import org.tensorflow.framework.{AttrValue, DataType, NodeDef, TensorProto}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.tf._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.FullConnectionTF.getOrSetTensor
-import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T}
-import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.dllib.nn.tf._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.tf.FullConnectionTF.getOrSetTensor
+import com.intel.analytics.bigdl.dllib.utils.{DirectedGraph, Node, T}
+import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowToBigDL._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.{ClassTag, classTag}

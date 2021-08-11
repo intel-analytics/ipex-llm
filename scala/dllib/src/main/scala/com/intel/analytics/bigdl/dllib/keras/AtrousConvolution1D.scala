@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{InitializationMethod, Xavier, Zeros}
-import com.intel.analytics.bigdl.nn.{SpatialDilatedConvolution, Squeeze, Transpose, Sequential => TSequential}
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, Xavier, Zeros}
+import com.intel.analytics.bigdl.dllib.nn.{SpatialDilatedConvolution, Squeeze, Transpose, Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.optim.Regularizer
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
@@ -78,7 +78,7 @@ class AtrousConvolution1D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
     model.add(Transpose(Array((2, 3))))
-    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(2), input(1), 1), Some(true)))
+    model.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(input(2), input(1), 1), Some(true)))
     val layer = SpatialDilatedConvolution(
       nInputPlane = input(2),
       nOutputPlane = nbFilter,

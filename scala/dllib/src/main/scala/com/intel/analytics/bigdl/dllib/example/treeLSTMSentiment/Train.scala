@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.treeLSTMSentiment
+package com.intel.analytics.bigdl.dllib.example.treeLSTMSentiment
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.PaddingParam
-import com.intel.analytics.bigdl.example.treeLSTMSentiment.Utils._
-import com.intel.analytics.bigdl.nn.{TimeDistributedCriterion, _}
+import com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam
+import com.intel.analytics.bigdl.dllib.example.treeLSTMSentiment.Utils._
+import com.intel.analytics.bigdl.dllib.nn.{TimeDistributedCriterion, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, OptimizerV1, OptimizerV2, T}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{T}
+import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.utils.LoggerFilter
 import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
 import org.apache.spark.SparkContext
 import org.slf4j.{Logger, LoggerFactory}
@@ -33,7 +35,7 @@ import scala.language.existentials
 object Train {
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   LoggerFilter.redirectSparkInfoLogs()
-  Logger4j.getLogger("com.intel.analytics.bigdl.optim").setLevel(Levle4j.INFO)
+  Logger4j.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Levle4j.INFO)
 
   def main(args: Array[String]): Unit = {
     val params = paramParser.parse(args, TreeLSTMSentimentParam()).get

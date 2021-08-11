@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf.loaders
+package com.intel.analytics.bigdl.dllib.utils.tf.loaders
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
-import com.intel.analytics.bigdl.utils.tf.Tensorflow._
+import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow._
 
 class RangeSpec extends TensorflowSpecHelper {
   "Range" should "be correct when input is int" in {

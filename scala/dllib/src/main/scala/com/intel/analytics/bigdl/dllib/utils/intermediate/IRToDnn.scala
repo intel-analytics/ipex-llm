@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.intermediate
+package com.intel.analytics.bigdl.dllib.utils.intermediate
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl.{AlgKind, Direction}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
-import com.intel.analytics.bigdl.nn.{Module => _, _}
-import com.intel.analytics.bigdl.nn.mkldnn._
-import com.intel.analytics.bigdl.optim.DistriOptimizer._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, ReflectionUtils, T}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.dllib.nn.{Module => _, _}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn._
+import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{DirectedGraph, Node, ReflectionUtils, T}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
 private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]] {
 
-  private val prefix = "com.intel.analytics.bigdl.nn.mkldnn."
+  private val prefix = "com.intel.analytics.bigdl.dllib.nn.mkldnn."
   // converter function mappings
   private val IR2DnnMap = new mutable.HashMap[String, (IRElement[Float]) => Module[Float]]
 

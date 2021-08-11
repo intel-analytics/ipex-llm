@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
 import java.io.File
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.utils.tf.TFRecordIterator
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.utils.tf.TFRecordIterator
 import org.tensorflow.example.Example
 
 class DecodeJpegSerialTest extends ModuleSerializationTest {
@@ -31,7 +31,7 @@ class DecodeJpegSerialTest extends ModuleSerializationTest {
   }
 
   private def getInputs(name: String): Tensor[ByteString] = {
-    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
     val index = name match {
       case "png" => 0
       case "jpeg" => 1

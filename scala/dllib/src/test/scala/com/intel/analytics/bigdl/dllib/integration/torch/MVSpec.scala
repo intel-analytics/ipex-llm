@@ -15,9 +15,10 @@
  */
 package com.intel.analytics.bigdl.integration.torch
 
-import com.intel.analytics.bigdl.nn.MV
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
+import com.intel.analytics.bigdl.dllib.nn.MV
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 import scala.collection.mutable
 

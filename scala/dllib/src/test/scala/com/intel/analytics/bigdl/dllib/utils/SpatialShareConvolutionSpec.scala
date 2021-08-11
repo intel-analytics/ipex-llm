@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
-import com.intel.analytics.bigdl.nn.{SpatialConvolution, SpatialShareConvolution}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.models.inception.{Inception_v1_NoAuxClassifier}
-import com.intel.analytics.bigdl.models.resnet.ResNet
-import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
-import com.intel.analytics.bigdl.models.vgg.{Vgg_16}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.nn.{SpatialConvolution, SpatialShareConvolution}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.models.inception.{Inception_v1_NoAuxClassifier}
+import com.intel.analytics.bigdl.dllib.models.resnet.ResNet
+import com.intel.analytics.bigdl.dllib.models.resnet.ResNet.{DatasetType, ShortcutType}
+import com.intel.analytics.bigdl.dllib.models.vgg.{Vgg_16}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils._
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random

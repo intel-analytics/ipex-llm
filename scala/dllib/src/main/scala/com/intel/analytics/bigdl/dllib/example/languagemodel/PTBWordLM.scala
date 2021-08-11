@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.languagemodel
+package com.intel.analytics.bigdl.dllib.example.languagemodel
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentenceToSample, _}
-import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch}
-import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, TimeDistributedCriterion}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
+import com.intel.analytics.bigdl.dllib.feature.dataset.text.{LabeledSentenceToSample, _}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dllib.nn.{CrossEntropyCriterion, Module, TimeDistributedCriterion}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import com.intel.analytics.bigdl.example.languagemodel.Utils._
-import com.intel.analytics.bigdl.models.rnn.SequencePreprocess
+import com.intel.analytics.bigdl.dllib.example.languagemodel.Utils._
+import com.intel.analytics.bigdl.dllib.models.rnn.SequencePreprocess
 
 object PTBWordLM {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.example").setLevel(Level.INFO)
+  Logger.getLogger("com.intel.analytics.bigdl.dllib.example").setLevel(Level.INFO)
   val logger = Logger.getLogger(getClass)
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {

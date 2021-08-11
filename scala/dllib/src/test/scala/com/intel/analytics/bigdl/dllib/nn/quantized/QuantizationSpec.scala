@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantized
+package com.intel.analytics.bigdl.dllib.nn.quantized
 
-import com.intel.analytics.bigdl.nn.quantized.Quantization._
+import com.intel.analytics.bigdl.dllib.nn.quantized.Quantization._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class QuantizationSpec extends FlatSpec with Matchers {

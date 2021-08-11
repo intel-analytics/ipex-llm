@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.abstractnn
+package com.intel.analytics.bigdl.dllib.nn.abstractnn
 
-import com.intel.analytics.bigdl.nn.abstractnn.SizeAverageStatus.SizeAverageStatus
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.SizeAverageStatus.SizeAverageStatus
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag

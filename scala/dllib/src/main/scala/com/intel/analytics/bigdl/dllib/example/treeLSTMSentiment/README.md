@@ -28,7 +28,7 @@ Next just run the following command to run the code:
 
 ```{r, engine='sh'}
      spark-submit --master "local[physical_core_number]" --driver-memory 20g      \
-                   --class com.intel.analytics.bigdl.example.treeLSTMSentiment.Train \
+                   --class com.intel.analytics.bigdl.dllib.example.treeLSTMSentiment.Train \
                    bigdl-VERSION-jar-with-dependencies.jar
 ```
 
@@ -39,7 +39,7 @@ Next just run the following command to run the code:
             MASTER=spark://xxx.xxx.xxx.xxx:xxxx
             spark-submit --master ${MASTER} --driver-memory 20g --executor-memory 10g      \
                    --total-executor-cores 32 --executor-cores 8                      \
-                   --class com.intel.analytics.bigdl.example.treeLSTMSentiment.Train \
+                   --class com.intel.analytics.bigdl.dllib.example.treeLSTMSentiment.Train \
                    bigdl-VERSION-jar-with-dependencies.jar
     ```
         
@@ -49,7 +49,7 @@ Next just run the following command to run the code:
             MASTER=spark://xxx.xxx.xxx.xxx:xxxx
             spark-submit --master yarn --driver-memory 20g --executor-memory 10g           \
                    --num-executor 4 --executor-cores 8                               \
-                   --class com.intel.analytics.bigdl.example.treeLSTMSentiment.Train \
+                   --class com.intel.analytics.bigdl.dllib.example.treeLSTMSentiment.Train \
                    bigdl-VERSION-jar-with-dependencies.jar
     ```
       

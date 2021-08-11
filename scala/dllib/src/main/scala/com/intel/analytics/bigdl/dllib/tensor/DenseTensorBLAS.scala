@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath._
+package com.intel.analytics.bigdl.dllib.tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath._
 
 object DenseTensorBLAS {
   var time = 0L

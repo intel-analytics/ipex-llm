@@ -17,13 +17,13 @@ package com.intel.analytics.bigdl.integration
 
 import java.nio.ByteOrder
 
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.models.resnet.Convolution
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, CaffePersister}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
-import com.intel.analytics.bigdl.utils.tf.{TensorflowLoader, TensorflowSaver}
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.models.resnet.Convolution
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.caffe.{CaffeLoader, CaffePersister}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+import com.intel.analytics.bigdl.dllib.utils.tf.{TensorflowLoader, TensorflowSaver}
 import org.apache.commons.compress.utils.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

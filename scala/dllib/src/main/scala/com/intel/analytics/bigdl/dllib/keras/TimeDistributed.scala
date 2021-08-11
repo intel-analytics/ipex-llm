@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
@@ -61,7 +61,7 @@ class TimeDistributed[T: ClassTag](
     val innerInput = getInnerInput(input)
     layer.build(Shape(innerInput))
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    val timedistributed = com.intel.analytics.bigdl.nn.TimeDistributed(layer)
+    val timedistributed = com.intel.analytics.bigdl.dllib.nn.TimeDistributed(layer)
     timedistributed.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
