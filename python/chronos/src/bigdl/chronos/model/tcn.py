@@ -125,7 +125,6 @@ class TemporalConvNet(nn.Module):
         self.linear.weight.data.normal_(0, 0.01)
 
     def forward(self, x):
-        x = x.float()  # for orca distributed training since orca transform data to double
         x = x.permute(0, 2, 1)
         y = self.tcn(x)
         y = self.linear(y)
