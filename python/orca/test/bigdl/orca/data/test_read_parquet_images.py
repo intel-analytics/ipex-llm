@@ -83,14 +83,25 @@ class TestReadParquet(TestCase):
             for dt in dataset.take(1):
                 print(dt.keys())
 
+            num_shards, rank = 3, 1
+            dataset_shard = read_parquet("tf_dataset", path=path, config={"num_shards": num_shards,
+                                                                          "rank": rank},
+                                         output_types=output_types)
+            assert len(list(dataset_shard)) <= len(list(dataset)) // num_shards, \
+                "len of dataset_shard should be 1/`num_shards` of the whole dataset."
+
             dataloader = read_parquet("dataloader", path=path)
-            cur_dl = iter(dataloader)
+            dataloader_shard = read_parquet("dataloader", path=path,
+                                            config={"num_shards": num_shards, "rank": rank})
+            cur_dl = iter(dataloader_shard)
+            cur_count = 0
             while True:
                 try:
                     print(next(cur_dl)['label'])
+                    cur_count += 1
                 except StopIteration:
                     break
-
+            assert cur_count == len(list(dataset_shard))
         finally:
             shutil.rmtree(temp_dir)
 
