@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import com.google.common.util.concurrent.AtomicDouble
 import org.apache.spark.SparkContext

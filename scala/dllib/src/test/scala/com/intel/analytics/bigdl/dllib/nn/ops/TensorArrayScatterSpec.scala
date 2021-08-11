@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.dllib.nn.ops
 
-import com.intel.analytics.bigdl.nn.Graph
-import com.intel.analytics.bigdl.nn.tf.Const
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.nn.Graph
+import com.intel.analytics.bigdl.dllib.nn.tf.Const
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 class TensorArrayScatterSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    import com.intel.analytics.bigdl.nn.tf._
+    import com.intel.analytics.bigdl.dllib.nn.tf._
     val tensorArray = new TensorArrayCreator[Float, Float]().inputs()
     val data = Const[Float, Float](Tensor[Float](3, 4).rand()).inputs()
     val indices = Const[Float, Int](Tensor[Int](T(0, 1, 2))).inputs()
     val scatter = new TensorArrayScatter[Float, Float]().inputs((tensorArray, 1), (indices, 1),
       (data, 1))
-    val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(scatter)
+    val ctr = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().inputs(scatter)
     val gather = new TensorArrayGather[Float, Float]().inputs((tensorArray, 1), (indices, 1),
       (ctr, 1))
-    val ctr2 = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(gather)
+    val ctr2 = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().inputs(gather)
     val close = new TensorArrayClose[Float]().inputs((tensorArray, 1), (ctr2, 1))
     val model = Graph.dynamic[Float](Array(tensorArray), Array(gather, close))
 

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.visualization
+package com.intel.analytics.bigdl.dllib.utils.visualization
 
-import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
+import com.intel.analytics.bigdl.dllib.utils.visualization.tensorboard.{FileReader, FileWriter}
 
 /**
  * Validation logger for tensorboard.

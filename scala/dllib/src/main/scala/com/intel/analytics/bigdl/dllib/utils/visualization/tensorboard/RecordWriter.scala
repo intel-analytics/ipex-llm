@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.visualization.tensorboard
+package com.intel.analytics.bigdl.dllib.utils.visualization.tensorboard
 
 import java.io.{File, FileOutputStream}
 
 import com.google.common.primitives.{Ints, Longs}
-import com.intel.analytics.bigdl.utils.Crc32
+import com.intel.analytics.bigdl.dllib.utils.Crc32
 import netty.Crc32c
 import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
 import org.tensorflow.util.Event

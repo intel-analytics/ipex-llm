@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf
+package com.intel.analytics.bigdl.dllib.utils.tf
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.tensor.{ConvertableFrom, StringType, TensorDataType}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.UndefinedTensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{ConvertableFrom, StringType, TensorDataType}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.UndefinedTensorNumeric
 
 import scala.language.implicitConversions
 

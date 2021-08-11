@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch, _}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, SampleToMiniBatch, _}
 
 import scala.collection.mutable
-import com.intel.analytics.bigdl.parameters.{ConstantClippingProcessor,
+import com.intel.analytics.bigdl.dllib.optim.parameters.{ConstantClippingProcessor,
   L2NormClippingProcessor, ParameterProcessor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.utils.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
@@ -126,9 +126,9 @@ abstract class Optimizer[T: ClassTag, D](
    * @param vMethods a set of validation method [[ValidationMethod]]
    * @param batchSize batch size
    * @param featurePaddingParam feature padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
    *
    * @return this optimizer
    */
@@ -322,9 +322,9 @@ abstract class Optimizer[T: ClassTag, D](
    * @param sampleRDD           training Samples
    * @param batchSize           mini batch size
    * @param featurePaddingParam feature padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
    * @return the optimizer
    */
   def setTrainData(sampleRDD: RDD[Sample[T]],
@@ -595,9 +595,9 @@ object Optimizer {
    * @param criterion           loss function
    * @param batchSize           mini batch size
    * @param featurePaddingParam feature padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
    * @return An optimizer
    */
   def apply[T: ClassTag](

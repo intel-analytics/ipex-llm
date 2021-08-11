@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.FrameManager.Frame
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.ops._
-import com.intel.analytics.bigdl.nn.tf._
+import com.intel.analytics.bigdl.dllib.nn.FrameManager.Frame
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.ops._
+import com.intel.analytics.bigdl.dllib.nn.tf._
 
 import scala.collection.mutable
 
@@ -125,7 +125,7 @@ private[bigdl] class Scheduler[T] (
     if (!nodeStatus.isConst(node)) {
       // Update status of current node
       nodeStatus(node) = if (node.prevNodes.length == 0) {
-        if (node.element.isInstanceOf[com.intel.analytics.bigdl.nn.tf.Const[_, _]]) {
+        if (node.element.isInstanceOf[com.intel.analytics.bigdl.dllib.nn.tf.Const[_, _]]) {
           Const()
         } else {
           Ready()

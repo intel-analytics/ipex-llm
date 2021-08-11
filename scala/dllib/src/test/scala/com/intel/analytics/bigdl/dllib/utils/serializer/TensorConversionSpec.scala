@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.serializer
+package com.intel.analytics.bigdl.dllib.utils.serializer
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLTensor, TensorStorage}
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, BigDLTensor, TensorStorage}
 
 import scala.collection.mutable
 import scala.reflect.runtime.universe
@@ -31,7 +31,7 @@ class TensorConversionSpec extends FlatSpec with Matchers{
 
   "ByteString tensor conversion " should "work properly" in {
 
-    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
 
     val byteString = Tensor[ByteString](Array(ByteString.copyFromUtf8("a"),
       ByteString.copyFromUtf8("b")), Array(2))
@@ -58,7 +58,7 @@ class TensorConversionSpec extends FlatSpec with Matchers{
 
   "Char tensor conversion " should "work properly" in {
 
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericChar
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericChar
 
     val chars = Tensor[Char](Array('a', 'b'), Array(2))
 
@@ -85,7 +85,7 @@ class TensorConversionSpec extends FlatSpec with Matchers{
 
   "Int tensor conversion " should "work properly" in {
 
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericInt
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericInt
 
     val ints = Tensor[Int](Array(2, 3), Array(2))
 
@@ -111,7 +111,7 @@ class TensorConversionSpec extends FlatSpec with Matchers{
 
   "Long tensor conversion " should "work properly" in {
 
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericLong
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericLong
 
     val longs = Tensor[Long](Array(2L, 3L), Array(2))
 
@@ -137,7 +137,7 @@ class TensorConversionSpec extends FlatSpec with Matchers{
 
   "Short tensor conversion " should "work properly" in {
 
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericShort
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericShort
 
     val shorts = Tensor[Short](Array[Short](2, 3), Array(2))
 
@@ -163,7 +163,7 @@ class TensorConversionSpec extends FlatSpec with Matchers{
 
   "Float tensor conversion " should "work properly" in {
 
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
     val floats = Tensor[Float](Array[Float](2f, 3f), Array(2))
 
@@ -189,7 +189,7 @@ class TensorConversionSpec extends FlatSpec with Matchers{
 
   "Double tensor conversion " should "work properly" in {
 
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 
     val doubles = Tensor[Double](Array[Double](2, 3), Array(2))
 
@@ -215,7 +215,7 @@ class TensorConversionSpec extends FlatSpec with Matchers{
 
   "String tensor conversion " should "work properly" in {
 
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericString
+    import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericString
 
     val strings = Tensor[String](Array[String]("hello", "world"), Array(2))
 

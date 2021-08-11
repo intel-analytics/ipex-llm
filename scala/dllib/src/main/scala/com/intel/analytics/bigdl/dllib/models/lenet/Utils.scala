@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.lenet
+package com.intel.analytics.bigdl.dllib.models.lenet
 
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 
-import com.intel.analytics.bigdl.dataset.ByteRecord
-import com.intel.analytics.bigdl.utils.{File, OptimizerVersion}
+import com.intel.analytics.bigdl.dllib.feature.dataset.ByteRecord
+import com.intel.analytics.bigdl.dllib.utils.{File}
+import com.intel.analytics.bigdl.utils.{OptimizerVersion}
 import scopt.OptionParser
 
 object Utils {

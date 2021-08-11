@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf.loaders
+package com.intel.analytics.bigdl.dllib.utils.tf.loaders
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowDataFormat, TensorflowSpecHelper}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.tf.{PaddingType, TensorflowDataFormat, TensorflowSpecHelper}
 import org.tensorflow.framework.{AttrValue, DataType, NodeDef}
-import com.intel.analytics.bigdl.utils.tf.Tensorflow._
+import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow._
 
 abstract class BinaryOpBaseSpec extends TensorflowSpecHelper {
 

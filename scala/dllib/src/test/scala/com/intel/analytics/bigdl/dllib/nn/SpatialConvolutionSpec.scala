@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
+import com.intel.analytics.bigdl.dllib.tensor
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
-import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
+import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
+import com.intel.analytics.bigdl.utils.Shape
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers {

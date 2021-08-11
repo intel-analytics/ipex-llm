@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.util
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util
 
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 class BoundingBoxSpec extends FlatSpec with Matchers {

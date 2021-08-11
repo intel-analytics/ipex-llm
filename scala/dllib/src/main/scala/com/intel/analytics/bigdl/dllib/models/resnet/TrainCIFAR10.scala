@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.resnet
+package com.intel.analytics.bigdl.dllib.models.resnet
 
-import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.dllib.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, OptimizerV1, OptimizerV2, T, Table}
+import com.intel.analytics.bigdl.dllib.models.resnet.ResNet.{DatasetType, ShortcutType}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.utils.LoggerFilter
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
 
 object TrainCIFAR10 {
   LoggerFilter.redirectSparkInfoLogs()

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.transform.vision.image.label.roi
+package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi
 
-import com.intel.analytics.bigdl.dataset.segmentation.{MaskUtils, SegmentationMasks, RLEMasks}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.RoiImageInfo
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.{MaskUtils, SegmentationMasks, RLEMasks}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.RoiImageInfo
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 /**
  * image target with classes and bounding boxes

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.image
+package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer, Utils}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch, Transformer, Utils}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 
 import scala.collection.Iterator
 

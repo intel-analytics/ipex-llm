@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.text.utils
+package com.intel.analytics.bigdl.dllib.feature.dataset.text.utils
 
 sealed trait AbstractToken
 

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.resnet
+package com.intel.analytics.bigdl.dllib.models.resnet
 
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 
-import com.intel.analytics.bigdl.dataset.ByteRecord
-import com.intel.analytics.bigdl.utils.File
+import com.intel.analytics.bigdl.dllib.feature.dataset.ByteRecord
+import com.intel.analytics.bigdl.dllib.utils.File
 import scopt.OptionParser
 
 import scala.collection.mutable.ArrayBuffer

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.google.protobuf.ByteString
-import com.intel.analytics.bigdl.serialization.Bigdl
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Table, Util}
-import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, SerializeContext}
-import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, DataType}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{Table, Util}
+import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
@@ -267,9 +267,9 @@ object TensorOp {
 
   // register custom DataConverter for transformer
   DataConverter.registerConverter(
-    "(com.intel.analytics.bigdl.tensor.Tensor[T], " +
-      "com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric[T]) => " +
-      "com.intel.analytics.bigdl.tensor.Tensor[T]",
+    "(com.intel.analytics.bigdl.dllib.tensor.Tensor[T], " +
+      "com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric[T]) => " +
+      "com.intel.analytics.bigdl.dllib.tensor.Tensor[T]",
     new DataConverter {
       override def getAttributeValue[T: ClassTag](
           context: DeserializeContext,

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package com.intel.analytics.bigdl.serialization;
+package com.intel.analytics.bigdl.dllib.serialization;
 import "google/protobuf/any.proto";
 message BigDLModule
 {

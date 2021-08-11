@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.intermediate
+package com.intel.analytics.bigdl.dllib.utils.intermediate
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnContainer}
-import com.intel.analytics.bigdl.nn.mkldnn.{DnnGraph, MklDnnLayer, MklDnnModule}
-import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, MklDnnContainer}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, MklDnnLayer, MklDnnModule}
+import com.intel.analytics.bigdl.dllib.utils.{T}
+import com.intel.analytics.bigdl.utils._
 import org.apache.spark.rdd.RDD
-import com.intel.analytics.bigdl.nn.Graph
-import com.intel.analytics.bigdl.nn.StaticGraph
-import com.intel.analytics.bigdl.nn.quantized.Quantization
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.Graph
+import com.intel.analytics.bigdl.dllib.nn.StaticGraph
+import com.intel.analytics.bigdl.dllib.nn.quantized.Quantization
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 

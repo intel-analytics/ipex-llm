@@ -28,7 +28,7 @@ For Caffe Inception model and Alexnet model, the command to transform the sequen
 
 ```bash
 java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
-         com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
+         com.intel.analytics.bigdl.dllib.models.utils.ImageNetSeqFileGenerator   \
     -f <imagenet_folder> -o <output_folder> -p <cores_number> -r -v
 ```
 
@@ -36,7 +36,7 @@ For Torch Resnet model, the command to transform the sequence file is (validatio
 
 ```bash
 java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
-         com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
+         com.intel.analytics.bigdl.dllib.models.utils.ImageNetSeqFileGenerator   \
      -f imagenet_folder -o output_folder -p cores_number -v
 ```
 
@@ -90,7 +90,7 @@ For example, following the steps below will load BVLC GoogLeNet.
   output_folder=seq
   cores_number=28
   java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
-           com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
+           com.intel.analytics.bigdl.dllib.models.utils.ImageNetSeqFileGenerator   \
        -f ${imagenet_folder} -o ${output_folder} -p ${cores_number} -r -v
   hdfs dfs -put seq/val/ /
 ```
@@ -131,7 +131,7 @@ For example, following the steps below will load BVLC GoogLeNet.
                --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=$engine"  \
                --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=$engine"  \
                --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
-               --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator          \
+               --class com.intel.analytics.bigdl.dllib.example.loadmodel.ModelValidator          \
                        dist/lib/bigdl-VERSION-jar-with-dependencies.jar             \
               -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt   \
               --modelPath $pathToModel -b $batchSize
@@ -153,7 +153,7 @@ For example, following the steps below will load BVLC GoogLeNet.
                --executor-cores 28                                                         \
                --num-executors 4                                                  \
                --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
-               --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator          \
+               --class com.intel.analytics.bigdl.dllib.example.loadmodel.ModelValidator          \
                        dist/lib/bigdl-VERSION-jar-with-dependencies.jar             \
               -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt   \
               --modelPath $pathToModel -b $batchSize

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
-import com.intel.analytics.bigdl.nn.{InitializationMethod, Ones, Xavier, Zeros}
-import com.intel.analytics.bigdl.nn.abstractnn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, Ones, Xavier, Zeros}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
@@ -67,7 +67,7 @@ class SReLU[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val shape = inputShape.toSingle().toArray
-    val layer = com.intel.analytics.bigdl.nn.SReLU(shape.slice(1, shape.length), sharedAxes)
+    val layer = com.intel.analytics.bigdl.dllib.nn.SReLU(shape.slice(1, shape.length), sharedAxes)
     layer.setInitMethod(Array(tLeftInit, aLeftInit, tRightInit, aRightInit))
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }

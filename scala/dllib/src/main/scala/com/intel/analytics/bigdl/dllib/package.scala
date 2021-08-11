@@ -17,26 +17,26 @@ package com.intel.analytics
 
 import java.util.Properties
 
-import com.intel.analytics.bigdl.dataset.AbstractDataSet
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.feature.dataset.AbstractDataSet
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 
 import scala.language.implicitConversions
 
 package object bigdl {
   type Module[T] =
-    com.intel.analytics.bigdl.nn.abstractnn.AbstractModule[Activity, Activity, T]
+    com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule[Activity, Activity, T]
   type Criterion[T] =
-    com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion[Activity, Activity, T]
+    com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractCriterion[Activity, Activity, T]
 
   implicit def convModule[T](
-    module: com.intel.analytics.bigdl.nn.abstractnn.AbstractModule[_, _, T]
+    module: com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule[_, _, T]
   ): Module[T] = module.asInstanceOf[Module[T]]
 
   implicit def convCriterion[T](
-    criterion: com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion[_, _, T]
+    criterion: com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractCriterion[_, _, T]
   ): Criterion[T] = criterion.asInstanceOf[Criterion[T]]
 
-  val numeric = com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+  val numeric = com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
   type DataSet[D] = AbstractDataSet[D, _]
 

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.mkldnn.int8
+package com.intel.analytics.bigdl.dllib.example.mkldnn.int8
 
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
-import com.intel.analytics.bigdl.models.resnet.ImageNetDataSet
-import com.intel.analytics.bigdl.nn.{Graph, Module}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch}
+import com.intel.analytics.bigdl.dllib.models.resnet.ImageNetDataSet
+import com.intel.analytics.bigdl.dllib.nn.{Graph, Module}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext

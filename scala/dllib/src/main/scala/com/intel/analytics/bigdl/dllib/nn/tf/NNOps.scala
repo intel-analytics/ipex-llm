@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
-import com.intel.analytics.bigdl.nn.{Sigmoid, SpatialAveragePooling, SpatialBatchNormalization,
+import com.intel.analytics.bigdl.dllib.nn.{Sigmoid, SpatialAveragePooling, SpatialBatchNormalization,
 SpatialConvolution, SpatialCrossMapLRN, SpatialMaxPooling, SpatialSeparableConvolution, Tanh, Utils,
 VolumetricConvolution, ELU => ELULayer, ReLU6 => ReLU6Layer, SoftPlus => SoftPlusLayer,
 SoftSign => SoftSignLayer, ReLU => ReLULayer}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{ModuleToOperation, Operation}
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.dllib.nn.ops.{ModuleToOperation, Operation}
+import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
 
 import scala.reflect.ClassTag
 

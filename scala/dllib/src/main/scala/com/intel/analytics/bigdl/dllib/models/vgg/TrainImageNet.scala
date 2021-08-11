@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.vgg
+package com.intel.analytics.bigdl.dllib.models.vgg
 
-import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, SoftmaxWithCriterion}
-import com.intel.analytics.bigdl.optim.SGD.{Poly, SequentialSchedule, Warmup}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, MklBlas, MklDnn, OptimizerV1, OptimizerV2}
-import com.intel.analytics.bigdl.visualization.TrainSummary
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn.{CrossEntropyCriterion, Module, SoftmaxWithCriterion}
+import com.intel.analytics.bigdl.dllib.optim.SGD.{Poly, SequentialSchedule, Warmup}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.utils.LoggerFilter
+import com.intel.analytics.bigdl.dllib.utils.visualization.TrainSummary
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object TrainImageNet {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
   val logger = Logger.getLogger(getClass)
 
   import Utils._

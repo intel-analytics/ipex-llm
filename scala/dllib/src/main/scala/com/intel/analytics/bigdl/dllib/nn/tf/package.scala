@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.tf.TensorModuleWrapper
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.tf.TensorModuleWrapper
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
@@ -31,7 +31,7 @@ package object tf {
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
     = TensorModuleWrapper[T, D](
-      com.intel.analytics.bigdl.nn.Mean(dimension, nInputDims, squeeze))
+      com.intel.analytics.bigdl.dllib.nn.Mean(dimension, nInputDims, squeeze))
   }
 
   object Abs {
@@ -39,7 +39,7 @@ package object tf {
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
     = TensorModuleWrapper[T, D](
-      com.intel.analytics.bigdl.nn.Abs[D]())
+      com.intel.analytics.bigdl.dllib.nn.Abs[D]())
   }
 
   object Clamp {
@@ -47,7 +47,7 @@ package object tf {
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
     = TensorModuleWrapper[T, D](
-      com.intel.analytics.bigdl.nn.Clamp[D](min, max))
+      com.intel.analytics.bigdl.dllib.nn.Clamp[D](min, max))
   }
 
   object ReLU6 {
@@ -55,7 +55,7 @@ package object tf {
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
     = TensorModuleWrapper[T, D](
-      com.intel.analytics.bigdl.nn.ReLU6[D]())
+      com.intel.analytics.bigdl.dllib.nn.ReLU6[D]())
   }
 
   object ELU {
@@ -63,7 +63,7 @@ package object tf {
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
     = TensorModuleWrapper[T, D](
-      com.intel.analytics.bigdl.nn.ELU[D]())
+      com.intel.analytics.bigdl.dllib.nn.ELU[D]())
   }
 
   object Log {
@@ -71,7 +71,7 @@ package object tf {
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
     = TensorModuleWrapper[T, D](
-      com.intel.analytics.bigdl.nn.Log[D]())
+      com.intel.analytics.bigdl.dllib.nn.Log[D]())
   }
 
   object Power {
@@ -81,7 +81,7 @@ package object tf {
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
     = TensorModuleWrapper[T, D](
-      com.intel.analytics.bigdl.nn.Power[D](power, scale, shift))
+      com.intel.analytics.bigdl.dllib.nn.Power[D](power, scale, shift))
   }
 
   object SoftPlus {
@@ -89,7 +89,7 @@ package object tf {
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
     = TensorModuleWrapper[T, D](
-      com.intel.analytics.bigdl.nn.SoftPlus[D]())
+      com.intel.analytics.bigdl.dllib.nn.SoftPlus[D]())
   }
 
   object SoftSign {
@@ -97,6 +97,6 @@ package object tf {
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
     = TensorModuleWrapper[T, D](
-      com.intel.analytics.bigdl.nn.SoftSign[D]())
+      com.intel.analytics.bigdl.dllib.nn.SoftSign[D]())
   }
 }

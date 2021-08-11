@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl.{DataSet, _}
-import com.intel.analytics.bigdl.dataset.MiniBatch
-import com.intel.analytics.bigdl.parameters.FP16CompressedTensor
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
+import com.intel.analytics.bigdl.dllib.optim.parameters.FP16CompressedTensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
 
 import scala.reflect.ClassTag
 

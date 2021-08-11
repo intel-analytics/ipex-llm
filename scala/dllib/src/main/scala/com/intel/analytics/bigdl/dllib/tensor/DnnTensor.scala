@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.tensor
+package com.intel.analytics.bigdl.dllib.tensor
 
 import breeze.linalg.{DenseMatrix, DenseVector}
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.mkldnn.{MemoryOwner, Releasable}
-import com.intel.analytics.bigdl.tensor.DnnTensor.DnnTensorUnsupportOperations
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.{MemoryOwner, Releasable}
+import com.intel.analytics.bigdl.dllib.tensor.DnnTensor.DnnTensorUnsupportOperations
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
 import org.apache.spark.mllib.linalg
 import org.apache.spark.mllib.linalg.Matrix
 import scala.reflect.ClassTag

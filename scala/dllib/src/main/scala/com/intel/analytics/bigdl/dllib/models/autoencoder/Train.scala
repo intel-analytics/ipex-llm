@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.autoencoder
+package com.intel.analytics.bigdl.dllib.models.autoencoder
 
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Transformer}
-import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2, T, Table}
+import com.intel.analytics.bigdl.dllib.feature.dataset.image._
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Transformer}
+import com.intel.analytics.bigdl.dllib.nn.{MSECriterion, Module}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 

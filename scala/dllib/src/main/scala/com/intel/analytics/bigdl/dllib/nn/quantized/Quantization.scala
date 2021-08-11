@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.quantized
+package com.intel.analytics.bigdl.dllib.nn.quantized
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.quantized.Utils._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.quantized.Utils._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import java.nio.ByteBuffer
 import scala.reflect.ClassTag
 

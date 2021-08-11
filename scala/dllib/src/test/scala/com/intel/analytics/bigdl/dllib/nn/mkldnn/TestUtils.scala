@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import java.io.{File, PrintWriter}
 import java.nio.channels.FileChannel
@@ -24,11 +24,11 @@ import java.nio.{ByteBuffer, ByteOrder}
 import breeze.numerics.abs
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.nn.Container
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorMath, Storage, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

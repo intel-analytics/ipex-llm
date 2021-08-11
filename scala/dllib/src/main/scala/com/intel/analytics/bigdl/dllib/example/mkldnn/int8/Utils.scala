@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.mkldnn.int8
+package com.intel.analytics.bigdl.dllib.example.mkldnn.int8
 
 import scopt.OptionParser
 

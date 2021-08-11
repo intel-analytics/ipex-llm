@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.KullbackLeiblerDivergenceCriterion
+import com.intel.analytics.bigdl.dllib.nn.KullbackLeiblerDivergenceCriterion
 
 class KullbackLeiblerDivergenceCriterionSpec extends KerasBaseSpec {
 

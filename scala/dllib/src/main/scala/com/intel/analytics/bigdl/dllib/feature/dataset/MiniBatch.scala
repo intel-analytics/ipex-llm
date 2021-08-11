@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset
+package com.intel.analytics.bigdl.dllib.feature.dataset
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -102,9 +102,9 @@ trait MiniBatch[T] extends Serializable{
  * @param inputData           a set of input tensor
  * @param targetData          a set of target tensor
  * @param featurePaddingParam feature padding strategy, see
- *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+ *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
  * @param labelPaddingParam   label padding strategy, see
- *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+ *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
  * @tparam T Numeric type
  * @since 0.2.0
  */

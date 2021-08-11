@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf
+package com.intel.analytics.bigdl.dllib.utils.tf
 
 import java.io.{DataInputStream, InputStream, FileReader => JFileReader}
 import java.nio.ByteOrder
@@ -23,16 +23,16 @@ import java.util.{HashMap => JHashMap}
 
 import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Graph
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.tf.AssignGrad
-import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDL, PythonBigDLUtils}
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.tf.{SwitchControlNode, SwitchOps}
-import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
-import com.intel.analytics.bigdl.utils.tf.loaders.TensorflowOpsLoader
+import com.intel.analytics.bigdl.dllib.nn.Graph
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.tf.AssignGrad
+import com.intel.analytics.bigdl.dllib.python.api.{JTensor, PythonBigDL, PythonBigDLUtils}
+import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.tf.{SwitchControlNode, SwitchOps}
+import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowToBigDL._
+import com.intel.analytics.bigdl.dllib.utils.tf.loaders.TensorflowOpsLoader
+import com.intel.analytics.bigdl.dllib.utils._
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
 import scala.collection.mutable
@@ -394,7 +394,7 @@ object TensorflowLoader{
         val (module, nodes, inputNodes) =
           extract[T](n.graph(reverse = true), context, byteOrder).getOrElse({
             try {
-              val cls = Class.forName("com.intel.analytics.bigdl.utils.tf.loaders." +
+              val cls = Class.forName("com.intel.analytics.bigdl.dllib.utils.tf.loaders." +
                 n.element.getOp)
               val builder = cls.getConstructors()(0).newInstance().asInstanceOf[TensorflowOpsLoader]
               (builder.build[T](n.element, byteOrder, context), Seq(n).asJava, Seq(n))

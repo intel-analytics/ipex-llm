@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.image
+package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import java.nio.ByteBuffer
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{Path => hadoopPath}
 import org.apache.hadoop.io.{SequenceFile, Text}

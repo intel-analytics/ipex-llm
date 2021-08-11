@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.{CosineProximityCriterion, MSECriterion}
+import com.intel.analytics.bigdl.dllib.nn.{CosineProximityCriterion, MSECriterion}
 
 class CosineCriterionSpec extends  KerasBaseSpec{
   "Cosine proximity loss" should "be ok" in {

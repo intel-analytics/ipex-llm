@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.text
+package com.intel.analytics.bigdl.dllib.feature.dataset.text
 
-import com.intel.analytics.bigdl.dataset.Sentence
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.dataset.Sentence
+import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 

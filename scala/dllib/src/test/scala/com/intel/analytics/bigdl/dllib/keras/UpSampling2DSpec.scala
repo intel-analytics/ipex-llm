@@ -16,10 +16,10 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.utils.TestUtils
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 class UpSampling2DSpec extends KerasBaseSpec {
   "UpSampling2D nchw" should "work properly" in {

@@ -16,9 +16,10 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{TestUtils}
+import com.intel.analytics.bigdl.utils.Shape
 
 class UpSampling3DSpec extends KerasBaseSpec {
   "UpSampling3D forward with size 1" should "work properly" in {

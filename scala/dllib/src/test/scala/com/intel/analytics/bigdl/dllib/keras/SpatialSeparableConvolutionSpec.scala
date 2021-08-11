@@ -15,8 +15,8 @@
  */
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.{CategoricalCrossEntropy, SpatialSeparableConvolution}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.nn.{CategoricalCrossEntropy, SpatialSeparableConvolution}
 
 class SpatialSeparableConvolutionSpec extends KerasBaseSpec {
   "SpatialSeperableConvolution" should "be ok" in {

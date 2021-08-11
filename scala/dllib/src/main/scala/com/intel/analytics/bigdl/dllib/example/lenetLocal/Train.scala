@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.lenetLocal
+package com.intel.analytics.bigdl.dllib.example.lenetLocal
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
+import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
-import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.LoggerFilter
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
 import org.apache.log4j.{Level, Logger}
 
 

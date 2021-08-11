@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.keras
 
-import com.intel.analytics.bigdl.nn.Cell
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.Cell
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.dllib.optim.Regularizer
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
@@ -64,7 +64,7 @@ class GRU[T: ClassTag](
   extends Recurrent[T](outputDim, returnSequences, goBackwards, inputShape) {
 
   override def buildCell(input: Array[Int]): Cell[T] = {
-    com.intel.analytics.bigdl.nn.GRU[T](
+    com.intel.analytics.bigdl.dllib.nn.GRU[T](
       inputSize = input(2),
       outputSize = outputDim,
       activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],

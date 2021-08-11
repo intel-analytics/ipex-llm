@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.intermediate
+package com.intel.analytics.bigdl.dllib.utils.intermediate
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.optim.DistriOptimizer._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, ReflectionUtils, T}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{Node, ReflectionUtils, T}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -82,7 +82,7 @@ private[bigdl] class IRToBlas[T: ClassTag] extends ConvertBase[IRElement[T], Mod
 
   private def className(layer: IRElement[T]): String = {
     val name = layer.getOp().name
-    s"com.intel.analytics.bigdl.nn.${name.substring(2)}"
+    s"com.intel.analytics.bigdl.dllib.nn.${name.substring(2)}"
   }
 
   override def convertLayerCheck(layer: IRElement[T]): Boolean = {

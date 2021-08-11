@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.bigdl.nn.{Squeeze, StaticGraph, Input => NNInput}
+import com.intel.analytics.bigdl.dllib.nn.{Squeeze, StaticGraph, Input => NNInput}
 
 class SqueezeSpec extends FlatSpec with Matchers {
   "a graph with squeeze" should "convert correctly" in {

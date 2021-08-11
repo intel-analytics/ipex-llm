@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.mkldnn
+package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import breeze.linalg.Axis._1
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.example.languagemodel.PTBModel
+import com.intel.analytics.bigdl.dllib.example.languagemodel.PTBModel
 import com.intel.analytics.bigdl.mkl.{AlgKind, Direction, Memory}
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
-import com.intel.analytics.bigdl.nn.{Graph, Module => _, _}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.models.resnet.ResNet.{DatasetType, ShortcutType}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn.{Graph, Module => _, _}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.utils._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import com.intel.analytics.bigdl.models.resnet
-import com.intel.analytics.bigdl.models.utils.ModelBroadcast
-import com.intel.analytics.bigdl.utils.intermediate._
+import com.intel.analytics.bigdl.dllib.models.resnet
+import com.intel.analytics.bigdl.dllib.models.utils.ModelBroadcast
+import com.intel.analytics.bigdl.dllib.utils.intermediate._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import org.apache.spark.SparkContext
 
@@ -286,7 +288,7 @@ class DnnGraphSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "DnnGraph fusion" should "not change model parameters" in {
     Engine.setEngineType(MklDnn)
-    import com.intel.analytics.bigdl.models.resnet
+    import com.intel.analytics.bigdl.dllib.models.resnet
     RNG.setSeed(100)
     val module = resnet.ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth" -> 50,
       "optnet" -> false, "dataSet" -> DatasetType.ImageNet))

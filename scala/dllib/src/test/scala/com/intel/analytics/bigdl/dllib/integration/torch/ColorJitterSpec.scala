@@ -16,16 +16,16 @@
 
 package com.intel.analytics.bigdl.integration.torch
 
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 import scala.util.Random
-import com.intel.analytics.bigdl.dataset.LocalArrayDataSet
-import com.intel.analytics.bigdl.dataset.image.{ColorJitter, LabeledBGRImage}
+import com.intel.analytics.bigdl.dllib.feature.dataset.LocalArrayDataSet
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{ColorJitter, LabeledBGRImage}
 import com.intel.analytics.bigdl.utils.RandomGenerator
 
 @com.intel.analytics.bigdl.tags.Serial

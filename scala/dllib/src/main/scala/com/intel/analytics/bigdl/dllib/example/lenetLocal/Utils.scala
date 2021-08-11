@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.lenetLocal
+package com.intel.analytics.bigdl.dllib.example.lenetLocal
 
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.dataset.ByteRecord
-import com.intel.analytics.bigdl.utils.File
+import com.intel.analytics.bigdl.dllib.feature.dataset.ByteRecord
+import com.intel.analytics.bigdl.dllib.utils.File
 import scopt.OptionParser
 
 object Utils {

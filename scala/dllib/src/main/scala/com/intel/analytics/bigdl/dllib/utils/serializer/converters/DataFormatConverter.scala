@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.serializer.converters
+package com.intel.analytics.bigdl.dllib.utils.serializer.converters
 
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.{NCHW, NHWC}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, SerializeContext}
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType, InputDataFormat}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat.{NCHW, NHWC}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
+import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, DataType, InputDataFormat}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 
 /**
- * DataConverter for [[com.intel.analytics.bigdl.nn.abstractnn.DataFormat]]
+ * DataConverter for [[com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat]]
  */
 object DataFormatConverter extends DataConverter {
   override def getAttributeValue[T: ClassTag](context: DeserializeContext, attribute: AttrValue)

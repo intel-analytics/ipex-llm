@@ -44,7 +44,7 @@ spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---class com.intel.analytics.bigdl.models.rnn.Train \
+--class com.intel.analytics.bigdl.dllib.models.rnn.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f /path/inputdata/ -s /path/saveDict --checkpoint /path/model/ --batchSize 12
 ```
@@ -74,7 +74,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.models.rnn.Test \
+--class com.intel.analytics.bigdl.dllib.models.rnn.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f /path/saveDict --model /path/model/model.iterationNumber --words 20
 ```
@@ -91,7 +91,7 @@ spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---class com.intel.analytics.bigdl.models.rnn.Train \
+--class com.intel.analytics.bigdl.dllib.models.rnn.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f /path/inputdata/ -s /path/saveDict --checkpoint /path/model/ --batchSize 12 \
 --sent hdfs://127.0.0.1:9001/tokenizer/en-sent.bin --token hdfs://127.0.0.1:9001/tokenizer/en-token.bin

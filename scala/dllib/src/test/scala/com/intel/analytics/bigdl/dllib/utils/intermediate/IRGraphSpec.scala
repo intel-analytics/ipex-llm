@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.intermediate
+package com.intel.analytics.bigdl.dllib.utils.intermediate
 
-import com.intel.analytics.bigdl.example.languagemodel.PTBModel
+import com.intel.analytics.bigdl.dllib.example.languagemodel.PTBModel
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.mkldnn._
-import com.intel.analytics.bigdl.{Module, nn, utils}
-import com.intel.analytics.bigdl.nn.{Graph, Reshape, StaticGraph, TimeDistributed}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, DataFormat}
+import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.keras
+import com.intel.analytics.bigdl.dllib.nn.mkldnn._
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dllib.utils
+import com.intel.analytics.bigdl.dllib.nn.{Graph, Reshape, StaticGraph, TimeDistributed}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.utils._
 
 class IRGraphSpec extends BigDLSpecHelper {
@@ -91,14 +95,14 @@ class IRGraphSpec extends BigDLSpecHelper {
     val gradOutput = Tensor[Float](2, 50, 4, 4).rand(-1, 1)
 
     RandomGenerator.RNG.setSeed(1000)
-    utils.Engine.setEngineType(MklBlas)
+    Engine.setEngineType(MklBlas)
     val irBlas = modelIR()
     irBlas.build()
     val outBlas = irBlas.forward(input)
     val gradInputBlas = irBlas.backward(input, gradOutput)
 
     RandomGenerator.RNG.setSeed(1000)
-    utils.Engine.setEngineType(MklDnn)
+    Engine.setEngineType(MklDnn)
     val irDnn = modelIR()
     irDnn.build()
     val outDnn = irDnn.forward(input)
@@ -113,14 +117,14 @@ class IRGraphSpec extends BigDLSpecHelper {
     val input = Tensor[Float](2, 1, 28, 28).rand(-1, 1)
     val gradOutput = Tensor[Float](2, 10).rand(-1, 1)
     RandomGenerator.RNG.setSeed(1000)
-    utils.Engine.setEngineType(MklBlas)
+    Engine.setEngineType(MklBlas)
     val irBlas = modelIR2()
     irBlas.build()
     val outBlas = irBlas.forward(input)
     val gradInputBlas = irBlas.backward(input, gradOutput)
 
     RandomGenerator.RNG.setSeed(1000)
-    utils.Engine.setEngineType(MklDnn)
+    Engine.setEngineType(MklDnn)
     val irDnn = modelIR2()
     irDnn.build()
     val outDnn = irDnn.forward(input)
@@ -137,14 +141,14 @@ class IRGraphSpec extends BigDLSpecHelper {
     val gradOutput = Tensor[Float](2, 14).rand(-1, 1)
 
     RandomGenerator.RNG.setSeed(1000)
-    utils.Engine.setEngineType(MklBlas)
+    Engine.setEngineType(MklBlas)
     val irBlas = modelIR3()
     irBlas.build()
     val outBlas = irBlas.forward(input)
     val gradInputBlas = irBlas.backward(input, gradOutput).asInstanceOf[Table]
 
     RandomGenerator.RNG.setSeed(1000)
-    utils.Engine.setEngineType(MklDnn)
+    Engine.setEngineType(MklDnn)
     val irDnn = modelIR3()
     irDnn.build()
     val outDnn = irDnn.forward(input)

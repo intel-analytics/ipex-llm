@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.integration.torch
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.{GradientChecker, View}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.{GradientChecker, View}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.math._

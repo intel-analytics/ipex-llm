@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.tensor
+package com.intel.analytics.bigdl.dllib.tensor
 
 import com.intel.analytics.bigdl.bigquant.BigQuant
-import com.intel.analytics.bigdl.nn.quantized._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.quantized._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import java.io.{IOException, ObjectInputStream}
 import scala.reflect.ClassTag
 

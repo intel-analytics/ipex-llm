@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.dllib.nn.ops
 
-import com.intel.analytics.bigdl.nn.Graph
-import com.intel.analytics.bigdl.nn.tf._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.nn.Graph
+import com.intel.analytics.bigdl.dllib.nn.tf._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 class TensorArraySplitSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
@@ -30,10 +30,10 @@ class TensorArraySplitSerialTest extends ModuleSerializationTest {
       val lengths = Const[Float, Int](Tensor[Int](T(1, 2))).inputs()
       val splitter = new TensorArraySplit[Float, Float]().inputs((tensorArray, 1), (data, 1),
         (lengths, 1))
-      val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(splitter)
+      val ctr = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().inputs(splitter)
       val concat = new TensorArrayConcat[Float, Float]().inputs(tensorArray, ctr)
       val size = new TensorArraySize[Float]().inputs(tensorArray, ctr)
-      val ctr2 = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(concat, size)
+      val ctr2 = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().inputs(concat, size)
       val close = new TensorArrayClose[Float]().inputs((tensorArray, 1), (ctr2, 1))
       val model = Graph.dynamic[Float](Array(tensorArray), Array(concat, close, size))
 
