@@ -30,7 +30,7 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -Dlog.file=${flink_home}/log/flink-sgx-taskexecutor-0-sgx-ICX-LCC.log \
     -Dlog4j.configuration=file:${flink_home}/conf/log4j.properties \
     -Dlogback.configurationFile=file:${flink_home}/conf/logback.xml \
-    -classpath ${flink_home}/lib/flink-table_2.11-1.10.1.jar:${flink_home}/lib/flink-table-blink_2.11-1.10.1.jar:${flink_home}/lib/log4j-1.2.17.jar:${flink_home}/lib/slf4j-log4j12-1.7.15.jar:${flink_home}/lib/flink-dist_2.11-1.10.1.jar::: org.apache.flink.runtime.taskexecutor.TaskManagerRunner \
+    -classpath ${flink_home}/lib/flink-csv-${flink_version}.jar:${flink_home}/lib/flink-dist_2.11-${flink_version}.jar:${flink_home}/lib/flink-json-${flink_version}.jar:${flink_home}/lib/flink-shaded-zookeeper-3.4.14.jar:${flink_home}/lib/flink-table_2.11-${flink_version}.jar:${flink_home}/lib/flink-table-blink_2.11-${flink_version}.jar:${flink_home}/lib/log4j-1.2-api-2.12.1.jar:${flink_home}/lib/log4j-api-2.12.1.jar:${flink_home}/lib/log4j-core-2.12.1.jar:${flink_home}/lib/log4j-slf4j-impl-2.12.1.jar::: org.apache.flink.runtime.taskexecutor.TaskManagerRunner \
     --configDir ${flink_home}/conf \
     -D rest.bind-address=${job_manager_host} \
     -D rest.bind-port=${job_manager_rest_port} \
