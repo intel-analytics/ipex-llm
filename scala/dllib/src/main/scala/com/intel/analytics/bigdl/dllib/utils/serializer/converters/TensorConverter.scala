@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.quantized._
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.{BigDLStorage, DeserializeContext, ProtoStorageType, SerializeContext}
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl._
+import com.intel.analytics.bigdl.serialization.Bigdl._
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
