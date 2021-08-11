@@ -19,7 +19,7 @@ import breeze.linalg.*
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, BigDLModule, DataType}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule, DataType}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter

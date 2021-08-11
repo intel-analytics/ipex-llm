@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.utils.serializer.converters
 import com.intel.analytics.bigdl.dllib.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, DataType, RegularizerType, Regularizer => SerializeRegularizer}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType, RegularizerType, Regularizer => SerializeRegularizer}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
