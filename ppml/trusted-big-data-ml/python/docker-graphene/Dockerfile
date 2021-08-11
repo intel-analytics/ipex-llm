@@ -185,8 +185,10 @@ ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
 ADD ./check-status.sh /ppml/trusted-big-data-ml/check-status.sh
 ADD ./tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
+ADD ./_dill.py.patch ./_dill.py.patch
 
 RUN jar -uf /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_2.4.6-0.12.0-SNAPSHOT-jar-with-dependencies.jar ./tracker.py && \
+    patch /usr/local/lib/python3.6/dist-packages/dill/_dill.py ./_dill.py.patch && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \
