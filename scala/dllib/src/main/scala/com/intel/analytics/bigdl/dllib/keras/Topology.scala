@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.{Container, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.optim._
-import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.BigDLModule
+//import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.BigDLModule
+import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{LoggerFilter, Shape}
 import com.intel.analytics.bigdl.dllib.utils.serializer._
