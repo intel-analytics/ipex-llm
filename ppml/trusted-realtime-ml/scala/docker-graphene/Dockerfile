@@ -19,7 +19,7 @@ RUN /graphene/Scripts/download --output redis.tar.gz --sha256 f7ded6c27d48c20bc7
 
 # stage.2 jdk & flink
 FROM ubuntu:18.04 as flink
-ARG FLINK_VERSION=1.10.1
+ARG FLINK_VERSION=1.11.3
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ENV FLINK_VERSION ${FLINK_VERSION}
