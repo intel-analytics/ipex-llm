@@ -18,6 +18,10 @@ import sys
 import os
 import glob
 import warnings
+import logging
+
+
+log = logging.getLogger(__name__)
 
 
 def exist_pyspark():
@@ -54,7 +58,7 @@ def __prepare_spark_env():
             raise ValueError(
                 """Could not find Spark. Please make sure SPARK_HOME env is set:
                    export SPARK_HOME=path to your spark home directory.""")
-        print("Using %s" % spark_home)
+        log.info(f"Using {spark_home} as spark home")
         py4j = glob.glob(os.path.join(spark_home, 'python/lib', 'py4j-*.zip'))[0]
         pyspark = glob.glob(os.path.join(spark_home, 'python/lib', 'pyspark*.zip'))[0]
         if py4j not in sys.path:
@@ -72,7 +76,7 @@ def __prepare_analytics_zoo_env():
     def append_path(env_var_name, path):
         try:
             if path not in os.environ[env_var_name]:
-                print("Adding %s to %s" % (path, env_var_name))
+                log.info(f"Adding {path} to {env_var_name}")
                 os.environ[env_var_name] = path + ":" + os.environ[env_var_name]  # noqa
         except KeyError:
             os.environ[env_var_name] = path
@@ -83,13 +87,13 @@ def __prepare_analytics_zoo_env():
     if conf_paths:
         assert len(conf_paths) == 1, "Expecting one conf, but got: %s" % len(conf_paths)
         if conf_paths[0] not in sys.path:
-            print("Prepending %s to sys.path" % conf_paths[0])
+            log.info(f"Prepending {conf_paths[0]} to sys.path")
             sys.path.insert(0, conf_paths[0])
 
     if extra_resources_paths:
         for resource in extra_resources_paths:
             if resource not in extra_resources_paths:
-                print("Prepending %s to sys.path" % resource)
+                log.info(f"Prepending {resource} to sys.path")
                 sys.path.insert(0, resource)
 
     if os.environ.get("BIGDL_JARS", None) and is_spark_below_2_2():
