@@ -175,7 +175,7 @@ object TorchFile {
           } else {
             ClassTag.Double
           }
-        val bigDlName = "com.intel.analytics.bigdl." + moduleName
+        val bigDlName = "com.intel.analytics.bigdl.dllib." + moduleName
         // Use reflection to load all parameter-free module
         val args: Array[(Class[_], AnyRef)] = Array((classOf[ClassTag[_]], classTag),
           (classOf[TensorNumeric[_]], ev))
