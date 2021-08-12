@@ -15,7 +15,6 @@
 #
 
 import pandas as pd
-import numpy as np
 
 
 def split_timeseries_dataframe(df,
@@ -37,23 +36,17 @@ def split_timeseries_dataframe(df,
 
     :return: splited dataframes
     """
-    id_list = list(np.unique(df[id_col]))
-    train_df_list = []
-    valid_df_list = []
-    test_df_list = []
-    for id_name in id_list:
-        train_df_id, valid_df_id, test_df_id = \
-            split_single_timeseries_dataframe(df=df[df[id_col] == id_name],
-                                              val_ratio=val_ratio,
-                                              test_ratio=test_ratio,
-                                              look_back=look_back,
-                                              horizon=horizon)
-        train_df_list.append(train_df_id)
-        valid_df_list.append(valid_df_id)
-        test_df_list.append(test_df_id)
-    train_df = pd.concat(train_df_list)
-    valid_df = pd.concat(valid_df_list)
-    test_df = pd.concat(test_df_list)
+    split_result = df.groupby(id_col).apply(lambda df:
+                                            split_single_timeseries_dataframe(
+                                                df=df,
+                                                val_ratio=val_ratio,
+                                                test_ratio=test_ratio,
+                                                look_back=look_back,
+                                                horizon=horizon)
+                                            )
+    train_df = pd.concat([split_result[i][0] for i in split_result.index])
+    valid_df = pd.concat([split_result[i][1] for i in split_result.index])
+    test_df = pd.concat([split_result[i][2] for i in split_result.index])
     return train_df, valid_df, test_df
 
 
