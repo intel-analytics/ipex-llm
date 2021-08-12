@@ -39,6 +39,22 @@ class TestTable(TestCase):
         """
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
+    def test_apply(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        feature_tbl = feature_tbl.fillna(0, "col_1")
+        # udf on single column
+        transform = lambda x: x + 1
+        feature_tbl = feature_tbl.apply("col_1", "new_col_1", transform, dtype="int")
+        col1_values = feature_tbl.select("col_1").df.rdd.flatMap(lambda x: x).collect()
+        updated_col1_values = feature_tbl.select("new_col_1").df.rdd.flatMap(lambda x: x).collect()
+        assert [v + 1 for v in col1_values] == updated_col1_values
+        # udf on multi columns
+        transform = lambda x: "xxxx"
+        feature_tbl = feature_tbl.apply(["col_2", "col_4", "col_5"], "out", transform)
+        out_values = feature_tbl.select("out").df.rdd.flatMap(lambda x: x).collect()
+        assert out_values == ["xxxx"] * len(out_values)
+
     def test_fillna_int(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
