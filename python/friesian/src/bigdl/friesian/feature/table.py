@@ -1168,15 +1168,24 @@ class FeatureTable(Table):
         """
         Transform a FeatureTable using a user-defined Python function.
 
-        :param in_col: str, the name of column to be transformed.
+        :param in_col: str or a list of str, the column(s) to be transformed.
         :param out_col: str, the name of output column.
-        :param func: The Python function to convert in_col to out_col.
+        :param func: The Python function with in_col as input and out_col.
+               When in_col is a list of str, func should take a list as input,
+               and in this case you are generating out_col given multiple
+               input columns.
         :param dtype: str, the data type of out_col. Default is string type.
 
         :return: A new FeatureTable after column transformation.
         """
         udf_func = udf(func, dtype)
-        df = self.df.withColumn(out_col, udf_func(pyspark_col(in_col)))
+        assert isinstance(out_col, str), "out_col must be a single column"
+        if isinstance(in_col, str):
+            df = self.df.withColumn(out_col, udf_func(pyspark_col(in_col)))
+        else:
+            assert isinstance(in_col, list),\
+                "in_col must be a single column of a list of columns"
+            df = self.df.withColumn(out_col, udf_func(array(in_col)))
         return FeatureTable(df)
 
     def join(self, table, on=None, how=None, lsuffix=None, rsuffix=None):
