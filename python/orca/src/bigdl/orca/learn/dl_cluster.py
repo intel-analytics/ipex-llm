@@ -17,6 +17,7 @@
 import ray
 from zoo.orca.cpu_info import schedule_workers
 import os
+import sys
 import logging
 log = logging.getLogger(__name__)
 
@@ -68,7 +69,14 @@ class RayDLCluster:
         self.worker_cores = worker_cores
         self.worker_cls = make_worker(worker_cls)
         self.work_param = worker_param
-        self.cpu_binding = cpu_binding
+        if sys.platform == 'linux':
+            self.cpu_binding = cpu_binding
+        else:
+            if cpu_binding:
+                log.warn(f"cpu_binding is only support in linux, detectiong os {sys.platform}, "
+                         "set cpu_binding to False")
+
+            self.cpu_binding = False
 
         self.worker_class = ray.remote(num_cpus=self.worker_cores)(self.worker_cls)
         self.remote_workers = [self.worker_class.remote(**worker_param)
@@ -99,7 +107,7 @@ class RayDLCluster:
 
             ray.get(result)
         else:
-            ray.get([worker.disable_cpu_affinity(self.worker_cores)
+            ray.get([worker.disable_cpu_affinity.remote(self.worker_cores)
                      for worker in self.remote_workers])
 
     def get_workers(self):
