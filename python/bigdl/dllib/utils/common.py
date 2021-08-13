@@ -154,7 +154,7 @@ class JTensor(object):
     A wrapper to easy our work when need to pass or return Tensor to/from Scala.
 
     >>> import numpy as np
-    >>> from bigdl.util.common import JTensor
+    >>> from bigdl.utils.common import JTensor
     >>> np.random.seed(123)
     >>>
     """
@@ -189,8 +189,8 @@ class JTensor(object):
         Convert a ndarray to a DenseTensor which would be used in Java side.
 
         >>> import numpy as np
-        >>> from bigdl.util.common import JTensor
-        >>> from bigdl.util.common import callBigDlFunc
+        >>> from bigdl.utils.common import JTensor
+        >>> from bigdl.utils.common import callBigDlFunc
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
@@ -236,8 +236,8 @@ class JTensor(object):
         :param shape     shape as a DenseTensor.
 
         >>> import numpy as np
-        >>> from bigdl.util.common import JTensor
-        >>> from bigdl.util.common import callBigDlFunc
+        >>> from bigdl.utils.common import JTensor
+        >>> from bigdl.utils.common import callBigDlFunc
         >>> np.random.seed(123)
         >>> data = np.arange(1, 7).astype("float32")
         >>> indices = np.arange(1, 7)
@@ -314,7 +314,7 @@ class Sample(object):
         :param bigdl_type: "double" or "float"
 
         >>> import numpy as np
-        >>> from bigdl.util.common import callBigDlFunc
+        >>> from bigdl.utils.common import callBigDlFunc
         >>> from numpy.testing import assert_allclose
         >>> np.random.seed(123)
         >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
@@ -495,7 +495,7 @@ def to_sample_rdd(x, y, numSlices=None):
     :return:
     """
     sc = get_spark_context()
-    from bigdl.util.common import Sample
+    from bigdl.utils.common import Sample
     x_rdd = sc.parallelize(x, numSlices)
     y_rdd = sc.parallelize(y, numSlices)
     return x_rdd.zip(y_rdd).map(lambda item: Sample.from_ndarray(item[0], item[1]))
@@ -720,7 +720,7 @@ def is_distributed(path):
 def get_activation_by_name(activation_name, activation_id=None):
     """ Convert to a bigdl activation layer
         given the name of the activation as a string  """
-    import bigdl.nn.layer as BLayer
+    import bigdl.dllib.nn.layer as BLayer
     activation = None
     activation_name = activation_name.lower()
     if activation_name == "tanh":
@@ -749,7 +749,7 @@ def get_activation_by_name(activation_name, activation_id=None):
 def _test():
     import doctest
     from pyspark import SparkContext
-    from bigdl.nn import layer
+    from bigdl.dllib.nn import layer
     globs = layer.__dict__.copy()
     sc = SparkContext(master="local[2]", appName="test common utility")
     globs['sc'] = sc

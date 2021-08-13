@@ -14,18 +14,19 @@
 # limitations under the License.
 #
 
-from bigdl.util.common import *
+from bigdl.utils.common import *
 
-from bigdl.transform.vision.image import *
+from bigdl.dllib.feature.transform.vision.image import *
 
-from bigdl.optim.optimizer import *
+from bigdl.dllib.optim.optimizer import *
 
 from pyspark import SparkContext
 
-from bigdl.nn.layer import *
+from bigdl.dllib.nn.layer import *
 
 from optparse import OptionParser
 
+import os
 import sys
 
 parser = OptionParser()
