@@ -16,8 +16,8 @@
 
 from math import ceil
 
-import bigdl.nn.initialization_method as BInit
-from bigdl.optim.optimizer import L1L2Regularizer as BRegularizer
+import bigdl.dllib.nn.initialization_method as BInit
+from bigdl.dllib.optim.optimizer import L1L2Regularizer as BRegularizer
 
 
 def to_bigdl_2d_ordering(order):

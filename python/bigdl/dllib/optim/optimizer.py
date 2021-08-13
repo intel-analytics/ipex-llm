@@ -23,15 +23,15 @@ from distutils.dir_util import mkpath
 from py4j.java_gateway import JavaObject
 from pyspark.rdd import RDD
 
-from bigdl.util.common import DOUBLEMAX
-from bigdl.util.common import JTensor
-from bigdl.util.common import JavaValue
-from bigdl.util.common import callBigDlFunc
-from bigdl.util.common import callJavaFunc
-from bigdl.util.common import get_node_and_core_number
-from bigdl.util.common import init_engine
-from bigdl.util.common import to_list
-from bigdl.dataset.dataset import *
+from bigdl.utils.common import DOUBLEMAX
+from bigdl.utils.common import JTensor
+from bigdl.utils.common import JavaValue
+from bigdl.utils.common import callBigDlFunc
+from bigdl.utils.common import callJavaFunc
+from bigdl.utils.common import get_node_and_core_number
+from bigdl.utils.common import init_engine
+from bigdl.utils.common import to_list
+from bigdl.dllib.feature.dataset.dataset import *
 import warnings
 
 if sys.version >= '3':
@@ -100,7 +100,7 @@ class Loss(JavaValue):
 
     """
     This evaluation method is calculate loss of output with respect to target
-    >>> from bigdl.nn.criterion import ClassNLLCriterion
+    >>> from bigdl.dllib.nn.criterion import ClassNLLCriterion
     >>> loss = Loss()
     creating: createClassNLLCriterion
     creating: createLoss
@@ -110,7 +110,7 @@ class Loss(JavaValue):
     creating: createLoss
     """
     def __init__(self, cri=None, bigdl_type="float"):
-        from bigdl.nn.criterion import ClassNLLCriterion
+        from bigdl.dllib.nn.criterion import ClassNLLCriterion
         if cri is None:
             cri = ClassNLLCriterion()
         JavaValue.__init__(self, None, bigdl_type, cri)
@@ -789,7 +789,7 @@ class BaseOptimizer(JavaValue):
         Do an optimization.
         """
         jmodel = callJavaFunc(self.value.optimize)
-        from bigdl.nn.layer import Layer
+        from bigdl.dllib.nn.layer import Layer
         return Layer.of(jmodel)
 
     def set_train_summary(self, summary):
@@ -1189,9 +1189,9 @@ class L2Regularizer(JavaValue):
 def _test():
     import doctest
     from pyspark import SparkContext
-    from bigdl.optim import optimizer
-    from bigdl.util.common import init_engine
-    from bigdl.util.common import create_spark_conf
+    from bigdl.dllib.optim import optimizer
+    from bigdl.utils.common import init_engine
+    from bigdl.utils.common import create_spark_conf
     globs = optimizer.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test optimizer",
                       conf=create_spark_conf())
