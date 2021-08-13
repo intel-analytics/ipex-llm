@@ -16,7 +16,7 @@
 
 import sys
 
-from bigdl.util.common import JavaValue
+from bigdl.utils.common import JavaValue
 
 if sys.version >= '3':
     long = int

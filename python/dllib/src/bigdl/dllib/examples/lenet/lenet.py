@@ -15,9 +15,9 @@
 #
 
 from optparse import OptionParser
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import *
-from bigdl.dataset import mnist
+from bigdl.dllib.keras.topology import Sequential
+from bigdl.dllib.keras.layer import *
+from bigdl.dllib.feature.dataset import mnist
 
 
 def build_model(class_num):
