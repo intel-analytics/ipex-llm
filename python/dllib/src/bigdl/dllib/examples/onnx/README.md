@@ -18,7 +18,7 @@
  * Import library dependencies
 ```
 import numpy as np
-from bigdl.contrib.onnx import load
+from bigdl.dllib.contrib.onnx import load
 ```
 
  * Set target ONNX ResNet-50 model path

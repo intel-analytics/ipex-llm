@@ -21,7 +21,7 @@ from tempfile import NamedTemporaryFile
 
 from pyspark.broadcast import Broadcast
 from pyspark.broadcast import _from_id
-from bigdl.nn.layer import Model
+from bigdl.dllib.nn.layer import Model
 
 def _from_id_and_type(bid, bigdl_type):
     result = _from_id(bid)
