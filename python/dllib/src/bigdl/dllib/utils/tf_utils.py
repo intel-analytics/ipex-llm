@@ -26,9 +26,9 @@ from tensorflow.python.client import session
 from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import importer
 from tensorflow.python.platform import gfile
-from bigdl.nn.layer import Model
-from bigdl.util.common import JTensor
-from bigdl.util.common import callBigDlFunc
+from bigdl.dllib.nn.layer import Model
+from bigdl.utils.common import JTensor
+from bigdl.utils.common import callBigDlFunc
 import os
 
 def get_path(output_name, sess=None):
