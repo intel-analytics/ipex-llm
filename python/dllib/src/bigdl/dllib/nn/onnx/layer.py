@@ -16,8 +16,8 @@
 
 import sys
 import numpy as np
-from bigdl.nn.layer import Layer
-from bigdl.util.common import JTensor
+from bigdl.dllib.nn.layer import Layer
+from bigdl.utils.common import JTensor
 
 if sys.version >= '3':
     long = int

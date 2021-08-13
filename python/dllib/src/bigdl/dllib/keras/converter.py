@@ -15,14 +15,14 @@
 #
 
 import numpy as np
-import bigdl.nn.layer as BLayer
-import bigdl.util.common as BCommon
-from bigdl.util.common import get_activation_by_name
+import bigdl.dllib.nn.layer as BLayer
+import bigdl.utils.common as BCommon
+from bigdl.utils.common import get_activation_by_name
 from keras.models import model_from_json
 from keras.models import Sequential, Model, Layer
 import keras
 import warnings
-from bigdl.keras.ToBigDLHelper import *
+from bigdl.dllib.keras.ToBigDLHelper import *
 
 
 def unsupport_exp(name):

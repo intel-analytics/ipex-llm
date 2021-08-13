@@ -19,7 +19,7 @@ import os
 import zipfile
 import numpy as np
 
-from bigdl.dataset import base
+from bigdl.dllib.feature.dataset import base
 
 SOURCE_URL = 'http://files.grouplens.org/datasets/movielens/'
 def read_data_sets(data_dir):

@@ -15,12 +15,12 @@
 #
 
 from optparse import OptionParser
-from bigdl.models.lenet.utils import *
-from bigdl.dataset.transformer import *
-from bigdl.nn.layer import *
-from bigdl.nn.criterion import *
-from bigdl.optim.optimizer import *
-from bigdl.util.common import *
+from bigdl.dllib.models.lenet.utils import *
+from bigdl.dllib.feature.dataset.transformer import *
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.optim.optimizer import *
+from bigdl.utils.common import *
 
 
 def build_model(class_num):
