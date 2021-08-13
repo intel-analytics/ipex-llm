@@ -72,10 +72,10 @@ if __name__ == "__main__":
     hdf5_path = "/tmp/imdb.h5"
     keras_model.save(hdf5_path)
 
-    from bigdl.util.common import *
-    from bigdl.nn.layer import *
-    from bigdl.optim.optimizer import *
-    from bigdl.nn.criterion import *
+    from bigdl.utils.common import *
+    from bigdl.dllib.nn.layer import *
+    from bigdl.dllib.optim.optimizer import *
+    from bigdl.dllib.nn.criterion import *
 
     # Load the HDF5 file with weights to a BigDL model
     bigdl_model = Model.load_keras(hdf5_path=hdf5_path)

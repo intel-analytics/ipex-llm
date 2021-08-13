@@ -17,10 +17,10 @@
 
 import sys
 
-from bigdl.util.common import JavaValue
-from bigdl.util.common import callBigDlFunc
-from bigdl.util.common import JTensor
-from bigdl.nn.layer import Layer
+from bigdl.utils.common import JavaValue
+from bigdl.utils.common import callBigDlFunc
+from bigdl.utils.common import JTensor
+from bigdl.dllib.nn.layer import Layer
 import numpy as np
 
 if sys.version >= '3':
@@ -978,9 +978,9 @@ class PGCriterion(Criterion):
 def _test():
     import doctest
     from pyspark import SparkContext
-    from bigdl.nn import criterion
-    from bigdl.util.common import init_engine
-    from bigdl.util.common import create_spark_conf
+    from bigdl.dllib.nn import criterion
+    from bigdl.utils.common import init_engine
+    from bigdl.utils.common import create_spark_conf
     globs = criterion.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test criterion",
                       conf=create_spark_conf())

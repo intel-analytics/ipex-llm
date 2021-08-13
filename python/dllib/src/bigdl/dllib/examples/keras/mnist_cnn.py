@@ -22,7 +22,7 @@
 # See README.md for how to run this example.
 
 from optparse import OptionParser
-from bigdl.examples.keras.keras_utils import *
+from bigdl.dllib.examples.keras.keras_utils import *
 
 import keras.backend
 if keras.backend.image_dim_ordering() == "th":
@@ -36,8 +36,8 @@ def get_mnist(sc, data_type="train", location="/tmp/mnist"):
     Download or load MNIST dataset to/from the specified path.
     Normalize and transform input data into an RDD of Sample
     """
-    from bigdl.dataset import mnist
-    from bigdl.dataset.transformer import normalizer
+    from bigdl.dllib.feature.dataset import mnist
+    from bigdl.dllib.feature.dataset.transformer import normalizer
     (images, labels) = mnist.read_data_sets(location, data_type)
     images = images.reshape((images.shape[0], ) + input_shape)
     images = sc.parallelize(images)
@@ -85,10 +85,10 @@ if __name__ == "__main__":
     json_path = "/tmp/lenet.json"
     save_keras_definition(keras_model, json_path)
 
-    from bigdl.util.common import *
-    from bigdl.nn.layer import *
-    from bigdl.optim.optimizer import *
-    from bigdl.nn.criterion import *
+    from bigdl.utils.common import *
+    from bigdl.dllib.nn.layer import *
+    from bigdl.dllib.optim.optimizer import *
+    from bigdl.dllib.nn.criterion import *
 
     # Load the JSON file to a BigDL model
     bigdl_model = Model.load_keras(json_path=json_path)

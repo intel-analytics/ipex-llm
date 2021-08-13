@@ -19,12 +19,12 @@ import itertools
 import re
 from optparse import OptionParser
 
-from bigdl.dataset import news20
-from bigdl.nn.layer import *
-from bigdl.nn.criterion import *
-from bigdl.optim.optimizer import *
-from bigdl.util.common import *
-from bigdl.util.common import Sample
+from bigdl.dllib.feature.dataset import news20
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.optim.optimizer import *
+from bigdl.utils.common import *
+from bigdl.utils.common import Sample
 import datetime as dt
 
 
