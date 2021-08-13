@@ -25,3 +25,4 @@ tsfresh==0.18.0
 pystan==2.19.1.1
 prophet
 pmdarima
+sphinx_markdown_tables
