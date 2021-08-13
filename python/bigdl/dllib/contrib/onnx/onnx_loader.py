@@ -15,8 +15,8 @@
 #
 
 import onnx
-from bigdl.nn.onnx.layer import *
-from bigdl.nn.layer import Identity, Model
+from bigdl.dllib.nn.onnx.layer import *
+from bigdl.dllib.nn.layer import Identity, Model
 from .ops_mapping import _convert_map as convert_map
 from .converter_utils import parse_node_attr, parse_tensor_data
 

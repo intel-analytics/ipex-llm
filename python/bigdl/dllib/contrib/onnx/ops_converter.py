@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from bigdl.nn.layer import SpatialAveragePooling, SpatialBatchNormalization
-from bigdl.nn.layer import SpatialConvolution, SpatialMaxPooling, JoinTable
-from bigdl.nn.layer import ReLU, SoftMax, CAddTable, Unsqueeze
-from bigdl.nn.onnx.layer import Constant, Gather, Gemm, Shape, Reshape
+from bigdl.dllib.nn.layer import SpatialAveragePooling, SpatialBatchNormalization
+from bigdl.dllib.nn.layer import SpatialConvolution, SpatialMaxPooling, JoinTable
+from bigdl.dllib.nn.layer import ReLU, SoftMax, CAddTable, Unsqueeze
+from bigdl.dllib.nn.onnx.layer import Constant, Gather, Gemm, Shape, Reshape
 from .converter_utils import *
 
 

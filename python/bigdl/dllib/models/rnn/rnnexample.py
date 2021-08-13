@@ -19,13 +19,13 @@ import itertools
 import re
 from optparse import OptionParser
 
-from bigdl.dataset import base
-from bigdl.dataset import sentence
-from bigdl.nn.layer import *
-from bigdl.nn.criterion import *
-from bigdl.optim.optimizer import *
-from bigdl.util.common import *
-from bigdl.util.common import Sample
+from bigdl.dllib.feature.dataset import base
+from bigdl.dllib.feature.dataset import sentence
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.optim.optimizer import *
+from bigdl.utils.common import *
+from bigdl.utils.common import Sample
 
 def download_data(dest_dir):
     TINYSHAKESPEARE_URL = 'https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt'  # noqa
