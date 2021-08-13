@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.keras.optimization import *
-from bigdl.util.common import *
+from bigdl.dllib.keras.optimization import *
+from bigdl.utils.common import *
 
 
 class KerasModelWrapper:
