@@ -15,9 +15,9 @@
 #
 
 import sys
-from bigdl.util.common import JavaValue
-from bigdl.util.common import callBigDlFunc
-from bigdl.util.common import *
+from bigdl.utils.common import JavaValue
+from bigdl.utils.common import callBigDlFunc
+from bigdl.utils.common import *
 
 if sys.version >= '3':
     long = int
