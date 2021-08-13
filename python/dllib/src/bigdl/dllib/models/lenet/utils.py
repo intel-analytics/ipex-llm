@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.dataset import mnist
-from bigdl.dataset.transformer import *
-from bigdl.optim.optimizer import *
+from bigdl.dllib.feature.dataset import mnist
+from bigdl.dllib.feature.dataset.transformer import *
+from bigdl.dllib.optim.optimizer import *
 
 
 def get_mnist(sc, data_type="train", location="/tmp/mnist"):
