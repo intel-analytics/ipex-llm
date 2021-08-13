@@ -21,19 +21,19 @@ import importlib
 import numpy as np
 import six
 
-from bigdl.util.common import JTensor
-from bigdl.util.common import JavaValue
-from bigdl.util.common import callBigDlFunc
-from bigdl.util.common import callJavaFunc
-from bigdl.util.common import get_spark_context
-from bigdl.util.common import to_list
-from bigdl.util.common import INTMAX, INTMIN, DOUBLEMAX
-from bigdl.util.common import get_activation_by_name
-from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
+from bigdl.utils.common import JTensor
+from bigdl.utils.common import JavaValue
+from bigdl.utils.common import callBigDlFunc
+from bigdl.utils.common import callJavaFunc
+from bigdl.utils.common import get_spark_context
+from bigdl.utils.common import to_list
+from bigdl.utils.common import INTMAX, INTMIN, DOUBLEMAX
+from bigdl.utils.common import get_activation_by_name
+from bigdl.dllib.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 from py4j.java_gateway import JavaObject
 from pyspark.rdd import RDD
-from bigdl.transform.vision.image import ImageFrame
-from bigdl.dataset.dataset import DataSet
+from bigdl.dllib.feature.transform.vision.image import ImageFrame
+from bigdl.dllib.feature.dataset.dataset import DataSet
 
 if sys.version >= '3':
     long = int
@@ -98,13 +98,13 @@ class SharedStaticUtils():
         jpackage_name = ".".join(jname.split(".")[:-1])
         pclass_name = get_py_name(jname.split(".")[-1])
 
-        if "com.intel.analytics.bigdl.nn.keras.Model" == jname or \
-                        "com.intel.analytics.bigdl.nn.keras.Sequential" == jname:
-            base_module = importlib.import_module('bigdl.nn.keras.topology')
-        elif "com.intel.analytics.bigdl.nn.keras" == jpackage_name:
-            base_module = importlib.import_module('bigdl.nn.keras.layer')
+        if "com.intel.analytics.bigdl.dllib.keras.Model" == jname or \
+                        "com.intel.analytics.bigdl.dllib.keras.Sequential" == jname:
+            base_module = importlib.import_module('bigdl.dllib.keras.topology')
+        elif "com.intel.analytics.bigdl.dllib.keras" == jpackage_name:
+            base_module = importlib.import_module('bigdl.dllib.keras.layer')
         else:
-            base_module = importlib.import_module('bigdl.nn.layer')
+            base_module = importlib.import_module('bigdl.dllib.nn.layer')
 
         realClassName = "Layer" # The top base class
         if pclass_name in dir(base_module):
@@ -807,7 +807,7 @@ class Model(Container):
             except ImportError:
                 raise Exception("No backend is found for Keras. "
                                 "Please install either tensorflow or theano.")
-        from bigdl.keras.converter import DefinitionLoader, WeightLoader
+        from bigdl.dllib.keras.converter import DefinitionLoader, WeightLoader
         if json_path and not hdf5_path:
             return DefinitionLoader.from_json_path(json_path)
         elif json_path and hdf5_path:
@@ -864,7 +864,7 @@ class Model(Container):
     @staticmethod
     def train(output, data, label, opt_method, criterion, batch_size, end_when, session=None, bigdl_type="float"):
         from bigdl.util.tf_utils import get_path
-        from bigdl.util.common import Sample
+        from bigdl.utils.common import Sample
         output_name = output.name.split(":")[0]
         path = get_path(output_name, session)
         sc = get_spark_context()
@@ -3927,7 +3927,7 @@ class SReLU(Layer):
     creating: createSReLU
     >>> srelu = SReLU((2, 2), (1, 2))
     creating: createSReLU
-    >>> from bigdl.nn.initialization_method import Xavier
+    >>> from bigdl.dllib.nn.initialization_method import Xavier
     >>> init = Xavier()
     creating: createXavier
     >>> srelu = srelu.set_init_method(tLeftInit=init, aLeftInit=init, tRightInit=init, aRightInit=init)
@@ -5783,9 +5783,9 @@ class FPN(Layer):
 def _test():
     import doctest
     from pyspark import SparkContext
-    from bigdl.nn import layer
-    from bigdl.util.common import init_engine
-    from bigdl.util.common import create_spark_conf
+    from bigdl.dllib.nn import layer
+    from bigdl.utils.common import init_engine
+    from bigdl.utils.common import create_spark_conf
     globs = layer.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test layer",
                       conf=create_spark_conf())
