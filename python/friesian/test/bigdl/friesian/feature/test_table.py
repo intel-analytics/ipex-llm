@@ -226,6 +226,31 @@ class TestTable(TestCase):
         assert string_idx_list[0].size() == 3, "col_4 should have 3 indices"
         assert string_idx_list[1].size() == 2, "col_5 should have 2 indices"
 
+    def test_gen_string_idx_union(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        string_idx_list1 = feature_tbl \
+            .gen_string_idx(["col_4", 'col_5'],
+                            freq_limit=1)
+        assert string_idx_list1[0].size() == 3, "col_4 should have 3 indices"
+        assert string_idx_list1[1].size() == 2, "col_5 should have 2 indices"
+        new_tbl1 = feature_tbl.encode_string(['col_4', 'col_5'], string_idx_list1)
+        assert new_tbl1.max("col_5").to_list("max")[0] == 2, "col_5 max value should be 2"
+
+        string_idx_list2 = feature_tbl \
+            .gen_string_idx(["col_4", {"src_cols": ["col_4", "col_5"], "col_name": 'col_5'}],
+                            freq_limit=1)
+        assert string_idx_list2[0].size() == 3, "col_4 should have 3 indices"
+        assert string_idx_list2[1].size() == 4, "col_5 should have 4 indices"
+        new_tbl2 = feature_tbl.encode_string(['col_4', 'col_5'], string_idx_list2)
+        assert new_tbl2.max("col_5").to_list("max")[0] == 4, "col_5 max value should be 4"
+
+        string_idx_3 = feature_tbl \
+            .gen_string_idx({"src_cols": ["col_4", "col_5"], "col_name": 'col_5'}, freq_limit=1)
+        assert string_idx_3.size() == 4, "col_5 should have 4 indices"
+        new_tbl3 = feature_tbl.encode_string('col_5', string_idx_3)
+        assert new_tbl3.max("col_5").to_list("max")[0] == 4, "col_5 max value should be 4"
+
     def test_clip(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
