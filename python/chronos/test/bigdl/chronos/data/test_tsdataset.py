@@ -64,6 +64,15 @@ def get_ugly_ts_df():
     return df
 
 
+def get_int_target_df():
+    sample_num = np.random.randint(100, 200)
+    train_df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
+                             "value": np.array(sample_num),
+                             "id": np.array(['00']*sample_num),
+                             "extra feature": np.random.randn(sample_num)})
+    return train_df
+
+
 class TestTSDataset(ZooTestCase):
     def setup_method(self, method):
         pass
@@ -300,13 +309,24 @@ class TestTSDataset(ZooTestCase):
                                        id_col="id")
         x, y = tsdata.roll(lookback=1, horizon=1, id_sensitive=False).to_numpy()
         assert x.shape == (2, 1, 3) and y.shape == (2, 1, 1)
-        assert np.array_equal(x, np.array([[[1.9, 1, 2]], [[2.3, 0, 9]]]))
-        assert np.array_equal(y, np.array([[[2.4]], [[2.6]]]))
+        assert np.array_equal(x, np.array([[[1.9, 1, 2]], [[2.3, 0, 9]]], dtype=np.float32))
+        assert np.array_equal(y, np.array([[[2.4]], [[2.6]]], dtype=np.float32))
 
         x, y = tsdata.roll(lookback=1, horizon=1, id_sensitive=True).to_numpy()
         assert x.shape == (1, 1, 6) and y.shape == (1, 1, 2)
-        assert np.array_equal(x, np.array([[[1.9, 2.3, 1, 2, 0, 9]]]))
-        assert np.array_equal(y, np.array([[[2.4, 2.6]]]))
+        assert np.array_equal(x, np.array([[[1.9, 2.3, 1, 2, 0, 9]]], dtype=np.float32))
+        assert np.array_equal(y, np.array([[[2.4, 2.6]]], dtype=np.float32))
+
+    def test_tsdata_roll_int_target(self):
+        horizon = random.randint(1, 10)
+        lookback = random.randint(1, 20)
+        df = get_int_target_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value',
+                                       extra_feature_col=['extra feature'], id_col="id")
+        x, y = tsdata.roll(lookback=lookback, horizon=horizon).to_numpy()
+        assert x.dtype == np.float32
+        assert y.dtype == np.float32
+        tsdata._check_basic_invariants()
 
     def test_tsdataset_to_torch_loader_roll(self):
         df_single_id = get_ts_df()
