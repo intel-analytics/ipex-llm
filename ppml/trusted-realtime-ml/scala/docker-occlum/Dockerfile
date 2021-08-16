@@ -1,5 +1,5 @@
 # stage.1 Redis
-FROM occlum/occlum:0.21.0-ubuntu18.04 as redis-tls
+FROM occlum/occlum:0.23.7-ubuntu18.04 as redis-tls
 
 WORKDIR /opt
 
@@ -81,7 +81,7 @@ ENV BIGDL_VERSION			${BIGDL_VERSION}
 ENV JAVA_HOME				/usr/lib/jvm/java-11-openjdk-amd64
 ENV PATH				${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP				127.0.0.1
-ENV SGX_MEM_SIZE			64G
+ENV SGX_MEM_SIZE			32G
 ENV REDIS_PORT				6379
 ENV FLINK_VERSION			${FLINK_VERSION}
 ENV FLINK_HOME				/opt/flink-${FLINK_VERSION}
@@ -126,10 +126,7 @@ RUN apt-get update && \
         occlum && \
     apt-get clean
 
-RUN echo "source /etc/profile" >> $HOME/.bashrc && \
-    sed -i "s|pgrep \"|if [ -S /var/run/aesmd/aesm.socket ]; then\n            return\n        else\n            pgrep \"|g" /opt/occlum/build/bin/occlum && \
-    sed -i "/pgrep \"/a \ \ \ \ \ \ \ \ fi" /opt/occlum/build/bin/occlum
-# Hotfix for occlum mount aesm
+RUN echo "source /etc/profile" >> $HOME/.bashrc 
 
 
 # Cluster Serving config

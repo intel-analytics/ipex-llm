@@ -52,7 +52,7 @@ for worker in ${WORKERS[@]}
         -v $KEYS_PATH:/opt/keys \
         -v $SECURE_PASSWORD_PATH:/opt/password \
         --name=flink-task-manager-$worker \
-        -e SGX_MEM_SIZE=64G \
+        -e SGX_MEM_SIZE=32G \
         -e FLINK_JOB_MANAGER_IP=$MASTER \
         -e FLINK_JOB_MANAGER_REST_PORT=8081 \
         -e FLINK_JOB_MANAGER_RPC_PORT=6123 \
