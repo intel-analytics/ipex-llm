@@ -88,7 +88,7 @@ def _roll_timeseries_dataframe_test(df,
                                     lookback,
                                     feature_col,
                                     target_col):
-    x = df.loc[:, target_col+feature_col].values
+    x = df.loc[:, target_col+feature_col].values.astype(np.float32)
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)
     mask = (mask_x == 1)
@@ -105,8 +105,8 @@ def _roll_timeseries_dataframe_train(df,
                                      feature_col,
                                      target_col):
     max_horizon = horizon if isinstance(horizon, int) else max(horizon)
-    x = df[:-max_horizon].loc[:, target_col+feature_col].values
-    y = df.iloc[lookback:].loc[:, target_col].values
+    x = df[:-max_horizon].loc[:, target_col+feature_col].values.astype(np.float32)
+    y = df.iloc[lookback:].loc[:, target_col].values.astype(np.float32)
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)
     output_y, mask_y = _roll_timeseries_ndarray(y, horizon)

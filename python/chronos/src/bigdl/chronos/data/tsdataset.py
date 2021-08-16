@@ -543,11 +543,11 @@ class TSDataset:
         concat_axis = 2 if id_sensitive else 0
         self.numpy_x = np.concatenate([rolling_result[i][0]
                                        for i in self._id_list],
-                                      axis=concat_axis).astype(np.float64)
+                                      axis=concat_axis).astype(np.float32)
         if horizon != 0:
             self.numpy_y = np.concatenate([rolling_result[i][1]
                                            for i in self._id_list],
-                                          axis=concat_axis).astype(np.float64)
+                                          axis=concat_axis).astype(np.float32)
         else:
             self.numpy_y = None
 
@@ -667,7 +667,7 @@ class TSDataset:
         Export rolling result in form of a tuple of numpy ndarray (x, y).
 
         :return: a 2-dim tuple. each item is a 3d numpy ndarray. The ndarray
-                 is casted to float64.
+                 is casted to float32.
         '''
         if self.numpy_x is None:
             raise RuntimeError("Please call \"roll\" method\
