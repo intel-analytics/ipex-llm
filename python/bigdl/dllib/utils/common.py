@@ -32,7 +32,7 @@ import numpy as np
 import threading
 import tempfile
 import traceback
-from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
+from bigdl.utils.engine import get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -65,8 +65,8 @@ class GatewayWrapper(SingletonMixin):
 
 class JavaCreator(SingletonMixin):
     __creator_class=[
-        "com.intel.analytics.bigdl.python.api.PythonBigDLKeras",
-        "com.intel.analytics.bigdl.python.api.PythonBigDLOnnx"
+        "com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDLKeras",
+        "com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDLOnnx"
     ]
 
     @classmethod
