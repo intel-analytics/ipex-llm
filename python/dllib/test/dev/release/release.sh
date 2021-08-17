@@ -19,9 +19,9 @@
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
-BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../../../; pwd)"
+BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../; pwd)"
 echo $BIGDL_DIR
-BIGDL_PYTHON_DIR="$(cd ${RUN_SCRIPT_DIR}/../../../../pyspark; pwd)"
+BIGDL_PYTHON_DIR="$(cd ${RUN_SCRIPT_DIR}/../python; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 if (( $# < 2)); then
@@ -32,13 +32,7 @@ fi
 platform=$1
 spark_profile=$2
 quick=$3
-input_version=$4
-bigdl_version=$(python -c "exec(open('$BIGDL_DIR/pyspark/bigdl/version.py').read()); print(__version__)")
-
-if [ "$input_version" != "$bigdl_version" ]; then
-   echo "Not the proposed version: $bigdl_version"
-   exit -1
-fi
+bigdl_version=$(python -c "exec(open('$BIGDL_DIR/python/bigdl/version.py').read()); print(__version__)")
 
 cd ${BIGDL_DIR}
 if [ "$platform" ==  "mac" ]; then
@@ -53,7 +47,7 @@ else
     echo "unsupport platform"
 fi
 
-bigdl_build_command="${BIGDL_DIR}/make-dist.sh ${dist_profile}"
+bigdl_build_command="${BIGDL_DIR}/scala/make-dist.sh ${dist_profile}"
 if [ "$quick" == "true" ]; then
     echo "Skip disting BigDL"
 else
@@ -66,18 +60,11 @@ sdist_command="python setup.py sdist"
 echo "packing source code: ${sdist_command}"
 $sdist_command
 
-if [ -d "${BIGDL_DIR}/pyspark/build" ]; then
-   rm -r ${BIGDL_DIR}/pyspark/build
-fi
-
-if [ -d "${BIGDL_DIR}/pyspark/dist" ]; then
-   rm -r ${BIGDL_DIR}/pyspark/dist
-fi
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
 echo "Packing python distribution:   $wheel_command"
 ${wheel_command}
 
-upload_command="twine upload dist/BigDL-${bigdl_version}-py2.py3-none-${verbose_pname}.whl"
-echo "Please manually upload with this command:  $upload_command"
+#upload_command="twine upload dist/BigDL-${bigdl_version}-py2.py3-none-${verbose_pname}.whl"
+#echo "Please manually upload with this command:  $upload_command"
 
-$upload_command
+#$upload_command
