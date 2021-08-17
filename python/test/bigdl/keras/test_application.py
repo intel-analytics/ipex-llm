@@ -20,11 +20,11 @@ from keras.layers import *
 np.random.seed(1337)  # for reproducibility
 import pytest
 from keras.applications import *
-from bigdl.keras.converter import *
+from bigdl.dllib.keras.converter import *
 from keras.applications.music_tagger_crnn import MusicTaggerCRNN
 
 from test.bigdl.test_utils import BigDLTestCase, TestModels
-from bigdl.keras.backend import *
+from bigdl.dllib.keras.backend import *
 
 
 class TestApplication(BigDLTestCase):
