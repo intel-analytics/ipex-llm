@@ -31,7 +31,6 @@ requirements:
     run:
         - python
         - 'intel-openmp >=2021.2.0'
-        - 'jemalloc >=5.2.1'
         - 'PyTurboJPEG'
         - 'opencv-python-headless'
         - 'opencv_transforms'
