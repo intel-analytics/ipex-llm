@@ -16,8 +16,8 @@
 
 import pytest
 import os
-from bigdl.util.common import *
-from bigdl.transform.vision.image import *
+from bigdl.utils.common import *
+from bigdl.dllib.feature.transform.vision.image import *
 import tempfile
 
 
