@@ -17,13 +17,13 @@
 import pytest
 
 from test.bigdl.test_utils import BigDLTestCase
-import bigdl.nn.keras.layer as BLayer
+import bigdl.dllib.keras.layer as BLayer
 import keras.layers as KLayer
 import keras.backend as K
-from bigdl.keras.converter import WeightsConverter
+from bigdl.dllib.keras.converter import WeightsConverter
 from bigdl.dataset.dataset import *
-from bigdl.nn.keras.topology import Model as BModel
-from bigdl.nn.keras.topology import Sequential as BSequential
+from bigdl.dllib.keras.topology import Model as BModel
+from bigdl.dllib.keras.topology import Sequential as BSequential
 from keras.engine import merge as kmerge, Model as KModel
 from keras.models import Sequential as KSequential
 
@@ -124,7 +124,7 @@ class TestKerasAPI(BigDLTestCase):
         self.compare_newapi(klayer, blayer, input_data)
 
     def test_lenet_shape(self):
-        from bigdl.examples.lenet.lenet import build_model
+        from bigdl.dllib.examples.lenet.lenet import build_model
         model = build_model(10)
         input_shape = model.get_input_shape()
         np.testing.assert_allclose((28, 28, 1), input_shape[1:])
