@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 from keras import objectives
 
-from bigdl.keras.optimization import OptimConverter
+from bigdl.dllib.keras.optimization import OptimConverter
 from test.bigdl.test_utils import BigDLTestCase
 np.random.seed(1337)  # for reproducibility
 
