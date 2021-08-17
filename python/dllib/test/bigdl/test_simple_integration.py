@@ -14,22 +14,22 @@
 # limitations under the License.
 #
 
-from bigdl.nn.layer import *
-from bigdl.nn.initialization_method import *
-from bigdl.nn.criterion import *
-from bigdl.optim.optimizer import *
-from bigdl.util.common import *
-from bigdl.util.common import _py2java
-from bigdl.nn.initialization_method import *
-from bigdl.dataset import movielens
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.nn.initialization_method import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.optim.optimizer import *
+from bigdl.utils.common import *
+from bigdl.utils.common import _py2java
+from bigdl.dllib.nn.initialization_method import *
+from bigdl.dllib.feature.dataset import movielens
 import numpy as np
 import tempfile
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
-from bigdl.util.engine import compare_version
-from bigdl.transform.vision.image import *
-from bigdl.models.utils.model_broadcast import broadcast_model
-from bigdl.dataset.dataset import *
+from bigdl.utils.engine import compare_version
+from bigdl.dllib.feature.transform.vision.image import *
+from bigdl.dllib.models.utils.model_broadcast import broadcast_model
+from bigdl.dllib.feature.dataset.dataset import *
 np.random.seed(1337)  # for reproducibility
 
 
@@ -77,9 +77,9 @@ class TestSimple():
                         rtol=1.e-1)
 
     def test_load_keras_model_of(self):
-        from bigdl.nn.keras.topology import Model as KModel
-        from bigdl.nn.keras.layer import Input as KInput
-        from bigdl.nn.keras.layer import Dense
+        from bigdl.dllib.keras.topology import Model as KModel
+        from bigdl.dllib.keras.layer import Input as KInput
+        from bigdl.dllib.keras.layer import Dense
 
         input = KInput(shape=[2, 3])
         fc1 = Dense(2)(input)
@@ -87,12 +87,12 @@ class TestSimple():
         tmp_path = tempfile.mktemp()
         model.save(tmp_path, True)
         model_loaded = KModel.load(tmp_path)
-        assert "bigdl.nn.keras.topology.Model" in str(type(model_loaded))
+        assert "bigdl.dllib.keras.topology.Model" in str(type(model_loaded))
         assert len(model_loaded.layers) == 2
 
     def test_load_keras_seq_of(self):
-        from bigdl.nn.keras.topology import Sequential as KSequential
-        from bigdl.nn.keras.layer import Dense
+        from bigdl.dllib.keras.topology import Sequential as KSequential
+        from bigdl.dllib.keras.layer import Dense
 
         model = KSequential()
         fc1 = Dense(2, input_shape=[2, 3])
@@ -100,7 +100,7 @@ class TestSimple():
         tmp_path = tempfile.mktemp()
         model.save(tmp_path, True)
         model_loaded = KSequential.load(tmp_path)
-        assert "bigdl.nn.keras.topology.Sequential" in str(type(model_loaded))
+        assert "bigdl.dllib.keras.topology.Sequential" in str(type(model_loaded))
         assert len(model_loaded.layers) == 1
 
     def test_load_model_of(self):
@@ -244,7 +244,7 @@ class TestSimple():
                        np.array([1.0]))
 
     def test_load_zip_conf(self):
-        from bigdl.util.common import get_bigdl_conf
+        from bigdl.utils.common import get_bigdl_conf
         import sys
         sys_path_back = sys.path
         sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
@@ -420,7 +420,7 @@ class TestSimple():
         optimizer.optimize()
 
     def test_forward_backward(self):
-        from bigdl.nn.layer import Linear
+        from bigdl.dllib.nn.layer import Linear
         rng = RNG()
         rng.set_seed(100)
 
@@ -442,7 +442,7 @@ class TestSimple():
         l_grad_output = linear.backward(input, grad_output)
 
     def test_forward_multiple(self):
-        from bigdl.nn.layer import Linear
+        from bigdl.dllib.nn.layer import Linear
         rng = RNG()
         rng.set_seed(100)
 

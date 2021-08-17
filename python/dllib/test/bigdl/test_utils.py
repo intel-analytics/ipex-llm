@@ -21,13 +21,13 @@ from keras.layers.core import *
 from keras.layers.convolutional import *
 from keras.layers import Dense, Dropout, Input
 from keras.optimizers import RMSprop
-from bigdl.util.common import *
-from bigdl.keras.converter import *
-from bigdl.keras.converter import WeightLoader, WeightsConverter
+from bigdl.utils.common import *
+from bigdl.dllib.keras.converter import *
+from bigdl.dllib.keras.converter import WeightLoader, WeightsConverter
 import numpy as np
 from unittest import TestCase
 import keras
-from bigdl.examples.keras.keras_utils import *
+from bigdl.dllib.examples.keras.keras_utils import *
 
 
 class TestModels:
@@ -323,13 +323,13 @@ class BigDLTestCase(TestCase):
     def compare_newapi(self, klayer, blayer, input_data, weight_converter=None,
                        is_training=False, rtol=1e-6, atol=1e-6):
         from keras.models import Sequential as KSequential
-        from bigdl.nn.keras.topology import Sequential as BSequential
+        from bigdl.dllib.keras.topology import Sequential as BSequential
         bmodel = BSequential()
         bmodel.add(blayer)
         kmodel = KSequential()
         kmodel.add(klayer)
         koutput = kmodel.predict(input_data)
-        from bigdl.nn.keras.layer import BatchNormalization
+        from bigdl.dllib.keras.layer import BatchNormalization
         if isinstance(blayer, BatchNormalization):
             k_running_mean = K.eval(klayer.running_mean)
             k_running_std = K.eval(klayer.running_std)
