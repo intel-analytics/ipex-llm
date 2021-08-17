@@ -1,3 +1,3 @@
 #!/bin/bash
 
-bigdl-nano-run -o -j
+bigdl-nano-init -o -j

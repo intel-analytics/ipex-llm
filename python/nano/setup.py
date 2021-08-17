@@ -20,10 +20,16 @@
 import os
 import fnmatch
 from setuptools import setup
+import urllib.request
+import os
+import stat
+import sys
+import re
+from html.parser import HTMLParser
+
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
 nano_home = os.path.abspath(__file__ + "/../src/")
-print(nano_home)
 
 
 def get_nano_packages():
@@ -38,40 +44,67 @@ def get_nano_packages():
             nano_packages.append(package)
             print("including", package)
     return nano_packages
-    
 
-def load_requirements(file_name="requirements.txt", comment_char='#'):
-    """
-    Load requirements from a file,
-    return install_requires_list
-    """
-    with open(file_name, 'r') as file:
-        lines = [ln.strip() for ln in file.readlines()]
-    _install_requires_list = []
-    _dependency_links_tmp = ""
-    for ln in lines:
-        # Filter out urls
-        if comment_char in ln:
-            text_start = 0
-            for s_char in ln:
-                if s_char is comment_char:
-                    text_start += 1
-            ln = ln[text_start:].strip()
-            if ln.startswith('http'):
-                _dependency_links_tmp = ln
-            else:
-                _dependency_links_tmp = ""
-        elif ln:
-            ln = ln + " @ " + _dependency_links_tmp if _dependency_links_tmp else ln
-            _dependency_links_tmp = ""
-            _install_requires_list.append(ln)
-        else:
-            _dependency_links_tmp = ""
-    return _install_requires_list
+
+def download_libs():
+    url = "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so"
+    libs_dir = os.path.join(nano_home, "bigdl", "nano", "libs")
+    if not os.path.exists(libs_dir):
+        os.mkdir(libs_dir)
+    jemalloc_file = os.path.join(libs_dir, "libjemalloc.so")
+    if not os.path.exists(jemalloc_file):
+        urllib.request.urlretrieve(url, jemalloc_file)
+    st = os.stat(jemalloc_file)
+    os.chmod(jemalloc_file, st.st_mode | stat.S_IEXEC)
+
+
+class URLHtmlParser(HTMLParser):
+
+    def __init__(self):
+        super().__init__()
+        self.links = {}
+        self.unmatched_link = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag != 'a':
+            return
+
+        for attr in attrs:
+            if 'href' in attr[0]:
+                self.unmatched_link = attr[1]
+                break
+
+    def handle_data(self, data):
+        if self.unmatched_link is not None:
+            self.links[data] = self.unmatched_link
+            self.unmatched_link = None
+
+
+def parse_find_index_page(url):
+    with urllib.request.urlopen(url, timeout=30) as f:
+        content = f.read()
+    content = content.decode('utf8')
+    parser = URLHtmlParser()
+    parser.feed(content)
+    return parser.links
 
 
 def setup_package():
-    install_requires_list = load_requirements()
+
+    py_version = sys.version_info
+    ipex_version = "1.8.0"
+    ipex_links = parse_find_index_page("https://software.intel.com/ipex-whl-stable")
+    ipex_whl_name = f"torch_ipex-{ipex_version}-cp{py_version.major}{py_version.minor}" \
+                    f"-cp{py_version.major}{py_version.minor}m-linux_x86_64.whl"
+    ipex_link = ipex_links[ipex_whl_name]
+    install_requires_list = ["pytorch_lightning",
+                             "opencv-python-headless",
+                             "PyTurboJPEG",
+                             "opencv-transforms",
+                             "intel-openmp",
+                             f"torch_ipex @ {ipex_link}"]
+
+    download_libs()
 
     metadata = dict(
         name='bigdl-nano',
@@ -82,8 +115,9 @@ def setup_package():
         url='https://github.com/intel-analytics/analytics-zoo/tree/bigdl-2.0',
         install_requires=install_requires_list,
         packages=get_nano_packages(),
-        package_dir = {'': 'src'},
-        scripts=['script/bigdl-nano-run']
+        package_data={"bigdl.nano": ["libs/libjemalloc.so"]},
+        package_dir={'': 'src'},
+        scripts=['script/bigdl-nano-init']
     )
 
     setup(**metadata)
