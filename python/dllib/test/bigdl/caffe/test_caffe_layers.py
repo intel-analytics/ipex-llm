@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.nn.layer import *
-from bigdl.optim.optimizer import *
-from bigdl.util.common import *
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.optim.optimizer import *
+from bigdl.utils.common import *
 import numpy as np
 import pytest
 import tempfile
@@ -56,8 +56,8 @@ class TestCaffeLayers():
             if len(inputs) == 1:
                 inputs = inputs[0]
             bigdlResult = model.forward(inputs)
-            print cafferesult
-            print bigdlResult
+            print(cafferesult)
+            print(bigdlResult)
             assert_allclose(cafferesult, bigdlResult, atol=1e-4, rtol=0)
 
 if __name__ == "__main__":

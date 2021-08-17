@@ -745,7 +745,7 @@ class Model(Container):
                 bigdl_type, "createModelPreprocessor", inputs, outputs)
             self.bigdl_type = bigdl_type
         else:
-            from bigdl.util.tf_utils import convert
+            from bigdl.utils.tf_utils import convert
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
             super(Model, self).__init__(model.value, bigdl_type)
 
@@ -863,7 +863,7 @@ class Model(Container):
 
     @staticmethod
     def train(output, data, label, opt_method, criterion, batch_size, end_when, session=None, bigdl_type="float"):
-        from bigdl.util.tf_utils import get_path
+        from bigdl.utils.tf_utils import get_path
         from bigdl.utils.common import Sample
         output_name = output.name.split(":")[0]
         path = get_path(output_name, session)
