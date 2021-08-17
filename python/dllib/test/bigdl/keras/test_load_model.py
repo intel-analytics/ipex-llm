@@ -19,13 +19,13 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-import bigdl.nn.layer as BLayer
-from bigdl.keras.converter import WeightLoader
-from bigdl.keras.converter import DefinitionLoader
+import bigdl.dllib.nn.layer as BLayer
+from bigdl.dllib.keras.converter import WeightLoader
+from bigdl.dllib.keras.converter import DefinitionLoader
 
 np.random.seed(1337)  # for reproducibility
 from test.bigdl.test_utils import BigDLTestCase, TestModels
-from bigdl.examples.keras.keras_utils import *
+from bigdl.dllib.examples.keras.keras_utils import *
 import keras.backend as K
 
 

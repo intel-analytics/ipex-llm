@@ -20,8 +20,8 @@ from keras.layers import *
 np.random.seed(1337)  # for reproducibility
 import pytest
 from keras.applications import *
-from bigdl.keras.converter import *
-from bigdl.keras.backend import *
+from bigdl.dllib.keras.converter import *
+from bigdl.dllib.keras.backend import *
 from test.bigdl.test_utils import BigDLTestCase, TestModels
 
 
@@ -73,8 +73,8 @@ class TestBackend(BigDLTestCase):
     def test_lenet_distributed_rdd(self):
         kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
         sc = get_spark_context()
-        from bigdl.util.common import Sample
-        from bigdl.util.common import to_sample_rdd
+        from bigdl.utils.common import Sample
+        from bigdl.utils.common import to_sample_rdd
         training_rdd = to_sample_rdd(X_train, y_train)
 
         self.modelTest(X_train, kmodel, dump_weights=True)
