@@ -53,7 +53,7 @@ For example, we plan to build a package based on python3.7
     conda create -n test37 python=3.7
     conda activate test37
 
-    conda install bigdl-nano -c conda-forge -c pytorch -c chriskafka
+    conda install bigdl-nano -c pytorch -c chriskafka -c conda-forge
     ```
     Note that default channel may conflict with pytorch channel when it comes to torch, so we specify channels here.
     ```bash
