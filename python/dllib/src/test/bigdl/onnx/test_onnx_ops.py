@@ -18,12 +18,12 @@ import onnx
 import pytest
 import numpy as np
 
-from bigdl.contrib.onnx.onnx_loader import load_model_proto
-from bigdl.nn.layer import CAddTable, JoinTable, ReLU
-from bigdl.nn.layer import SoftMax, SpatialAveragePooling, SpatialBatchNormalization
-from bigdl.nn.layer import SpatialConvolution, SpatialMaxPooling
-from bigdl.nn.layer import Unsqueeze
-from bigdl.nn.onnx.layer import Gemm, Reshape, Shape
+from bigdl.dllib.contrib.onnx.onnx_loader import load_model_proto
+from bigdl.dllib.nn.layer import CAddTable, JoinTable, ReLU
+from bigdl.dllib.nn.layer import SoftMax, SpatialAveragePooling, SpatialBatchNormalization
+from bigdl.dllib.nn.layer import SpatialConvolution, SpatialMaxPooling
+from bigdl.dllib.nn.layer import Unsqueeze
+from bigdl.dllib.nn.onnx.layer import Gemm, Reshape, Shape
 
 
 class TestAveragePool(object):
