@@ -14,19 +14,19 @@
 # limitations under the License.
 #
 
-from bigdl.nn.layer import *
-from bigdl.nn.initialization_method import *
-from bigdl.nn.criterion import *
-from bigdl.optim.optimizer import *
-from bigdl.util.common import *
-from bigdl.util.common import _py2java
-from bigdl.nn.initialization_method import *
-from bigdl.dataset import movielens
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.nn.initialization_method import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.optim.optimizer import *
+from bigdl.utils.common import *
+from bigdl.utils.common import _py2java
+from bigdl.dllib.nn.initialization_method import *
+from bigdl.dllib.feature.dataset import movielens
 import numpy as np
 import tempfile
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
-from bigdl.util.engine import compare_version
+from bigdl.utils.engine import compare_version
 np.random.seed(1337)  # for reproducibility
 
 
@@ -35,7 +35,7 @@ class TestPickler():
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        JavaCreator.add_creator_class("com.intel.analytics.bigdl.python.api.PythonBigDLValidator")
+        JavaCreator.add_creator_class("com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDLValidator")
         sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
         self.sc = get_spark_context(sparkConf)
         init_engine()
