@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.dllib.optim.{Optimizer, _}
 import com.intel.analytics.bigdl.dllib.tensor.{DenseType, SparseType, Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{Table, _}
-import com.intel.analytics.bigdl.dllib.utils.visualization.{Summary, TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.dllib.visualization.{Summary, TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.utils._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
