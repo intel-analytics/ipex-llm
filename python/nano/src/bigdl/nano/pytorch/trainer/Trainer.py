@@ -18,8 +18,6 @@
 from logging import warning
 import torch
 import pytorch_lightning as pl
-import intel_pytorch_extension as ipex
-from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.common import check_avx512
 from pytorch_lightning.plugins.environments import LightningEnvironment
@@ -66,12 +64,16 @@ class Trainer(pl.Trainer):
         # Initialize trainer
         if use_ipex and not check_avx512():
             warning("Enable ipex in a cpu instruction set"
-                   " without avx512 may cause some random error."
-                   "Fall back to cpu device.")
+                    " without avx512 may cause some random error."
+                    "Fall back to cpu device.")
             use_ipex = False
 
         if num_processes == 1:
-            accelerator = IPEXAccelerator(enable_bf16=enable_bf16) if use_ipex else None
+            if use_ipex:
+                from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
+                accelerator = IPEXAccelerator(enable_bf16=enable_bf16)
+            else:
+                accelerator = None
             super().__init__(accelerator=accelerator, *args, **kwargs)
         else:
             plugin = None
@@ -79,7 +81,11 @@ class Trainer(pl.Trainer):
                 f"Distributed backends supported now are spawn and ray," \
                 " but get {distributed_backend}."
             if distributed_backend == "spawn":
-                device = ipex.DEVICE if use_ipex else "cpu"
+                if use_ipex:
+                    import intel_pytorch_extension as ipex
+                    device = ipex.DEVICE
+                else:
+                    device = "cpu"
                 plugin = DDPSpawnPlugin(parallel_devices=[
                     torch.device(device) for _ in range(num_processes)],
                     cpu_for_each_process=cpu_for_each_process,
@@ -91,7 +97,11 @@ class Trainer(pl.Trainer):
                 from bigdl.nano.pytorch.plugins.ray_distributed import RayPlugin
                 plugin = RayPlugin(num_workers=num_processes, use_ipex=use_ipex)  # type: ignore
 
-            accelerator = IPEXAccelerator(training_type_plugin=plugin,  # type: ignore
-                                          enable_bf16=enable_bf16) if use_ipex else None
+            if use_ipex:
+                from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
+                accelerator = IPEXAccelerator(training_type_plugin=plugin,  # type: ignore
+                                              enable_bf16=enable_bf16)
+            else:
+                accelerator = None
 
             super().__init__(accelerator=accelerator, plugins=[plugin], *args, **kwargs)
