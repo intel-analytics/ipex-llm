@@ -1,0 +1,192 @@
+#!/bin/bash
+
+## Usage ################################
+# ./bigdl-nano-init <command to run under openmp and jemalloc environment variables>
+# Example:
+# bigdl-nano-init python pytorch-lenet.py --device ipex
+#########################################
+
+
+# Get options
+function disable-openmp-var {
+	echo "Option: Disable opemMP and unset related variables"
+	export DISABLE_OPENMP_VAR=1
+}
+
+function disable-jemalloc-var {
+	echo "Option: Disable jemalloc and unset related variables"
+	export DISABLE_JEMALLOC_VAR=1
+}
+
+function enable-tensorflow-var {
+	echo "Option: Enable tensorflow optimaztion"
+	export ENABLE_TF_OPTS=1
+}
+
+function display-error {
+	echo "Invalid Option: -$1" 1>&2
+        echo "Try to run 'bigdl-nano-run -h' for detailed usage." 1>&2
+        exit 1
+}
+
+function display-help {
+	echo "Usage: bigdl-nano-run [-o] [-j] <subcommand>"
+        echo ""
+        echo "bigdl-nano-run is a tool to automatically configure and run the subcommand under"
+        echo "environment variables for accelerating pytorch."
+        echo ""
+        echo "Optional options:"
+        echo "    -h, --help                Display this help message and exit."
+        echo "    -o, --disable-openmp      Disable openMP and unset related variables"
+        echo "    -j, --disable-jemalloc    Disable jemalloc and unset related variables"
+		echo "    -t, --enable-tensorflow   Enable tensorflow optimaztion"
+}
+
+while getopts ":ojht-:" opt; do
+	case ${opt} in
+		- )
+			case "${OPTARG}" in
+				disable-openmp)
+					disable-openmp-var
+					;;
+				disable-jemalloc)
+					disable-jemalloc-var
+					;;
+				enable-tensorflow)
+					enable-tensorflow-var
+					;;
+				help)
+					display-help
+					exit 0
+					;;
+				*)
+					display-error "-$OPTARG"
+					;;
+			esac
+			;;
+
+		o )
+			disable-openmp-var
+			;;
+		j )
+			disable-jemalloc-var
+			;;
+		t )
+			enable-tensorflow-var
+			;;
+		h )
+			display-help
+			exit 0
+			;;	
+		\? )
+			display-error $OPTARG
+			;;
+	esac
+done
+
+shift $((OPTIND -1))
+
+# Init
+OPENMP=0
+JEMALLOC=0
+
+# Find conda dir
+BASE_DIR="$(dirname "$0")/../"
+echo "conda dir found: $BASE_DIR"
+LIB_DIR=$BASE_DIR/lib
+
+PYTHON_VERSION=$($BASE_DIR/bin/python -c "import platform; major, mnior, patch = platform.python_version_tuple();print(major+'.'+mnior)")
+
+NANO_DIR="${LIB_DIR}/python${PYTHON_VERSION}/site-packages/bigdl/nano/"
+
+
+# Detect Intel openMP library
+if [ -f "${LIB_DIR}/libiomp5.so" ]; then
+	echo "OpenMP library found..."
+	OPENMP=1
+
+	# detect number of physical cores
+	cores_per_socket=$(lscpu | grep "Core(s) per socket" | sed "s/.*://g" | sed -r "s/\s+//g")
+	threads_per_core=$(lscpu | grep "Thread(s) per core" | sed "s/.*://g" | sed -r "s/\s+//g")
+	sockets_=$(lscpu | grep "Socket(s)" | sed "s/.*://g" | sed -r "s/\s+//g")
+	
+	# set env variables
+	echo "Setting OMP_NUM_THREADS..."
+
+	if [ -z "${ENABLE_TF_OPTS:-}" ]; then
+		echo "Setting OMP_NUM_THREADS specified for pytorch..."
+		export OMP_NUM_THREADS=$((cores_per_socket*sockets_))
+	else
+		export OMP_NUM_THREADS=${cores_per_socket}
+	fi
+
+	echo "Setting KMP_AFFINITY..."
+	if [[ $threads_per_core -gt 1 ]]; then
+		export KMP_AFFINITY=granularity=fine,compact,1,0
+	else
+		export KMP_AFFINITY=granularity=fine,compact
+	fi
+
+
+	echo "Setting KMP_BLOCKTIME..."
+	export KMP_BLOCKTIME=1
+
+else
+	echo "No openMP library found in ${LIB_DIR}."
+fi
+
+# Detect jemalloc library
+JEMALLOC=1
+
+# set env variables
+echo "Setting MALLOC_CONF..."
+export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1"
+
+# Set LD_PRELOAD
+if [ -z "${LD_PRELOAD:-}" ]; then
+	echo "Setting LD_PRELOAD..."
+	if [[ $OPENMP -eq 1 && -z "${DISABLE_OPENMP_VAR:-}" ]]; then
+		export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
+	fi
+	if [[ $JEMALLOC -eq 1 && -z "${DISABLE_JEMALLOC_VAR:-}" ]]; then
+		if [ -z "${LD_PRELOAD:-}" ]; then
+			export LD_PRELOAD="${LIB_DIR}/libjemalloc.so"
+		else
+			export LD_PRELOAD="${LD_PRELOAD} ${NANO_DIR}/libs/libjemalloc.so"
+		fi
+	fi
+fi
+
+# Set TF_ENABLE_ONEDNN_OPTS
+export TF_ENABLE_ONEDNN_OPTS=1
+
+# Disable openmp or jemalloc according to options
+if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
+	unset OMP_NUM_THREADS
+	unset KMP_AFFINITY
+	unset KMP_BLOCKTIME
+	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libiomp5\.so//g" | sed "s/.*libiomp5\.so\s*//g"`
+fi
+if [ ! -z "${DISABLE_JEMALLOC_VAR:-}" ]; then
+	unset MALLOC_CONF
+	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libjemalloc\.so//g" | sed "s/.*libjemalloc\.so\s*//g"`
+fi
+if [ -z "${LD_PRELOAD:-}" ]; then
+	unset LD_PRELOAD
+fi
+if [ -z "${ENABLE_TF_OPTS:-}" ]; then
+	unset TF_ENABLE_ONEDNN_OPTS
+fi
+
+
+
+echo "+++++ Env Variables +++++"
+echo "LD_PRELOAD=${LD_PRELOAD}"
+echo "MALLOC_CONF=${MALLOC_CONF}"
+echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
+echo "KMP_AFFINITY=${KMP_AFFINITY}"
+echo "KMP_BLOCKTIME=${KMP_BLOCKTIME}"
+echo "TF_ENABLE_ONEDNN_OPTS=${TF_ENABLE_ONEDNN_OPTS}"
+echo "+++++++++++++++++++++++++"
+# Run the commands after bigdl-nano-init
+echo "Complete."
