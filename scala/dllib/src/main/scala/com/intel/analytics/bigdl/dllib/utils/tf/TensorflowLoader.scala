@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.Graph
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.tf.AssignGrad
-import com.intel.analytics.bigdl.dllib.python.api.{JTensor, PythonBigDL, PythonBigDLUtils}
+import com.intel.analytics.bigdl.dllib.utils.python.api.{JTensor, PythonBigDL, PythonBigDLUtils}
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.nn.tf.{SwitchControlNode, SwitchOps}
