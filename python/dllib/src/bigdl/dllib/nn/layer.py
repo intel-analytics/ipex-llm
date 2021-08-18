@@ -100,9 +100,9 @@ class SharedStaticUtils():
 
         if "com.intel.analytics.bigdl.dllib.keras.Model" == jname or \
                         "com.intel.analytics.bigdl.dllib.keras.Sequential" == jname:
-            base_module = importlib.import_module('bigdl.dllib.keras.topology')
+            base_module = importlib.import_module('bigdl.dllib.keras.layers.topology')
         elif "com.intel.analytics.bigdl.dllib.keras" == jpackage_name:
-            base_module = importlib.import_module('bigdl.dllib.keras.layer')
+            base_module = importlib.import_module('bigdl.dllib.keras.layers.layer')
         else:
             base_module = importlib.import_module('bigdl.dllib.nn.layer')
 
