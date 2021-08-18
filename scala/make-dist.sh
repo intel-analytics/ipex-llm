@@ -56,15 +56,18 @@ fi
 mvn clean package -DskipTests $*
 
 BASEDIR=$(dirname "$0")
-DIST_DIR=$BASEDIR/../dist/lib
+DIST_DIR=$BASEDIR/../dist/
 
 if [ ! -d "$DIST_DIR" ]
 then
-  mkdir -p $DIST_DIR
+  mkdir -p $DIST_DIR/lib
+  mkdir -p $DIST_DIR/conf
 else
   rm -r $DIST_DIR
-  mkdir -p $DIST_DIR
+  mkdir -p $DIST_DIR/lib
+  mkdir -p $DIST_DIR/conf
 fi
 
-cp -r $BASEDIR/dllib/target/bigdl-dllib-2.0.0-SNAPSHOT-jar-with-dependencies.jar $DIST_DIR
-cp -r $BASEDIR/dllib/target/bigdl-dllib-2.0.0-SNAPSHOT-python-api.zip $DIST_DIR
+cp -r $BASEDIR/dllib/target/bigdl-dllib-2.0.0-SNAPSHOT-jar-with-dependencies.jar $DIST_DIR/lib
+cp -r $BASEDIR/dllib/target/bigdl-dllib-2.0.0-SNAPSHOT-python-api.zip $DIST_DIR/lib
+cp -r $BASEDIR/dllib/src/main/resources/spark-bigdl.conf $DIST_DIR/conf
