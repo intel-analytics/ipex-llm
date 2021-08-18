@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.utils.visualization.tensorboard
+package com.intel.analytics.bigdl.dllib.visualization.tensorboard
 
 import java.io.{BufferedInputStream}
 import java.nio.ByteBuffer
