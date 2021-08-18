@@ -24,7 +24,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.dllib.python.api._
+import com.intel.analytics.bigdl.dllib.utils.python.api._
 import com.intel.analytics.bigdl.dllib.utils.Table
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
@@ -99,7 +99,7 @@ private[spark] abstract class BigDLSerDeBase {
  */
 object BigDLSerDe extends BigDLSerDeBase with Serializable {
 
-  val PYSPARK_PACKAGE = "bigdl.util.common"
+  val PYSPARK_PACKAGE = "bigdl.utils.common"
   val LATIN1 = "ISO-8859-1"
 
   /**
@@ -108,7 +108,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
   private[python] abstract class BigDLBasePickler[T: ClassTag]
     extends IObjectPickler with IObjectConstructor {
 
-    val PYSPARK_PACKAGE = "bigdl.util.common"
+    val PYSPARK_PACKAGE = "bigdl.utils.common"
     val LATIN1 = "ISO-8859-1"
 
     private val cls = implicitly[ClassTag[T]].runtimeClass
