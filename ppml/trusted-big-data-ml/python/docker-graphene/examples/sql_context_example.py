@@ -11,7 +11,6 @@ def sql_context_api(spark):
     print("Start running SQL context API")
     
     # createDataFrame
-    
     l = [('Alice', 1)]
     sqlContext.createDataFrame(l).collect()
     res = sqlContext.createDataFrame(l, ['name', 'age']).collect()
@@ -56,17 +55,14 @@ def sql_context_api(spark):
     res = sqlContext.range(3).collect()
     print(res)
     print("range API finished")
-    
+
     # read
     res = sqlContext.read
-    # text_sdf = sqlContext.readStream.text(tempfile.mkdtemp())
-    # res = text_sdf.isStreaming
-    # print(res)
+    text_sdf = sqlContext.readStream.text("/ppml/trusted-big-data-ml/work/examples/helloworld.py")
+    res = text_sdf.isStreaming
+    print(res)
     print("read and readStream API finished")
 
-    # register
-
-    
     # sql
     df = spark.createDataFrame([('Alice', 5, 80), ('Alice', 5, 80), ('Alice', 10, 80)], ["name", "age", "height"])
     sqlContext.registerDataFrameAsTable(df, "table1")
@@ -99,10 +95,16 @@ def sql_context_api(spark):
     print(res)
     print("tables API finished")
 
+    # register
+    # strlen = sqlContext.registerFunction("stringLengthString", lambda x: len(x))
+    # res = spark.sql("SELECT stringLengthString('test')").collect()
+    # print(res)
+    spark.udf.registerJavaFunction("javaStringLength3", "org.apache.spark.sql.JavaStringLength", "integer")
+    res = spark.sql("SELECT javaStringLength3('test')").collect()
+    print(res)
+    print("register API finished")
+
     print("Finish running SQL context API")
-
-
-
 
 
 

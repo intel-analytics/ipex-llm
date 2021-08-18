@@ -73,7 +73,7 @@ def sql_dataframe_example(spark):
     df3 = spark.sql("select * from threecols")
     print(sorted(df3.collect()) == sorted(df2.collect()))
     print("TempView API finished")
-    
+
     # cross
     df = spark.createDataFrame([("a", 1.1, 1.0), ("b", 2.2, 2.0), ("c", 3.3, 3.0)], ["Col1", "Col2", "Col3"])
     df2 = spark.createDataFrame([(2, "Alice"), (5, "Bob")], ["age", "name"])
@@ -95,7 +95,6 @@ def sql_dataframe_example(spark):
     res = df.distinct().count()
     print(res)
     print("distinct API finshed")
-    
 
     # drop
     df3 = spark.createDataFrame([('Alice', 5, 80), ('Alice', 5, 80), ('Alice', 10, 80)], ["name", "age", "height"])
@@ -128,7 +127,7 @@ def sql_dataframe_example(spark):
         for row in table:
             print(row.C1)
     df1.foreachPartition(F)
-    print("foreachPartition API finshed")
+    print("foreachPartition API finshed") 
 
     # freqItems and groupBy
     df1 = spark.createDataFrame(
