@@ -15,8 +15,8 @@
 #
 
 from optparse import OptionParser
-from bigdl.dllib.keras.topology import Sequential
-from bigdl.dllib.keras.layer import *
+from bigdl.dllib.keras.layers.topology import Sequential
+from bigdl.dllib.keras.layers.layer import *
 from bigdl.dllib.feature.dataset import mnist
 
 
