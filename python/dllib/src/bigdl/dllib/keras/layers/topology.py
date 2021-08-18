@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.dllib.keras.layer import KerasLayer
+from bigdl.dllib.keras.layers.layer import KerasLayer
 from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.nn.criterion import *
 import multiprocessing

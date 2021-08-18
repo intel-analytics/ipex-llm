@@ -77,9 +77,9 @@ class TestSimple():
                         rtol=1.e-1)
 
     def test_load_keras_model_of(self):
-        from bigdl.dllib.keras.topology import Model as KModel
-        from bigdl.dllib.keras.layer import Input as KInput
-        from bigdl.dllib.keras.layer import Dense
+        from bigdl.dllib.keras.layers.topology import Model as KModel
+        from bigdl.dllib.keras.layers.layer import Input as KInput
+        from bigdl.dllib.keras.layers.layer import Dense
 
         input = KInput(shape=[2, 3])
         fc1 = Dense(2)(input)
@@ -87,12 +87,12 @@ class TestSimple():
         tmp_path = tempfile.mktemp()
         model.save(tmp_path, True)
         model_loaded = KModel.load(tmp_path)
-        assert "bigdl.dllib.keras.topology.Model" in str(type(model_loaded))
+        assert "bigdl.dllib.keras.layers.topology.Model" in str(type(model_loaded))
         assert len(model_loaded.layers) == 2
 
     def test_load_keras_seq_of(self):
-        from bigdl.dllib.keras.topology import Sequential as KSequential
-        from bigdl.dllib.keras.layer import Dense
+        from bigdl.dllib.keras.layers.topology import Sequential as KSequential
+        from bigdl.dllib.keras.layers.layer import Dense
 
         model = KSequential()
         fc1 = Dense(2, input_shape=[2, 3])
@@ -100,7 +100,7 @@ class TestSimple():
         tmp_path = tempfile.mktemp()
         model.save(tmp_path, True)
         model_loaded = KSequential.load(tmp_path)
-        assert "bigdl.dllib.keras.topology.Sequential" in str(type(model_loaded))
+        assert "bigdl.dllib.keras.layers.topology.Sequential" in str(type(model_loaded))
         assert len(model_loaded.layers) == 1
 
     def test_load_model_of(self):
