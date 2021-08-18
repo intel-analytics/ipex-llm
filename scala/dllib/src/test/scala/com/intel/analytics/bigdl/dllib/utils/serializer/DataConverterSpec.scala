@@ -25,14 +25,12 @@ import com.intel.analytics.bigdl.dllib.optim.{L1L2Regularizer, L1Regularizer, L2
 import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
 import org.scalatest.{FlatSpec, Matchers}
-//import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.{AttrValue, BigDLTensor, DataType, TensorStorage}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLTensor, DataType, TensorStorage}
 
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.SingleShape
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
-//import com.intel.analytics.bigdl.dllib.utils.serialization.Bigdl.AttrValue.ArrayValue
 import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 
 import scala.collection.mutable
