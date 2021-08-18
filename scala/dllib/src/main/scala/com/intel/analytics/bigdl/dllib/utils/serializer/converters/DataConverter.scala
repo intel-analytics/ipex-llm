@@ -172,7 +172,8 @@ object DataConverter extends DataConverter{
       } else if (valueType <:< universe.typeOf[Tensor[_]]) {
         TensorConverter.setAttributeValue(context, attributeBuilder, value)
       } else if (valueType.toString == ModuleSerializer.tType.toString) {
-        if (ev == com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericDouble) {
+        if (ev ==
+          com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericDouble) {
           attributeBuilder.setDataType(DataType.DOUBLE)
           attributeBuilder.setDoubleValue(value.asInstanceOf[Double])
         } else {

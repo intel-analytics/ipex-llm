@@ -31,8 +31,8 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.Nu
 import com.intel.analytics.bigdl.dllib.utils.caffe.{CaffeLoader, CaffePersister}
 import com.intel.analytics.bigdl.dllib.utils.tf._
 import com.intel.analytics.bigdl.dllib.utils.{File}
-import com.intel.analytics.bigdl.dllib.utils.visualization.Summary
-import com.intel.analytics.bigdl.dllib.utils.visualization.tensorboard.{FileReader, FileWriter}
+import com.intel.analytics.bigdl.dllib.visualization.Summary
+import com.intel.analytics.bigdl.dllib.visualization.tensorboard.{FileReader, FileWriter}
 import com.intel.analytics.bigdl.utils._
 import org.apache.commons.compress.utils.IOUtils
 import org.apache.hadoop.conf.Configuration

@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
-//import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.ExecutionException
