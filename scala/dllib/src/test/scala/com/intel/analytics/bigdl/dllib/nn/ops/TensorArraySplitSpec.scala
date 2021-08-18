@@ -30,10 +30,12 @@ class TensorArraySplitSerialTest extends ModuleSerializationTest {
       val lengths = Const[Float, Int](Tensor[Int](T(1, 2))).inputs()
       val splitter = new TensorArraySplit[Float, Float]().inputs((tensorArray, 1), (data, 1),
         (lengths, 1))
-      val ctr = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().inputs(splitter)
+      val ctr = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().
+        inputs(splitter)
       val concat = new TensorArrayConcat[Float, Float]().inputs(tensorArray, ctr)
       val size = new TensorArraySize[Float]().inputs(tensorArray, ctr)
-      val ctr2 = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().inputs(concat, size)
+      val ctr2 = new com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency[Float]().
+        inputs(concat, size)
       val close = new TensorArrayClose[Float]().inputs((tensorArray, 1), (ctr2, 1))
       val model = Graph.dynamic[Float](Array(tensorArray), Array(concat, close, size))
 

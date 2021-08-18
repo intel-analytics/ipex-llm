@@ -27,7 +27,8 @@ class ControlOpsSerialTest extends ModuleSerializationTest {
 
     val conditionInput = Input[Float]("conditionInput")
     val const = new com.intel.analytics.bigdl.dllib.nn.tf.Const[Float, Float](Tensor(T(9))).inputs()
-    val constEnter = new com.intel.analytics.bigdl.dllib.nn.tf.Enter[Float]("test_frame").inputs(const)
+    val constEnter = new com.intel.analytics.bigdl.dllib.nn.tf.Enter[Float]("test_frame").
+      inputs(const)
     val less = Less[Float]().inputs(constEnter, conditionInput)
 
     val updateInput = Input[Float]()
