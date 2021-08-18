@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.intermediate.IRGraph
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 import com.intel.analytics.bigdl.dllib.utils.{Table}
-import com.intel.analytics.bigdl.dllib.utils.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
 
 import scala.reflect.ClassTag

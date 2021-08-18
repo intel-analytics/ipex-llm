@@ -102,9 +102,11 @@ trait MiniBatch[T] extends Serializable{
  * @param inputData           a set of input tensor
  * @param targetData          a set of target tensor
  * @param featurePaddingParam feature padding strategy, see
- *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+ *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+ *                            for details.
  * @param labelPaddingParam   label padding strategy, see
- *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+ *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+ *                            for details.
  * @tparam T Numeric type
  * @since 0.2.0
  */
