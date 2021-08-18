@@ -21,8 +21,8 @@
             <!--<includes>-->
                 <!--<include>**/spark-bigdl.conf</include>-->
             <!--</includes>-->
-            <!--<outputDirectory>/</outputDirectory>-->
-            <!--<directory>${project.build.directory}/../../../spark/dl/src/main/resources</directory>-->
+            <!--<outputDirectory>/..</outputDirectory>-->
+            <!--<directory>${project.build.directory}/../../../scala/dllib/src/main/resources</directory>-->
         <!--</fileSet>-->
     </fileSets>
 </assembly>

@@ -17,13 +17,13 @@
 import pytest
 
 from test.bigdl.test_utils import BigDLTestCase
-import bigdl.dllib.keras.layer as BLayer
+import bigdl.dllib.keras.layers.layer as BLayer
 import keras.layers as KLayer
 import keras.backend as K
 from bigdl.dllib.keras.converter import WeightsConverter
 from bigdl.dataset.dataset import *
-from bigdl.dllib.keras.topology import Model as BModel
-from bigdl.dllib.keras.topology import Sequential as BSequential
+from bigdl.dllib.keras.layers.topology import Model as BModel
+from bigdl.dllib.keras.layers.topology import Sequential as BSequential
 from keras.engine import merge as kmerge, Model as KModel
 from keras.models import Sequential as KSequential
 
