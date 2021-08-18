@@ -33,22 +33,21 @@ from zoo.ray.utils import resource_to_bytes
 
 class JVMGuard:
     """
-    The registered pids would be put into the killing list of Spark Executor.
+    The process group id would be registered and killed in the shutdown hook of Spark Executor.
     """
     @staticmethod
-    def register_pids(pids):
+    def register_pgid(pgid):
         import traceback
         try:
             from zoo.common.utils import callZooFunc
             import zoo
             callZooFunc("float",
-                        "jvmGuardRegisterPids",
-                        pids)
+                        "jvmGuardRegisterPgid",
+                        pgid)
         except Exception as err:
             print(traceback.format_exc())
             print("Cannot successfully register pid into JVMGuard")
-            for pid in pids:
-                os.kill(pid, signal.SIGKILL)
+            os.killpg(pgid, signal.SIGKILL)
             raise err
 
 
@@ -205,7 +204,7 @@ class RayServiceFuncGenerator(object):
         modified_env = self._prepare_env()
         print("Starting {} by running: {}".format(tag, command))
         process_info = session_execute(command=command, env=modified_env, tag=tag)
-        JVMGuard.register_pids(process_info.pids)
+        JVMGuard.register_pgid(process_info.pgid)
         import ray._private.services as rservices
         process_info.node_ip = rservices.get_node_ip_address()
         return process_info
