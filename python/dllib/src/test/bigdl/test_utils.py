@@ -323,13 +323,13 @@ class BigDLTestCase(TestCase):
     def compare_newapi(self, klayer, blayer, input_data, weight_converter=None,
                        is_training=False, rtol=1e-6, atol=1e-6):
         from keras.models import Sequential as KSequential
-        from bigdl.dllib.keras.topology import Sequential as BSequential
+        from bigdl.dllib.keras.layers.topology import Sequential as BSequential
         bmodel = BSequential()
         bmodel.add(blayer)
         kmodel = KSequential()
         kmodel.add(klayer)
         koutput = kmodel.predict(input_data)
-        from bigdl.dllib.keras.layer import BatchNormalization
+        from bigdl.dllib.keras.layers.layer import BatchNormalization
         if isinstance(blayer, BatchNormalization):
             k_running_mean = K.eval(klayer.running_mean)
             k_running_std = K.eval(klayer.running_std)
