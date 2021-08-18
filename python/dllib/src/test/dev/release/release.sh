@@ -19,9 +19,9 @@
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
-BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../; pwd)"
+BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../../..; pwd)"
 echo $BIGDL_DIR
-BIGDL_PYTHON_DIR="$(cd ${RUN_SCRIPT_DIR}/../python; pwd)"
+BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 if (( $# < 2)); then
@@ -34,7 +34,7 @@ spark_profile=$2
 quick=$3
 bigdl_version=$(python -c "exec(open('$BIGDL_DIR/python/bigdl/version.py').read()); print(__version__)")
 
-cd ${BIGDL_DIR}
+cd ${BIGDL_DIR}/scala
 if [ "$platform" ==  "mac" ]; then
     echo "Building bigdl for mac system"
     dist_profile="-P mac -P $spark_profile"
@@ -47,11 +47,12 @@ else
     echo "unsupport platform"
 fi
 
-bigdl_build_command="${BIGDL_DIR}/scala/make-dist.sh ${dist_profile}"
+bigdl_build_command="bash make-dist.sh ${dist_profile}"
 if [ "$quick" == "true" ]; then
     echo "Skip disting BigDL"
 else
     echo "Dist BigDL: $bigdl_build_command"
+    cd ${BIGDL_DIR}/scala
     $bigdl_build_command
 fi
 
@@ -59,6 +60,14 @@ cd $BIGDL_PYTHON_DIR
 sdist_command="python setup.py sdist"
 echo "packing source code: ${sdist_command}"
 $sdist_command
+
+if [ -d "${BIGDL_DIR}/python/build" ]; then
+   rm -r ${BIGDL_DIR}/python/build
+fi
+
+if [ -d "${BIGDL_DIR}/python/dist" ]; then
+   rm -r ${BIGDL_DIR}/python/dist
+fi
 
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
 echo "Packing python distribution:   $wheel_command"
