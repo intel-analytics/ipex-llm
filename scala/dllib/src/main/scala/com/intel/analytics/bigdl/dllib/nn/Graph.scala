@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow
-import com.intel.analytics.bigdl.dllib.utils.visualization.tensorboard.{FileWriter => TFFileWriter}
+import com.intel.analytics.bigdl.dllib.visualization.tensorboard.{FileWriter => TFFileWriter}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
