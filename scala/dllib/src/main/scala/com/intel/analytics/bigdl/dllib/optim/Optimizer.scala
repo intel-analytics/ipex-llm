@@ -126,9 +126,11 @@ abstract class Optimizer[T: ClassTag, D](
    * @param vMethods a set of validation method [[ValidationMethod]]
    * @param batchSize batch size
    * @param featurePaddingParam feature padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+   *                            for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+   *                            for details.
    *
    * @return this optimizer
    */
@@ -322,9 +324,11 @@ abstract class Optimizer[T: ClassTag, D](
    * @param sampleRDD           training Samples
    * @param batchSize           mini batch size
    * @param featurePaddingParam feature padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+   *                            for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+   *                            for details.
    * @return the optimizer
    */
   def setTrainData(sampleRDD: RDD[Sample[T]],
@@ -595,9 +599,11 @@ object Optimizer {
    * @param criterion           loss function
    * @param batchSize           mini batch size
    * @param featurePaddingParam feature padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+   *                            for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+   *                            for details.
    * @return An optimizer
    */
   def apply[T: ClassTag](

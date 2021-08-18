@@ -1,51 +1,52 @@
-///*
-// * Copyright 2016 The BigDL Authors.
-// *
-// * Licensed under the Apache License, Version 2.0 (the "License");
-// * you may not use this file except in compliance with the License.
-// * You may obtain a copy of the License at
-// *
-// *     http://www.apache.org/licenses/LICENSE-2.0
-// *
-// * Unless required by applicable law or agreed to in writing, software
-// * distributed under the License is distributed on an "AS IS" BASIS,
-// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// * See the License for the specific language governing permissions and
-// * limitations under the License.
-// */
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// package com.intel.analytics.bigdl.dllib.python.api
 //
-//package com.intel.analytics.bigdl.dllib.python.api
+// import java.util.{List => JList}
 //
-//import java.util.{List => JList}
+// import com.intel.analytics.bigdl.{Criterion, DataSet}
+// import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, LocalDataSet, MiniBatch}
+// import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+// import com.intel.analytics.bigdl.dllib.nn.{Container, SpatialBatchNormalization}
+// import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+// import com.intel.analytics.bigdl.dllib.keras
+// import com.intel.analytics.bigdl.dllib.keras._
+// import com.intel.analytics.bigdl.numeric._
+// import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, Regularizer, ValidationMethod}
+// import com.intel.analytics.bigdl.dllib.tensor.Tensor
+// import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+// import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+// import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeatureToMiniBatch
+// import com.intel.analytics.bigdl.dllib.utils.{Engine, MultiShape, Shape, SingleShape}
+// import org.apache.spark.api.java.JavaRDD
 //
-//import com.intel.analytics.bigdl.{Criterion, DataSet}
-//import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, LocalDataSet, MiniBatch}
-//import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
-//import com.intel.analytics.bigdl.dllib.nn.{Container, SpatialBatchNormalization}
-//import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-//import com.intel.analytics.bigdl.dllib.keras
-//import com.intel.analytics.bigdl.dllib.keras._
-//import com.intel.analytics.bigdl.numeric._
-//import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, Regularizer, ValidationMethod}
-//import com.intel.analytics.bigdl.dllib.tensor.Tensor
-//import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-//import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
-//import com.intel.analytics.bigdl.dllib.utils.{Engine, MultiShape, Shape, SingleShape}
-//import org.apache.spark.api.java.JavaRDD
-//
-//import scala.collection.JavaConverters._
-//import scala.language.existentials
-//import scala.reflect.ClassTag
+// import scala.collection.JavaConverters._
+// import scala.language.existentials
+// import scala.reflect.ClassTag
 //
 //
-//object PythonBigDLKeras {
+// object PythonBigDLKeras {
 //
 //  def ofFloat(): PythonBigDLKeras[Float] = new PythonBigDLKeras[Float]()
 //
 //  def ofDouble(): PythonBigDLKeras[Double] = new PythonBigDLKeras[Double]()
-//}
+// }
 //
-//class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
+// class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
 //
 //  def toScalaShape(inputShape: JList[Int]): Shape = {
 //    if (inputShape == null) {
@@ -744,4 +745,4 @@
 //    testResultArray.toList.asJava
 //  }
 //
-//}
+// }

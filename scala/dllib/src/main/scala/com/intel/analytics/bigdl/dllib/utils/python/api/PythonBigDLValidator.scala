@@ -1,41 +1,41 @@
-///*
-// * Copyright 2016 The BigDL Authors.
-// *
-// * Licensed under the Apache License, Version 2.0 (the "License");
-// * you may not use this file except in compliance with the License.
-// * You may obtain a copy of the License at
-// *
-// *     http://www.apache.org/licenses/LICENSE-2.0
-// *
-// * Unless required by applicable law or agreed to in writing, software
-// * distributed under the License is distributed on an "AS IS" BASIS,
-// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// * See the License for the specific language governing permissions and
-// * limitations under the License.
-// */
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// package com.intel.analytics.bigdl.dllib.python.api
 //
-//package com.intel.analytics.bigdl.dllib.python.api
+// import java.lang.{Boolean => JBoolean}
+// import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 //
-//import java.lang.{Boolean => JBoolean}
-//import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
+// import com.intel.analytics.bigdl.dllib.tensor.Tensor
+// import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+// import com.intel.analytics.bigdl.dllib.utils.Table
 //
-//import com.intel.analytics.bigdl.dllib.tensor.Tensor
-//import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-//import com.intel.analytics.bigdl.dllib.utils.Table
+// import scala.collection.JavaConverters._
+// import scala.collection.mutable.Map
+// import scala.language.existentials
+// import scala.reflect.ClassTag
 //
-//import scala.collection.JavaConverters._
-//import scala.collection.mutable.Map
-//import scala.language.existentials
-//import scala.reflect.ClassTag
-//
-//object PythonBigDLValidator {
+// object PythonBigDLValidator {
 //
 //  def ofFloat(): PythonBigDLValidator[Float] = new PythonBigDLValidator[Float]()
 //
 //  def ofDouble(): PythonBigDLValidator[Double] = new PythonBigDLValidator[Double]()
-//}
+// }
 //
-//class PythonBigDLValidator[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T]{
+// class PythonBigDLValidator[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T]{
 //
 //  def testDict(): JMap[String, String] = {
 //    return Map("jack" -> "40", "lucy" -> "50").asJava
@@ -78,4 +78,4 @@
 //    nestedTable.insert(table)
 //    return JActivity(nestedTable)
 //  }
-//}
+// }
