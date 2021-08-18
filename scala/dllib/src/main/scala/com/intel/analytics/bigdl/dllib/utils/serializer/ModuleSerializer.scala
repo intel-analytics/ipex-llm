@@ -192,7 +192,8 @@ object ModuleSerializer extends ModuleSerializable{
 
   private def initializeDeclaredTypes() : Unit = {
 
-    var wrapperCls = Class.forName("com.intel.analytics.bigdl.dllib.utils.serializer.GenericTypeWrapper")
+    var wrapperCls = Class.forName(
+      "com.intel.analytics.bigdl.dllib.utils.serializer.GenericTypeWrapper")
     val fullParams = ReflectionUtils.getPrimCtorMirror(wrapperCls).symbol.paramss
     fullParams.foreach(map => {
       map.foreach(param => {
@@ -223,7 +224,8 @@ object ModuleSerializer extends ModuleSerializable{
   private def registerModules : Unit = {
 
     registerModule("com.intel.analytics.bigdl.dllib.nn.BatchNormalization", BatchNormalization)
-    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialBatchNormalization", BatchNormalization)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.SpatialBatchNormalization",
+      BatchNormalization)
     registerModule("com.intel.analytics.bigdl.dllib.nn.BinaryTreeLSTM", BinaryTreeLSTM)
     registerModule("com.intel.analytics.bigdl.dllib.nn.BiRecurrent", BiRecurrent)
     registerModule("com.intel.analytics.bigdl.dllib.nn.CAddTable", CAddTable)
