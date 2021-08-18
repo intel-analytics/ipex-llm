@@ -1341,7 +1341,8 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
       Seq((updateInput, add)),
       Seq(input)
     )
-    val model = Graph.dynamic(Array[ModuleNode[Float]](), Array(exit(0)), None, false)
+    val model = Graph.dynamic(Array[ModuleNode[Float]](),
+      Array(exit(0)), None, false)
     model.forward(null)
     val result = model.forward(null)
     result.toTensor.valueAt(1) should be(10)
@@ -1354,7 +1355,8 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
 
     val conditionInput1 = Input("conditionInput1")
     val conditionInput2 = Input("conditionInput2")
-    val const = new com.intel.analytics.bigdl.dllib.nn.tf.Const(Tensor(T(9))).setName("inc").inputs()
+    val const = new com.intel.analytics.bigdl.dllib.nn.tf.Const(Tensor(T(9))).
+      setName("inc").inputs()
     val less = Less().setName("less").inputs(const, conditionInput1)
 
     val updateInput1 = Input("updateInput1")

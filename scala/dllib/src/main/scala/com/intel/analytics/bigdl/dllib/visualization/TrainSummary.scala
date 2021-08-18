@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.utils.visualization
+package com.intel.analytics.bigdl.dllib.visualization
 
 import com.intel.analytics.bigdl.dllib.optim.Trigger
-import com.intel.analytics.bigdl.dllib.utils.visualization.tensorboard.{FileReader, FileWriter}
+import com.intel.analytics.bigdl.dllib.visualization.tensorboard.{FileReader, FileWriter}
 
 import scala.collection.mutable
 

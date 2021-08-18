@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn, OptimizerV1, OptimizerV2}
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.utils.LoggerFilter
-import com.intel.analytics.bigdl.dllib.utils.visualization.TrainSummary
+import com.intel.analytics.bigdl.dllib.visualization.TrainSummary
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
