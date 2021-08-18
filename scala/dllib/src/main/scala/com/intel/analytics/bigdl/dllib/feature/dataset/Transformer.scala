@@ -361,9 +361,11 @@ object SampleToMiniBatch {
    *
    * @param batchSize           total batch size
    * @param featurePaddingParam feature padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+   *                            for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]]
+   *                            for details.
    * @return
    */
   def apply[T: ClassTag](
