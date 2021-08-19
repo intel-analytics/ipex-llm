@@ -672,10 +672,6 @@ class Table:
 
     order_by = sort
 
-    def to_pandas(self):
-        """ Returns the contents of this :class:`Table` as Pandas ``pandas.DataFrame`` """
-        return self.df.toPandas()
-
     @staticmethod
     def from_pandas(pandas_df):
         """
