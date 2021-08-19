@@ -658,6 +658,35 @@ class Table:
         """
         return pyspark_col(name)
 
+    def sort(self, *cols, **kwargs):
+        """
+        Sort table by the specified col(s).
+        :param cols: list of :class:`Column` or column names to sort by.
+        :param ascending: boolean or list of boolean (default ``True``).
+            Sort ascending vs. descending. Specify list for multiple sort orders.
+            If a list is specified, length of the list must equal length of the `cols`.
+        """
+        if not cols:
+            raise ValueError("cols should be str or a list of str, but got None.")
+        return self._clone(self.df.sort(*cols, **kwargs))
+
+    order_by = sort
+
+    def to_pandas(self):
+        """ Returns the contents of this :class:`Table` as Pandas ``pandas.DataFrame`` """
+        return self.df.toPandas()
+
+    @staticmethod
+    def from_pandas(pandas_df):
+        """
+        Returns the contents of this :class:`pandas.DataFrame` as Table
+        :param pandas_df: pandas dataframe
+        """
+        spark = OrcaContext.get_spark_session()
+        spark.conf.set("spark.sql.execution.arrow.enabled", "true")
+        sparkDF = spark.createDataFrame(pandas_df)
+        return Table(sparkDF)
+
 
 class FeatureTable(Table):
     @classmethod
