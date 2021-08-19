@@ -55,6 +55,18 @@ class TestTable(TestCase):
         out_values = feature_tbl.select("out").df.rdd.flatMap(lambda x: x).collect()
         assert out_values == ["xxxx"] * len(out_values)
 
+    def test_apply_with_data(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        feature_tbl = feature_tbl.fillna(0, "col_1")
+        # udf on single column
+        y = {"ace": 1, "aa": 2}
+        transform = lambda x: y.get(x, 0)
+        feature_tbl = feature_tbl.apply("col_5", "out", transform, "int")
+        assert(feature_tbl.filter(col("out") == 2).size() == 3)
+        assert(feature_tbl.filter(col("out") == 1).size() == 1)
+        assert(feature_tbl.filter(col("out") == 0).size() == 1)
+
     def test_fillna_int(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
@@ -907,6 +919,36 @@ class TestTable(TestCase):
         dictionary = tbl.to_dict()
         print(dictionary)
         assert dictionary["name"] == ['jack', 'alice', 'rose']
+
+    def test_to_pandas(self):
+        spark = OrcaContext.get_spark_session()
+        # test the case the column of key is unique
+        data = [("jack", "123", 14),
+                ("alice", "34", 25),
+                ("rose", "25344", 23)]
+        schema = StructType([StructField("name", StringType(), True),
+                             StructField("num", StringType(), True),
+                             StructField("age", IntegerType(), True)])
+        tbl = FeatureTable(spark.createDataFrame(data, schema))
+        pddf = tbl.to_pandas()
+        assert pddf["name"].values.tolist() == ['jack', 'alice', 'rose']
+
+    def test_from_pandas(self):
+        import pandas as pd
+        data = [['tom', 10], ['nick', 15], ['juli', 14]]
+        pddf = pd.DataFrame(data, columns=['Name', 'Age'])
+        tbl = FeatureTable.from_pandas(pddf)
+        assert(tbl.size() == 3)
+
+    def test_sort(self):
+        import pandas as pd
+        data = [['tom', 10], ['nick', 15], ['juli', 14]]
+        pddf = pd.DataFrame(data, columns=['Name', 'Age'])
+        tbl = FeatureTable.from_pandas(pddf)
+        tbl = tbl.sort("Age", ascending=False)
+        assert(tbl.select("Name").to_list("Name") == ["nick", "juli", "tom"])
+        tbl = tbl.sort("Name")
+        assert(tbl.select("Name").to_list("Name") == ["juli", "nick", "tom"])
 
     def test_add(self):
         spark = OrcaContext.get_spark_session()
