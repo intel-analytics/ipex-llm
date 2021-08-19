@@ -82,6 +82,8 @@ sgx.trusted_files.libm = "file:$(GRAPHENEDIR)/Runtime/libm.so.6"
 sgx.trusted_files.libdl = "file:$(GRAPHENEDIR)/Runtime/libdl.so.2"
 sgx.trusted_files.librt = "file:$(GRAPHENEDIR)/Runtime/librt.so.1"
 sgx.trusted_files.libpthread = "file:$(GRAPHENEDIR)/Runtime/libpthread.so.0"
+sgx.trusted_files.dns ="file:$(GRAPHENEDIR)/Runtime/libnss_dns.so.2"
+sgx.trusted_files.libresolv="file:$(GRAPHENEDIR)/Runtime/libresolv.so.2"
 
 # Name Service Switch (NSS) libraries (Glibc dependencies)
 sgx.trusted_files.libnsscompat = "file:$(ARCH_LIBDIR)/libnss_compat.so.2"
