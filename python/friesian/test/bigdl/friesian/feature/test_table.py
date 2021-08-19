@@ -920,19 +920,6 @@ class TestTable(TestCase):
         print(dictionary)
         assert dictionary["name"] == ['jack', 'alice', 'rose']
 
-    def test_to_pandas(self):
-        spark = OrcaContext.get_spark_session()
-        # test the case the column of key is unique
-        data = [("jack", "123", 14),
-                ("alice", "34", 25),
-                ("rose", "25344", 23)]
-        schema = StructType([StructField("name", StringType(), True),
-                             StructField("num", StringType(), True),
-                             StructField("age", IntegerType(), True)])
-        tbl = FeatureTable(spark.createDataFrame(data, schema))
-        pddf = tbl.to_pandas()
-        assert pddf["name"].values.tolist() == ['jack', 'alice', 'rose']
-
     def test_from_pandas(self):
         import pandas as pd
         data = [['tom', 10], ['nick', 15], ['juli', 14]]
