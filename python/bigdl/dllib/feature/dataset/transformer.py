@@ -15,7 +15,7 @@
 #
 
 
-from bigdl.utils.common import Sample
+from bigdl.dllib.utils.common import Sample
 
 
 def normalizer(data, mean, std):

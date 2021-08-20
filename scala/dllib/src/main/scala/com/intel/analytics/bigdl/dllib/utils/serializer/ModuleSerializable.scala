@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{ReflectionUtils, Table}
-import com.intel.analytics.bigdl.utils.{Shape => BigDLShape}
+import com.intel.analytics.bigdl.dllib.utils.{Shape => BigDLShape}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.{DataConverter, ShapeConverter, TensorConverter}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializer._
 import com.intel.analytics.bigdl.serialization.Bigdl._

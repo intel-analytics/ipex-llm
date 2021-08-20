@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.dllib.utils
 import com.intel.analytics.bigdl.dllib.nn.{Graph, Reshape, StaticGraph, TimeDistributed}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils._
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 
 class IRGraphSpec extends BigDLSpecHelper {
   def modelIR(inputFormats: Int = Memory.Format.nchw,

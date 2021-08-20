@@ -15,7 +15,7 @@
 #
 
 from bigdl.dllib.keras.optimization import *
-from bigdl.utils.common import *
+from bigdl.dllib.utils.common import *
 
 
 class KerasModelWrapper:

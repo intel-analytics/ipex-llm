@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.optim.{Top1Accuracy, Top5Accuracy}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFrame, ImageFrameToSample, MatToTensor, PixelBytesToMat}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.SparkContext
 import scopt.OptionParser
 

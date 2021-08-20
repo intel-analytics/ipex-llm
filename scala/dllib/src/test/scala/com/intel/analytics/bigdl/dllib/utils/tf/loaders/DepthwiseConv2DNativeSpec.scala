@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.dllib.utils.tf.loaders
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow.{listIntAttr, typeAttr}
 import com.intel.analytics.bigdl.dllib.utils.tf.{PaddingType, TensorflowDataFormat, TensorflowSpecHelper}
