@@ -18,6 +18,7 @@ import os
 import hashlib
 import numpy as np
 from functools import reduce
+from py4j.protocol import Py4JError
 
 import pyspark.sql.functions as F
 from pyspark.sql import Row, Window
@@ -682,6 +683,29 @@ class Table:
         spark.conf.set("spark.sql.execution.arrow.enabled", "true")
         sparkDF = spark.createDataFrame(pandas_df)
         return Table(sparkDF)
+
+    def cache(self):
+        """
+        Persist this table in memory
+
+        :return: this Table
+        """
+        self.df.cache()
+        return self
+
+    def uncache(self):
+        """
+
+        Make this table as non-persistent, and remove all blocks for it from memory
+
+        :return: this Table
+        """
+        if self.df.is_cached:
+            try:
+                self.df.unpersist()
+            except Py4JError:
+                print("Try to unpersist an uncached table")
+        return self
 
 
 class FeatureTable(Table):
