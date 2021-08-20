@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.example.utils.AbstractTextClassificationP
 import com.intel.analytics.bigdl.dllib.nn.TensorTree
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD

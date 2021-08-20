@@ -19,7 +19,7 @@ import java.io.File
 
 import com.intel.analytics.bigdl.dllib.nn.ReLU6
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.scalatest._
 
 import scala.collection.mutable.ListBuffer

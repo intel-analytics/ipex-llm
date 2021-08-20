@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.utils.{TestUtils}
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 class UpSampling1DSpec extends KerasBaseSpec {
   "UpSampling1D forward with size 1" should "work properly" in {

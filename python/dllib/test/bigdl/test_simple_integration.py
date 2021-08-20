@@ -18,15 +18,15 @@ from bigdl.dllib.nn.layer import *
 from bigdl.dllib.nn.initialization_method import *
 from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.optim.optimizer import *
-from bigdl.utils.common import *
-from bigdl.utils.common import _py2java
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.common import _py2java
 from bigdl.dllib.nn.initialization_method import *
 from bigdl.dllib.feature.dataset import movielens
 import numpy as np
 import tempfile
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
-from bigdl.utils.engine import compare_version
+from bigdl.dllib.utils.engine import compare_version
 from bigdl.dllib.feature.transform.vision.image import *
 from bigdl.dllib.models.utils.model_broadcast import broadcast_model
 from bigdl.dllib.feature.dataset.dataset import *
@@ -244,7 +244,7 @@ class TestSimple():
                        np.array([1.0]))
 
     def test_load_zip_conf(self):
-        from bigdl.utils.common import get_bigdl_conf
+        from bigdl.dllib.utils.common import get_bigdl_conf
         import sys
         sys_path_back = sys.path
         sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]

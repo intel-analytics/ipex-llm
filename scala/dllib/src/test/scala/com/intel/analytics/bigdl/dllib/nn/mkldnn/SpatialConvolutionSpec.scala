@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, Training
 import com.intel.analytics.bigdl.dllib.nn.{Xavier, Zeros}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.{DnnStorage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 

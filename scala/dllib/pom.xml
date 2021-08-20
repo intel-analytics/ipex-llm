@@ -22,11 +22,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.intel.analytics.bigdl</groupId>
-            <artifactId>bigdl-utils</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.opennlp</groupId>
             <artifactId>opennlp-tools</artifactId>
             <version>1.8.2</version>

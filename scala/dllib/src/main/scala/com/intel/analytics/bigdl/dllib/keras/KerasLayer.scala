@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, SingleShape}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer

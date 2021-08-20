@@ -58,7 +58,7 @@ class RandomAlterAspect(min_area_ratio: Float = 0.08f,
                            cropLength: Int = 224)
   extends FeatureTransformer {
 
-  import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+  import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 
   @inline
   private def randRatio(min: Float, max: Float): Float = {

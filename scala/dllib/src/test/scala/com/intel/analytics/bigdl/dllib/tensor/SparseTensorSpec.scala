@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.tensor
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 
 import scala.util.Random
 
