@@ -99,8 +99,9 @@ class AutoLSTM:
         Automatically fit the model and search for the best hyper parameters.
 
         :param data: train data.
-               For backend of "torch", data can be a tuple of ndarrays or a function that takes a
-               config dictionary as parameter and returns a PyTorch DataLoader.
+               For backend of "torch", data can be a tuple of ndarrays or a PyTorch DataLoader
+               or a function that takes a config dictionary as parameter and returns a
+               PyTorch DataLoader.
                For backend of "keras", data can be a tuple of ndarrays.
                If data is a tuple of ndarrays, it should be in the form of (x, y),
                 where x is training input data and y is training target data.
