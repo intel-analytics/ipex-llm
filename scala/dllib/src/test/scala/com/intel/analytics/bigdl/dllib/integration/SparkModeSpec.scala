@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.integration
+package com.intel.analytics.bigdl.dllib.integration
 
 import com.intel.analytics.bigdl.dllib.models.lenet
 import com.intel.analytics.bigdl.dllib.models.vgg
