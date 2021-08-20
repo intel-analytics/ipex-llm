@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, MklDnnContainer}
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, MklDnnLayer, MklDnnModule}
 import com.intel.analytics.bigdl.dllib.utils.{T}
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.dllib.nn.Graph
 import com.intel.analytics.bigdl.dllib.nn.StaticGraph

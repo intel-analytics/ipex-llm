@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.utils.tf.loaders
 import com.intel.analytics.bigdl.dllib.nn.SpatialCrossMapLRN
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow.{floatAttr, intAttr, typeAttr}
 import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}

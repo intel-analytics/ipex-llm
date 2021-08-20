@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{TestUtils}
 import Summary._
 import com.intel.analytics.bigdl.dllib.visualization.tensorboard.{FileReader, FileWriter}
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import org.tensorflow.framework
 

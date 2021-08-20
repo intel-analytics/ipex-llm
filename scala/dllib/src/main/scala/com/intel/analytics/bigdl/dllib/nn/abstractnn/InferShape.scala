@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.abstractnn
 
 import com.intel.analytics.bigdl.dllib.keras.{Input => KInput, Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.nn.{Input => TInput}
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 import scala.language.existentials
 import scala.reflect.ClassTag
