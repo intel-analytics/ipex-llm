@@ -100,6 +100,18 @@ class TestAutoTCN(TestCase):
         assert best_config['batch_size'] in (32, 64)
         assert 1 <= best_config['levels'] < 3
 
+    def test_fit_loader(self):
+        auto_tcn = get_auto_estimator()
+        auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
+                     epochs=1,
+                     validation_data=valid_dataloader_creator(config={"batch_size": 64}),
+                     n_sampling=1,
+                     )
+        assert auto_tcn.get_best_model()
+        best_config = auto_tcn.get_best_config()
+        assert 0.1 <= best_config['dropout'] <= 0.2
+        assert 1 <= best_config['levels'] < 3
+
     def test_fit_data_creator(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator,
