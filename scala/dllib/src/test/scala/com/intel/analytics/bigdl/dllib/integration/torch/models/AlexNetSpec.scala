@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.integration.torch.models
+package com.intel.analytics.bigdl.dllib.integration.torch.models
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.example.loadmodel.AlexNet_OWT
-import com.intel.analytics.bigdl.integration.torch.{TH, TorchSpec}
+import com.intel.analytics.bigdl.dllib.integration.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.dllib.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim.SGD
