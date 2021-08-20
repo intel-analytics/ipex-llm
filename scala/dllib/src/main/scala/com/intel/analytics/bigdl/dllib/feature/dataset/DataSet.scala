@@ -26,8 +26,8 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, RoiImageInfo}
 import com.intel.analytics.bigdl.dllib.utils.{T}
-import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.io.ByteArrayInputStream

@@ -33,7 +33,7 @@ import com.intel.analytics.bigdl.dllib.utils.tf._
 import com.intel.analytics.bigdl.dllib.utils.{File}
 import com.intel.analytics.bigdl.dllib.visualization.Summary
 import com.intel.analytics.bigdl.dllib.visualization.tensorboard.{FileReader, FileWriter}
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.commons.compress.utils.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

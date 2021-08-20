@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.feature.dataset
 
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.log4j.Logger
 
 object Utils {

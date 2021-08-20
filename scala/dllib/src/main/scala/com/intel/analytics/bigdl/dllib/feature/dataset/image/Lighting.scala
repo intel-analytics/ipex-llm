@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 
 import scala.collection.Iterator
 

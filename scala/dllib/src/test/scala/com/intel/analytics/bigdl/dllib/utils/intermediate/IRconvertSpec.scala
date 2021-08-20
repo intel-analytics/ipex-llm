@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, Equivalent, Input, O
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils._
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.Module
 
 class IRconvertSpec extends BigDLSpecHelper {
@@ -96,7 +96,7 @@ class IRconvertSpec extends BigDLSpecHelper {
 
   def kerasLayer(classNum: Int, shape: Shape = Shape(28, 28, 3)): keras.Sequential[Float] = {
     import com.intel.analytics.bigdl.dllib.keras._
-    import com.intel.analytics.bigdl.utils.Shape
+    import com.intel.analytics.bigdl.dllib.utils.Shape
 
     val model = Sequential()
     model.add(Convolution2D(6, 5, 5, activation = "tanh",

@@ -21,7 +21,7 @@ from keras.layers.core import *
 from keras.layers.convolutional import *
 from keras.layers import Dense, Dropout, Input
 from keras.optimizers import RMSprop
-from bigdl.utils.common import *
+from bigdl.dllib.utils.common import *
 from bigdl.dllib.keras.converter import *
 from bigdl.dllib.keras.converter import WeightLoader, WeightsConverter
 import numpy as np

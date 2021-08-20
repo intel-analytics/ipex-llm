@@ -21,8 +21,8 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2}
-import com.intel.analytics.bigdl.utils.LoggerFilter
+import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._

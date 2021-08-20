@@ -20,8 +20,8 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2}
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag

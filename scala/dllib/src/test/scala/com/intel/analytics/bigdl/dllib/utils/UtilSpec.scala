@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.{Cache, CacheV1}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Util.{setExtraParametersFromModelRDD, cloneParameters}
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 

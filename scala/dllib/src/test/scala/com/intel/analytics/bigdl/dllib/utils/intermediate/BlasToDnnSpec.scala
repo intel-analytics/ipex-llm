@@ -29,9 +29,9 @@ import com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, Equivalent}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils._
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.util.Random
 

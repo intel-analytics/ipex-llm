@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.optim.parameters
 
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
