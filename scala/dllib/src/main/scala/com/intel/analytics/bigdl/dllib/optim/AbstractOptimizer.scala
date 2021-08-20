@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.optim.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.intermediate.IRGraph
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, MklBlas, MklDnn}
 import com.intel.analytics.bigdl.dllib.utils.{Table}
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}

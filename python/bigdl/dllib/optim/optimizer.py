@@ -23,14 +23,14 @@ from distutils.dir_util import mkpath
 from py4j.java_gateway import JavaObject
 from pyspark.rdd import RDD
 
-from bigdl.utils.common import DOUBLEMAX
-from bigdl.utils.common import JTensor
-from bigdl.utils.common import JavaValue
-from bigdl.utils.common import callBigDlFunc
-from bigdl.utils.common import callJavaFunc
-from bigdl.utils.common import get_node_and_core_number
-from bigdl.utils.common import init_engine
-from bigdl.utils.common import to_list
+from bigdl.dllib.utils.common import DOUBLEMAX
+from bigdl.dllib.utils.common import JTensor
+from bigdl.dllib.utils.common import JavaValue
+from bigdl.dllib.utils.common import callBigDlFunc
+from bigdl.dllib.utils.common import callJavaFunc
+from bigdl.dllib.utils.common import get_node_and_core_number
+from bigdl.dllib.utils.common import init_engine
+from bigdl.dllib.utils.common import to_list
 from bigdl.dllib.feature.dataset.dataset import *
 import warnings
 
@@ -1190,8 +1190,8 @@ def _test():
     import doctest
     from pyspark import SparkContext
     from bigdl.dllib.optim import optimizer
-    from bigdl.utils.common import init_engine
-    from bigdl.utils.common import create_spark_conf
+    from bigdl.dllib.utils.common import init_engine
+    from bigdl.dllib.utils.common import create_spark_conf
     globs = optimizer.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test optimizer",
                       conf=create_spark_conf())

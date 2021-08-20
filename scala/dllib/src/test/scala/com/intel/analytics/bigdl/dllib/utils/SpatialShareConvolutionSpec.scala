@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.models.resnet.ResNet
 import com.intel.analytics.bigdl.dllib.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.dllib.models.vgg.{Vgg_16}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random

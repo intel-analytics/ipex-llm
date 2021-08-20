@@ -22,7 +22,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.nn.{Graph, Module}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.tensorflow.framework.AttrValue.ListValue
 import org.tensorflow.framework._
 import org.tensorflow.framework.TensorShapeProto.Dim

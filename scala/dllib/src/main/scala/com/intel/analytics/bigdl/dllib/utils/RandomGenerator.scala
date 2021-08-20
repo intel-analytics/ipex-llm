@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
 import java.io.{BufferedInputStream, FileInputStream}
 import java.nio.ByteBuffer
