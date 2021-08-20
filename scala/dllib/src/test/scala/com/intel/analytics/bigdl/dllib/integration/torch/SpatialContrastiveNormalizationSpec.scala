@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.integration.torch
+package com.intel.analytics.bigdl.dllib.integration.torch
 
 import com.intel.analytics.bigdl.dllib.nn.{Sequential, SpatialContrastiveNormalization}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
