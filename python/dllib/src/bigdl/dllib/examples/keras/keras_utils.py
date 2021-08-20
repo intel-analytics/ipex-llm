@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.utils.common import *
+from bigdl.dllib.utils.common import *
 
 
 def save_keras_definition(keras_model, path):

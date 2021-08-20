@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, Tensor, TensorDataType}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.dllib.utils.TorchObject.TYPE_MODULE
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils

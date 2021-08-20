@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleSerializable, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.dllib.utils.Table
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 import scala.reflect.ClassTag
 

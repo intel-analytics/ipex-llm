@@ -22,8 +22,8 @@ import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.InferencePhase
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine}
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{Engine}
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils
 
 class FusionSpec extends FlatSpec with Matchers {

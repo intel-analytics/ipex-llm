@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.utils.common import *
+from bigdl.dllib.utils.common import *
 
 from bigdl.dllib.feature.transform.vision.image import *
 
@@ -50,11 +50,11 @@ def run(image_path, model_path, batch_size):
     transformed = transformer(raw_image_frame)
     model = Model.loadModel(model_path)
     result = model.evaluate(transformed, int(batch_size), [Top1Accuracy()])
-    print "top1 accuray", result[0]
+    print("top1 accuray", result[0])
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print "parameters needed : <imagePath> <modelPath> <batchSize>"
+        print("parameters needed : <imagePath> <modelPath> <batchSize>")
     image_path = sys.argv[1]
     model_path = sys.argv[2]
     batch_size = sys.argv[3]

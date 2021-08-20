@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn.mkldnn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils._
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.reflect.ClassTag
 

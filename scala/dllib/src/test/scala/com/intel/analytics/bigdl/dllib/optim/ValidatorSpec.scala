@@ -20,8 +20,8 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, Sample, SampleT
 import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
 import com.intel.analytics.bigdl.dllib.nn.CrossEntropyCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.utils.SparkContextLifeCycle
 import org.apache.spark.{SparkConf, SparkContext}

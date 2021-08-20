@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-from bigdl.utils.engine import prepare_env
+from bigdl.dllib.utils.engine import prepare_env
 prepare_env()
