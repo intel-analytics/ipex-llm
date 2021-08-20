@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, Regularizer, Validati
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
-import com.intel.analytics.bigdl.utils.{Engine, MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, MultiShape, Shape, SingleShape}
 import org.apache.spark.api.java.JavaRDD
 
 import scala.collection.JavaConverters._

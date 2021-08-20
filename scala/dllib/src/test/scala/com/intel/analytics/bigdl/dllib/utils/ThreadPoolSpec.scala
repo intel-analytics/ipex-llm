@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import org.scalatest.{FlatSpec, Matchers}
