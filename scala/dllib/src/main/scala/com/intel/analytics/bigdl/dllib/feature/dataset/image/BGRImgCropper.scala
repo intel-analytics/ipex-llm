@@ -53,7 +53,7 @@ object BGRImgCropper {
 class BGRImgCropper(cropWidth: Int, cropHeight: Int, cropperMethod: CropperMethod = CropRandom)
   extends Transformer[LabeledBGRImage, LabeledBGRImage] {
 
-  import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+  import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 
   private val buffer = new LabeledBGRImage(cropWidth, cropHeight)
 

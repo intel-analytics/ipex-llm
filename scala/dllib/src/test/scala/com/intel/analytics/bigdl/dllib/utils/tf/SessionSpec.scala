@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset._
 import com.intel.analytics.bigdl.dllib.nn.MSECriterion
 import com.intel.analytics.bigdl.dllib.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}

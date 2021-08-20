@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.HashFunc
+import com.intel.analytics.bigdl.dllib.utils.HashFunc
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
