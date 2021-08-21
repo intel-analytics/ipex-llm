@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, MTImageFeatureToBatch, MatToTensor, PixelBytesToMat}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.{ChannelScaledNormalizer, RandomCropper, RandomResize}
 import com.intel.analytics.bigdl.dllib.utils._
-import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 

@@ -73,8 +73,13 @@ class TestBackend(BigDLTestCase):
     def test_lenet_distributed_rdd(self):
         kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
         sc = get_spark_context()
+<<<<<<< HEAD
         from bigdl.dllib.utils.common import Sample
         from bigdl.dllib.utils.common import to_sample_rdd
+=======
+        from bigdl.utils.common import Sample
+        from bigdl.utils.common import to_sample_rdd
+>>>>>>> upstream_bigdl-2.0
         training_rdd = to_sample_rdd(X_train, y_train)
 
         self.modelTest(X_train, kmodel, dump_weights=True)
