@@ -16,11 +16,7 @@
 
 import pytest
 import os
-<<<<<<< HEAD
 from bigdl.dllib.utils.common import *
-=======
-from bigdl.utils.common import *
->>>>>>> upstream_bigdl-2.0
 from bigdl.dllib.feature.transform.vision.image import *
 import tempfile
 

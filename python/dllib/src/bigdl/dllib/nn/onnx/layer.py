@@ -17,11 +17,7 @@
 import sys
 import numpy as np
 from bigdl.dllib.nn.layer import Layer
-<<<<<<< HEAD
 from bigdl.dllib.utils.common import JTensor
-=======
-from bigdl.utils.common import JTensor
->>>>>>> upstream_bigdl-2.0
 
 if sys.version >= '3':
     long = int

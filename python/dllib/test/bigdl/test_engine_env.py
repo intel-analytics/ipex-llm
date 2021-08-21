@@ -16,11 +16,7 @@
 
 import pytest
 import os
-<<<<<<< HEAD
 from bigdl.dllib.utils.common import *
-=======
-from bigdl.utils.common import *
->>>>>>> upstream_bigdl-2.0
 
 
 class TestEngineEnv():
@@ -42,11 +38,7 @@ class TestEngineEnv():
         #  adding jar path message, just do prepare_env()' again
         # to see if the log is correct and the environment variables should not vary.
 
-<<<<<<< HEAD
         from bigdl.dllib.utils.engine import prepare_env
-=======
-        from bigdl.utils.engine import prepare_env
->>>>>>> upstream_bigdl-2.0
 
         bigdl_jars_env_1 = os.environ.get("BIGDL_JARS", None)
         spark_class_path_1 = os.environ.get("SPARK_CLASSPATH", None)
