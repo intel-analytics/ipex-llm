@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, segm
 import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.optim.MeanAveragePrecision
 import org.apache.spark.{SparkContext, rdd}
+
 object Test {
   case class TestParams(
      folder: String = "./",
