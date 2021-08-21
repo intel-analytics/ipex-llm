@@ -28,10 +28,10 @@ import com.intel.analytics.bigdl.dllib.nn.{Module, StaticGraph}
 import com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, Equivalent}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.BigDLSpecHelper
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils._
-import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.util.Random
 

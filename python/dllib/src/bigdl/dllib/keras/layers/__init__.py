@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+<<<<<<< HEAD
 from bigdl.dllib.utils.common import *
+=======
+from bigdl.utils.common import *
+>>>>>>> upstream_bigdl-2.0
 
 init_engine()
 redire_spark_logs()
