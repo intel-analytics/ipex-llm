@@ -14,9 +14,5 @@
 # limitations under the License.
 #
 
-<<<<<<< HEAD
 from bigdl.dllib.utils.engine import prepare_env
-=======
-from bigdl.utils.engine import prepare_env
->>>>>>> upstream_bigdl-2.0
 prepare_env()

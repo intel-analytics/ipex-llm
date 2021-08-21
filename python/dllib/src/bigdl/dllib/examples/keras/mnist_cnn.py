@@ -85,11 +85,7 @@ if __name__ == "__main__":
     json_path = "/tmp/lenet.json"
     save_keras_definition(keras_model, json_path)
 
-<<<<<<< HEAD
     from bigdl.dllib.utils.common import *
-=======
-    from bigdl.utils.common import *
->>>>>>> upstream_bigdl-2.0
     from bigdl.dllib.nn.layer import *
     from bigdl.dllib.optim.optimizer import *
     from bigdl.dllib.nn.criterion import *
