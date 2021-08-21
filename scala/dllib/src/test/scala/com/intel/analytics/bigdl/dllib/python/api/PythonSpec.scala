@@ -34,7 +34,6 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-
 import scala.util.Random
 import scala.collection.JavaConverters._
 
