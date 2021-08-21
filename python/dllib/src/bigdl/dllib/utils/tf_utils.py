@@ -27,8 +27,13 @@ from tensorflow.python.framework import graph_util
 from tensorflow.python.framework import importer
 from tensorflow.python.platform import gfile
 from bigdl.dllib.nn.layer import Model
+<<<<<<< HEAD
 from bigdl.dllib.utils.common import JTensor
 from bigdl.dllib.utils.common import callBigDlFunc
+=======
+from bigdl.utils.common import JTensor
+from bigdl.utils.common import callBigDlFunc
+>>>>>>> upstream_bigdl-2.0
 import os
 
 def get_path(output_name, sess=None):

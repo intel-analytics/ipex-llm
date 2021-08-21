@@ -24,8 +24,13 @@ from bigdl.dllib.feature.dataset import sentence
 from bigdl.dllib.nn.layer import *
 from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.optim.optimizer import *
+<<<<<<< HEAD
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.common import Sample
+=======
+from bigdl.utils.common import *
+from bigdl.utils.common import Sample
+>>>>>>> upstream_bigdl-2.0
 
 def download_data(dest_dir):
     TINYSHAKESPEARE_URL = 'https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt'  # noqa

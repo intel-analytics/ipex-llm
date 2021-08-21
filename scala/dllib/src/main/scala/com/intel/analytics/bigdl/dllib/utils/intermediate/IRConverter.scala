@@ -22,8 +22,6 @@ import com.intel.analytics.bigdl.dllib.nn.mkldnn._
 import com.intel.analytics.bigdl.dllib.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dllib.utils
-import com.intel.analytics.bigdl.dllib.utils.{Node}
 import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.collection.mutable.ArrayBuffer

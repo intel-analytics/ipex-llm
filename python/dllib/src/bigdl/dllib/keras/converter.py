@@ -16,8 +16,13 @@
 
 import numpy as np
 import bigdl.dllib.nn.layer as BLayer
+<<<<<<< HEAD
 import bigdl.dllib.utils.common as BCommon
 from bigdl.dllib.utils.common import get_activation_by_name
+=======
+import bigdl.utils.common as BCommon
+from bigdl.utils.common import get_activation_by_name
+>>>>>>> upstream_bigdl-2.0
 from keras.models import model_from_json
 from keras.models import Sequential, Model, Layer
 import keras
