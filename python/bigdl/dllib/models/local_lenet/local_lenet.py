@@ -19,11 +19,7 @@ from bigdl.dllib.feature.dataset import mnist
 from bigdl.dllib.models.lenet.lenet5 import build_model
 from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.optim.optimizer import *
-<<<<<<< HEAD
 from bigdl.dllib.utils.common import *
-=======
-from bigdl.utils.common import *
->>>>>>> upstream_bigdl-2.0
 
 
 def get_mnist(data_type="train", location="/tmp/mnist"):

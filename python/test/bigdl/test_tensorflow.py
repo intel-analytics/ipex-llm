@@ -16,11 +16,7 @@
 
 from bigdl.dllib.nn.layer import *
 from bigdl.dllib.optim.optimizer import *
-<<<<<<< HEAD
 from bigdl.dllib.utils.common import *
-=======
-from bigdl.utils.common import *
->>>>>>> upstream_bigdl-2.0
 import numpy as np
 import unittest
 import shutil
