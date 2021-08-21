@@ -18,24 +18,15 @@ from bigdl.dllib.nn.layer import *
 from bigdl.dllib.nn.initialization_method import *
 from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.optim.optimizer import *
-<<<<<<< HEAD
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.common import _py2java
-=======
-from bigdl.utils.common import *
-from bigdl.utils.common import _py2java
->>>>>>> upstream_bigdl-2.0
 from bigdl.dllib.nn.initialization_method import *
 from bigdl.dllib.feature.dataset import movielens
 import numpy as np
 import tempfile
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
-<<<<<<< HEAD
 from bigdl.dllib.utils.engine import compare_version
-=======
-from bigdl.utils.engine import compare_version
->>>>>>> upstream_bigdl-2.0
 np.random.seed(1337)  # for reproducibility
 
 

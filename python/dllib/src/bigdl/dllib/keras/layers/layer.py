@@ -17,11 +17,7 @@
 import sys
 
 from bigdl.dllib.nn.layer import Layer, Node, SharedStaticUtils, Container
-<<<<<<< HEAD
 from bigdl.dllib.utils.common import callBigDlFunc, JTensor, JavaValue
-=======
-from bigdl.utils.common import callBigDlFunc, JTensor, JavaValue
->>>>>>> upstream_bigdl-2.0
 
 if sys.version >= '3':
     long = int
