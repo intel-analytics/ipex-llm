@@ -1,6 +1,10 @@
 from pyspark.ml.pipeline import Estimator, Model
 from pyspark.ml.param.shared import *
+<<<<<<< HEAD
 from bigdl.dllib.utils.common import *
+=======
+from bigdl.utils.common import *
+>>>>>>> upstream_bigdl-2.0
 import sys
 
 if sys.version >= '3':
