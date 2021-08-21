@@ -18,7 +18,11 @@ import keras.optimizers as koptimizers
 
 import bigdl.dllib.nn.criterion as bcriterion
 import bigdl.dllib.optim.optimizer as boptimizer
+<<<<<<< HEAD
 from bigdl.dllib.utils.common import to_list
+=======
+from bigdl.utils.common import to_list
+>>>>>>> upstream_bigdl-2.0
 from bigdl.dllib.keras.converter import *
 from keras.objectives import *
 import six
