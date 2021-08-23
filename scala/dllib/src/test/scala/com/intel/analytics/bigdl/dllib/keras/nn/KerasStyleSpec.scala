@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Input => TInput, Sequential => TSeque
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, T, TestUtils}
-import com.intel.analytics.bigdl.utils.{Shape, RandomGenerator}
+import com.intel.analytics.bigdl.dllib.utils.{Shape, RandomGenerator}
 
 
 class KerasStyleSpec extends BigDLSpecHelper {

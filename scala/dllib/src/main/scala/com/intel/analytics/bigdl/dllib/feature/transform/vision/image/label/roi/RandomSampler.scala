@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.Crop
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.{BoundingBox}
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.opencv.core.Mat
 
 import scala.collection.mutable.ArrayBuffer

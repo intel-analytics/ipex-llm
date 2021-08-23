@@ -17,9 +17,9 @@
 
 import sys
 
-from bigdl.utils.common import JavaValue
-from bigdl.utils.common import callBigDlFunc
-from bigdl.utils.common import JTensor
+from bigdl.dllib.utils.common import JavaValue
+from bigdl.dllib.utils.common import callBigDlFunc
+from bigdl.dllib.utils.common import JTensor
 from bigdl.dllib.nn.layer import Layer
 import numpy as np
 
@@ -979,8 +979,8 @@ def _test():
     import doctest
     from pyspark import SparkContext
     from bigdl.dllib.nn import criterion
-    from bigdl.utils.common import init_engine
-    from bigdl.utils.common import create_spark_conf
+    from bigdl.dllib.utils.common import init_engine
+    from bigdl.dllib.utils.common import create_spark_conf
     globs = criterion.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test criterion",
                       conf=create_spark_conf())

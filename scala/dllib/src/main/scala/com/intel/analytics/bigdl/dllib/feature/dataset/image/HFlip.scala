@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 
 import scala.collection.Iterator
 

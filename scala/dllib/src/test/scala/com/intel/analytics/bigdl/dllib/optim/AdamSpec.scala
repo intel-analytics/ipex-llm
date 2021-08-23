@@ -19,8 +19,8 @@ package com.intel.analytics.bigdl.dllib.optim
 import com.intel.analytics.bigdl.dllib.nn.{CrossEntropyCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
-import com.intel.analytics.bigdl.utils.RandomGenerator
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer

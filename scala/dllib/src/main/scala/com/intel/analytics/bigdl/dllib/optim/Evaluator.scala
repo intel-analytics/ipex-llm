@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, MklDnn}
 import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils
 import org.apache.spark.rdd
 import org.apache.spark.rdd.RDD
