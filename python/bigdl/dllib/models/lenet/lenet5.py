@@ -20,7 +20,7 @@ from bigdl.dllib.feature.dataset.transformer import *
 from bigdl.dllib.nn.layer import *
 from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.optim.optimizer import *
-from bigdl.utils.common import *
+from bigdl.dllib.utils.common import *
 
 
 def build_model(class_num):

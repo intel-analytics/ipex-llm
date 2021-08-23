@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.optim.parameters
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericDouble
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 

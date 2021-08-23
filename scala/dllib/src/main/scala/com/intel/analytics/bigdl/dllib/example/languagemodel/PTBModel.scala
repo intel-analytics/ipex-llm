@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn.{TimeDistributed, _}
-import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, MklDnn}
 
 object PTBModel {
   def transformer(

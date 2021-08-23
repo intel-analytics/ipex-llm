@@ -21,7 +21,7 @@ import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.ByteRecord
 import com.intel.analytics.bigdl.dllib.utils.{File}
-import com.intel.analytics.bigdl.utils.{OptimizerVersion}
+import com.intel.analytics.bigdl.dllib.utils.{OptimizerVersion}
 import scopt.OptionParser
 
 object Utils {

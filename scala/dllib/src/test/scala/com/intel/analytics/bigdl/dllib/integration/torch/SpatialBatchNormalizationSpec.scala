@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import breeze.numerics.abs
 import com.intel.analytics.bigdl.dllib.nn.{BatchNormalization, GradientChecker, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 import scala.util.Random
 import com.intel.analytics.bigdl._
