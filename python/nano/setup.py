@@ -104,14 +104,18 @@ def setup_package():
                            f"-cp{py_version.major}{py_version.minor}m-linux_x86_64.whl"
     torchvision_link = "https://download.pytorch.org/whl/" + torchvision_links[torchvision_whl_name]
 
-    install_requires_list = ["pytorch_lightning",
-                             "opencv-python-headless",
-                             "PyTurboJPEG",
-                             "opencv-transforms",
-                             "intel-openmp",
-                             "torchvision",
-                             f"torch_ipex @ {ipex_link}",
-                             f"torchvision @ {torchvision_link}"]
+    install_requires = ["intel-openmp"]
+
+    tensorflow_requires = ["intel-tensorflow"]
+
+    pytorch_requires = ["pytorch_lightning",
+                        "opencv-python-headless",
+                        "PyTurboJPEG",
+                        "opencv-transforms",
+                        "torchvision",
+                        f"torch_ipex @ {ipex_link}",
+                        f"torchvision @ {torchvision_link}"]
+
 
     download_libs()
 
@@ -122,7 +126,8 @@ def setup_package():
         author='',
         author_email='',
         url='https://github.com/intel-analytics/analytics-zoo/tree/bigdl-2.0',
-        install_requires=install_requires_list,
+        install_requires=install_requires,
+        extras_require={"tensorflow": tensorflow_requires, "pytorch": pytorch_requires},
         packages=get_nano_packages(),
         package_data={"bigdl.nano": ["libs/libjemalloc.so"]},
         package_dir={'': 'src'},
