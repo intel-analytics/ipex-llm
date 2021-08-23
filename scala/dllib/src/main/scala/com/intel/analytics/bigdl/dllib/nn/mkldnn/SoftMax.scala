@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DenseType, Tensor}
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 import scala.collection.mutable.ArrayBuffer
 

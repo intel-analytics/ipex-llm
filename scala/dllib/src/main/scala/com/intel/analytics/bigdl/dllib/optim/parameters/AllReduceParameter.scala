@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.optim.parameters
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.commons.lang.exception.ExceptionUtils

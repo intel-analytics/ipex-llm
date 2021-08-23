@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, SampleToMiniBat
 import com.intel.analytics.bigdl.dllib.nn.{CrossEntropyCriterion, Module, TimeDistributedCriterion}
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
-import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.dllib.example.languagemodel.Utils._
