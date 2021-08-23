@@ -22,8 +22,8 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BytesToGreyImg, Gr
 import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim._
-import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.utils.LoggerFilter
+import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
 import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
 import org.apache.log4j.{Level, Logger}
 

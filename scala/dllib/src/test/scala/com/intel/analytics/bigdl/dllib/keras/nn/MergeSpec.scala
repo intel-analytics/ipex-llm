@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.keras.Merge.merge
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
 
 import scala.util.Random
 

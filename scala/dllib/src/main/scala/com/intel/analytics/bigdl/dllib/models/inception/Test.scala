@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, DataSet}
 import com.intel.analytics.bigdl.dllib.feature.dataset.image._
 import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.optim.{Top1Accuracy, Top5Accuracy, Validator}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.hadoop.io.Text
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext

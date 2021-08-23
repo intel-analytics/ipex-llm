@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
 import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, FileWriter, T}
 import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow.const
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
 import scala.language.postfixOps

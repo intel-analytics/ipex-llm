@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentat
 import com.intel.analytics.bigdl.dllib.feature.dataset.image.{CropCenter, CropRandom, CropperMethod}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import org.opencv.core.CvType
 
 object RandomCropper {
@@ -40,7 +40,7 @@ class RandomCropper(cropWidth: Int, cropHeight: Int,
                       channels: Int = 3)
   extends FeatureTransformer {
 
-  import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+  import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 
   val buffer = new Array[Float](cropWidth * cropHeight * channels)
 

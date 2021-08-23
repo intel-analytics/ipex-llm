@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.dllib.nn.{Linear, MSECriterion, ReLU, Sequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.dllib.optim._
 
