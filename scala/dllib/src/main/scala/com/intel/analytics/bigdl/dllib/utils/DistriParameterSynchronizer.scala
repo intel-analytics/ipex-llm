@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.mkl.hardware.{Affinity, CpuInfo}
 import com.intel.analytics.bigdl.dllib.optim.parameters.{CompressedTensor, FP16CompressedTensor, SerializerInstance}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.sparkExtension.SparkExtension

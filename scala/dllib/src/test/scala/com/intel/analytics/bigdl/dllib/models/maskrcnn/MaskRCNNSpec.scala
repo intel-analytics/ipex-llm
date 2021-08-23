@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.RoiImageIn
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.reflect.io.File

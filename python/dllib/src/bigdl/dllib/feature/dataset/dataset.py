@@ -15,9 +15,9 @@
 #
 
 import sys
-from bigdl.utils.common import JavaValue
-from bigdl.utils.common import callBigDlFunc
-from bigdl.utils.common import *
+from bigdl.dllib.utils.common import JavaValue
+from bigdl.dllib.utils.common import callBigDlFunc
+from bigdl.dllib.utils.common import *
 from bigdl.dllib.feature.transform.vision.image import *
 
 if sys.version >= '3':

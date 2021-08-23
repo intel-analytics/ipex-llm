@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import org.opencv.imgproc.Imgproc
 
 object RandomResize {

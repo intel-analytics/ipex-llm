@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.utils.serializer.converters
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
-import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
+import com.intel.analytics.bigdl.dllib.utils.{MultiShape, SingleShape, Shape => BigDLShape}
 import com.intel.analytics.bigdl.serialization.Bigdl
 import com.intel.analytics.bigdl.serialization.Bigdl.Shape.ShapeType
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule, DataType, Shape}

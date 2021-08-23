@@ -21,7 +21,7 @@ import java.util
 import com.intel.analytics.bigdl.dllib.feature.dataset.text._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Storage, Tensor}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.Iterator

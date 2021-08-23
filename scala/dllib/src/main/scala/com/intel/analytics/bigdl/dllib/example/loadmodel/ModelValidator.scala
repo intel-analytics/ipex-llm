@@ -21,7 +21,7 @@ import java.nio.file.Paths
 import com.intel.analytics.bigdl.dllib.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.optim.{Top1Accuracy, Top5Accuracy, Validator}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import scopt.OptionParser

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.optim
 
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 

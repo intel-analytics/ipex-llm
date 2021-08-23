@@ -26,9 +26,9 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.{Util => NNUtils, _}
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.log4j.Logger
 
 /**

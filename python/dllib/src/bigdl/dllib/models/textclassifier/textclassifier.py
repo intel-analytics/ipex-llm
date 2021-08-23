@@ -23,8 +23,8 @@ from bigdl.dllib.feature.dataset import news20
 from bigdl.dllib.nn.layer import *
 from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.optim.optimizer import *
-from bigdl.utils.common import *
-from bigdl.utils.common import Sample
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.common import Sample
 import datetime as dt
 
 
