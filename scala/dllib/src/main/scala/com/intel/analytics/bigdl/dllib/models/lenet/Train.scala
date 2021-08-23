@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BytesToGreyImg, Gr
 import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim._
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext

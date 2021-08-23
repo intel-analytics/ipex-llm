@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
-import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
+import com.intel.analytics.bigdl.dllib.utils.{MultiShape, SingleShape, Shape => BigDLShape}
 import com.intel.analytics.bigdl.serialization.Bigdl._
 import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 

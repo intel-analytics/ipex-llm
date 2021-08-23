@@ -59,7 +59,7 @@ object LeNet5 {
 
   def kerasLayer(classNum: Int): keras.Sequential[Float] = {
     import com.intel.analytics.bigdl.dllib.keras._
-    import com.intel.analytics.bigdl.utils.Shape
+    import com.intel.analytics.bigdl.dllib.utils.Shape
 
     val model = Sequential()
     model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
@@ -74,7 +74,7 @@ object LeNet5 {
 
   def kerasGraph(classNum: Int): keras.Model[Float] = {
     import com.intel.analytics.bigdl.dllib.keras._
-    import com.intel.analytics.bigdl.utils.Shape
+    import com.intel.analytics.bigdl.dllib.utils.Shape
 
     val input = Input(inputShape = Shape(28, 28, 1))
     val reshape = Reshape(Array(1, 28, 28)).inputs(input)

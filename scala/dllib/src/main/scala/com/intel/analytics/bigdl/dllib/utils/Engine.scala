@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.dllib.utils
 
 import java.io.{FileOutputStream, InputStream, PrintWriter}
 import java.util.Locale
@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.log4j.Logger
 import org.apache.spark._
-import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.mkl.hardware.{Affinity, CpuInfo}
 import org.apache.spark.utils.SparkUtils

@@ -24,9 +24,9 @@ import com.intel.analytics.bigdl.dllib.nn.quantized.Utils.ANode
 import com.intel.analytics.bigdl.dllib.nn.{Linear => NNLinear, SpatialConvolution => NNConv, SpatialDilatedConvolution => NNDilatedConv, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.log4j.Logger
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 

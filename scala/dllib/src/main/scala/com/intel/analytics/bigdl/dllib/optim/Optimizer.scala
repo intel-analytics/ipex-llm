@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.dllib.optim.parameters.{ConstantClippingProcess
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 

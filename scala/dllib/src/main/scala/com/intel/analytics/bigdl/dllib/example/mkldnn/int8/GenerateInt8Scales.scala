@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.example.mkldnn.int8
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.dllib.models.resnet.ImageNetDataSet
 import com.intel.analytics.bigdl.dllib.nn.{Graph, Module}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

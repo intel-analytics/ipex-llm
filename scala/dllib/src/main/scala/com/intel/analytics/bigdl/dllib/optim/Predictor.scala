@@ -28,7 +28,6 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils.intermediate.{ConversionUtils, IRGraph}
-import com.intel.analytics.bigdl.utils._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

@@ -21,14 +21,14 @@ import importlib
 import numpy as np
 import six
 
-from bigdl.utils.common import JTensor
-from bigdl.utils.common import JavaValue
-from bigdl.utils.common import callBigDlFunc
-from bigdl.utils.common import callJavaFunc
-from bigdl.utils.common import get_spark_context
-from bigdl.utils.common import to_list
-from bigdl.utils.common import INTMAX, INTMIN, DOUBLEMAX
-from bigdl.utils.common import get_activation_by_name
+from bigdl.dllib.utils.common import JTensor
+from bigdl.dllib.utils.common import JavaValue
+from bigdl.dllib.utils.common import callBigDlFunc
+from bigdl.dllib.utils.common import callJavaFunc
+from bigdl.dllib.utils.common import get_spark_context
+from bigdl.dllib.utils.common import to_list
+from bigdl.dllib.utils.common import INTMAX, INTMIN, DOUBLEMAX
+from bigdl.dllib.utils.common import get_activation_by_name
 from bigdl.dllib.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 from py4j.java_gateway import JavaObject
 from pyspark.rdd import RDD
@@ -745,7 +745,7 @@ class Model(Container):
                 bigdl_type, "createModelPreprocessor", inputs, outputs)
             self.bigdl_type = bigdl_type
         else:
-            from bigdl.utils.tf_utils import convert
+            from bigdl.dllib.utils.tf_utils import convert
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
             super(Model, self).__init__(model.value, bigdl_type)
 
@@ -863,8 +863,8 @@ class Model(Container):
 
     @staticmethod
     def train(output, data, label, opt_method, criterion, batch_size, end_when, session=None, bigdl_type="float"):
-        from bigdl.utils.tf_utils import get_path
-        from bigdl.utils.common import Sample
+        from bigdl.dllib.utils.tf_utils import get_path
+        from bigdl.dllib.utils.common import Sample
         output_name = output.name.split(":")[0]
         path = get_path(output_name, session)
         sc = get_spark_context()
@@ -5784,8 +5784,8 @@ def _test():
     import doctest
     from pyspark import SparkContext
     from bigdl.dllib.nn import layer
-    from bigdl.utils.common import init_engine
-    from bigdl.utils.common import create_spark_conf
+    from bigdl.dllib.utils.common import init_engine
+    from bigdl.dllib.utils.common import create_spark_conf
     globs = layer.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test layer",
                       conf=create_spark_conf())

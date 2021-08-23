@@ -16,7 +16,7 @@
 
 from bigdl.dllib.nn.layer import *
 from bigdl.dllib.optim.optimizer import *
-from bigdl.utils.common import *
+from bigdl.dllib.utils.common import *
 import numpy as np
 import pytest
 import tempfile

@@ -22,9 +22,9 @@ import java.lang.reflect.Modifier
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.ops.{Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.dllib.nn.tf.{DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps}
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.tf.loaders.{Pack => _}
-import com.intel.analytics.bigdl.utils.{Shape => KShape}
+import com.intel.analytics.bigdl.dllib.utils.{Shape => KShape}
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
