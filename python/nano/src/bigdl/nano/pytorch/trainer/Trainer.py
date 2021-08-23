@@ -36,7 +36,6 @@ class Trainer(pl.Trainer):
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
-
         :param num_processes: number of processes in distributed training. default: 4.
         :param use_ipex: whether we use ipex as accelerator for trainer. default: True.
         :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
@@ -95,7 +94,8 @@ class Trainer(pl.Trainer):
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
                 from bigdl.nano.pytorch.plugins.ray_distributed import RayPlugin
-                plugin = RayPlugin(num_workers=num_processes, use_ipex=use_ipex)  # type: ignore
+                plugin = RayPlugin(num_workers=num_processes,
+                                   use_ipex=use_ipex)  # type: ignore
 
             if use_ipex:
                 from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
@@ -104,4 +104,5 @@ class Trainer(pl.Trainer):
             else:
                 accelerator = None
 
-            super().__init__(accelerator=accelerator, plugins=[plugin], *args, **kwargs)
+            super().__init__(accelerator=accelerator,
+                             plugins=[plugin], *args, **kwargs)
