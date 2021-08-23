@@ -97,12 +97,21 @@ def setup_package():
     ipex_whl_name = f"torch_ipex-{ipex_version}-cp{py_version.major}{py_version.minor}" \
                     f"-cp{py_version.major}{py_version.minor}m-linux_x86_64.whl"
     ipex_link = ipex_links[ipex_whl_name]
+
+    torchvision_version = "0.9.0"
+    torchvision_links = parse_find_index_page("https://download.pytorch.org/whl/torch_stable.html")
+    torchvision_whl_name = f"cpu/torchvision-{torchvision_version}%2Bcpu-cp{py_version.major}{py_version.minor}" \
+                           f"-cp{py_version.major}{py_version.minor}m-linux_x86_64.whl"
+    torchvision_link = "https://download.pytorch.org/whl/" + torchvision_links[torchvision_whl_name]
+
     install_requires_list = ["pytorch_lightning",
                              "opencv-python-headless",
                              "PyTurboJPEG",
                              "opencv-transforms",
                              "intel-openmp",
-                             f"torch_ipex @ {ipex_link}"]
+                             "torchvision",
+                             f"torch_ipex @ {ipex_link}",
+                             f"torchvision @ {torchvision_link}"]
 
     download_libs()
 

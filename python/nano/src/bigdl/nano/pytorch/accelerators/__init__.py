@@ -20,7 +20,6 @@ _torch_save = torch.save
 
 # To replace torch.save in ipex, you need to import and exec their __init__.py first.
 from intel_pytorch_extension.ops.save import *
-
 # And then you can replace torch.save with your customized function.
 # Note that you need to temporarily store original torch.save,
 # because it will be modified in ipex.ops.save.
@@ -33,8 +32,9 @@ DEFAULT_PROTOCOL = 2
 
 torch_save = torch.save
 
+
 def nano_save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL,
-                   _use_new_zipfile_serialization=False):
+              _use_new_zipfile_serialization=False):
     def to_cpu(obj, iter_type):
         # Extend original `save` defined in ipex.ops.save
         # to support converting a list of xpu tensor to cpu in torch.save
@@ -59,5 +59,6 @@ def nano_save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL,
     else:
         obj_copy = obj
     return torch_save(obj_copy, f, pickle_module, pickle_protocol, _use_new_zipfile_serialization)
+
 
 torch.save = nano_save
