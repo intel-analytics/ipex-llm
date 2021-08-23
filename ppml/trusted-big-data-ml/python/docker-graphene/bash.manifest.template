@@ -85,6 +85,10 @@ fs.mount.zinc.type = "chroot"
 fs.mount.zinc.path = "/root/.zinc"
 fs.mount.zinc.uri = "file:/root/.zinc"
 
+fs.mount.gcclib.type = "chroot"
+fs.mount.gcclib.path = "/usr/lib/gcc"
+fs.mount.gcclib.uri = "file:/usr/lib/gcc"
+
 fs.mount.work.type = "chroot"
 fs.mount.work.path = "$(WORK_DIR)"
 fs.mount.work.uri = "file:$(WORK_DIR)"
@@ -115,6 +119,8 @@ sgx.trusted_files.sh = "file:/bin/sh"
 sgx.trusted_files.stty = "file:/bin/stty"
 sgx.trusted_files.mvn = "file:/usr/bin/mvn"
 sgx.trusted_files.scala = "file:/opt/scala-2.11.8/bin/scala"
+sgx.trusted_files.ldconfig = "file:/sbin/ldconfig"
+sgx.trusted_files.gcc = "file:/usr/bin/gcc"
 
 # Glibc libraries
 sgx.trusted_files.ld = "file:$(GRAPHENEDIR)/Runtime/ld-linux-x86-64.so.2"
@@ -151,5 +157,6 @@ sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.6/dist-packages"
 sgx.allowed_files.kerasdatas = "file:/root/.keras"
 sgx.allowed_files.m2        = "file:/root/.m2"
 sgx.allowed_files.zinc      = "file:/root/.zinc"
+sgx.allowed_files.gcclib    = "file:/usr/lib/gcc"
 
 sgx.nonpie_binary = 1
