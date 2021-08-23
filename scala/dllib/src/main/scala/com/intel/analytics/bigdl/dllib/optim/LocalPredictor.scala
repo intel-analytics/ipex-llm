@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeat
 import com.intel.analytics.bigdl.dllib.utils.Util._
 import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils
 import com.intel.analytics.bigdl.dllib.utils.{Util}
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, MklBlas, MklDnn}
 import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag

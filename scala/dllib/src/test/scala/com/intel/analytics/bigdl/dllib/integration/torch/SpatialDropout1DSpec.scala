@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 
 import com.intel.analytics.bigdl.dllib.nn.{SpatialDropout1D, SpatialDropout2D}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialDropout1DSpec extends TorchSpec {

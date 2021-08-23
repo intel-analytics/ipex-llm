@@ -27,11 +27,11 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.EmptyGradInput
 import com.intel.analytics.bigdl.dllib.nn.ops.Less
 import com.intel.analytics.bigdl.dllib.nn.tf.{ControlNodes, Enter, Const}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.reflect.ClassTag
 import scala.util.Random

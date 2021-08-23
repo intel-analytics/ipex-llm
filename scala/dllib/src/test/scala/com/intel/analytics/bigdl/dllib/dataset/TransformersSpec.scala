@@ -23,10 +23,10 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet.SeqFileFolder
 import com.intel.analytics.bigdl.dllib.feature.dataset.image._
 import com.intel.analytics.bigdl.dllib.feature.dataset.text.{LabeledSentence, LabeledSentenceToSample}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.{TestUtils}
-import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{SequenceFile, Text}

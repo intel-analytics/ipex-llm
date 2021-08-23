@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.utils.common import *
+from bigdl.dllib.utils.common import *
 
 init_engine()
 redire_spark_logs()
