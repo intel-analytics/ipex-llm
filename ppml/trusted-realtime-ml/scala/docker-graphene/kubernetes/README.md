@@ -44,7 +44,7 @@ kubectl create -f taskmanager-session-deployment.yaml
 Both the job manager and the task manager will start automatically in SGX on top of Graphene libos when the deployments are created.
 
 Next, we set up a port forward to access the Flink UI:
-1. Run `kubectl port-forward ${flink-jobmanager-pod} 8081:8081` to forward your jobmanager’s web ui port to local 8081.
+1. Run `kubectl port-forward ${flink-jobmanager-pod} --address 0.0.0.0 8081:8081` to forward your jobmanager’s web ui port to local 8081.
 2. Navigate to http://localhost:8081 in your browser.
 
 ## Deploy cluster serving
@@ -57,7 +57,7 @@ kubectl apply -f master-deployment.yaml
 The components (Redis, http-frontend, and cluster serving) should start on their own, if jobmanager and taskmanager are running.
 
 Next, we set up a port forward to access the ports 6379, 10020, and 10023 on the host:
-1. Run `kubectl port-forward ${master-pod} 10020:10020`.
+1. Run `kubectl port-forward ${master-pod} --address 0.0.0.0 10020:10020`.
 2. Navigate to http://localhost:10020 in your browser.
 3. Do the same to the other ports.
 
