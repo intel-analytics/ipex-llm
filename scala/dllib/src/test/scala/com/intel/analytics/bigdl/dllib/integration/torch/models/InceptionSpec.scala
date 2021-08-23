@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.optim.SGD
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.integration.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.dllib.models.Inception
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 

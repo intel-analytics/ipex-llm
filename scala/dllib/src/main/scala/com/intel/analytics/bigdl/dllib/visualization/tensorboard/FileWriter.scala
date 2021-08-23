@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.visualization.tensorboard
 
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.tensorflow

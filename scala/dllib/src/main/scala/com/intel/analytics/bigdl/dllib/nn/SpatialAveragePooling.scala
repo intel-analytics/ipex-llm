@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect._
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 
 /**
  * Applies 2D average-pooling operation in kWxkH regions by step size dWxdH steps.

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, Tensor}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {

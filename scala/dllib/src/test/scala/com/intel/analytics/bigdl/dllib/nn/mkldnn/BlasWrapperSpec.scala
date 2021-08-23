@@ -26,9 +26,9 @@ import com.intel.analytics.bigdl.dllib.nn.{Graph, Squeeze, mkldnn}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, T}
-import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.utils.RandomGenerator
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 class BlasWrapperSpec extends BigDLSpecHelper {

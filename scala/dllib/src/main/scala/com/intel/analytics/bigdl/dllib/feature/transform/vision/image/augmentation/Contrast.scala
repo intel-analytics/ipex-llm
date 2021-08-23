@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentat
 
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 /**
  * Adjust the image contrast

@@ -20,12 +20,13 @@ import com.intel.analytics.bigdl.dllib.models.resnet.Utils.{TestParams, _}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
 import scopt.OptionParser
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, segmentation}
 import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.optim.MeanAveragePrecision
 import org.apache.spark.{SparkContext, rdd}
+
 object Test {
   case class TestParams(
      folder: String = "./",

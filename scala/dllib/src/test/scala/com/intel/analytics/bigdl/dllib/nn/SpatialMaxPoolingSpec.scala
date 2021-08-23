@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.tensor
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
