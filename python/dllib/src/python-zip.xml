@@ -15,7 +15,7 @@
                 <exclude>test/**</exclude>
             </excludes>
             <outputDirectory>/..</outputDirectory>
-            <directory>${project.build.directory}/../../../python</directory>
+            <directory>${project.build.directory}/../../../python/dllib/</directory>
         </fileSet>
         <!--<fileSet>-->
             <!--<includes>-->
