@@ -66,7 +66,8 @@ def _find_library(library_name: str, priority_dir: Union[str, None] = None) -> U
             res = subprocess.check_output("find " + priority_dir + " -name " + library_name,
                                           shell=True, stderr=subprocess.DEVNULL).splitlines()
         except Exception:
-            warnings.warn("Some errors occurred while trying to find " + library_name)
+            warnings.warn(
+                "Some errors occurred while trying to find " + library_name)
         if len(res) > 0:
             return res[0].decode("utf-8")
 
@@ -74,12 +75,13 @@ def _find_library(library_name: str, priority_dir: Union[str, None] = None) -> U
         res = subprocess.check_output("find / -name " + library_name, shell=True,
                                       stderr=subprocess.DEVNULL).splitlines()
     except Exception:
-        warnings.warn("Some errors occurred while trying to find " + library_name)
+        warnings.warn(
+            "Some errors occurred while trying to find " + library_name)
     return res[0].decode("utf-8") if len(res) > 0 else None
 
 
 def init_nano(use_jemalloc: bool = True, use_openmp: bool = True,
-                   print_environment: bool = False) -> None:
+              print_environment: bool = False) -> None:
     """
     Configure necessary environment variables for jemalloc and openmp libraries.
     :param use_jemalloc: If this is set to True, then use jemalloc library. Otherwise disable
