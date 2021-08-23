@@ -91,7 +91,13 @@ OPENMP=0
 JEMALLOC=0
 
 # Find conda dir
-BASE_DIR="$(dirname "$0")/../"
+if [ $0 != $BASH_SOURCE ]; then
+        # this script is being sourced
+        BASE_DIR="$(dirname "$BASH_SOURCE")/.."
+else
+        # this script is being executed
+        BASE_DIR="$(dirname "$0")/../"
+fi
 echo "conda dir found: $BASE_DIR"
 LIB_DIR=$BASE_DIR/lib
 
