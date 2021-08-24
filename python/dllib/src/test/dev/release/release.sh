@@ -19,9 +19,9 @@
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
-BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../../..; pwd)"
+BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../../../..; pwd)"
 echo $BIGDL_DIR
-BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python; pwd)"
+BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/dllib/src; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 if (( $# < 2)); then
@@ -32,7 +32,7 @@ fi
 platform=$1
 spark_profile=$2
 quick=$3
-bigdl_version=$(python -c "exec(open('$BIGDL_DIR/python/bigdl/version.py').read()); print(__version__)")
+bigdl_version=$(python -c "exec(open('$BIGDL_DIR/python/dllib/src/bigdl/version.py').read()); print(__version__)")
 
 cd ${BIGDL_DIR}/scala
 if [ "$platform" ==  "mac" ]; then
@@ -61,12 +61,12 @@ sdist_command="python setup.py sdist"
 echo "packing source code: ${sdist_command}"
 $sdist_command
 
-if [ -d "${BIGDL_DIR}/python/build" ]; then
-   rm -r ${BIGDL_DIR}/python/build
+if [ -d "${BIGDL_DIR}/python/dllib/build" ]; then
+   rm -r ${BIGDL_DIR}/python/dllib/build
 fi
 
-if [ -d "${BIGDL_DIR}/python/dist" ]; then
-   rm -r ${BIGDL_DIR}/python/dist
+if [ -d "${BIGDL_DIR}/python/dllib/dist" ]; then
+   rm -r ${BIGDL_DIR}/python/dllib/dist
 fi
 
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
