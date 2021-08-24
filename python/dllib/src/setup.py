@@ -22,7 +22,7 @@ from shutil import copyfile, copytree, rmtree
 
 from setuptools import setup
 
-TEMP_PATH = "bigdl/share"
+TEMP_PATH = "bigdl/dllib/share"
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 
 try:
@@ -69,7 +69,7 @@ def init_env():
 
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__)[:-8]
-    bigdl_packages = ['bigdl.share']
+    bigdl_packages = ['bigdl.dllib.share']
     for dirpath, dirs, files in os.walk(bigdl_python_home + "bigdl"):
         package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
         if "__pycache__" not in package:
@@ -93,7 +93,7 @@ def setup_package():
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         # package_data={"bigdl.share": ['bigdl/share/lib', 'bigdl/share/conf', 'bigdl/share/bin']},
-        package_data={"bigdl.share": ['bigdl/share/lib']},
+        package_data={"bigdl.dllib.share": ['bigdl/dllib/share/lib']},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 2.7',
