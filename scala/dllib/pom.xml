@@ -261,7 +261,7 @@
                         <inherited>false</inherited>
                         <configuration>
                             <descriptors>
-                                <descriptor>${project.basedir}/../../python/python-zip.xml
+                                <descriptor>${project.basedir}/../../python/dllib/src/python-zip.xml
                                 </descriptor>
                             </descriptors>
                         </configuration>
