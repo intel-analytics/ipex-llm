@@ -673,6 +673,9 @@ class Table:
 
     order_by = sort
 
+    def to_pandas(self):
+        return self.df.toPandas()
+
     @staticmethod
     def from_pandas(pandas_df):
         """
@@ -680,7 +683,6 @@ class Table:
         :param pandas_df: pandas dataframe
         """
         spark = OrcaContext.get_spark_session()
-        spark.conf.set("spark.sql.execution.arrow.enabled", "true")
         sparkDF = spark.createDataFrame(pandas_df)
         return Table(sparkDF)
 
