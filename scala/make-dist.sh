@@ -68,6 +68,6 @@ else
   mkdir -p $DIST_DIR/conf
 fi
 
-cp -r $BASEDIR/dllib/target/bigdl-dllib-2.0.0-SNAPSHOT-jar-with-dependencies.jar $DIST_DIR/lib
-cp -r $BASEDIR/dllib/target/bigdl-dllib-2.0.0-SNAPSHOT-python-api.zip $DIST_DIR/lib
+cp -r $BASEDIR/dllib/target/bigdl-dllib-*-jar-with-dependencies.jar $DIST_DIR/lib
+cp -r $BASEDIR/dllib/target/bigdl-dllib-*-python-api.zip $DIST_DIR/lib
 cp -r $BASEDIR/dllib/src/main/resources/spark-bigdl.conf $DIST_DIR/conf
