@@ -100,6 +100,9 @@ ENV FLINK_BLOB_SERVER_PORT              6124
 ENV FLINK_TASK_MANAGER_RPC_PORT		6125
 ENV FLINK_TASK_MANAGER_TASKSLOTS_NUM	1
 ENV CORE_NUM                            2
+ENV TASKMANAGER_MEMORY_TASK_HEAP_SIZE   10gb
+ENV TASKMANAGER_MEMORY_MANAGED_SIZE     8192mb
+ENV XMX_SIZE                            10g 
 
 RUN mkdir -p /graphene && \
     mkdir -p /graphene/Runtime && \
