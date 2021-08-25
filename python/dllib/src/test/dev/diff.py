@@ -21,8 +21,9 @@ import os
 import re
 from os.path import isfile, join
 
-scala_nn_root = "./spark/dl/src/main/scala/com/intel/analytics/bigdl/nn/"
-python_nn_root = "./pyspark/bigdl/nn/"
+scala_nn_root = "./scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/nn/"
+
+python_nn_root = "./python/dllib/src/bigdl/dllib/nn/"
 
 scala_to_python = {"Graph": "Model"}
 

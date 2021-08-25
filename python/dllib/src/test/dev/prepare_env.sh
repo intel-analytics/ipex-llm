@@ -16,9 +16,9 @@
 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE[0]})
 echo "SCRIPT_DIR": $SCRIPT_DIR
-export DL_PYTHON_HOME="$(cd ${SCRIPT_DIR}/../../src; pwd)"
+export DL_PYTHON_HOME="$(cd ${SCRIPT_DIR}/../../../src; pwd)"
 
-export BIGDL_HOME="$(cd ${SCRIPT_DIR}/../../../..; pwd)"
+export BIGDL_HOME="$(cd ${SCRIPT_DIR}/../../../../..; pwd)"
 
 echo "BIGDL_HOME: $BIGDL_HOME"
 echo "SPARK_HOME": $SPARK_HOME
@@ -28,7 +28,8 @@ if [ -z ${SPARK_HOME+x} ]; then echo "SPARK_HOME is unset"; exit 1; else echo "S
 
 export PYSPARK_ZIP=`find $SPARK_HOME/python/lib  -type f -iname '*.zip' | tr "\n" ":"`
 
-export PYTHONPATH=$PYTHONPATH:$PYSPARK_ZIP:$DL_PYTHON_HOME:$DL_PYTHON_HOME/:$DL_PYTHON_HOME/test/dev:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf
+export PYTHONPATH=$PYTHONPATH:$PYSPARK_ZIP:$DL_PYTHON_HOME:$DL_PYTHON_HOME/:$DL_PYTHON_HOME/../test/dev:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf
+echo "PYTHONPATH": $PYTHONPATH
 
 export BIGDL_CLASSPATH=$(find $BIGDL_HOME/dist/lib/ -name "*with-dependencies.jar" | head -n 1)
 echo "BIGDL_CLASSPATH": $BIGDL_CLASSPATH
