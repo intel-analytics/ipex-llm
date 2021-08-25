@@ -21,7 +21,7 @@ import bigdl.dllib.keras.layers.layer as BLayer
 import keras.layers as KLayer
 import keras.backend as K
 from bigdl.dllib.keras.converter import WeightsConverter
-from bigdl.dataset.dataset import *
+from bigdl.dllib.feature.dataset.dataset import *
 from bigdl.dllib.keras.layers.topology import Model as BModel
 from bigdl.dllib.keras.layers.topology import Sequential as BSequential
 from keras.engine import merge as kmerge, Model as KModel
