@@ -3,8 +3,8 @@
 
 REDISLOG="/ppml/trusted-realtime-ml/redis/redis-sgx.log"
 JMSGXLOG="/ppml/trusted-realtime-ml/java/flink-jobmanager-sgx.log"
-STANDALONELOG="/ppml/trusted-realtime-ml/java/work/flink-1.10.1/log/flink-sgx-standalonesession-*.log"
-TMSGXLOG="/ppml/trusted-realtime-ml/java/work/flink-1.10.1/log/flink-sgx-taskexecutor-*.log"
+STANDALONELOG="/ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}/log/flink-sgx-standalonesession-*.log"
+TMSGXLOG="/ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}/log/flink-sgx-taskexecutor-*.log"
 FRONTENDLOG="/ppml/trusted-realtime-ml/java/http-frontend-sgx.log"
 SERVINGLOG="/ppml/trusted-realtime-ml/java/cluster-serving-job-sgx.log"
 

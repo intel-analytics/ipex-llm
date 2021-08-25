@@ -9,6 +9,7 @@ job_manager_rpc_port=$FLINK_JOB_MANAGER_RPC_PORT
 secure_password=`openssl rsautl -inkey /ppml/trusted-realtime-ml/java/work/password/key.txt -decrypt </ppml/trusted-realtime-ml/java/work/password/output.bin`
 flink_home=$FLINK_HOME
 flink_version=$FLINK_VERSION
+blob_server_port=$FLINK_BLOB_SERVER_PORT
 
 echo "### Launching Flink Jobmanager ###"
 
@@ -27,6 +28,7 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
     --configDir ${flink_home}/conf \
     -D rest.bind-address=${job_manager_host} \
     -D rest.bind-port=${job_manager_rest_port} \
+    -D blob.server.port=${blob_server_port} \
     -D jobmanager.rpc.address=${job_manager_host} \
     -D jobmanager.rpc.port=${job_manager_rpc_port} \
     -D jobmanager.heap.size=5g \
