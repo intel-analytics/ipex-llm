@@ -33,6 +33,7 @@ do
     export PYTHON_EXECUTABLE=$p
     export PYSPARK_PYTHON=$p
     export PYSPARK_DRIVER_PYTHON=$p
+<<<<<<< HEAD:python/dllib/src/test/dev/run-tests
     $p -m pytest -v --junitxml result_bigdl_${p}.xml --doctest-modules ../../../../dllib/src/bigdl \
     --ignore=../../../../dllib/src/bigdl/dllib/feature/dataset/ \
     --ignore=../../../../dllib/src/bigdl/dllib/utils/tf_utils.py \
@@ -44,6 +45,19 @@ do
     --ignore=../../../../dllib/test/bigdl/caffe/ \
     --ignore=../../../../dllib/test/bigdl/keras/ \
     --ignore=../../../../dllib/test/bigdl/test_utils.py
+=======
+    $p -m pytest -v --junitxml result_bigdl_${p}.xml --doctest-modules ../../../dllib/src/bigdl \
+    --ignore=../../../dllib/src/bigdl/dllib/feature/dataset/ \
+    --ignore=../../../dllib/src/bigdl/dllib/utils/tf_utils.py \
+    --ignore=../../../dllib/src/bigdl/dllib/keras \
+    --ignore=../../../dllib/test/bigdl/keras/test_application.py \
+    --ignore=../../../dllib/src/bigdl/dllib/examples/ \
+    --ignore=../../../dllib/src/bigdl/dllib/models/ && \
+    $p -m pytest -v --junitxml result_test_${p}.xml  ../../../python/test/ \
+    --ignore=../../../dllib/test/bigdl/caffe/ \
+    --ignore=../../../dllib/test/bigdl/keras/ \
+    --ignore=../../../dllib/test/bigdl/test_utils.py
+>>>>>>> upstream_bigdl-2.0:python/dllib/test/dev/run-tests
 
     exit_status=$?
     if [ $exit_status -ne 0 ];
