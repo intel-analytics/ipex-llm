@@ -43,7 +43,7 @@ class Estimator(object):
                    workers_per_node=1,
                    compile_args_creator=None,
                    backend="tf2",
-                   cpu_binding=True,
+                   cpu_binding=False,
                    ):
         """
         Create an Estimator for tensorflow 2.
@@ -61,7 +61,7 @@ class Estimator(object):
                dictionary like {"optimizer": tf.keras.optimizers.SGD(lr), "loss":
                "mean_squared_error", "metrics": ["mean_squared_error"]}
         :param backend: (string) You can choose "horovod" or "tf2" as backend. Default: `tf2`.
-        :param cpu_binding: (bool) Whether to binds threads to specific CPUs. Default: True
+        :param cpu_binding: (bool) Whether to binds threads to specific CPUs. Default: False
         """
         return TensorFlow2Estimator(model_creator=model_creator, config=config,
                                     verbose=verbose, workers_per_node=workers_per_node,
@@ -92,7 +92,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                  verbose=False,
                  backend="tf2",
                  workers_per_node=1,
-                 cpu_binding=True):
+                 cpu_binding=False):
         self.model_creator = model_creator
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
