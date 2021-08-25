@@ -32,7 +32,11 @@ echo "${cyan}Using python version: $p${reset}"
 export PYTHON_EXECUTABLE=$p
 export PYSPARK_PYTHON=$p
 export PYSPARK_DRIVER_PYTHON=$p
+<<<<<<< HEAD:python/dllib/src/test/dev/run-keras.sh
 $p -m pytest -v  ../../test/bigdl/keras
+=======
+$p -m pytest -v  ../../../python/dllib/test/bigdl/keras
+>>>>>>> upstream_bigdl-2.0:python/dllib/test/dev/run-keras.sh
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
