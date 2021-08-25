@@ -1,58 +1,71 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flink-taskmanager
+  name: flink-jobmanager
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: analytics-zoo-ppml-trusted-realtime-ml-graphene
-      component: taskmanager
+      component: jobmanager
   template:
     metadata:
       labels:
         app: analytics-zoo-ppml-trusted-realtime-ml-graphene
-        component: taskmanager
+        component: jobmanager
     spec:
       tolerations:
       - key: sgx.intel.com/epc
         operator: Exists
         effect: NoSchedule
       containers:
-      - name: taskmanager
+      - name: jobmanager
         image: 10.239.45.10/arda/intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.12.0-SNAPSHOT
         command: ["/bin/bash","-c"]
-        args:
-              - export FLINK_JOB_MANAGER_IP=flink-jobmanager;
-                cd /ppml/trusted-realtime-ml/java;
-                bash init-java.sh | tee ../init-java.log ;
-                bash start-flink-taskmanager.sh | tee ../taskmanager.log;
-                tail -f /dev/null
-#        args: ["export FLINK_JOB_MANAGER_IP=flink-jobmanager; tail -f /dev/null"]
-        ports:
-        - containerPort: 6122
-          name: rpc
-        - containerPort: 6125
-          name: query-state
-#        resources:
-#          requests:
-#            cpu: 10
-#            memory: 128G
-#            sgx.intel.com/epc: 133258905600
-#          limits:
-#            cpu: 12
-#            memory: 128G
-#            sgx.intel.com/epc: 133258905600
-#        livenessProbe:
-#          tcpSocket:
-#            port: 6122
-#          initialDelaySeconds: 30
-#          periodSeconds: 60
+        args: 
+          - cd /ppml/trusted-realtime-ml/java; 
+            bash init-java.sh 2> ../init-java.sh ; 
+            bash start-flink-jobmanager.sh | tee ../jobmanager.log; 
+            tail -f /dev/null
+#        args: ["tail -f /dev/null"]
+        env: 
+          - name: FLINK_JOBMANAGER_IP
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: flink.jobmanager.ip
+        env: 
+          - name: XMX_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: xmx.size
         securityContext:
           privileged: true
+        resources:
+          requests:
+            cpu: 10
+            sgx.intel.com/epc: 133258905600
+          limits:
+            cpu: 12
+            sgx.intel.com/epc: 133258905600
+        ports:
+        - containerPort: 6123
+          name: rpc
+        - containerPort: 6124
+          name: blob-server
+        - containerPort: 8081
+          name: webui
+#        livenessProbe:
+#          tcpSocket:
+#            port: 6123
+#          initialDelaySeconds: 30
+#          periodSeconds: 60
+#        securityContext:
+#          runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
         volumeMounts:
         - name: flink-config-volume
-          mountPath: /opt/flink/conf/
+          mountPath: /opt/flink/conf
         - name: enclave-keys
           mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
         - name: java-secure-keys
@@ -65,17 +78,7 @@ spec:
           mountPath: /dev/gsgx
         - name: aesm-socket
           mountPath: /var/run/aesmd/aesm.socket
-#        securityContext:
-#          runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
       volumes:
-      - name: flink-config-volume
-        configMap:
-          name: flink-config
-          items:
-          - key: flink-conf.yaml
-            path: flink-conf.yaml
-          - key: log4j-console.properties
-            path: log4j-console.properties
       - name: enclave-keys
         hostPath:
           path: path_to_enclave-key.pem
@@ -94,4 +97,11 @@ spec:
       - name: aesm-socket
         hostPath:
           path: /var/run/aesmd/aesm.socket
-
+      - name: flink-config-volume
+        configMap:
+          name: flink-config
+          items:
+          - key: flink-conf.yaml
+            path: flink-conf.yaml
+          - key: log4j-console.properties
+            path: log4j-console.properties

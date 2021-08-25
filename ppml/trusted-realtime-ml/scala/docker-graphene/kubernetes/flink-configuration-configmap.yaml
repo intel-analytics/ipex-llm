@@ -5,6 +5,10 @@ metadata:
   labels:
     app: analytics-zoo-ppml-trusted-realtime-ml-graphene
 data:
+  flink.jobmanager.ip: flink-jobmanager
+  taskmanager.memory.managed.size: 8192mb
+  taskmanager.memory.task.heap.size: 10gb
+  xmx.size: 10g
   flink-conf.yaml: |+
     jobmanager.rpc.address: flink-jobmanager
     taskmanager.numberOfTaskSlots: 2
