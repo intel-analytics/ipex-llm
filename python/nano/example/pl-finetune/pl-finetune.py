@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This file is adapted from PyTorch Lightning. 
+# This file is adapted from PyTorch Lightning.
 # https://github.com/PyTorchLightning/pytorch-lightning/blob/master/
 # pl_examples/domain_templates/computer_vision_fine_tuning.py
 # Copyright The PyTorch Lightning team.
@@ -62,8 +62,9 @@ from torch.optim.lr_scheduler import MultiStepLR
 from torch.optim.optimizer import Optimizer
 from torch.utils.data import DataLoader
 from torchmetrics import Accuracy
-from torchvision import models, transforms
-from torchvision.datasets import ImageFolder
+from torchvision import models
+from bigdl.nano.pytorch.vision.datasets import ImageFolder
+from bigdl.nano.pytorch.vision.transforms import transforms
 from torchvision.datasets.utils import download_and_extract_archive
 
 import pytorch_lightning as pl
@@ -314,8 +315,10 @@ class MyLightningCLI(LightningCLI):
 
 
 def cli_main():
+    from bigdl.nano.pytorch.trainer import Trainer
+
     MyLightningCLI(TransferLearningModel, CatDogImageDataModule,
-                   seed_everything_default=1234)
+                   seed_everything_default=1234, trainer_class=Trainer)
 
 
 if __name__ == "__main__":
