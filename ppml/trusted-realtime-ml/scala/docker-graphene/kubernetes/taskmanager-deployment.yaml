@@ -23,7 +23,8 @@ spec:
         image: 10.239.45.10/arda/intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.12.0-SNAPSHOT
         command: ["/bin/bash","-c"]
         args:
-              - cd /ppml/trusted-realtime-ml/java;
+              - export FLINK_TASK_MANAGER_IP=$(hostname -I);
+                cd /ppml/trusted-realtime-ml/java;
                 bash init-java.sh | tee ../init-java.log ;
                 bash start-flink-taskmanager.sh | tee ../taskmanager.log;
                 tail -f /dev/null
@@ -52,11 +53,17 @@ spec:
               configMapKeyRef:
                 name: flink-config
                 key: xmx.size
+        env:
+          - name: FLINK_TASK_MANAGER_RPC_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: taskmanager.rpc.port
         ports:
-        - containerPort: 6122
-          name: rpc
         - containerPort: 6125
-          name: query-state
+          name: rpc
+#        - containerPort: 6125
+#          name: query-state
 #        resources:
 #          requests:
 #            cpu: 10
