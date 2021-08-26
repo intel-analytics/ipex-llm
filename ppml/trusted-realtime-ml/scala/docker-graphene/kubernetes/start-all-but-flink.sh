@@ -3,13 +3,13 @@ set -x
 export FLINK_JOB_MANAGER_IP=flink-jobmanager
 cd /ppml/trusted-realtime-ml/redis
 export SGX_MEM_SIZE=16G
-./init-redis.sh
+test "$SGX_MODE" = sgx && ./init-redis.sh
 echo "redis initiated"
 
 
 cd /ppml/trusted-realtime-ml/java
 export SGX_MEM_SIZE=32G
-./init-java.sh
+test "$SGX_MODE" = sgx && ./init-java.sh
 echo "java initiated"
 
 

@@ -16,10 +16,13 @@ flink_version=$FLINK_VERSION
 taskmanager_memory_task_heap_size=$TASKMANAGER_MEMORY_TASK_HEAP_SIZE
 taskmanager_memory_managed_size=$TASKMANAGER_MEMORY_MANAGED_SIZE
 xmx_size=$XMX_SIZE
+sgx_mode=$SGX_MODE
+
+if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then cmd_prefix="SGX=1 ./pal_loader"; fi
 
 echo "### Launching Flink Taskmanager ###"
 
-SGX=1 ./pal_loader /opt/jdk8/bin/java \
+eval ${cmd_prefix} /opt/jdk8/bin/java \
     -XX:+UseG1GC \
     -Xms2g \
     -Xmx${xmx_size} \
@@ -30,7 +33,7 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -Dorg.apache.flink.shaded.netty4.io.netty.tryReflectionSetAccessible=true \
     -Dorg.apache.flink.shaded.netty4.io.netty.eventLoopThreads=${core_num} \
     -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
-    -Dlog.file=${flink_home}/log/flink-sgx-taskexecutor-0-sgx-ICX-LCC.log \
+    -Dlog.file=${flink_home}/log/flink-taskexecutor-0-${sgx_mode}.log \
     -Dlog4j.configurationFile=file:${flink_home}/conf/log4j.properties \
     -Dlogback.configurationFile=file:${flink_home}/conf/logback.xml \
     -classpath ${flink_home}/lib/flink-csv-${flink_version}.jar:${flink_home}/lib/flink-dist_2.11-${flink_version}.jar:${flink_home}/lib/flink-json-${flink_version}.jar:${flink_home}/lib/flink-shaded-zookeeper-3.4.14.jar:${flink_home}/lib/flink-table_2.11-${flink_version}.jar:${flink_home}/lib/flink-table-blink_2.11-${flink_version}.jar:${flink_home}/lib/log4j-1.2-api-2.12.1.jar:${flink_home}/lib/log4j-api-2.12.1.jar:${flink_home}/lib/log4j-core-2.12.1.jar:${flink_home}/lib/log4j-slf4j-impl-2.12.1.jar::: org.apache.flink.runtime.taskexecutor.TaskManagerRunner \
@@ -57,4 +60,4 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
     -D taskmanager.memory.managed.size=${taskmanager_memory_managed_size} \
     -D taskmanager.cpu.cores=${core_num} \
     -D taskmanager.memory.task.heap.size=${taskmanager_memory_task_heap_size} \
-    -D taskmanager.memory.task.off-heap.size=953mb | tee ./flink-taskmanager-sgx.log
+    -D taskmanager.memory.task.off-heap.size=953mb | tee ./flink-taskmanager-${sgx_mode}.log
