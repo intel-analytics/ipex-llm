@@ -24,7 +24,7 @@ spec:
         command: ["/bin/bash","-c"]
         args: 
           - cd /ppml/trusted-realtime-ml/java; 
-            bash init-java.sh 2> ../init-java.sh ; 
+            test "$SGX_MODE" = sgx && bash init-java.sh > ../init-java.log; fi 
             bash start-flink-jobmanager.sh | tee ../jobmanager.log; 
             tail -f /dev/null
 #        args: ["tail -f /dev/null"]
@@ -40,6 +40,12 @@ spec:
               configMapKeyRef:
                 name: flink-config
                 key: xmx.size
+        env:
+          - name: SGX_MODE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: sgx.mode 
         securityContext:
           privileged: true
         resources:
