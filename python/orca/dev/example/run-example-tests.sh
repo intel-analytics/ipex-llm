@@ -307,15 +307,6 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
   --executor-memory 20g \
   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/gan/gan_train_tmp.py
 
-echo "start example test for TFPark inceptionv1 training 8"
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-  --master local[4] \
-  --driver-memory 10g \
-  ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/tensorflow/tfpark/inception/inception.py \
-  --maxIteration 20 \
-  -b 8 \
-  -f ${HDFS_URI}/imagenet-mini
-
 if [ -f analytics-zoo-models/resnet_50_saved_model.zip ]; then
   echo "analytics-zoo-models/resnet_50_saved_model.zip already exists."
 else
@@ -324,7 +315,7 @@ else
   unzip analytics-zoo-models/resnet_50_saved_model.zip -d analytics-zoo-models/resnet_50_saved_model
 fi
 
-echo "start example test for TFPark freeze saved model 9"
+echo "start example test for TFPark freeze saved model 8"
 ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
   --master local[4] \
   --driver-memory 10g \
@@ -667,7 +658,20 @@ fi
 now=$(date "+%s")
 time20=$((now - start))
 
-echo "#21 start test for XGBoostRegressor"
+echo "#21 start test for orca inception_v1"
+start=$(date "+%s")
+
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+  --master ${MASTER} \
+  --driver-memory 2g \
+  --executor-memory 10g \
+  ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/tf/inception/inception.py \
+  -b 8 -f ${ANALYTICS_ZOO_ROOT}/pyzoo/test/zoo/resources/imagenet_to_tfrecord --imagenet ./imagenet 
+
+now=$(date "+%s")
+time21=$((now - start))
+
+echo "#22 start test for XGBoostRegressor"
 #timer
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
@@ -676,7 +680,7 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
   --executor-memory 3g \
   ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/xgboost/xgboost_example.py -d
 now=$(date "+%s")
-time21=$((now - start))
+time22=$((now - start))
 
 echo "#1 textclassification time used: $time1 seconds"
 echo "#2 autograd time used: $time2 seconds"
@@ -698,4 +702,5 @@ echo "#17 orca tf transfer_learning time used:$time17 seconds"
 echo "#18 orca tf basic_text_classification time used:$time18 seconds"
 echo "#19 orca bigdl attention time used:$time19 seconds"
 echo "#20 orca bigdl imageInference time used:$time20 seconds"
-echo "#21 xgboost regressor time used:$time21 seconds"
+echo "#21 orca inception_v1 time used:$time21 seconds"
+echo "#22 xgboost regressor time used:$time22 seconds"
