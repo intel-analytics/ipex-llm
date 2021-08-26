@@ -103,6 +103,7 @@ ENV CORE_NUM                            2
 ENV TASKMANAGER_MEMORY_TASK_HEAP_SIZE   10gb
 ENV TASKMANAGER_MEMORY_MANAGED_SIZE     8192mb
 ENV XMX_SIZE                            10g 
+ENV SGX_MODE                            sgx
 
 RUN mkdir -p /graphene && \
     mkdir -p /graphene/Runtime && \
@@ -132,6 +133,7 @@ COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/wor
 COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar
 COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar
 COPY --from=analytics-zoo /opt/resnet50/ /ppml/trusted-realtime-ml/java/work/models/resnet50
+COPY --from=analytics-zoo /analytics-zoo/scripts/cluster-serving/config.yaml /ppml/trusted-realtime-ml/java/config.yaml
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree && \
@@ -155,7 +157,6 @@ ADD ./init-java.sh /ppml/trusted-realtime-ml/java/init-java.sh
 ADD ./start-flink-jobmanager.sh /ppml/trusted-realtime-ml/java/start-flink-jobmanager.sh
 ADD ./start-flink-taskmanager.sh /ppml/trusted-realtime-ml/java/start-flink-taskmanager.sh
 ADD ./start-http-frontend.sh /ppml/trusted-realtime-ml/java/start-http-frontend.sh
-ADD ./cluster-serving-config.yaml /ppml/trusted-realtime-ml/java/config.yaml
 ADD ./servables.yaml /ppml/trusted-realtime-ml/java/work/servables.yaml
 ADD ./init-cluster-serving.sh /ppml/trusted-realtime-ml/java/init-cluster-serving.sh
 ADD ./start-cluster-serving-job.sh /ppml/trusted-realtime-ml/java/start-cluster-serving-job.sh
