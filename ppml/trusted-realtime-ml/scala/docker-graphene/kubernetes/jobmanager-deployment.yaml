@@ -29,7 +29,7 @@ spec:
             tail -f /dev/null
 #        args: ["tail -f /dev/null"]
         env: 
-          - name: FLINK_JOBMANAGER_IP
+          - name: FLINK_JOB_MANAGER_IP
             valueFrom:
               configMapKeyRef:
                 name: flink-config
@@ -64,8 +64,6 @@ spec:
 #        securityContext:
 #          runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
         volumeMounts:
-        - name: flink-config-volume
-          mountPath: /opt/flink/conf
         - name: enclave-keys
           mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
         - name: java-secure-keys
@@ -97,11 +95,3 @@ spec:
       - name: aesm-socket
         hostPath:
           path: /var/run/aesmd/aesm.socket
-      - name: flink-config-volume
-        configMap:
-          name: flink-config
-          items:
-          - key: flink-conf.yaml
-            path: flink-conf.yaml
-          - key: log4j-console.properties
-            path: log4j-console.properties

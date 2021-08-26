@@ -9,4 +9,4 @@ data:
   taskmanager.memory.managed.size: 8192mb
   taskmanager.memory.task.heap.size: 10gb
   xmx.size: 10g
-  taskmanager.rpc.port: 6125
+  taskmanager.rpc.port: "6125"
