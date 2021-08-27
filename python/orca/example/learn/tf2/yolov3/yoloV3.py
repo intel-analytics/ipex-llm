@@ -558,6 +558,8 @@ def main():
     parser.add_argument("--object_store_memory", type=str, default="10g",
                         help="The memory you want to use on each node. "
                              "You can change it depending on your own cluster setting.")
+    parser.add_argument("--enable_numa_binding", dest="enable_numa_binding", default=False,
+                        help="enable_numa_binding")
     parser.add_argument('--k8s_master', type=str, default="",
                         help="The k8s master. "
                              "It should be k8s://https://<k8s-apiserver-host>: "
@@ -568,8 +570,36 @@ def main():
                         help="The k8s driver localhost.")
     parser.add_argument('--k8s_driver_port', type=str, default="",
                         help="The k8s driver port.")
+    parser.add_argument('--nfs_mount_path', type=str, default="",
+                        help="nfs mount path")
 
     options = parser.parse_args()
+
+    if options.cluster_mode == "local":
+        init_orca_context(cluster_mode="local", cores=options.cores, num_nodes=options.worker_num,
+                          memory=options.memory, init_ray_on_spark=True,
+                          object_store_memory=options.object_store_memory)
+    elif options.cluster_mode == "k8s":
+        init_orca_context(cluster_mode="k8s", master=options.k8s_master,
+                          container_image=options.container_image,
+                          init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
+                          num_nodes=options.worker_num, cores=options.cores, memory=options.memory,
+                          object_store_memory=options.object_store_memory,
+                          conf={"spark.driver.host": options.driver_host,
+                                "spark.driver.port": options.driver_port,
+                                "spark.kubernetes.executor.volumes.persistentVolumeClaim."
+                                "nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
+                                "spark.kubernetes.executor.volumes.persistentVolumeClaim."
+                                "nfsvolumeclaim.mount.path": options.nfs_mount_path,
+                                "spark.kubernetes.driver.volumes.persistentVolumeClaim."
+                                "nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
+                                "spark.kubernetes.driver.volumes.persistentVolumeClaim."
+                                "nfsvolumeclaim.mount.path": options.nfs_mount_path})
+    elif options.cluster_mode == "yarn":
+        init_orca_context(cluster_mode="yarn-client", cores=options.cores,
+                          num_nodes=options.worker_num, memory=options.memory,
+                          init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
+                          object_store_memory=options.object_store_memory)
 
     # convert yolov3 weights
     yolo = YoloV3(classes=80)
@@ -646,24 +676,6 @@ def main():
                         verbose=1, save_weights_only=True),
         TensorBoard(log_dir='logs')
     ]
-
-    if options.cluster_mode == "local":
-        init_orca_context(cluster_mode="local", cores=options.cores, num_nodes=options.worker_num,
-                          memory=options.memory, init_ray_on_spark=True, enable_numa_binding=False,
-                          object_store_memory=options.object_store_memory)
-    elif options.cluster_mode == "k8s":
-        init_orca_context(cluster_mode="k8s", master=options.k8s_master,
-                          container_image=options.container_image,
-                          init_ray_on_spark=True, enable_numa_binding=False,
-                          num_nodes=options.worker_num, cores=options.cores, memory=options.memory,
-                          object_store_memory=options.object_store_memory,
-                          conf={"spark.driver.host": options.driver_host,
-                                "spark.driver.port": options.driver_port})
-    elif options.cluster_mode == "yarn":
-        init_orca_context(cluster_mode="yarn-client", cores=options.cores,
-                          num_nodes=options.worker_num,
-                          memory=options.memory, init_ray_on_spark=True, enable_numa_binding=False,
-                          object_store_memory=options.object_store_memory)
 
     trainer = Estimator.from_keras(model_creator=model_creator)
 
