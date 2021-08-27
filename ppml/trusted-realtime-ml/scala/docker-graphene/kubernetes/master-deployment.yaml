@@ -24,6 +24,11 @@ spec:
         securityContext:
           privileged: true
         env:
+          - name: FLINK_JOB_MANAGER_IP
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: flink.jobmanager.ip
           - name: SGX_MODE
             valueFrom:
               configMapKeyRef:
