@@ -15,49 +15,55 @@
 #
 
 
+from typing import Dict, List, Tuple
+import pickle
+import copy
+from intel_pytorch_extension.ops.save import *
 import torch
 _torch_save = torch.save
 
 # To replace torch.save in ipex, you need to import and exec their __init__.py first.
-from intel_pytorch_extension.ops.save import *
 # And then you can replace torch.save with your customized function.
 # Note that you need to temporarily store original torch.save,
 # because it will be modified in ipex.ops.save.
 torch.save = _torch_save
 
-import copy
-import pickle
+
+RESTORE_TYPE = (torch.Tensor, Dict, List, Tuple)
 
 DEFAULT_PROTOCOL = 2
 
 torch_save = torch.save
 
 
+def to_cpu(obj):
+    # Recursively move the tensor in the output to the cpu inplace.
+    if torch.is_tensor(obj):
+        if obj.device.type == 'xpu':
+            obj = obj.cpu()
+        return obj
+
+    if isinstance(obj, RESTORE_TYPE):
+        iter_keys = obj.keys() if isinstance(obj, Dict) else range(len(obj))
+        for k in iter_keys:
+            if isinstance(obj[k], RESTORE_TYPE):
+                obj[k] = to_cpu(obj[k])
+
+    return obj
+
+
 def nano_save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL,
               _use_new_zipfile_serialization=False):
-    def to_cpu(obj, iter_type):
-        # Extend original `save` defined in ipex.ops.save
-        # to support converting a list of xpu tensor to cpu in torch.save
-        iter_keys = obj.keys() if iter_type == 'dict' else range(len(obj))
-        for k in iter_keys:
-            if isinstance(obj[k], dict):
-                to_cpu(obj[k], 'dict')
-            elif torch.is_tensor(obj[k]) and obj[k].device.type == 'xpu':
-                obj[k] = obj[k].to('cpu')
-            elif isinstance(obj[k], list):
-                to_cpu(obj[k], 'list')
-            else:
-                pass
-
-    if isinstance(obj, dict):
+    # Extend original `save` defined in ipex.ops.save
+    # to support converting a list of xpu tensor to cpu in torch.save
+    if isinstance(obj, RESTORE_TYPE):
         obj_copy = copy.deepcopy(obj)
-        to_cpu(obj_copy, 'dict')
-    elif torch.is_tensor(obj) and obj.device.type == 'xpu':
-        obj_copy = copy.deepcopy(obj).to('cpu')
+        obj_copy = to_cpu(obj_copy)
     elif isinstance(obj, torch.nn.Module):
         obj_copy = copy.deepcopy(obj).to('cpu')
     else:
         obj_copy = obj
+
     return torch_save(obj_copy, f, pickle_module, pickle_protocol, _use_new_zipfile_serialization)
 
 

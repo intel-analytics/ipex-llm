@@ -29,6 +29,8 @@ from pytorch_lightning.plugins.training_type import TrainingTypePlugin
 from pytorch_lightning.plugins.precision import PrecisionPlugin, MixedPrecisionPlugin
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
+from . import to_cpu
+
 _STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
 
@@ -75,11 +77,7 @@ class IPEXAccelerator(Accelerator):
         which is a required operation by pytorch_lightning,
         so just move output to cpu to store it, and move it back when doing backward.
         """
-        if isinstance(output, torch.Tensor):
-            output = output.cpu()
-        elif isinstance(output, Dict):
-            output = {key: xpu_tensor.cpu()
-                      for key, xpu_tensor in output.items()}
+        output = to_cpu(output)
 
         return super().training_step_end(output)
 
@@ -90,11 +88,7 @@ class IPEXAccelerator(Accelerator):
         Args:
             output: the output of the test step
         """
-        if isinstance(output, torch.Tensor):
-            output = output.cpu()
-        elif isinstance(output, Dict):
-            output = {key: xpu_tensor.cpu()
-                      for key, xpu_tensor in output.items()}
+        output = to_cpu(output)
 
         return super().test_step_end(output)
 
@@ -105,11 +99,7 @@ class IPEXAccelerator(Accelerator):
         Args:
             output: the output of the validation step
         """
-        if isinstance(output, torch.Tensor):
-            output = output.cpu()
-        elif isinstance(output, Dict):
-            output = {key: xpu_tensor.cpu()
-                      for key, xpu_tensor in output.items()}
+        output = to_cpu(output)
 
         return super().validation_step_end(output)
 
