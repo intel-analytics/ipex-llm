@@ -8,8 +8,11 @@ redis_host=$REDIS_HOST
 core_num=$CORE_NUM
 redis_secure_password=`openssl rsautl -inkey /ppml/trusted-realtime-ml/redis/work/password/key.txt -decrypt </ppml/trusted-realtime-ml/redis/work/password/output.bin`
 https_secure_password=`openssl rsautl -inkey /ppml/trusted-realtime-ml/java/work/password/key.txt -decrypt </ppml/trusted-realtime-ml/java/work/password/output.bin`
+sgx_mode=$SGX_MODE
 
-SGX=1 ./pal_loader /opt/jdk8/bin/java \
+if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then cmd_prefix="SGX=1 ./pal_loader"; fi
+
+eval ${cmd_prefix} /opt/jdk8/bin/java \
     -Xms2g \
     -Xmx8g \
     -XX:ActiveProcessorCount=${core_num} \
@@ -30,4 +33,4 @@ SGX=1 ./pal_loader /opt/jdk8/bin/java \
     --redisSecureEnabled true \
     --redissTrustStorePath "/ppml/trusted-realtime-ml/redis/work/keys/keystore.jks" \
     --redissTrustStoreToken "${redis_secure_password}" \
-    --servableManagerConfPath "/ppml/trusted-realtime-ml/java/work/servables.yaml" | tee ./http-frontend-sgx.log
+    --servableManagerConfPath "/ppml/trusted-realtime-ml/java/work/servables.yaml" | tee ./http-frontend-${sgx_mode}.log

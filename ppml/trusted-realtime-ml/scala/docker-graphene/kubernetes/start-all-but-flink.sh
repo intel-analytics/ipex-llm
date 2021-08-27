@@ -1,6 +1,7 @@
 #!/bin/bash
 set -x
-export FLINK_JOB_MANAGER_IP=flink-jobmanager
+export REDIS_HOST=$(hostname -i)
+
 cd /ppml/trusted-realtime-ml/redis
 export SGX_MEM_SIZE=16G
 test "$SGX_MODE" = sgx && ./init-redis.sh
