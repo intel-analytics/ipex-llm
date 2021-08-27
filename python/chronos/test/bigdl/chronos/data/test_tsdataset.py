@@ -73,6 +73,30 @@ def get_int_target_df():
     return train_df
 
 
+def get_non_dt():
+    df = pd.DataFrame({"datetime": np.arange(100),
+                       "id": np.array(['00']*100),
+                       "value": np.random.randn(100),
+                       "extra feature": np.random.randn(100)})
+    return df
+
+
+def get_not_aligned_df():
+    df_val = pd.DataFrame({"id": np.array(['00']*20+['01']*30+['02']*50),
+                           "value": np.random.randn(100),
+                           "extra feature": np.random.randn(100)})
+    data_sec = pd.DataFrame({"datetime": pd.date_range(
+        start='1/1/2019 00:00:00', periods=20, freq='S')})
+    data_min = pd.DataFrame({"datetime": pd.date_range(
+        start='1/2/2019 00:00:00', periods=30, freq='H')})
+    data_hou = pd.DataFrame({"datetime": pd.date_range(
+        start='1/3/2019 00:00:00', periods=50, freq='D')})
+    dt_val = pd.concat([data_sec, data_min, data_hou],
+                       axis=0, ignore_index=True)
+    df = pd.merge(left=dt_val, right=df_val, left_index=True, right_index=True)
+    return df
+
+
 class TestTSDataset(ZooTestCase):
     def setup_method(self, method):
         pass
@@ -833,3 +857,29 @@ class TestTSDataset(ZooTestCase):
         # with pytest.raises(AssertionError):
         #     tsdata.gen_global_feature(settings="minimal")\
         #           .gen_rolling_feature(settings="minimal", window_size=5)
+
+    def test_non_pd_datetime(self):
+        df = get_non_dt()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col="value",
+                                       extra_feature_col="extra feature",
+                                       id_col="id")
+
+        with pytest.raises(AssertionError):
+            tsdata.resample('2D')
+        with pytest.raises(AssertionError):
+            tsdata.gen_dt_feature()
+        with pytest.raises(AssertionError):
+            tsdata.gen_rolling_feature(settings="minimal", window_size=1000)
+
+        tsdata._check_basic_invariants()
+
+    def test_not_aligned(self):
+        df = get_not_aligned_df()
+        tsdata = TSDataset.from_pandas(df, target_col="value",
+                                       dt_col="datetime",
+                                       extra_feature_col="extra feature",
+                                       id_col="id")
+        with pytest.raises(AssertionError):
+            tsdata.roll(lookback=5, horizon=2, id_sensitive=True)
+        tsdata._check_basic_invariants()

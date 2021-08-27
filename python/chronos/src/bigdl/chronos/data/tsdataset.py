@@ -26,7 +26,7 @@ from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
 from zoo.chronos.data.utils.resample import resample_timeseries_dataframe
 from zoo.chronos.data.utils.split import split_timeseries_dataframe
 from zoo.chronos.data.utils.utils import _to_list, _check_type,\
-    _check_col_within, _check_col_no_na
+    _check_col_within, _check_col_no_na, _check_is_aligned
 
 from tsfresh.utilities.dataframe_functions import roll_time_series
 from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
@@ -285,7 +285,9 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-
+        assert self._is_pd_datetime,\
+            "The time series data does not have a Pandas datetime format\
+            (you can use pandas.to_datetime to convert a string into a datetime format)."
         self.df = self.df.groupby([self.id_col]) \
             .apply(lambda df: resample_timeseries_dataframe(df=df,
                                                             dt_col=self.dt_col,
@@ -330,6 +332,8 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        assert self._is_pd_datetime, "The time series data does not have a Pandas datetime format\
+                    (you can use pandas.to_datetime to convert a string into a datetime format.)"
         features_generated = []
         self.df = generate_dt_features(input_df=self.df,
                                        dt_col=self.dt_col,
@@ -420,6 +424,8 @@ class TSDataset:
         else:
             default_fc_parameters = settings
 
+        assert window_size < self.df.groupby(self.id_col).size().min() + 1, "gen_rolling_feature \
+            should have a window_size smaller than shortest time series length."
         df_rolled = roll_time_series(self.df,
                                      column_id=self.id_col,
                                      column_sort=self.dt_col,
@@ -508,6 +514,9 @@ class TSDataset:
         >>> print(x.shape, y.shape) # x.shape = (1, 1, 6) y.shape = (1, 1, 2)
 
         '''
+        if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
+            raise AssertionError("The time series data should be\
+                 aligned if id_sensitive is set to True.")
         feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
             else self.feature_col
         target_col = _to_list(target_col, "target_col") if target_col is not None \
