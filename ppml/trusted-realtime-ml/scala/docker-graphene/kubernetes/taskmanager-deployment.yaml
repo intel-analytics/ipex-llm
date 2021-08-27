@@ -35,31 +35,26 @@ spec:
               configMapKeyRef:
                 name: flink-config
                 key: flink.jobmanager.ip
-        env:
           - name: TASKMANAGER_MEMORY_MANAGED_SIZE
             valueFrom:
               configMapKeyRef:
                 name: flink-config
                 key: taskmanager.memory.managed.size
-        env:
           - name: TASKMANAGER_MEMORY_TASK_HEAP_SIZE
             valueFrom:
               configMapKeyRef:
                 name: flink-config
                 key: taskmanager.memory.task.heap.size
-        env:
           - name: XMX_SIZE
             valueFrom:
               configMapKeyRef:
                 name: flink-config
                 key: xmx.size
-        env:
           - name: FLINK_TASK_MANAGER_RPC_PORT
             valueFrom:
               configMapKeyRef:
                 name: flink-config
                 key: taskmanager.rpc.port
-        env:
           - name: SGX_MODE
             valueFrom:
               configMapKeyRef:

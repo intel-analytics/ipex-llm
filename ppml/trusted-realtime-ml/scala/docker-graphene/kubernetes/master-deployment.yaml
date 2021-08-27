@@ -23,6 +23,12 @@ spec:
         args: ["bash /ppml/trusted-realtime-ml/start-all-but-flink.sh | tee /ppml/trusted-realtime-ml/log; tail -f /dev/null"]
         securityContext:
           privileged: true
+        env:
+          - name: SGX_MODE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: sgx.mode
 #        resources:
 #          requests:
 #            cpu: 10
