@@ -751,7 +751,9 @@ class FeatureTable(Table):
         """
         return cls(Table._read_csv(paths, delimiter, header, names, dtype))
 
-    def encode_string(self, columns, indices, broadcast=True):
+    def encode_string(self, columns, indices,
+                      do_split=False, sep='\t', sort_for_array=False, keep_most_frequent=False,
+                      broadcast=True):
         """
         Encode columns with provided list of StringIndex.
 
@@ -762,6 +764,15 @@ class FeatureTable(Table):
                Or it can be a dict or a list of dicts. In this case,
                the keys of the dict should be within the categorical column
                and the values are the target ids to be encoded.
+        :param do_split: bool, whether need to split column value to array to encode string.
+        Default is False.
+        :param sep: str, a string representing a regular expression to split a column value.
+        Default is '\t'
+        :param sort_for_array: bool, whether need to sort array columns. Default is False.
+        :param keep_most_frequent: bool, whether need to keep most frequent value as the
+        column value. Default is False.
+        :param broadcast: bool, whether need to broadcast index when encode string.
+        Default is True.
 
         :return: A new FeatureTable which transforms categorical features into unique integer
                  values with provided StringIndexes.
@@ -780,8 +791,29 @@ class FeatureTable(Table):
             col_name = columns[i]
             if broadcast:
                 index_tbl.broadcast()
-            data_df = data_df.join(index_tbl.df, col_name, how="left") \
-                .drop(col_name).withColumnRenamed("id", col_name)
+            if not do_split:
+                data_df = data_df.join(index_tbl.df, col_name, how="left") \
+                    .drop(col_name).withColumnRenamed("id", col_name)
+            else:
+                data_df = data_df.withColumn('row_id', F.monotonically_increasing_id())
+                tmp_df = data_df.select('row_id', col_name)\
+                    .withColumn(col_name, F.explode(F.split(F.col(col_name), sep)))
+                tmp_df = tmp_df.join(index_tbl.df, col_name, how="left")\
+                    .filter(F.col("id").isNotNull())
+                tmp_df = tmp_df.select('row_id', F.col("id"))
+                if keep_most_frequent:
+                    tmp_df = tmp_df.groupby('row_id')\
+                        .agg(F.array_sort(F.collect_list(F.col("id")))
+                             .getItem(0).alias("id"))
+                elif sort_for_array:
+                    tmp_df = tmp_df.groupby('row_id') \
+                        .agg(F.array_sort(F.collect_list(F.col("id"))).alias("id"))
+                else:
+                    tmp_df = tmp_df.groupby('row_id') \
+                        .agg(F.collect_list(F.col("id")).alias("id"))
+                data_df = data_df.join(tmp_df, 'row_id', 'left')\
+                    .drop('row_id').drop(col_name).withColumnRenamed("id", col_name)
+
         return FeatureTable(data_df)
 
     def filter_by_frequency(self, columns, min_freq=2):
@@ -852,7 +884,9 @@ class FeatureTable(Table):
         cross_hash_df = FeatureTable(cross_hash_df).hash_encode([cross_col_name], bins, method)
         return cross_hash_df
 
-    def category_encode(self, columns, freq_limit=None, order_by_freq=False):
+    def category_encode(self, columns, freq_limit=None, order_by_freq=False,
+                        do_split=False, sep='\t', sort_for_array=False, keep_most_frequent=False,
+                        broadcast=True):
         """
         Category encode the given columns.
 
@@ -868,8 +902,12 @@ class FeatureTable(Table):
         :return: A tuple of a new FeatureTable which transforms categorical features into unique
                  integer values, and a list of StringIndex for the mapping.
         """
-        indices = self.gen_string_idx(columns, freq_limit, order_by_freq)
-        return self.encode_string(columns, indices), indices
+        indices = self.gen_string_idx(columns, freq_limit=freq_limit, order_by_freq=order_by_freq,
+                                      do_split=do_split, sep=sep)
+        return self.encode_string(columns, indices, do_split=do_split, sep=sep,
+                                  sort_for_array=sort_for_array,
+                                  keep_most_frequent=keep_most_frequent,
+                                  broadcast=broadcast), indices
 
     def one_hot_encode(self, columns, sizes=None, prefix=None, keep_original_columns=False):
         """
@@ -962,7 +1000,8 @@ class FeatureTable(Table):
         data_df = data_df.drop("friesian_onehot")
         return FeatureTable(data_df)
 
-    def gen_string_idx(self, columns, freq_limit=None, order_by_freq=False):
+    def gen_string_idx(self, columns, do_split=False, sep=',',
+                       freq_limit=None, order_by_freq=False):
         """
         Generate unique index value of categorical features. The resulting index would
         start from 1 with 0 reserved for unknown features.
@@ -971,6 +1010,8 @@ class FeatureTable(Table):
          dict is a mapping of source column names -> target column name if needs to combine multiple
          source columns to generate index.
          For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
+        :param do_split: bool, whether need to split column value to array to generate index.
+        :param sep: str, a string representing a regular expression to split a column value.
         :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
                will be omitted from the encoding. Can be represented as either an integer,
                dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
@@ -1007,6 +1048,7 @@ class FeatureTable(Table):
         simple_columns = []
         df_id_list = []
         for c in columns:
+            # union column
             if isinstance(c, dict):
                 if 'src_cols' in c:
                     src_cols = c['src_cols']
@@ -1032,9 +1074,17 @@ class FeatureTable(Table):
                                                     freq_limit, order_by_freq)
                 df_id_list.extend(union_id_list)
                 out_columns.append(col_name)
+            # single column
             else:
-                simple_columns.append(c)
-                out_columns.append(c)
+                if do_split:
+                    dict_df = self.df.select(F.col(c))
+                    dict_df = dict_df.withColumn(c, F.explode(F.split(c, sep)))
+                    split_id_list = generate_string_idx(dict_df, [c], freq_limit, order_by_freq)
+                    df_id_list.extend(split_id_list)
+                    out_columns.append(c)
+                else:
+                    simple_columns.append(c)
+                    out_columns.append(c)
         if simple_columns:
             simple_df_id_list = generate_string_idx(self.df, simple_columns,
                                                     freq_limit, order_by_freq)
