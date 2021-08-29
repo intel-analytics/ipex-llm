@@ -21,7 +21,7 @@ import hashlib
 import operator
 from unittest import TestCase
 
-from pyspark.sql.functions import col, concat, max, min, array
+from pyspark.sql.functions import col, concat, max, min, array, udf
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType, \
     DoubleType
 
@@ -262,6 +262,32 @@ class TestTable(TestCase):
         assert string_idx_3.size() == 4, "col_5 should have 4 indices"
         new_tbl3 = feature_tbl.encode_string('col_5', string_idx_3)
         assert new_tbl3.max("col_5").to_list("max")[0] == 4, "col_5 max value should be 4"
+
+    def test_gen_string_idx_split(self):
+        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        to_list_str = udf(lambda arr: ','.join(arr))
+        df = feature_tbl.dropna(['col_4', 'col_5']).df.withColumn("list1", array('col_4', 'col_5'))\
+            .withColumn("list1", to_list_str(col("list1")))
+        tbl = FeatureTable(df)
+        string_idx_1 = tbl.gen_string_idx("list1", do_split=True, sep=",", freq_limit=1)
+        assert string_idx_1.size() == 4, "list1 should have 4 indices"
+
+        new_tbl1 = tbl.encode_string('list1', string_idx_1, do_split=True, sep=",")
+        assert isinstance(new_tbl1.to_list("list1"), list), \
+            "encode list should return list of int"
+
+        new_tbl2 = tbl.encode_string(['list1'], string_idx_1, do_split=True, sep=",",
+                                     sort_for_array=True)
+        l1 = new_tbl2.to_list("list1")[0]
+        l2 = l1.copy()
+        l2.sort()
+        assert l1 == l2, "encode list with sort should sort"
+
+        new_tbl3 = tbl.encode_string(['list1'], string_idx_1, do_split=True, sep=",",
+                                     keep_most_frequent=True)
+        assert isinstance(new_tbl3.to_list("list1")[0], int), \
+            "encode list with keep most frequent should only keep one int"
 
     def test_clip(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
