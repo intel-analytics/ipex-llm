@@ -147,6 +147,9 @@ class BasePytorchForecaster(Forecaster):
         Predict using a trained forecaster with onnxruntime. The method can only be
         used when forecaster is a non-distributed version.
 
+        Directly call this method without calling build_onnx is valid and Forecaster will
+        automatically build an onnxruntime session with default settings.
+
         :param data: The data support following formats:
 
                | 1. a numpy ndarray x:
@@ -229,6 +232,9 @@ class BasePytorchForecaster(Forecaster):
         """
         Evaluate using a trained forecaster with onnxruntime. The method can only be
         used when forecaster is a non-distributed version.
+
+        Directly call this method without calling build_onnx is valid and Forecaster will
+        automatically build an onnxruntime session with default settings.
 
         Please note that evaluate result is calculated by scaled y and yhat. If you scaled
         your data (e.g. use .scale() on the TSDataset) please follow the following code
@@ -337,6 +343,47 @@ class BasePytorchForecaster(Forecaster):
             return self.internal.get_model()
         else:
             return self.internal.model
+
+    def build_onnx(self, thread_num=None, sess_options=None):
+        '''
+        Build onnx model to speed up inference and reduce latency.
+        The method is Not required to call before predict_with_onnx,
+        evaluate_with_onnx or export_onnx_file.
+        It is recommended to use when you want to:
+
+        | 1. Strictly control the thread to be used during inferencing.
+        | 2. Alleviate the cold start problem when you call predict_with_onnx
+             for the first time.
+
+        :param thread_num: int, the num of thread limit. The value is set to None by
+               default where no limit is set.
+        :param sess_options: an onnxruntime.SessionOptions instance, if you set this
+               other than None, a new onnxruntime session will be built on this setting
+               and ignore other settings you assigned(e.g. thread_num...).
+
+        Example:
+            >>> # to pre build onnx sess
+            >>> forecaster.build_onnx(thread_num=1)  # build onnx runtime sess for single thread
+            >>> pred = forecaster.predict_with_onnx(data)
+            >>> # ------------------------------------------------------
+            >>> # directly call onnx related method is also supported
+            >>> pred = forecaster.predict_with_onnx(data)
+        '''
+        import onnxruntime
+        if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
+            raise RuntimeError("sess_options should be an onnxruntime.SessionOptions instance"
+                               f", but f{type(sess_options)}")
+        if self.distributed:
+            raise NotImplementedError("build_onnx has not been supported for distributed\
+                                       forecaster. You can call .to_local() to transform the\
+                                       forecaster to a non-distributed version.")
+        import torch
+        dummy_input = torch.rand(1, self.data_config["past_seq_len"],
+                                 self.data_config["input_feature_num"])
+        self.internal._build_onnx(dummy_input,
+                                  dirname=None,
+                                  thread_num=thread_num,
+                                  sess_options=None)
 
     def export_onnx_file(self, dirname):
         """
