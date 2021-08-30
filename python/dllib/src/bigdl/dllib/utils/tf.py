@@ -21,7 +21,7 @@ import copy
 import tempfile
 import re
 import shutil
-from zoo.common.utils import put_local_file_to_remote, get_remote_file_to_local, get_file_list,\
+from bigdl.dllib.utils.file_utils import put_local_file_to_remote, get_remote_file_to_local, get_file_list,\
     is_local_path
 
 
@@ -90,7 +90,7 @@ def export_tf(sess, folder, inputs, outputs,
 
     all_variables = graph.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
 
-    import zoo.util.tf_graph_util as graph_util
+    import bigdl.dllib.utils.tf_graph_util as graph_util
     # freeze graph
     frozen_graph_def = graph_util.convert_variables_to_constants(
         sess,
@@ -304,7 +304,7 @@ def strip_unused(input_graph_def, input_tensor_names, output_tensor_names,
 
     if not_found:
         raise KeyError("The following input nodes were not found: %s\n" % not_found)
-    import zoo.util.tf_graph_util as graph_util
+    import bigdl.dllib.utils.tf_graph_util as graph_util
     output_graph_def = graph_util.extract_sub_graph(inputs_replaced_graph_def,
                                                     output_node_names)
     return output_graph_def, old2new

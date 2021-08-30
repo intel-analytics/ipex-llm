@@ -17,9 +17,9 @@
 # and licensed under the BSD license.
 #
 
-from bigdl.util.common import *
-from zoo.common.utils import callZooFunc
-from zoo.util.utils import set_python_home
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.utils import set_python_home
 import warnings
 import multiprocessing
 import os
@@ -45,7 +45,7 @@ def init_spark_on_local(cores=2, conf=None, python_location=None, spark_log_leve
 
     :return: An instance of SparkContext.
     """
-    from zoo.util.spark import SparkRunner
+    from bigdl.dllib.utils.spark import SparkRunner
     runner = SparkRunner(spark_log_level=spark_log_level,
                          redirect_spark_log=redirect_spark_log)
     set_python_home()
@@ -103,7 +103,7 @@ def init_spark_on_yarn(hadoop_conf,
 
     :return: An instance of SparkContext.
     """
-    from zoo.util.spark import SparkRunner
+    from bigdl.dllib.utils.spark import SparkRunner
     runner = SparkRunner(spark_log_level=spark_log_level,
                          redirect_spark_log=redirect_spark_log)
     set_python_home()
@@ -176,7 +176,7 @@ def init_spark_standalone(num_executors,
 
     :return: An instance of SparkContext.
     """
-    from zoo.util.spark import SparkRunner
+    from bigdl.dllib.utils.spark import SparkRunner
     runner = SparkRunner(spark_log_level=spark_log_level,
                          redirect_spark_log=redirect_spark_log)
     set_python_home()
@@ -239,7 +239,7 @@ def init_spark_on_k8s(master,
 
     :return: An instance of SparkContext.
     """
-    from zoo.util.spark import SparkRunner
+    from bigdl.dllib.utils.spark import SparkRunner
     runner = SparkRunner(spark_log_level=spark_log_level,
                          redirect_spark_log=redirect_spark_log)
     sc = runner.init_spark_on_k8s(
@@ -262,7 +262,7 @@ def stop_spark_standalone():
     """
     Stop the Spark standalone cluster created from init_spark_standalone (master not specified).
     """
-    from zoo.util.spark import SparkRunner
+    from bigdl.dllib.utils.spark import SparkRunner
     SparkRunner.stop_spark_standalone()
 
 
