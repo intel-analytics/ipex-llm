@@ -77,7 +77,7 @@ class ProphetForecaster(Forecaster):
         :param data: training data, a pandas dataframe with Td rows,
             and 2 columns, with column 'ds' indicating date and column 'y' indicating value
             and Td is the time dimension
-        :param validation_data: evaluation data, should be the same type as x
+        :param validation_data: evaluation data, should be the same type as data
         """
         self._check_data(data, validation_data)
         return self.internal.fit_eval(data=data,
@@ -90,33 +90,36 @@ class ProphetForecaster(Forecaster):
         assert 'ds' in validation_data.columns and 'y' in validation_data.columns, \
             "validation_data should be a dataframe that has at least 2 columns 'ds' and 'y'."
 
-    def predict(self, horizon):
+    def predict(self, horizon=1, freq="D", ds_data=None):
         """
         Predict using a trained forecaster.
 
-        :param horizon: the number of steps forward to predict
+        :param horizon: the number of steps forward to predict, the value defaults to 1.
+        :param freq: the freqency of the predicted dataframe, defaulted to day("D"),
+               the frequency can be anything from the pandas list of frequency strings here:
+               https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#timeseries-offset-aliases
+        :param ds_data: a dataframe that has 1 column 'ds' indicating date.
         """
         if self.internal.model is None:
             raise RuntimeError(
                 "You must call fit or restore first before calling predict!")
-        return self.internal.predict(horizon=horizon)
+        return self.internal.predict(horizon=horizon, freq=freq, ds_data=ds_data)
 
-    def evaluate(self, validation_data, metrics=['mse']):
+    def evaluate(self, data, metrics=['mse']):
         """
         Evaluate using a trained forecaster.
 
-        :param validation_data: evaluation data, a pandas dataframe with Td rows,
+        :param data: evaluation data, a pandas dataframe with Td rows,
             and 2 columns, with column 'ds' indicating date and column 'y' indicating value
             and Td is the time dimension
-        :param data: We don't support input data currently.
         :param metrics: A list contains metrics for test/valid data.
         """
-        if validation_data is None:
-            raise ValueError("Input invalid validation_data of None")
+        if data is None:
+            raise ValueError("Input invalid data of None")
         if self.internal.model is None:
             raise RuntimeError(
                 "You must call fit or restore first before calling evaluate!")
-        return self.internal.evaluate(target=validation_data,
+        return self.internal.evaluate(target=data,
                                       metrics=metrics)
 
     def save(self, checkpoint_file):

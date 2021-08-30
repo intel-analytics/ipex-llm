@@ -63,8 +63,6 @@ class TestProphetModel(ZooTestCase):
         assert len(evaluate_result) == 2
 
     def test_error(self):
-        with pytest.raises(ValueError, match="We don't support input data currently"):
-            self.model.predict(data=1)
 
         with pytest.raises(ValueError, match="We don't support input data currently"):
             self.model.evaluate(target=self.validation_data, data=1)
