@@ -84,6 +84,11 @@ class TestChronosModelLSTMForecaster(TestCase):
             mse_onnx = forecaster.evaluate_with_onnx(test_data,
                                                      multioutput="raw_values")
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
+            with pytest.raises(RuntimeError):
+                forecaster.build_onnx(sess_options=1)
+            sess_options = onnxruntime.SessionOptions()
+            sess_options.intra_op_num_threads = 1
+            forecaster.build_onnx(sess_options=sess_options)
             mse = forecaster.evaluate(test_data)
             mse_onnx = forecaster.evaluate_with_onnx(test_data)
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
