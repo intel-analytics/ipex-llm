@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.util.common import Sample as BSample, JTensor as BJTensor,\
+from bigdl.utils.common import Sample as BSample, JTensor as BJTensor,\
     JavaCreator, _get_gateway, _py2java, _java2py
 import numpy as np
 import os
