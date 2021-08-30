@@ -89,14 +89,6 @@ class TestChronosModelProphetForecaster(TestCase):
             forecaster.predict(horizon=validation_data.shape[0])
 
         with pytest.raises(Exception,
-                           match="Input invalid validation_data of None"):
-            forecaster.evaluate(validation_data=None)
-
-        with pytest.raises(Exception,
-                           match="You must call fit or restore first before calling evaluate!"):
-            forecaster.evaluate(validation_data=validation_data)
-
-        with pytest.raises(Exception,
                            match="You must call fit or restore first before calling save!"):
             model_file = "tmp.json"
             forecaster.save(model_file)
