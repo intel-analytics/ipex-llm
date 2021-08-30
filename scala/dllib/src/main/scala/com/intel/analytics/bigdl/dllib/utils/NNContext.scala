@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.dllib.utils
 import java.io.InputStream
 import java.util.Properties
 
-import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2, OptimizerVersion}
 import org.apache.log4j.Logger
 import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext, SparkException}
 import sys.env
