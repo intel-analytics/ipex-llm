@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.dllib.utils
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.text.Dictionary
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
