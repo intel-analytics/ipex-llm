@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.common
+package com.intel.analytics.bigdl.dllib.utils
 
 import com.intel.analytics.zoo.core.TFNetNative
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.net.NetUtils
+//import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import jep.{NDArray, SharedInterpreter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 
+// uncomment this file after migrate zoo.keras
+/*
 @PythonInterpreterTest
 class PythonInterpreterSpec extends ZooSpecHelper{
   protected def ifskipTest(): Unit = {
@@ -60,3 +61,4 @@ class PythonInterpreterSpec extends ZooSpecHelper{
     sc.stop()
   }
 }
+*/
