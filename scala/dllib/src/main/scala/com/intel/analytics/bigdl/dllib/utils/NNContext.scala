@@ -68,7 +68,7 @@ object NNContext {
         3
       }
       if (diffLevel <= level && !reportWarning) {
-        Utils.logUsageErrorAndThrowException(warnMessage + errorMessage)
+        zooUtils.logUsageErrorAndThrowException(warnMessage + errorMessage)
       }
       logger.warn(warnMessage)
     } else {

@@ -124,3 +124,4 @@ class ZooDictionary() extends Dictionary {
     _vocabSize = _vocabulary.length
   }
 }
+
