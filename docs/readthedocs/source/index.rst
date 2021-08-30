@@ -51,6 +51,7 @@ Analytics Zoo Documentation
    doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.md
    doc/UseCase/spark-dataframe.md
    doc/UseCase/xshards-pandas.md
+   doc/Chronos/QuickStart/chronos-autotsest-quickstart.md
    doc/Chronos/QuickStart/chronos-autots-quickstart.md
    doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.md
    doc/Chronos/QuickStart/chronos-anomaly-detector.md
