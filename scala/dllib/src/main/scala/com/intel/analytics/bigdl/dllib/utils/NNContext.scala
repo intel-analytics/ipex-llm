@@ -20,7 +20,6 @@ import java.io.InputStream
 import java.util.Properties
 
 import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2, OptimizerVersion}
-import com.intel.analytics.bigdl.dllib.keras.zooKeras.layers.utils.{EngineRef, KerasUtils}
 import org.apache.log4j.Logger
 import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext, SparkException}
 import sys.env
@@ -33,11 +32,11 @@ object NNContext {
 
   private val logger = Logger.getLogger(getClass)
 
-  private[zoo] def checkSparkVersion(reportWarning: Boolean = false) = {
+  private[bigdl] def checkSparkVersion(reportWarning: Boolean = false) = {
     checkVersion(SPARK_VERSION, ZooBuildInfo.spark_version, "Spark", reportWarning)
   }
 
-  private[zoo] def checkScalaVersion(reportWarning: Boolean = false) = {
+  private[bigdl] def checkScalaVersion(reportWarning: Boolean = false) = {
     checkVersion(scala.util.Properties.versionNumberString,
       ZooBuildInfo.scala_version, "Scala", reportWarning, level = 2)
   }
@@ -77,7 +76,7 @@ object NNContext {
     }
   }
 
-  private[zoo] object ZooBuildInfo {
+  private[bigdl] object ZooBuildInfo {
 
     val (
       analytics_zoo_verion: String,
@@ -186,7 +185,7 @@ object NNContext {
   /**
    * Read spark conf values from spark-analytics-zoo.conf
    */
-  private[zoo] def readConf: Seq[(String, String)] = {
+  private[bigdl] def readConf: Seq[(String, String)] = {
     val stream: InputStream = getClass.getResourceAsStream("/spark-analytics-zoo.conf")
     val lines = scala.io.Source.fromInputStream(stream)
       .getLines.filter(_.startsWith("spark")).toArray
@@ -207,7 +206,7 @@ object NNContext {
    *
    * @param zooConf SparkConf
    */
-  private[zoo] def initConf(zooConf: SparkConf) : Unit = {
+  private[bigdl] def initConf(zooConf: SparkConf) : Unit = {
     // check env and set spark conf
     // Set default value
     // We should skip this env, when engineType is mkldnn.
@@ -247,13 +246,13 @@ object NNContext {
   }
 
   def getOptimizerVersion(): String = {
-    EngineRef.getOptimizerVersion().toString
+    Engine.getOptimizerVersion().toString
   }
 
   def setOptimizerVersion(optimizerVersion: String): Unit = {
     optimizerVersion.toLowerCase() match {
-      case "optimizerv1" => EngineRef.setOptimizerVersion(OptimizerV1)
-      case "optimizerv2" => EngineRef.setOptimizerVersion(OptimizerV2)
+      case "optimizerv1" => Engine.setOptimizerVersion(OptimizerV1)
+      case "optimizerv2" => Engine.setOptimizerVersion(OptimizerV2)
       case _ =>
         logger.warn("supported DistriOptimizerVersion is optimizerV1 or optimizerV2")
     }
