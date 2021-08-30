@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.utils
 import com.intel.analytics.bigdl.dllib.optim.SGD
 import com.intel.analytics.bigdl.dllib.optim.SGD.LearningRateSchedule
 import com.intel.analytics.bigdl.dllib.utils.Table
-import com.intel.analytics.bigdl.dllib.zooKeras.models.{InternalOptimizerUtil}
+//import com.intel.analytics.bigdl.dllib.zooKeras.models.{InternalOptimizerUtil}
 
 object Optim {
 
@@ -34,10 +34,11 @@ object Optim {
     }
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val state = InternalOptimizerUtil.getStateFromOptiMethod[T](optimMethod)
-      val nevals = state.get[Int]("evalCounter").getOrElse(0)
-      state("evalCounter") = nevals + 1
-      currentRate = lr
+      //TODO: uncomment below code after migrate keras.models
+      //val state = InternalOptimizerUtil.getStateFromOptiMethod[T](optimMethod)
+      //val nevals = state.get[Int]("evalCounter").getOrElse(0)
+      //state("evalCounter") = nevals + 1
+      //currentRate = lr
     }
   }
 }
