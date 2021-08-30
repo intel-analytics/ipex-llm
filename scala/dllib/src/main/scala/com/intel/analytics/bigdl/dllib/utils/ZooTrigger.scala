@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.dllib.utils
-package com.intel.analytics.zoo.common
 
 import com.intel.analytics.bigdl.dllib.optim.Trigger
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
@@ -31,7 +30,7 @@ trait ZooTrigger extends Trigger {
    * We also hold some training metrics to control trigger.
    * @param zooState zoo state table
    */
-  private[zoo] def setZooState(zooState: Table): Unit = {
+  private[bigdl] def setZooState(zooState: Table): Unit = {
     this.zooState = zooState
   }
 }
