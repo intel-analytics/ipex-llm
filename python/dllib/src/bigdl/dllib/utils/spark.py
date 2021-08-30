@@ -18,9 +18,9 @@ import os
 import platform
 
 from pyspark import SparkContext
-from zoo import init_nncontext, init_spark_conf
-from zoo.util.utils import detect_python_location, pack_penv
-from zoo.util.utils import get_executor_conda_zoo_classpath, get_zoo_bigdl_classpath_on_driver
+from bigdl.dllib.utils import init_nncontext, init_spark_conf
+from bigdl.dllib.utils.utils import detect_python_location, pack_penv
+from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath, get_zoo_bigdl_classpath_on_driver
 
 
 class SparkRunner:
@@ -142,7 +142,7 @@ class SparkRunner:
                               enable_numa_binding=False):
         import subprocess
         import pyspark
-        from zoo.util.utils import get_node_ip
+        from bigdl.dllib.utils.utils import get_node_ip
 
         if "PYSPARK_PYTHON" not in os.environ:
             os.environ["PYSPARK_PYTHON"] = \

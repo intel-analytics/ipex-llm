@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from abc import abstractmethod
-from bigdl.util.common import JavaValue
+from bigdl.dllib.utils.common import JavaValue
 
 
 class ZooTrigger(JavaValue):
