@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.dllib.utils
 
 import com.intel.analytics.bigdl.mkl.{MKL => BMKL}
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.mkl.MKL.{vdErf, vsErf}
 import org.apache.log4j.Logger
 
