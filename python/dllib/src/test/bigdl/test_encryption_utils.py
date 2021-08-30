@@ -19,7 +19,7 @@ import pytest
 import string
 import random
 
-from zoo.common.encryption_utils import *
+from bigdl.dllib.utils.encryption_utils import *
 
 
 class TestEncryption(TestCase):
