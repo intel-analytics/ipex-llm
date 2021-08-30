@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.common
+package com.intel.analytics.bigdl.dllib.utils
 
 import com.intel.analytics.bigdl.mkl.{MKL => BMKL}
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
@@ -24,7 +24,7 @@ import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
 
-private[zoo] object MKLBlas {
+private[bigdl] object MKLBlas {
   private val logger = Logger.getLogger(getClass)
 
   def erf[T: ClassTag](tensor: Tensor[T])
