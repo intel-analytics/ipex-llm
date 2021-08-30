@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.common
+package com.intel.analytics.bigdl.dllib.utils
 
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.optim.SGD.LearningRateSchedule
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.zoo.pipeline.api.keras.models.{InternalOptimizerUtil}
+import com.intel.analytics.bigdl.dllib.optim.SGD
+import com.intel.analytics.bigdl.dllib.optim.SGD.LearningRateSchedule
+import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.zooKeras.models.{InternalOptimizerUtil}
 
 object Optim {
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.common
+package com.intel.analytics.bigdl.dllib.utils
 
 import java.io.{InputStream, ObjectInputStream, ObjectStreamClass}
 

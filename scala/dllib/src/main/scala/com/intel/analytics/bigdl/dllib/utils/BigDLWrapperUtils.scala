@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.dllib.utils
 
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.tensor.Tensor
