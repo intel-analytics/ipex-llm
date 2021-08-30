@@ -14,38 +14,38 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.common
+package com.intel.analytics.bigdl.dllib.utils
 
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import org.apache.hadoop.fs.Path
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class UtilsSpec extends FlatSpec with Matchers {
+class zooUtilsSpec extends FlatSpec with Matchers {
   val path: String = getClass.getClassLoader.getResource("qa").getPath
   val txtRelations: String = path + "/relations.txt"
 
   "Utils listFiles" should "work properly" in {
-    val files = Utils.listPaths(path)
+    val files = zooUtils.listPaths(path)
     assert(files.size == 3)
-    val recursiveFiles = Utils.listPaths(path, true)
+    val recursiveFiles = zooUtils.listPaths(path, true)
     assert(recursiveFiles.size == 13)
   }
 
   "Utils readBytes" should "work properly" in {
-    val inputStream = Utils.open(txtRelations)
+    val inputStream = zooUtils.open(txtRelations)
     val fileLen = inputStream.available()
     inputStream.close()
-    val bytes = Utils.readBytes(txtRelations)
+    val bytes = zooUtils.readBytes(txtRelations)
     assert(bytes.length == fileLen)
   }
 
   "Utils saveBytes" should "work properly" in {
-    val fs = Utils.getFileSystem(path)
+    val fs = zooUtils.getFileSystem(path)
     // Generate random file
     val tmpFile = System.currentTimeMillis()
     val randomContent = new Array[Byte](1000)
-    Utils.saveBytes(randomContent, path + "/" + tmpFile)
+    zooUtils.saveBytes(randomContent, path + "/" + tmpFile)
     // Delete random file
     fs.deleteOnExit(new Path(path + "/" + tmpFile))
     fs.close()
