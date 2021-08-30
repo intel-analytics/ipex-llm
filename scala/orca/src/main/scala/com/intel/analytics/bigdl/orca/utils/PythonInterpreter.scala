@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.dllib.utils
 import java.util.concurrent.{ExecutorService, Executors, ThreadFactory}
 
 import com.intel.analytics.zoo.core.TFNetNative
-import com.intel.analytics.zoo.pipeline.api.net.NetUtils
 import jep.{JepConfig, JepException, NamingConventionClassEnquirer, SharedInterpreter}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.{Level, Logger}
