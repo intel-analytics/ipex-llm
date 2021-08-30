@@ -16,7 +16,6 @@
 package com.intel.analytics.bigdl.dllib.utils
 
 import com.intel.analytics.bigdl.dllib.optim.Trigger
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 /**
  * A trigger specifies a timespot or several timespots during training,
