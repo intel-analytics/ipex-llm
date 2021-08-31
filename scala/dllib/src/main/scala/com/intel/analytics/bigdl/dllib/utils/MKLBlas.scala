@@ -24,7 +24,7 @@ import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
 
-private[bigdl] object MKLBlas {
+private[bigdl] object zooMKLBlas {
   private val logger = Logger.getLogger(getClass)
 
   def erf[T: ClassTag](tensor: Tensor[T])
