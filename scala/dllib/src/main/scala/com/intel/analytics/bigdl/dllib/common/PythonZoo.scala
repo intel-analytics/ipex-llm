@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
+
 package com.intel.analytics.bigdl.dllib.utils
 
 import java.util
 
 import com.intel.analytics.bigdl.dllib.utils.python.api.{EvaluatedResult, JTensor, PythonBigDLKeras, Sample}
-import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.pipeline.api.Predictable
+import com.intel.analytics.bigdl.dllib.tensor.{DenseType, SparseType, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+//import com.intel.analytics.zoo.pipeline.api.Predictable
 import org.apache.spark.api.java.JavaRDD
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.{MiniBatch}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.optim.{LocalPredictor, ValidationMethod}
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.zoo.feature.image.ImageSet
-import com.intel.analytics.zoo.feature.text.TextSet
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
-import com.intel.analytics.zoo.pipeline.api.net.TFNet
+import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, ValidationMethod}
+//import com.intel.analytics.zoo.feature.image.ImageSet
+//import com.intel.analytics.zoo.feature.text.TextSet
+//import com.intel.analytics.zoo.pipeline.api.net.TFNet
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -148,7 +146,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     }
     list
   }
-
+/*
   def zooPredict(
                   module: Predictable[T],
                   x: JavaRDD[Sample],
@@ -161,9 +159,9 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
                  x: JavaRDD[MiniBatch[T]]): JavaRDD[JList[Object]] = {
     module.predictMiniBatch(x.rdd).map(activityToList).toJavaRDD()
   }
-
+*/
   // todo support featurePaddingParam
-  def zooRDDSampleToMiniBatch(rdd: JavaRDD[Sample],
+ /* def zooRDDSampleToMiniBatch(rdd: JavaRDD[Sample],
                               batchSizePerPartition: Int,
                               dropRemainder: Boolean): RDDWrapper[MiniBatch[T]] = {
     import com.intel.analytics.zoo.tfpark.SampleToMiniBatch
@@ -182,7 +180,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     }
     RDDWrapper(miniBatchRdd)
   }
-
+*/
   def zooForward(model: AbstractModule[Activity, Activity, T],
                  input: JList[JTensor],
                  inputIsTable: Boolean): JList[Object] = {
@@ -203,7 +201,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     val finalResult = result.map(activityToList).toList.asJava
     finalResult
   }
-
+/*
   def zooPredict(
                   module: Predictable[T],
                   x: ImageSet,
@@ -225,8 +223,8 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
                          zeroBasedLabel: Boolean = true): JavaRDD[Int] = {
     module.predictClasses(toJSample(x), batchPerThread, zeroBasedLabel).toJavaRDD()
   }
-
-  def tfnetEvaluate(model: AbstractModule[Activity, Activity, Float],
+*/
+/*  def tfnetEvaluate(model: AbstractModule[Activity, Activity, Float],
                     valRDD: JavaRDD[MiniBatch[Float]],
                     valMethods: JList[ValidationMethod[Float]])
   : JList[EvaluatedResult] = {
@@ -238,32 +236,32 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     }
     testResultArray.toList.asJava
   }
-
+*/
   def setCoreNumber(num: Int): Unit = {
-    EngineRef.setCoreNumber(num)
+    Engine.setCoreNumber(num)
   }
 
 
   def putLocalFileToRemote(localPath: String, remotePath: String,
                            isOverwrite: Boolean = false): Unit = {
-    Utils.putLocalFileToRemote(localPath, remotePath, isOverwrite)
+    zooUtils.putLocalFileToRemote(localPath, remotePath, isOverwrite)
   }
 
   def getRemoteFileToLocal(remotePath: String, localPath: String,
                            isOverwrite: Boolean = false): Unit = {
-    Utils.getRemoteFileToLocal(remotePath, localPath, isOverwrite)
+    zooUtils.getRemoteFileToLocal(remotePath, localPath, isOverwrite)
   }
 
   def listPaths(path: String, recursive: Boolean = false): JList[String] = {
-    com.intel.analytics.zoo.common.Utils.listPaths(path, recursive).toList.asJava
+    zooUtils.listPaths(path, recursive).toList.asJava
   }
 
   def exists(path: String): Boolean = {
-    Utils.exists(path)
+    zooUtils.exists(path)
   }
 
   def mkdirs(path: String): Unit = {
-    Utils.mkdirs(path)
+    zooUtils.mkdirs(path)
   }
 
   def createZooEveryEpoch(): EveryEpoch = {
@@ -298,4 +296,3 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     new Or(first, others.asScala: _*)
   }
 }
-*/
