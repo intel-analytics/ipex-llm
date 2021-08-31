@@ -2,3 +2,4 @@
 
 enclaveKeysPath: path_to_enclave-key.pem
 startAllButFlinkPath: path_to_start-all-but-flink.sh
+image: your_ppml_image

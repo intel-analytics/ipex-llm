@@ -20,7 +20,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: jobmanager
-        image: 10.239.45.10/arda/intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.12.0-SNAPSHOT
+        image:  {{ .Values.image }}
         command: ["/bin/bash","-c"]
         args: 
           - cd /ppml/trusted-realtime-ml/java; 
