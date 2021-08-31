@@ -34,7 +34,9 @@ class AutoLSTM:
                  backend="torch",
                  logs_dir="/tmp/auto_lstm",
                  cpus_per_trial=1,
-                 name="auto_lstm"):
+                 name="auto_lstm",
+                 remote_dir=None,
+                 ):
         """
         Create an AutoLSTM.
 
@@ -59,6 +61,9 @@ class AutoLSTM:
         :param logs_dir: Local directory to save logs and results. It defaults to "/tmp/auto_lstm"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the AutoLSTM. It defaults to "auto_lstm"
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+            defaults to None and doesn't take effects while running in local. While running in
+            cluster, it defaults to "hdfs:///tmp/{name}".
         """
         # todo: support backend = 'keras'
         if backend != "torch":
@@ -81,6 +86,7 @@ class AutoLSTM:
         self.auto_est = AutoEstimator(model_builder=model_builder,
                                       logs_dir=logs_dir,
                                       resources_per_trial={"cpu": cpus_per_trial},
+                                      remote_dir=remote_dir,
                                       name=name)
 
     def fit(self,
