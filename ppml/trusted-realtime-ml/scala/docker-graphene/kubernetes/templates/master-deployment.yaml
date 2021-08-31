@@ -18,7 +18,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: master-python-graphene
-        image: 10.239.45.10/arda/intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.12.0-SNAPSHOT
+        image:  {{ .Values.image }}
         command: ["/bin/sh","-c"]
         args: ["bash /ppml/trusted-realtime-ml/start-all-but-flink.sh | tee /ppml/trusted-realtime-ml/log; tail -f /dev/null"]
         securityContext:
