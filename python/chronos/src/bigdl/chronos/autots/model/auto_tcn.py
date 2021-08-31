@@ -37,7 +37,9 @@ class AutoTCN:
                  backend="torch",
                  logs_dir="/tmp/auto_tcn",
                  cpus_per_trial=1,
-                 name="auto_tcn"):
+                 name="auto_tcn",
+                 remote_dir=None,
+                 ):
         """
         Create an AutoTCN.
 
@@ -71,6 +73,9 @@ class AutoTCN:
         :param logs_dir: Local directory to save logs and results. It defaults to "/tmp/auto_tcn"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the AutoTCN. It defaults to "auto_tcn"
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+            defaults to None and doesn't take effects while running in local. While running in
+            cluster, it defaults to "hdfs:///tmp/{name}".
         """
         # todo: support search for past_seq_len.
         # todo: add input check.
@@ -96,6 +101,7 @@ class AutoTCN:
         self.auto_est = AutoEstimator(model_builder=model_builder,
                                       logs_dir=logs_dir,
                                       resources_per_trial={"cpu": cpus_per_trial},
+                                      remote_dir=remote_dir,
                                       name=name)
 
     def fit(self,

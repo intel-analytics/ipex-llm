@@ -37,6 +37,7 @@ class AutoProphet:
                  logs_dir="/tmp/auto_prophet_logs",
                  cpus_per_trial=1,
                  name="auto_prophet",
+                 remote_dir=None,
                  **prophet_config
                  ):
         """
@@ -66,6 +67,10 @@ class AutoProphet:
             "/tmp/auto_prophet_logs"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the AutoProphet. It defaults to "auto_prophet"
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+            defaults to None and doesn't take effects while running in local. While running in
+            cluster, it defaults to "hdfs:///tmp/{name}".
+
         :param prophet_config: Other Prophet hyperparameters.
         """
         self.search_space = {
@@ -81,6 +86,7 @@ class AutoProphet:
         self.auto_est = AutoEstimator(model_builder=model_builder,
                                       logs_dir=logs_dir,
                                       resources_per_trial={"cpu": cpus_per_trial},
+                                      remote_dir=remote_dir,
                                       name=name)
 
     def fit(self,

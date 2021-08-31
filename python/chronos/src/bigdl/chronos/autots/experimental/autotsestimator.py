@@ -58,7 +58,8 @@ class AutoTSEstimator:
                  backend="torch",
                  logs_dir="/tmp/autots_estimator",
                  cpus_per_trial=1,
-                 name="autots_estimator"
+                 name="autots_estimator",
+                 remote_dir=None,
                  ):
         """
         AutoTSEstimator trains a model for time series forecasting.
@@ -107,6 +108,9 @@ class AutoTSEstimator:
                It defaults to "/tmp/autots_estimator"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the autots estimator. It defaults to "autots_estimator".
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+               defaults to None and doesn't take effects while running in local. While running in
+               cluster, it defaults to "hdfs:///tmp/{name}".
         """
         # check backend and set default loss
         if backend != "torch":

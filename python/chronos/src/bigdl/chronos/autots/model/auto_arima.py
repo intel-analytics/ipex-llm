@@ -35,6 +35,7 @@ class AutoARIMA:
                  logs_dir="/tmp/auto_arima_logs",
                  cpus_per_trial=1,
                  name="auto_arima",
+                 remote_dir=None,
                  **arima_config
                  ):
         """
@@ -68,6 +69,9 @@ class AutoARIMA:
                "/tmp/auto_arima_logs"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the AutoARIMA. It defaults to "auto_arima"
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+            defaults to None and doesn't take effects while running in local. While running in
+            cluster, it defaults to "hdfs:///tmp/{name}".
         :param arima_config: Other ARIMA hyperparameters.
 
         """
@@ -85,6 +89,7 @@ class AutoARIMA:
                                       logs_dir=logs_dir,
                                       resources_per_trial={
                                           "cpu": cpus_per_trial},
+                                      remote_dir=remote_dir,
                                       name=name)
 
     def fit(self,
