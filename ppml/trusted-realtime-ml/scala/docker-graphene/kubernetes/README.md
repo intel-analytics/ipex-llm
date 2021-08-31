@@ -41,7 +41,7 @@ kubectl apply -f password.yaml
 
 ### Using [Helm][helmsite] to deploy all components
 
-If you have installed Helm, you can use Helm to deploy all the `yaml` files at once. In `values.yaml`, configure the full paths for `start-all-but-flink.sh` and `enclave-key.pem`. 
+If you have installed Helm, you can use Helm to deploy all the `yaml` files at once. In `values.yaml`, configure the full paths for `start-all-but-flink.sh` and `enclave-key.pem`, as well as the ppml image to be used. 
 Then, simply run 
 ``` bash
 helm install <name> ./
