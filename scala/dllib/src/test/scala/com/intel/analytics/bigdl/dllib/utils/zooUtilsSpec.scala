@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.dllib.utils
 
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import org.apache.hadoop.fs.Path
 import org.scalatest.{FlatSpec, Matchers}
 
