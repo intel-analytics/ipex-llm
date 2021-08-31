@@ -1,72 +1,87 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flink-jobmanager
+  name: flink-taskmanager
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: analytics-zoo-ppml-trusted-realtime-ml-graphene
-      component: jobmanager
+      component: taskmanager
   template:
     metadata:
       labels:
         app: analytics-zoo-ppml-trusted-realtime-ml-graphene
-        component: jobmanager
+        component: taskmanager
     spec:
       tolerations:
       - key: sgx.intel.com/epc
         operator: Exists
         effect: NoSchedule
       containers:
-      - name: jobmanager
+      - name: taskmanager
         image: 10.239.45.10/arda/intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.12.0-SNAPSHOT
         command: ["/bin/bash","-c"]
-        args: 
-          - cd /ppml/trusted-realtime-ml/java; 
-            test "$SGX_MODE" = sgx && bash init-java.sh > ../init-java.log; 
-            bash start-flink-jobmanager.sh | tee ../jobmanager.log; 
-            tail -f /dev/null
-#        args: ["tail -f /dev/null"]
-        env: 
+        args:
+              - export FLINK_TASK_MANAGER_IP=$(hostname -I);
+                export OMP_NUM_THREADS=${core_num};
+                export KMP_AFFINITY=verbose,granularity=fine,compact,1,0;
+                export KMP_BLOCKTIME=20;
+                cd /ppml/trusted-realtime-ml/java;
+                test "$SGX_MODE" = sgx && bash init-java.sh | tee ../init-java.log ;
+                bash start-flink-taskmanager.sh | tee ../taskmanager.log;
+                tail -f /dev/null
+#        args: ["export FLINK_JOB_MANAGER_IP=flink-jobmanager; tail -f /dev/null"]
+        env:
           - name: FLINK_JOB_MANAGER_IP
             valueFrom:
               configMapKeyRef:
                 name: flink-config
                 key: flink.jobmanager.ip
+          - name: TASKMANAGER_MEMORY_MANAGED_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: taskmanager.memory.managed.size
+          - name: TASKMANAGER_MEMORY_TASK_HEAP_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: taskmanager.memory.task.heap.size
           - name: XMX_SIZE
             valueFrom:
               configMapKeyRef:
                 name: flink-config
                 key: xmx.size
+          - name: FLINK_TASK_MANAGER_RPC_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: taskmanager.rpc.port
           - name: SGX_MODE
             valueFrom:
               configMapKeyRef:
                 name: flink-config
-                key: sgx.mode 
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 10
-            sgx.intel.com/epc: 133258905600
-          limits:
-            cpu: 12
-            sgx.intel.com/epc: 133258905600
-        ports:
-        - containerPort: 6123
+                key: sgx.mode
+         ports:
+        - containerPort: 6125
           name: rpc
-        - containerPort: 6124
-          name: blob-server
-        - containerPort: 8081
-          name: webui
+#        resources:
+#          requests:
+#            cpu: 10
+#            memory: 128G
+#            sgx.intel.com/epc: 133258905600
+#          limits:
+#            cpu: 12
+#            memory: 128G
+#            sgx.intel.com/epc: 133258905600
 #        livenessProbe:
 #          tcpSocket:
-#            port: 6123
+#            port: 6122
 #          initialDelaySeconds: 30
 #          periodSeconds: 60
-#        securityContext:
-#          runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
+        securityContext:
+          privileged: true
         volumeMounts:
         - name: enclave-keys
           mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
@@ -83,7 +98,7 @@ spec:
       volumes:
       - name: enclave-keys
         hostPath:
-          path: path_to_enclave-key.pem
+          path:  {{ .Values.enclaveKeysPath }}
       - name: java-secure-keys
         secret:
           secretName: ssl-keys
@@ -99,3 +114,4 @@ spec:
       - name: aesm-socket
         hostPath:
           path: /var/run/aesmd/aesm.socket
+
