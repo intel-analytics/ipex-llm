@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.dllib.utils
 
-import com.intel.analytics.zoo.core.TFNetNative
+//import com.intel.analytics.zoo.core.TFNetNative
 //import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import jep.{NDArray, SharedInterpreter}
 import org.apache.log4j.{Level, Logger}
