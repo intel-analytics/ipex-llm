@@ -67,7 +67,7 @@ class JavaCreator(SingletonMixin):
     __creator_class=[
         "com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDLKeras",
         "com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDLOnnx",
-        "com.intel.analytics.bigdl.dllib.utils.PythonZoo"
+        "com.intel.analytics.bigdl.dllib.common.PythonZoo"
     ]
 
     @classmethod
