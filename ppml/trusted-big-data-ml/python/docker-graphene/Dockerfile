@@ -1,19 +1,29 @@
 # stage.1 graphene
 FROM ubuntu:18.04 AS graphene
-
+ARG GRAPHENE_BRANCH=branch-1.2-rc1
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        autoconf bison build-essential coreutils gawk git wget \
+        python3 python3-pip libcurl4-openssl-dev \
+        libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
 RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
-    git fetch origin branch-0.3 && \
-    git checkout branch-0.3
+    git fetch origin $GRAPHENE_BRANCH && \
+    git checkout $GRAPHENE_BRANCH
+RUN pip3 install ninja meson && \
+    python3 -m pip install toml==0.10.2 click jinja2
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
     git checkout DCAP_1.7 && \
     cp -r driver/linux/* .
 RUN cd /graphene && \
-    ISGX_DRIVER_PATH=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver make -s -j4 SGX=1 WERROR=1 && true
+    make && \
+    ISGX_DRIVER_PATH=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver make -s -j4 SGX=1 && \
+    meson setup build/ --prefix="/graphene/meson_build_output" \ 
+    --buildtype=release -Ddirect=enabled -Dsgx=enabled  && \
+    ninja -C build/ && \
+    ninja -C build/ install
 RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
 
 # stage.2 jdk & scala & spark
@@ -109,7 +119,7 @@ ENV SPARK_VERSION			${SPARK_VERSION}
 ENV SPARK_HOME				/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
 ENV ANALYTICS_ZOO_HOME			/ppml/trusted-big-data-ml/work/analytics-zoo-${ANALYTICS_ZOO_VERSION}
 ENV JAVA_HOME				/opt/jdk8
-ENV PATH				${JAVA_HOME}/bin:${PATH}
+ENV PATH				/graphene/meson_build_output/bin:${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP				127.0.0.1
 ENV SGX_MEM_SIZE			64G
 ENV SPARK_MASTER_IP			127.0.0.1
@@ -128,6 +138,7 @@ RUN mkdir -p /graphene && \
     mkdir -p /graphene/python && \
     mkdir -p /graphene/Tools && \
     mkdir -p /graphene/Pal/src && \
+    mkdir -p /graphene/meson_build_output && \
     mkdir -p /ppml/trusted-big-data-ml/work && \
     mkdir -p /ppml/trusted-big-data-ml/work/keys && \
     mkdir -p /ppml/trusted-big-data-ml/work/password && \
@@ -145,8 +156,8 @@ COPY --from=graphene /graphene/Runtime/ /graphene/Runtime
 COPY --from=graphene /graphene/python /graphene/python
 COPY --from=graphene /graphene/Pal /graphene/Pal
 COPY --from=graphene /graphene/Pal/src/host/Linux-SGX/generated_offsets.py /graphene/python/
-COPY --from=graphene /graphene/Examples/common_tools/get_deps.sh /graphene/get_deps.sh
 COPY --from=graphene /graphene/Tools/argv_serializer /graphene/Tools
+COPY --from=graphene /graphene/meson_build_output /graphene/meson_build_output
 COPY --from=spark /opt/jdk  /opt/jdk8
 COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
@@ -178,6 +189,8 @@ RUN apt-get install -y python3-minimal && \
     pip install --no-cache-dir filelock && \
     pip install --no-cache-dir tensorflow_datasets==3.2.0 h5py==2.10.0 && \
     pip install --no-cache-dir pyarrow && \
+    pip install --no-cache-dir ninja meson && \
+    python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec
 
 ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
@@ -222,5 +235,6 @@ RUN jar -uf /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/ana
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-data-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh 
 
-    
-
+ENV PYTHONPATH	${PYTHONPATH}:/graphene/meson_build_output/lib/python3.6/site-packages
+ENV LC_ALL	C.UTF-8
+ENV LANG	C.UTF-8
