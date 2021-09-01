@@ -1,4 +1,4 @@
-ARG SPARK_VERSION=3.1.2
+ARG SPARK_VERSION=2.4.6
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
@@ -115,6 +115,9 @@ ENV CS_HOME                             /opt/work/cluster-serving
 ENV PYTHONPATH                          ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:${CS_HOME}/serving-python.zip:/opt/models/research/slim
 ENV PATH                                ${ANALYTICS_ZOO_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:/root/miniconda3/bin:${PATH}
 ENV TINI_VERSION                        ${TINI_VERSION}
+ENV LC_ALL                              C.UTF-8
+ENV LANG                                C.UTF-8
+
 
 COPY --from=copies-layer /opt /opt
 COPY --from=spark /sbin/tini /sbin/tini
@@ -157,6 +160,11 @@ RUN mkdir -p /opt/analytics-zoo-examples/python && \
     pip install --no-cache-dir cmake==3.16.3 && \
     pip install --no-cache-dir torch==1.7.1 torchvision==0.8.2 && \
     pip install --no-cache-dir horovod==0.19.2 && \
+#tf2
+    pip install --no-cache-dir pyarrow && \
+    pip install opencv-python==4.2.0.34 && \
+    pip install aioredis==1.1.0 && \
+    pip install tensorflow==2.4.0 && \
 # chmod
     chmod a+x /opt/start-notebook-spark.sh && \
     chmod a+x /opt/start-notebook-k8s.sh && \
