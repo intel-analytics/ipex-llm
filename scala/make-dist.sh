@@ -22,6 +22,9 @@
 
 set -e
 
+RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
+echo $RUN_SCRIPT_DIR
+
 # Check java
 if type -p java>/dev/null; then
     _java=java
@@ -53,7 +56,7 @@ if [ $MVN_INSTALL -eq 0 ]; then
   exit 1
 fi
 
-mvn clean package -DskipTests $*
+mvn -f $RUN_SCRIPT_DIR clean package -DskipTests $*
 
 BASEDIR=$(dirname "$0")
 DIST_DIR=$BASEDIR/../dist/
