@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.utils
+package com.intel.analytics.bigdl.dllib.common
 
 import java.util
 
 import com.intel.analytics.bigdl.dllib.utils.python.api.{EvaluatedResult, JTensor, PythonBigDLKeras, Sample}
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.tensor.{DenseType, SparseType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 //import com.intel.analytics.zoo.pipeline.api.Predictable
@@ -28,7 +29,7 @@ import java.util.{List => JList}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, ValidationMethod}
+import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, ValidationMethod, _}
 //import com.intel.analytics.zoo.feature.image.ImageSet
 //import com.intel.analytics.zoo.feature.text.TextSet
 //import com.intel.analytics.zoo.pipeline.api.net.TFNet
