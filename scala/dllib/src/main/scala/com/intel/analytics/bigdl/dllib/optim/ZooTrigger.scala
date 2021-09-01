@@ -15,7 +15,6 @@
  */
 package com.intel.analytics.bigdl.dllib.optim
 
-import com.intel.analytics.bigdl.dllib.optim.Trigger
 import com.intel.analytics.bigdl.dllib.utils._
 
 /**
