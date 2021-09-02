@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytic.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.nn.SpatialAveragePooling
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, ZeroPadding2D => BigDLZeroPadding2D}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
-import com.intel.analytics.bigdl.nn.Padding
-import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.nn.SpatialAveragePooling
+import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, ZeroPadding2D => BigDLZeroPadding2D}
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.dllib.nn.Padding
+import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
