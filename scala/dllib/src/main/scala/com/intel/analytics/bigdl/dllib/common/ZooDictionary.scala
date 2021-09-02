@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.utils
+package com.intel.analytics.bigdl.dllib.common
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.text.Dictionary
+import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 

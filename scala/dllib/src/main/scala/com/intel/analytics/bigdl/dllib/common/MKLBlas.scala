@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.utils
+package com.intel.analytics.bigdl.dllib.common
 
 import com.intel.analytics.bigdl.mkl.{MKL => BMKL}
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.mkl.MKL.{vdErf, vsErf}
+//import com.intel.analytics.zoo.mkl.MKL.{vdErf, vsErf}
 import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
@@ -29,6 +29,7 @@ private[bigdl] object zooMKLBlas {
 
   def erf[T: ClassTag](tensor: Tensor[T])
     (implicit ev: TensorNumeric[T]): Unit = {
+    /* uncomment below lines after zoo core merged into bigdl core
     if (BMKL.isMKLLoaded && tensor.isContiguous()) {
       ev.getType() match {
         case FloatType =>
@@ -45,6 +46,8 @@ private[bigdl] object zooMKLBlas {
       logger.warn("MKL is not used for erf, with mkl the performance will be much better")
       tensor.erf()
     }
+    */
+    tensor.erf()
   }
 
 }
