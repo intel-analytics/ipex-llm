@@ -83,12 +83,6 @@
             <scope>${bigdl-core-all-scope}</scope>
         </dependency>
         <dependency>
-            <groupId>com.intel.analytics.zoo</groupId>
-            <artifactId>zoo-core-dist-linux64</artifactId>
-            <version>0.12.0-SNAPSHOT</version>
-            <type>pom</type>
-        </dependency>  
-        <dependency>
             <groupId>black.ninia</groupId>
             <artifactId>jep</artifactId>
             <version>3.9.0</version>
