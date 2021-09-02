@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.models
+package com.intel.analytics.bigdl.dllib.keras.models
 
 import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
