@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.common
+package com.intel.analytics.bigdl.dllib.feature.common
 
-import com.intel.analytics.bigdl.dataset.Transformer
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.zoo.feature.image.ImageSet
-import com.intel.analytics.zoo.feature.text.{TextFeature, TextSet}
+import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.feature.text.{TextFeature, TextSet}
 import org.apache.commons.lang3.SerializationUtils
 
 /**
@@ -42,14 +42,30 @@ trait Preprocessing[A, B] extends Transformer[A, B] {
     SerializationUtils.clone(this)
   }
 
-  def apply(imageSet: ImageSet): ImageSet = {
-    if (this.isInstanceOf[Preprocessing[ImageFeature, ImageFeature]]) {
-      imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
-    } else {
-      throw new IllegalArgumentException("We expect " +
+//  def apply(imageSet: ImageSet): ImageSet = {
+//    if (this.isInstanceOf[Preprocessing[ImageFeature, ImageFeature]]) {
+//      imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
+//    } else {
+//      throw new IllegalArgumentException("We expect " +
+//        "Preprocessing[ImageFeature, ImageFeature] here")
+//    }
+//  }
+
+def apply(imageSet: ImageSet): ImageSet = {
+    this match {
+case xs: com.intel.analytics.bigdl.dllib.feature.common.Preprocessing[com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature,com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature] => 
+imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
+case _ => throw new IllegalArgumentException("We expect " +
         "Preprocessing[ImageFeature, ImageFeature] here")
-    }
+}
+//    if (this.isInstanceOf[Preprocessing[ImageFeature, ImageFeature]]) {
+//      imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
+//    } else {
+//      throw new IllegalArgumentException("We expect " +
+//        "Preprocessing[ImageFeature, ImageFeature] here")
+//    }
   }
+
 
   def apply(textSet: TextSet): TextSet = {
     this match {

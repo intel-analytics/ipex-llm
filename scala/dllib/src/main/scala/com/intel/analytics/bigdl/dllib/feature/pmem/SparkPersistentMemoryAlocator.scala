@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.pmem
+package com.intel.analytics.bigdl.dllib.feature.pmem
 
-import com.intel.analytics.zoo.pmem._
+import com.intel.analytics.bigdl.dllib.feature.pmem._
 import org.apache.spark.SparkEnv
 
 object MemoryAllocator {

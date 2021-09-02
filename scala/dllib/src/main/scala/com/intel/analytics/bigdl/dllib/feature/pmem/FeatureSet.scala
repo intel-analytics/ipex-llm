@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.pmem
+package com.intel.analytics.bigdl.dllib.feature.pmem
 
-import com.intel.analytics.bigdl.dataset.{ByteRecord, Sample}
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.zoo.feature.{CachedDistributedFeatureSet, DistributedFeatureSet}
-import com.intel.analytics.zoo.feature.common.ArrayLike
+import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, Sample}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.dllib.feature.{CachedDistributedFeatureSet, DistributedFeatureSet}
+import com.intel.analytics.bigdl.dllib.feature.common.ArrayLike
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-private[zoo] abstract class NativeArrayConverter[T: ClassTag]
+private[bigdl] abstract class NativeArrayConverter[T: ClassTag]
   extends Serializable {
 
   def getBytesPerRecord(record: T): Long
@@ -33,7 +33,7 @@ private[zoo] abstract class NativeArrayConverter[T: ClassTag]
       countPerPartition: Iterator[(Int, Long)]): Iterator[ArrayLike[T]]
 }
 
-private[zoo] class ByteRecordConverter(
+private[bigdl] class ByteRecordConverter(
     memoryType: MemoryType = PMEM) extends NativeArrayConverter[ByteRecord] {
 
   override def getBytesPerRecord(byteRecord: ByteRecord): Long = {
@@ -57,7 +57,7 @@ private[zoo] class ByteRecordConverter(
     }
 }
 
-private[zoo] case class ByteRecordArray(records: VarLenBytesArray,
+private[bigdl] case class ByteRecordArray(records: VarLenBytesArray,
     label: Array[Float]) extends ArrayLike[ByteRecord] {
   override def length: Int = {
     records.recordNum
@@ -70,7 +70,7 @@ private[zoo] case class ByteRecordArray(records: VarLenBytesArray,
   }
 }
 
-private[zoo] class SampleConverter(
+private[bigdl] class SampleConverter(
     memoryType: MemoryType = PMEM) extends NativeArrayConverter[Sample[Float]] {
 
   override def getBytesPerRecord(sample: Sample[Float]): Long = {
@@ -98,7 +98,7 @@ private[zoo] class SampleConverter(
   }
 }
 
-private[zoo] case class SampleArray(
+private[bigdl] case class SampleArray(
     samples: VarLenFloatsArray,
     featureSizes: Array[Array[Array[Int]]],
     labelSizes: Array[Array[Array[Int]]]) extends ArrayLike[Sample[Float]] {
@@ -115,7 +115,7 @@ private[zoo] case class SampleArray(
   }
 }
 
-private[zoo] class ImageFeatureConverter(
+private[bigdl] class ImageFeatureConverter(
       memoryType: MemoryType = PMEM) extends NativeArrayConverter[ImageFeature] {
 
   override def getBytesPerRecord(imageFeature: ImageFeature): Long = {
@@ -152,7 +152,7 @@ private[zoo] class ImageFeatureConverter(
  * @param bytesData bytes in PMEM.
  * @param metrics ImageFeature without bytes, just some metrics.
  */
-private[zoo] case class ImageFeatureArray(
+private[bigdl] case class ImageFeatureArray(
       bytesData: VarLenBytesArray,
       metrics: Array[ImageFeature]) extends ArrayLike[ImageFeature] {
   override def length: Int = {

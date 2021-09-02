@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature
+package com.intel.analytics.bigdl.dllib.feature
 
 import java.nio.file.Paths
 import java.util
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.{AbstractDataSet, DistributedDataSet, MiniBatch, Transformer}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator
-import com.intel.analytics.zoo.common.PythonInterpreter
-import com.intel.analytics.zoo.core.TFNetNative
-import com.intel.analytics.zoo.feature.common.{ArrayLike, ArrayLikeWrapper}
-import com.intel.analytics.zoo.feature.pmem._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import com.intel.analytics.bigdl.dllib.feature.dataset.{AbstractDataSet, DistributedDataSet, MiniBatch, Transformer}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.PythonInterpreter
+import com.intel.analytics.bigdl.dllib.feature.common.{ArrayLike, ArrayLikeWrapper}
+import com.intel.analytics.bigdl.dllib.feature.pmem._
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.{SparkContext, TaskContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
@@ -200,7 +199,7 @@ trait DistributedFeatureSet[T] extends AbstractFeatureSet[T, RDD[T]] {
  * @param featureSet
  * @tparam T
  */
-private[zoo] class DistributedDataSetWrapper[T: ClassTag](featureSet: DistributedFeatureSet[T])
+private[bigdl] class DistributedDataSetWrapper[T: ClassTag](featureSet: DistributedFeatureSet[T])
   extends DistributedDataSet[T]{
 
   override def data(train: Boolean): RDD[T] = {
@@ -349,7 +348,7 @@ object PythonFeatureSet{
       imports: String,
       interpRdd: RDD[Int]): Unit = {
     val bcDataSet = interpRdd.sparkContext.broadcast(dataset)
-    val nodeNumber = EngineRef.getNodeNumber()
+    val nodeNumber = Engine.nodeNumber()
     val preimports = s"""
       |from pyspark.serializers import CloudPickleSerializer
       |import numpy as np
@@ -372,7 +371,7 @@ object PythonFeatureSet{
   protected lazy val cachedRdd: RDD[Int] = createCachedRdd()
   protected def createCachedRdd(): RDD[Int] = {
     val sc = SparkContext.getOrCreate()
-    val nodeNumber = EngineRef.getNodeNumber()
+    val nodeNumber = Engine.nodeNumber()
     // TODO: make sure 1 executor 1 partition
     val originRdd = sc.parallelize(
       Array.tabulate(nodeNumber)(_ => "dummy123123"), nodeNumber * 10)
@@ -384,7 +383,7 @@ object PythonFeatureSet{
     originRdd
   }
 
-  private[zoo] def toArrayTensor(
+  private[bigdl] def toArrayTensor(
         data: AnyRef): Array[Tensor[Float]] = {
     data match {
       case ndArray: NDArray[_] =>
@@ -406,7 +405,7 @@ object PythonFeatureSet{
     }
   }
 
-  private[zoo] def ndArrayToTensor(ndArray: NDArray[_]): Tensor[Float] = {
+  private[bigdl] def ndArrayToTensor(ndArray: NDArray[_]): Tensor[Float] = {
     val array = ndArray.asInstanceOf[NDArray[Array[_]]]
     val data = array.getData()
     if (data.length > 0) {
@@ -566,7 +565,7 @@ class DiskFeatureSet[T: ClassTag]
 
   override def numOfSlice: Int = numSlice
 
-  protected val buffer = origin.coalesce(EngineRef.getNodeNumber(), true)
+  protected val buffer = origin.coalesce(Engine.nodeNumber(), true)
     .persist(StorageLevel.DISK_ONLY)
     .setName("Origin Data Cached on Disk")
   protected lazy val count: Long = buffer.count()
@@ -647,7 +646,7 @@ object DRAMFeatureSet {
 
 object FeatureSet {
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
-  private[zoo] def python[T: ClassTag](
+  private[bigdl] def python[T: ClassTag](
       dataset: Array[Byte],
       getLoader: (Int, Int, String) => String,
       getIterator: (String, String, Boolean) => String,
@@ -670,7 +669,7 @@ object FeatureSet {
        shuffle: Boolean = true): DistributedFeatureSet[T] = {
     dataStrategy match {
       case PARTITIONED =>
-        val nodeNumber = EngineRef.getNodeNumber()
+        val nodeNumber = Engine.nodeNumber()
         val repartitionedData = data.coalesce(nodeNumber, true).setName(data.name)
         memoryType match {
           case DRAM =>

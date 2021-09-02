@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.image
+package com.intel.analytics.bigdl.dllib.feature.image
 
 import com.intel.analytics.bigdl.opencv.OpenCV
-import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 
 import org.opencv.core.{Mat, MatOfByte}
 import org.opencv.imgcodecs.Imgcodecs
 
-private[zoo] object OpenCVMethod {
+private[bigdl] object OpenCVMethod {
   OpenCV.isOpenCVLoaded
 
   /**

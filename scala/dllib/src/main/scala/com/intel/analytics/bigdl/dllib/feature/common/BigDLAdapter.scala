@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.common
+package com.intel.analytics.bigdl.dllib.feature.common
 
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
 
 /**
  * Convert a BigDL Transformer to a Preprocessing

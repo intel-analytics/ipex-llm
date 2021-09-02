@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.common
+package com.intel.analytics.bigdl.dllib.feature.common
 
-import com.intel.analytics.bigdl.dataset.Sample
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * @tparam F data type from feature column, E.g. Array[_] or Vector
  * @tparam L data type from label column, E.g. Float, Double, Array[_] or Vector
  */
-class FeatureLabelPreprocessing[F, X, L, T: ClassTag] private[zoo] (
+class FeatureLabelPreprocessing[F, X, L, T: ClassTag] private[bigdl] (
     featureStep: Preprocessing[F, X],
     labelStep: Preprocessing[L, Tensor[T]]
   )(implicit ev: TensorNumeric[T]) extends Preprocessing[(F, Option[L]), Sample[T]] {
