@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.utils
+package com.intel.analytics.bigdl.dllib.common
 
 import java.io.{InputStream, ObjectInputStream, ObjectStreamClass}
 
