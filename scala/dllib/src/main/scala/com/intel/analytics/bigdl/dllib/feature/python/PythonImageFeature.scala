@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.intel.analytics.zoo.feature.python
+/*
+package com.intel.analytics.bigdl.dllib.feature.python
 
 import java.util
 import java.util.{List => JList}
 
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.python.api.JTensor
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.utils.python.api.JTensor
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.zoo.common.PythonZoo
-import com.intel.analytics.zoo.feature.common.Preprocessing
-import com.intel.analytics.zoo.feature.image._
-import com.intel.analytics.zoo.feature.image3d._
+import com.intel.analytics.bigdl.dllib.feature.common.Preprocessing
+import com.intel.analytics.bigdl.dllib.feature.image._
+import com.intel.analytics.bigdl.dllib.feature.image3d._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -405,3 +405,4 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
     tensor
   }
 }
+*/

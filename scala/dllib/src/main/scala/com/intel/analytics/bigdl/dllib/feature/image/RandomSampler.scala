@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.image
+package com.intel.analytics.bigdl.dllib.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature, augmentation}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.Crop
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.{BatchSampler, RandomSampler, RoiLabel, RoiProject}
-import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature, augmentation}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.Crop
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.{BatchSampler, RandomSampler, RoiLabel, RoiProject}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BoundingBox
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.opencv.core.Mat
 
 import scala.collection.mutable.ArrayBuffer

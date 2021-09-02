@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.text
+package com.intel.analytics.bigdl.dllib.feature.text
 
-import com.intel.analytics.zoo.feature.common.{ChainedPreprocessing, Preprocessing}
+import com.intel.analytics.bigdl.dllib.feature.common.{ChainedPreprocessing, Preprocessing}
 
 /**
  * Base class of Transformers that transform TextFeature.

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.pmem
+package com.intel.analytics.bigdl.dllib.feature.pmem
 
 import org.apache.spark.unsafe.Platform
 
 import scala.reflect.ClassTag
 
-private[zoo] abstract class NativeVarLenArray[T: ClassTag](val recordNum: Int,
+private[bigdl] abstract class NativeVarLenArray[T: ClassTag](val recordNum: Int,
     totalSizeByBytes: Long,
     memoryType: MemoryType, protected val moveStep: Int) extends
   NativeArray[Array[T]](totalSizeByBytes, memoryType) {

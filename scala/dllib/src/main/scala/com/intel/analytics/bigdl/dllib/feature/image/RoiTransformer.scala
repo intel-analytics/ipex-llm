@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.image
+package com.intel.analytics.bigdl.dllib.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.{RoiHFlip, RoiNormalize, RoiProject, RoiResize}
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.{RoiHFlip, RoiNormalize, RoiProject, RoiResize}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 
 /**
  * Normalize Roi to [0, 1]
