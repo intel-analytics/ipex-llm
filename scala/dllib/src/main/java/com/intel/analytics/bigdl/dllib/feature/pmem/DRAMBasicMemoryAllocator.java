@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pmem;
+package com.intel.analytics.bigdl.dllib.feature.pmem;
 
 public class DRAMBasicMemoryAllocator implements BasicMemoryAllocator {
     public static DRAMBasicMemoryAllocator instance = new DRAMBasicMemoryAllocator();
