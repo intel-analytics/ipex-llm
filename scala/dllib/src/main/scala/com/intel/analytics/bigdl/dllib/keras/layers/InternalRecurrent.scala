@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.internal
+package com.intel.analytic.bigdl.dllib.keras.layers.internal
 
-import com.intel.analytics.bigdl.nn.{BatchNormParams, BigDLWrapperUtils, Cell, Recurrent}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.{BatchNormParams, BigDLWrapperUtils, Cell, Recurrent}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DeserializeContext, ModuleSerializer, SerializeContext}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{InternalConvLSTM2D, InternalConvLSTM3D}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.dllib.utils.serializer.{ContainerSerializable, DeserializeContext, ModuleSerializer, SerializeContext}
+import com.intel.analytics.bigdl.dllib.keras.layers.{InternalConvLSTM2D, InternalConvLSTM3D}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime._
