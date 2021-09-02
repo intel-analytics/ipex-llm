@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.image
+package com.intel.analytics.bigdl.dllib.feature.image
 
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, MatToFloats, MatToTensor}
-import com.intel.analytics.bigdl.transform.vision.image
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, MatToFloats, MatToTensor}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image
 
 import scala.reflect.ClassTag
 

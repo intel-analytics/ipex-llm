@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.image3d
+package com.intel.analytics.bigdl.dllib.feature.image3d
 
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor, Storage}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor, Storage}
 import scala.reflect.ClassTag
 
 object Rotate3D {

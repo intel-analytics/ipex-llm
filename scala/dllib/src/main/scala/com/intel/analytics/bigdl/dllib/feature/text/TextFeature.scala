@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.text
+package com.intel.analytics.bigdl.dllib.feature.text
 
-import com.intel.analytics.bigdl.dataset.Sample
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.apache.log4j.Logger
 
 import scala.collection.{Set, mutable}

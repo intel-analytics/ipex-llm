@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.text
+package com.intel.analytics.bigdl.dllib.feature.text
 
 /**
  * Removes all dirty (non English alphabet) characters from tokens and converts words

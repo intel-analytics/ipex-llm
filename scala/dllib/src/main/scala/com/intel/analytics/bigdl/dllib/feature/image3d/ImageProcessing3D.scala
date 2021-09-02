@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.image3d
+package com.intel.analytics.bigdl.dllib.feature.image3d
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.FeatureTransformer._
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.zoo.feature.image.{ImageProcessing, ImageSet}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.FeatureTransformer._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.dllib.feature.image.{ImageProcessing, ImageSet}
 import org.apache.log4j.Logger
 
-private[zoo] abstract class ImageProcessing3D extends ImageProcessing {
+private[bigdl] abstract class ImageProcessing3D extends ImageProcessing {
 
   /**
    * if true, catch the exception of the transformer to avoid crashing.

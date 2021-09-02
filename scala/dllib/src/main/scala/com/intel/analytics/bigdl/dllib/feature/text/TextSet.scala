@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.text
+package com.intel.analytics.bigdl.dllib.feature.text
 
 import java.io._
 import java.util
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.{DataSet, Sample}
-import com.intel.analytics.zoo.feature.common.{Preprocessing, Relation, Relations}
-import com.intel.analytics.zoo.feature.text.TruncMode.TruncMode
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, Sample}
+import com.intel.analytics.bigdl.dllib.feature.common.{Preprocessing, Relation, Relations}
+import com.intel.analytics.bigdl.dllib.feature.text.TruncMode.TruncMode
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.util.StringUtils
@@ -32,9 +32,9 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.zoo.feature.FeatureSet
-import com.intel.analytics.zoo.feature.pmem.{DRAM, MemoryType}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.FeatureSet
+import com.intel.analytics.bigdl.dllib.feature.pmem.{DRAM, MemoryType}
 import org.apache.spark.sql.SQLContext
 
 /**
