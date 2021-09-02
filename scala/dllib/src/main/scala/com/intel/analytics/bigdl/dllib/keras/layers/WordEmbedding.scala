@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytic.bigdl.dllib.keras.layers
 
 import java.io._
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.intel.analytics.bigdl.nn.{Identity => BIdentity}
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.dllib.nn.{Identity => BIdentity}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.serialization.Bigdl._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, SerializeContext}
-import com.intel.analytics.bigdl.utils.serializer.converters.{DataConverter, TensorConverter}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.{DataConverter, TensorConverter}
 import com.intel.analytics.zoo.common.CheckedObjectInputStream
-import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding.EmbeddingMatrixHolder
+import com.intel.analytics.bigdl.dllib.keras.layers.WordEmbedding.EmbeddingMatrixHolder
 import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, RegistryMap, SerializationHolder}
 import org.slf4j.LoggerFactory
 

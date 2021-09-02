@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.api.keras.optimizers
+package com.intel.analytic.bigdl.dllib.keras.optimizers
 
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.optim.SGD.{Default, LearningRateSchedule}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.SGDRef
+import com.intel.analytics.bigdl.dllib.optim.SGD
+import com.intel.analytics.bigdl.dllib.optim.SGD.{Default, LearningRateSchedule}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.SGDRef
 
 import scala.math._
 import scala.reflect.ClassTag
