@@ -16,7 +16,7 @@
 //
 //package com.intel.analytics.bigdl.dllib.nnframes
 //
-//import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+//import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 //import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 //import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 //import com.intel.analytics.zoo.feature.image.ImageSet

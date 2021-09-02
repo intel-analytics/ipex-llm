@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.metrics
+package com.intel.analytics.bigdl.dllib.keras.metrics
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.optim.{ValidationMethod, ValidationResult}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.optim.{ValidationMethod, ValidationResult}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.collection.mutable.ArrayBuffer
 

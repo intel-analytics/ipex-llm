@@ -19,10 +19,10 @@
 //import java.util.{ArrayList => JArrayList, List => JList}
 //
 //import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
-//import com.intel.analytics.bigdl.optim.{OptimMethod, Trigger, ValidationMethod, ValidationResult}
+//import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, Trigger, ValidationMethod, ValidationResult}
 //import com.intel.analytics.bigdl.python.api.EvaluatedResult
-//import com.intel.analytics.bigdl.tensor.Tensor
-//import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+//import com.intel.analytics.bigdl.dllib.tensor.Tensor
+//import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 //import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 //import com.intel.analytics.bigdl.{Criterion, Module}
 //import com.intel.analytics.zoo.common.PythonZoo

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.objectives
+package com.intel.analytic.bigdl.dllib.keras.objectives
 
-import com.intel.analytics.bigdl.nn.MeanAbsolutePercentageCriterion
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, TensorCriterion}
-import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.MeanAbsolutePercentageCriterion
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, TensorCriterion}
+import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply, Tensor, TensorFunc6}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
