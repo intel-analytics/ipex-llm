@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo
+package com.intel.analytics.bigdl.dllib
 
 package object feature {
   type FeatureSet[D] = AbstractFeatureSet[D, _]

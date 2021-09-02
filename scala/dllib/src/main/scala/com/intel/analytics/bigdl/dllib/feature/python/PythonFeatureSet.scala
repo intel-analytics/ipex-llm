@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.intel.analytics.zoo.feature.python
+/*
+package com.intel.analytics.bigdl.dllib.feature.python
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer, Sample => JSample}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch, Transformer, Sample => JSample}
 import com.intel.analytics.bigdl.opencv.OpenCV
-import com.intel.analytics.bigdl.python.api.Sample
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.python.api.Sample
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
+import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.zoo.common.PythonZoo
-import com.intel.analytics.zoo.feature.FeatureSet
-import com.intel.analytics.zoo.feature.pmem.MemoryType
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import com.intel.analytics.bigdl.dllib.feature.FeatureSet
+import com.intel.analytics.bigdl.dllib.feature.pmem.MemoryType
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.storage.StorageLevel
@@ -42,7 +42,7 @@ object PythonFeatureSet {
   def ofDouble(): PythonFeatureSet[Double] = new PythonFeatureSet[Double]()
 
   protected def loadOpenCv(sc: SparkContext): Unit = {
-    val nodeNumber = EngineRef.getNodeNumber()
+    val nodeNumber = Engine.getNodeNumber()
     val loadOpenCvRdd = sc.parallelize(
       Array.tabulate(nodeNumber)(_ => "dummy123123"), nodeNumber * 10)
       .mapPartitions(_ => (0 until 2000000).toIterator)
@@ -102,7 +102,7 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   def createFeatureSetFromTfDataset(
         dataset: Array[Byte],
         totalSize: Int): FeatureSet[MiniBatch[Float]] = {
-    val nodeNumber = EngineRef.getNodeNumber()
+    val nodeNumber = Engine.getNodeNumber()
     // set a random seed to make sure shuffle is the same in each executor
     val imports =
       s"""
@@ -225,3 +225,4 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
 }
+*/

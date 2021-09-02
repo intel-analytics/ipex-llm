@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.image.roi
+package com.intel.analytics.bigdl.dllib.feature.image.roi
 
 import java.nio.ByteBuffer
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.zoo.feature.common.Preprocessing
-import com.intel.analytics.zoo.models.image.objectdetection.common.dataset.ByteRecord
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.feature.common.Preprocessing
 
 import scala.collection.Iterator
+
+// remove below line after migrate zoo.models
+case class ByteRecord(var data: Array[Byte], path: String)
 
 /**
  * Convert ROI image record to ImageFeature.
