@@ -20,25 +20,25 @@ import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import com.intel.analytics.bigdl.mkl.MKL
-import com.intel.analytics.bigdl.dataset.{MiniBatch, _}
-import com.intel.analytics.bigdl.models.utils.ModelBroadcast
-import com.intel.analytics.bigdl.{DataSet, optim, _}
-import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializable}
-import com.intel.analytics.bigdl.nn.mkldnn.MklDnnModule
-import com.intel.analytics.bigdl.nn.{Container, Graph, Module, StaticGraph, Sequential => TSequential}
-import com.intel.analytics.bigdl.optim.DistriOptimizer.{Cache, CacheV1}
-import com.intel.analytics.bigdl.optim.DistriOptimizerV2.{Cache => CacheV2}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.parameters.AllReduceParameter
-import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.dllib.mkl.MKL
+import com.intel.analytics.bigdl.dllib.dataset.{MiniBatch, _}
+import com.intel.analytics.bigdl.dllib.models.utils.ModelBroadcast
+import com.intel.analytics.bigdl.dllib.{DataSet, optim, _}
+import com.intel.analytics.bigdl.dllib.nn.Graph._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasLayerSerializable}
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.MklDnnModule
+import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, Module, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.{Cache, CacheV1}
+import com.intel.analytics.bigdl.dllib.optim.DistriOptimizerV2.{Cache => CacheV2}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.parameters.AllReduceParameter
+import com.intel.analytics.bigdl.dllib.serialization.Bigdl.BigDLModule
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
+import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.zoo.common.ZooTrigger
 import com.intel.analytics.zoo.feature.{DiskFeatureSet, DistributedFeatureSet, FeatureSet}
 import com.intel.analytics.zoo.feature.image.ImageSet
@@ -46,8 +46,8 @@ import com.intel.analytics.zoo.feature.text._
 import com.intel.analytics.zoo.pipeline.api.{Net, Predictable}
 import com.intel.analytics.zoo.pipeline.api.autograd.{Lambda, Variable}
 import com.intel.analytics.zoo.pipeline.api.autograd._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Input
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils._
+import com.intel.analytics.bigdl.dllib.keras.layers.Input
+import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, TorchModel}
 import com.intel.analytics.zoo.pipeline.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
 import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
@@ -1109,7 +1109,7 @@ private[zoo] object InternalOptimizerUtil {
   def releaseBroadcast[T: ClassTag](
         uuid: String)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.invokeMethodWithEv(
-      "com.intel.analytics.bigdl.models.utils.CachedModels",
+      "com.intel.analytics.bigdl.dllib.models.utils.CachedModels",
       "deleteKey",
       uuid)
   }
@@ -1172,7 +1172,7 @@ private[zoo] class InternalDistriOptimizer[T: ClassTag] (
     state("warmupIterationNum") = warmupIterationNum
     state("computeThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
-    state("isLayerwiseScaled") = com.intel.analytics.bigdl.nn.Utils.isLayerwiseScaled(_model)
+    state("isLayerwiseScaled") = com.intel.analytics.bigdl.dllib.nn.Utils.isLayerwiseScaled(_model)
 
     val nodeNumber = EngineRef.getNodeNumber()
 

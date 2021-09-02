@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.internal
+package com.intel.analytic.bigdl.dllib.keras.layers.internal
 
-import com.intel.analytics.bigdl.nn.{CAddTable => BigDLCAddTable}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.dllib.nn.{CAddTable => BigDLCAddTable}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
 
 import scala.reflect.ClassTag
 

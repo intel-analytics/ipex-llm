@@ -16,10 +16,10 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{SizeAverageStatus, TensorCriterion}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{SizeAverageStatus, TensorCriterion}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Engine
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
