@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.image3d
+package com.intel.analytics.bigdl.dllib.feature.image3d
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 import java.util.Calendar
 
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 object Crop3D {
   /**
@@ -33,7 +33,7 @@ object Crop3D {
   def apply(start: Array[Int], patchSize: Array[Int]): Crop3D =
     new Crop3D(start, patchSize)
 
-  private[zoo] def crop(tensor: Tensor[Float], start: Array[Int],
+  private[bigdl] def crop(tensor: Tensor[Float], start: Array[Int],
                         patchSize: Array[Int]): Tensor[Float] = {
     require(start(0) <= tensor.size(1) && start(1) <= tensor.size(2) &&
       start(2) <= tensor.size(3), "Cropping indices out of bounds.")

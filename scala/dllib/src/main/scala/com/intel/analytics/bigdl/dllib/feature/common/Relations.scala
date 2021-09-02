@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.common
+package com.intel.analytics.bigdl.dllib.feature.common
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

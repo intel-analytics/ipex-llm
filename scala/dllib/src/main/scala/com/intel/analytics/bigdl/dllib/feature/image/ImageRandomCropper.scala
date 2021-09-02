@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.image
+package com.intel.analytics.bigdl.dllib.feature.image
 
-import com.intel.analytics.bigdl.dataset.image.{CropRandom, CropperMethod}
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.RandomCropper
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{CropRandom, CropperMethod}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.RandomCropper
 
 /**
  * Random cropper on uniform distribution with fixed height and width.

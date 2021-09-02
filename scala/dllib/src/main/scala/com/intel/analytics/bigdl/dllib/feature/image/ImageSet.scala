@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.image
+package com.intel.analytics.bigdl.dllib.feature.image
 
 import java.io.File
 
 import java.nio.ByteBuffer
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder.readLabel
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.zoo.common.Utils
-import com.intel.analytics.zoo.feature.common.Preprocessing
+import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet.SeqFileFolder.readLabel
+import com.intel.analytics.bigdl.dllib.feature.dataset._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
+import com.intel.analytics.bigdl.dllib.common.zooUtils
+import com.intel.analytics.bigdl.dllib.feature.common.Preprocessing
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.io.Text
 import org.apache.spark.SparkContext
@@ -36,8 +36,8 @@ import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
 import org.apache.hadoop.fs.Path
 
 /**
@@ -301,7 +301,7 @@ object ImageSet {
       }.toMap
 
       val files = classFolders.flatMap { p =>
-        Utils.listLocalFiles(p.toAbsolutePath.toString)
+        zooUtils.listLocalFiles(p.toAbsolutePath.toString)
       }
 
       val images = files.map { p =>
@@ -314,7 +314,7 @@ object ImageSet {
 
       ImageSet.array(images, labelMap)
     } else {
-      val files = Utils.listLocalFiles(pathStr)
+      val files = zooUtils.listLocalFiles(pathStr)
       val images = files.map { p =>
         ImageFeature(FileUtils.readFileToByteArray(p), uri = p.getAbsolutePath)
       }
@@ -358,7 +358,7 @@ object ImageSet {
    * @param imageFrame imageFrame which needs to covert to Imageset
    * @return ImageSet
    */
-  private[zoo] def fromImageFrame(imageFrame: ImageFrame): ImageSet = {
+  private[bigdl] def fromImageFrame(imageFrame: ImageFrame): ImageSet = {
     val imageset = imageFrame match {
       case distributedImageFrame: DistributedImageFrame =>
         ImageSet.rdd(imageFrame.toDistributed().rdd)
