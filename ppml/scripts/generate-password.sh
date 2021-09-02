@@ -1,6 +1,5 @@
 #!/bin/bash
-OUTPUT=path_of_output_yaml_file
-PASSWORD_PATH=./password
+OUTPUT=password.yaml
 
 mkdir -p password && cd password
 export PASSWORD=$1 #used_password_when_generate_keys
@@ -11,11 +10,11 @@ echo apiVersion: v1 > $OUTPUT
 echo data: >> $OUTPUT
 echo " key.txt:" >> $OUTPUT
 echo -n "  " >> $OUTPUT
-base64 -w 0 $PASSWORD_PATH/key.txt  >> $OUTPUT
+base64 -w 0 key.txt  >> $OUTPUT
 echo "" >> $OUTPUT
 echo " output.bin:" >> $OUTPUT
 echo -n "  " >> $OUTPUT
-base64 -w 0 $PASSWORD_PATH/output.bin  >> $OUTPUT
+base64 -w 0 output.bin  >> $OUTPUT
 echo "" >> $OUTPUT
 echo kind: Secret  >> $OUTPUT
 echo metadata:  >> $OUTPUT

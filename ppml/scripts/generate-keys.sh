@@ -1,6 +1,5 @@
 #!/bin/bash
-OUTPUT=path_of_output_yaml_file
-KEYS_PATH=./keys
+OUTPUT=keys.yaml
 
 mkdir -p keys && cd keys
 openssl genrsa -des3 -out server.key 2048
@@ -25,32 +24,32 @@ echo data: >> $OUTPUT
 
 echo " keystore.jks:" >> $OUTPUT
 echo -n "  " >> $OUTPUT
-base64 -w 0 $KEYS_PATH/keystore.jks  >> $OUTPUT
+base64 -w 0 keystore.jks  >> $OUTPUT
 echo "" >> $OUTPUT
 
 echo " keystore.pkcs12:" >> $OUTPUT
 echo -n "  " >> $OUTPUT
-base64 -w 0 $KEYS_PATH/keystore.pkcs12  >> $OUTPUT
+base64 -w 0 keystore.pkcs12  >> $OUTPUT
 echo "" >> $OUTPUT
 
 echo " server.pem:" >> $OUTPUT
 echo -n "  " >> $OUTPUT
-base64 -w 0 $KEYS_PATH/server.pem  >> $OUTPUT
+base64 -w 0 server.pem  >> $OUTPUT
 echo "" >> $OUTPUT
 
 echo " server.crt:" >> $OUTPUT
 echo -n "  " >> $OUTPUT
-base64 -w 0 $KEYS_PATH/server.crt  >> $OUTPUT
+base64 -w 0 server.crt  >> $OUTPUT
 echo "" >> $OUTPUT
 
 echo " server.csr:" >> $OUTPUT
 echo -n "  " >> $OUTPUT
-base64 -w 0 $KEYS_PATH/server.csr  >> $OUTPUT
+base64 -w 0 server.csr  >> $OUTPUT
 echo "" >> $OUTPUT
 
 echo " server.key:" >> $OUTPUT
 echo -n "  " >> $OUTPUT
-base64 -w 0 $KEYS_PATH/server.key  >> $OUTPUT
+base64 -w 0 server.key  >> $OUTPUT
 echo "" >> $OUTPUT
 
 echo kind: Secret  >> $OUTPUT
