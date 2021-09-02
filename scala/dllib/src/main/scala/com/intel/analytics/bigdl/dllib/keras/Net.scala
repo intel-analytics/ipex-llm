@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api
+package com.intel.analytics.bigdl.dllib.keras
 
 import java.io.{BufferedReader, BufferedWriter, FileOutputStream, FileWriter, InputStreamReader, File => JFile}
 import java.nio.ByteOrder
