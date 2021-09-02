@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras
+package com.intel.analytics.bigdl.dllib.keras
 
 package object layers {
   // Alias

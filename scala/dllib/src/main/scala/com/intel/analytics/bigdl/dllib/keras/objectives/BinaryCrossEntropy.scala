@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.objectives
+package com.intel.analytic.bigdl.dllib.keras.objectives
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion
-import com.intel.analytics.bigdl.nn.BCECriterion
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractCriterion
+import com.intel.analytics.bigdl.dllib.nn.BCECriterion
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 /**
  * This loss function measures the Binary Cross Entropy between the target and the output

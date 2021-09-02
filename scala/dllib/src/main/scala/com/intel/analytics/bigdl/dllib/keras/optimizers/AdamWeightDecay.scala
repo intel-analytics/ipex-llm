@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.optimizers
+package com.intel.analytic.bigdl.dllib.keras.optimizers
 
-import com.intel.analytics.bigdl.optim.{OptimMethod, SGD}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.SGDRef
+import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, SGD}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.SGDRef
 
 import scala.reflect.ClassTag
 

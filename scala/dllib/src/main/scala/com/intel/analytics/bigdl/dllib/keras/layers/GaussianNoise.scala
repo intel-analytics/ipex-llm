@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytic.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{GaussianNoise => BigDLGaussianNoise}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.nn.keras.{GaussianNoise => BigDLGaussianNoise}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
