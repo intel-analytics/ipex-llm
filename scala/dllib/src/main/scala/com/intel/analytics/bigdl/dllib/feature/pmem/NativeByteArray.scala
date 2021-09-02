@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.pmem
+package com.intel.analytics.bigdl.dllib.feature.pmem
 
 import org.apache.spark.unsafe.Platform
 

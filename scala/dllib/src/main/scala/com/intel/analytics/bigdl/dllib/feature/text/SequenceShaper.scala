@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.text
+package com.intel.analytics.bigdl.dllib.feature.text
 
-import com.intel.analytics.zoo.feature.text.TruncMode.TruncMode
+import com.intel.analytics.bigdl.dllib.feature.text.TruncMode.TruncMode
 
 /**
  * Shape the sequence of indices to a fixed length.

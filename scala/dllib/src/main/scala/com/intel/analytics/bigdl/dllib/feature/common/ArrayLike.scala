@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.common
+package com.intel.analytics.bigdl.dllib.feature.common
 
 import scala.reflect.ClassTag
 
 
-private[zoo] abstract class ArrayLike[T: ClassTag] extends Serializable {
+private[bigdl] abstract class ArrayLike[T: ClassTag] extends Serializable {
   def length: Int = throw new Error()
 
   def apply(i: Int): T = throw new Error()
@@ -27,7 +27,7 @@ private[zoo] abstract class ArrayLike[T: ClassTag] extends Serializable {
   def free(): Unit = {}
 }
 
-private[zoo] class ArrayLikeWrapper[T: ClassTag](array: Array[T]) extends ArrayLike[T] {
+private[bigdl] class ArrayLikeWrapper[T: ClassTag](array: Array[T]) extends ArrayLike[T] {
   override def length: Int = array.length
 
   override def apply(i: Int): T = array(i)

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.common
+package com.intel.analytics.bigdl.dllib.feature.common
 
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import com.intel.analytics.bigdl.dllib.feature.dataset._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Engine
 
 import scala.reflect.ClassTag
 
@@ -39,7 +39,7 @@ class MTSampleToMiniBatch[A: ClassTag, T: ClassTag] (
   private val batchSize = batchPerPartition
   private val sampleData = new Array[Sample[T]](batchSize)
 
-  private val parallelism = EngineRef.getCoreNumber()
+  private val parallelism = Engine.coreNumber()
 
   private val transformers = (0 until parallelism).map(
     _ => transformer.cloneTransformer()
@@ -101,9 +101,9 @@ object MTSampleToMiniBatch {
    * @param batchSize           total batch size
    * @param transformer         transformer who rawData to Sample
    * @param featurePaddingParam feature padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
    * @param labelPaddingParam   label padding strategy, see
-   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   *                            [[com.intel.analytics.bigdl.dllib.feature.dataset.PaddingParam]] for details.
    * @return
    */
   def apply[A: ClassTag, T: ClassTag](

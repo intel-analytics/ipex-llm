@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.intel.analytics.zoo.feature.python
+/*
+package com.intel.analytics.bigdl.dllib.feature.python
 
 import java.util.{List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.python.api.{JTensor, Sample}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dataset.{Sample => JSample}
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.utils.python.api.{JTensor, Sample}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.dataset.{Sample => JSample}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.zoo.common.PythonZoo
-import com.intel.analytics.zoo.feature.common.{Preprocessing, Relation, Relations}
-import com.intel.analytics.zoo.feature.text.TruncMode.TruncMode
-import com.intel.analytics.zoo.feature.text.{DistributedTextSet, _}
+import com.intel.analytics.bigdl.dllib.feature.common.{Preprocessing, Relation, Relations}
+import com.intel.analytics.bigdl.dllib.feature.text.TruncMode.TruncMode
+import com.intel.analytics.bigdl.dllib.feature.text.{DistributedTextSet, _}
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -412,3 +412,4 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
   }
 
 }
+*/
