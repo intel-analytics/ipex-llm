@@ -16,18 +16,18 @@
 
 package com.intel.analytics.zoo.pipeline.api
 
-import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer}
-import com.intel.analytics.bigdl.models.utils.ModelBroadcast
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.optim.LocalPredictor
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
-import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.zoo.feature.image.ImageSet
-import com.intel.analytics.zoo.feature.text._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.dllib._
+import com.intel.analytics.bigdl.dllib.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer}
+import com.intel.analytics.bigdl.dllib.models.utils.ModelBroadcast
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.optim.LocalPredictor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+//import com.intel.analytics.zoo.feature.image.ImageSet
+//import com.intel.analytics.zoo.feature.text._
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import org.apache.spark.rdd.RDD
 
 import scala.collection.Iterator
@@ -42,7 +42,7 @@ object Predictor {
     new Predictor[T](model, featurePaddingParam, batchPerPartition)
   }
 
-  private[zoo] def predictImageBatch[T: ClassTag](
+  private[bigdl] def predictImageBatch[T: ClassTag](
                      localModel: Module[T], imageFeatures: Seq[ImageFeature],
                      outputLayer: String, predictKey: String,
                      localToBatch: Transformer[Sample[T], MiniBatch[T]],
@@ -56,7 +56,7 @@ object Predictor {
     imageFeatures
   }
 
-  private[zoo] def predictSamples[T: ClassTag]
+  private[bigdl] def predictSamples[T: ClassTag]
   (localModel: Module[T], samples: Seq[Sample[T]],
    localToBatch: Transformer[Sample[T], MiniBatch[T]],
    shareBuffer: Boolean,
@@ -74,7 +74,7 @@ object Predictor {
     })
   }
 
-  private[zoo] def splitTensor[T: ClassTag](output: Tensor[T],
+  private[bigdl] def splitTensor[T: ClassTag](output: Tensor[T],
                                               shareBuffer: Boolean, batchSize: Int)
                                              (implicit ev: TensorNumeric[T]): Array[Activity] = {
     val result = if (shareBuffer) output else output.clone
@@ -89,7 +89,7 @@ object Predictor {
     out.asInstanceOf[Array[Activity]]
   }
 
-  private[zoo] def splitBatch[T: ClassTag](output: Activity, shareBuffer: Boolean, batchSize: Int)
+  private[bigdl] def splitBatch[T: ClassTag](output: Activity, shareBuffer: Boolean, batchSize: Int)
                                             (implicit ev: TensorNumeric[T]): Array[Activity] = {
     val out = if (output.isTensor) {
       splitTensor(output.toTensor, shareBuffer, batchSize)
@@ -426,7 +426,7 @@ trait Predictable[T]  {
  * @param featurePaddingParam featurePaddingParam if the inputs have variant size
  * @param batchPerPartition batch size per partition, default is 4
  */
-class Predictor[T: ClassTag] private[zoo](
+class Predictor[T: ClassTag] private[bigdl](
                                              model: Module[T],
                                              featurePaddingParam: Option[PaddingParam[T]] = None,
                                              batchPerPartition: Int = 4)
