@@ -82,11 +82,6 @@
             <version>0.14.0-SNAPSHOT</version>
             <scope>${bigdl-core-all-scope}</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>black.ninia</groupId>-->
-            <!--<artifactId>jep</artifactId>-->
-            <!--<version>3.9.0</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.major.version}</artifactId>
