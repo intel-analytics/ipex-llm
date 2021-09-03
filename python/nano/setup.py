@@ -46,16 +46,16 @@ def get_nano_packages():
     return nano_packages
 
 
-def download_libs():
-    url = "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so"
+def download_libs(url: str):
     libs_dir = os.path.join(nano_home, "bigdl", "nano", "libs")
     if not os.path.exists(libs_dir):
         os.mkdir(libs_dir)
-    jemalloc_file = os.path.join(libs_dir, "libjemalloc.so")
-    if not os.path.exists(jemalloc_file):
-        urllib.request.urlretrieve(url, jemalloc_file)
-    st = os.stat(jemalloc_file)
-    os.chmod(jemalloc_file, st.st_mode | stat.S_IEXEC)
+    libso_file_name = url.split('/')[-1]
+    libso_file = os.path.join(libs_dir, libso_file_name)
+    if not os.path.exists(libso_file):
+        urllib.request.urlretrieve(url, libso_file)
+    st = os.stat(libso_file)
+    os.chmod(libso_file, st.st_mode | stat.S_IEXEC)
 
 
 class URLHtmlParser(HTMLParser):
@@ -99,7 +99,8 @@ def setup_package():
     ipex_link = f"https://intel-optimized-pytorch.s3.cn-north-1.amazonaws.com.cn/wheels/" \
                 f"v{ipex_version_major}/{ipex_whl_name}"
 
-    torch_links = parse_find_index_page("https://download.pytorch.org/whl/torch_stable.html")
+    torch_links = parse_find_index_page(
+        "https://download.pytorch.org/whl/torch_stable.html")
     torchvision_version = "0.9.0"
     torchvision_whl_name = f"cpu/torchvision-{torchvision_version}%2Bcpu-cp{py_version.major}{py_version.minor}" \
                            f"-cp{py_version.major}{py_version.minor}m-linux_x86_64.whl"
@@ -109,8 +110,10 @@ def setup_package():
 
     # both pytorch_lightning and ipex depends on pytorch
     # listing it here to make sure installing the correct version
-    pytorch_link = "https://download.pytorch.org/whl/" + torch_links[pytorch_whl_name]
-    torchvision_link = "https://download.pytorch.org/whl/" + torch_links[torchvision_whl_name]
+    pytorch_link = "https://download.pytorch.org/whl/" + \
+        torch_links[pytorch_whl_name]
+    torchvision_link = "https://download.pytorch.org/whl/" + \
+        torch_links[torchvision_whl_name]
 
     install_requires = ["intel-openmp"]
 
@@ -123,8 +126,12 @@ def setup_package():
                         f"torch_ipex @ {ipex_link}",
                         f"torchvision @ {torchvision_link}"]
 
-
-    download_libs()
+    lib_urls = [
+        "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
+        "https://github.com/leonardozcm/libjpeg-turbo/releases/download/2.1.1/libturbojpeg.so.0.2.0"
+    ]
+    for url in lib_urls:
+        download_libs(url)
 
     metadata = dict(
         name='bigdl-nano',
@@ -134,9 +141,11 @@ def setup_package():
         author_email='',
         url='https://github.com/intel-analytics/analytics-zoo/tree/bigdl-2.0',
         install_requires=install_requires,
-        extras_require={"tensorflow": tensorflow_requires, "pytorch": pytorch_requires},
+        extras_require={"tensorflow": tensorflow_requires,
+                        "pytorch": pytorch_requires},
         packages=get_nano_packages(),
-        package_data={"bigdl.nano": ["libs/libjemalloc.so"]},
+        package_data={"bigdl.nano": [
+            "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0"]},
         package_dir={'': 'src'},
         scripts=['script/bigdl-nano-init']
     )

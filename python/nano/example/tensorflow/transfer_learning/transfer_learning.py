@@ -15,7 +15,7 @@
 #
 
 # This file is adapted from
-# https://github.com/tensorflow/docs-l10n/blob/master/site/zh-cn/tutorials/images/transfer_learning.ipynb
+# https://github.com/tensorflow/docs/blob/r2.4/site/en/tutorials/images/transfer_learning.ipynb
 # Copyright 2019 The TensorFlow Authors.
 
 # @title Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,7 +57,7 @@ import os
 import tensorflow as tf
 
 from tensorflow.keras.preprocessing import image_dataset_from_directory
-from tensorflow.keras import Sequential
+from bigdl.nano.tf.keras import Sequential
 
 
 def main():
@@ -146,7 +146,7 @@ def main():
 
     model.summary()
 
-    len(model.trainable_variables)
+    print("Number of trainable variables:", len(model.trainable_variables))
 
     initial_epochs = 10
 
@@ -178,7 +178,7 @@ def main():
 
     model.summary()
 
-    len(model.trainable_variables)
+    print("Number of trainable variables now:", len(model.trainable_variables))
 
     fine_tune_epochs = 10
     total_epochs = initial_epochs + fine_tune_epochs
