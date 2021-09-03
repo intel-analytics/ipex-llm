@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.keras.{MaxoutDense => BigDLMaxoutDense
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 
 import scala.reflect.ClassTag
 

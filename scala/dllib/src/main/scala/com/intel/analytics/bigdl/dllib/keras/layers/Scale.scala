@@ -48,7 +48,7 @@ class Scale[T: ClassTag](
     with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.Scale(size)
+    val layer = com.intel.analytics.bigdl.dllib.nn.Scale(size)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

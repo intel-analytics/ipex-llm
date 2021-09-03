@@ -21,12 +21,14 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import com.intel.analytics.bigdl.dllib.mkl.MKL
-import com.intel.analytics.bigdl.dllib.dataset.{MiniBatch, _}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch, _}
 import com.intel.analytics.bigdl.dllib.models.utils.ModelBroadcast
-import com.intel.analytics.bigdl.dllib.{DataSet, optim, _}
+import com.intel.analytics.bigdl.dllib.feature.data.DataSet
+import com.intel.analytics.bigdl.dllib.optim
+import com.intel.analytics.bigdl.dllib._
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasLayerSerializable}
+import com.intel.analytics.bigdl.dllib.keras.{KerasLayer, KerasLayerSerializable}
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.MklDnnModule
 import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, Module, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.{Cache, CacheV1}
@@ -39,18 +41,19 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.common.ZooTrigger
-import com.intel.analytics.zoo.feature.{DiskFeatureSet, DistributedFeatureSet, FeatureSet}
-import com.intel.analytics.zoo.feature.image.ImageSet
-import com.intel.analytics.zoo.feature.text._
-import com.intel.analytics.zoo.pipeline.api.{Net, Predictable}
-import com.intel.analytics.zoo.pipeline.api.autograd.{Lambda, Variable}
-import com.intel.analytics.zoo.pipeline.api.autograd._
+import com.intel.analytics.bigdl.dllib.optim.ZooTrigger
+//import com.intel.analytics.zoo.feature.{DiskFeatureSet, DistributedFeatureSet, FeatureSet}
+//import com.intel.analytics.zoo.feature.image.ImageSet
+//import com.intel.analytics.zoo.feature.text._
+import com.intel.analytics.bigdl.dllib.keras.{Net, Predictable}
+import com.intel.analytics.bigdl.dllib.autograd.{Lambda, Variable}
+import com.intel.analytics.bigdl.dllib.autograd._
 import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
-import com.intel.bigdl.dllib.keras.Net.{NetUtils, TorchModel}
+import com.intel.analytics.bigdl.dllib.net.NetUtils
+//import com.intel.analytics.bigdl.dllib.Net.TorchModel
 import com.intel.analytics.zoo.pipeline.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
-import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
+//import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
