@@ -3,12 +3,12 @@ set -x
 
 cd /ppml/trusted-realtime-ml/redis
 export SGX_MEM_SIZE=16G
-./init-redis.sh
+./init.sh
 echo "redis initiated"
 
 cd /ppml/trusted-realtime-ml/java
 export SGX_MEM_SIZE=32G
-./init-java.sh
+./init.sh
 echo "java initiated"
 
 export REDIS_HOST=$LOCAL_IP
