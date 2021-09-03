@@ -36,7 +36,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.dllib.utils.tf.{Session, TensorflowLoader}
 //import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.bigdl.dllib.common.zooUtils
-//import com.intel.analytics.zoo.pipeline.api.autograd.Variable
+import com.intel.analytics.bigdl.dllib.autograd.Variable
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, Merge, WordEmbedding}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import com.intel.analytics.bigdl.dllib.keras.models.{KerasNet, Model, Sequential}

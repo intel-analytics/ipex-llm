@@ -15,20 +15,20 @@
  */
 
 
-package com.intel.analytics.zoo.pipeline.api.autograd
+package com.intel.analytics.bigdl.dllib.autograd
 
-import com.intel.analytics.bigdl.nn.abstractnn._
-import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.nn.tf.InternalWithoutInput
-import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, Shape}
-import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.analytics.bigdl.dllib.nn.abstractnn._
+import com.intel.analytics.bigdl.dllib.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.tf.InternalWithoutInput
+import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, RandomUniform, VariableFormat}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{Node, Shape}
+import com.intel.analytics.bigdl.dllib.keras.Net
 
 import scala.reflect.ClassTag
 
-private[zoo] class KerasParameter[T: ClassTag] private[zoo](val inputShape: Shape,
+private[bigdl] class KerasParameter[T: ClassTag] private[bigdl](val inputShape: Shape,
     val initMethod: InitializationMethod = RandomUniform(-0.05, 0.05),
     val initWeight: Tensor[T] = null,
     val trainable: Boolean = true)(implicit ev: TensorNumeric[T])
@@ -70,7 +70,7 @@ private[zoo] class KerasParameter[T: ClassTag] private[zoo](val inputShape: Shap
  * @param initWeight The init value for the Parameter
  * @param trainable It's true by default, meaning the value would be updated by gradient.
  */
-class Parameter[T: ClassTag] private[zoo](val inputShape: Shape,
+class Parameter[T: ClassTag] private[bigdl](val inputShape: Shape,
     val initMethod: InitializationMethod = RandomUniform(-0.05, 0.05),
     val initWeight: Tensor[T] = null,
     val trainable: Boolean = true,
@@ -108,7 +108,7 @@ object Parameter {
   }
 }
 
-private[zoo] class InternalParameter[T: ClassTag](
+private[bigdl] class InternalParameter[T: ClassTag](
     val shape: Shape,
     val initMethod: InitializationMethod = RandomUniform(-0.05, 0.05),
     val initWeight: Tensor[T] = null,
@@ -164,7 +164,7 @@ private[zoo] class InternalParameter[T: ClassTag](
   override def hashCode(): Int = System.identityHashCode(this)
 }
 
-private[zoo] class InternalConstant[T: ClassTag](val data: Tensor[T])
+private[bigdl] class InternalConstant[T: ClassTag](val data: Tensor[T])
   (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
@@ -185,7 +185,7 @@ private[zoo] class InternalConstant[T: ClassTag](val data: Tensor[T])
   override def hashCode(): Int = System.identityHashCode(this)
 }
 
-private[zoo] class KerasConstant[T: ClassTag] private[zoo](
+private[bigdl] class KerasConstant[T: ClassTag] private[bigdl](
   val data: Tensor[T]
   )(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T]()
@@ -199,7 +199,7 @@ private[zoo] class KerasConstant[T: ClassTag] private[zoo](
   override def computeOutputShape(inputShape: Shape): Shape = Shape(data.size())
 }
 
-class Constant[T: ClassTag] private[zoo](val data: Tensor[T],
+class Constant[T: ClassTag] private[bigdl](val data: Tensor[T],
   name: String = null)(implicit ev: TensorNumeric[T])
   extends Variable[T](null, name) {
 

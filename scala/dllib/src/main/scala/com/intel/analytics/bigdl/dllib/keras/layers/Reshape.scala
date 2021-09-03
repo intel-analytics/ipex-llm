@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -94,7 +94,7 @@ class Reshape[T: ClassTag](
       InferReshape(targetShape, batchMode = true)
     }
     else {
-      com.intel.analytics.bigdl.nn.Reshape(targetShape, batchMode = Some(true))
+      com.intel.analytics.bigdl.dllib.nn.Reshape(targetShape, batchMode = Some(true))
     }
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }

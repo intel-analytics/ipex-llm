@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.autograd
+package com.intel.analytics.bigdl.dllib.autograd
 
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
-import com.intel.analytics.zoo.pipeline.api.Net
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
-import com.intel.analytics.zoo.pipeline.api.keras.models.Model
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.dllib.keras.models.Model
 
 import scala.reflect.ClassTag
 
 
-private[zoo] class LambdaTorch[T: ClassTag](val graph: Model[T])(
+private[bigdl] class LambdaTorch[T: ClassTag](val graph: Model[T])(
     implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] {
 
   override def updateOutput(input: Activity): Activity = {
@@ -46,7 +46,7 @@ private[zoo] class LambdaTorch[T: ClassTag](val graph: Model[T])(
   }
 }
 
-private[zoo] class Lambda[T: ClassTag](val func: (List[Variable[T]]) => Variable[T],
+private[bigdl] class Lambda[T: ClassTag](val func: (List[Variable[T]]) => Variable[T],
     inputShape: Shape = null)(
     implicit ev: TensorNumeric[T]) {
 

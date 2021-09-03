@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -69,7 +69,7 @@ class GRU[T: ClassTag](
     outputDimension, returnSeq, goBackward, mInputShape) with Net {
 
   override def buildCell(input: Array[Int]): Cell[T] = {
-    com.intel.analytics.bigdl.nn.GRU[T](
+    com.intel.analytics.bigdl.dllib.nn.GRU[T](
       inputSize = input(2),
       outputSize = outputDim,
       activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],

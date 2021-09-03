@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, Ones, Xavier, Z
 import com.intel.analytics.bigdl.dllib.nn.keras.{SReLU => BigDLSReLU}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag

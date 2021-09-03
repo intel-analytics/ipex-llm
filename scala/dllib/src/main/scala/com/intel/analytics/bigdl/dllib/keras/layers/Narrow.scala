@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -84,7 +84,7 @@ class Narrow[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val (positiveDim, positiveLength) = getPositiveDimAndLength(inputShape)
-    val layer = com.intel.analytics.bigdl.nn.Narrow(positiveDim + 1, offset + 1, positiveLength)
+    val layer = com.intel.analytics.bigdl.dllib.nn.Narrow(positiveDim + 1, offset + 1, positiveLength)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
