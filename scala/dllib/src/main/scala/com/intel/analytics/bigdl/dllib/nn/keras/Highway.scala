@@ -59,7 +59,7 @@ class Highway[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val layer = com.intel.analytics.bigdl.nn.Highway[T](
+    val layer = com.intel.analytics.bigdl.dllib.nn.Highway[T](
       size = input(1),
       withBias = bias,
       activation = if (activation != null) {

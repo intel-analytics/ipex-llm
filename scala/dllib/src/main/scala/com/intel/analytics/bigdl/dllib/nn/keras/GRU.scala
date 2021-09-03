@@ -64,7 +64,7 @@ class GRU[T: ClassTag](
   extends Recurrent[T](outputDim, returnSequences, goBackwards, inputShape) {
 
   override def buildCell(input: Array[Int]): Cell[T] = {
-    com.intel.analytics.bigdl.nn.GRU[T](
+    com.intel.analytics.bigdl.dllib.nn.GRU[T](
       inputSize = input(2),
       outputSize = outputDim,
       activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
