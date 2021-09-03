@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{Shape, T, Table}
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.LayerWrapperByForward
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -44,7 +44,7 @@ class SelectTable[T: ClassTag](index: Int, val inputShape: Shape = null)
   extends LayerWrapperByForward[T](KerasUtils.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = {
-    val layer = com.intel.analytics.bigdl.nn.SelectTable(index + 1)
+    val layer = com.intel.analytics.bigdl.dllib.nn.SelectTable(index + 1)
     layer.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }

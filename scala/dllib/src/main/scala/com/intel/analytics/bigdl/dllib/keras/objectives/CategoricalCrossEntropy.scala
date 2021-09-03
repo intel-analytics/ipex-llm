@@ -30,7 +30,7 @@ class CategoricalCrossEntropy[@specialized(Float, Double) T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends TensorLossFunction[T] {
 
   override val loss: AbstractCriterion[Tensor[T], Tensor[T], T] =
-    com.intel.analytics.bigdl.nn.CategoricalCrossEntropy[T]()
+    com.intel.analytics.bigdl.dllib.nn.CategoricalCrossEntropy[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     val eps = ev.fromType(1e-8)

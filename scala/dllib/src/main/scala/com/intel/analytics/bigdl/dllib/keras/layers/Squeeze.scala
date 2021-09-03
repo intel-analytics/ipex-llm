@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -78,10 +78,10 @@ class Squeeze[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = if (dims != null) {
-      com.intel.analytics.bigdl.nn.Squeeze(dims.map(x => x + 1), batchMode = false)
+      com.intel.analytics.bigdl.dllib.nn.Squeeze(dims.map(x => x + 1), batchMode = false)
     }
     else {
-      com.intel.analytics.bigdl.nn.Squeeze(null, batchMode = false)
+      com.intel.analytics.bigdl.dllib.nn.Squeeze(null, batchMode = false)
     }
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }

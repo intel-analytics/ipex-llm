@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.autograd
+package com.intel.analytics.bigdl.dllib.autograd
 
-import com.intel.analytics.bigdl.nn.abstractnn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Shape, T}
-import com.intel.analytics.zoo.pipeline.api.autograd.{AutoGrad => AG}
-import com.intel.analytics.zoo.pipeline.api.keras.models.Model
-import com.intel.analytics.zoo.pipeline.api.keras.objectives.TensorLossFunction
+import com.intel.analytics.bigdl.dllib.nn.abstractnn._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
+import com.intel.analytics.bigdl.dllib.autograd.{AutoGrad => AG}
+import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.keras.objectives.TensorLossFunction
 
 import scala.reflect.ClassTag
 

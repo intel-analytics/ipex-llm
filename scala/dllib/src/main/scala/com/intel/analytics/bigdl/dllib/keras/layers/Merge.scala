@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.nn.{CAddTable, CAveTable, CDivTable, CMax
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.{KerasLayerRef, KerasUtils}
 
 import scala.reflect.ClassTag
@@ -160,12 +160,12 @@ class Merge[T: ClassTag](
       case "dot" =>
         val seq = TSequential[T]()
         seq.add(DotProduct())
-        seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1), Some(true)))
+        seq.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(1), Some(true)))
         seq
       case "cos" =>
         val seq = TSequential[T]()
         seq.add(CosineDistance())
-        seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1, 1), Some(true)))
+        seq.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(1, 1), Some(true)))
         seq
     }
     if (layers != null) { // In the case `layers != null`, return a ParallelTable to merge layers.
