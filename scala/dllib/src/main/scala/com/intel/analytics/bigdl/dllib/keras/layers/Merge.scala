@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.nn.{CAddTable, CAveTable, CDivTable, CMaxTable, CMinTable, CMulTable, CSubTable, CosineDistance, DotProduct, JoinTable, ParallelTable, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
-import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.{KerasLayerRef, KerasUtils}
 
 import scala.reflect.ClassTag
@@ -53,7 +53,7 @@ class Merge[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](Merge.calcBatchInputShape(inputShape, layers))
   with Net {
 
-  override private[zoo] def toKeras2(): String = {
+  override private[bigdl] def toKeras2(): String = {
     var params = Net.inputShapeToString(inputShape) ++
       Net.param(getName())
     val kerasLayerName = mode match {
