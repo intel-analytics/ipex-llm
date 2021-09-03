@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.autograd
+package com.intel.analytics.bigdl.dllib.autograd
 
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, InferShape}
-import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.{nn => bnn}
-import com.intel.analytics.zoo.pipeline.api.keras.layers._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.internal._
-import com.intel.analytics.zoo.pipeline.api.keras.models._
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, InferShape}
+import com.intel.analytics.bigdl.dllib.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils._
+import com.intel.analytics.bigdl.dllib.{nn => bnn}
+import com.intel.analytics.bigdl.dllib.keras.layers._
+import com.intel.analytics.bigdl.dllib.keras.layers.internal._
+import com.intel.analytics.bigdl.dllib.keras.models._
 
 import scala.reflect.ClassTag
 
@@ -364,7 +364,7 @@ object AutoGrad {
 
 object Variable extends {
 
-  private[zoo] def apply[T: ClassTag](node: ModuleNode[T])(
+  private[bigdl] def apply[T: ClassTag](node: ModuleNode[T])(
       implicit ev: TensorNumeric[T]) = {
     new Variable[T](node)
   }
@@ -375,7 +375,7 @@ object Variable extends {
   }
 }
 
-class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
+class Variable[T: ClassTag] private[bigdl] (private[bigdl] var node: ModuleNode[T],
     var name: String = null)(
     implicit ev: TensorNumeric[T]) extends Serializable {
 
@@ -390,19 +390,19 @@ class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
     require(node.element.asInstanceOf[InferShape].getOutputShape() != null)
   }
 
-  private[zoo] def getRoots(): Array[ModuleNode[T]] = {
+  private[bigdl] def getRoots(): Array[ModuleNode[T]] = {
     val dfs = this.node.graph(reverse = true).DFS.toList.reverse
     val roots = dfs.filter(_.prevNodes.size == 0).toArray[ModuleNode[T]]
     roots
   }
 
 
-  private[zoo] def toGraph(inputs: Array[Variable[T]]): Model[T] = {
+  private[bigdl] def toGraph(inputs: Array[Variable[T]]): Model[T] = {
     Model(input = inputs.map(_.node), output = this.node)
   }
 
   // "tensorboard --logdir path" to visualize this Variable
-  private[zoo] def toTensorBoard(path: String) = {
+  private[bigdl] def toTensorBoard(path: String) = {
     def toGraph(): Model[T] = {
       val dfs = this.node.graph(reverse = true).DFS.toList.reverse
       val roots = dfs.filter(_.prevNodes.size == 0).toArray
@@ -491,9 +491,9 @@ class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
 
   def squeeze(dims: Array[Int]): Variable[T] = {
     val blayer = if (dims == null){
-       com.intel.analytics.bigdl.nn.Squeeze[T](null, batchMode = false)
+       com.intel.analytics.bigdl.dllib.nn.Squeeze[T](null, batchMode = false)
     } else {
-      com.intel.analytics.bigdl.nn.Squeeze[T](dims.map(x => x + 1), batchMode = false)
+      com.intel.analytics.bigdl.dllib.nn.Squeeze[T](dims.map(x => x + 1), batchMode = false)
     }
     val klayer = new KerasLayerWrapper[T](blayer)
     Variable(klayer.inputs(this.node))
@@ -545,7 +545,7 @@ class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
     Variable(layer.inputs(this.node))
   }
 
-  private[zoo] def broadcast(x: Variable[T], y: Variable[T]): (Variable[T], Variable[T]) = {
+  private[bigdl] def broadcast(x: Variable[T], y: Variable[T]): (Variable[T], Variable[T]) = {
     var xx = x
     var yy = y
 
@@ -606,7 +606,7 @@ class Variable[T: ClassTag] private[zoo] (private[zoo] var node: ModuleNode[T],
     this.node.element.getInputShape()
   }
 
-  private[zoo] def getDummyTensor(fillValue: T, batchSize: Int): Tensor[T] = {
+  private[bigdl] def getDummyTensor(fillValue: T, batchSize: Int): Tensor[T] = {
     Tensor[T](getInputShape().copyAndUpdate(0, batchSize).toSingle().toArray).fill(fillValue)
   }
 }

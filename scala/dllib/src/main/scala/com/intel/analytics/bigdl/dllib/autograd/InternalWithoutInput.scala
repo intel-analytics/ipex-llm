@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.tf
+package com.intel.analytics.bigdl.dllib.nn.tf
 
 trait InternalWithoutInput extends WithoutInput

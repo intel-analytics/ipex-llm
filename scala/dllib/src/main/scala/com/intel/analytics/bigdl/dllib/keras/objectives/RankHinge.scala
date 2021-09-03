@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.autograd.{CustomLoss, Variable, AutoGrad => A}
+import com.intel.analytics.bigdl.dllib.autograd.{CustomLoss, Variable, AutoGrad => A}
 
 import scala.reflect.ClassTag
 

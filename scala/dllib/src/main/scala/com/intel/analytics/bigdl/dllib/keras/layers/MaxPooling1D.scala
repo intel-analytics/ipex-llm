@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.nn.keras.Pooling1D
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import scala.tools.nsc.interpreter.JList
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -62,7 +62,7 @@ class MaxPooling1D[T: ClassTag](
       Array(pad, 0)
     })
     val model = TSequential[T]()
-    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
+    model.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
     val layer = SpatialMaxPooling(
       kW = 1,
       kH = poolLength,
@@ -72,7 +72,7 @@ class MaxPooling1D[T: ClassTag](
       padH = pads._1,
       format = DataFormat.NHWC)
     model.add(layer)
-    model.add(com.intel.analytics.bigdl.nn.Squeeze(3))
+    model.add(com.intel.analytics.bigdl.dllib.nn.Squeeze(3))
     model.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 }

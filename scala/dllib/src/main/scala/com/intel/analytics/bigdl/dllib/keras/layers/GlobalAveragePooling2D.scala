@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.nn.keras.GlobalPooling2D
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -58,8 +58,8 @@ class GlobalAveragePooling2D[T: ClassTag](
       countIncludePad = false,
       format = dimOrdering)
     model.add(layer)
-    model.add(com.intel.analytics.bigdl.nn.Squeeze(dimW))
-    model.add(com.intel.analytics.bigdl.nn.Squeeze(dimH))
+    model.add(com.intel.analytics.bigdl.dllib.nn.Squeeze(dimW))
+    model.add(com.intel.analytics.bigdl.dllib.nn.Squeeze(dimH))
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

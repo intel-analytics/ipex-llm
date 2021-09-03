@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.nn.keras.GlobalPooling3D
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -58,9 +58,9 @@ class GlobalAveragePooling3D[T: ClassTag](
       dH = 1,
       countIncludePad = false)
     model.add(layer)
-    model.add(com.intel.analytics.bigdl.nn.Squeeze(5))
-    model.add(com.intel.analytics.bigdl.nn.Squeeze(4))
-    model.add(com.intel.analytics.bigdl.nn.Squeeze(3))
+    model.add(com.intel.analytics.bigdl.dllib.nn.Squeeze(5))
+    model.add(com.intel.analytics.bigdl.dllib.nn.Squeeze(4))
+    model.add(com.intel.analytics.bigdl.dllib.nn.Squeeze(3))
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

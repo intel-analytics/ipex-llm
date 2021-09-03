@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, SingleShape}
-//import com.intel.bigdl.dllib.keras.Net
+//import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.metrics.{AUC, Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy, Top5Accuracy => ZooTop5Accuracy}
 import com.intel.analytics.bigdl.dllib.keras.models.KerasNet
@@ -93,7 +93,7 @@ object KerasUtils {
         case _: Tanh[T] => "tanh"
         case _: Sigmoid[T] => "sigmoid"
         case _: ReLU[T] => "relu"
-        case _: com.intel.analytics.bigdl.nn.SoftMax[T] => "softmax"
+        case _: com.intel.analytics.bigdl.dllib.nn.SoftMax[T] => "softmax"
         case _: SoftPlus[T] => "softplus"
         case _: SoftSign[T] => "softsign"
         case _: HardSigmoid[T] => "hard_sigmoid"
@@ -120,7 +120,7 @@ object KerasUtils {
           case "sigmoid" => Sigmoid[T]()
           case "relu" => ReLU[T]()
           case "softmax" =>
-                com.intel.analytics.bigdl.nn.SoftMax[T]()
+                com.intel.analytics.bigdl.dllib.nn.SoftMax[T]()
           case "softplus" => SoftPlus[T]()
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()

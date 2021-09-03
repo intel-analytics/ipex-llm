@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.keras.{Flatten => BigDLFlatten}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 
 import scala.reflect.ClassTag
 
@@ -43,7 +43,7 @@ class Flatten[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val layer =
-      com.intel.analytics.bigdl.nn.Reshape(
+      com.intel.analytics.bigdl.dllib.nn.Reshape(
         Array(input.slice(1, input.length).product), batchMode = Some(true))
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }

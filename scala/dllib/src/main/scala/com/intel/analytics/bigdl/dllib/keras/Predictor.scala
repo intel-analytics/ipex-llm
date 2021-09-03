@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api
+package com.intel.analytics.bigdl.dllib.keras
 
 import com.intel.analytics.bigdl.dllib._
-import com.intel.analytics.bigdl.dllib.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer}
 import com.intel.analytics.bigdl.dllib.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.LocalPredictor
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 //import com.intel.analytics.zoo.feature.image.ImageSet
 //import com.intel.analytics.zoo.feature.text._
