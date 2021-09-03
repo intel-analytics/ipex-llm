@@ -52,7 +52,7 @@ abstract class Recurrent[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
     if (goBackwards) model.add(Reverse(2))
-    val rec = com.intel.analytics.bigdl.nn.Recurrent[T]()
+    val rec = com.intel.analytics.bigdl.dllib.nn.Recurrent[T]()
     rec.add(buildCell(input))
     model.add(rec)
     if (!returnSequences) model.add(Select(2, -1))

@@ -42,7 +42,7 @@ class ELU[T: ClassTag](
     with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.ELU(
+    val layer = com.intel.analytics.bigdl.dllib.nn.ELU(
       alpha = alpha,
       inplace = false)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]

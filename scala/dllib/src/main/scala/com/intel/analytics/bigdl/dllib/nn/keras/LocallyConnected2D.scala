@@ -76,7 +76,7 @@ class LocallyConnected2D[T: ClassTag](
     val stack = if (dimOrdering == DataFormat.NCHW) (input(1), input(3), input(2))
       else (input(3), input(2), input(1))
     val pad = KerasUtils.getPadsFromBorderMode(borderMode)
-    val layer = com.intel.analytics.bigdl.nn.LocallyConnected2D(
+    val layer = com.intel.analytics.bigdl.dllib.nn.LocallyConnected2D(
       nInputPlane = stack._1,
       inputWidth = stack._2,
       inputHeight = stack._3,

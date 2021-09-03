@@ -71,8 +71,8 @@ class LocallyConnected1D[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
-    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
-    val layer = com.intel.analytics.bigdl.nn.LocallyConnected2D(
+    model.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
+    val layer = com.intel.analytics.bigdl.dllib.nn.LocallyConnected2D(
       nInputPlane = input(2),
       inputWidth = 1,
       inputHeight = input(1),

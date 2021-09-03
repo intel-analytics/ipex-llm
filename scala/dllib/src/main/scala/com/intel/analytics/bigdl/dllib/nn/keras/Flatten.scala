@@ -43,7 +43,7 @@ class Flatten[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val layer =
-      com.intel.analytics.bigdl.nn.Reshape(Array(input.slice(1, input.length).product))
+      com.intel.analytics.bigdl.dllib.nn.Reshape(Array(input.slice(1, input.length).product))
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

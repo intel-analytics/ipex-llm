@@ -90,7 +90,7 @@ class ConvLSTM2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
     if (goBackwards) model.add(Reverse(2))
-    val rec = com.intel.analytics.bigdl.nn.Recurrent[T]()
+    val rec = com.intel.analytics.bigdl.dllib.nn.Recurrent[T]()
     val layer = ConvLSTMPeephole(
       inputSize = input(2),
       outputSize = nbFilter,

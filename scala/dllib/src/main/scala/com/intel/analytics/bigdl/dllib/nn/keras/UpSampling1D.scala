@@ -40,7 +40,7 @@ class UpSampling1D[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.UpSampling1D(length)
+    val layer = com.intel.analytics.bigdl.dllib.nn.UpSampling1D(length)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

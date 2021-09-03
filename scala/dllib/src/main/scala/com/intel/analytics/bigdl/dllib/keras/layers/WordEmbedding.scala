@@ -27,9 +27,10 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.{DataConverter, TensorConverter}
-import com.intel.analytics.zoo.common.CheckedObjectInputStream
+//import com.intel.analytics.zoo.common.CheckedObjectInputStream
+import com.intel.analytics.bigdl.dllib.common.CheckedObjectInputStream
 import com.intel.analytics.bigdl.dllib.keras.layers.WordEmbedding.EmbeddingMatrixHolder
-import com.intel.analytics.bigdl.dllib.keras.Net.{NetUtils, RegistryMap, SerializationHolder}
+import com.intel.analytics.bigdl.dllib.net.{NetUtils, RegistryMap, SerializationHolder}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{Map => MMap}
