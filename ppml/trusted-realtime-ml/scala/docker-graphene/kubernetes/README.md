@@ -60,8 +60,8 @@ Then, run
 kubectl create -f flink-configuration-configmap.yaml
 kubectl create -f jobmanager-service.yaml
 # Create the deployments for the cluster
-kubectl create -f jobmanager-session-deployment.yaml
-kubectl create -f taskmanager-session-deployment.yaml
+kubectl create -f jobmanager-deployment.yaml
+kubectl create -f taskmanager-statefulset.yaml
 ```
 
 Both the job manager and the task manager will start automatically in SGX on top of Graphene libos when the deployments are created.
