@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.feature.image3d
+package com.intel.analytics.bigdl.dllib.feature.image3d
 
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.zoo.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
+import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
 import org.apache.spark.SparkContext
 import org.scalatest.{FlatSpec, Matchers}
 
