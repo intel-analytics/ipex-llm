@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.objectives
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.nn.ZooClassNLLCriterion
+import com.intel.analytics.bigdl.dllib.dllib.keras.objectives.ZooClassNLLCriterion
 
 import scala.reflect.ClassTag
 

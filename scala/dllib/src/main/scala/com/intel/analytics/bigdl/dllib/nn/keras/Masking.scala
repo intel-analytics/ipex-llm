@@ -43,7 +43,7 @@ class Masking[T: ClassTag](
     with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.Masking(maskValue = maskValue)
+    val layer = com.intel.analytics.bigdl.dllib.nn.Masking(maskValue = maskValue)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
