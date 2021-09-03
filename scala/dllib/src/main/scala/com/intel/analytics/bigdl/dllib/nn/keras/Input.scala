@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.nn.keras
 
-import com.intel.analytics.bigdl.nn.{Input => TInput}
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, Shape}
+import com.intel.analytics.bigdl.dllib.nn.{Input => TInput}
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{Node, Shape}
 
 import scala.reflect.ClassTag
 

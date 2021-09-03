@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.nn.keras
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.{Graph, StaticGraph, Container => TContainer, Input => TInput, Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.nn.Graph._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.keras.{Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.{Graph, StaticGraph, Container => TContainer, Input => TInput, Sequential => TSequential}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer._
-import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.serializer._
+import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, SingleShape}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
