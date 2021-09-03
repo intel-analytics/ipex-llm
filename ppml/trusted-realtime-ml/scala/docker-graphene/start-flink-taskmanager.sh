@@ -18,11 +18,11 @@ taskmanager_memory_managed_size=$TASKMANAGER_MEMORY_MANAGED_SIZE
 xmx_size=$XMX_SIZE
 sgx_mode=$SGX_MODE
 
-if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then cmd_prefix="SGX=1 ./pal_loader"; fi
+if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then cmd_prefix="graphene-sgx ./"; fi
 
 echo "### Launching Flink Taskmanager ###"
 
-eval ${cmd_prefix} /opt/jdk8/bin/java \
+eval ${cmd_prefix}bash -c " /opt/jdk8/bin/java \
     -XX:+UseG1GC \
     -Xms2g \
     -Xmx${xmx_size} \
@@ -60,4 +60,4 @@ eval ${cmd_prefix} /opt/jdk8/bin/java \
     -D taskmanager.memory.managed.size=${taskmanager_memory_managed_size} \
     -D taskmanager.cpu.cores=${core_num} \
     -D taskmanager.memory.task.heap.size=${taskmanager_memory_task_heap_size} \
-    -D taskmanager.memory.task.off-heap.size=953mb | tee ./flink-taskmanager-${sgx_mode}.log
+    -D taskmanager.memory.task.off-heap.size=953mb " | tee ./flink-taskmanager-${sgx_mode}.log
