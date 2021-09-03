@@ -12,7 +12,7 @@ sgx_mode=$SGX_MODE
 
 if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then cmd_prefix="graphene-sgx ./"; fi
 
-eval ${cmd_prefix}bash -c " /opt/jdk8/bin/java \
+eval ${cmd_prefix}bash -c \" /opt/jdk8/bin/java \
     -Xms2g \
     -Xmx8g \
     -XX:ActiveProcessorCount=${core_num} \
@@ -33,4 +33,4 @@ eval ${cmd_prefix}bash -c " /opt/jdk8/bin/java \
     --redisSecureEnabled true \
     --redissTrustStorePath "/ppml/trusted-realtime-ml/redis/work/keys/keystore.jks" \
     --redissTrustStoreToken "${redis_secure_password}" \
-    --servableManagerConfPath "/ppml/trusted-realtime-ml/java/work/servables.yaml" " | tee ./http-frontend-${sgx_mode}.log
+    --servableManagerConfPath "/ppml/trusted-realtime-ml/java/work/servables.yaml" \" | tee ./http-frontend-${sgx_mode}.log
