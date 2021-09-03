@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule}
-import com.intel.analytics.bigdl.nn.{InitializationMethod, VolumetricConvolution, Xavier, Zeros}
-import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule}
+import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, VolumetricConvolution, Xavier, Zeros}
+import com.intel.analytics.bigdl.dllib.optim.Regularizer
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 import scala.reflect.ClassTag
 
