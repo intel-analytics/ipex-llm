@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -75,7 +75,7 @@ class Select[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val (positiveDim, positiveIndex) = getPositiveDimAndIndex(inputShape)
-    val layer = com.intel.analytics.bigdl.nn.Select(positiveDim + 1, positiveIndex + 1)
+    val layer = com.intel.analytics.bigdl.dllib.nn.Select(positiveDim + 1, positiveIndex + 1)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 

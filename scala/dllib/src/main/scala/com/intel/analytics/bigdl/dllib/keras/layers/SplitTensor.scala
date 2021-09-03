@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, Table}
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalSplitTensor
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 

@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 
 import scala.reflect.ClassTag
 
@@ -36,7 +36,7 @@ class Dropout[T: ClassTag](
   override val p: Double,
   override val inputShape: Shape = null)
   (implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.nn.keras.Dropout[T](p, inputShape) with Net {
+  extends com.intel.analytics.bigdl.dllib.nn.keras.Dropout[T](p, inputShape) with Net {
 
   override private[bigdl] def toKeras2(): String = {
     val params = Net.inputShapeToString(inputShape) ++
