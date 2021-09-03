@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.util.common import *
-from zoo.common.utils import callZooFunc
-from bigdl.dataset.dataset import DataSet
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.utils import callZooFunc
+from bigdl.dllib.feature.dataset.dataset import DataSet
 from pyspark.serializers import CloudPickleSerializer
 import sys
 import math
@@ -106,10 +106,10 @@ class Preprocessing(JavaValue):
         Transform ImageSet or TextSet.
         """
         # move the import here to break circular import
-        if "zoo.feature.image.imageset.ImageSet" not in sys.modules:
-            from zoo.feature.image import ImageSet
-        if "zoo.feature.text.text_set.TextSet" not in sys.modules:
-            from zoo.feature.text import TextSet
+        if "bigdl.dllib.feature.image.imageset.ImageSet" not in sys.modules:
+            from bigdl.dllib.feature.image import ImageSet
+        if "bigdl.dllib.feature.text.text_set.TextSet" not in sys.modules:
+            from bigdl.dllib.feature.text import TextSet
         # if type(input) is ImageSet:
         if isinstance(input, ImageSet):
             jset = callZooFunc(self.bigdl_type, "transformImageSet", self.value, input)
