@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
 
 /**
  * NB: This implementation includes some bug fixes for
- * "com.intel.analytics.bigdl.nn.Timedistributed". Also it accepts input as Tensor
+ * "com.intel.analytics.bigdl.dllib.nn.Timedistributed". Also it accepts input as Tensor
  * or Tables whose elements are Tensor. Nested Tables are not supported currently.
  *
  * This layer is intended to apply contained layer to each temporal time slice
