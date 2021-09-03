@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.keras.{Permute => BigDLPermute}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.bigdl.dllib.keras.Net
 
 import scala.reflect.ClassTag
 
@@ -41,7 +41,7 @@ class Permute[T: ClassTag](
   extends BigDLPermute[T](
     dims, inputShape) with Net {
 
-  override private[zoo] def toKeras2(): String = {
+  override private[bigdl] def toKeras2(): String = {
     val params = Net.inputShapeToString(inputShape) ++
       Net.param(getName()) ++
       Net.arrayToString(dims, "dims")

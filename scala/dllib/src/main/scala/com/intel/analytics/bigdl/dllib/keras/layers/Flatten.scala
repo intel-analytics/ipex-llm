@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.keras.{Flatten => BigDLFlatten}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.bigdl.dllib.keras.Net
 
 import scala.reflect.ClassTag
 
@@ -48,7 +48,7 @@ class Flatten[T: ClassTag](
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 
-  override private[zoo] def toKeras2(): String = {
+  override private[bigdl] def toKeras2(): String = {
     val params = Net.inputShapeToString(inputShape) ++
       Net.param(getName())
     Net.kerasDef(this, params)

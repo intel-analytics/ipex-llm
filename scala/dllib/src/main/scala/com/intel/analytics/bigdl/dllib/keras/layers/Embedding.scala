@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.keras.{Embedding => BEmbedding}
@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.nn.{AddConstant => TAddConstant, InitializationMethod, LookupTable, RandomUniform, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -101,7 +101,7 @@ class Embedding[T: ClassTag](
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 
-  override private[zoo] def toKeras2(): String = {
+  override private[bigdl] def toKeras2(): String = {
     val params = Net.inputShapeToString(inputShape) ++
       Net.param(getName()) ++
       Net.param(inputDim, "input_dim") ++
