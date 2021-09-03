@@ -21,23 +21,25 @@ import java.nio.ByteOrder
 import java.util
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
-import com.intel.analytics.bigdl.nn.keras.{KerasIdentityWrapper, KerasLayer}
-import com.intel.analytics.bigdl.nn.{Container, Graph, InitializationMethod, StaticGraph, Identity => BIdentity, Sequential => TSequential}
-import com.intel.analytics.bigdl.python.api.PythonBigDL
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{File, Shape}
-import com.intel.analytics.zoo.models.caffe.CaffeLoader
-import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
-import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowLoader}
-import com.intel.analytics.zoo.common.Utils
-import com.intel.analytics.zoo.pipeline.api.autograd.Variable
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{KerasLayerWrapper, Merge, WordEmbedding}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
-import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
-import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils}
+import com.intel.analytics.bigdl.dllib.nn.Graph._
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, Initializable}
+import com.intel.analytics.bigdl.dllib.nn.keras.{KerasIdentityWrapper, KerasLayer}
+import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, InitializationMethod, StaticGraph, Identity => BIdentity, Sequential => TSequential}
+//import com.intel.analytics.bigdl.python.api.PythonBigDL
+import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{File, Shape}
+//import com.intel.analytics.zoo.models.caffe.CaffeLoader
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
+import com.intel.analytics.bigdl.dllib.utils.tf.{Session, TensorflowLoader}
+//import com.intel.analytics.zoo.common.Utils
+import com.intel.analytics.bigdl.dllib.common.zooUtils
+//import com.intel.analytics.zoo.pipeline.api.autograd.Variable
+import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, Merge, WordEmbedding}
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.dllib.keras.models.{KerasNet, Model, Sequential}
+import com.intel.analytics.bigdl.dllib.keras.net.{GraphNet, NetUtils}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Logger
 import org.apache.spark.bigdl.api.python.BigDLSerDe
