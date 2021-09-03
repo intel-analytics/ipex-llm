@@ -1,23 +1,33 @@
 # stage.1 graphene
 FROM ubuntu:18.04 AS graphene
-
+ARG GRAPHENE_BRANCH=branch-1.2-rc1
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        autoconf bison build-essential coreutils gawk git wget \
+        python3 python3-pip libcurl4-openssl-dev \
+        libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
 RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
-    git fetch origin branch-0.2 && \
-    git checkout branch-0.2
+    git fetch origin $GRAPHENE_BRANCH && \
+    git checkout $GRAPHENE_BRANCH
+RUN pip3 install ninja meson && \
+    python3 -m pip install toml==0.10.2 click jinja2
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
     git checkout DCAP_1.7 && \
     cp -r driver/linux/* .
 RUN cd /graphene && \
-    ISGX_DRIVER_PATH=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver make -s -j4 SGX=1 WERROR=1 && true
-RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
+    make && \
+    ISGX_DRIVER_PATH=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver make -s -j4 SGX=1 && \
+    meson setup build/ --prefix="/graphene/meson_build_output" \ 
+    --buildtype=release -Ddirect=enabled -Dsgx=enabled  && \
+    ninja -C build/ && \
+    ninja -C build/ install
 RUN /graphene/Scripts/download --output redis.tar.gz --sha256 f7ded6c27d48c20bc78e797046c79b6bc411121f0c2d7eead9fea50d6b0b6290 --url https://github.com/antirez/redis/archive/6.0.5.tar.gz
+RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
 
-# stage.2 jdk & flink
+# stage.2 jdk & scala & flink
 FROM ubuntu:18.04 as flink
 ARG FLINK_VERSION=1.11.3
 ARG JDK_VERSION=8u192
@@ -33,6 +43,10 @@ RUN wget $JDK_URL && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
+# scala
+RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
+    (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
+    rm /scala-2.11.8.tgz
 # flink
 RUN cd /opt && \
     wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
@@ -85,7 +99,7 @@ ENV ANALYTICS_ZOO_VERSION		${ANALYTICS_ZOO_VERSION}
 ENV SPARK_VERSION			${SPARK_VERSION}
 ENV BIGDL_VERSION			${BIGDL_VERSION}
 ENV JAVA_HOME				/opt/jdk8
-ENV PATH				${JAVA_HOME}/bin:${PATH}
+ENV PATH				/graphene/meson_build_output/bin:${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP				127.0.0.1
 ENV SGX_MEM_SIZE			64G
 ENV REDIS_PORT				6379
@@ -110,6 +124,7 @@ RUN mkdir -p /graphene && \
     mkdir -p /graphene/python && \
     mkdir -p /graphene/Tools && \
     mkdir -p /graphene/Pal/src && \
+    mkdir -p /graphene/meson_build_output && \
     mkdir -p /ppml/trusted-realtime-ml/redis && \
     mkdir -p /ppml/trusted-realtime-ml/redis/work/keys && \
     mkdir -p /ppml/trusted-realtime-ml/redis/work/password && \
@@ -118,6 +133,9 @@ RUN mkdir -p /graphene && \
     mkdir -p /ppml/trusted-realtime-ml/java/work/password && \
     mkdir -p /ppml/trusted-realtime-ml/java/work/data && \
     mkdir -p /ppml/trusted-realtime-ml/java/work/models && \
+    mkdir -p /root/.keras/datasets && \
+    mkdir -p /root/.zinc && \
+    mkdir -p /root/.m2 && \
     mkdir -p /graphene/Pal/src/host/Linux-SGX/signer
 
 COPY --from=graphene /graphene/Scripts /graphene/Scripts
@@ -125,10 +143,11 @@ COPY --from=graphene /graphene/Runtime/ /graphene/Runtime
 COPY --from=graphene /graphene/python /graphene/python
 COPY --from=graphene /graphene/Pal /graphene/Pal
 COPY --from=graphene /graphene/Pal/src/host/Linux-SGX/generated_offsets.py /graphene/python/
-COPY --from=graphene /graphene/Examples/common_tools/get_deps.sh /graphene/get_deps.sh
 COPY --from=graphene /graphene/Tools/argv_serializer /graphene/Tools
+COPY --from=graphene /graphene/meson_build_output /graphene/meson_build_output
 COPY --from=graphene /redis.tar.gz /ppml/trusted-realtime-ml/redis
 COPY --from=flink /opt/jdk  /opt/jdk8
+COPY --from=flink /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}
 COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar
 COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar
@@ -140,20 +159,29 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y openssl libssl-dev pkg-config && \
-    apt-get install -y netcat net-tools
+    apt-get install -y netcat net-tools && \
+    apt-get install -y python3-minimal && \
+    apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
+    pip3 install --upgrade pip && \
+    pip install --upgrade setuptools && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    pip install --no-cache-dir ninja meson && \
+    python3 -m pip install toml==0.10.2 click jinja2
 
 RUN mkdir -p /ppml/trusted-realtime-ml/redis/src && \
     tar -C /ppml/trusted-realtime-ml/redis/src --strip-components=1 -xf /ppml/trusted-realtime-ml/redis/redis.tar.gz && \
     make BUILD_TLS=yes -C /ppml/trusted-realtime-ml/redis/src && \
     cp /ppml/trusted-realtime-ml/redis/src/src/redis-server /ppml/trusted-realtime-ml/redis/redis-server
 
-ADD ./redis.Makefile /ppml/trusted-realtime-ml/redis/Makefile
-ADD ./redis-server.manifest.template /ppml/trusted-realtime-ml/redis/redis-server.manifest.template
-ADD ./init-redis.sh /ppml/trusted-realtime-ml/redis/init-redis.sh
+ADD ./Makefile /ppml/trusted-realtime-ml/redis/Makefile
+ADD ./bash.manifest.template /ppml/trusted-realtime-ml/redis/bash.manifest.template
+ADD ./init.sh /ppml/trusted-realtime-ml/redis/init.sh
+ADD ./clean.sh /ppml/trusted-realtime-ml/redis/clean.sh
 ADD ./start-redis.sh /ppml/trusted-realtime-ml/redis/start-redis.sh
-ADD ./java.Makefile /ppml/trusted-realtime-ml/java/Makefile
-ADD ./java.manifest.template /ppml/trusted-realtime-ml/java/java.manifest.template
-ADD ./init-java.sh /ppml/trusted-realtime-ml/java/init-java.sh
+ADD ./Makefile /ppml/trusted-realtime-ml/java/Makefile
+ADD ./bash.manifest.template /ppml/trusted-realtime-ml/java/bash.manifest.template
+ADD ./init.sh /ppml/trusted-realtime-ml/java/init.sh
+ADD ./clean.sh /ppml/trusted-realtime-ml/java/clean.sh
 ADD ./start-flink-jobmanager.sh /ppml/trusted-realtime-ml/java/start-flink-jobmanager.sh
 ADD ./start-flink-taskmanager.sh /ppml/trusted-realtime-ml/java/start-flink-taskmanager.sh
 ADD ./start-http-frontend.sh /ppml/trusted-realtime-ml/java/start-http-frontend.sh
@@ -163,9 +191,11 @@ ADD ./start-cluster-serving-job.sh /ppml/trusted-realtime-ml/java/start-cluster-
 ADD ./check-status.sh /ppml/trusted-realtime-ml/check-status.sh
 ADD ./start-all.sh /ppml/trusted-realtime-ml/start-all.sh
 
-RUN chmod a+x /ppml/trusted-realtime-ml/redis/init-redis.sh && \
+RUN chmod a+x /ppml/trusted-realtime-ml/redis/init.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/redis/clean.sh && \
     chmod a+x /ppml/trusted-realtime-ml/redis/start-redis.sh && \
-    chmod a+x /ppml/trusted-realtime-ml/java/init-java.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/java/init.sh && \
+    chmod a+x /ppml/trusted-realtime-ml/java/clean.sh && \
     chmod a+x /ppml/trusted-realtime-ml/java/start-flink-jobmanager.sh && \
     chmod a+x /ppml/trusted-realtime-ml/java/start-flink-taskmanager.sh && \
     chmod a+x /ppml/trusted-realtime-ml/java/start-http-frontend.sh && \
@@ -173,3 +203,7 @@ RUN chmod a+x /ppml/trusted-realtime-ml/redis/init-redis.sh && \
     chmod a+x /ppml/trusted-realtime-ml/java/start-cluster-serving-job.sh && \
     chmod a+x /ppml/trusted-realtime-ml/check-status.sh && \
     chmod a+x /ppml/trusted-realtime-ml/start-all.sh
+
+ENV PYTHONPATH	${PYTHONPATH}:/graphene/meson_build_output/lib/python3.6/site-packages
+ENV LC_ALL	C.UTF-8
+ENV LANG	C.UTF-8
