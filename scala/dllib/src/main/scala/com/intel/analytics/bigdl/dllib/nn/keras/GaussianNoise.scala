@@ -43,7 +43,7 @@ class GaussianNoise[T: ClassTag](
     with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.GaussianNoise(stddev = sigma)
+    val layer = com.intel.analytics.bigdl.dllib.nn.GaussianNoise(stddev = sigma)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

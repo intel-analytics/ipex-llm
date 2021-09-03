@@ -15,14 +15,12 @@
  */
 
 package com.intel.analytics.bigdl.dllib.keras.layers
-
-
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, IdentityOutputShape}
 import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.bigdl.{nn => bnn}
+import com.intel.analytics.bigdl.dllib.{nn => bnn}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import scala.reflect.ClassTag

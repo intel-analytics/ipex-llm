@@ -131,12 +131,12 @@ class Merge[T: ClassTag](
       case "dot" =>
         val seq = TSequential[T]()
         seq.add(DotProduct())
-        seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1), Some(true)))
+        seq.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(1), Some(true)))
         seq
       case "cos" =>
         val seq = TSequential[T]()
         seq.add(CosineDistance())
-        seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1, 1), Some(true)))
+        seq.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(1, 1), Some(true)))
         seq
     }
     if (layers != null) { // In the case `layers != null`, return a ParallelTable to merge layers

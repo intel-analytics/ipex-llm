@@ -47,7 +47,7 @@ class UpSampling2D[T: ClassTag](
     s"UpSampling2D: upsampling sizes should be of length 2, but got ${size.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.UpSampling2D(
+    val layer = com.intel.analytics.bigdl.dllib.nn.UpSampling2D(
       size = Array(size(0), size(1)),
       format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]

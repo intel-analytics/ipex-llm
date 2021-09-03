@@ -40,7 +40,7 @@ import com.intel.analytics.bigdl.dllib.autograd.Variable
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, Merge, WordEmbedding}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import com.intel.analytics.bigdl.dllib.keras.models.{KerasNet, Model, Sequential}
-import com.intel.analytics.bigdl.dllib.net.NetUtils
+import com.intel.analytics.bigdl.dllib.net.{GraphNet, NetUtils}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Logger
 import org.apache.spark.bigdl.api.python.BigDLSerDe
@@ -184,12 +184,12 @@ object Net {
    * @param defPath  caffe model definition file path
    * @param modelPath caffe model binary file containing weight and bias
    */
-  def loadCaffe[T: ClassTag](defPath: String, modelPath: String)(
-      implicit ev: TensorNumeric[T]): GraphNet[T] = {
-    val graph = CaffeLoader.loadCaffe[T](defPath, modelPath)._1
-      .asInstanceOf[Graph[T]]
-    new GraphNet[T](graph)
-  }
+//  def loadCaffe[T: ClassTag](defPath: String, modelPath: String)(
+//      implicit ev: TensorNumeric[T]): GraphNet[T] = {
+//    val graph = CaffeLoader.loadCaffe[T](defPath, modelPath)._1
+//      .asInstanceOf[Graph[T]]
+//    new GraphNet[T](graph)
+//  }
 
   private[bigdl] def saveToKeras2[T: ClassTag](
         model: Net,
@@ -307,7 +307,7 @@ object Net {
           python: String,
           saveCommand: String)
           (implicit ev: TensorNumeric[T]): Unit = {
-      val tmpDir = Utils.createTmpDir("ZooKeras")
+      val tmpDir = zooUtils.createTmpDir("ZooKeras")
       logger.info(s"Write model's temp file to ${tmpDir}")
       val modelFile = tmpDir.toString + s"/${module.getName()}.py"
       val bw = new BufferedWriter(new FileWriter(modelFile))

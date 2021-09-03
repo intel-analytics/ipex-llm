@@ -41,7 +41,7 @@ class GaussianDropout[T: ClassTag](
     with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.GaussianDropout(rate = p)
+    val layer = com.intel.analytics.bigdl.dllib.nn.GaussianDropout(rate = p)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

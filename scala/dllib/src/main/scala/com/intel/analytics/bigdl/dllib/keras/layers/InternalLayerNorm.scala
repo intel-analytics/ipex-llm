@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers.internal
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.common.TensorOperation
+import com.intel.analytics.bigdl.dllib.common.TensorOperation
 
 import scala.reflect.ClassTag
 
