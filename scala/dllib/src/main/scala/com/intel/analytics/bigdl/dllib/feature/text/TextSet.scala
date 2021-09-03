@@ -34,7 +34,7 @@ import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
-import com.intel.analytics.bigdl.dllib.feature.pmem.{DRAM, MemoryType}
+//import com.intel.analytics.bigdl.dllib.feature.pmem.{DRAM, MemoryType}
 import org.apache.spark.sql.SQLContext
 
 /**
@@ -258,9 +258,12 @@ object TextSet {
   /**
    * Create a DistributedTextSet from RDD of TextFeature.
    */
-  def rdd(data: RDD[TextFeature], memoryType: MemoryType = DRAM): DistributedTextSet = {
-    new DistributedTextSet(data, memoryType)
-  }
+//  def rdd(data: RDD[TextFeature], memoryType: MemoryType = DRAM): DistributedTextSet = {
+//    new DistributedTextSet(data, memoryType)
+//  }
+def rdd(data: RDD[TextFeature]): DistributedTextSet = {
+  new DistributedTextSet(data)
+}
 
   /**
    * Read text files with labels from a directory.
@@ -396,11 +399,15 @@ object TextSet {
    *                in corpus2, text must have been transformed to indexedTokens of the same length.
    * @return DistributedTextSet.
    */
-  def fromRelationPairs(
-      relations: RDD[Relation],
-      corpus1: TextSet,
-      corpus2: TextSet,
-      memoryType: MemoryType = DRAM): DistributedTextSet = {
+    def fromRelationPairs(
+        relations: RDD[Relation],
+        corpus1: TextSet,
+        corpus2: TextSet): DistributedTextSet = {
+//  def fromRelationPairs(
+//      relations: RDD[Relation],
+//      corpus1: TextSet,
+//      corpus2: TextSet,
+//      memoryType: MemoryType = DRAM): DistributedTextSet = {
     val pairsRDD = Relations.generateRelationPairs(relations)
     require(corpus1.isDistributed, "corpus1 must be a DistributedTextSet")
     require(corpus2.isDistributed, "corpus2 must be a DistributedTextSet")
@@ -428,7 +435,8 @@ object TextSet {
       textFeature(TextFeature.sample) = Sample(feature, label)
       textFeature
     }).setName("Pairwise Training Set")
-    TextSet.rdd(res, memoryType)
+//    TextSet.rdd(res, memoryType)
+      TextSet.rdd(res)
   }
 
   /**
@@ -709,9 +717,9 @@ class LocalTextSet(var array: Array[TextFeature]) extends TextSet {
 /**
  * DistributedTextSet is comprised of RDD of TextFeature.
  */
-class DistributedTextSet(var rdd: RDD[TextFeature],
-                         memoryType: MemoryType = DRAM) extends TextSet {
-
+//class DistributedTextSet(var rdd: RDD[TextFeature],
+//                         memoryType: MemoryType = DRAM) extends TextSet {
+class DistributedTextSet(var rdd: RDD[TextFeature]) extends TextSet {
   override def transform(transformer: Preprocessing[TextFeature, TextFeature]): TextSet = {
     rdd = transformer(rdd)
     this
@@ -730,13 +738,16 @@ class DistributedTextSet(var rdd: RDD[TextFeature],
   }
 
   override def toDataSet: DataSet[Sample[Float]] = {
+//    FeatureSet.rdd(rdd.map(_[Sample[Float]](TextFeature.sample))
+//      .setName(s"Samples in ${rdd.name}"),
+//      memoryType)
     FeatureSet.rdd(rdd.map(_[Sample[Float]](TextFeature.sample))
-      .setName(s"Samples in ${rdd.name}"),
-      memoryType)
+      .setName(s"Samples in ${rdd.name}"))
   }
 
   override def randomSplit(weights: Array[Double]): Array[TextSet] = {
-    rdd.randomSplit(weights).map(v => TextSet.rdd(v, this.memoryType))
+//    rdd.randomSplit(weights).map(v => TextSet.rdd(v, this.memoryType))
+    rdd.randomSplit(weights).map(v => TextSet.rdd(v))
   }
 
   override def generateWordIndexMap(

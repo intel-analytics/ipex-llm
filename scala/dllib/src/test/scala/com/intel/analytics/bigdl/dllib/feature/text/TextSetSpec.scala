@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.intel.analytics.zoo.feature.text
+/*
+package com.intel.analytics.bigdl.dllib.feature.text
 
 import com.intel.analytics.bigdl.optim.{Adagrad, SGD}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.feature.common.Relation
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.feature.common.Relation
 import com.intel.analytics.zoo.models.textclassification.TextClassifier
 import com.intel.analytics.zoo.models.textmatching.KNRM
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
@@ -451,3 +451,4 @@ class TextSetSpec extends ZooSpecHelper {
     knrm.evaluateMAP(listSet)
   }
 }
+*/
