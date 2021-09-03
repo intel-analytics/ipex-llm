@@ -17,7 +17,7 @@ make intel-sgx-initcontainer
 ```
 Deploy the DaemonSet with
 ```bash
-kubectl apply -k /usr/local/go-1.16.6/src/intel/sgx-device-plugin/deployments/sgx_plugin/overlays/epc-register/
+kubectl apply -k deployments/sgx_plugin/overlays/epc-register/
 ```
 Verify with (replace the `<node name>` with your own node name)
 ```
@@ -35,8 +35,8 @@ It is worth mentioning that you can run the components without using sgx by sett
 
 You need to [generate secure keys and password][keysNpassword]. Modify the `OUTPUT` in both `../../../../scripts/generate-keys.sh` and `../../../../scripts/generate-password.sh` to your present working directory, and run both scripts. Then, run
 ``` bash
-kubectl apply -f keys.yaml
-kubectl apply -f password.yaml
+kubectl apply -f ../../../../scripts/keys/keys.yaml
+kubectl apply -f ../../../../scripts/password/password.yaml
 ```
 
 ### Using [Helm][helmsite] to deploy all components
