@@ -17,9 +17,9 @@
 import sys
 import numpy as np
 
-from bigdl.util.common import *
-from zoo.feature.image.imagePreprocessing import *
-from zoo.feature.image.imageset import *
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.feature.image.imagePreprocessing import *
+from bigdl.dllib.feature.image.imageset import *
 
 if sys.version >= '3':
     long = int

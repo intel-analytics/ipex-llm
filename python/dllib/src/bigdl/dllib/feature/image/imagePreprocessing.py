@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.util.common import *
-from zoo.feature.common import Preprocessing
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.feature.common import Preprocessing
 
 if sys.version >= '3':
     long = int
