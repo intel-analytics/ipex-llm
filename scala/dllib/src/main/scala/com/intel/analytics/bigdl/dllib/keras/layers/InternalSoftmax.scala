@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers.internal
+package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * where shift = max_i(x_i).
  * Currently only support apply softmax normalization to the last dim.
  */
-private[zoo] class InternalSoftMax[T: ClassTag]()
+private[bigdl] class InternalSoftMax[T: ClassTag]()
    (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -55,7 +55,7 @@ private[zoo] class InternalSoftMax[T: ClassTag]()
   }
 }
 
-private[zoo] object InternalSoftMax{
+private[bigdl] object InternalSoftMax{
   def apply[T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : InternalSoftMax[T] = {
     new InternalSoftMax[T]()

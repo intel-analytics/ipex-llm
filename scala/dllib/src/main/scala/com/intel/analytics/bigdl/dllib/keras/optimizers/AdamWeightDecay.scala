@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.optimizers
+package com.intel.analytics.bigdl.dllib.keras.optimizers
 
 import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, SGD}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor

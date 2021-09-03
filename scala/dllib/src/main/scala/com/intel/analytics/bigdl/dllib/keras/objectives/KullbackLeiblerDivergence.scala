@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.objectives
+package com.intel.analytics.bigdl.dllib.keras.objectives
 
 import com.intel.analytics.bigdl.dllib.nn.KullbackLeiblerDivergenceCriterion
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractCriterion

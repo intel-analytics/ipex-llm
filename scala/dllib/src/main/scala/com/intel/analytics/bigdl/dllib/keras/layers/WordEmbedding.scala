@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
 import java.io._
 import java.util.concurrent.atomic.AtomicInteger
@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, Ser
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.{DataConverter, TensorConverter}
 import com.intel.analytics.zoo.common.CheckedObjectInputStream
 import com.intel.analytics.bigdl.dllib.keras.layers.WordEmbedding.EmbeddingMatrixHolder
-import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, RegistryMap, SerializationHolder}
+import com.intel.bigdl.dllib.keras.Net.{NetUtils, RegistryMap, SerializationHolder}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.{Map => MMap}

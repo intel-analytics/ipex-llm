@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, Dense => BigDLDense}
 import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, Xavier}
@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -60,7 +60,7 @@ class Dense[T: ClassTag](
   extends BigDLDense[T](outputDim, init, activation, wRegularizer, bRegularizer, bias,
     inputShape) with Net {
 
-  override private[zoo] def toKeras2(): String = {
+  override private[bigdl] def toKeras2(): String = {
     val params = Net.inputShapeToString(inputShape) ++
       Net.activationToString(activation) ++
       Net.param(getName()) ++
@@ -69,7 +69,7 @@ class Dense[T: ClassTag](
     Net.kerasDef(this, params)
   }
 
-  override private[zoo] def getKerasWeights(): Array[Tensor[Float]] = {
+  override private[bigdl] def getKerasWeights(): Array[Tensor[Float]] = {
     val weights = this.parameters()._1
     val kWeights = Array.tabulate(weights.length)(_ => Tensor[Float]())
     weights(0) = weights(0).t().contiguous()
