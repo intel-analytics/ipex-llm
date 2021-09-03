@@ -47,7 +47,7 @@ class SpatialDropout1D[T: ClassTag](
     with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.SpatialDropout1D(initP = p)
+    val layer = com.intel.analytics.bigdl.dllib.nn.SpatialDropout1D(initP = p)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

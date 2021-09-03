@@ -40,7 +40,7 @@ class SoftMax[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val layer = com.intel.analytics.bigdl.nn.SoftMax()
+    val layer = com.intel.analytics.bigdl.dllib.nn.SoftMax()
     if (input.length <= 2) {
       layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
     } else if (input.length == 3) {

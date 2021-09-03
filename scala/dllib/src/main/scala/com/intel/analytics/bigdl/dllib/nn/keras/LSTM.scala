@@ -64,7 +64,7 @@ class LSTM[T: ClassTag](
   extends Recurrent[T](outputDim, returnSequences, goBackwards, inputShape) {
 
   override def buildCell(input: Array[Int]): Cell[T] = {
-    com.intel.analytics.bigdl.nn.LSTM[T](
+    com.intel.analytics.bigdl.dllib.nn.LSTM[T](
       inputSize = input(2),
       hiddenSize = outputDim,
       activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],

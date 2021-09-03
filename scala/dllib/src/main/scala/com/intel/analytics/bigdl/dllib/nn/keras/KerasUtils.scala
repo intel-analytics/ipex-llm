@@ -69,7 +69,7 @@ object KerasUtils {
           case "sigmoid" => Sigmoid[T]()
           case "relu" => ReLU[T]()
           case "softmax" =>
-                com.intel.analytics.bigdl.nn.SoftMax[T]()
+                com.intel.analytics.bigdl.dllib.nn.SoftMax[T]()
           case "softplus" => SoftPlus[T]()
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()
