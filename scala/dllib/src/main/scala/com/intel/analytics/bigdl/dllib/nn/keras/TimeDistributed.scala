@@ -61,7 +61,7 @@ class TimeDistributed[T: ClassTag](
     val innerInput = getInnerInput(input)
     layer.build(Shape(innerInput))
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    val timedistributed = com.intel.analytics.bigdl.nn.TimeDistributed(layer)
+    val timedistributed = com.intel.analytics.bigdl.dllib.nn.TimeDistributed(layer)
     timedistributed.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

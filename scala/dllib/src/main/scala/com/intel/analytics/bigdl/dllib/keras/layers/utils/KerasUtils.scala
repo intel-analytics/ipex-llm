@@ -77,7 +77,7 @@ object KerasUtils {
     (implicit ev: TensorNumeric[T]): KerasLayer[Tensor[T], Tensor[T], T] = {
     if (activation == null) { return null }
     if (activation.toLowerCase() == "softmax") {
-      com.intel.analytics.zoo.pipeline.api.keras.layers.SoftMax[T]()
+      com.intel.analytics.bigdl.dllib.nn.keras.layers.SoftMax[T]()
     } else {
       val torchActivation = getTorchActivation(activation)
       new KerasIdentityWrapper[T](torchActivation)
@@ -103,7 +103,7 @@ object KerasUtils {
         case _: LogSigmoid[T] => "log_sigmoid"
         case _: LogSoftMax[T] => "log_softmax"
         case _: Identity[T] => "linear"
-        case _: com.intel.analytics.zoo.pipeline.api.keras.layers.SoftMax[T] => "softmax"
+        case _: com.intel.analytics.bigdl.dllib.keras.layers.SoftMax[T] => "softmax"
         case _ => throw new IllegalArgumentException("unkown activation"
           + activation.getClass.getName)
       }
@@ -183,7 +183,7 @@ object KerasUtils {
     loss.toLowerCase() match {
       case "binary_crossentropy" => BinaryCrossEntropy[T]()
       case "categorical_crossentropy" =>
-        com.intel.analytics.zoo.pipeline.api.keras.objectives.CategoricalCrossEntropy[T]()
+        com.intel.analytics.bigdl.dllib.keras.objectives.CategoricalCrossEntropy[T]()
       case "mse" => MeanSquaredError[T]()
       case "mean_squared_error" => MeanSquaredError[T]()
       case "mae" => MeanAbsoluteError[T]()

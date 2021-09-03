@@ -78,7 +78,7 @@ class AtrousConvolution1D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
     model.add(Transpose(Array((2, 3))))
-    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(2), input(1), 1), Some(true)))
+    model.add(com.intel.analytics.bigdl.dllib.nn.Reshape(Array(input(2), input(1), 1), Some(true)))
     val layer = SpatialDilatedConvolution(
       nInputPlane = input(2),
       nOutputPlane = nbFilter,
