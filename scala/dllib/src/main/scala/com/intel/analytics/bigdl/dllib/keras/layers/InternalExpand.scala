@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers.internal
+package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * @param tgtSizes target tensor sizes, dim whose size is -1 will be ignored
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-private[zoo] class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
+private[bigdl] class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -98,7 +98,7 @@ private[zoo] class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
   override def toString: String = s"InternalExpand()"
 }
 
-private[zoo] object InternalExpand {
+private[bigdl] object InternalExpand {
   def apply[@specialized(Float, Double) T: ClassTag](tgtSizes: Array[Int])
     (implicit ev: TensorNumeric[T]) : InternalExpand[T] = {
     new InternalExpand[T](tgtSizes)
