@@ -24,9 +24,9 @@ import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, StaticGraph}
 import com.intel.analytics.bigdl.dllib.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer._
-import com.intel.analytics.zoo.pipeline.api.Predictable
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.serializer._
+import com.intel.analytics.bigdl.dllib.keras.Predictable
 import com.intel.analytics.bigdl.dllib.keras.layers.KerasLayerWrapper
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import org.apache.spark.utils.SparkUtils
@@ -140,20 +140,20 @@ object GraphNet extends ContainerSerializable {
 
 
 object NetUtils {
-  private[zoo] def getGraphOutputs[T](graph: Graph[T]): Seq[ModuleNode[T]] = {
+  private[bigdl] def getGraphOutputs[T](graph: Graph[T]): Seq[ModuleNode[T]] = {
     KerasUtils.invokeMethod(graph, "outputs").asInstanceOf[Seq[ModuleNode[T]]]
   }
 
-  private[zoo] def getGraphVariables[T](graph: Graph[T]) = {
+  private[bigdl] def getGraphVariables[T](graph: Graph[T]) = {
     KerasUtils.invokeMethod(graph, "variables")
       .asInstanceOf[Option[(Array[Tensor[T]], Array[Tensor[T]])]]
   }
 
-  private[zoo] def getGenerateBackward[T](graph: Graph[T]): Boolean = {
+  private[bigdl] def getGenerateBackward[T](graph: Graph[T]): Boolean = {
     KerasUtils.invokeMethod(graph, "generateBackward").asInstanceOf[Boolean]
   }
 
-  private[zoo] def dynamic[T](
+  private[bigdl] def dynamic[T](
                                input: Array[ModuleNode[T]],
                                output: Array[ModuleNode[T]],
                                variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
@@ -174,7 +174,7 @@ object NetUtils {
 
   implicit val formats = DefaultFormats
 
-  private[zoo] def processTFFolder(folder: String): (String, Meta) = {
+  private[bigdl] def processTFFolder(folder: String): (String, Meta) = {
     val folderPath = Path(folder)
     if (!folderPath.exists) {
       throw new IllegalArgumentException(s"$folder does not exist")
@@ -197,11 +197,11 @@ object NetUtils {
     (modelPath.toString(), meta)
   }
 
-  private[zoo] def removePort(nodes: Seq[String]): Seq[String] = {
+  private[bigdl] def removePort(nodes: Seq[String]): Seq[String] = {
     nodes.map(node => if (node contains ":") node.split(":")(0) else node)
   }
 
-  private[zoo] def isDriver = try {
+  private[bigdl] def isDriver = try {
     SparkUtils.isDriver
   } catch {
     case e: NullPointerException =>
@@ -223,7 +223,7 @@ object NetUtils {
   }
 }
 
-private[zoo] case class Meta(inputNames: Array[String],
+private[bigdl] case class Meta(inputNames: Array[String],
                              outputNames: Array[String],
                              tempTensors: Option[Array[String]] = None,
                              variables: Option[Array[String]] = None,
@@ -307,7 +307,7 @@ trait NetUtils[T, D <: Module[T] with NetUtils[T, D]] {
   }
 }
 
-private[zoo] abstract class SerializationHolder
+private[bigdl] abstract class SerializationHolder
   extends Serializable with KryoSerializable {
 
   protected def timing[T](name: String)(f: => T): T = {
@@ -392,7 +392,7 @@ private[zoo] abstract class SerializationHolder
   }
 }
 
-private[zoo] class RegistryMap[T]() {
+private[bigdl] class RegistryMap[T]() {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
