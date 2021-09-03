@@ -40,7 +40,7 @@ import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, Merge, WordEmbedding}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import com.intel.analytics.bigdl.dllib.keras.models.{KerasNet, Model, Sequential}
-import com.intel.analytics.bigdl.dllib.keras.net.{GraphNet, NetUtils}
+import com.intel.analytics.bigdl.dllib.net.NetUtils
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Logger
 import org.apache.spark.bigdl.api.python.BigDLSerDe
