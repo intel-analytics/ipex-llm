@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytic.bigdl.dllib.keras.optimizers
+package com.intel.analytics.bigdl.dllib.keras.optimizers
 
 import com.intel.analytics.bigdl.dllib.optim.SGD
 import com.intel.analytics.bigdl.dllib.optim.SGD.{Default, LearningRateSchedule}

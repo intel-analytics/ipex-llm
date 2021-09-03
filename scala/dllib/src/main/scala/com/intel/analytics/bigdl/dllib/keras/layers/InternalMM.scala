@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers.internal
+package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import java.security.InvalidParameterException
 
@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(8315388141765786231L)
-private[zoo] class InternalMM[T: ClassTag](
+private[bigdl] class InternalMM[T: ClassTag](
     val transA: Boolean = false,
     val transB: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
@@ -215,7 +215,7 @@ private[zoo] class InternalMM[T: ClassTag](
   }
 }
 
-private[zoo] object InternalMM {
+private[bigdl] object InternalMM {
   def apply[@specialized(Float, Double) T: ClassTag](
       transA: Boolean = false,
       transB: Boolean = false)(implicit ev: TensorNumeric[T]) : InternalMM[T] = {
