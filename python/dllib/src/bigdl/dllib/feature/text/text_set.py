@@ -15,8 +15,8 @@
 #
 
 import six
-from bigdl.util.common import JavaValue
-from zoo.common.utils import callZooFunc
+from bigdl.dllib.utils.common import JavaValue
+from bigdl.dllib.utils.utils import callZooFunc
 from pyspark import RDD
 
 

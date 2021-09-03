@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.transform.vision.image import ImageFrame
-from bigdl.util.common import *
-from zoo.common.utils import callZooFunc
+from bigdl.dllib.feature.transform.vision.image import ImageFrame
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.utils import callZooFunc
 
 
 class ImageSet(JavaValue):
