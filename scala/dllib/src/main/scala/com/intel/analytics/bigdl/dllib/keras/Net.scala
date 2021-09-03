@@ -23,7 +23,8 @@ import java.util
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, Initializable}
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasIdentityWrapper, KerasLayer}
+import com.intel.analytics.bigdl.dllib.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.keras.KerasIdentityWrapper
 import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, InitializationMethod, StaticGraph, Identity => BIdentity, Sequential => TSequential}
 //import com.intel.analytics.bigdl.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
@@ -80,7 +81,7 @@ trait Net {
       this.asInstanceOf[AbstractModule[Activity, Activity, T]].inputs(vars.map(_.node): _*))
   }
 
-  private[zoo] def toKeras2(): String = {
+  private[bigdl] def toKeras2(): String = {
     throw new UnimplementedException()
   }
 
@@ -89,7 +90,7 @@ trait Net {
    * Need to override this when this default weights doesn't match the weights in Keras.
    * @return keras-like weights.
    */
-  private[zoo] def getKerasWeights(): Array[Tensor[Float]] = {
+  private[bigdl] def getKerasWeights(): Array[Tensor[Float]] = {
     if (this.asInstanceOf[AbstractModule[_, _, _]].parameters()._1.length != 0) {
       val weights = this.asInstanceOf[AbstractModule[_, _, _]].parameters()._1
       val kWeights = Array.tabulate(weights.length)(_ => Tensor[Float]())
@@ -190,25 +191,25 @@ object Net {
     new GraphNet[T](graph)
   }
 
-  private[zoo] def saveToKeras2[T: ClassTag](
+  private[bigdl] def saveToKeras2[T: ClassTag](
         model: Net,
         filePath: String,
         python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
     NetSaver.saveToKeras2(model.asInstanceOf[Module[T]], filePath, python)
   }
 
-  private[zoo] def saveToTf[T: ClassTag](
+  private[bigdl] def saveToTf[T: ClassTag](
         model: Net,
         dir: String,
         python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
     NetSaver.saveToTf(model.asInstanceOf[Module[T]], dir, python)
   }
 
-  private[zoo] def getName(name: String): String = {
+  private[bigdl] def getName(name: String): String = {
     name.split("\\.").last
   }
 
-  private[zoo] def inputShapeToString(
+  private[bigdl] def inputShapeToString(
         inputShape: Shape,
         paramName: String = "input_shape"): Map[String, String] = {
     if (inputShape != null) {
@@ -218,11 +219,11 @@ object Net {
     }
   }
 
-  private[zoo] def arrayToString(array: Seq[Int], name: String): Map[String, String] = {
+  private[bigdl] def arrayToString(array: Seq[Int], name: String): Map[String, String] = {
     Map(name -> s"(${array.mkString(", ")})")
   }
 
-  private[zoo] def activationToString(
+  private[bigdl] def activationToString(
         activation: AbstractModule[_, _, _],
         paramName: String = "activation"): Map[String, String] = {
     val trueActivation = if (activation.isInstanceOf[KerasIdentityWrapper[_]]) {
@@ -238,38 +239,38 @@ object Net {
 
   }
 
-  private[zoo] def param(
+  private[bigdl] def param(
         boolean: Boolean,
         paramName: String): Map[String, String] = {
     Map(paramName -> s"${if (boolean) "True" else "False"}")
   }
 
-  private[zoo] def param(
+  private[bigdl] def param(
         integer: Int,
         paramName: String): Map[String, String] = {
     Map(paramName -> integer.toString)
   }
 
-  private[zoo] def param(
+  private[bigdl] def param(
         double: Double,
         paramName: String): Map[String, String] = {
     Map(paramName -> double.toString)
   }
 
-  private[zoo] def param(
+  private[bigdl] def param(
         name: String,
         paramName: String = "name"): Map[String, String] = {
     Map(paramName -> s"'$name'")
   }
 
-  private[zoo] def kerasDef(
+  private[bigdl] def kerasDef(
         module: Module[_],
         params: Map[String, String]): String = {
     s"${Net.getName(module.getClass.getName)}(" +
       params.map(v => s"${v._1}=${v._2}").mkString(", ") + ")"
   }
 
-  private[zoo] def kerasDef(
+  private[bigdl] def kerasDef(
        moduleType: String,
        params: Map[String, String]): String = {
     s"${moduleType}(" +
@@ -403,7 +404,7 @@ object Net {
       }
     }
 
-    private[zoo] def saveWeights[T: ClassTag](
+    private[bigdl] def saveWeights[T: ClassTag](
                                                  module: AbstractModule[_, _, T], path: String)
                                              (implicit ev: TensorNumeric[T]): String = {
       val moduleName = module.getName()

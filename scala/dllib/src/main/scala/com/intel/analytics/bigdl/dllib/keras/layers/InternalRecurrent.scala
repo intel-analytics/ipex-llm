@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers.internal
+package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import com.intel.analytics.bigdl.dllib.nn.{BatchNormParams, BigDLWrapperUtils, Cell, Recurrent}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}

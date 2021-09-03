@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.{RandomNormal, RandomUniform, SpatialBatchNormalization, Xavier, BatchNormalization => BBatchNormalization}
 import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, BatchNormalization => BKBatchNormalization}
@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag

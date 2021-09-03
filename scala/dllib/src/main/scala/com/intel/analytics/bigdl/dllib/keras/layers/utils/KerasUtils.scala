@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytic.bigdl.dllib.keras.layers.utils
+package com.intel.analytics.bigdl.dllib.keras.layers.utils
 
 import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
@@ -25,7 +25,8 @@ import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, SingleShape}
-import com.intel.analytics.zoo.pipeline.api.Net
+//import com.intel.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.metrics.{AUC, Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy, Top5Accuracy => ZooTop5Accuracy}
 import com.intel.analytics.bigdl.dllib.keras.models.KerasNet
 import com.intel.analytics.bigdl.dllib.keras.objectives._
@@ -287,7 +288,7 @@ object KerasUtils {
     }
   }
 
-  private[zoo] def invokeMethod(obj: Object, methodName: String, args: Object*): Object = {
+  private[bigdl] def invokeMethod(obj: Object, methodName: String, args: Object*): Object = {
     val clazz = obj.getClass()
     val method =
       try {
@@ -302,7 +303,7 @@ object KerasUtils {
     method.invoke(obj, args: _*)
   }
 
-  private[zoo] def invokeMethodWithEv[T: ClassTag](
+  private[bigdl] def invokeMethodWithEv[T: ClassTag](
         obj: String,
         methodName: String,
         args: Object*)(implicit ev: TensorNumeric[T]): Object = {
@@ -321,7 +322,7 @@ object KerasUtils {
     method.invoke(obj, argsWithTag: _*)
   }
 
-  private[zoo] def invokeMethodWithEv[T: ClassTag](
+  private[bigdl] def invokeMethodWithEv[T: ClassTag](
         obj: Object,
         methodName: String,
         args: Object*)(implicit ev: TensorNumeric[T]): Object = {
