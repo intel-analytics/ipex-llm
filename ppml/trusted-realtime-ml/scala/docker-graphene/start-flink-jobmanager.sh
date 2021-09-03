@@ -18,7 +18,7 @@ if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then cmd_prefix="graphene-sgx 
 
 echo "### Launching Flink Jobmanager ###"
 
-eval ${cmd_prefix}bash -c "/opt/jdk8/bin/java \
+eval ${cmd_prefix}bash -c \" /opt/jdk8/bin/java \
     -Xms5g \
     -Xmx${xmx_size} \
     -XX:ActiveProcessorCount=${core_num} \
@@ -43,4 +43,4 @@ eval ${cmd_prefix}bash -c "/opt/jdk8/bin/java \
     -D security.ssl.internal.keystore-password=${secure_password} \
     -D security.ssl.internal.truststore-password=${secure_password} \
     -D security.ssl.internal.key-password=${secure_password} \
-    --executionMode cluster " | tee ./flink-jobmanager-${sgx_mode}.log
+    --executionMode cluster \" | tee ./flink-jobmanager-${sgx_mode}.log
