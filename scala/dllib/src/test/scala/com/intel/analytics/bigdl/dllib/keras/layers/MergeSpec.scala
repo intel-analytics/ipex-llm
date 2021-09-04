@@ -18,9 +18,9 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, T}
-import com.intel.analytics.zoo.pipeline.api.keras.models._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.models._
+import com.intel.analytics.bigdl.dllib.keras.layers.Merge.merge
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 
 class MergeSpec extends KerasBaseSpec {

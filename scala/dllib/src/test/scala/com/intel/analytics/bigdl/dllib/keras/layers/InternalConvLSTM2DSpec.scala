@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalRecurrent
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 class InternalConvLSTM2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {

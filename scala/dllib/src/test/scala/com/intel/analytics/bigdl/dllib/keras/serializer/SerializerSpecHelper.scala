@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.serializer
+package com.intel.analytics.bigdl.dllib.keras.serializer
 
 import java.lang.reflect.Modifier
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.zoo.pipeline.api.keras.layers.NoKeras2
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.dllib.keras.layers.NoKeras2
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
