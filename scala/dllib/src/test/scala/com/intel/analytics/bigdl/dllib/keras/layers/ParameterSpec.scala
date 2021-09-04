@@ -22,12 +22,12 @@ import com.intel.analytics.bigdl.dllib.nn.keras.Sequential
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{Shape, T, Table}
-import com.intel.analytics.zoo.pipeline.api.Net
-import com.intel.analytics.zoo.pipeline.api.autograd.{AutoGrad, Lambda, Parameter, Variable}
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
-import com.intel.analytics.zoo.pipeline.api.keras.models.Model
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.autograd.{AutoGrad, Lambda, Parameter, Variable}
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 import scala.math.log
 import scala.reflect.ClassTag
