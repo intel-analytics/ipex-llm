@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Shape, T}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
 import com.intel.analytics.zoo.pipeline.api.autograd.Variable
 import com.intel.analytics.zoo.pipeline.api.keras.models.Model
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest

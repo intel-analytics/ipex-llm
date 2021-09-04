@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.dllib.nn.Module
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{Identity => ZIdentity}
-import com.intel.analytics.bigdl.nn.{Module, Identity => BIdentity}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, Table}
+import com.intel.analytics.bigdl.dllib.nn.{Module, Identity => BIdentity}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape, T, Table}
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}

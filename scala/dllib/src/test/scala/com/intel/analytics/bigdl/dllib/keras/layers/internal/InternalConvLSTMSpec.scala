@@ -17,11 +17,11 @@
 package com.intel.analytics.bigdl.torch
 
 import scala.math._
-import com.intel.analytics.bigdl.nn.{MSECriterion, Sequential, TimeDistributedCriterion}
+import com.intel.analytics.bigdl.dllib.nn.{MSECriterion, Sequential, TimeDistributedCriterion}
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.zoo.pipeline.api.keras.layers.InternalConvLSTM2D
 import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
