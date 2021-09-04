@@ -17,11 +17,11 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.{Sqrt => BSqrt}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Sqrt => ZSqrt}
+import com.intel.analytics.bigdl.dllib.keras.layers.{Sqrt => ZSqrt}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 
 class SqrtSpec extends ZooSpecHelper {
