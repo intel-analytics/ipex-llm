@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 class InternalCMulTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
