@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.{Negative => BNegative}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Negative => ZNegative}
+import com.intel.analytics.bigdl.dllib.keras.layers.{Negative => ZNegative}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 
 class NegativeSpec extends ZooSpecHelper {

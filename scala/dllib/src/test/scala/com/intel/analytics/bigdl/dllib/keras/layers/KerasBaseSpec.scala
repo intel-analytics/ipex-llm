@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, AbstractModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 
 import scala.sys.process._
 import org.scalatest.Tag

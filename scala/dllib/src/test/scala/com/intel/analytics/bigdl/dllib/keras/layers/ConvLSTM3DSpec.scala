@@ -19,8 +19,8 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 import com.intel.analytics.bigdl.dllib.nn.ConvLSTMPeephole3D
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 
 class ConvLSTM3DSpec extends ZooSpecHelper {
@@ -50,7 +50,7 @@ class ConvLSTM3DSpec extends ZooSpecHelper {
   }
 
   "ConvLSTM3D with same padding" should "be the same as BigDL" in {
-    val blayer = com.intel.analytics.bigdl.nn.Recurrent[Float]()
+    val blayer = com.intel.analytics.bigdl.dllib.nn.Recurrent[Float]()
       .add(ConvLSTMPeephole3D[Float](4, 4, 2, 2, withPeephole = false))
     val zlayer = ConvLSTM3D[Float](4, 2, returnSequences = true, borderMode = "same",
       inputShape = Shape(12, 4, 8, 8, 8))

@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 
 class Convolution2DSpec extends KerasBaseSpec {

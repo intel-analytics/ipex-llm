@@ -22,11 +22,11 @@ import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
-import com.intel.analytics.zoo.pipeline.api.autograd.Variable
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
-import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.autograd.Variable
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 class TransformerLayerSpec extends ZooSpecHelper {
   "TransformerLayer" should "be able to work" in {

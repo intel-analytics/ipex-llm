@@ -18,8 +18,8 @@ package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.KerasBaseSpec
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.layers.KerasBaseSpec
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 
 class InternalExpandSpec extends KerasBaseSpec {
