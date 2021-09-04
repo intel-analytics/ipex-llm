@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 import com.intel.analytics.bigdl.dllib.{nn => bnn}
 import com.intel.analytics.bigdl.dllib.nn.{RandomNormal, Tanh}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
@@ -73,8 +73,8 @@ private[layers] class TransformerLayer[T: ClassTag](
       val (extendedAttentionMask, embeddingInputs, inputs) = buildInput(inputShape)
 
       require(embeddingLayer.isInstanceOf[Net], "use layers from" +
-        "com.intel.analytics.zoo.pipeline.api.keras and operators from" +
-        " com.intel.analytics.zoo.pipeline.api.autograd to construct the embedding layer")
+        "com.intel.analytics.bigdl.dllib.keras and operators from" +
+        " com.intel.analytics.bigdl.dllib.autograd to construct the embedding layer")
       val embedding = embeddingLayer.asInstanceOf[Net]
       val e = embedding.from(embeddingInputs: _*)
       val hiddenSize = e.getOutputShape().toSingle().last

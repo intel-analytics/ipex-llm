@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.api.keras
+package com.intel.analytics.bigdl.dllib.keras
 
 import java.io.{File => JFile}
 import java.nio.file.attribute.PosixFilePermissions
@@ -22,8 +22,8 @@ import java.nio.file.Files
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Table}
-import com.intel.analytics.zoo.common.Utils
-import com.intel.analytics.zoo.models.common.ZooModel
+import com.intel.analytics.bigdl.dllib.common.zooUtils
+//import com.intel.analytics.zoo.models.common.ZooModel
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Logger
 import org.scalactic.TolerantNumerics
@@ -52,7 +52,7 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
   }
 
   def createTmpDir(permissions: String = "rwx------"): JFile = {
-    val dir = Utils.createTmpDir("ZooUT", permissions).toFile()
+    val dir = zooUtils.createTmpDir("ZooUT", permissions).toFile()
     logger.info(s"created directory $dir")
     tmpDirs.append(dir)
     dir
@@ -145,29 +145,29 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
     compareOutputAndGradInput(model1, model2, input, precision)
   }
 
-  def testZooModelLoadSave[Model](model: ZooModel[Tensor[Float], Tensor[Float], Float],
-                                  input: Tensor[Float],
-                                  loader: (String, String) => Model,
-                                  precision: Double = 1e-5): Unit = {
-    val serFile = createTmpFile()
-    model.saveModel(serFile.getAbsolutePath, overWrite = true)
-    val loadedModel = loader(serFile.getAbsolutePath, null)
-      .asInstanceOf[ZooModel[Tensor[Float], Tensor[Float], Float]]
-    require(loadedModel.modules.length == 1)
-    compareOutputAndGradInput(model, loadedModel, input, precision)
-  }
-
-  def testZooModelLoadSave2[Model](model: ZooModel[Table, Tensor[Float], Float],
-                                   input: Table,
-                                   loader: (String, String) => Model,
-                                   precision: Double = 1e-5): Unit = {
-    val serFile = createTmpFile()
-    model.saveModel(serFile.getAbsolutePath, overWrite = true)
-    val loadedModel = loader(serFile.getAbsolutePath, null)
-      .asInstanceOf[ZooModel[Table, Tensor[Float], Float]]
-    require(loadedModel.modules.length == 1)
-    compareOutputAndGradInputTable2Tensor(model, loadedModel, input, precision)
-  }
+//  def testZooModelLoadSave[Model](model: ZooModel[Tensor[Float], Tensor[Float], Float],
+//                                  input: Tensor[Float],
+//                                  loader: (String, String) => Model,
+//                                  precision: Double = 1e-5): Unit = {
+//    val serFile = createTmpFile()
+//    model.saveModel(serFile.getAbsolutePath, overWrite = true)
+//    val loadedModel = loader(serFile.getAbsolutePath, null)
+//      .asInstanceOf[ZooModel[Tensor[Float], Tensor[Float], Float]]
+//    require(loadedModel.modules.length == 1)
+//    compareOutputAndGradInput(model, loadedModel, input, precision)
+//  }
+//
+//  def testZooModelLoadSave2[Model](model: ZooModel[Table, Tensor[Float], Float],
+//                                   input: Table,
+//                                   loader: (String, String) => Model,
+//                                   precision: Double = 1e-5): Unit = {
+//    val serFile = createTmpFile()
+//    model.saveModel(serFile.getAbsolutePath, overWrite = true)
+//    val loadedModel = loader(serFile.getAbsolutePath, null)
+//      .asInstanceOf[ZooModel[Table, Tensor[Float], Float]]
+//    require(loadedModel.modules.length == 1)
+//    compareOutputAndGradInputTable2Tensor(model, loadedModel, input, precision)
+//  }
 }
 
 trait SerialSpecHelper extends ZooSpecHelper {

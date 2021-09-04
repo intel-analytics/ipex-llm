@@ -20,10 +20,10 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
-import com.intel.analytics.zoo.pipeline.api.autograd.Variable
-import com.intel.analytics.zoo.pipeline.api.keras.models.Model
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.autograd.Variable
+import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 
 class BertSpec extends ZooSpecHelper {
   "Bert " should "be able to work" in {

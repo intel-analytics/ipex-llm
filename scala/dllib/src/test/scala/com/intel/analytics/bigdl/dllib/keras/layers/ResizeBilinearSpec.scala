@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.dllib.nn.{ResizeBilinear => BResizeBilinear}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{ResizeBilinear => ZResizeBilinear}
+import com.intel.analytics.bigdl.dllib.keras.layers.{ResizeBilinear => ZResizeBilinear}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 
 class ResizeBilinearSpec extends ZooSpecHelper {
