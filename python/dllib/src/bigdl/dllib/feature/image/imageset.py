@@ -15,7 +15,7 @@
 #
 from bigdl.dllib.feature.transform.vision.image import ImageFrame
 from bigdl.dllib.utils.common import *
-from bigdl.dllib.utils.utils import callZooFunc
+from bigdl.dllib.utils.file_utils import callZooFunc
 
 
 class ImageSet(JavaValue):
