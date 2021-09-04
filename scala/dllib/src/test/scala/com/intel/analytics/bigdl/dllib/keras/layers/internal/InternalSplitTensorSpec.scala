@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.internal
+package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
-import com.intel.analytics.bigdl.nn.JoinTable
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.nn.JoinTable
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
