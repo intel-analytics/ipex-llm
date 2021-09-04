@@ -399,17 +399,17 @@ trait Predictable[T]  {
    * @param zeroBasedLabel Boolean. Whether result labels start from 0.
    *                       Default is true. If false, result labels start from 1.
    */
-  def predictClasses(
-                      x: RDD[Sample[T]],
-                      batchPerThread: Int = 4,
-                      zeroBasedLabel: Boolean = true): RDD[Int] = {
-    KerasUtils.toZeroBasedLabel(zeroBasedLabel,
-      Predictor.predictClass(x,
-        batchSize = -1,
-        model = module,
-        batchPerPartition = batchPerThread,
-        featurePaddingParam = None))
-  }
+//  def predictClasses(
+//                      x: RDD[Sample[T]],
+//                      batchPerThread: Int = 4,
+//                      zeroBasedLabel: Boolean = true): RDD[Int] = {
+//    KerasUtils.toZeroBasedLabel(zeroBasedLabel,
+//      Predictor.predictClass(x,
+//        batchSize = -1,
+//        model = module,
+//        batchPerPartition = batchPerThread,
+//        featurePaddingParam = None))
+//  }
 
 }
 
