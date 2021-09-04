@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.nn.{Square => BSquare}
+import com.intel.analytics.bigdl.dllib.nn.{Square => BSquare}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{Square => ZSquare}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 

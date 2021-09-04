@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, T}
 import com.intel.analytics.zoo.pipeline.api.keras.models._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest

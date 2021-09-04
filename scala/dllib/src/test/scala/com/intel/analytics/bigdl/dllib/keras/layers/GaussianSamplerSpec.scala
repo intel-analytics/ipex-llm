@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.nn.{Module, GaussianSampler => BGaussianSampler}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.dllib.nn.{Module, GaussianSampler => BGaussianSampler}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{GaussianSampler => ZGaussianSampler}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, Table}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape, T, Table}
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
