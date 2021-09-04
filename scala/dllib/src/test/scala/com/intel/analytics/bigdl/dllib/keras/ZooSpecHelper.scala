@@ -19,9 +19,9 @@ import java.io.{File => JFile}
 import java.nio.file.attribute.PosixFilePermissions
 import java.nio.file.Files
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, Table}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Table}
 import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.models.common.ZooModel
 import org.apache.commons.io.FileUtils

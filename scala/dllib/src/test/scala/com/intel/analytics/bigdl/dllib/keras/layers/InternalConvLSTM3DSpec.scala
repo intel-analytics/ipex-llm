@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.nn.Sequential
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.nn.Sequential
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalRecurrent
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
