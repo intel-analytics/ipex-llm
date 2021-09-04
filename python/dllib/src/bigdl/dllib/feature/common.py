@@ -15,7 +15,7 @@
 #
 
 from bigdl.dllib.utils.common import *
-from bigdl.dllib.utils.utils import callZooFunc
+from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.feature.dataset.dataset import DataSet
 from pyspark.serializers import CloudPickleSerializer
 import sys
