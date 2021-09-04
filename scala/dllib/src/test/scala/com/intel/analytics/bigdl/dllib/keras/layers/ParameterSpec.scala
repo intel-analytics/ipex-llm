@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.Sequential
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Shape, T, Table}
+import com.intel.analytics.bigdl.dllib.nn.{MSECriterion, Module}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.keras.Sequential
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{Shape, T, Table}
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd.{AutoGrad, Lambda, Parameter, Variable}
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
