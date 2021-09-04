@@ -18,7 +18,7 @@ import sys
 import six
 from bigdl.dllib.feature.common import Preprocessing
 from bigdl.dllib.feature.text import TextFeature
-from bigdl.dllib.utils.utils import callZooFunc
+from bigdl.dllib.utils.file_utils import callZooFunc
 
 if sys.version >= '3':
     long = int
