@@ -17,13 +17,13 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.{Narrow => BNarrow}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Narrow => ZNarrow}
+import com.intel.analytics.bigdl.dllib.keras.layers.{Narrow => ZNarrow}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.zoo.pipeline.api.autograd.Parameter
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
-import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
+import com.intel.analytics.bigdl.dllib.autograd.Parameter
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}
 
 
 class NarrowSpec extends ZooSpecHelper {

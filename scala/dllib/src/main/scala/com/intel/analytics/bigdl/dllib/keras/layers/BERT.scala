@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.{RandomNormal, StaticGraph}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.keras.{KerasLayer, KerasLayerSerializable}
+import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasLayerSerializable}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
@@ -110,7 +110,7 @@ class BERT[T: ClassTag] private (
 object BERT extends KerasLayerSerializable {
   Model
   ModuleSerializer.registerModule(
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.BERT",
+    "com.intel.analytics.bigdl.dllib.keras.layers.BERT",
     BERT)
 
   private val logger = Logger.getLogger(getClass)
