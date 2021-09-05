@@ -8,4 +8,4 @@ do
     cp "${RECIPE_DIR}/${CHANGE}.sh" "${PREFIX}/etc/conda/${CHANGE}.d/${PKG_NAME}_${CHANGE}.sh"
 done
 
-python $SRC_DIR/setup.py install --single-version-externally-managed --record=record.txt --no-deps
+pip install $SRC_DIR --no-deps
