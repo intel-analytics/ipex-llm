@@ -22,6 +22,17 @@ import cv2
 import os
 import numpy as np
 import torch
+from logging import warning
+from os.path import split, join, realpath
+
+
+local_libturbo_path = None
+_turbo_path = realpath(join(split(realpath(__file__))[0],
+                            "../../../libs/libturbojpeg.so.0.2.0"))
+if os.path.exists(_turbo_path):
+    local_libturbo_path = _turbo_path
+else:
+    warning("libturbojpeg.so.0 not found in bigdl-nano, try to load from system.")
 
 
 class ImageFolder(torchvision.datasets.ImageFolder):
@@ -65,7 +76,7 @@ class ImageFolder(torchvision.datasets.ImageFolder):
 
     def decode_img_libjpeg_turbo(self, img_str: str):
         if self.jpeg is None:
-            self.jpeg = TurboJPEG()
+            self.jpeg = TurboJPEG(lib_path=local_libturbo_path)
         bgr_array = self.jpeg.decode(img_str)
         return bgr_array
 
@@ -100,7 +111,7 @@ class SegmentationImageFolder:
         self.imgs = list(sorted(os.listdir(self.image_folder)))
         self.masks = list(sorted(os.listdir(self.mask_folder)))
         self.transforms = transforms
-        self.jpeg = TurboJPEG()
+        self.jpeg = TurboJPEG(lib_path=local_libturbo_path)
 
     def __getitem__(self, idx: int):
         img_path = os.path.join(self.image_folder, self.imgs[idx])
