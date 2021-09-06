@@ -17,11 +17,11 @@
 //package com.intel.analytics.bigdl.dllib.nnframes
 //
 //import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
-//import com.intel.analytics.bigdl.tensor.Tensor
-//import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+//import com.intel.analytics.bigdl.dllib.tensor.Tensor
+//import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 //import com.intel.analytics.bigdl.{Criterion, Module}
 //import com.intel.analytics.zoo.feature.common._
-//import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+//import com.intel.analytics.bigdl.dllib.keras.layers.utils.EngineRef
 //import com.intel.analytics.bigdl.dllib.nnframes.NNModel.NNModelWriter
 //import ml.dmlc.xgboost4j.scala.spark.{XGBoostClassificationModel, XGBoostHelper,
 //XGBoostRegressionModel, XGBoostRegressor, XGBoostClassifier}
