@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.estimator
+package com.intel.analytics.bigdl.dllib.estimator
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.{LBFGS, Loss, SGD, Trigger}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, RandomGenerator}
-import com.intel.analytics.zoo.common._
-import com.intel.analytics.zoo.feature.pmem.DISK_AND_DRAM
-import com.intel.analytics.zoo.feature.{DistributedDataSetWrapper, DistributedFeatureSet, FeatureSet}
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.models.InternalOptimizerUtil
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch, Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.optim.{LBFGS, Loss, SGD, Trigger}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, LoggerFilter, RandomGenerator}
+import com.intel.analytics.bigdl.dllib.common._
+//import com.intel.analytics.bigdl.dllib.feature.pmem.DISK_AND_DRAM
+import com.intel.analytics.bigdl.dllib.feature.{DistributedDataSetWrapper, DistributedFeatureSet, FeatureSet}
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -254,112 +254,113 @@ class DistriEstimatorSpec extends ZooSpecHelper {
     result
   }
 
-  "Estimator" should "works fine with DiskFeatureSet nslice = 2" in {
-    val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber)
-      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
-    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(2)) -> SampleToMiniBatch(batchSize = batchSize)
-    val mm = EstimatorSpecModel.mse
-    mm.parameters()._1.foreach(_.fill(0.125))
-    val sgd = new SGD[Double](20)
-    val estimator = Estimator(mm, sgd)
-    val mse = MSECriterion[Double]()
-    val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
-    estimator.train(dset, mse, endTrigger = Some(MaxEpoch(2)))
+  // uncomment when migrating DISK_AND_DRAM
+//  "Estimator" should "works fine with DiskFeatureSet nslice = 2" in {
+//    val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber)
+//      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
+//    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(2)) -> SampleToMiniBatch(batchSize = batchSize)
+//    val mm = EstimatorSpecModel.mse
+//    mm.parameters()._1.foreach(_.fill(0.125))
+//    val sgd = new SGD[Double](20)
+//    val estimator = Estimator(mm, sgd)
+//    val mse = MSECriterion[Double]()
+//    val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
+//    estimator.train(dset, mse, endTrigger = Some(MaxEpoch(2)))
+//
+//    state[Int]("epoch") should be (3)
+//  }
 
-    state[Int]("epoch") should be (3)
-  }
+//  "Estimator" should "works fine with DiskFeatureSet nslice = 5" in {
+//    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
+//      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
+//   val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(5)) -> SampleToMiniBatch(batchSize = batchSize)
+//    val mm = EstimatorSpecModel.mse
+//    mm.parameters()._1.foreach(_.fill(0.125))
+//    val sgd = new SGD[Double](20)
+//    val mse = MSECriterion[Double]()
+//    val estimator = Estimator(mm, sgd)
+//    val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
+//    estimator.train(dset, mse, endTrigger = Some(MaxEpoch(2)))
+//
+//    state[Int]("epoch") should be (3)
+//  }
 
-  "Estimator" should "works fine with DiskFeatureSet nslice = 5" in {
-    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
-      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
-    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(5)) -> SampleToMiniBatch(batchSize = batchSize)
-    val mm = EstimatorSpecModel.mse
-    mm.parameters()._1.foreach(_.fill(0.125))
-    val sgd = new SGD[Double](20)
-    val mse = MSECriterion[Double]()
-    val estimator = Estimator(mm, sgd)
-    val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
-    estimator.train(dset, mse, endTrigger = Some(MaxEpoch(2)))
+//  "Estimator" should "stop with MaxIteration" in {
+//    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
+//      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
+//    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(5)) -> SampleToMiniBatch(batchSize = batchSize)
+//    val mm = EstimatorSpecModel.mse
+//    mm.parameters()._1.foreach(_.fill(0.125))
+//    val sgd = new SGD[Double](20)
+//    val mse = MSECriterion[Double]()
+//    val estimator = Estimator(mm, sgd)
+//   val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
+//   estimator.train(dset, mse, endTrigger = Some(MaxIteration(200)))
 
-    state[Int]("epoch") should be (3)
-  }
+//    state[Int]("neval") should be (201)
+//    state[Int]("epoch") should be (2)
+//  }
 
-  "Estimator" should "stop with MaxIteration" in {
-    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
-      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
-    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(5)) -> SampleToMiniBatch(batchSize = batchSize)
-    val mm = EstimatorSpecModel.mse
-    mm.parameters()._1.foreach(_.fill(0.125))
-    val sgd = new SGD[Double](20)
-    val mse = MSECriterion[Double]()
-    val estimator = Estimator(mm, sgd)
-    val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
-    estimator.train(dset, mse, endTrigger = Some(MaxIteration(200)))
+//  "Estimator" should "stop with Or Trigger" in {
+//    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
+//      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
+//    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(5)) -> SampleToMiniBatch(batchSize = batchSize)
+//    val mm = EstimatorSpecModel.mse
+//    mm.parameters()._1.foreach(_.fill(0.125))
+//    val sgd = new SGD[Double](20)
+//    val mse = MSECriterion[Double]()
+//    val estimator = Estimator(mm, sgd)
+//    val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
+//    estimator.train(dset, mse,
+//      endTrigger = Some(Or(MaxIteration(200), MinLoss(0.05f))))
+//
+//    state[Int]("neval") should be <= 201
+//    state[Int]("epoch") should be <= 2
+//  }
 
-    state[Int]("neval") should be (201)
-    state[Int]("epoch") should be (2)
-  }
+//  "Estimator" should "works with And Trigger" in {
+//    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
+//      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
+//    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(5)) -> SampleToMiniBatch(batchSize = batchSize)
+//    val mm = EstimatorSpecModel.mse
+//    mm.parameters()._1.foreach(_.fill(0.125))
+//    val sgd = new SGD[Double](20)
+//    val mse = MSECriterion[Double]()
+//    val estimator = Estimator(mm, sgd)
+//    estimator.train(dset, mse,
+//      endTrigger = Some(MaxIteration(200)),
+//      checkPointTrigger = Some(Or(SeveralIteration(80), EveryEpoch())),
+//      validationSet = dset,
+ //     validationMethod = Array(new Loss(mse)))
 
-  "Estimator" should "stop with Or Trigger" in {
-    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
-      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
-    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(5)) -> SampleToMiniBatch(batchSize = batchSize)
-    val mm = EstimatorSpecModel.mse
-    mm.parameters()._1.foreach(_.fill(0.125))
-    val sgd = new SGD[Double](20)
-    val mse = MSECriterion[Double]()
-    val estimator = Estimator(mm, sgd)
-    val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
-    estimator.train(dset, mse,
-      endTrigger = Some(Or(MaxIteration(200), MinLoss(0.05f))))
+//   val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
+//    state[Int]("neval") should be <= 201
+//    state[Int]("epoch") should be <= 2
+//  }
 
-    state[Int]("neval") should be <= 201
-    state[Int]("epoch") should be <= 2
-  }
+//  "Estimator" should "throw exception when cache percentage == 0" in {
+//    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
+//      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
+//    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(0)) -> SampleToMiniBatch(batchSize = batchSize)
+//    val mm = EstimatorSpecModel.mse
+//    mm.parameters()._1.foreach(_.fill(0.125))
+//    val sgd = new SGD[Double](20)
+//    val mse = MSECriterion[Double]()
+//    val estimator = Estimator(mm, sgd)
+//    intercept[Exception] {
+//      estimator.train(dset, mse, endTrigger = Some(MaxIteration(200)))
+//    }
+//  }
 
-  "Estimator" should "works with And Trigger" in {
-    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
-      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
-    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(5)) -> SampleToMiniBatch(batchSize = batchSize)
-    val mm = EstimatorSpecModel.mse
-    mm.parameters()._1.foreach(_.fill(0.125))
-    val sgd = new SGD[Double](20)
-    val mse = MSECriterion[Double]()
-    val estimator = Estimator(mm, sgd)
-    estimator.train(dset, mse,
-      endTrigger = Some(MaxIteration(200)),
-      checkPointTrigger = Some(Or(SeveralIteration(80), EveryEpoch())),
-      validationSet = dset,
-      validationMethod = Array(new Loss(mse)))
-
-    val state = InternalOptimizerUtil.getStateFromOptiMethod(sgd)
-    state[Int]("neval") should be <= 201
-    state[Int]("epoch") should be <= 2
-  }
-
-  "Estimator" should "throw exception when cache percentage == 0" in {
-    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
-      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
-    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(0)) -> SampleToMiniBatch(batchSize = batchSize)
-    val mm = EstimatorSpecModel.mse
-    mm.parameters()._1.foreach(_.fill(0.125))
-    val sgd = new SGD[Double](20)
-    val mse = MSECriterion[Double]()
-    val estimator = Estimator(mm, sgd)
-    intercept[Exception] {
-      estimator.train(dset, mse, endTrigger = Some(MaxIteration(200)))
-    }
-  }
-
-  "Estimator" should "evaluate should works fine" in {
-    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
-      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
-    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(0)) -> SampleToMiniBatch(batchSize = batchSize)
-    val mm = EstimatorSpecModel.mse
-    mm.parameters()._1.foreach(_.fill(0.125))
-    val sgd = new SGD[Double](20)
-    val mse = MSECriterion[Double]()
-    val estimator = Estimator(mm, sgd)
-    estimator.evaluate(dset, Array(new Loss[Double](mse)))
-  }
+//  "Estimator" should "evaluate should works fine" in {
+//    val rdd = sc.parallelize(1 to (1024 * nodeNumber), nodeNumber)
+//      .map(_ => Sample[Double](Tensor[Double](4).rand(), Tensor[Double](1).rand()))
+//    val dset = FeatureSet.rdd(rdd, DISK_AND_DRAM(0)) -> SampleToMiniBatch(batchSize = batchSize)
+//    val mm = EstimatorSpecModel.mse
+//    mm.parameters()._1.foreach(_.fill(0.125))
+//    val sgd = new SGD[Double](20)
+//    val mse = MSECriterion[Double]()
+//    val estimator = Estimator(mm, sgd)
+//    estimator.evaluate(dset, Array(new Loss[Double](mse)))
+//  }
 }
