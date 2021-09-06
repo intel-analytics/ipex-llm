@@ -69,9 +69,9 @@ class JavaCreator(SingletonMixin):
         "com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDLOnnx",
         "com.intel.analytics.bigdl.dllib.common.PythonZoo",
         "com.intel.analytics.bigdl.dllib.nnframes.python.PythonNNFrames",
-        # "com.intel.analytics.bigdl.dllib.feature.python.ImageFeature"
-        # "com.intel.analytics.bigdl.dllib.feature.python.TextFeature",
-        # "com.intel.analytics.bigdl.dllib.feature.python.PythonFeatureSet",
+        "com.intel.analytics.bigdl.dllib.feature.python.PythonImageFeature",
+        "com.intel.analytics.bigdl.dllib.feature.python.PythonTextFeature",
+        "com.intel.analytics.bigdl.dllib.feature.python.PythonFeatureSet",
     ]
 
     @classmethod

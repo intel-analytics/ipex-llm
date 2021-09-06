@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * Copyright 2018 Analytics Zoo Authors.
  *
@@ -33,8 +34,7 @@ import com.intel.analytics.bigdl.dllib.feature.common.{Preprocessing, _}
 // import com.intel.analytics.zoo.feature.pmem.{DRAM, MemoryType}
 // import com.intel.analytics.zoo.pipeline.api.Net
 // import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
-// import com.intel.analytics.zoo.pipeline.api.keras.models.InternalDistriOptimizer
-import com.intel.analytics.bigdl.dllib.nnframes.InternalDistriOptimizer
+import com.intel.analytics.bigdl.dllib.keras.models.InternalDistriOptimizer
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
@@ -152,6 +152,161 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
    * release the current cache, and load another 1/n into memory.
    * By default, DRAM is used.
    */
+=======
+///*
+// * Copyright 2018 Analytics Zoo Authors.
+// *
+// * Licensed under the Apache License, Version 2.0 (the "License");
+// * you may not use this file except in compliance with the License.
+// * You may obtain a copy of the License at
+// *
+// *     http://www.apache.org/licenses/LICENSE-2.0
+// *
+// * Unless required by applicable law or agreed to in writing, software
+// * distributed under the License is distributed on an "AS IS" BASIS,
+// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// * See the License for the specific language governing permissions and
+// * limitations under the License.
+// */
+//
+//package com.intel.analytics.bigdl.dllib.nnframes
+//
+//import java.util.{List => JList, Map => JMap}
+//
+//import com.intel.analytics.bigdl.dataset.{SampleToMiniBatch, _}
+//import com.intel.analytics.bigdl.models.utils.ModelBroadcast
+//import com.intel.analytics.bigdl.dllib.optim._
+//import com.intel.analytics.bigdl.python.api.EvaluatedResult
+//import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+//import com.intel.analytics.bigdl.dllib.tensor.{Tensor, DoubleType => TensorDouble, FloatType => TensorFloat}
+//import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
+//import com.intel.analytics.bigdl.dllib.utils.{File, T}
+//import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+//import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
+//import com.intel.analytics.zoo.feature.FeatureSet
+//import com.intel.analytics.zoo.feature.common.{Preprocessing, _}
+//import com.intel.analytics.zoo.feature.pmem.{DRAM, MemoryType}
+//import com.intel.analytics.zoo.pipeline.api.Net
+//import com.intel.analytics.bigdl.dllib.keras.layers.utils.EngineRef
+//import com.intel.analytics.bigdl.dllib.keras.models.InternalDistriOptimizer
+//import org.apache.hadoop.fs.Path
+//import org.apache.log4j.Logger
+//import org.apache.spark.SparkContext
+//import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
+//import org.apache.spark.ml.param._
+//import org.apache.spark.ml.util._
+//import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper, VectorCompatibility}
+//import org.apache.spark.sql.types._
+//import org.apache.spark.sql.{DataFrame, Row}
+//import org.json4s.JsonDSL._
+//import org.json4s.{DefaultFormats, JObject}
+//
+//import scala.reflect.ClassTag
+//import scala.collection.JavaConverters._
+//
+//private[nnframes] trait HasBatchSize extends Params {
+//
+//  /**
+//   * Global batch size across the cluster.
+//   */
+//  final val batchSize: IntParam = new IntParam(this, "batchSize", "batchSize")
+//
+//  def getBatchSize: Int = $(batchSize)
+//}
+//
+//private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Params {
+//
+//  /**
+//   * When to stop the training, passed in a [[Trigger]]. E.g. Trigger.maxIterations
+//   */
+//  final val endWhen = new Param[Trigger](this, "endWhen", "Trigger to stop the training")
+//
+//  def getEndWhen: Trigger = $(endWhen)
+//
+//  /**
+//   * learning rate for the optimizer in the NNEstimator.
+//   * Default: 0.001
+//   * :: deprecated, please set the learning rate with optimMethod directly.
+//   */
+//  @deprecated("Please set the learning rate with optimMethod directly", "0.4.0")
+//  final val learningRate = new DoubleParam(
+//    this, "learningRate", "learningRate", ParamValidators.gt(0))
+//
+//  def getLearningRate: Double = $(learningRate)
+//
+//  /**
+//   * learning rate decay for each iteration.
+//   * Default: 0
+//   * :: deprecated, please set the learning rate decay with optimMethod directly.
+//   */
+//  @deprecated("Please set the learning rate decay with optimMethod directly", "0.4.0")
+//  final val learningRateDecay = new DoubleParam(this, "learningRateDecay", "learningRateDecay")
+//
+//  def getLearningRateDecay: Double = $(learningRateDecay)
+//
+//  /**
+//   * Number of max Epoch for the training, an epoch refers to a traverse over the training data
+//   * Default: 50
+//   */
+//  final val maxEpoch = new IntParam(this, "maxEpoch", "number of max Epoch", ParamValidators.gt(0))
+//
+//  def getMaxEpoch: Int = $(maxEpoch)
+//
+//  /**
+//   * optimization method to be used. BigDL supports many optimization methods like Adam,
+//   * SGD and LBFGS. Refer to package com.intel.analytics.bigdl.optim for all the options.
+//   * Default: SGD
+//   */
+//  final val optimMethod = new Param[OptimMethod[T]](this, "optimMethod", "optimMethod")
+//
+//  def getOptimMethod: OptimMethod[T] = $(optimMethod)
+//
+//  /**
+//   * Constant gradient clipping thresholds.
+//   */
+//  final val constantGradientClippingParams = new Param[(Float, Float)](this,
+//    "threshold for constant clipping", "constantGradientClippingParams")
+//
+//  /**
+//   * L2 norm gradient clipping threshold.
+//   */
+//  final val l2GradientClippingParams = new FloatParam(this,
+//    "threshold for l2 norm gradient clipping", "l2GradientClippingParams")
+//
+//  /**
+//   * whether to cache the Samples after preprocessing.
+//   * Default: true
+//   */
+//  final val cachingSample = new BooleanParam(
+//    this, "cachingSample", "whether to cache the Samples after preprocessing")
+//
+//  def isCachingSample: Boolean = $(cachingSample)
+//
+//  /**
+//   * Set a check point saved at `path` triggered by `trigger`
+//   * Default: not enabled
+//   */
+//  final val checkpointPath = new Param[String](this, "checkpointPath", "path for check points")
+//  final val checkpointTrigger = new Param[Trigger](this, "checkpointTrigger",
+//    "Trigger for check points")
+//  final val checkpointOverwrite = new BooleanParam(this, "checkpointOverwrite",
+//    "checkpointOverwrite")
+//
+//  /**
+//   * Get check point path.
+//   */
+//  def getCheckpointPath: String = $(checkpointPath)
+//
+//  /**
+//   * How to cache the training data, options are defined in com.intel.analytics.zoo.feature.pmem.
+//   * If it's DRAM, will cache dataset into dynamic random-access memory
+//   * If it's PMEM, will cache dataset into Intel Optane DC Persistent Memory
+//   * If it's DISK_AND_DRAM(numSlice: Int), will cache dataset into disk, and only hold 1/n
+//   * of the data into memory during the training. After going through the 1/n, we will
+//   * release the current cache, and load another 1/n into memory.
+//   * By default, DRAM is used.
+//   */
+>>>>>>> upstream_bigdl-2.0
 //  final val dataCacheLevel = new Param[MemoryType](
 //    this, "dataCacheLevel", "cache the data in memory, disk, ")
 //

@@ -62,7 +62,7 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   import PythonFeatureSet.loadOpenCv
   def createFeatureSetFromImageFrame(
         imageFrame: ImageFrame,
-//        memoryType: String,
+        memoryType: String,
         sequentialOrder: Boolean, shuffle: Boolean): FeatureSet[ImageFeature] = {
     require(imageFrame.isDistributed(), "Only support distributed ImageFrame")
     loadOpenCv(imageFrame.toDistributed().rdd.sparkContext)
@@ -74,7 +74,7 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
 
   def createFeatureSetFromRDD(
         data: JavaRDD[Any],
-//        memoryType: String,
+        memoryType: String,
         sequentialOrder: Boolean,
         shuffle: Boolean): FeatureSet[Any] = {
 //    FeatureSet.rdd(data, MemoryType.fromString(memoryType),
@@ -84,7 +84,7 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def createSampleFeatureSetFromRDD(data: JavaRDD[Sample],
-//                                    memoryType: String,
+                                    memoryType: String,
                                     sequentialOrder: Boolean,
                                     shuffle: Boolean)
   : FeatureSet[JSample[T]] = {
