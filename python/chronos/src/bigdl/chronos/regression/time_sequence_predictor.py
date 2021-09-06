@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zoo.automl.regression.base_predictor import BasePredictor
+from zoo.chronos.regression.base_predictor import BasePredictor
 
 
 class TimeSequencePredictor(BasePredictor):

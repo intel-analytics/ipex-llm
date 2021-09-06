@@ -21,7 +21,6 @@ import numpy as np
 import pandas as pd
 import tempfile
 from unittest import TestCase
-from zoo.automl.recipe.base import Recipe
 from zoo.orca.automl import hp
 
 
