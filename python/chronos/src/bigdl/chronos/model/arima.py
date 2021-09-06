@@ -13,15 +13,13 @@
 # limitations under the License.
 #
 
-import json
-import pandas as pd
 import os
 import pickle
 from pmdarima.arima import ARIMA
 from pmdarima.arima import ndiffs
 from pmdarima.arima import nsdiffs
 
-from zoo.automl.common.metrics import Evaluator
+from zoo.automl.metrics import Evaluator
 from zoo.automl.model.abstract import BaseModel, ModelBuilder
 
 

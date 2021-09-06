@@ -17,7 +17,7 @@
 import os
 
 from zoo.chronos.data import TSDataset
-from zoo.automl.common.metrics import Evaluator
+from zoo.automl.metrics import Evaluator
 
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
 DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"

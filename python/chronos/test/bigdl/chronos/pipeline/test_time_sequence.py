@@ -19,11 +19,11 @@ import tempfile
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.pipeline.time_sequence import TimeSequencePipeline, load_ts_pipeline
+from zoo.chronos.pipeline.time_sequence import load_ts_pipeline
 from zoo.chronos.regression.time_sequence_predictor import TimeSequencePredictor
 from zoo.chronos.feature.time_sequence import TimeSequenceFeatureTransformer
 from zoo.chronos.model.time_sequence import TimeSequenceModel
-from zoo.automl.common.metrics import Evaluator
+from zoo.automl.metrics import Evaluator
 from zoo.chronos.config.recipe import *
 
 import numpy as np
