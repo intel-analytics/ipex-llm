@@ -134,7 +134,7 @@ if __name__ == "__main__":
     target_value = dict({"y": target_data})
 
     # evaluate with prediction results
-    from zoo.automl.common.metrics import Evaluator
+    from zoo.automl.metrics import Evaluator
     evaluate_mse = Evaluator.evaluate("mse", target_data, yhat)
 
     # You can also evaluate directly without prediction results.
