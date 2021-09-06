@@ -92,6 +92,9 @@ def parse_find_index_page(url):
 def setup_package():
 
     py_version = sys.version_info
+
+    assert py_version.major == 3, "Nano only supports python3.x"
+
     ipex_version = "1.8.0"
     ipex_version_major = "1.8"
     ipex_whl_name = f"torch_ipex-{ipex_version}-cp{py_version.major}{py_version.minor}" \
@@ -102,11 +105,13 @@ def setup_package():
     torch_links = parse_find_index_page(
         "https://download.pytorch.org/whl/torch_stable.html")
     torchvision_version = "0.9.0"
-    torchvision_whl_name = f"cpu/torchvision-{torchvision_version}%2Bcpu-cp{py_version.major}{py_version.minor}" \
-                           f"-cp{py_version.major}{py_version.minor}m-linux_x86_64.whl"
     pytorch_version = "1.8.0"
+    pytorch_url_suffix = "m-linux_x86_64.whl" if py_version.minor < 8 else "-linux_x86_64.whl"
+
+    torchvision_whl_name = f"cpu/torchvision-{torchvision_version}%2Bcpu-cp{py_version.major}{py_version.minor}" \
+                           f"-cp{py_version.major}{py_version.minor}" + pytorch_url_suffix
     pytorch_whl_name = f"cpu/torch-{pytorch_version}%2Bcpu-cp{py_version.major}{py_version.minor}" \
-                       f"-cp{py_version.major}{py_version.minor}m-linux_x86_64.whl"
+                       f"-cp{py_version.major}{py_version.minor}" + pytorch_url_suffix
 
     # both pytorch_lightning and ipex depends on pytorch
     # listing it here to make sure installing the correct version
