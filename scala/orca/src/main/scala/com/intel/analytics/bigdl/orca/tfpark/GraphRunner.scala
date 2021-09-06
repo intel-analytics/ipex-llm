@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.tfpark
+package com.intel.analytics.bigdl.orca.tfpark
 
 import java.nio._
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.core.TFNetNative
-import com.intel.analytics.zoo.pipeline.api.net.TFNet
+//import com.intel.analytics.zoo.pipeline.api.net.TFNet
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
 
 import scala.collection.JavaConverters._
@@ -40,7 +40,7 @@ import scala.collection.mutable.ArrayBuffer
  * @param graphDef serialized representation of a graph
  */
 class GraphRunner(
-            private[zoo] val graphDef: Array[Byte],
+            private[bigdl] val graphDef: Array[Byte],
             private val restoreOp: String,
             private val restorePathPlaceholder: String,
             private val saveOp: String,
@@ -58,7 +58,7 @@ class GraphRunner(
   val output = ArrayBuffer[Tensor[Float]]()
 
   @transient
-  private[zoo] lazy val sess = {
+  private[bigdl] lazy val sess = {
     assert(TFNetNative.isLoaded)
     val graph = new Graph()
     graph.importGraphDef(graphDef)

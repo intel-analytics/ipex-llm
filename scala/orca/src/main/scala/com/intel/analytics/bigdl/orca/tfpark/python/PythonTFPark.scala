@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.tfpark.python
+package com.intel.analytics.bigdl.orca.tfpark.python
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.optim.Tensor
+import com.intel.analytics.bigdl.dllib.optim.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.common.{PythonZoo, RDDWrapper}
-import com.intel.analytics.zoo.feature.FeatureSet
-import com.intel.analytics.zoo.tfpark._
+import com.intel.analytics.bigdl.dllib.feature.FeatureSet
+import com.intel.analytics.bigdl.orca.tfpark._
 import org.apache.spark.api.java.JavaRDD
 
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
 import java.util.{List => JList}
 
-import com.intel.analytics.bigdl.dataset.MiniBatch
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.SparkContext
 import org.apache.spark.storage.StorageLevel
 import org.tensorflow.DataType
@@ -234,7 +234,7 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
       shuffle = shuffle).transform(new StringToMiniBatch(batchSize))
   }
 
-  import com.intel.analytics.zoo.tfpark
+  import com.intel.analytics.bigdl.orca.tfpark
   def createTFParkSampleToMiniBatch(batchSize: Int,
                                     dropRemainder: Boolean): tfpark.SampleToMiniBatch[T] = {
     new tfpark.SampleToMiniBatch[T](totalBatch = batchSize,
