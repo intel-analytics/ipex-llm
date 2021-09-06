@@ -14,11 +14,8 @@
 # limitations under the License.
 #
 
-from zoo.automl.recipe.base import Recipe
-from zoo.automl.search.base import *
-import numpy as np
+from zoo.chronos.config.base import Recipe
 from zoo.orca.automl import hp
-import json
 
 
 class SmokeRecipe(Recipe):
@@ -553,7 +550,6 @@ class RandomRecipe(Recipe):
             look_back)
 
     def search_space(self):
-        import random
         return {
             "model": hp.choice(["LSTM", "Seq2seq"]),
             # --------- Vanilla LSTM model parameters

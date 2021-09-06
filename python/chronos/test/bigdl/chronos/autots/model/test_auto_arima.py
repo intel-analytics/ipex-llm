@@ -17,9 +17,7 @@
 from zoo.chronos.autots.model.auto_arima import AutoARIMA
 
 import numpy as np
-import pandas as pd
 from unittest import TestCase
-from zoo.automl.recipe.base import Recipe
 from zoo.orca.automl import hp
 
 
