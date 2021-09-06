@@ -15,9 +15,9 @@
 #
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.automl.common.util import *
 from zoo.chronos.preprocessing.utils import train_val_test_split
 import pandas as pd
+import numpy as np
 
 
 class TestUtil(ZooTestCase):

@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 import pickle
+import numpy as np
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, LSTM, Dense
 import tensorflow.keras as keras
 
 from zoo.automl.model.abstract import BaseModel
-from zoo.automl.common.util import *
 from zoo.automl.metrics import Evaluator
 
 
@@ -254,8 +254,8 @@ class LSTMSeq2Seq(BaseModel):
             metric_name = self.metric
         else:
             raise ValueError(f"Input metric in fit_eval should be one of the metrics that are used "
-                             f"to compile the model. Got metric value of {metric} and the metrics "
-                             f"in compile are {compiled_metric_names}")
+                             f"to compile the model. Got metric value of {self.metric} and "
+                             f"the metrics in compile are {compiled_metric_names}")
         if validation_data is None:
             result = hist.history.get(metric_name)[-1]
         else:
