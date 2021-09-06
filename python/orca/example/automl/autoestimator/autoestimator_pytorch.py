@@ -13,20 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-from unittest import TestCase
 
 import numpy as np
-import pytest
 import argparse
 
 import torch
 import torch.nn as nn
 from zoo.orca.automl.auto_estimator import AutoEstimator
-from zoo.automl.recipe.base import Recipe
 from zoo.orca.automl.pytorch_utils import LR_NAME
 from zoo.orca import init_orca_context, stop_orca_context
-from abc import abstractmethod
 
 
 class Net(nn.Module):
@@ -107,7 +102,7 @@ def train_example(args):
     best_model = auto_est.get_best_model()
 
     y_hat = best_model(torch.from_numpy(val_data[0]).float()).detach().numpy()
-    from zoo.automl.common.metrics import Evaluator
+    from zoo.automl.metrics import Evaluator
     accuracy = Evaluator.evaluate(metric="accuracy", y_true=val_data[1], y_pred=y_hat)
     print("Evaluate: accuracy is", accuracy)
 

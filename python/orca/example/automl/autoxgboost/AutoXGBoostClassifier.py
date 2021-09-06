@@ -153,6 +153,6 @@ if __name__ == '__main__':
     best_model = auto_xgb_clf.get_best_model()
 
     y_hat = best_model.predict(X_val)
-    from zoo.automl.common.metrics import Evaluator
+    from zoo.automl.metrics import Evaluator
     accuracy = Evaluator.evaluate(metric="accuracy", y_true=y_val, y_pred=y_hat)
     print("Evaluate: accuracy is", accuracy)
