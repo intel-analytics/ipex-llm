@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.estimator
+package com.intel.analytics.bigdl.dllib.estimator
 
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.dataset.MiniBatch
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{OptimizerV1, OptimizerV2}
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.feature.{DiskFeatureSet, DistributedFeatureSet, FeatureSet}
-import com.intel.analytics.zoo.pipeline.api.keras.models.{InternalDistriOptimizer, InternalDistriOptimizerV2}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.dllib.feature.{DiskFeatureSet, DistributedFeatureSet, FeatureSet}
+import com.intel.analytics.bigdl.dllib.keras.models.{InternalDistriOptimizer, InternalDistriOptimizerV2}
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.EngineRef
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
@@ -65,7 +65,7 @@ private[estimator] case class ConstantClipping(min: Double, max: Double) extends
  * @param modelDir model checkpoint directory, and related summary directory.
  * @tparam T tensor numeric type
  */
-class Estimator[T: ClassTag] private[zoo](
+class Estimator[T: ClassTag] private[bigdl](
       model: Module[T],
       optimMethods: Map[String, OptimMethod[T]] = Map(),
       modelDir: Option[String] = None)(implicit ev: TensorNumeric[T]) extends AbstractEstimator[T] {
