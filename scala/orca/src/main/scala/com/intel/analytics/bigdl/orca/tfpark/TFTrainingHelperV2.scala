@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.tfpark
+package com.intel.analytics.bigdl.orca.tfpark
 
 import com.intel.analytics.zoo.common.Utils
 import org.tensorflow.DataType

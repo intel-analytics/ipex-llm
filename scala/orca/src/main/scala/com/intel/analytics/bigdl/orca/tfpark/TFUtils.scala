@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.tfpark
+package com.intel.analytics.bigdl.orca.tfpark
 
 import java.io.{File, FileInputStream, InputStream}
 import java.nio._
 
-import com.intel.analytics.bigdl.dataset.Sample
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.zoo.feature.common.Preprocessing
-import com.intel.analytics.zoo.feature.image.ImageProcessing
-import com.intel.analytics.zoo.pipeline.api.keras.{metrics => kmetrics}
-import com.intel.analytics.zoo.pipeline.api.keras.metrics.{Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy}
+import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.optim.Tensor
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.feature.common.Preprocessing
+import com.intel.analytics.bigdl.dllib.feature.image.ImageProcessing
+import bigdl.dllib.zookeras.{metrics => kmetrics}
+import bigdl.dllib.zookeras.metrics.{Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy}
 import org.tensorflow.framework.GraphDef
 import org.tensorflow.{DataType, Tensor => TTensor}
 
@@ -39,7 +39,7 @@ object TFUtils {
 
   val defaultSessionConfig = SessionConfig()
 
-  private[zoo] def getTrainMeta(trainMetaPath: Path) = {
+  private[bigdl] def getTrainMeta(trainMetaPath: Path) = {
     val jsonStr = Source.fromFile(trainMetaPath.jfile).getLines().mkString
     import org.json4s._
     import org.json4s.jackson.JsonMethods._
@@ -48,7 +48,7 @@ object TFUtils {
     parse(jsonStr).camelizeKeys.extract[TrainMeta]
   }
 
-  private[zoo] def parseGraph(graphProtoTxt: String): GraphDef = {
+  private[bigdl] def parseGraph(graphProtoTxt: String): GraphDef = {
     var fr: File = null
     var in: InputStream = null
     try {
@@ -90,7 +90,7 @@ object TFUtils {
     offsets.map(_.toInt)
   }
 
-  private[zoo] def tf2bigdl(t: TTensor[_], output: Tensor[_]) = {
+  private[bigdl] def tf2bigdl(t: TTensor[_], output: Tensor[_]) = {
     val shape = t.shape().map(_.toInt)
     output.resize(shape)
     val dataType = t.dataType()
@@ -162,7 +162,7 @@ object TFUtils {
     }
   }
 
-  private[zoo] def byte2float(src: Array[Byte], dest: Array[Float], offset: Int): Unit = {
+  private[bigdl] def byte2float(src: Array[Byte], dest: Array[Float], offset: Int): Unit = {
     val length = src.length
     var i = 0
     while (i < length) {
@@ -171,7 +171,7 @@ object TFUtils {
     }
   }
 
-  private[zoo] def int2float(src: Array[Int], dest: Array[Float], offset: Int): Unit = {
+  private[bigdl] def int2float(src: Array[Int], dest: Array[Float], offset: Int): Unit = {
     val length = src.length
     var i = 0
     while (i < length) {
@@ -180,7 +180,7 @@ object TFUtils {
     }
   }
 
-  private[zoo] def long2float(src: Array[Long], dest: Array[Float], offset: Int): Unit = {
+  private[bigdl] def long2float(src: Array[Long], dest: Array[Float], offset: Int): Unit = {
     val length = src.length
     var i = 0
     while (i < length) {
@@ -189,7 +189,7 @@ object TFUtils {
     }
   }
 
-  private[zoo] def double2float(src: Array[Double], dest: Array[Float], offset: Int): Unit = {
+  private[bigdl] def double2float(src: Array[Double], dest: Array[Float], offset: Int): Unit = {
     val length = src.length
     var i = 0
     while (i < length) {
@@ -402,7 +402,7 @@ case class TrainMeta(inputs: Array[String],
  * method accordingly.
  * The gradients of TFSubGraph will never be used and thus a dummy Tensor is put as a placeholder.
  */
-private[zoo] class TFSubGraph(
+private[bigdl] class TFSubGraph(
         weights: Array[Tensor[Float]]) extends AbstractModule[Activity, Activity, Float] {
   override def updateOutput(input: Activity): Activity = {
     input
