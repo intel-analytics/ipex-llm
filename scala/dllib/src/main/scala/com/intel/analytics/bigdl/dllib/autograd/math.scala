@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.autograd
 
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, InferShape}
-import com.intel.analytics.bigdl.dllib.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils._
@@ -303,7 +303,7 @@ object AutoGrad {
     val mm = InternalMM[T](transA = transposeX,
       transB = transposeY)
     val kmm = new KerasLayerWrapper[T](mm.asInstanceOf[AbstractModule[Activity, Activity, T]])
-
+// uncomment untill TimeDistributed ready
 //    if (xShape.length > 3 || yShape.length > 3) {
 //      TimeDistributed(kmm.asInstanceOf[KerasLayer[Activity, Tensor[T], T]]).from(xx, yy)
 //    } else kmm.from(xx, yy)
