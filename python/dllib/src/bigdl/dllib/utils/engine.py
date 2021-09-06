@@ -70,6 +70,7 @@ def __prepare_spark_env():
 def __prepare_bigdl_env():
     jar_dir = os.path.abspath(__file__ + "/../../")
     conf_paths = glob.glob(os.path.join(jar_dir, "share/conf/*.conf"))
+    extra_resources_paths = glob.glob(os.path.join(jar_dir, "share/extra-resources/*"))
     bigdl_classpath = get_bigdl_classpath()
 
     def append_path(env_var_name, jar_path):
@@ -86,6 +87,12 @@ def __prepare_bigdl_env():
     if conf_paths:
         assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
         __sys_path_insert(conf_paths[0])
+
+    if extra_resources_paths:
+        for resource in extra_resources_paths:
+            if resource not in extra_resources_paths:
+                # log.info(f"Prepending {resource} to sys.path")
+                sys.path.insert(0, resource)
 
     if os.environ.get("BIGDL_JARS", None) and is_spark_below_2_2():
         for jar in os.environ["BIGDL_JARS"].split(":"):
