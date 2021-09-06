@@ -18,7 +18,7 @@ import pytest
 
 from bigdl.dllib.utils.common import get_node_and_core_number
 from test.bigdl.test_zoo_utils import ZooTestCase
-from bigdl.dllib.utils import set_core_number
+from bigdl.dllib.utils.file_utils import set_core_number
 
 
 class TestUtil(ZooTestCase):
