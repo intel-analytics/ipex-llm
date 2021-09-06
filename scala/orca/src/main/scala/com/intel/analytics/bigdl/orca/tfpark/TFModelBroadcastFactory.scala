@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.tfpark
+package com.intel.analytics.bigdl.orca.tfpark
 
-import com.intel.analytics.bigdl.models.utils.{ModelBroadcast, ModelBroadcastFactory}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.models.utils.{ModelBroadcast, ModelBroadcastFactory}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-private[zoo] class TFModelBroadcastFactory extends ModelBroadcastFactory {
+private[bigdl] class TFModelBroadcastFactory extends ModelBroadcastFactory {
   override def create[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModelBroadcast[T] = {
     new TFModelBroadcast[T]()
   }

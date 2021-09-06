@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.tfpark
+package com.intel.analytics.bigdl.orca.tfpark
 
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.dllib.nn.Module
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.core.TFNetNative
 import org.slf4j.LoggerFactory
@@ -30,7 +30,7 @@ import scala.reflect.io.Path
 
 // variables and gradVariables need to be sorted by name if you want to use multiple
 // optimization methods for a TensorFlow model according to variable names.
-private[zoo] class TFTrainingHelper protected(val graphRunner: GraphRunner,
+private[bigdl] class TFTrainingHelper protected(val graphRunner: GraphRunner,
                                               val checkpointPath: String,
                                               val inputs: Array[String],
                                               val inputTypes: Array[Int],
@@ -57,7 +57,7 @@ private[zoo] class TFTrainingHelper protected(val graphRunner: GraphRunner,
   this.setName("TFParkTraining")
 
   System.setProperty("bigdl.ModelBroadcastFactory",
-    "com.intel.analytics.zoo.tfpark.TFModelBroadcastFactory")
+    "com.intel.analytics.bigdl.orca.tfpark.TFModelBroadcastFactory")
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
     (weights, gradWeights)

@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.tfpark
+package com.intel.analytics.bigdl.orca.tfpark
 
 import java.io._
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast, ModelInfo}
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.mkldnn.{MklDnnLayer, TensorMMap}
-import com.intel.analytics.bigdl.nn.tf.Const
-import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.mkldnn.{MklDnnLayer, TensorMMap}
+import com.intel.analytics.bigdl.dllib.nn.tf.Const
+import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.zoo.common.CheckedObjectInputStream
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.zoo.pipeline.api.net.SerializationHolder
-import com.intel.analytics.zoo.tfpark.Util._
+import com.intel.analytics.bigdl.orca.tfpark.Util._
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
@@ -144,7 +144,7 @@ class TFModelBroadcast[T: ClassTag]()
   }
 }
 
-private[zoo] class ModelInfo[T: ClassTag](var uuid: String, @transient var model: Module[T])(
+private[bigdl] class ModelInfo[T: ClassTag](var uuid: String, @transient var model: Module[T])(
   implicit ev: TensorNumeric[T]) extends SerializationHolder {
 
   override def writeInternal(out: CommonOutputStream): Unit = {
@@ -184,12 +184,12 @@ private[zoo] class ModelInfo[T: ClassTag](var uuid: String, @transient var model
   }
 }
 
-private[zoo] object ModelInfo {
+private[bigdl] object ModelInfo {
   def apply[T: ClassTag](uuid: String, model: Module[T])(
     implicit ev: TensorNumeric[T]): ModelInfo[T] = new ModelInfo[T](uuid, model)
 }
 
-private[zoo] object CachedModels {
+private[bigdl] object CachedModels {
 
   import java.util.concurrent.ConcurrentHashMap
 
@@ -242,20 +242,20 @@ private[zoo] object CachedModels {
 
 object Util {
 
-  private[zoo] def getAndClearWeightBias[T: ClassTag]
+  private[bigdl] def getAndClearWeightBias[T: ClassTag]
   (parameters: (Array[Tensor[T]], Array[Tensor[T]]))(implicit ev: TensorNumeric[T])
   : Array[Tensor[T]] = {
     clearTensor(parameters._2)
     getAndClearParameters(parameters._1)
   }
 
-  private[zoo] def getAndClearExtraParameters[T: ClassTag]
+  private[bigdl] def getAndClearExtraParameters[T: ClassTag]
   (parameters: Array[Tensor[T]])(implicit ev: TensorNumeric[T])
   : Array[Tensor[T]] = {
     getAndClearParameters(parameters)
   }
 
-  private[zoo] def getAndClearParameters[T: ClassTag]
+  private[bigdl] def getAndClearParameters[T: ClassTag]
   (parameters: Array[Tensor[T]])(implicit ev: TensorNumeric[T])
   : Array[Tensor[T]] = {
     if (parameters != null) {
@@ -307,7 +307,7 @@ object Util {
     }
   }
 
-  private[zoo] def putWeightBias[T: ClassTag](broadcastWeightBias: Array[Tensor[T]],
+  private[bigdl] def putWeightBias[T: ClassTag](broadcastWeightBias: Array[Tensor[T]],
                                               localModel: Module[T])(
                                                implicit ev: TensorNumeric[T]): Unit = {
     val localWeightBias = localModel.parameters()._1
@@ -324,7 +324,7 @@ object Util {
     }
   }
 
-  private[zoo] def putExtraParams[T: ClassTag](broadcastExtraParams: Array[Tensor[T]],
+  private[bigdl] def putExtraParams[T: ClassTag](broadcastExtraParams: Array[Tensor[T]],
                                                localModel: Module[T])(
                                                 implicit ev: TensorNumeric[T]): Unit = {
     val localExtraParams = localModel.getExtraParameter()
@@ -341,7 +341,7 @@ object Util {
 
   }
 
-  private[zoo] def initGradWeightBias[T: ClassTag](broadcastWeightBias: Array[Tensor[T]],
+  private[bigdl] def initGradWeightBias[T: ClassTag](broadcastWeightBias: Array[Tensor[T]],
                                                    localModel: Module[T])(
                                                     implicit ev: TensorNumeric[T]): Unit = {
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
@@ -363,7 +363,7 @@ object Util {
     }
   }
 
-  private[zoo] def cloneParameters[T: ClassTag]
+  private[bigdl] def cloneParameters[T: ClassTag]
   (parameters: Array[Tensor[T]])(implicit ev: TensorNumeric[T])
   : Array[Tensor[T]] = {
     if (parameters != null) {
