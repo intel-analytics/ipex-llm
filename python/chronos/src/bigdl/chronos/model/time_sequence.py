@@ -22,7 +22,7 @@ from zoo.chronos.model.MTNet_keras import MTNetKeras
 from zoo.automl.common.util import *
 from zoo.chronos.feature.time_sequence import TimeSequenceFeatureTransformer
 from zoo.chronos.preprocessing.impute import LastFillImpute, FillZeroImpute
-from zoo.automl.common.metrics import Evaluator
+from zoo.automl.metrics import Evaluator
 import pandas as pd
 
 MODEL_MAP = {"LSTM": VanillaLSTM,

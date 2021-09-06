@@ -24,7 +24,7 @@ from zoo.chronos.data.tsdataset import TSDataset
 from zoo.chronos.autots.model.auto_lstm import AutoLSTM
 from zoo.orca.automl import hp
 from zoo.orca import init_orca_context, stop_orca_context
-from zoo.automl.common.metrics import Evaluator
+from zoo.automl.metrics import Evaluator
 
 
 def get_data(args):

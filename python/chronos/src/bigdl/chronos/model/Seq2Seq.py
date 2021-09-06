@@ -21,7 +21,7 @@ import tensorflow.keras as keras
 
 from zoo.automl.model.abstract import BaseModel
 from zoo.automl.common.util import *
-from zoo.automl.common.metrics import Evaluator
+from zoo.automl.metrics import Evaluator
 
 
 class LSTMSeq2Seq(BaseModel):
