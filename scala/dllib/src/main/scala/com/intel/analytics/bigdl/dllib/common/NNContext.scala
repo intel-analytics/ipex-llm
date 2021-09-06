@@ -187,7 +187,7 @@ object NNContext {
    * Read spark conf values from spark-analytics-zoo.conf
    */
   private[bigdl] def readConf: Seq[(String, String)] = {
-    val stream: InputStream = getClass.getResourceAsStream("/spark-analytics-zoo.conf")
+    val stream: InputStream = getClass.getResourceAsStream("/spark-bigdl.conf")
     val lines = scala.io.Source.fromInputStream(stream)
       .getLines.filter(_.startsWith("spark")).toArray
 
