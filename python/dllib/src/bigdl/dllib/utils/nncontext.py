@@ -428,7 +428,7 @@ def getOrCreateSparkContext(conf=None, appName=None):
 
 
 def get_analytics_zoo_conf():
-    zoo_conf_file = "spark-analytics-zoo.conf"
+    zoo_conf_file = "spark-bigdl.conf"
     zoo_python_wrapper = "python-api.zip"
 
     for p in sys.path:
