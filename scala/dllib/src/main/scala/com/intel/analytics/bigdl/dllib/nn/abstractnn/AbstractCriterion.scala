@@ -53,9 +53,9 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
   var gradInput: A = Activity.allocate[A, T]()
   var output: T = ev.fromType[Int](0)
 
-  private[nn] var sizeAverageStatus: SizeAverageStatus = SizeAverageStatus.None
+  private[bigdl] var sizeAverageStatus: SizeAverageStatus = SizeAverageStatus.None
 
-  private[nn] def allocateAs[D <: Activity](dest: D): D = dest match {
+  private[bigdl] def allocateAs[D <: Activity](dest: D): D = dest match {
     case tensor: Tensor[T] => Tensor[T]().asInstanceOf[D]
     case table: Table => T().asInstanceOf[D]
     case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
