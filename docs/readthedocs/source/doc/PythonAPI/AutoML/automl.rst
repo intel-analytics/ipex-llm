@@ -20,11 +20,11 @@ Sampling specs to be used in search space configuration.
     :members:
     :show-inheritance:
 
-automl.common.metrics
+automl.metrics
 ----------------------------
 
 Evaluate unscaled metrics between y true value and y predicted value.
 
-.. automodule:: zoo.automl.common.metrics
+.. automodule:: zoo.automl.metrics
     :members:
     :show-inheritance:

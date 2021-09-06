@@ -121,7 +121,7 @@ yhat = model.predict(horizon,
                      future_dti=None,
                      num_workers=num_workers_for_predict)
 
-from zoo.automl.common.metrics import Evaluator
+from zoo.automl.metrics import Evaluator
 evaluate_mse = Evaluator.evaluate("mse", target_data, yhat)
 ```
 
