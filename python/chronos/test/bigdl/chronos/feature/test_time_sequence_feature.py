@@ -17,10 +17,12 @@
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.automl.common.util import *
+from zoo.chronos.feature.utils import save, restore
 from zoo.chronos.feature.time_sequence import *
 from numpy.testing import assert_array_almost_equal
 import json
+import tempfile
+import shutil
 
 from zoo.chronos.preprocessing.utils import train_val_test_split
 

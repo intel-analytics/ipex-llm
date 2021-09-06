@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.automl.common.util import save_config
+from zoo.chronos.feature.utils import save_config
 from zoo.chronos.feature.abstract import BaseFeatureTransformer
 
 import sklearn

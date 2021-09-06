@@ -16,7 +16,7 @@
 import time
 
 from zoo.automl.pipeline.base import Pipeline
-from zoo.automl.common.util import save_config
+from zoo.chronos.feature.utils import save_config
 from zoo.chronos.model.time_sequence import TimeSequenceModel
 from zoo.chronos.pipeline.parameters import DEFAULT_CONFIG_DIR, DEFAULT_PPL_DIR
 import os
