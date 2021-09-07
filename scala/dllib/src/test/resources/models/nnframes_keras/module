@@ -1,0 +1,48 @@
+¸¡ƒ:)com.intel.analytics.bigdl.dllib.nn.LinearB
+module_tagsz:FloatB"
+module_numericsz:FloatB
+	inputSizeB
+
+outputSizeB
+withBias@B
+wRegularizer	B
+bRegularizer	B
+
+initWeight
+B
+initBias
+B
+initGradWeight
+B
+initGradBias
+J0.14.0-SNAPSHOTPZ332d8263`‹‘üıx‚ (0BH´öCHñ˜Øõ‚ (0BH”ïİ€H›Äíòˆ*Input33f29b512Input33f29b51:2com.intel.analytics.bigdl.dllib.keras.layers.DenseB
+module_tagsz:FloatB"
+module_numericsz:FloatB
+	outputDimB
+initbB
+
+activationB
+wRegularizer	B
+bRegularizer	B
+bias@B
+
+inputShapeJ0.14.0-SNAPSHOTPZ7489d662`´‹Ájÿÿÿÿÿÿÿÿÿrÿÿÿÿÿÿÿÿÿx‚ (0BH´öCHñ˜Øõ‚ (0BH”ïİ€H›Äíòí‘:(com.intel.analytics.bigdl.dllib.nn.InputB
+module_tagsz:FloatB"
+module_numericsz:FloatJ0.14.0-SNAPSHOTPZ215b47eb`è¦¹:2com.intel.analytics.bigdl.dllib.keras.layers.InputB
+module_tagsz:FloatB"
+module_numericsz:FloatB
+
+inputShape
+’J0.14.0-SNAPSHOTPZ33f29b51`ê…Á±jÿÿÿÿÿÿÿÿÿrÿÿÿÿÿÿÿÿÿx:.com.intel.analytics.bigdl.dllib.nn.StaticGraphB
+module_tagsz:FloatB"
+module_numericsz:FloatBH
+Dense7489d662_edges1r-
+Dense7489d662
+Input33f29b51ÿÿÿÿÿÿÿÿÿB*
+Input33f29b51_edgesr
+Input33f29b51B%
+
+inputNamesz:Input33f29b51B&
+outputNamesz:Dense7489d662J0.14.0-SNAPSHOTPZf05d97c8`® ïÇx‚ (0BH´öCHñ˜Øõ‚ (0BH”ïİ€H›Äíòˆ:2com.intel.analytics.bigdl.dllib.keras.models.ModelB
+module_tagsz:FloatB"
+module_numericsz:FloatJ0.14.0-SNAPSHOTPZ11cfac1c`¸É®Ÿjÿÿÿÿÿÿÿÿÿrÿÿÿÿÿÿÿÿÿx‚ (0BH´öCHñ˜Øõ‚ (0BH”ïİ€H›Äíò
