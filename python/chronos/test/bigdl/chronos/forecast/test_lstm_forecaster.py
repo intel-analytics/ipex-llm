@@ -19,7 +19,7 @@ import tempfile
 import os
 import torch
 
-from zoo.chronos.model.forecast.tcn_forecaster import TCNForecaster
+from zoo.chronos.forecast.lstm_forecaster import LSTMForecaster
 from zoo.orca import init_orca_context, stop_orca_context
 from unittest import TestCase
 import pytest
@@ -30,9 +30,9 @@ def create_data():
     num_val_samples = 400
     num_test_samples = 400
     input_time_steps = 24
-    input_feature_dim = 1
-    output_time_steps = 5
-    output_feature_dim = 1
+    input_feature_dim = 2
+    output_time_steps = 1
+    output_feature_dim = 2
 
     def get_x_y(num_samples):
         x = np.random.rand(num_samples, input_time_steps, input_feature_dim).astype(np.float32)
@@ -46,7 +46,7 @@ def create_data():
     return train_data, val_data, test_data
 
 
-class TestChronosModelTCNForecaster(TestCase):
+class TestChronosModelLSTMForecaster(TestCase):
 
     def setUp(self):
         pass
@@ -56,14 +56,11 @@ class TestChronosModelTCNForecaster(TestCase):
 
     def test_tcn_forecaster_fit_eva_pred(self):
         train_data, val_data, test_data = create_data()
-        forecaster = TCNForecaster(past_seq_len=24,
-                                   future_seq_len=5,
-                                   input_feature_num=1,
-                                   output_feature_num=1,
-                                   kernel_size=4,
-                                   num_channels=[16, 16],
-                                   loss="mae",
-                                   lr=0.01)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01)
         train_loss = forecaster.fit(train_data, epochs=2)
         test_pred = forecaster.predict(test_data[0])
         assert test_pred.shape == test_data[1].shape
@@ -71,13 +68,11 @@ class TestChronosModelTCNForecaster(TestCase):
 
     def test_tcn_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
-        forecaster = TCNForecaster(past_seq_len=24,
-                                   future_seq_len=5,
-                                   input_feature_num=1,
-                                   output_feature_num=1,
-                                   kernel_size=4,
-                                   num_channels=[16, 16],
-                                   lr=0.01)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01)
         forecaster.fit(train_data, epochs=2)
         try:
             import onnx
@@ -91,7 +86,9 @@ class TestChronosModelTCNForecaster(TestCase):
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
             with pytest.raises(RuntimeError):
                 forecaster.build_onnx(sess_options=1)
-            forecaster.build_onnx(thread_num=1)
+            sess_options = onnxruntime.SessionOptions()
+            sess_options.intra_op_num_threads = 1
+            forecaster.build_onnx(sess_options=sess_options)
             mse = forecaster.evaluate(test_data)
             mse_onnx = forecaster.evaluate_with_onnx(test_data)
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
@@ -100,13 +97,11 @@ class TestChronosModelTCNForecaster(TestCase):
 
     def test_tcn_forecaster_save_load(self):
         train_data, val_data, test_data = create_data()
-        forecaster = TCNForecaster(past_seq_len=24,
-                                   future_seq_len=5,
-                                   input_feature_num=1,
-                                   output_feature_num=1,
-                                   kernel_size=4,
-                                   num_channels=[16, 16],
-                                   lr=0.01)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01)
         train_mse = forecaster.fit(train_data, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
@@ -118,12 +113,11 @@ class TestChronosModelTCNForecaster(TestCase):
 
     def test_tcn_forecaster_runtime_error(self):
         train_data, val_data, test_data = create_data()
-        forecaster = TCNForecaster(past_seq_len=24,
-                                   future_seq_len=5,
-                                   input_feature_num=1,
-                                   output_feature_num=1,
-                                   kernel_size=3,
-                                   lr=0.01)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01)
         with pytest.raises(RuntimeError):
             with tempfile.TemporaryDirectory() as tmp_dir_name:
                 ckpt_name = os.path.join(tmp_dir_name, "ckpt")
@@ -135,12 +129,11 @@ class TestChronosModelTCNForecaster(TestCase):
 
     def test_tcn_forecaster_shape_error(self):
         train_data, val_data, test_data = create_data()
-        forecaster = TCNForecaster(past_seq_len=24,
-                                   future_seq_len=5,
-                                   input_feature_num=1,
-                                   output_feature_num=2,
-                                   kernel_size=3,
-                                   lr=0.01)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=1,
+                                    loss="mae",
+                                    lr=0.01)
         with pytest.raises(AssertionError):
             forecaster.fit(train_data, epochs=2)
 
@@ -159,13 +152,12 @@ class TestChronosModelTCNForecaster(TestCase):
         val_data = XShards.partition(val_data).transform_shard(transform_to_dict)
         test_data = XShards.partition(test_data).transform_shard(transform_to_dict_x)
         for distributed in [True, False]:
-            forecaster = TCNForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       kernel_size=3,
-                                       lr=0.01,
-                                       distributed=distributed)
+            forecaster = LSTMForecaster(past_seq_len=24,
+                                        input_feature_num=2,
+                                        output_feature_num=2,
+                                        loss="mae",
+                                        lr=0.01,
+                                        distributed=distributed)
             forecaster.fit(train_data, epochs=2)
             distributed_pred = forecaster.predict(test_data)
             distributed_eval = forecaster.evaluate(val_data)
@@ -173,16 +165,14 @@ class TestChronosModelTCNForecaster(TestCase):
 
     def test_tcn_forecaster_distributed(self):
         train_data, val_data, test_data = create_data()
-
         init_orca_context(cores=4, memory="2g")
 
-        forecaster = TCNForecaster(past_seq_len=24,
-                                   future_seq_len=5,
-                                   input_feature_num=1,
-                                   output_feature_num=1,
-                                   kernel_size=3,
-                                   lr=0.01,
-                                   distributed=True)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01,
+                                    distributed=True)
 
         forecaster.fit(train_data, epochs=2)
         distributed_pred = forecaster.predict(test_data[0])
