@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.nnframes
+package com.intel.analytics.bigdl.dllib.nnframes
 
-import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.{VectorAssembler}
 import org.apache.spark.sql.{SQLContext, SparkSession}
