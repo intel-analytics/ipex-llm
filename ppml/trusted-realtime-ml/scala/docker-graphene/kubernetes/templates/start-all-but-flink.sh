@@ -14,7 +14,7 @@ test "$SGX_MODE" = sgx && ./init-java.sh
 echo "java initiated"
 
 
-export REDIS_HOST=$LOCAL_IP
+export REDIS_HOST=redis-service
 ./init-cluster-serving.sh
 echo "cluster serving initiated"
 

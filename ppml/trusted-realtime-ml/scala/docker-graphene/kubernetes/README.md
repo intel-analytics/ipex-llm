@@ -73,6 +73,7 @@ In `master-deployment.yaml`, look for `{{ .Values.startAllButFlinkPath }}` and `
 Finally, run 
 ```bash
 kubectl apply -f master-deployment.yaml
+kubectl apply -f redis-service.yaml
 ```
 The components (Redis, http-frontend, and cluster serving) should start on their own, if jobmanager and taskmanager are running.
 
