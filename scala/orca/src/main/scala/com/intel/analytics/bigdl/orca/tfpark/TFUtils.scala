@@ -22,13 +22,13 @@ import java.nio._
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.optim._
-import com.intel.analytics.bigdl.dllib.optim.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.dllib.feature.common.Preprocessing
 import com.intel.analytics.bigdl.dllib.feature.image.ImageProcessing
-import bigdl.dllib.zookeras.{metrics => kmetrics}
-import bigdl.dllib.zookeras.metrics.{Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy}
+import com.intel.analytics.bigdl.dllib.keras.{metrics => kmetrics}
+import com.intel.analytics.bigdl.dllib.keras.metrics.{Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy}
 import org.tensorflow.framework.GraphDef
 import org.tensorflow.{DataType, Tensor => TTensor}
 

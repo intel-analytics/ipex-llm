@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
-import com.intel.analytics.zoo.common.Utils
+import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.zoo.core.TFNetNative
 import org.slf4j.LoggerFactory
 import org.tensorflow.DataType
@@ -216,7 +216,7 @@ private[bigdl] class TFTrainingHelper protected(val graphRunner: GraphRunner,
 
   protected def beforeRunGradient() = {
     if (this.isTraining() || !weightsRestored) {
-      Utils.timeIt("setTrainingVariableIntoTF") {
+      zooUtils.timeIt("setTrainingVariableIntoTF") {
         setVariableIntoTF(weights, variableAssignPlaceholders,
           variableTypes.map(TFUtils.tfenum2datatype), assignVariableOp)
       }
@@ -232,7 +232,7 @@ private[bigdl] class TFTrainingHelper protected(val graphRunner: GraphRunner,
 
   protected def afterRunGradient() = {
     if (extraParameters.length > 0) {
-      Utils.timeIt("getExtraVariableFromTF") {
+      zooUtils.timeIt("getExtraVariableFromTF") {
         getVariableFromTF(extraParameters, variableNames = extraVariables)
       }
     }
@@ -245,13 +245,13 @@ private[bigdl] class TFTrainingHelper protected(val graphRunner: GraphRunner,
   }
 
   override def updateOutput(input: Activity): Activity = {
-    Utils.timeIt("updateOutput") {
+    zooUtils.timeIt("updateOutput") {
 
       assert(tableInited)
 
       this.beforeRunGradient()
 
-      val feeds = Utils.activity2VectorBuilder(input)
+      val feeds = zooUtils.activity2VectorBuilder(input)
 
       if (this.isTraining()) {
         var i = 0
