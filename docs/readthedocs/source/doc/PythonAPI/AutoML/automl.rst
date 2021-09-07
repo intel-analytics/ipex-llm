@@ -25,6 +25,6 @@ automl.metrics
 
 Evaluate unscaled metrics between y true value and y predicted value.
 
-.. automodule:: zoo.automl.metrics
+.. automodule:: zoo.orca.automl.metrics
     :members:
     :show-inheritance:
