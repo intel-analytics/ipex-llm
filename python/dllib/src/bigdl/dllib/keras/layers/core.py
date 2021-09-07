@@ -16,7 +16,7 @@
 
 import sys
 
-from bigdl.util.common import INTMIN
+from bigdl.dllib.utils.common import INTMIN
 from ..engine.topology import ZooKerasLayer
 
 if sys.version >= '3':

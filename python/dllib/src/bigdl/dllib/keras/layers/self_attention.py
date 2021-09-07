@@ -18,16 +18,16 @@
 import numpy as np
 import math
 
-from bigdl.nn.layer import Sum
-from bigdl.nn.layer import Layer
-from zoo.common.utils import callZooFunc
+from bigdl.dllib.nn.layer import Sum
+from bigdl.dllib.nn.layer import Layer
+from bigdl.dllib.utils.file_utils import callZooFunc
 
 from zoo.models.common import ZooModel
-from zoo.pipeline.api.keras.engine import ZooKerasLayer
-from zoo.pipeline.api.keras.layers import *
-from zoo.pipeline.api.keras.models import Sequential
-from zoo.pipeline.api.keras.models import Model
-import zoo.pipeline.api.autograd as auto
+from bigdl.dllib.keras.engine import ZooKerasLayer
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
+from bigdl.dllib.keras.models import Model
+import bigdl.dllib.autograd as auto
 
 if sys.version >= '3':
     long = int
@@ -212,7 +212,7 @@ class TransformerLayer(ZooKerasLayer):
         """
         if hidden_size < 0:
             raise TypeError('hidden_size must be greater than 0 with default embedding layer')
-        from bigdl.nn.layer import Squeeze
+        from bigdl.dllib.nn.layer import Squeeze
         word_input = InputLayer(input_shape=(seq_len,))
         postion_input = InputLayer(input_shape=(seq_len,))
 

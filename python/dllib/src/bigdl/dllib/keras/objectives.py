@@ -16,9 +16,9 @@
 
 import sys
 
-from zoo.pipeline.api.keras.base import ZooKerasCreator
-from bigdl.nn.criterion import Criterion
-from bigdl.util.common import JTensor
+from bigdl.dllib.keras.base import ZooKerasCreator
+from bigdl.dllib.nn.criterion import Criterion
+from bigdl.dllib.utils.common import JTensor
 
 if sys.version >= '3':
     long = int

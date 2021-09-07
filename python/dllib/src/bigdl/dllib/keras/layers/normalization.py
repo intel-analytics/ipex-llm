@@ -17,8 +17,8 @@
 import sys
 
 from ..engine.topology import ZooKerasLayer
-from bigdl.util.common import JTensor
-from zoo.common.utils import callZooFunc
+from bigdl.dllib.utils.common import JTensor
+from bigdl.dllib.utils.file_utils import callZooFunc
 
 if sys.version >= '3':
     long = int

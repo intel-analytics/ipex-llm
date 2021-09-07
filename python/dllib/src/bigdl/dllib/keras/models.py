@@ -16,10 +16,10 @@
 
 import sys
 
-from zoo.pipeline.api.utils import remove_batch
+from dllib.utils import remove_batch
 from .engine.topology import KerasNet
-from bigdl.util.common import to_list
-from zoo.common.utils import callZooFunc
+from bigdl.dllib.utils.common import to_list
+from bigdl.dllib.utils.file_utils import callZooFunc
 
 if sys.version >= '3':
     long = int

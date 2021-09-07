@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.optim.optimizer import *
-from zoo.pipeline.api.keras.objectives import *
-from zoo.pipeline.api.keras import metrics
+from bigdl.dllib.optim.optimizer import *
+from bigdl.dllib.keras.objectives import *
+from bigdl.dllib.keras import metrics
 
 
 def to_bigdl_optim_method(optimizer):
