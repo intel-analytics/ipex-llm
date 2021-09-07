@@ -23,7 +23,7 @@ from zoo.chronos.pipeline.time_sequence import load_ts_pipeline
 from zoo.chronos.regression.time_sequence_predictor import TimeSequencePredictor
 from zoo.chronos.feature.time_sequence import TimeSequenceFeatureTransformer
 from zoo.chronos.model.time_sequence import TimeSequenceModel
-from zoo.automl.metrics import Evaluator
+from zoo.orca.automl.metrics import Evaluator
 from zoo.chronos.config.recipe import *
 
 import numpy as np

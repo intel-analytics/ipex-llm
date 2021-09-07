@@ -21,7 +21,7 @@ from tensorflow.keras.layers import Input, LSTM, Dense
 import tensorflow.keras as keras
 
 from zoo.automl.model.abstract import BaseModel
-from zoo.automl.metrics import Evaluator
+from zoo.orca.automl.metrics import Evaluator
 
 
 class LSTMSeq2Seq(BaseModel):
