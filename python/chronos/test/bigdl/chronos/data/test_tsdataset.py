@@ -714,6 +714,29 @@ class TestTSDataset(ZooTestCase):
         assert len(tsdata.to_pandas()) == (df.shape[0] + 1) // 2
         tsdata._check_basic_invariants()
 
+        # target_col\extra_feature_col dtype is object(str).
+        sample_num = np.random.randint(100, 200)
+        df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
+                           "value": np.array(['test_value']*sample_num),
+                           "id": np.array(['00']*sample_num),
+                           "extra feature": np.array(['test_extra_feature']*sample_num)})
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        with pytest.raises(RuntimeError):
+            tsdata.resample('2S', df.datetime[0], df.datetime[df.shape[0]-1])
+        tsdata._check_basic_invariants()
+
+        # target_col\extra_feature_col dtype is object(numeric).
+        df = get_ts_df()
+        df.value = df.value.astype(np.object)
+        df['extra feature'] = df['extra feature'].astype(np.object)
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        before_sampling = tsdata.df.columns
+        tsdata.resample('2S', df.datetime[0], df.datetime[df.shape[0]-1])
+        assert set(before_sampling) == set(tsdata.df.columns)
+        tsdata._check_basic_invariants()
+
     def test_tsdataset_resample_multiple(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
@@ -725,6 +748,29 @@ class TestTSDataset(ZooTestCase):
                                        extra_feature_col=["extra feature"], id_col="id")
         tsdata.resample('2D')
         assert len(tsdata.to_pandas()) == 50
+        tsdata._check_basic_invariants()
+
+        # target_col\extra_feature_col dtype is object(str).
+        df = pd.DataFrame({"value": np.array(['test_value']*100),
+                           "id": np.array(['00']*50 + ['01']*50),
+                           "extra feature": np.array(['test_extra_feature']*100)})
+        df["datetime"] = pd.date_range('1/1/2019', periods=100)
+        df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        with pytest.raises(RuntimeError):
+            tsdata.resample('2S', df.datetime[0], df.datetime[df.shape[0]-1])
+        tsdata._check_basic_invariants()
+
+        # target_col/extra_feature_col dtype is object(numeric).
+        df = get_multi_id_ts_df()
+        df.value = df.value.astype(np.object)
+        df['extra feature'] = df['extra feature'].astype(np.object)
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        before_sampling = tsdata.df.columns
+        tsdata.resample('2S', df.datetime[0], df.datetime[df.shape[0]-1])
+        assert set(before_sampling) == set(tsdata.df.columns)
         tsdata._check_basic_invariants()
 
     def test_tsdataset_split(self):
