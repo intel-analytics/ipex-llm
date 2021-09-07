@@ -16,7 +16,7 @@
 import argparse
 from zoo.orca import init_orca_context, stop_orca_context
 import numpy as np
-from zoo.chronos.model.forecast.tcmf_forecaster import TCMFForecaster
+from zoo.chronos.forecast.tcmf_forecaster import TCMFForecaster
 import tempfile
 import logging
 import sys

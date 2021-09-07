@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from zoo.chronos.model.forecast.base_forecaster import BasePytorchForecaster
-from zoo.chronos.model.forecast.utils import set_pytorch_seed
+from zoo.chronos.forecast.base_forecaster import BasePytorchForecaster
+from zoo.chronos.forecast.utils import set_pytorch_seed
 from zoo.chronos.model.tcn import TCNPytorch
 from zoo.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
 
