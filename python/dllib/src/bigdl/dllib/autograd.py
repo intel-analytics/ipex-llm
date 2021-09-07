@@ -17,12 +17,12 @@
 import sys
 
 from bigdl.dllib.nn.layer import Layer, Node
-from bigdl.dllib.util.common import to_list, JTensor
+from bigdl.dllib.utils.common import to_list, JTensor
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 import bigdl.dllib.keras.base as kbase
 from bigdl.dllib.keras.objectives import LossFunction
-from bigdl.dllib.utils import remove_batch, toMultiShape
+from bigdl.dllib.utils.utils import remove_batch, toMultiShape
 
 if sys.version >= '3':
     long = int
