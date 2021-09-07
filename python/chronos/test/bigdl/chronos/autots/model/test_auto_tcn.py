@@ -18,6 +18,8 @@ import torch
 import numpy as np
 from unittest import TestCase
 import pytest
+import tempfile
+
 from zoo.chronos.autots.model.auto_tcn import AutoTCN
 from zoo.orca.automl import hp
 
@@ -30,7 +32,7 @@ future_seq_len = 1
 def get_x_y(size):
     x = np.random.randn(size, past_seq_len, input_feature_dim)
     y = np.random.randn(size, future_seq_len, output_feature_dim)
-    return x, y
+    return x.astype(np.float32), y.astype(np.float32)
 
 
 class RandomDataset(Dataset):
@@ -153,6 +155,56 @@ class TestAutoTCN(TestCase):
         best_config = auto_tcn.get_best_config()
         assert best_config['num_channels'] == [8]*2
 
+    def test_predict_evaluation(self):
+        auto_tcn = get_auto_estimator()
+        auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
+                     epochs=1,
+                     validation_data=valid_dataloader_creator(config={"batch_size": 64}),
+                     n_sampling=1)
+        test_data_x, test_data_y = get_x_y(size=100)
+        auto_tcn.predict(test_data_x)
+        auto_tcn.evaluate((test_data_x, test_data_y))
+
+    def test_onnx_methods(self):
+        auto_tcn = get_auto_estimator()
+        auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
+                     epochs=1,
+                     validation_data=valid_dataloader_creator(config={"batch_size": 64}),
+                     n_sampling=1)
+        test_data_x, test_data_y = get_x_y(size=100)
+        pred = auto_tcn.predict(test_data_x)
+        eval_res = auto_tcn.evaluate((test_data_x, test_data_y))
+        try:
+            import onnx
+            import onnxruntime
+            pred_onnx = auto_tcn.predict_with_onnx(test_data_x)
+            eval_res_onnx = auto_tcn.evaluate_with_onnx((test_data_x, test_data_y))
+            np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
+            np.testing.assert_almost_equal(eval_res, eval_res_onnx, decimal=5)
+        except ImportError:
+            pass
+
+    def test_save_load(self):
+        auto_tcn = get_auto_estimator()
+        auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
+                     epochs=1,
+                     validation_data=valid_dataloader_creator(config={"batch_size": 64}),
+                     n_sampling=1)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            auto_tcn.save(tmp_dir_name)
+            auto_tcn.load(tmp_dir_name)
+        test_data_x, test_data_y = get_x_y(size=100)
+        pred = auto_tcn.predict(test_data_x)
+        eval_res = auto_tcn.evaluate((test_data_x, test_data_y))
+        try:
+            import onnx
+            import onnxruntime
+            pred_onnx = auto_tcn.predict_with_onnx(test_data_x)
+            eval_res_onnx = auto_tcn.evaluate_with_onnx((test_data_x, test_data_y))
+            np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
+            np.testing.assert_almost_equal(eval_res, eval_res_onnx, decimal=5)
+        except ImportError:
+            pass
 
 if __name__ == "__main__":
     pytest.main([__file__])
