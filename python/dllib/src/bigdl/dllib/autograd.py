@@ -16,13 +16,13 @@
 
 import sys
 
-from bigdl.nn.layer import Layer, Node
-from bigdl.util.common import to_list, JTensor
+from bigdl.dllib.nn.layer import Layer, Node
+from bigdl.dllib.util.common import to_list, JTensor
 
-from zoo.common.utils import callZooFunc
-import zoo.pipeline.api.keras.base as kbase
-from zoo.pipeline.api.keras.objectives import LossFunction
-from zoo.pipeline.api.utils import remove_batch, toMultiShape
+from bigdl.dllib.utils.file_utils import callZooFunc
+import bigdl.dllib.keras.base as kbase
+from bigdl.dllib.keras.objectives import LossFunction
+from bigdl.dllib.utils import remove_batch, toMultiShape
 
 if sys.version >= '3':
     long = int

@@ -15,7 +15,7 @@
 #
 
 
-from bigdl.dataset import base
+from bigdl.dllib.feature.dataset import base
 import numpy as np
 
 from six.moves import cPickle
