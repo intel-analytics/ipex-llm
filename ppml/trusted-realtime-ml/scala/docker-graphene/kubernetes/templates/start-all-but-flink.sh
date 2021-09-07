@@ -1,16 +1,15 @@
 #!/bin/bash
 set -x
-export REDIS_HOST=$(hostname -i)
 
 cd /ppml/trusted-realtime-ml/redis
 export SGX_MEM_SIZE=16G
-test "$SGX_MODE" = sgx && ./init-redis.sh
+test "$SGX_MODE" = sgx && ./init.sh
 echo "redis initiated"
 
 
 cd /ppml/trusted-realtime-ml/java
 export SGX_MEM_SIZE=32G
-test "$SGX_MODE" = sgx && ./init-java.sh
+test "$SGX_MODE" = sgx && ./init.sh
 echo "java initiated"
 
 
