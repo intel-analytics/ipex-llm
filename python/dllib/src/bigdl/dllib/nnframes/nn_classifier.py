@@ -15,15 +15,15 @@
 #
 
 import json
-from bigdl.nn.layer import Layer
+from bigdl.dllib.nn.layer import Layer
 from pyspark.ml.param.shared import *
 from pyspark.ml.wrapper import JavaModel, JavaEstimator, JavaTransformer
 from pyspark.ml.util import MLWritable, MLReadable, JavaMLWriter
-from bigdl.optim.optimizer import SGD
-from zoo.common.utils import callZooFunc, put_local_file_to_remote
-from bigdl.util.common import *
-from zoo.feature.common import *
-from zoo import init_nncontext
+from bigdl.dllib.optim.optimizer import SGD
+from bigdl.dllib.utils.file_utils import callZooFunc, put_local_file_to_remote
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.feature.common import *
+from bigdl.dllib.utils.nncontext import init_nncontext
 
 if sys.version >= '3':
     long = int
