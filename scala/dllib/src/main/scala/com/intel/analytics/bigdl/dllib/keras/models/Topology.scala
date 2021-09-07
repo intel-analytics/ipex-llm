@@ -739,7 +739,7 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
 
 object Model extends KerasLayerSerializable {
   ModuleSerializer.registerModule(
-    "com.intel.analytics.zoo.pipeline.api.keras.models.Model",
+    "com.intel.analytics.bigdl.dllib.keras.models.Model",
     Model)
 
   /**
@@ -1449,7 +1449,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
           }
         } else {
           throw new IllegalArgumentException(
-            s"Excepted com.intel.analytics.zoo.common.ZooTrigger." +
+            s"Excepted com.intel.analytics.bigdl.dllib.common.ZooTrigger." +
             s" Please change your trigger to an instance of ZooTrigger.")
         }
       }
@@ -1654,7 +1654,7 @@ private[bigdl] class InternalDistriOptimizerV2[T: ClassTag] (
           checkPointTrigger.get.asInstanceOf[ZooTrigger].setZooState(state)
         } else {
           throw new IllegalArgumentException(
-            s"Excepted com.intel.analytics.zoo.common.ZooTrigger." +
+            s"Excepted com.intel.analytics.bigdl.dllib.common.ZooTrigger." +
             s" Please change your trigger to an instance of ZooTrigger.")
         }
       }
