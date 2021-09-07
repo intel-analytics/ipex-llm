@@ -1,4 +1,4 @@
-­¤ñ:#com.intel.analytics.bigdl.nn.LinearB
+¸¡ƒ:)com.intel.analytics.bigdl.dllib.nn.LinearB
 module_tagsz:FloatB"
 module_numericsz:FloatB
 	inputSizeB
@@ -15,7 +15,7 @@ B
 initGradWeight
 B
 initGradBias
-J0.7.1PZ37ab5919`ôğx‚  (0BH­´ŠçHØ¬üá‚ (0BH¤¾“H€é›„*Input3d0aa1fc2Input3d0aa1fc:7com.intel.analytics.zoo.pipeline.api.keras.layers.DenseB
+J0.14.0-SNAPSHOTPZ332d8263`‹‘üıx‚ (0BH´öCHñ˜Øõ‚ (0BH”ïİ€H›Äíòˆ*Input33f29b512Input33f29b51:2com.intel.analytics.bigdl.dllib.keras.layers.DenseB
 module_tagsz:FloatB"
 module_numericsz:FloatB
 	outputDimB
@@ -26,25 +26,23 @@ activationB
 bRegularizer	B
 bias@B
 
-inputShapeB
-is_keras_module@J0.7.1PZb64d6e15`ÿş‹šjÿÿÿÿÿÿÿÿÿrÿÿÿÿÿÿÿÿÿx‚  (0BH­´ŠçHØ¬üá‚ (0BH¤¾“H€é›„ñ:"com.intel.analytics.bigdl.nn.InputB
+inputShapeJ0.14.0-SNAPSHOTPZ7489d662`´‹Ájÿÿÿÿÿÿÿÿÿrÿÿÿÿÿÿÿÿÿx‚ (0BH´öCHñ˜Øõ‚ (0BH”ïİ€H›Äíòí‘:(com.intel.analytics.bigdl.dllib.nn.InputB
 module_tagsz:FloatB"
-module_numericsz:FloatJ0.7.1PZf9ca8c9f`øÑÌí:7com.intel.analytics.zoo.pipeline.api.keras.layers.InputB
+module_numericsz:FloatJ0.14.0-SNAPSHOTPZ215b47eb`è¦¹:2com.intel.analytics.bigdl.dllib.keras.layers.InputB
 module_tagsz:FloatB"
 module_numericsz:FloatB
 
 inputShape
-’B
-is_keras_module@J0.7.1PZ3d0aa1fc`µó™jÿÿÿÿÿÿÿÿÿrÿÿÿÿÿÿÿÿÿx:(com.intel.analytics.bigdl.nn.StaticGraphB
+’J0.14.0-SNAPSHOTPZ33f29b51`ê…Á±jÿÿÿÿÿÿÿÿÿrÿÿÿÿÿÿÿÿÿx:.com.intel.analytics.bigdl.dllib.nn.StaticGraphB
 module_tagsz:FloatB"
 module_numericsz:FloatBH
-Denseb64d6e15_edges1r-
-Denseb64d6e15
-Input3d0aa1fcÿÿÿÿÿÿÿÿÿB*
-Input3d0aa1fc_edgesr
-Input3d0aa1fcB%
+Dense7489d662_edges1r-
+Dense7489d662
+Input33f29b51ÿÿÿÿÿÿÿÿÿB*
+Input33f29b51_edgesr
+Input33f29b51B%
 
-inputNamesz:Input3d0aa1fcB&
-outputNamesz:Denseb64d6e15J0.7.1PZf06345f7`€»‰÷x‚  (0BH­´ŠçHØ¬üá‚ (0BH¤¾“H€é›„:7com.intel.analytics.zoo.pipeline.api.keras.models.ModelB
+inputNamesz:Input33f29b51B&
+outputNamesz:Dense7489d662J0.14.0-SNAPSHOTPZf05d97c8`® ïÇx‚ (0BH´öCHñ˜Øõ‚ (0BH”ïİ€H›Äíòˆ:2com.intel.analytics.bigdl.dllib.keras.models.ModelB
 module_tagsz:FloatB"
-module_numericsz:FloatJ0.7.1PZ822a547c`—±œËjÿÿÿÿÿÿÿÿÿrÿÿÿÿÿÿÿÿÿx‚  (0BH­´ŠçHØ¬üá‚ (0BH¤¾“H€é›„
+module_numericsz:FloatJ0.14.0-SNAPSHOTPZ11cfac1c`¸É®Ÿjÿÿÿÿÿÿÿÿÿrÿÿÿÿÿÿÿÿÿx‚ (0BH´öCHñ˜Øõ‚ (0BH”ïİ€H›Äíò
