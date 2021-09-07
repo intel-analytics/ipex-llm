@@ -20,7 +20,7 @@ from prophet.serialize import model_to_json, model_from_json
 from prophet.diagnostics import performance_metrics
 from prophet.diagnostics import cross_validation
 
-from zoo.automl.metrics import Evaluator
+from zoo.orca.automl.metrics import Evaluator
 from zoo.automl.model.abstract import BaseModel, ModelBuilder
 
 
