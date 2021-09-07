@@ -18,7 +18,11 @@ import glob
 from bigdl.dllib.utils.file_utils import Sample
 import numpy as np
 from pyspark.ml.linalg import DenseVector, SparseVector, VectorUDT
+import sys
 
+if sys.version >= '3':
+    long = int
+    unicode = str
 
 def to_sample_rdd(x, y, sc, num_slices=None):
     """
@@ -195,3 +199,22 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
         return (features, labels)
     else:
         return (features,)
+
+
+def toMultiShape(shape):
+    if any(isinstance(i, list) for i in shape):  # multi shape
+        return shape
+    elif any(isinstance(i, tuple) for i in shape):
+        return [list(s) for s in shape]
+    elif isinstance(shape, tuple):
+        return [list(shape)]
+    else:
+        return [shape]
+
+
+# TODO: create a shape mapping here.
+def remove_batch(shape):
+    if any(isinstance(i, list) or isinstance(i, tuple) for i in shape):  # multi shape
+        return [remove_batch(s) for s in shape]
+    else:
+        return list(shape[1:])

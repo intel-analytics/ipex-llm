@@ -22,7 +22,7 @@ from bigdl.dllib.nn.layer import Sum
 from bigdl.dllib.nn.layer import Layer
 from bigdl.dllib.utils.file_utils import callZooFunc
 
-from zoo.models.common import ZooModel
+# from zoo.models.common import ZooModel
 from bigdl.dllib.keras.engine import ZooKerasLayer
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.keras.models import Sequential
