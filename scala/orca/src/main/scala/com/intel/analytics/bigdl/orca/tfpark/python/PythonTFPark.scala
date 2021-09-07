@@ -17,9 +17,9 @@ package com.intel.analytics.bigdl.orca.tfpark.python
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.optim._
-import com.intel.analytics.bigdl.dllib.optim.Tensor
-import com.intel.analytics.bigdl.dllib.optim.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.common.{PythonZoo, RDDWrapper}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.common.{PythonZoo, RDDWrapper}
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
 import com.intel.analytics.bigdl.orca.tfpark._
 import org.apache.spark.api.java.JavaRDD
@@ -109,8 +109,8 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     val types = outputTypes.asScala.map(TFUtils.tfenum2datatype).toVector
     val names = outputNames.asScala.toVector
     val sc = SparkContext.getOrCreate()
-    val nodeNumber = EngineRef.getNodeNumber()
-    val coreNumber = EngineRef.getCoreNumber()
+    val nodeNumber = Engine.nodeNumber()
+    val coreNumber = Engine.coreNumber()
     val totoalCoreNumber = nodeNumber * coreNumber
 
     val broadcastedGraph = sc.broadcast(graph)
@@ -144,7 +144,7 @@ class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
                                       shardIndex: String): RDDWrapper[TFMiniBatch] = {
     val types = outputTypes.asScala.map(TFUtils.tfenum2datatype).toVector
     val names = outputNames.asScala.toVector
-    val coreNumber = EngineRef.getCoreNumber()
+    val coreNumber = Engine.coreNumber()
 
     val resultRDD = graphRDD.rdd.mapPartitionsWithIndex { case (idx, iter) =>
       if (iter.hasNext) {
