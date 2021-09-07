@@ -19,7 +19,7 @@ from pmdarima.arima import ARIMA
 from pmdarima.arima import ndiffs
 from pmdarima.arima import nsdiffs
 
-from zoo.automl.metrics import Evaluator
+from zoo.orca.automl.metrics import Evaluator
 from zoo.automl.model.abstract import BaseModel, ModelBuilder
 
 
