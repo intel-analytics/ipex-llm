@@ -36,7 +36,7 @@ from argparse import ArgumentParser, Namespace
 import numpy as np
 import torch
 import torch.nn.functional as F
-import torchvision.transforms as transforms
+from bigdl.nano.pytorch.vision.transforms import transforms
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from typing import Union
@@ -45,6 +45,7 @@ import pytorch_lightning as pl
 from pl_examples import cli_lightning_logo
 from pl_examples.domain_templates.unet import UNet
 from pytorch_lightning.utilities.argparse import from_argparse_args
+from bigdl.nano.pytorch.trainer import Trainer
 
 DEFAULT_VOID_LABELS = (0, 1, 2, 3, 4, 5, 6, 9, 10, 14, 15, 16, 18, 29, 30, -1)
 DEFAULT_VALID_LABELS = (7, 8, 11, 12, 13, 17, 19, 20,
@@ -302,7 +303,7 @@ def main(hparams: Namespace):
     # ------------------------
     # 2 INIT TRAINER
     # ------------------------
-    trainer = pl.Trainer.from_argparse_args(hparams)
+    trainer = Trainer.from_argparse_args(hparams)
 
     # ------------------------
     # 3 START TRAINING
@@ -314,6 +315,10 @@ if __name__ == "__main__":
     cli_lightning_logo()
     parser = ArgumentParser(add_help=False)
     parser = SegModel.add_model_specific_args(parser)
+    parser.add_argument("--num_processes", type=int, default=1,
+                        help="The number of processes in distributed training.")
+    parser.add_argument('--use_ipex', action='store_true', default=False,
+                        help='use intel pytorch extension') 
     hparams = parser.parse_args()
 
     main(hparams)
