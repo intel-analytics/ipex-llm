@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 
-import zoo.pipeline.api.autograd as autograd
-from zoo.feature.image import ImageSet
-from zoo.feature.text import TextSet
-from zoo.feature.common import FeatureSet
-from zoo.pipeline.api.keras.base import ZooKerasLayer
-from zoo.pipeline.api.keras.utils import *
-from bigdl.nn.layer import Layer
-from zoo.common.utils import callZooFunc
+import bigdl.dllib.autograd as autograd
+from bigdl.dllib.feature.image import ImageSet
+from bigdl.dllib.feature.text import TextSet
+from bigdl.dllib.feature.common import FeatureSet
+from bigdl.dllib.keras.base import ZooKerasLayer
+from bigdl.dllib.keras.utils import *
+from bigdl.dllib.nn.layer import Layer
+from bigdl.dllib.utils.file_utils import callZooFunc
 
 if sys.version >= '3':
     long = int
@@ -404,7 +404,7 @@ class KerasNet(ZooKerasLayer):
                     [float(p) for p in positions])
 
     def to_model(self):
-        from zoo.pipeline.api.keras.models import Model
+        from bigdl.dllib.keras.models import Model
         return Model.from_jvalue(callZooFunc(self.bigdl_type, "kerasNetToModel", self.value))
 
     @property

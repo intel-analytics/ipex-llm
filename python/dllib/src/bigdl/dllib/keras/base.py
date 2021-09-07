@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.nn.layer import Layer
-from bigdl.util.common import *
-from zoo.common.utils import callZooFunc
+from bigdl.dllib.nn.layer import Layer
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.file_utils import callZooFunc
 
 if sys.version >= '3':
     long = int

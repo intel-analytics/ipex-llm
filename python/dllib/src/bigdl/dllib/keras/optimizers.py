@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from bigdl.util.common import *
-from bigdl.optim.optimizer import OptimMethod, Default
-from zoo.pipeline.api.keras.base import ZooKerasCreator
-from zoo.common.utils import callZooFunc
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.optim.optimizer import OptimMethod, Default
+from bigdl.dllib.keras.base import ZooKerasCreator
+from bigdl.dllib.utils.file_utils import callZooFunc
 
 if sys.version >= '3':
     long = int

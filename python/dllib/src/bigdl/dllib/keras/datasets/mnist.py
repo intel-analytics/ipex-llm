@@ -17,7 +17,7 @@
 import gzip
 import numpy
 
-from bigdl.dataset import base
+from bigdl.dllib.feature.dataset import base
 
 
 SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'

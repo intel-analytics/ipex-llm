@@ -40,7 +40,7 @@ class TimeDistributed(ZooKerasLayer):
     name: String to set the name of the wrapper.
           If not specified, its name will by default to be a generated string.
 
-    >>> from zoo.pipeline.api.keras.layers import Dense
+    >>> from bigdl.dllib.keras.layers import Dense
     >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12))
     creating: createZooKerasDense
     creating: createZooKerasTimeDistributed
@@ -70,7 +70,7 @@ class Bidirectional(ZooKerasLayer):
     name: String to set the name of the wrapper.
           If not specified, its name will by default to be a generated string.
 
-    >>> from zoo.pipeline.api.keras.layers import LSTM
+    >>> from bigdl.dllib.keras.layers import LSTM
     >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16))
     creating: createZooKerasLSTM
     creating: createZooKerasBidirectional
@@ -93,8 +93,8 @@ class KerasLayerWrapper(ZooKerasLayer):
     torch_layer: a torch style layer.
     input_shape: A shape tuple, not including batch.
     i.e If the input data is (2, 3, 4) and 2 is the batch size, you should input: (3, 4) here.
-    >>> from zoo.pipeline.api.keras.layers import KerasLayerWrapper
-    >>> from bigdl.nn.layer import Linear
+    >>> from bigdl.dllib.keras.layers import KerasLayerWrapper
+    >>> from bigdl.dllib.nn.layer import Linear
     >>> linear = Linear(100, 10, with_bias=True)
     creating: createLinear
     >>> kerasLayer = KerasLayerWrapper(linear, input_shape=(100, ))
