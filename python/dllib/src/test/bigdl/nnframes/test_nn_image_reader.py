@@ -16,12 +16,12 @@
 
 import os
 import pytest
-from bigdl.transform.vision.image import *
-from bigdl.util.common import *
+from bigdl.dllib.transform.vision.image import *
+from bigdl.dllib.utils.common import *
 from pyspark.sql.types import *
 
-from zoo.common.nncontext import *
-from zoo.pipeline.nnframes import *
+from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nnframes import *
 
 
 class TestNNImageReader():

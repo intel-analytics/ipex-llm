@@ -18,22 +18,22 @@ import errno
 import shutil
 
 import pytest
-from bigdl.nn.criterion import *
-from bigdl.nn.layer import *
-from bigdl.optim.optimizer import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.optim.optimizer import *
 from numpy.testing import assert_allclose
 from pyspark.ml import Pipeline, PipelineModel
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.tuning import ParamGridBuilder
 from pyspark.sql.types import *
-from zoo.common.nncontext import *
-from zoo.feature.common import *
-from zoo.feature.image import *
-from zoo.pipeline.api.keras import layers as ZLayer
-from zoo.pipeline.api.keras.models import Model as ZModel
-from zoo.pipeline.api.keras.optimizers import Adam as KAdam
-from zoo.pipeline.nnframes import *
-from zoo.util.tf import *
+from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.feature.common import *
+from bigdl.dllib.feature.image import *
+from bigdl.dllib.keras import layers as ZLayer
+from bigdl.dllib.keras.models import Model as ZModel
+from bigdl.dllib.keras.optimizers import Adam as KAdam
+from bigdl.dllib.nnframes import *
+from bigdl.dllib.utils.tf import *
 
 
 class TestNNClassifer():
