@@ -17,9 +17,10 @@
 from zoo.automl.model.base_pytorch_model import PytorchModelBuilder
 from zoo.orca.automl.auto_estimator import AutoEstimator
 from zoo.chronos.model.tcn import model_creator
+from .base_automodel import BasePytorchAutomodel
 
 
-class AutoTCN:
+class AutoTCN(BasePytorchAutomodel):
     def __init__(self,
                  input_feature_num,
                  output_target_num,
@@ -77,6 +78,7 @@ class AutoTCN:
             defaults to None and doesn't take effects while running in local. While running in
             cluster, it defaults to "hdfs:///tmp/{name}".
         """
+        super().__init__()
         # todo: support search for past_seq_len.
         # todo: add input check.
         if backend != "torch":
@@ -103,77 +105,3 @@ class AutoTCN:
                                       resources_per_trial={"cpu": cpus_per_trial},
                                       remote_dir=remote_dir,
                                       name=name)
-
-    def fit(self,
-            data,
-            epochs=1,
-            batch_size=32,
-            validation_data=None,
-            metric_threshold=None,
-            n_sampling=1,
-            search_alg=None,
-            search_alg_params=None,
-            scheduler=None,
-            scheduler_params=None,
-            ):
-        """
-        Automatically fit the model and search for the best hyper parameters.
-
-        :param data: train data.
-               For backend of "torch", data can be a tuple of ndarrays or a PyTorch DataLoader
-               or a function that takes a config dictionary as parameter and returns a
-               PyTorch DataLoader.
-               For backend of "keras", data can be a tuple of ndarrays.
-               If data is a tuple of ndarrays, it should be in the form of (x, y),
-                where x is training input data and y is training target data.
-        :param epochs: Max number of epochs to train in each trial. Defaults to 1.
-               If you have also set metric_threshold, a trial will stop if either it has been
-               optimized to the metric_threshold or it has been trained for {epochs} epochs.
-        :param batch_size: Int or hp sampling function from an integer space. Training batch size.
-               It defaults to 32.
-        :param validation_data: Validation data. Validation data type should be the same as data.
-        :param metric_threshold: a trial will be terminated when metric threshold is met
-        :param n_sampling: Number of times to sample from the search_space. Defaults to 1.
-               If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
-               If this is -1, (virtually) infinite samples are generated
-               until a stopping condition is met.
-        :param search_alg: str, all supported searcher provided by ray tune
-               (i.e."variant_generator", "random", "ax", "dragonfly", "skopt",
-               "hyperopt", "bayesopt", "bohb", "nevergrad", "optuna", "zoopt" and
-               "sigopt")
-        :param search_alg_params: extra parameters for searcher algorithm besides search_space,
-               metric and searcher mode
-        :param scheduler: str, all supported scheduler provided by ray tune
-        :param scheduler_params: parameters for scheduler
-        """
-        self.search_space["batch_size"] = batch_size
-        self.auto_est.fit(
-            data=data,
-            epochs=epochs,
-            validation_data=validation_data,
-            metric=self.metric,
-            metric_threshold=metric_threshold,
-            n_sampling=n_sampling,
-            search_space=self.search_space,
-            search_alg=search_alg,
-            search_alg_params=search_alg_params,
-            scheduler=scheduler,
-            scheduler_params=scheduler_params,
-        )
-
-    def get_best_model(self):
-        """
-        Get the best tcn model.
-        """
-        return self.auto_est.get_best_model()
-
-    def get_best_config(self):
-        """
-        Get the best configuration
-
-        :return: A dictionary of best hyper parameters
-        """
-        return self.auto_est.get_best_config()
-
-    def _get_best_automl_model(self):
-        return self.auto_est._get_best_automl_model()
