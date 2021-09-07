@@ -481,7 +481,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     result2 shouldEqual result
   }
 
-  "An NNModel" should "support save/load keras model" in {
+  /*"An NNModel" should "support save/load keras model" in {
     val modelLocation = getClass.getClassLoader.getResource("models/nnframes_keras").getFile
     /** code to generate model
      * import com.intel.analytics.bigdl.dllib.keras.layers.{Dense, Embedding, Input}
@@ -499,7 +499,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
       val loadedModel = NNModel.load(modelLocation).setBatchSize(8)
       loadedModel.transform(data).collect()
     }
-  }
+  }*/
 
   "An NNEstimator" should "supports deep copy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
