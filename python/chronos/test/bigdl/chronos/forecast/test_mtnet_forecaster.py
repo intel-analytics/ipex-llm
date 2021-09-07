@@ -20,7 +20,7 @@ from zoo.chronos.feature.time_sequence import TimeSequenceFeatureTransformer
 import tensorflow as tf
 import pandas as pd
 
-from zoo.chronos.model.forecast.mtnet_forecaster import MTNetForecaster
+from zoo.chronos.forecast.mtnet_forecaster import MTNetForecaster
 from unittest import TestCase
 
 

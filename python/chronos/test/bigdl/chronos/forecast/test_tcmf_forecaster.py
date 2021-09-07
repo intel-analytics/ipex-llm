@@ -16,7 +16,7 @@
 
 import pytest
 import numpy as np
-from zoo.chronos.model.forecast.tcmf_forecaster import TCMFForecaster
+from zoo.chronos.forecast.tcmf_forecaster import TCMFForecaster
 from unittest import TestCase
 import tempfile
 import pandas as pd

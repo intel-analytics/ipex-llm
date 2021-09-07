@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from zoo.chronos.model.forecast.abstract import Forecaster
+from zoo.chronos.forecast.abstract import Forecaster
 from zoo.orca.data.shard import SparkXShards
-from zoo.chronos.model.forecast.utils import\
+from zoo.chronos.forecast.utils import\
     np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard
 import numpy as np
 from zoo.orca.learn.pytorch.estimator import Estimator

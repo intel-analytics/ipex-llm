@@ -19,7 +19,7 @@ import tempfile
 import os
 import torch
 
-from zoo.chronos.model.forecast.seq2seq_forecaster import Seq2SeqForecaster
+from zoo.chronos.forecast.seq2seq_forecaster import Seq2SeqForecaster
 from zoo.orca import init_orca_context, stop_orca_context
 from unittest import TestCase
 import pytest
