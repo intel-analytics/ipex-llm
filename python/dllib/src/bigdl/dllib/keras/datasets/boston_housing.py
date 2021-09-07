@@ -39,7 +39,7 @@
 
 import numpy as np
 
-from bigdl.dataset import base
+from bigdl.dllib.feature.dataset import base
 
 
 def load_data(path='boston_housing.npz', dest_dir='/tmp/.zoo/dataset', test_split=0.2):

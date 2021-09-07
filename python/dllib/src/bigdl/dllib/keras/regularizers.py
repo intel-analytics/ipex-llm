@@ -15,7 +15,7 @@
 #
 
 
-from bigdl.optim.optimizer import *
+from bigdl.dllib.optim.optimizer import *
 
 
 def l1(l1=0.01):
