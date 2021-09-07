@@ -22,8 +22,8 @@ from unittest import TestCase
 
 import keras.backend as K
 
-from zoo.common.nncontext import *
-from zoo.feature.image import ImageSet
+from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.feature.image import ImageSet
 
 np.random.seed(1337)  # for reproducibility
 
