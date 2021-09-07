@@ -102,7 +102,7 @@ def train_example(args):
     best_model = auto_est.get_best_model()
 
     y_hat = best_model(torch.from_numpy(val_data[0]).float()).detach().numpy()
-    from zoo.automl.metrics import Evaluator
+    from zoo.orca.automl.metrics import Evaluator
     accuracy = Evaluator.evaluate(metric="accuracy", y_true=val_data[1], y_pred=y_hat)
     print("Evaluate: accuracy is", accuracy)
 
