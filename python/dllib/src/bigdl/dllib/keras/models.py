@@ -16,7 +16,7 @@
 
 import sys
 
-from dllib.utils import remove_batch
+from bigdl.dllib.utils.utils import remove_batch
 from .engine.topology import KerasNet
 from bigdl.dllib.utils.common import to_list
 from bigdl.dllib.utils.file_utils import callZooFunc
