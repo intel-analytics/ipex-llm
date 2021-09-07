@@ -17,11 +17,11 @@
 import pytest
 import shutil
 
-from zoo.feature.common import ChainedPreprocessing
-from zoo.feature.image import *
-from zoo.pipeline.api.keras.layers import *
-from zoo.pipeline.api.keras.models import *
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.dllib.feature.common import ChainedPreprocessing
+from bigdl.dllib.feature.image import *
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import *
+from test.bigdl.test_zoo_utils import ZooTestCase
 
 np.random.seed(1337)  # for reproducibility
 

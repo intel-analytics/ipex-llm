@@ -18,15 +18,15 @@ import pytest
 
 import numpy as np
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
-import zoo.pipeline.api.keras.layers as ZLayer
-from zoo.pipeline.api.keras.models import Model as ZModel, Sequential as ZSequential
-import keras.layers as KLayer
+from test.bigdl.utils.test_utils import ZooTestCase
+import bigdl.dllib.keras.layers as ZLayer
+from bigdl.dllib.keras.models import Model as ZModel, Sequential as ZSequential
+import bigdl.dllib.keras.layers as KLayer
 from keras.engine import merge as kmerge, Model as KModel
 from keras.models import Sequential as KSequential
 import keras.backend as K
-from bigdl.keras.converter import WeightsConverter
-from zoo.pipeline.api.keras import regularizers
+from bigdl.dllib.keras.converter import WeightsConverter
+from bigdl.dllib.keras import regularizers
 
 np.random.seed(1337)  # for reproducibility
 
