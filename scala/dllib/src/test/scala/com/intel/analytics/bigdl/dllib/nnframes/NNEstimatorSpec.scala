@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.nnframes
+package com.intel.analytics.bigdl.dllib.nnframes
 
 import java.io.File
 
-import com.intel.analytics.bigdl.dataset.Sample
-import com.intel.analytics.bigdl.models.inception.Inception_v1
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, Shape}
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.feature.common.{TensorToSample, _}
-import com.intel.analytics.zoo.feature.image._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Input}
-import com.intel.analytics.zoo.pipeline.api.keras.models.Model
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import org.apache.flink.types.Nothing
+import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
+import com.intel.analytics.bigdl.dllib.models.inception.Inception_v1
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.utils.{Engine, RandomGenerator, Shape}
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.dllib.common.{NNContext, _}
+import com.intel.analytics.bigdl.dllib.feature.common.{TensorToSample, _}
+import com.intel.analytics.bigdl.dllib.feature.image._
+import com.intel.analytics.bigdl.dllib.keras.layers.Merge.merge
+import com.intel.analytics.bigdl.dllib.keras.layers.{Dense, Input}
+import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.objectives.ZooClassNLLCriterion
+// import org.apache.flink.types.Nothing
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature.MinMaxScaler
@@ -483,8 +484,8 @@ class NNEstimatorSpec extends ZooSpecHelper {
   "An NNModel" should "support save/load keras model" in {
     val modelLocation = getClass.getClassLoader.getResource("models/nnframes_keras").getFile
     /** code to generate model
-     * import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Embedding, Input}
-     * import com.intel.analytics.zoo.pipeline.api.keras.models.Model
+     * import com.intel.analytics.bigdl.dllib.keras.layers.{Dense, Embedding, Input}
+     * import com.intel.analytics.bigdl.dllib.keras.models.Model
      * val input = Input(inputShape = Shape(6))
      * val output = Dense(2).inputs(input)
      * val module = Model(input, output)
