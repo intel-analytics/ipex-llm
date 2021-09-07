@@ -19,15 +19,15 @@ package com.intel.analytics.bigdl.orca.tfpark
 import java.io._
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast, ModelInfo}
+import com.intel.analytics.bigdl.dllib.models.utils.{CachedModels, ModelBroadcast, ModelInfo}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{MklDnnLayer, TensorMMap}
 import com.intel.analytics.bigdl.dllib.nn.tf.Const
 import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
-import com.intel.analytics.zoo.common.CheckedObjectInputStream
+import com.intel.analytics.bigdl.dllib.common.CheckedObjectInputStream
 import com.intel.analytics.bigdl.dllib.utils.Engine
-import com.intel.analytics.zoo.pipeline.api.net.SerializationHolder
+import com.intel.analytics.bigdl.dllib.net.SerializationHolder
 import com.intel.analytics.bigdl.orca.tfpark.Util._
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.SparkContext
@@ -49,8 +49,8 @@ class TFModelBroadcast[T: ClassTag]()
   private var coreNumber: Int = _
 
   private def setNodeAndCore(): Unit = {
-    nodeNumber = EngineRef.getNodeNumber()
-    coreNumber = EngineRef.getCoreNumber()
+    nodeNumber = Engine.nodeNumber()
+    coreNumber = Engine.coreNumber()
   }
 
   /**
@@ -101,7 +101,7 @@ class TFModelBroadcast[T: ClassTag]()
    * @return model
    */
   override def value(initGradient: Boolean = false, shareWeight: Boolean = true): Module[T] = {
-    EngineRef.setCoreNumber(coreNumber)
+    Engine.setCoreNumber(coreNumber)
     //    Engine.setNodeAndCore(nodeNumber, coreNumber)
     CachedModels.deleteAll(this.uuid)
 

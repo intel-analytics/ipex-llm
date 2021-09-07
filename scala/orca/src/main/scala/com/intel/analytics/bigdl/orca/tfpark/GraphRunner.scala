@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.orca.tfpark
 import java.nio._
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.zoo.common.Utils
+import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.zoo.core.TFNetNative
 //import com.intel.analytics.zoo.pipeline.api.net.TFNet
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
@@ -109,7 +109,7 @@ class GraphRunner(
           outputNames: Vector[String],
           outputTypes: Vector[DataType],
           targets: Vector[String]): Unit = {
-    Utils.timeIt("Graph Runner Run") {
+    zooUtils.timeIt("Graph Runner Run") {
       try {
         val runner = sess.runner()
 
@@ -129,7 +129,7 @@ class GraphRunner(
         targets.foreach(runner.addTarget)
 
 
-        val outputs = Utils.timeIt("Session Run") {
+        val outputs = zooUtils.timeIt("Session Run") {
           runner.run()
         }
 
