@@ -70,9 +70,9 @@ ray stop -f
 #ray stop -f
 
 echo "Running RayOnSpark tests"
-python -m pytest -v ../test/zoo/ray/ \
-	--ignore=../test/zoo/ray/integration/ \
-	--ignore=../test/zoo/ray/test_reinit_raycontext.py
+python -m pytest -v ../bigdl/orca/ray/ \
+	--ignore=../bigdl/orca/ray/integration/ \
+	--ignore=../bigdl/orca/ray/test_reinit_raycontext.py
 exit_status_1=$?
 if [ $exit_status_1 -ne 0 ];
 then
