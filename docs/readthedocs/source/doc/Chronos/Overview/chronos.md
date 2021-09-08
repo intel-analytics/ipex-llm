@@ -114,10 +114,60 @@ ts_pipeline = trainer.fit(train_df, validation_df, recipe=SmokeRecipe())
 `recipe` configures the search space for auto tuning. View [Recipe API docs](../../PythonAPI/Chronos/autots.html#chronos-config-recipe) for available recipes. 
 After training, it will return a [TSPipeline](../../PythonAPI/Chronos/autots.html#zoo.chronos.autots.forecast.TSPipeline), which includes not only the model, but also the data preprocessing/post processing steps. 
 
-Appropriate hyperparameters are automatically selected for the models and data processing steps in the pipeline during the fit process, and you may use built-in [visualization tool](https://analytics-zoo.github.io/master/#ProgrammingGuide/AutoML/visualization/) (This link lead to our old document, please head back after reading the visualization page.) to inspect the training results after training stopped. 
+Appropriate hyperparameters are automatically selected for the models and data processing steps in the pipeline during the fit process, and you may use built-in [visualization tool](#Visualization) to inspect the training results after training stopped. 
 
+<span id="Visualization"></span>
+##### **4.2.4 Visualization**
 
-##### **4.2.4 Use TSPipeline**
+AutoML visualization provides two kinds of visualization.
+* During the searching process, the visualizations of each trail are shown and updated every 30 seconds. (Monitor view)
+* After the searching process, a leaderboard of each trail's configs and metrics is shown. (Leaderboard view)
+
+**Note**: AutoML visualization is based on tensorboard and tensorboardx. They should be installed properly before the training starts.
+
+<span id="monitor_view">**Monitor view**</span>
+
+Before training, start the tensorboard server through
+
+```python
+tensorboard --logdir=<logs_dir>/<job_name>
+```
+
+`logs_dir` is the log directory you set for your predictor(e.g. TimeSequencePredictor in Automated Time Series Prediction). It is default to "/home/\<username>/zoo_automl_logs", where `username` is your login username. `job_name` is the name parameter you set for your predictor.
+
+The data in SCALARS tag will be updated every 30 seconds for users to see the training progress.
+
+![](../Image/automl_monitor.png)
+
+After training, start the tensorboard server through
+
+```python
+tensorboard --logdir=<logs_dir>/<job_name>_leaderboard/
+```
+
+where `logs_dir` and `job_name` are the same as stated in [Monitor view](#monitor_view).
+
+A dashboard of each trail's configs and metrics is shown in the SCALARS tag.
+
+![](../Image/automl_scalars.png)
+
+A leaderboard of each trail's configs and metrics is shown in the HPARAMS tag.
+
+![](../Image/automl_hparams.png)
+
+**Use visualization in Jupyter Notebook**
+
+You can enable a tensorboard view in jupyter notebook by the following code.
+
+```python
+%load_ext tensorboard
+# for scalar view
+%tensorboard --logdir <logs_dir>/<job_name>/
+# for leaderboard view
+%tensorboard --logdir <logs_dir>/<job_name>_leaderboard/
+```
+
+##### **4.2.5 Use TSPipeline**
 
 Use `TSPipeline.predict|evaluate|fit` for prediction, evaluation or (incremental) fitting. **Note**: incremental fitting on TSPipeline just update the model weights the standard way, which does not involve AutoML.
 
