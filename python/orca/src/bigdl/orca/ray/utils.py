@@ -15,8 +15,7 @@
 #
 
 import re
-import os
-import signal
+import psutil
 
 
 def to_list(input):
@@ -54,27 +53,11 @@ def resource_to_bytes(resource_str):
                         "E.g. 50b, 100k, 250m, 30g")
 
 
-def gen_shutdown_per_node(pgids, node_ips=None):
-    import ray._private.services as rservices
-    pgids = to_list(pgids)
-
-    def _shutdown_per_node(iter):
-        print("Stopping pgids: {}".format(pgids))
-        if node_ips:
-            current_node_ip = rservices.get_node_ip_address()
-            effect_pgids = [pair[0] for pair in zip(pgids, node_ips) if pair[1] == current_node_ip]
-        else:
-            effect_pgids = pgids
-        for pgid in effect_pgids:
-            print("Stopping by pgid {}".format(pgid))
-            try:
-                os.killpg(pgid, signal.SIGTERM)
-            except Exception:
-                print("WARNING: cannot kill pgid: {}".format(pgid))
-
-    return _shutdown_per_node
-
-
 def is_local(sc):
     master = sc.getConf().get("spark.master")
     return master == "local" or master.startswith("local[")
+
+
+def get_parent_pid(pid):
+    cur_proc = psutil.Process(pid)
+    return cur_proc.ppid()
