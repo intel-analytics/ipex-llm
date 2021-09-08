@@ -47,16 +47,6 @@ fi
 
 ray stop -f
 
-echo "Running automl tests"
-python -m pytest -v ../test/zoo/automl
-exit_status_3=$?
-if [ $exit_status_3 -ne 0 ];
-then
-    exit $exit_status_3
-fi
-
-ray stop -f
-
 echo "Running chronos tests"
 python -m pytest -v ../test/zoo/chronos \
        -k "not test_forecast_tcmf_distributed"
