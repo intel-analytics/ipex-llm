@@ -66,7 +66,7 @@ class KerasNet(ZooKerasLayer):
         if isinstance(loss, six.string_types):
             criterion = to_bigdl_criterion(loss)
         if callable(loss):
-            from zoo.pipeline.api.autograd import CustomLoss
+            from bigdl.dllib.autograd import CustomLoss
             criterion = CustomLoss(loss, self.get_output_shape()[1:])
         if metrics and all(isinstance(metric, six.string_types) for metric in metrics):
             metrics = to_bigdl_metrics(metrics, loss)
