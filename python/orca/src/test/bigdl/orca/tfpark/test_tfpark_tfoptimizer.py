@@ -15,15 +15,15 @@
 #
 import pytest
 
-from bigdl.optim.optimizer import Adam, SGD, MaxEpoch
+from bigdl.dllib.optim.optimizer import Adam, SGD, MaxEpoch
 from zoo.pipeline.api.keras.metrics import Accuracy
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from test.bigdl.test_zoo_utils import ZooTestCase
 import tensorflow as tf
 import numpy as np
 import tempfile
 import os
 
-from zoo.tfpark import TFDataset, TFOptimizer
+from bigdl.orca.tfpark import TFDataset, TFOptimizer
 
 
 class TestTFParkTFOptimizer(ZooTestCase):
