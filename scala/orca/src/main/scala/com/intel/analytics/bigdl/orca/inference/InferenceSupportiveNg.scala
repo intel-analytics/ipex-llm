@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import java.util.{List => JList}
 import java.lang.{Float => JFloat}
 import java.lang.{Integer => JInt}
 import java.util
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

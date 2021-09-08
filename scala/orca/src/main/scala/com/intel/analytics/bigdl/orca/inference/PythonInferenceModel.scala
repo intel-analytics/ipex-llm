@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.common.PythonZoo
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import java.util.{List => JList}
 
 import scala.reflect.ClassTag

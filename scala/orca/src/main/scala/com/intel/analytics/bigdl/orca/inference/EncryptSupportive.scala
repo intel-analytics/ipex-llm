@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
 import java.io.PrintWriter
 import java.util.Base64

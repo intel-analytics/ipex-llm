@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
-import com.intel.analytics.zoo.tensorboard.Summary
-import com.intel.analytics.zoo.tensorboard.FileWriter
-import com.intel.analytics.zoo.tensorboard.FileReader
+import com.intel.analytics.bigdl.dllib.visualization.tensorboard.Summary
+import com.intel.analytics.bigdl.dllib.visualization.tensorboard.FileWriter
+import com.intel.analytics.bigdl.dllib.visualization.tensorboard.FileReader
 
 
 class InferenceSummary(logDir: String,

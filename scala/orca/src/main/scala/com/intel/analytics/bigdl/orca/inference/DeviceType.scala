@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
 object DeviceType extends Enumeration {
   val CPU = value("CPU", 0)

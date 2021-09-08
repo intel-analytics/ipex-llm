@@ -159,8 +159,8 @@ model.load_openvino(modelPath, weightPath)
 ## **Predict with loaded model**
 After loading pre-trained models with load methods, we can make prediction with unified `predict` method.
 
-* `predictInput`: JList[JList[JTensor]] or [Tensor](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/tensor) for Scale and Java, Numpy for Python. Input data for prediction. [JTensor](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/java/com/intel/analytics/zoo/pipeline/inference/JTensor.java) is a 1D List, with Array[Int] shape.
-* `predictOutput`: JList[JList[JTensor]] or [Tensor](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/tensor) for Scale and Java, Numpy for Python. Prediction result.
+* `predictInput`: JList[JList[JTensor]] or [Tensor](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com.intel.analytics.bigdl.dllib.tensor) for Scale and Java, Numpy for Python. Input data for prediction. [JTensor](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/java/com.intel.analytics.bigdl.orca.inference/JTensor.java) is a 1D List, with Array[Int] shape.
+* `predictOutput`: JList[JList[JTensor]] or [Tensor](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com.intel.analytics.bigdl.dllib.tensor) for Scale and Java, Numpy for Python. Prediction result.
 
 ### **predict**
 
@@ -194,7 +194,7 @@ predict_output = model.predict(predict_input)
 to a valid data type, thus supporting future inference model prediction tasks.
 
 For example, method `transferTensorToJTensor` convert a model input of data type `Tensor` 
-to [`JTensor`](https://github.com/intel-analytics/analytics-zoo/blob/88afc2d921bb50341d8d7e02d380fa28f49d246b/zoo/src/main/java/com/intel/analytics/zoo/pipeline/inference/JTensor.java)
+to [`JTensor`](https://github.com/intel-analytics/analytics-zoo/blob/88afc2d921bb50341d8d7e02d380fa28f49d246b/zoo/src/main/java/com.intel.analytics.bigdl.orca.inference/JTensor.java)
 , which will be the input for a FloatInferenceModel.
 
 **AbstractModel**

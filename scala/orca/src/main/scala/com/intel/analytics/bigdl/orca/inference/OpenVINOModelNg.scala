@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
 import java.io.{File, IOException}
 import java.nio.file.{Files, Paths}
 import java.util
 import java.util.{ArrayList, Arrays, UUID, List => JList}
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.zoo.common.Utils.createTmpDir
-import com.intel.analytics.zoo.pipeline.api.net.{NetUtils, RegistryMap, SerializationHolder}
-import com.intel.analytics.zoo.pipeline.inference.DeviceType.DeviceTypeEnumVal
-import com.intel.analytics.zoo.pipeline.inference.OpenVINOModel.OpenVINOModelHolder
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.common.zooUtils.createTmpDir
+import com.intel.analytics.bigdl.dllib.net.{NetUtils, RegistryMap, SerializationHolder}
+import com.intel.analytics.bigdl.orca.inference.DeviceType.DeviceTypeEnumVal
+import com.intel.analytics.bigdl.orca.inference.OpenVINOModel.OpenVINOModelHolder
 import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 

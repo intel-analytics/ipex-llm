@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
 import java.util.{List => JList}
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 
 trait AbstractModel {
   def predictNg(input: JList[JTensor]): JList[JTensor]

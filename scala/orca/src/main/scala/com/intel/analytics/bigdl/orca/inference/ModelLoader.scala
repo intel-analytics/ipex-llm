@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
 import java.io.{ByteArrayInputStream, File, FileOutputStream}
 import java.nio.channels.Channels
 
-import com.intel.analytics.bigdl.nn.Graph
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
-import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
-import com.intel.analytics.zoo.common.Utils
-import com.intel.analytics.zoo.pipeline.api.keras.layers.WordEmbedding
-import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
-import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, TFNet, TorchModel}
+import com.intel.analytics.bigdl.dllib.nn.Graph
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.utils.caffe.CaffeLoader
+import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
+import com.intel.analytics.bigdl.dllib.common.zooUtils
+import com.intel.analytics.bigdl.dllib.keras.layers.WordEmbedding
+import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}
+import com.intel.analytics.bigdl.dllib.net.{GraphNet, TFNet, TorchModel}
 import org.slf4j.LoggerFactory
 
 import scala.language.postfixOps
