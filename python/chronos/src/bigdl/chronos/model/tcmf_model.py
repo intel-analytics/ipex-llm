@@ -16,7 +16,7 @@ from abc import ABCMeta, abstractmethod
 
 from zoo.chronos.model.tcmf import DeepGLO
 from zoo.orca.automl.metrics import Evaluator
-from zoo.automl.model.abstract import BaseModel
+from zoo.orca.automl.model.abstract import BaseModel
 from zoo.orca.data import SparkXShards, XShards
 import pickle
 import numpy as np

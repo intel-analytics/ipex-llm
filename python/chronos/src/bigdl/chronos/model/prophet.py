@@ -21,7 +21,7 @@ from prophet.diagnostics import performance_metrics
 from prophet.diagnostics import cross_validation
 
 from zoo.orca.automl.metrics import Evaluator
-from zoo.automl.model.abstract import BaseModel, ModelBuilder
+from zoo.orca.automl.model.abstract import BaseModel, ModelBuilder
 
 
 class ProphetModel(BaseModel):

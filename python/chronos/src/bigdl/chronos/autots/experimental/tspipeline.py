@@ -194,7 +194,7 @@ class TSPipeline:
             data_process = pickle.load(f)
         with open(best_config_path, "rb") as f:
             best_config = pickle.load(f)
-        from zoo.automl.model.base_pytorch_model import PytorchBaseModel
+        from zoo.orca.automl.model.base_pytorch_model import PytorchBaseModel
         best_model = PytorchBaseModel(**model_init)
         best_model.restore(model_path)
         return TSPipeline(best_model, best_config, **data_process)
