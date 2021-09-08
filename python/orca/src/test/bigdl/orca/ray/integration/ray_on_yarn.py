@@ -18,7 +18,7 @@
 import ray
 
 from zoo import init_spark_on_yarn
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 
 slave_num = 2
 
