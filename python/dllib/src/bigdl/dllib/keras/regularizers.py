@@ -1,5 +1,5 @@
 #
-# Copyright 2016 The BigDL Authors.
+# Copyright 2018 Analytics Zoo Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
 # limitations under the License.
 #
 
-from ..engine import *
-from .core import *
-from .convolutional import *
-from .pooling import *
-from .local import *
-from .recurrent import *
-from .normalization import *
-from .embeddings import *
-from .noise import *
-from .advanced_activations import *
-from .wrappers import *
-from .convolutional_recurrent import *
-from .torch import *
-from .self_attention import *
+
+from bigdl.dllib.optim.optimizer import *
+
+
+def l1(l1=0.01):
+    return L1Regularizer(l1=l1)
+
+
+def l2(l2=0.01):
+    return L2Regularizer(l2=l2)
+
+
+def l1l2(l1=0.01, l2=0.01):
+    return L1L2Regularizer(l1=l1, l2=l2)
