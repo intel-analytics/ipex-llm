@@ -1,5 +1,7 @@
+#!/usr/bin/env bash
+
 #
-# Copyright 2016 The BigDL Authors.
+# Copyright 2018 Analytics Zoo Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +16,24 @@
 # limitations under the License.
 #
 
-from ..engine import *
-from .core import *
-from .convolutional import *
-from .pooling import *
-from .local import *
-from .recurrent import *
-from .normalization import *
-from .embeddings import *
-from .noise import *
-from .advanced_activations import *
-from .wrappers import *
-from .convolutional_recurrent import *
-from .torch import *
-from .self_attention import *
+. `dirname $0`/prepare_env.sh
+
+cd "`dirname $0`"
+
+export PYSPARK_PYTHON=python
+export PYSPARK_DRIVER_PYTHON=python
+
+python -m pytest -v --doctest-modules ../../../../dllib/src/bigdl/dllib/keras
+
+exit_status_1=$?
+if [ $exit_status_1 -ne 0 ];
+then
+    exit $exit_status_1
+fi
+
+python -m pytest -v ../test/bigdl/keras/test_layer.py
+exit_status_2=$?
+if [ $exit_status_2 -ne 0 ];
+then
+    exit $exit_status_2
+fi
