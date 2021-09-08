@@ -43,11 +43,16 @@ This guidance is used to provide guidance to BigDL and Analytics zoo users to mi
    ```bigdl.nn.keras.XYZ``` is deprecated and will be removed. Please use zoo keras api instead
 
 * **For Analytics Zoo users**
+
    ***scala application***
 
    ****feature/common/nnframes modules****
 
    Change ```import com.intel.analytics.zoo.XYZ``` to ```import com.intel.analytics.bigdl.dllib.XYZ```
+   
+   ****Keras modules****
+
+   Change ```import com.intel.analytics.zoo.pipeline.api.keras.XYZ``` to ```import com.intel.analytics.bigdl.dllib.keras.XYZ```
 
 If you are a maven user and add above modules as dependency to your own project. Please change the dependency as
    ```
