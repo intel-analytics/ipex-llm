@@ -107,13 +107,13 @@ class ZooTestCase(TestCase):
         Compare forward results for Keras layer against Zoo Keras API layer.
         """
         from keras.models import Sequential as KSequential
-        from zoo.pipeline.api.keras.models import Sequential as ZSequential
+        from bigdl.dllib.keras.models import Sequential as ZSequential
         zmodel = ZSequential()
         zmodel.add(zlayer)
         kmodel = KSequential()
         kmodel.add(klayer)
         koutput = kmodel.predict(input_data)
-        from zoo.pipeline.api.keras.layers import BatchNormalization
+        from bigdl.dllib.keras.layers import BatchNormalization
         if isinstance(zlayer, BatchNormalization):
             k_running_mean = K.eval(klayer.running_mean)
             k_running_std = K.eval(klayer.running_std)
