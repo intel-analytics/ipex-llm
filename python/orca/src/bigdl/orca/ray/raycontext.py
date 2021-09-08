@@ -27,10 +27,10 @@ import filelock
 import multiprocessing
 from packaging import version
 
-from zoo.ray.process import session_execute, ProcessMonitor
-from zoo.ray.utils import is_local
-from zoo.ray.utils import resource_to_bytes
-from zoo.ray.utils import get_parent_pid
+from bigdl.orca.ray.process import session_execute, ProcessMonitor
+from bigdl.orca.ray.utils import is_local
+from bigdl.orca.ray.utils import resource_to_bytes
+from bigdl.orca.ray.utils import get_parent_pid
 
 
 def kill_redundant_log_monitors(redis_address):
@@ -222,7 +222,7 @@ class RayServiceFuncGenerator(object):
 
     def gen_ray_master_start(self):
         def _start_ray_master(index, iter):
-            from zoo.util.utils import get_node_ip
+            from bigdl.dllib.utils.utils import get_node_ip
             process_info = None
             if index == 0:
                 print("partition id is : {}".format(index))
@@ -237,7 +237,7 @@ class RayServiceFuncGenerator(object):
 
     def gen_raylet_start(self, redis_address):
         def _start_raylets(iter):
-            from zoo.util.utils import get_node_ip
+            from bigdl.dllib.utils.utils import get_node_ip
             current_ip = get_node_ip()
             master_ip = redis_address.split(":")[0]
             do_start = True
@@ -273,7 +273,7 @@ class RayServiceFuncGenerator(object):
     def gen_ray_start(self, master_ip):
         def _start_ray_services(iter):
             from pyspark import BarrierTaskContext
-            from zoo.util.utils import get_node_ip
+            from bigdl.dllib.utils.utils import get_node_ip
             tc = BarrierTaskContext.get()
             current_ip = get_node_ip()
             print("current address {}".format(current_ip))
@@ -430,7 +430,7 @@ class RayContext(object):
                                 "you need to manually specify num_ray_nodes and ray_node_cpu_cores "
                                 "for RayContext to start ray services")
 
-            from zoo.util.utils import detect_python_location
+            from bigdl.dllib.utils.utils import detect_python_location
             self.python_loc = os.environ.get("PYSPARK_PYTHON", detect_python_location())
             self.redis_port = random.randint(10000, 65535) if not redis_port else int(redis_port)
             self.ray_service = RayServiceFuncGenerator(
@@ -462,7 +462,7 @@ class RayContext(object):
         ray master.
         """
         def info_fn(iter):
-            from zoo.util.utils import get_node_ip
+            from bigdl.dllib.utils.utils import get_node_ip
             yield get_node_ip()
 
         ips = self.sc.range(0, self.total_cores,
