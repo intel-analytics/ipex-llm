@@ -90,27 +90,27 @@ class TestSimpleIntegration(ZooTestCase):
         shutil.rmtree(tmp_log_dir)
         shutil.rmtree(tmp_checkpoint_path)
 
-    def test_multiple_outputs_predict(self):
-        input = Input(shape=(32, ))
-        dense1 = Dense(10)(input)
-        dense2 = Dense(12)(input)
-        model = Model(input, [dense1, dense2])
-        data = np.random.random([10, 32])
-        result = model.predict(data).collect()
-        for res in result:
-            assert isinstance(res, list) and len(res) == 2
-        result2 = model.predict(data, distributed=False)
-        for res in result2:
-            assert isinstance(res, list) and len(res) == 2
+    # def test_multiple_outputs_predict(self):
+    #     input = Input(shape=(32, ))
+    #     dense1 = Dense(10)(input)
+    #     dense2 = Dense(12)(input)
+    #     model = Model(input, [dense1, dense2])
+    #     data = np.random.random([10, 32])
+    #     result = model.predict(data).collect()
+    #     for res in result:
+    #         assert isinstance(res, list) and len(res) == 2
+    #     result2 = model.predict(data, distributed=False)
+    #     for res in result2:
+    #         assert isinstance(res, list) and len(res) == 2
 
-    def test_training_without_validation(self):
-        model = Sequential()
-        model.add(Dense(4, activation="relu", input_shape=(10, )))
-        x = np.random.random([300, 10])
-        y = np.random.random([300, ])
-        model.compile(optimizer="sgd", loss="mae")
-        model.fit(x, y, batch_size=112, nb_epoch=2)
-        model.predict(x)
+    # def test_training_without_validation(self):
+    #     model = Sequential()
+    #     model.add(Dense(4, activation="relu", input_shape=(10, )))
+    #     x = np.random.random([300, 10])
+    #     y = np.random.random([300, ])
+    #     model.compile(optimizer="sgd", loss="mae")
+    #     model.fit(x, y, batch_size=112, nb_epoch=2)
+    #     model.predict(x)
 
     def test_training_imageset(self):
         images = []
