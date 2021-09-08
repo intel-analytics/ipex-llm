@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.tfpark import KerasModel
+from bigdl.orca.tfpark import KerasModel
 
 
 # TODO: add word embedding file support

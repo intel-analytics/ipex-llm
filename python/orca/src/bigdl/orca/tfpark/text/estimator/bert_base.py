@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.tfpark.estimator import *
+from bigdl.orca.tfpark.estimator import *
 from bert import modeling
 
 

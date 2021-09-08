@@ -22,15 +22,15 @@ import numpy as np
 import six
 from pyspark import RDD
 
-from bigdl.nn.layer import Layer
-from zoo.common import JTensor
-from zoo.common.nncontext import getOrCreateSparkContext
-from zoo.common.utils import callZooFunc
-from zoo.feature.image import ImageSet
-from zoo.tfpark.tf_dataset import TFImageDataset, TFDataset
+from bigdl.dllib.nn.layer import Layer
+from bigdl.dllib.utils.file_utils import JTensor
+from bigdl.dllib.utils.nncontext import getOrCreateSparkContext
+from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.feature.image import ImageSet
+from bigdl.orca.tfpark.tf_dataset import TFImageDataset, TFDataset
 import logging
 
-from zoo.util.utils import to_sample_rdd
+from bigdl.dllib.utils.utils import to_sample_rdd
 
 if sys.version >= '3':
     long = int
@@ -254,7 +254,7 @@ class TFNet(Layer):
                             net = TFNet.from_session(sess, inputs, outputs, sess_config)
         :return a TFNet
         """
-        from zoo.util.tf import export_tf
+        from bigdl.dllib.utils.tf import export_tf
         temp = tempfile.mkdtemp()
         try:
             if generate_backward:

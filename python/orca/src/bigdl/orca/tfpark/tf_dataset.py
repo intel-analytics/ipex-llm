@@ -21,15 +21,15 @@ import functools
 import logging
 
 from pyspark.ml.linalg import DenseVector, SparseVector, VectorUDT
-from bigdl.transform.vision.image import FeatureTransformer
-from bigdl.util.common import get_node_and_core_number
-from zoo.common.utils import callZooFunc
-from zoo.common import Sample, JTensor
-from zoo.common.nncontext import getOrCreateSparkContext
-from zoo.feature.common import FeatureSet, SampleToMiniBatch, Preprocessing
-from zoo.feature.image import ImagePreprocessing, ImageFeatureToSample
-from zoo.util import nest
-from zoo.util.utils import convert_row_to_numpy
+from bigdl.dllib.feature.transform.vision.image import FeatureTransformer
+from bigdl.dllib.utils.common import get_node_and_core_number
+from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.file_utils import Sample, JTensor
+from bigdl.dllib.utils.nncontext import getOrCreateSparkContext
+from bigdl.dllib.feature.common import FeatureSet, SampleToMiniBatch, Preprocessing
+from bigdl.dllib.feature.image import ImagePreprocessing, ImageFeatureToSample
+from bigdl.dllib.utils import nest
+from bigdl.dllib.utils.file_utils import convert_row_to_numpy
 
 if sys.version >= '3':
     long = int

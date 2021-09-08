@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.optim.optimizer import OptimMethod
-from zoo.util.tf import process_grad
+from bigdl.dllib.optim.optimizer import OptimMethod
+from bigdl.dllib.utils.tf import process_grad
 
 
 class FakeOptimMethod(OptimMethod):

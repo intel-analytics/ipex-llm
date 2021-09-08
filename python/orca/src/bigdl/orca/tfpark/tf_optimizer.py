@@ -20,21 +20,21 @@ import os
 import sys
 import tempfile
 
-from bigdl.nn.criterion import Criterion
-from bigdl.nn.layer import Layer
-from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
-from bigdl.util.common import to_list, JavaValue
+from bigdl.dllib.nn.criterion import Criterion
+from bigdl.dllib.nn.layer import Layer
+from bigdl.dllib.optim.optimizer import MaxEpoch, EveryEpoch
+from bigdl.dllib.utils.common import to_list, JavaValue
 
-from zoo.common.utils import callZooFunc
-from zoo.feature.common import FeatureSet
+from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.feature.common import FeatureSet
 from zoo.pipeline.api.keras.engine.topology import to_bigdl_metric, Loss, OptimMethod
 from zoo.pipeline.api.net.utils import find_placeholders, to_bigdl_optim_method, find_tensors
 from zoo.pipeline.estimator import Estimator
-from zoo.util import nest
-from zoo.util.triggers import EveryEpoch as ZEveryEpoch
-from zoo.util.triggers import ZooTrigger
-from zoo.tfpark.tf_dataset import TFNdarrayDataset, check_data_compatible
-from zoo.tfpark.tf_dataset import _standarize_feature_label_dataset
+from bigdl.dllib.utils import nest
+from bigdl.dllib.utils.triggers import EveryEpoch as ZEveryEpoch
+from bigdl.dllib.utils.triggers import ZooTrigger
+from bigdl.orca.tfpark.tf_dataset import TFNdarrayDataset, check_data_compatible
+from bigdl.orca.tfpark.tf_dataset import _standarize_feature_label_dataset
 
 if sys.version >= '3':
     long = int
@@ -146,7 +146,7 @@ class TFModel(object):
     def _process_grads(graph, grads):
 
         with graph.as_default():
-            from zoo.util.tf import process_grad
+            from bigdl.dllib.utils.tf import process_grad
             grads = [process_grad(grad) for grad in grads]
         return grads
 
@@ -486,7 +486,7 @@ class TFOptimizer:
 
         inputs = nest.flatten(inputs)
         labels = nest.flatten(labels)
-        from zoo.tfpark.zoo_optimizer import FakeOptimMethod
+        from bigdl.orca.tfpark.zoo_optimizer import FakeOptimMethod
         return TFOptimizer._from_grads(loss=loss, sess=sess, inputs=inputs, labels=labels,
                                        grads=grads,
                                        variables=variables, dataset=dataset, metrics=metrics,
@@ -656,7 +656,7 @@ class TFOptimizer:
         variables.sort(key=lambda variable: variable.name)
         keras_optimizer = keras_model.optimizer
 
-        from zoo.tfpark.zoo_optimizer import get_gradients_for_keras
+        from bigdl.orca.tfpark.zoo_optimizer import get_gradients_for_keras
         grads = get_gradients_for_keras(keras_optimizer, loss, variables)
         grads_and_vars = list(zip(grads, variables))
         import tensorflow.python.keras.optimizers as koptimizers

@@ -15,16 +15,16 @@
 #
 
 import numpy as np
-from bigdl.optim.optimizer import MaxEpoch
+from bigdl.dllib.optim.optimizer import MaxEpoch
 
-from zoo.tfpark.utils import evaluate_string_metrics
-from zoo.common import enable_multi_fs_save, enable_multi_fs_load
-from zoo.common.nncontext import getOrCreateSparkContext
-from zoo.tfpark.tf_dataset import TFNdarrayDataset, TFDataset, _standarize_feature_label_dataset, \
+from bigdl.orca.tfpark.utils import evaluate_string_metrics
+from bigdl.dllib.utils.file_utils import enable_multi_fs_save, enable_multi_fs_load
+from bigdl.dllib.utils.nncontext import getOrCreateSparkContext
+from bigdl.orca.tfpark.tf_dataset import TFNdarrayDataset, TFDataset, _standarize_feature_label_dataset, \
     check_data_compatible
 
-from zoo.tfpark.tf_optimizer import TFOptimizer
-from zoo.tfpark.tf_predictor import TFPredictor
+from bigdl.orca.tfpark.tf_optimizer import TFOptimizer
+from bigdl.orca.tfpark.tf_predictor import TFPredictor
 
 
 class KerasModel(object):

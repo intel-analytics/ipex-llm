@@ -19,10 +19,10 @@ import tempfile
 
 import tensorflow as tf
 
-from zoo.tfpark import TFOptimizer
+from bigdl.orca.tfpark import TFOptimizer
 # todo make it inherit Estimator
-from zoo.tfpark.zoo_optimizer import FakeOptimMethod
-from zoo.util import nest
+from bigdl.orca.tfpark.zoo_optimizer import FakeOptimMethod
+from bigdl.dllib.utils import nest
 
 
 class GANEstimator(object):
@@ -39,7 +39,7 @@ class GANEstimator(object):
                  model_dir=None,
                  session_config=None,
                  ):
-        from zoo.tfpark import ZooOptimizer
+        from bigdl.orca.tfpark import ZooOptimizer
         assert isinstance(generator_optimizer, ZooOptimizer),\
             "generator_optimizer should be a ZooOptimizer"
         assert isinstance(discriminator_optimizer, ZooOptimizer),\

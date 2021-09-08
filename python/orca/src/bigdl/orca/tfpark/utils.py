@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zoo.tfpark.tfnet import TFNet
-from zoo.tfpark.tf_optimizer import BigDLMetric, TFModel
+from bigdl.orca.tfpark.tfnet import TFNet
+from bigdl.orca.tfpark.tf_optimizer import BigDLMetric, TFModel
 from zoo.pipeline.api.keras import metrics as zmetrics
 
 
@@ -25,12 +25,12 @@ def to_bigdl_metric(metric):
     elif metric == "top5accuracy" or metric == "top5acc":
         return zmetrics.Top5Accuracy()
     elif metric == "mae":
-        from bigdl.optim.optimizer import MAE
+        from bigdl.dllib.optim.optimizer import MAE
         return MAE()
     elif metric == "auc":
         return zmetrics.AUC()
     elif metric == "treennaccuracy":
-        from bigdl.optim.optimizer import TreeNNAccuracy
+        from bigdl.dllib.optim.optimizer import TreeNNAccuracy
         return TreeNNAccuracy()
     else:
         raise TypeError("Unsupported metric: %s" % metric)

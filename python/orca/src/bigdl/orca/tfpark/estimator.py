@@ -14,15 +14,15 @@
 # limitations under the License.
 #
 
-from bigdl.optim.optimizer import MaxIteration, Loss, TreeNNAccuracy
+from bigdl.dllib.optim.optimizer import MaxIteration, Loss, TreeNNAccuracy
 
-from zoo.tfpark.utils import evaluate_string_metrics
-from zoo.pipeline.api.keras import metrics
-from zoo.tfpark.tfnet import TFNet
-from zoo.tfpark.tf_optimizer import TFOptimizer
-from zoo.tfpark.tf_dataset import TFDataset
+from bigdl.orca.tfpark.utils import evaluate_string_metrics
+from bigdl.dllib.keras import metrics
+from bigdl.orca.tfpark.tfnet import TFNet
+from bigdl.orca.tfpark.tf_optimizer import TFOptimizer
+from bigdl.orca.tfpark.tf_dataset import TFDataset
 
-from zoo.util import nest
+from bigdl.dllib.utils import nest
 import six
 import os
 
@@ -343,7 +343,7 @@ class TFEstimator(object):
         elif metric == "top5accuracy" or metric == "top5acc":
             return metrics.Top5Accuracy()
         elif metric == "mae":
-            from bigdl.optim.optimizer import MAE
+            from bigdl.dllib.optim.optimizer import MAE
             return MAE()
         elif metric == "auc":
             return metrics.AUC()
