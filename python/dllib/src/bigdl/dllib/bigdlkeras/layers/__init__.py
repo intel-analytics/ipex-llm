@@ -13,18 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from bigdl.dllib.utils.common import *
 
-from ..engine import *
-from .core import *
-from .convolutional import *
-from .pooling import *
-from .local import *
-from .recurrent import *
-from .normalization import *
-from .embeddings import *
-from .noise import *
-from .advanced_activations import *
-from .wrappers import *
-from .convolutional_recurrent import *
-from .torch import *
-from .self_attention import *
+init_engine()
+redire_spark_logs()
+show_bigdl_info_logs()

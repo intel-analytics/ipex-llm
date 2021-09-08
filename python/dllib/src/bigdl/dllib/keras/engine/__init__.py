@@ -1,5 +1,5 @@
 #
-# Copyright 2016 The BigDL Authors.
+# Copyright 2018 Analytics Zoo Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,4 @@
 # limitations under the License.
 #
 
-from ..engine import *
-from .core import *
-from .convolutional import *
-from .pooling import *
-from .local import *
-from .recurrent import *
-from .normalization import *
-from .embeddings import *
-from .noise import *
-from .advanced_activations import *
-from .wrappers import *
-from .convolutional_recurrent import *
-from .torch import *
-from .self_attention import *
+from .topology import *
