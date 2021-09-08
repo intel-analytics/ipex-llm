@@ -60,7 +60,11 @@
             <artifactId>scalatest_${scala.major.version}</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>black.ninia</groupId>
+            <artifactId>jep</artifactId>
+            <version>3.9.0</version>
+        </dependency>
         <!--<dependency>-->
             <!--<groupId>com.twelvemonkeys.imageio</groupId>-->
             <!--<artifactId>imageio-jpeg</artifactId>-->

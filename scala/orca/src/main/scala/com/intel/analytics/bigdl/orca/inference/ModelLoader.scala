@@ -26,7 +26,8 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.dllib.keras.layers.WordEmbedding
 import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}
-import com.intel.analytics.bigdl.dllib.net.{GraphNet, TFNet, TorchModel}
+import com.intel.analytics.bigdl.orca.net.{TFNet, TorchModel}
+import com.intel.analytics.bigdl.dllib.net.{GraphNet, NetUtils}
 import org.slf4j.LoggerFactory
 
 import scala.language.postfixOps
@@ -91,7 +92,7 @@ object ModelLoader extends InferenceSupportive {
     : AbstractModule[Activity, Activity, Float] = {
       timing("load model") {
         logger.info(s"load model from $frozenModelBytes")
-        val tmpDir = Utils.createTmpDir("ZOOTFNet").toFile()
+        val tmpDir = zooUtils.createTmpDir("ZOOTFNet").toFile()
         val outputPath: String = tmpDir.getCanonicalPath
 
         val tarFilePath = (frozenModelBytes == null) match {
@@ -138,7 +139,7 @@ object ModelLoader extends InferenceSupportive {
   : AbstractModule[Activity, Activity, Float] = {
     timing("load model") {
       logger.info(s"load model from $savedModelBytes")
-      val tmpDir = Utils.createTmpDir("ZOOTFNet").toFile()
+      val tmpDir = zooUtils.createTmpDir("ZOOTFNet").toFile()
       val outputPath: String = tmpDir.getCanonicalPath
 
       val tarFilePath = (savedModelBytes == null) match {

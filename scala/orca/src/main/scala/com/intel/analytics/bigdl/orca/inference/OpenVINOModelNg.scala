@@ -22,7 +22,7 @@ import java.util
 import java.util.{ArrayList, Arrays, UUID, List => JList}
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.common.zooUtils.createTmpDir
+import com.intel.analytics.bigdl.dllib.common.zooUtils.createTmpDir
 import com.intel.analytics.bigdl.dllib.net.{NetUtils, RegistryMap, SerializationHolder}
 import com.intel.analytics.bigdl.orca.inference.DeviceType.DeviceTypeEnumVal
 import com.intel.analytics.bigdl.orca.inference.OpenVINOModel.OpenVINOModelHolder

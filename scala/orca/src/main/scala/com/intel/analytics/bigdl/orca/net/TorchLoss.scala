@@ -19,7 +19,7 @@ import java.util.UUID
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.common.PythonInterpreter
+import com.intel.analytics.bigdl.orca.utils.PythonInterpreter
 import jep.NDArray
 import org.apache.spark.TaskContext
 

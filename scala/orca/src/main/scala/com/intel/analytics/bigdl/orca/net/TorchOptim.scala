@@ -19,8 +19,7 @@ import com.intel.analytics.bigdl.dllib.optim.OptimMethod
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{EngineType, Table}
-import com.intel.analytics.bigdl.common.PythonInterpreter
-import com.intel.analytics.bigdl.dllib.feature.PythonFeatureSet
+import com.intel.analytics.bigdl.orca.utils.PythonInterpreter
 import jep.NDArray
 import org.apache.spark.TaskContext
 

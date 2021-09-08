@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.orca.inference
 
-import com.intel.analytics.zoo.pipeline.api.net.TFNet
+import com.intel.analytics.bigdl.orca.net.TFNet
 import com.intel.analytics.bigdl.orca.inference.DeviceType.DeviceTypeEnumVal
 
 object InferenceModelFactory extends InferenceSupportive {

@@ -1,4 +1,4 @@
-package com.intel.analytics.zoo.pipeline.inference;
+package com.intel.analytics.bigdl.orca.inference;
 
 import java.util.ArrayList;
 import java.util.Arrays;

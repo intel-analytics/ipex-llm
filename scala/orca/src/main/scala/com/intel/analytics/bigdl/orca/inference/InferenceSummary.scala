@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.orca.inference
 
-import com.intel.analytics.bigdl.dllib.visualization.tensorboard.Summary
+import com.intel.analytics.bigdl.dllib.visualization.Summary
 import com.intel.analytics.bigdl.dllib.visualization.tensorboard.FileWriter
 import com.intel.analytics.bigdl.dllib.visualization.tensorboard.FileReader
 

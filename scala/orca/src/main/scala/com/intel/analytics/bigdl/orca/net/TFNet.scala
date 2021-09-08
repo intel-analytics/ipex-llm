@@ -26,10 +26,14 @@ import com.intel.analytics.bigdl.dllib.optim.{ValidationMethod, ValidationResult
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.T
-import com.intel.analytics.bigdl.dllib.utils.zooUtils
+import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.zoo.core.TFNetNative
 import com.intel.analytics.bigdl.dllib.keras.Predictable
+import com.intel.analytics.bigdl.dllib.net.{SerializationHolder, RegistryMap, NetUtils}
+import com.intel.analytics.bigdl.dllib.net.NetUtils._
+import com.intel.analytics.bigdl.dllib.net.Meta
 import com.intel.analytics.bigdl.orca.net.TFNet.TFGraphHolder
+import com.intel.analytics.bigdl.orca.net.TFNetForInference
 import com.intel.analytics.bigdl.orca.tfpark.{TFResourceManager, TFUtils}
 import org.apache.spark.rdd.RDD
 import org.tensorflow.framework.GraphDef
@@ -40,6 +44,7 @@ import org.json4s._
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
+
 
 /**
  * [[TFNet]] wraps a tensorflow subgraph as a layer, and use tensorflow to
@@ -179,7 +184,7 @@ class TFNet(private val graphDef: TFGraphHolder,
   override def updateOutput(input: Activity): Activity = {
     try {
 
-      Utils.timeIt("TFNet.updateOutput") {
+      zooUtils.timeIt("TFNet.updateOutput") {
         val runner = sess.runner()
 
         require(activityLength(input) == inputTypes.length,

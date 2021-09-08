@@ -86,8 +86,8 @@ The predict result of`AbstractInferenceModel` is a `List<List<JTensor>>` by defa
 
 It's very easy to apply abstract inference model for inference with below code piece. You will need to write a subclass that extends AbstractinferenceModel.
 ```java
-import com.intel.analytics.zoo.pipeline.inference.AbstractInferenceModel;
-import com.intel.analytics.zoo.pipeline.inference.JTensor;
+import com.intel.analytics.bigdl.orca.inference.AbstractInferenceModel;
+import com.intel.analytics.bigdl.orca.inference.JTensor;
 
 public class TextClassificationModel extends AbstractInferenceModel {
     public TextClassificationModel() {

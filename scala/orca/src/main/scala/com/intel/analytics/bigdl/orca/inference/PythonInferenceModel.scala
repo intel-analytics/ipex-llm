@@ -99,7 +99,7 @@ class PythonInferenceModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
 
   def inferenceModelPredict(
       model: InferenceModel,
-      inputs: JList[com.intel.analytics.bigdl.python.api.JTensor],
+      inputs: JList[com.intel.analytics.bigdl.dllib.utils.python.api.JTensor],
       inputIsTable: Boolean): JList[Object] = {
     val inputActivity = jTensorsToActivity(inputs, inputIsTable)
     val outputActivity = model.doPredict(inputActivity)

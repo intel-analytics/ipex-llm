@@ -24,14 +24,14 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.T
-import com.intel.analytics.bigdl.dllib.common.PythonInterpreter
-import com.intel.analytics.bigdl.dllib.feature.PythonFeatureSet
+import com.intel.analytics.bigdl.orca.utils.PythonInterpreter
 import com.intel.analytics.bigdl.orca.net.TorchModel.TorchModel2Holder
+import com.intel.analytics.bigdl.dllib.net.{NetUtils, RegistryMap, SerializationHolder}
 import jep.{Jep, NDArray}
 import org.apache.spark.TaskContext
 import com.intel.analytics.bigdl.dllib.nn.Utils._
 
-class TorchModel private(
+class TorchModel (
     private[bigdl] val modelHolder: TorchModel2Holder,
     init_weights: Array[Float])
   extends AbstractModule[Activity, Activity, Float]{

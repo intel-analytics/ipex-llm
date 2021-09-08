@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
 package com.intel.analytics.bigdl.orca.net
 
 import com.intel.analytics.bigdl.Module
@@ -21,8 +20,9 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.T
-import com.intel.analytics.bigdl.dllib.utils.zooUtils
-import com.intel.analytics.zoo.pipeline.api.Predictable
+import com.intel.analytics.bigdl.dllib.common.zooUtils
+import com.intel.analytics.bigdl.dllib.keras.Predictable
+import com.intel.analytics.bigdl.dllib.net.NetUtils
 import com.intel.analytics.bigdl.orca.tfpark.{GraphRunner, TFUtils}
 import org.slf4j.LoggerFactory
 import org.tensorflow.framework.{GraphDef, MetaGraphDef}
@@ -143,12 +143,12 @@ private[bigdl] class TFNetForInference(graphRunner: GraphRunner,
   }
 
   override def updateOutput(input: Activity): Activity = {
-    Utils.timeIt("updateOutput") {
+    zooUtils.timeIt("updateOutput") {
 
       assert(variableInited)
       assert(tableInited)
 
-      val feeds = Utils.activity2VectorBuilder(input)
+      val feeds = zooUtils.activity2VectorBuilder(input)
 
       val types = inputTypes.toVector.map(TFUtils.tfenum2datatype)
 
@@ -274,9 +274,9 @@ object TFNetForInference {
 
     // the following map function add a read operation, an assign operation
     // and a placeholder for each variable in the graph
-    val newOps = graphDef.getNodeList.asScala.filter{ node =>
+    val newOps = graphDef.getNodeList.asScala.filter { node =>
       variableTypes(node.getOp)
-    }.map{ x =>
+    }.map { x =>
       val name = x.getName
       val dataType = x.getAttrMap.get("dtype").getType
       val opType = x.getOp
@@ -392,7 +392,7 @@ object TFNetForInference {
   }
 
   private def getInputOutputNames(metaGraphDef: MetaGraphDef,
-                          signature: String): (Array[String], Array[String]) = {
+                                  signature: String): (Array[String], Array[String]) = {
     val signatureDef = metaGraphDef.getSignatureDefOrThrow(signature)
     val inputMap = signatureDef.getInputsMap
     val sortedInputKeys = inputMap.keySet().asScala.toArray.sorted
@@ -434,5 +434,3 @@ object TFNetForInference {
   }
 }
 
-
-*/
