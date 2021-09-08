@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.api.net
+package com.intel.analytics.bigdl.orca.net
 
-import com.intel.analytics.bigdl.optim.OptimMethod
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{EngineType, Table}
-import com.intel.analytics.zoo.common.PythonInterpreter
-import com.intel.analytics.zoo.feature.PythonFeatureSet
+import com.intel.analytics.bigdl.dllib.optim.OptimMethod
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{EngineType, Table}
+import com.intel.analytics.bigdl.common.PythonInterpreter
+import com.intel.analytics.bigdl.dllib.feature.PythonFeatureSet
 import jep.NDArray
 import org.apache.spark.TaskContext
 
 import scala.reflect.ClassTag
-import com.intel.analytics.zoo.pipeline.api.keras.models.InternalOptimizerUtil
-import com.intel.analytics.zoo.pipeline.api.net.TorchOptim.DecayType
+import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil
+import com.intel.analytics.bigdl.orca.net.TorchOptim.DecayType
 
 class TorchOptim[@specialized(Float, Double) T: ClassTag](
     torchOptim: Array[Byte],

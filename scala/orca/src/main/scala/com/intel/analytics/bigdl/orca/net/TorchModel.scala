@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.net
+package com.intel.analytics.bigdl.orca.net
 
 import java.util
 import java.util.UUID
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.zoo.common.PythonInterpreter
-import com.intel.analytics.zoo.feature.PythonFeatureSet
-import com.intel.analytics.zoo.pipeline.api.net.TorchModel.TorchModel2Holder
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.common.PythonInterpreter
+import com.intel.analytics.bigdl.dllib.feature.PythonFeatureSet
+import com.intel.analytics.bigdl.orca.net.TorchModel.TorchModel2Holder
 import jep.{Jep, NDArray}
 import org.apache.spark.TaskContext
-import com.intel.analytics.bigdl.nn.Utils._
+import com.intel.analytics.bigdl.dllib.nn.Utils._
 
 class TorchModel private(
-    private[zoo] val modelHolder: TorchModel2Holder,
+    private[bigdl] val modelHolder: TorchModel2Holder,
     init_weights: Array[Float])
   extends AbstractModule[Activity, Activity, Float]{
   import TorchModel._
@@ -221,7 +221,7 @@ class TorchModel private(
   }
 
   // TODO: change to override setExtraParameter when switch to bigdl 0.11.0
-  private[zoo] def setExtraParam(extraParams: Array[Tensor[Float]]): this.type = {
+  private[bigdl] def setExtraParam(extraParams: Array[Tensor[Float]]): this.type = {
     if (loaded) {
       val params = extraParams.map(param => new NDArray[Array[Float]](param.storage().array()))
       val paramName = s"${getName()}_new_extra_param"

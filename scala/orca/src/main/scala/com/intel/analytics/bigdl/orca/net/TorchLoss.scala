@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.api.net
+package com.intel.analytics.bigdl.orca.net
 
 import java.util.UUID
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.zoo.common.PythonInterpreter
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.common.PythonInterpreter
 import jep.NDArray
 import org.apache.spark.TaskContext
 

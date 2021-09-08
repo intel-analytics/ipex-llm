@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.intel.analytics.zoo.pipeline.api.net
+/*
+package com.intel.analytics.bigdl.orca.net
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.zoo.common.Utils
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.zooUtils
 import com.intel.analytics.zoo.pipeline.api.Predictable
-import com.intel.analytics.zoo.tfpark.{GraphRunner, TFUtils}
+import com.intel.analytics.bigdl.orca.tfpark.{GraphRunner, TFUtils}
 import org.slf4j.LoggerFactory
 import org.tensorflow.framework.{GraphDef, MetaGraphDef}
 import org.tensorflow.op.Ops
@@ -32,7 +32,7 @@ import org.tensorflow.{DataType, Graph, SavedModelBundle}
 
 import scala.reflect.ClassTag
 
-private[zoo] class TFNetForInference(graphRunner: GraphRunner,
+private[bigdl] class TFNetForInference(graphRunner: GraphRunner,
                                      inputs: Array[String],
                                      inputTypes: Array[Int],
                                      outputs: Array[String],
@@ -50,7 +50,7 @@ private[zoo] class TFNetForInference(graphRunner: GraphRunner,
   implicit val tag: ClassTag[Float] = ClassTag.Float
 
   System.setProperty("bigdl.ModelBroadcastFactory",
-    "com.intel.analytics.zoo.tfpark.TFModelBroadcastFactory")
+    "com.intel.analytics.bigdl.orca.tfpark.TFModelBroadcastFactory")
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
     (weights, gradWeights)
@@ -435,3 +435,4 @@ object TFNetForInference {
 }
 
 
+*/
