@@ -16,10 +16,9 @@
 
 import pytest
 import numpy as np
-import pandas as pd
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
-from zoo.chronos.model.anomaly.ae_detector import AEDetector
+from zoo.chronos.anomaly.ae_detector import AEDetector
 
 
 class TestAEDetector(ZooTestCase):
