@@ -182,7 +182,7 @@
     <modules>
         <module>common/spark-version</module>
         <module>dllib</module>
-        <!--<module>orca</module>-->
+        <module>orca</module>
     </modules>
 
     <distributionManagement>
