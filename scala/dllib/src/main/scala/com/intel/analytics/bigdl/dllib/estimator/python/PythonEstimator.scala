@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.estimator.python
+package com.intel.analytics.bigdl.dllib.estimator.python
 
 import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.optim.{OptimMethod, Trigger, ValidationMethod, ValidationResult}
-import com.intel.analytics.bigdl.python.api.EvaluatedResult
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.zoo.common.PythonZoo
-import com.intel.analytics.zoo.feature.FeatureSet
-import com.intel.analytics.zoo.pipeline.estimator.Estimator
+import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch, Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, Trigger, ValidationMethod, ValidationResult}
+import com.intel.analytics.bigdl.dllib.utils.python.api.EvaluatedResult
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
+import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.common.PythonZoo
+import com.intel.analytics.bigdl.dllib.feature.FeatureSet
+import com.intel.analytics.bigdl.dllib.estimator.Estimator
 
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
