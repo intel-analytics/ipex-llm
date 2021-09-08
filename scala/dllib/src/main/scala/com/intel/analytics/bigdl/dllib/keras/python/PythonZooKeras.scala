@@ -14,39 +14,39 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.python
+package com.intel.analytics.bigdl.dllib.keras.python
 
 import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, LocalDataSet, MiniBatch}
 
 import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, Sample}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.InitializationMethod
-import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
-import com.intel.analytics.bigdl.nn.{BatchNormalization => BNBatchNormalization}
-import com.intel.analytics.bigdl.utils.{Shape, Table}
-import com.intel.analytics.zoo.feature.image.ImageSet
-import com.intel.analytics.zoo.pipeline.api.autograd.{Constant, _}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{KerasLayerWrapper, _}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
-import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
-import com.intel.analytics.zoo.pipeline.api.keras.objectives._
-import com.intel.analytics.zoo.pipeline.api.keras.optimizers.{Adam, AdamWeightDecay, PolyEpochDecay}
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.utils.python.api.{EvaluatedResult, JTensor, Sample}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.nn.InitializationMethod
+import com.intel.analytics.bigdl.dllib.nn.Container
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasModel}
+import com.intel.analytics.bigdl.dllib.nn.{BatchNormalization => BNBatchNormalization}
+import com.intel.analytics.bigdl.dllib.utils.{Shape, Table}
+import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.autograd.{Constant, _}
+import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, _}
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.dllib.keras.models.{KerasNet, Model, Sequential}
+import com.intel.analytics.bigdl.dllib.keras.objectives._
+import com.intel.analytics.bigdl.dllib.keras.optimizers.{Adam, AdamWeightDecay, PolyEpochDecay}
 import org.apache.spark.api.java.JavaRDD
-import com.intel.analytics.zoo.common.PythonZoo
-import com.intel.analytics.zoo.feature.text.TextSet
-import com.intel.analytics.zoo.models.common.ZooModel
-import com.intel.analytics.zoo.models.seq2seq.{Bridge, RNNDecoder, RNNEncoder}
-import com.intel.analytics.zoo.pipeline.api.Net
-import com.intel.analytics.zoo.pipeline.api.keras.{metrics => zmetrics}
-import com.intel.analytics.zoo.pipeline.api.net.GraphNet
+import com.intel.analytics.bigdl.dllib.common.PythonZoo
+import com.intel.analytics.bigdl.dllib.feature.text.TextSet
+//import com.intel.analytics.zoo.models.common.ZooModel
+//import com.intel.analytics.zoo.models.seq2seq.{Bridge, RNNDecoder, RNNEncoder}
+import com.intel.analytics.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.{metrics => zmetrics}
+import com.intel.analytics.bigdl.dllib.net.GraphNet
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -844,21 +844,22 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       inputShape: JList[Int] = null): ThresholdedReLU[T] = {
     ThresholdedReLU(theta, toScalaShape(inputShape))
   }
-
-  def createZooKerasTimeDistributed(
-      layer: KerasLayer[Activity, Tensor[T], T],
-      inputShape: JList[Int] = null): TimeDistributed[T] = {
-    TimeDistributed(layer, toScalaShape(inputShape))
-  }
-
-  def createZooKerasTimeDistributed(
-      layer: ZooModel[Activity, Activity, T],
-      inputShape: JList[Int]): TimeDistributed[T] = {
-    TimeDistributed(layer, toScalaShape(inputShape))
-  }
+  
+  // uncomment when migrate zoo model
+//  def createZooKerasTimeDistributed(
+//      layer: KerasLayer[Activity, Tensor[T], T],
+//      inputShape: JList[Int] = null): TimeDistributed[T] = {
+//    TimeDistributed(layer, toScalaShape(inputShape))
+//  }
+  
+//  def createZooKerasTimeDistributed(
+//      layer: ZooModel[Activity, Activity, T],
+//      inputShape: JList[Int]): TimeDistributed[T] = {
+//    TimeDistributed(layer, toScalaShape(inputShape))
+//  }
 
   def createZooKerasBidirectional(
-      layer: com.intel.analytics.bigdl.nn.keras.Recurrent[T],
+      layer: com.intel.analytics.bigdl.dllib.nn.keras.Recurrent[T],
       mergeMode: String = "concat",
       inputShape: JList[Int] = null): Bidirectional[T] = {
     Bidirectional(layer, mergeMode, toScalaShape(inputShape))
@@ -1309,22 +1310,23 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     new Constant[T](toTensor(data), name)
   }
 
-  def createZooKerasRNNEncoder(rnns: JList[Recurrent[T]],
-    embedding: KerasLayer[Tensor[T], Tensor[T], T] = null,
-    inputShape: JList[Int] = null): RNNEncoder[T] = {
-    RNNEncoder(rnns.asScala.toArray, embedding, toScalaShape(inputShape))
-  }
+  // uncomment when migrate zoo model
+//  def createZooKerasRNNEncoder(rnns: JList[Recurrent[T]],
+//    embedding: KerasLayer[Tensor[T], Tensor[T], T] = null,
+//    inputShape: JList[Int] = null): RNNEncoder[T] = {
+//    RNNEncoder(rnns.asScala.toArray, embedding, toScalaShape(inputShape))
+//  }
 
-  def createZooKerasRNNDecoder(rnns: JList[Recurrent[T]],
-    embedding: KerasLayer[Tensor[T], Tensor[T], T] = null,
-    inputShape: JList[Int] = null): RNNDecoder[T] = {
-    RNNDecoder(rnns.asScala.toArray, embedding, toScalaShape(inputShape))
-  }
-
-  def createZooKerasBridge(bridgeType: String, decoderHiddenSize: Int,
-    bridge: KerasLayer[Tensor[T], Tensor[T], T]): KerasLayer[Activity, Activity, T] = {
-    new Bridge(bridgeType, decoderHiddenSize, bridge)
-  }
+//  def createZooKerasRNNDecoder(rnns: JList[Recurrent[T]],
+//    embedding: KerasLayer[Tensor[T], Tensor[T], T] = null,
+//    inputShape: JList[Int] = null): RNNDecoder[T] = {
+//    RNNDecoder(rnns.asScala.toArray, embedding, toScalaShape(inputShape))
+//  }
+  
+//  def createZooKerasBridge(bridgeType: String, decoderHiddenSize: Int,
+//    bridge: KerasLayer[Tensor[T], Tensor[T], T]): KerasLayer[Activity, Activity, T] = {
+//    new Bridge(bridgeType, decoderHiddenSize, bridge)
+//  }
 
   def createZooKerasMax(dim: Int,
     numInputDims: Int = Int.MinValue,
