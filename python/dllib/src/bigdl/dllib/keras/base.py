@@ -37,7 +37,7 @@ class ZooCallable(object):
         :param x: input variables. x is either a Variable or list of Variable.
         :return: Variable containing current module
         """
-        from zoo.pipeline.api.autograd import Variable
+        from bigdl.dllib.autograd import Variable
         return Variable.from_jvalue(callZooFunc(self.bigdl_type,
                                                 "connectInputs",
                                                 self,
