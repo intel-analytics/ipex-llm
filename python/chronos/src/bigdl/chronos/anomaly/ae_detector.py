@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from zoo.chronos.model.anomaly.abstract import AnomalyDetector
-from zoo.chronos.model.anomaly.util import roll_arr, scale_arr
+from zoo.chronos.anomaly.abstract import AnomalyDetector
+from zoo.chronos.anomaly.util import roll_arr, scale_arr
 import numpy as np
 
 
