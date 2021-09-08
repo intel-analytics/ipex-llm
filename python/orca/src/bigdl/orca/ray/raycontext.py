@@ -17,9 +17,10 @@
 
 import os
 import re
+import subprocess
+import time
 import uuid
 import random
-import signal
 import warnings
 import tempfile
 import filelock
@@ -29,26 +30,7 @@ from packaging import version
 from zoo.ray.process import session_execute, ProcessMonitor
 from zoo.ray.utils import is_local
 from zoo.ray.utils import resource_to_bytes
-
-
-class JVMGuard:
-    """
-    The process group id would be registered and killed in the shutdown hook of Spark Executor.
-    """
-    @staticmethod
-    def register_pgid(pgid):
-        import traceback
-        try:
-            from zoo.common.utils import callZooFunc
-            import zoo
-            callZooFunc("float",
-                        "jvmGuardRegisterPgid",
-                        pgid)
-        except Exception as err:
-            print(traceback.format_exc())
-            print("Cannot successfully register pid into JVMGuard")
-            os.killpg(pgid, signal.SIGKILL)
-            raise err
+from zoo.ray.utils import get_parent_pid
 
 
 def kill_redundant_log_monitors(redis_address):
@@ -200,11 +182,31 @@ class RayServiceFuncGenerator(object):
                                                        object_store_memory=object_store_memory,
                                                        extra_params=extra_params)
 
+    @staticmethod
+    def _get_spark_executor_pid():
+        # TODO: This might not work on OS other than Linux
+        this_pid = os.getpid()
+        pyspark_daemon_pid = get_parent_pid(this_pid)
+        spark_executor_pid = get_parent_pid(pyspark_daemon_pid)
+        return spark_executor_pid
+
+    @staticmethod
+    def start_ray_daemon(python_loc, pid_to_watch, pgid_to_kill):
+        daemon_path = os.path.join(os.path.dirname(__file__), "ray_daemon.py")
+        start_daemon_command = ['nohup', python_loc, daemon_path, str(pid_to_watch),
+                                str(pgid_to_kill)]
+        # put ray daemon process in its children's process group to avoid being killed by spark.
+        subprocess.Popen(start_daemon_command, preexec_fn=os.setpgrp)
+        time.sleep(1)
+
     def _start_ray_node(self, command, tag):
         modified_env = self._prepare_env()
         print("Starting {} by running: {}".format(tag, command))
         process_info = session_execute(command=command, env=modified_env, tag=tag)
-        JVMGuard.register_pgid(process_info.pgid)
+        spark_executor_pid = RayServiceFuncGenerator._get_spark_executor_pid()
+        RayServiceFuncGenerator.start_ray_daemon(self.python_loc,
+                                                 pid_to_watch=spark_executor_pid,
+                                                 pgid_to_kill=process_info.pgid)
         import ray._private.services as rservices
         process_info.node_ip = rservices.get_node_ip_address()
         return process_info
@@ -474,11 +476,6 @@ class RayContext(object):
             return
         import ray
         ray.shutdown()
-        if not self.is_local:
-            if not self.ray_processesMonitor:
-                print("Please start the runner first before closing it")
-            else:
-                self.ray_processesMonitor.clean_fn()
         self.initialized = False
 
     def purge(self):
@@ -540,9 +537,6 @@ class RayContext(object):
                 self._address_info = ray.init(**init_params)
             else:
                 self.cluster_ips = self._gather_cluster_ips()
-                from bigdl.util.common import init_executor_gateway
-                init_executor_gateway(self.sc)
-                print("JavaGatewayServer has been successfully launched on executors")
                 redis_address = self._start_cluster()
                 self._address_info = self._start_driver(num_cores=driver_cores,
                                                         redis_address=redis_address)
@@ -609,7 +603,9 @@ class RayContext(object):
         print("Executing command: {}".format(command))
         process_info = session_execute(command=command, env=modified_env,
                                        tag="raylet", fail_fast=True)
-        ProcessMonitor.register_shutdown_hook(pgid=process_info.pgid)
+        RayServiceFuncGenerator.start_ray_daemon("python",
+                                                 pid_to_watch=os.getpid(),
+                                                 pgid_to_kill=process_info.pgid)
 
     def _start_driver(self, num_cores, redis_address):
         print("Start to launch ray driver on local")

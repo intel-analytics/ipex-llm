@@ -16,11 +16,7 @@
 
 import os
 import subprocess
-import signal
-import atexit
-import sys
-
-from zoo.ray.utils import gen_shutdown_per_node, is_local
+from zoo.ray.utils import is_local
 
 
 class ProcessInfo(object):
@@ -105,7 +101,6 @@ class ProcessMonitor:
                 self.master.append(process_info)
             else:
                 self.slaves.append(process_info)
-        ProcessMonitor.register_shutdown_hook(extra_close_fn=self.clean_fn)
         assert len(self.master) == 1, \
             "We should got 1 master only, but we got {}".format(len(self.master))
         self.master = self.master[0]
@@ -122,31 +117,3 @@ class ProcessMonitor:
             print(self.master)
             for slave in self.slaves:
                 print(slave)
-
-    def clean_fn(self):
-        if not self.raycontext.initialized:
-            return
-        import ray
-        ray.shutdown()
-        if not self.sc:
-            print("WARNING: SparkContext has been stopped before cleaning the Ray resources")
-        if self.sc and (not is_local(self.sc)):
-            self.ray_rdd.map(gen_shutdown_per_node(self.pgids, self.node_ips)).collect()
-        else:
-            gen_shutdown_per_node(self.pgids, self.node_ips)([])
-
-    @staticmethod
-    def register_shutdown_hook(pgid=None, extra_close_fn=None):
-        def _shutdown():
-            if pgid:
-                gen_shutdown_per_node(pgid)(0)
-            if extra_close_fn:
-                extra_close_fn()
-
-        def _signal_shutdown(_signo, _stack_frame):
-            _shutdown()
-            sys.exit(0)
-
-        atexit.register(_shutdown)
-        signal.signal(signal.SIGTERM, _signal_shutdown)
-        signal.signal(signal.SIGINT, _signal_shutdown)
