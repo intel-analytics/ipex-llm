@@ -37,6 +37,8 @@ class XgboostTrainSpec extends ZooSpecHelper {
       sc.stop()
     }
   }
+  
+/*
   "XGBClassifer train" should "work" in {
     if (!(scala.util.Properties.isMac || scala.util.Properties.isWin)) {
       val spark = SparkSession.builder().getOrCreate()
@@ -91,5 +93,6 @@ class XgboostTrainSpec extends ZooSpecHelper {
       assert(y0_0.except(y0).count()==0)
     }
   }
+*/
 }
 
