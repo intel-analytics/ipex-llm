@@ -41,19 +41,16 @@ class BasePytorchAutomodel:
         Automatically fit the model and search for the best hyper parameters.
 
         :param data: train data.
-               For backend of "torch", data can be a tuple of ndarrays or a PyTorch DataLoader
+               data can be a tuple of ndarrays or a PyTorch DataLoader
                or a function that takes a config dictionary as parameter and returns a
                PyTorch DataLoader.
-               For backend of "keras", data can be a tuple of ndarrays.
-               If data is a tuple of ndarrays, it should be in the form of (x, y),
-                where x is training input data and y is training target data.
         :param epochs: Max number of epochs to train in each trial. Defaults to 1.
                If you have also set metric_threshold, a trial will stop if either it has been
                optimized to the metric_threshold or it has been trained for {epochs} epochs.
         :param batch_size: Int or hp sampling function from an integer space. Training batch size.
                It defaults to 32.
         :param validation_data: Validation data. Validation data type should be the same as data.
-        :param metric_threshold: a trial will be terminated when metric threshold is met
+        :param metric_threshold: a trial will be terminated when metric threshold is met.
         :param n_sampling: Number of times to sample from the search_space. Defaults to 1.
                If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
                If this is -1, (virtually) infinite samples are generated
@@ -61,11 +58,11 @@ class BasePytorchAutomodel:
         :param search_alg: str, all supported searcher provided by ray tune
                (i.e."variant_generator", "random", "ax", "dragonfly", "skopt",
                "hyperopt", "bayesopt", "bohb", "nevergrad", "optuna", "zoopt" and
-               "sigopt")
+               "sigopt").
         :param search_alg_params: extra parameters for searcher algorithm besides search_space,
-               metric and searcher mode
-        :param scheduler: str, all supported scheduler provided by ray tune
-        :param scheduler_params: parameters for scheduler
+               metric and searcher mode.
+        :param scheduler: str, all supported scheduler provided by ray tune.
+        :param scheduler_params: parameters for scheduler.
         """
         self.search_space["batch_size"] = batch_size
         self.auto_est.fit(
@@ -135,7 +132,7 @@ class BasePytorchAutomodel:
         your data (e.g. use .scale() on the TSDataset) please follow the following code
         snap to evaluate your result if you need to evaluate on unscaled data.
 
-        >>> from zoo.automl.common.metrics import Evaluator
+        >>> from zoo.automl.metrics import Evaluator
         >>> y_hat = automodel.predict(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
@@ -176,7 +173,7 @@ class BasePytorchAutomodel:
         your data (e.g. use .scale() on the TSDataset) please follow the following code
         snap to evaluate your result if you need to evaluate on unscaled data.
 
-        >>> from zoo.automl.common.metrics import Evaluator
+        >>> from zoo.automl.metrics import Evaluator
         >>> y_hat = automodel.predict_with_onnx(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
@@ -296,7 +293,7 @@ class BasePytorchAutomodel:
 
     def get_best_model(self):
         """
-        Get the best lstm model.
+        Get the best pytorch model.
         """
         return self.auto_est.get_best_model()
 
