@@ -55,6 +55,11 @@
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_${scala.major.version}</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!--<dependency>-->
             <!--<groupId>com.twelvemonkeys.imageio</groupId>-->
