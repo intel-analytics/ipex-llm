@@ -18,7 +18,7 @@ from unittest import TestCase
 import pytest
 import ray
 
-from zoo import init_spark_on_local
+from bigdl.dllib.utils.nncontext import init_spark_on_local
 from bigdl.orca.ray import RayContext
 
 
