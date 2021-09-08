@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.chronos.model.anomaly.abstract import AnomalyDetector
+from zoo.chronos.anomaly.abstract import AnomalyDetector
 
 import numpy as np
 from sklearn.cluster import DBSCAN
