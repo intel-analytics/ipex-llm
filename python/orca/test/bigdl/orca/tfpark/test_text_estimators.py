@@ -19,8 +19,8 @@ import pytest
 import os
 import random
 import numpy as np
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.tfpark.text.estimator import *
+from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.orca.tfpark.text.estimator import *
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 bert_config_path = os.path.join(resource_path, "bert/bert_config.json")

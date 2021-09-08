@@ -17,9 +17,9 @@
 import pytest
 
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.tfpark import TFNet, TFDataset
-from bigdl.util.common import *
+from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.orca.tfpark import TFNet, TFDataset
+from bigdl.dllib.utils.common import *
 
 np.random.seed(1337)  # for reproducibility
 

@@ -15,16 +15,16 @@
 #
 import pytest
 from pyspark.ml.linalg import DenseVector
-from zoo.feature.common import ChainedPreprocessing, FeatureSet
+from bigdl.dllib.feature import ChainedPreprocessing, FeatureSet
 from zoo.feature.image import *
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from test.bigdl.test_zoo_utils import ZooTestCase
 from zoo.pipeline.api.keras.optimizers import Adam
-from zoo.tfpark import TFNet, TFOptimizer
+from bigdl.orca.tfpark import TFNet, TFOptimizer
 import tensorflow as tf
 import numpy as np
 import os
 
-from zoo.tfpark import KerasModel, TFDataset
+from bigdl.orca.tfpark import KerasModel, TFDataset
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 

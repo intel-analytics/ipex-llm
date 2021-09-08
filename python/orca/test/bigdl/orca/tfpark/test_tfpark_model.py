@@ -15,12 +15,12 @@
 #
 import pytest
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from test.bigdl.test_zoo_utils import ZooTestCase
 import tensorflow as tf
 import numpy as np
 import os
 
-from zoo.tfpark import KerasModel, TFDataset, TFOptimizer
+from bigdl.orca.tfpark import KerasModel, TFDataset, TFOptimizer
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 
