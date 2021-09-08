@@ -20,7 +20,7 @@ import numpy as np
 import ray
 
 from zoo import init_spark_on_yarn
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 
 np.random.seed(1337)  # for reproducibility
 

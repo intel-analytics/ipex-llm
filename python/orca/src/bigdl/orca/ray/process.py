@@ -16,7 +16,7 @@
 
 import os
 import subprocess
-from zoo.ray.utils import is_local
+from bigdl.orca.ray.utils import is_local
 
 
 class ProcessInfo(object):
