@@ -462,7 +462,7 @@ class Parameter(kbase.ZooKerasLayer, VariableOperator):
     def __init__(self, shape, init_method=None,
                  init_weight=None, trainable=True, **kwargs):
         if not init_method:
-            from bigdl.nn.initialization_method import RandomUniform
+            from bigdl.dllib.nn.initialization_method import RandomUniform
             init_method = RandomUniform(-0.05, 0.05)
         super(Parameter, self).__init__(None,
                                         list(shape),
