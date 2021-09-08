@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.intel.analytics.bigdl.orca.tfpark
 
-package ml.dmlc.xgboost4j.scala.spark
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.UndefinedTensorNumeric
+import com.intel.analytics.bigdl.dllib.tensor.{ConvertableFrom, StringType, TensorDataType}
 
-object XGBoostHelper {
-  def load(path: String, numClass: Int): XGBoostClassificationModel = {
-    import ml.dmlc.xgboost4j.scala.XGBoost
-    val _booster = XGBoost.loadModel(path)
-    new XGBoostClassificationModel("XGBClassifierModel", numClass, _booster)
-  }
+import scala.language.implicitConversions
 
-  def load(path: String): XGBoostRegressionModel = {
-    import ml.dmlc.xgboost4j.scala.XGBoost
-    val _booster = XGBoost.loadModel(path)
-    new XGBoostRegressionModel("XGBRegressorModel", _booster)
+object TFTensorNumeric {
+
+  implicit object NumericByteArray extends UndefinedTensorNumeric[Array[Byte]]("ByteArray") {
+
+    override def getType(): TensorDataType = StringType
+
+    override def fromType[K](k: K)(implicit c: ConvertableFrom[K]): Array[Byte] = {
+      k.toString.getBytes("UTF-8")
+    }
+
   }
 }
