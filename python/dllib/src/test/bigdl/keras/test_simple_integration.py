@@ -139,7 +139,7 @@ class TestSimpleIntegration(ZooTestCase):
         accuracy = model.evaluate(data, batch_size=8)
 
     def test_remove_batch(self):
-        from zoo.pipeline.api.utils import remove_batch
+        from bigdl.dllib.utils.utils import remove_batch
         assert remove_batch([2, 3, 4]) == [3, 4]
         assert remove_batch([[2, 6, 7], [2, 3, 4]]) == [[6, 7], [3, 4]]
 
