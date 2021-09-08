@@ -73,4 +73,6 @@ fi
 
 cp -r $BASEDIR/dllib/target/bigdl-dllib-*-jar-with-dependencies.jar $DIST_DIR/lib
 cp -r $BASEDIR/dllib/target/bigdl-dllib-*-python-api.zip $DIST_DIR/lib
+cp -r $BASEDIR/orca/target/bigdl-orca-*-jar-with-dependencies.jar $DIST_DIR/lib
+#cp -r $BASEDIR/orca/target/bigdl-orca-*-python-api.zip $DIST_DIR/lib
 cp -r $BASEDIR/dllib/src/main/resources/spark-bigdl.conf $DIST_DIR/conf

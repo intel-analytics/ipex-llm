@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package ml.dmlc.xgboost4j.scala.spark
+package com.intel.analytics.bigdl.orca.tfpark
 
-object XGBoostHelper {
-  def load(path: String, numClass: Int): XGBoostClassificationModel = {
-    import ml.dmlc.xgboost4j.scala.XGBoost
-    val _booster = XGBoost.loadModel(path)
-    new XGBoostClassificationModel("XGBClassifierModel", numClass, _booster)
-  }
+import com.intel.analytics.bigdl.dllib.models.utils.{ModelBroadcast, ModelBroadcastFactory}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
-  def load(path: String): XGBoostRegressionModel = {
-    import ml.dmlc.xgboost4j.scala.XGBoost
-    val _booster = XGBoost.loadModel(path)
-    new XGBoostRegressionModel("XGBRegressorModel", _booster)
+import scala.reflect.ClassTag
+
+private[bigdl] class TFModelBroadcastFactory extends ModelBroadcastFactory {
+  override def create[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModelBroadcast[T] = {
+    new TFModelBroadcast[T]()
   }
 }
+
