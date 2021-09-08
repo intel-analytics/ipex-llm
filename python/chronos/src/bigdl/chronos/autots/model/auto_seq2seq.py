@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zoo.automl.model.base_pytorch_model import PytorchModelBuilder
+from zoo.orca.automl.model.base_pytorch_model import PytorchModelBuilder
 from zoo.orca.automl.auto_estimator import AutoEstimator
 from zoo.chronos.model.Seq2Seq_pytorch import model_creator
 from .base_automodel import BasePytorchAutomodel

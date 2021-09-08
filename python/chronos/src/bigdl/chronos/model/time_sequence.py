@@ -15,7 +15,7 @@
 #
 from copy import deepcopy
 
-from zoo.automl.model.abstract import BaseModel, ModelBuilder
+from zoo.orca.automl.model.abstract import BaseModel, ModelBuilder
 from zoo.chronos.model.VanillaLSTM import VanillaLSTM
 from zoo.chronos.model.Seq2Seq import LSTMSeq2Seq
 from zoo.chronos.model.MTNet_keras import MTNetKeras

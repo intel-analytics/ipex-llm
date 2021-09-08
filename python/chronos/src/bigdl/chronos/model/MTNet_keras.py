@@ -46,7 +46,7 @@ import tensorflow.keras.backend as K
 
 import tensorflow as tf
 from zoo.orca.automl.metrics import Evaluator
-from zoo.automl.model.abstract import BaseModel
+from zoo.orca.automl.model.abstract import BaseModel
 
 
 class AttentionRNNWrapper(Wrapper):
