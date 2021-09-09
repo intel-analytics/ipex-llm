@@ -14,22 +14,6 @@
 # limitations under the License.
 #
 
-<<<<<<< HEAD:python/dllib/src/bigdl/dllib/examples/onnx/load_onnx_resnet.py
-import numpy as np
-from bigdl.dllib.contrib.onnx import load
-
-
-def load_onnx_resnet():
-    restnet_path = "./resnet-50.onnx"
-    restnet_tensor = np.random.random([10, 3, 224, 224])
-    restnet = load(restnet_path)
-    restnet_out = restnet.forward(restnet_tensor)
-    return restnet_out
-
-
-if __name__ == "__main__":
-    load_onnx_resnet()
-=======
 
 from bigdl.dllib.optim.optimizer import *
 
@@ -44,4 +28,3 @@ def l2(l2=0.01):
 
 def l1l2(l1=0.01, l2=0.01):
     return L1L2Regularizer(l1=l1, l2=l2)
->>>>>>> upstream_bigdl-2.0:python/dllib/src/bigdl/dllib/keras/regularizers.py
