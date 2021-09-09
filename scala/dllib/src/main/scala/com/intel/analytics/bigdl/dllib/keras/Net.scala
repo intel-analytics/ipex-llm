@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, Initializable}
 import com.intel.analytics.bigdl.dllib.keras.KerasLayer
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasIdentityWrapper
+import com.intel.analytics.bigdl.dllib.keras.KerasIdentityWrapper
 import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, InitializationMethod, StaticGraph, Identity => BIdentity, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
