@@ -19,7 +19,7 @@ import torch
 from torch.nn import functional as F
 from typing import Callable
 
-Tensor = torch.Tensor
+from torch import Tensor
 _cross_entropy = F.cross_entropy
 
 
@@ -38,8 +38,20 @@ def workaround_cross_entropy(
     return _cross_entropy(input, target, *args, **kwargs)
 
 
+# For the development of ipex is on going, there are some
+# operations or functions we can not call directly like:
+# https://github.com/intel-analytics/analytics-zoo/pull/4600#discussion_r699773873
+#
+# Sometimes there are workarounds like moving tensor to cpu or following other implementation,
+# so we can replace `torch.nn.functional.SOMEFUNCTION` with our roundabout method.
+# Like `workaround_cross_entropy`, these method must has the same signature as the origin.
+#
+# The replacement only takes place when ipex accelerator is imported,
+# in another word `use_ipex` is specfied as true in Trainer, so it will not
+#  affect default behaviors.
+#
 # Usage: append your target method and your own implements to  `replacement_dict`
-
+#
 # Apply ops replacements here
 replacement_dict = {
     "cross_entropy": workaround_cross_entropy
