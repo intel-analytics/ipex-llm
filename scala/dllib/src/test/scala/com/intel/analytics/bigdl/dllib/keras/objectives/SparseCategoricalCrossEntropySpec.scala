@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.objectives
+package com.intel.analytics.bigdl.dllib.keras.objectives
 
-import com.intel.analytics.bigdl.nn.{LogSoftMax, SoftMax}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{KerasRunner, Loss}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.zoo.pipeline.api.keras.layers.KerasBaseSpec
+import com.intel.analytics.bigdl.dllib.nn.{LogSoftMax, SoftMax}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.keras.layers.{KerasRunner, Loss}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.keras.layers.KerasBaseSpec
 
 import scala.math.abs
 

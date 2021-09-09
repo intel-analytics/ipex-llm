@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.metrics
+package com.intel.analytics.bigdl.dllib.keras.metrics
 
-import com.intel.analytics.bigdl.optim.LossResult
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.optim.LossResult
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 class MAESpec extends FlatSpec with Matchers {

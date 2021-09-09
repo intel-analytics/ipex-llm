@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.metrics
+package com.intel.analytics.bigdl.dllib.keras.metrics
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.zoo.pipeline.api.keras.objectives.BinaryCrossEntropy
-import com.intel.analytics.zoo.pipeline.nnframes.NNEstimator
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.optim._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.keras.objectives.BinaryCrossEntropy
+import com.intel.analytics.bigdl.dllib.nnframes.NNEstimator
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext

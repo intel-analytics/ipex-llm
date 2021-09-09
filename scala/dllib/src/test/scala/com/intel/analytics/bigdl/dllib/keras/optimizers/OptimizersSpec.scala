@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.api.keras.optimizers
+package com.intel.analytics.bigdl.dllib.keras.optimizers
 
-import com.intel.analytics.bigdl.nn.{BCECriterion, Linear, Sequential, Sigmoid}
-import com.intel.analytics.bigdl.optim.SGD._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.pipeline.nnframes.{NNClassifier, NNClassifierModel, NNEstimatorSpec}
+import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, Linear, Sequential, Sigmoid}
+import com.intel.analytics.bigdl.dllib.optim.SGD._
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.nnframes.{NNClassifier, NNClassifierModel, NNEstimatorSpec}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
