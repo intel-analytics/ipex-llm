@@ -199,28 +199,28 @@ class TestNNClassifer():
         estimator.setGradientClippingByL2Norm(1.2)
         estimator.fit(df)
 
-    def test_nnEstimator_fit_with_Cache_Disk(self):
-        model = Sequential().add(Linear(2, 2))
-        criterion = MSECriterion()
-        estimator = NNEstimator(model, criterion, SeqToTensor([2]), ArrayToTensor([2])) \
-            .setBatchSize(1).setLearningRate(0.2).setMaxEpoch(2) \
-            .setDataCacheLevel("DISK_AND_DRAM", 2)
-
-        data = self.sc.parallelize([
-            ((2.0, 1.0), (1.0, 2.0)),
-            ((1.0, 2.0), (2.0, 1.0)),
-            ((2.0, 1.0), (1.0, 2.0)),
-            ((1.0, 2.0), (2.0, 1.0)),
-            ((2.0, 1.0), (1.0, 2.0)),
-            ((1.0, 2.0), (2.0, 1.0)),
-            ((2.0, 1.0), (1.0, 2.0)),
-            ((1.0, 2.0), (2.0, 1.0))] * 10)
-
-        schema = StructType([
-            StructField("features", ArrayType(DoubleType(), False), False),
-            StructField("label", ArrayType(DoubleType(), False), False)])
-        df = self.sqlContext.createDataFrame(data, schema)
-        estimator.fit(df)
+    # def test_nnEstimator_fit_with_Cache_Disk(self):
+    #     model = Sequential().add(Linear(2, 2))
+    #     criterion = MSECriterion()
+    #     estimator = NNEstimator(model, criterion, SeqToTensor([2]), ArrayToTensor([2])) \
+    #         .setBatchSize(1).setLearningRate(0.2).setMaxEpoch(2) \
+    #         .setDataCacheLevel("DISK_AND_DRAM", 2)
+    #
+    #     data = self.sc.parallelize([
+    #         ((2.0, 1.0), (1.0, 2.0)),
+    #         ((1.0, 2.0), (2.0, 1.0)),
+    #         ((2.0, 1.0), (1.0, 2.0)),
+    #         ((1.0, 2.0), (2.0, 1.0)),
+    #         ((2.0, 1.0), (1.0, 2.0)),
+    #         ((1.0, 2.0), (2.0, 1.0)),
+    #         ((2.0, 1.0), (1.0, 2.0)),
+    #         ((1.0, 2.0), (2.0, 1.0))] * 10)
+    #
+    #     schema = StructType([
+    #         StructField("features", ArrayType(DoubleType(), False), False),
+    #         StructField("label", ArrayType(DoubleType(), False), False)])
+    #     df = self.sqlContext.createDataFrame(data, schema)
+    #     estimator.fit(df)
 
     def test_nnEstimator_fit_with_non_default_featureCol(self):
         model = Sequential().add(Linear(2, 2))
@@ -841,7 +841,7 @@ class TestNNClassifer():
         if platform in ("darwin", "win32"):
             return
 
-        resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
         path = os.path.join(resource_path, "xgbclassifier/")
         modelPath = path + "XGBClassifer.bin"
         filePath = path + "test.csv"
