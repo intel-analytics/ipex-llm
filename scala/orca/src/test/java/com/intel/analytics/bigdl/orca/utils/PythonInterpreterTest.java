@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+<<<<<<< HEAD:scala/orca/src/test/java/com/intel/analytics/bigdl/orca/utils/PythonInterpreterTest.java
 package com.intel.analytics.bigdl.orca.utils;
 
 import org.scalatest.TagAnnotation;
@@ -27,4 +28,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface PythonInterpreterTest {
+=======
+package com.intel.analytics.bigdl.dllib.keras.layers
+
+import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
+
+class SoftMaxSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Activation[Float]("softmax", inputShape = Shape(2, 2, 2))
+    layer.build(Shape(3, 2, 2, 2))
+    val input = Tensor[Float](3, 2, 2, 2).rand()
+    runSerializationTest(layer, input)
+  }
+>>>>>>> upstream_bigdl-2.0:scala/dllib/src/test/scala/com/intel/analytics/bigdl/dllib/keras/layers/SoftmaxSpec.scala
 }

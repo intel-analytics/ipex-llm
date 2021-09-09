@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+<<<<<<< HEAD:scala/orca/src/test/java/com/intel/analytics/bigdl/orca/inference/OpenVinoTest.java
 package com.intel.analytics.bigdl.orca.inference;
 
 import org.scalatest.TagAnnotation;
@@ -27,4 +28,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface OpenVinoTest {
+=======
+package com.intel.analytics.bigdl.dllib.keras.layers.internal
+
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
+
+class InternalSoftMaxSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = new InternalSoftMax[Float]().setName("InternalSoftMax")
+    val input = Tensor[Float](4, 4).rand()
+    runSerializationTest(layer, input)
+  }
+>>>>>>> upstream_bigdl-2.0:scala/dllib/src/test/scala/com/intel/analytics/bigdl/dllib/keras/layers/internal/InternalSoftmaxSpec.scala
 }

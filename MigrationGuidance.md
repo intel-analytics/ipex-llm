@@ -49,6 +49,14 @@ This guidance is used to provide guidance to BigDL and Analytics zoo users to mi
 
    Change ```import com.intel.analytics.zoo.XYZ``` to ```import com.intel.analytics.bigdl.dllib.XYZ```
 
+   ****Keras modules****
+
+   Change ```import com.intel.analytics.zoo.pipeline.api.keras.XYZ``` to ```import com.intel.analytics.bigdl.dllib.keras.XYZ```
+   
+   ****Estimator modules****
+
+   Change ```import com.intel.analytics.zoo.pipeline.estimator.XYZ``` to ```import com.intel.analytics.bigdl.dllib.estimator.XYZ```
+
 If you are a maven user and add above modules as dependency to your own project. Please change the dependency as
    ```
    <dependency>
@@ -92,6 +100,10 @@ If you are a maven user and add above modules as dependency to your own project.
    ```from zoo.util.XYZ import *``` to ```from bigdl.dllib.utils.XYZ import *```
 
    ```from zoo.common.XYZ import *``` to ```from bigdl.dllib.utils.XYZ import *```
+
+   ****Keras modules****
+
+   Change ```from zoo.pipeline.api.keras import *``` to ```from bigdl.dllib.keras import```
 
    ****tfpark modules****
 

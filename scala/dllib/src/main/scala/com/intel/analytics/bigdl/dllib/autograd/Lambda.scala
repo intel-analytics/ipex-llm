@@ -18,7 +18,11 @@ package com.intel.analytics.bigdl.dllib.autograd
 
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+<<<<<<< HEAD
 import com.intel.analytics.bigdl.dllib.keras.KerasLayer
+=======
+import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+>>>>>>> upstream_bigdl-2.0
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, SingleShape}
 import com.intel.analytics.bigdl.dllib.keras.Net
