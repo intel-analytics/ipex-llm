@@ -178,7 +178,7 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "TFNet" should "output TFTensor of String" in {
     TFNet
 
-    import com.intel.analytics.zoo.tfpark.TFTensorNumeric.NumericByteArray
+    import com.intel.analytics.bigdl.orca.tfpark.TFTensorNumeric.NumericByteArray
     val inputs = Array.tabulate(20) { i =>
       val strLen = (1 << i) + 2
       StringUtils.repeat("1", strLen)

@@ -21,7 +21,6 @@ import java.util
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.common.CheckedObjectInputStream
-import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.reflect.io.Directory

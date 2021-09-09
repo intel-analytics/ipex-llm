@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.orca.utils.{PythonInterpreter, PythonInterpreterTest}
 import com.intel.analytics.zoo.core.TFNetNative
-import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.orca.utils.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil.getStateFromOptiMethod
 import com.intel.analytics.bigdl.orca.net.TorchOptim.{EpochDecay, EpochDecayByScore, IterationDecay}
 import org.apache.log4j.{Level, Logger}

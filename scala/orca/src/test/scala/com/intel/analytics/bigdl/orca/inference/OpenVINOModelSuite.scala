@@ -63,7 +63,7 @@ class OpenVINOModelSuite extends FunSuite with Matchers with BeforeAndAfterAll
     System.clearProperty("bigdl.localMode")
     System.clearProperty("bigdl.coreNumber")
 
-    tmpDir = Utils.createTmpDir("ZooVino").toFile()
+    tmpDir = zooUtils.createTmpDir("ZooVino").toFile()
     val dir = new File(s"${tmpDir.getAbsolutePath}/OpenVinoInferenceModelSpec").getCanonicalPath
 
     s"wget -nv -P $dir $url_ov_fasterrcnn_tests_inputdata1" !;

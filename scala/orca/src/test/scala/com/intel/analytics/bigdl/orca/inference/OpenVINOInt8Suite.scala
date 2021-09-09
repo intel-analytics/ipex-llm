@@ -67,7 +67,7 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
     System.clearProperty("bigdl.localMode")
     System.clearProperty("bigdl.coreNumber")
 
-    tmpDir = Utils.createTmpDir("ZooVino").toFile()
+    tmpDir = zooUtils.createTmpDir("ZooVino").toFile()
     val dir = new File(s"${tmpDir.getAbsolutePath}/OpenVinoInt8Spec").getCanonicalPath
 
     s"wget -nv -P $dir ${resnet_v1_50_url}.xml" !;

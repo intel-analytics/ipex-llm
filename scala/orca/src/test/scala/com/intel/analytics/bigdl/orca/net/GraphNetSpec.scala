@@ -19,11 +19,11 @@ package com.intel.analytics.bigdl.orca.net
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.keras.Net
-import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
-import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.orca.utils.ZooSpecHelper
+import com.intel.analytics.bigdl.orca.utils.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-
+/*
 class GraphNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "GraphNet " should "return correct parameters" in {
@@ -43,7 +43,7 @@ class GraphNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
 }
-
+*/
 class GraphNetSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val resource = getClass().getClassLoader().getResource("models")
