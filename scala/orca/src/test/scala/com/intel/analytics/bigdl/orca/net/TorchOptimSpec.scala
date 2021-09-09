@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.api.net
+package com.intel.analytics.bigdl.orca.net
 
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.zoo.common.{PythonInterpreter, PythonInterpreterTest}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.orca.utils.{PythonInterpreter, PythonInterpreterTest}
 import com.intel.analytics.zoo.core.TFNetNative
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.models.InternalOptimizerUtil.getStateFromOptiMethod
-import com.intel.analytics.zoo.pipeline.api.net.TorchOptim.{EpochDecay, EpochDecayByScore, IterationDecay}
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil.getStateFromOptiMethod
+import com.intel.analytics.bigdl.orca.net.TorchOptim.{EpochDecay, EpochDecayByScore, IterationDecay}
 import org.apache.log4j.{Level, Logger}
 
 @PythonInterpreterTest

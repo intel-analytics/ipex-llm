@@ -15,7 +15,7 @@
  */
 
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
 import java.io.File
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}

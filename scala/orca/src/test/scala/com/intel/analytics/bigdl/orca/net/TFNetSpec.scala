@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.pipeline.api.net
+package com.intel.analytics.bigdl.orca.net
 
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{LayerException, T}
-import com.intel.analytics.zoo.tfpark.TFUtils
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.{LayerException, T}
+import com.intel.analytics.bigdl.orca.tfpark.TFUtils
 import org.apache.commons.lang.StringUtils
 import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.SparkConf

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
 import java.io._
 import java.util
 
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.zoo.common.CheckedObjectInputStream
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.common.CheckedObjectInputStream
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.reflect.io.Directory

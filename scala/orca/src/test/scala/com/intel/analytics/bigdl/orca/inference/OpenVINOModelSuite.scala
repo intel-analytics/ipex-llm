@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.inference
+package com.intel.analytics.bigdl.orca.inference
 
 import java.io.File
 import java.nio.file.NoSuchFileException
 import java.util
 import java.util.{Arrays, Properties}
 
-import com.intel.analytics.zoo.common.Utils
+import com.intel.analytics.bigdl.dllib.common.zooUtils
 import org.codehaus.plexus.util.FileUtils
 import org.scalatest._
 import org.slf4j.LoggerFactory
