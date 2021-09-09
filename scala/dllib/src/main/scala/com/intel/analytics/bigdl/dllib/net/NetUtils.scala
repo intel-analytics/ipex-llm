@@ -110,7 +110,7 @@ class GraphNet[T](graph: Graph[T])(implicit val tag: ClassTag[T], implicit val e
 object GraphNet extends ContainerSerializable {
 
   ModuleSerializer.registerModule(
-    "com.intel.analytics.zoo.pipeline.api.net.GraphNet",
+    "com.intel.analytics.bigdl.dllib.net.GraphNet",
     GraphNet)
 
 
