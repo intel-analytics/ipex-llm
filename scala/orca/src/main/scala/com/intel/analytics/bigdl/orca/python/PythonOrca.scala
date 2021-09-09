@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.orca.python
+package com.intel.analytics.bigdl.orca.python
 
-import com.intel.analytics.zoo.pipeline.inference.InferenceModel
+import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import java.util.{List => JList}
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.common.PythonZoo
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.common.PythonZoo
 
 import scala.reflect.ClassTag
 
@@ -34,7 +34,7 @@ object PythonOrca {
 
 class PythonOrca[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
   def inferenceModelDistriPredict(model: InferenceModel, sc: JavaSparkContext,
-                                  inputs: JavaRDD[JList[com.intel.analytics.bigdl.python.api
+                                  inputs: JavaRDD[JList[com.intel.analytics.bigdl.dllib.utils.python.api
                                   .JTensor]],
                                   inputIsTable: Boolean): JavaRDD[JList[Object]] = {
     val broadcastModel = sc.broadcast(model)
