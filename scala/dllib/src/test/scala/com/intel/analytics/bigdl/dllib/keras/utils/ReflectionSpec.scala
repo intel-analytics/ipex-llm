@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.utils
+package com.intel.analytics.bigdl.dllib.keras.utils
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.keras.{Input, KerasLayer, Model}
-import com.intel.analytics.bigdl.nn.{Graph, Linear}
-import com.intel.analytics.bigdl.utils.{Engine, Shape}
-import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Dense
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{AbstractModuleRef, EngineRef, GraphRef, KerasLayerRef}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.nn.keras.{Input, KerasLayer, Model}
+import com.intel.analytics.bigdl.dllib.nn.{Graph, Linear}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Shape}
+import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.layers.Dense
+import com.intel.analytics.bigdl.dllib.keras.layers.utils.{AbstractModuleRef, EngineRef, GraphRef, KerasLayerRef}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable
