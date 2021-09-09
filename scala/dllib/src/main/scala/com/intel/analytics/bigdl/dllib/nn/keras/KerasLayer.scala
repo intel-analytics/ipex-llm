@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn.keras
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.{Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.nn.{Graph, StaticGraph, Container => TContainer, Input => TInput, Sequential => TSequential}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor

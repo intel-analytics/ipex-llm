@@ -859,7 +859,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 //  }
 
   def createZooKerasBidirectional(
-      layer: com.intel.analytics.bigdl.dllib.nn.keras.Recurrent[T],
+      layer: com.intel.analytics.bigdl.dllib.keras.Recurrent[T],
       mergeMode: String = "concat",
       inputShape: JList[Int] = null): Bidirectional[T] = {
     Bidirectional(layer, mergeMode, toScalaShape(inputShape))
