@@ -1,9 +1,5 @@
 #
-<<<<<<< HEAD
-# Copyright 2018 Analytics Zoo Authors.
-=======
 # Copyright 2016 The BigDL Authors.
->>>>>>> upstream_bigdl-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,10 +14,6 @@
 # limitations under the License.
 #
 
-<<<<<<< HEAD
-<<<<<<< HEAD:python/dllib/src/bigdl/dllib/examples/onnx/load_onnx_resnet.py
-=======
->>>>>>> upstream_bigdl-2.0
 import numpy as np
 from bigdl.dllib.contrib.onnx import load
 
@@ -36,8 +28,6 @@ def load_onnx_resnet():
 
 if __name__ == "__main__":
     load_onnx_resnet()
-<<<<<<< HEAD
-=======
 
 from bigdl.dllib.optim.optimizer import *
 
@@ -52,6 +42,4 @@ def l2(l2=0.01):
 
 def l1l2(l1=0.01, l2=0.01):
     return L1L2Regularizer(l1=l1, l2=l2)
->>>>>>> upstream_bigdl-2.0:python/dllib/src/bigdl/dllib/keras/regularizers.py
-=======
->>>>>>> upstream_bigdl-2.0
+

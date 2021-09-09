@@ -101,43 +101,6 @@ class ZooTestCase(TestCase):
         zoo_output = zloss.forward(y_a, y_b)
         np.testing.assert_allclose(zoo_output, keras_output, rtol=rtol, atol=atol)
 
-<<<<<<< HEAD
-    # uncomment below lines fater keras migration is done
-    # def compare_layer(self, klayer, zlayer, input_data, weight_converter=None,
-    #                   is_training=False, rtol=1e-6, atol=1e-6):
-    #     """
-    #     Compare forward results for Keras layer against Zoo Keras API layer.
-    #     """
-    #     from keras.models import Sequential as KSequential
-    #     from zoo.pipeline.api.keras.models import Sequential as ZSequential
-    #     zmodel = ZSequential()
-    #     zmodel.add(zlayer)
-    #     kmodel = KSequential()
-    #     kmodel.add(klayer)
-    #     koutput = kmodel.predict(input_data)
-    #     from zoo.pipeline.api.keras.layers import BatchNormalization
-    #     if isinstance(zlayer, BatchNormalization):
-    #         k_running_mean = K.eval(klayer.running_mean)
-    #         k_running_std = K.eval(klayer.running_std)
-    #         zlayer.set_running_mean(k_running_mean)
-    #         zlayer.set_running_std(k_running_std)
-    #     if kmodel.get_weights():
-    #         zmodel.set_weights(weight_converter(klayer, kmodel.get_weights()))
-    #     zmodel.training(is_training)
-    #     zoutput = zmodel.forward(input_data)
-    #     self.assert_allclose(zoutput, koutput, rtol=rtol, atol=atol)
-    #
-    # def compare_model(self, zmodel, kmodel, input_data, rtol=1e-5, atol=1e-5):
-    #     """
-    #     Compare forward results for Keras model against Zoo Keras API model.
-    #     """
-    #     from bigdl.keras.converter import WeightLoader
-    #     WeightLoader.load_weights_from_kmodel(zmodel, kmodel)
-    #     zmodel.training(is_training=False)
-    #     bigdl_output = zmodel.forward(input_data)
-    #     keras_output = kmodel.predict(input_data)
-    #     self.assert_allclose(bigdl_output, keras_output, rtol=rtol, atol=atol)
-=======
     def compare_layer(self, klayer, zlayer, input_data, weight_converter=None,
                       is_training=False, rtol=1e-6, atol=1e-6):
         """
@@ -172,7 +135,6 @@ class ZooTestCase(TestCase):
         bigdl_output = zmodel.forward(input_data)
         keras_output = kmodel.predict(input_data)
         self.assert_allclose(bigdl_output, keras_output, rtol=rtol, atol=atol)
->>>>>>> upstream_bigdl-2.0
 
     def assert_forward_backward(self, model, input_data):
         """

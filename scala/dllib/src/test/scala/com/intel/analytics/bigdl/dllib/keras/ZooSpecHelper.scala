@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2018 Analytics Zoo Authors.
  *
@@ -89,7 +88,6 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
                                 model2: AbstractModule[Tensor[Float], Tensor[Float], Float],
                                 input: Tensor[Float],
                                 precision: Double = 1e-5, compareBackward: Boolean = true): Unit = {
-<<<<<<< HEAD
     // Set seed in case of random factors such as dropout
     val seed = System.currentTimeMillis()
     RandomGenerator.RNG.setSeed(seed)
@@ -112,8 +110,6 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
       model2: AbstractModule[Table, Tensor[Float], Float],
       input: Table,
       precision: Double = 1e-5): Unit = {
-=======
->>>>>>> upstream_bigdl-2.0
     // Set seed in case of random factors such as dropout
     val seed = System.currentTimeMillis()
     RandomGenerator.RNG.setSeed(seed)
@@ -122,31 +118,6 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
     val output2 = model2.forward(input)
     output2.size().sameElements(output1.size()) should be (true)
     output2.almostEqual(output1, precision) should be (true)
-<<<<<<< HEAD
-=======
-    if(compareBackward) {
-      RandomGenerator.RNG.setSeed(seed)
-      val gradInput1 = model1.backward(input, output1)
-      RandomGenerator.RNG.setSeed(seed)
-      val gradInput2 = model2.backward(input, output2)
-      gradInput2.size().sameElements(gradInput1.size()) should be (true)
-      gradInput2.almostEqual(gradInput1, precision) should be (true)
-    }
-  }
-
-  def compareOutputAndGradInputTable2Tensor(model1: AbstractModule[Table, Tensor[Float], Float],
-      model2: AbstractModule[Table, Tensor[Float], Float],
-      input: Table,
-      precision: Double = 1e-5): Unit = {
-    // Set seed in case of random factors such as dropout
-    val seed = System.currentTimeMillis()
-    RandomGenerator.RNG.setSeed(seed)
-    val output1 = model1.forward(input)
-    RandomGenerator.RNG.setSeed(seed)
-    val output2 = model2.forward(input)
-    output2.size().sameElements(output1.size()) should be (true)
-    output2.almostEqual(output1, precision) should be (true)
->>>>>>> upstream_bigdl-2.0
     RandomGenerator.RNG.setSeed(seed)
     val gradInput1 = model1.backward(input, output1)
     RandomGenerator.RNG.setSeed(seed)

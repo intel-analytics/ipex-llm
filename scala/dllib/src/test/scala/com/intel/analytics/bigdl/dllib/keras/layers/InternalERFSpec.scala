@@ -14,21 +14,6 @@
  * limitations under the License.
  */
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD:scala/orca/src/main/java/com/intel/analytics/bigdl/orca/inference/InferenceRuntimeException.java
-package com.intel.analytics.bigdl.orca.inference;
-
-public class InferenceRuntimeException extends RuntimeException {
-	public InferenceRuntimeException(String msg) {
-		super(msg);
-	}
-
-	public InferenceRuntimeException(String msg, Throwable cause) {
-		super(msg, cause);
-	}
-=======
->>>>>>> upstream_bigdl-2.0
 package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -40,8 +25,4 @@ class InternalERFSerialTest extends ModuleSerializationTest {
     val input = Tensor[Float](2, 4, 4).rand
     runSerializationTest(layer, input)
   }
-<<<<<<< HEAD
-=======
->>>>>>> upstream_bigdl-2.0:scala/dllib/src/test/scala/com/intel/analytics/bigdl/dllib/keras/layers/InternalERFSpec.scala
->>>>>>> upstream_bigdl-2.0
 }

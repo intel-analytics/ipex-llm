@@ -13,13 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-<<<<<<< HEAD
-from bigdl.dllib.utils.common import *
-
-init_engine()
-redire_spark_logs()
-show_bigdl_info_logs()
-=======
 
 from ..engine import *
 from .core import *
@@ -35,4 +28,3 @@ from .wrappers import *
 from .convolutional_recurrent import *
 from .torch import *
 from .self_attention import *
->>>>>>> upstream_bigdl-2.0

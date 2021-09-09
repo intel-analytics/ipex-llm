@@ -20,11 +20,7 @@ import java.nio._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.zoo.core.TFNetNative
-<<<<<<< HEAD
-//import com.intel.analytics.bigdl.orca.net.TFNet
-=======
 //import com.intel.analytics.zoo.pipeline.api.net.TFNet
->>>>>>> upstream_bigdl-2.0
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
 
 import scala.collection.JavaConverters._
