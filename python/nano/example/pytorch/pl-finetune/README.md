@@ -9,13 +9,12 @@ We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux)
 conda create -n nano python=3.7  # "nano" is conda environment name, you can use any name you like.
 conda activate nano
 pip install jsonargparse[signatures]
-conda install PyTurboJPEG -c conda-forge
 
 pip install bigdl-nano[pytorch]
 ```
 Initialize environment variables with script `bigdl-nano-init` installed with bigdl-nano.
 ```
-bigdl-nano-init
+source bigdl-nano-init
 ``` 
 You may find environment variables set like follows:
 ```
