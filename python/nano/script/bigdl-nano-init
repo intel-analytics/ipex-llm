@@ -171,16 +171,19 @@ if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
 	unset OMP_NUM_THREADS
 	unset KMP_AFFINITY
 	unset KMP_BLOCKTIME
+	unset DISABLE_OPENMP_VAR
 	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libiomp5\.so//g" | sed "s/.*libiomp5\.so\s*//g"`
 fi
 if [ ! -z "${DISABLE_JEMALLOC_VAR:-}" ]; then
 	unset MALLOC_CONF
+	unset DISABLE_JEMALLOC_VAR
 	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libjemalloc\.so//g" | sed "s/.*libjemalloc\.so\s*//g"`
 fi
 if [ -z "${LD_PRELOAD:-}" ]; then
 	unset LD_PRELOAD
 fi
 if [ -z "${ENABLE_TF_OPTS:-}" ]; then
+	unset ENABLE_TF_OPTS
 	unset TF_ENABLE_ONEDNN_OPTS
 fi
 
@@ -196,3 +199,4 @@ echo "TF_ENABLE_ONEDNN_OPTS=${TF_ENABLE_ONEDNN_OPTS}"
 echo "+++++++++++++++++++++++++"
 # Run the commands after bigdl-nano-init
 echo "Complete."
+${@:1}
