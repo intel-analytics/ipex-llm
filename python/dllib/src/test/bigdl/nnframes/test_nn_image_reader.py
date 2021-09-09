@@ -16,7 +16,7 @@
 
 import os
 import pytest
-from bigdl.dllib.transform.vision.image import *
+from bigdl.dllib.feature.transform.vision.image import *
 from bigdl.dllib.utils.common import *
 from pyspark.sql.types import *
 
@@ -33,7 +33,7 @@ class TestNNImageReader():
         """
         sparkConf = init_spark_conf().setMaster("local[1]").setAppName("TestNNImageReader")
         self.sc = init_nncontext(sparkConf)
-        self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        self.resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 
     def teardown_method(self, method):
         """
