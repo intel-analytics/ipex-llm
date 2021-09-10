@@ -524,6 +524,7 @@ class TestTSDataset(ZooTestCase):
                                                    'IS_WEEKEND',
                                                    'WEEKDAY',
                                                    'MONTH',
+                                                   'YEAR',
                                                    'DAYOFYEAR',
                                                    'WEEKOFYEAR',
                                                    'extra feature',
@@ -534,6 +535,7 @@ class TestTSDataset(ZooTestCase):
                                            'IS_WEEKEND',
                                            'WEEKDAY',
                                            'MONTH',
+                                           'YEAR',
                                            'DAYOFYEAR',
                                            'WEEKOFYEAR',
                                            'extra feature'}
@@ -553,6 +555,7 @@ class TestTSDataset(ZooTestCase):
                                                    'WEEKDAY_5',
                                                    'WEEKDAY_6',
                                                    'MONTH',
+                                                   'YEAR',
                                                    'DAYOFYEAR',
                                                    'WEEKOFYEAR',
                                                    'extra feature',
@@ -569,6 +572,7 @@ class TestTSDataset(ZooTestCase):
                                            'WEEKDAY_5',
                                            'WEEKDAY_6',
                                            'MONTH',
+                                           'YEAR',
                                            'DAYOFYEAR',
                                            'WEEKOFYEAR',
                                            'extra feature'}
@@ -584,6 +588,7 @@ class TestTSDataset(ZooTestCase):
                                                    'IS_WEEKEND',
                                                    'WEEKDAY',
                                                    'MONTH',
+                                                   'YEAR',
                                                    'DAYOFYEAR',
                                                    'WEEKOFYEAR',
                                                    'extra feature',
@@ -594,6 +599,7 @@ class TestTSDataset(ZooTestCase):
                                            'IS_WEEKEND',
                                            'WEEKDAY',
                                            'MONTH',
+                                           'YEAR',
                                            'DAYOFYEAR',
                                            'WEEKOFYEAR',
                                            'extra feature'}
@@ -613,6 +619,7 @@ class TestTSDataset(ZooTestCase):
                                                    'WEEKDAY_5',
                                                    'WEEKDAY_6',
                                                    'MONTH',
+                                                   'YEAR',
                                                    'DAYOFYEAR',
                                                    'WEEKOFYEAR',
                                                    'extra feature',
@@ -629,6 +636,7 @@ class TestTSDataset(ZooTestCase):
                                            'WEEKDAY_5',
                                            'WEEKDAY_6',
                                            'MONTH',
+                                           'YEAR',
                                            'DAYOFYEAR',
                                            'WEEKOFYEAR',
                                            'extra feature'}
