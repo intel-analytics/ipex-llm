@@ -15,11 +15,11 @@
 #
 import pytest
 
-from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 import tensorflow as tf
 
-from bigdl.dllib.feature import ChainedPreprocessing, FeatureSet
-from zoo.feature.image import *
+from bigdl.dllib.feature.common import ChainedPreprocessing, FeatureSet
+from bigdl.dllib.feature.image import *
 from bigdl.orca.tfpark import TFDataset, TFEstimator
 from bigdl.orca.tfpark import ZooOptimizer
 

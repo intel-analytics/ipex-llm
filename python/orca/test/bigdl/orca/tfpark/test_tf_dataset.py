@@ -15,10 +15,10 @@
 #
 import pytest
 from pyspark.ml.linalg import DenseVector
-from bigdl.dllib.feature import ChainedPreprocessing, FeatureSet
-from zoo.feature.image import *
-from test.bigdl.test_zoo_utils import ZooTestCase
-from zoo.pipeline.api.keras.optimizers import Adam
+from bigdl.dllib.feature.common import ChainedPreprocessing, FeatureSet
+from bigdl.dllib.feature.image import *
+from bigdl.orca.test_zoo_utils import ZooTestCase
+from bigdl.dllib.keras.optimizers import Adam
 from bigdl.orca.tfpark import TFNet, TFOptimizer
 import tensorflow as tf
 import numpy as np

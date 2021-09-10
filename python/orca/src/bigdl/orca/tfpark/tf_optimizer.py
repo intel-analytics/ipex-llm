@@ -27,9 +27,9 @@ from bigdl.dllib.utils.common import to_list, JavaValue
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.feature.common import FeatureSet
-from zoo.pipeline.api.keras.engine.topology import to_bigdl_metric, Loss, OptimMethod
-from zoo.pipeline.api.net.utils import find_placeholders, to_bigdl_optim_method, find_tensors
-from zoo.pipeline.estimator import Estimator
+from bigdl.dllib.keras.engine.topology import to_bigdl_metric, Loss, OptimMethod
+from bigdl.dllib.net.utils import find_placeholders, to_bigdl_optim_method, find_tensors
+from bigdl.dllib.estimator.estimator import Estimator
 from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.triggers import EveryEpoch as ZEveryEpoch
 from bigdl.dllib.utils.triggers import ZooTrigger

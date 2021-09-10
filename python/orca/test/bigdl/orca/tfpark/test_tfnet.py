@@ -17,7 +17,7 @@
 import pytest
 
 
-from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.orca.tfpark import TFNet, TFDataset
 from bigdl.dllib.utils.common import *
 
