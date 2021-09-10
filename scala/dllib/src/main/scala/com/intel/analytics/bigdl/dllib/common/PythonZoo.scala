@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.python.api.{EvaluatedResult, JTenso
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.tensor.{DenseType, SparseType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-//import com.intel.analytics.zoo.pipeline.api.Predictable
+import com.intel.analytics.bigdl.dllib.keras.Predictable
 import org.apache.spark.api.java.JavaRDD
 import java.util.{List => JList}
 
@@ -30,8 +30,8 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, ValidationMethod, _}
-//import com.intel.analytics.zoo.feature.image.ImageSet
-//import com.intel.analytics.zoo.feature.text.TextSet
+import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.feature.text.TextSet
 //import com.intel.analytics.zoo.pipeline.api.net.TFNet
 
 import scala.collection.JavaConverters._
@@ -147,7 +147,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     }
     list
   }
-/*
+
   def zooPredict(
                   module: Predictable[T],
                   x: JavaRDD[Sample],
@@ -160,9 +160,10 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
                  x: JavaRDD[MiniBatch[T]]): JavaRDD[JList[Object]] = {
     module.predictMiniBatch(x.rdd).map(activityToList).toJavaRDD()
   }
-*/
+
   // todo support featurePaddingParam
- /* def zooRDDSampleToMiniBatch(rdd: JavaRDD[Sample],
+  /*
+  def zooRDDSampleToMiniBatch(rdd: JavaRDD[Sample],
                               batchSizePerPartition: Int,
                               dropRemainder: Boolean): RDDWrapper[MiniBatch[T]] = {
     import com.intel.analytics.zoo.tfpark.SampleToMiniBatch
@@ -202,7 +203,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     val finalResult = result.map(activityToList).toList.asJava
     finalResult
   }
-/*
+
   def zooPredict(
                   module: Predictable[T],
                   x: ImageSet,
@@ -224,7 +225,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
                          zeroBasedLabel: Boolean = true): JavaRDD[Int] = {
     module.predictClasses(toJSample(x), batchPerThread, zeroBasedLabel).toJavaRDD()
   }
-*/
+
 /*  def tfnetEvaluate(model: AbstractModule[Activity, Activity, Float],
                     valRDD: JavaRDD[MiniBatch[Float]],
                     valMethods: JList[ValidationMethod[Float]])
