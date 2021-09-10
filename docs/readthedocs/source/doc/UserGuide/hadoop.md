@@ -42,7 +42,9 @@ You can run Analytics Zoo programs on standard Hadoop/YARN clusters without any 
 
 ### **1.1 Setup for CDH**
 
-We have tested on CDH 5.X. CDH 6.X is not supported
+We have tested on CDH 5.X. CDH 6.X is not supported.  
+If your CDH cluster has installed Spark, the CDH's spark will be conflicted with pyspark installed by pip in next section. So before running analytics-zoo, you should unset the spark related environment variables. You can use `env | grep SPARK` to find all the spark environment variables.  
+CDH cluster's `HADOOP_CONF_DIR` which should be set in upon section is `/etc/hadoop/conf`.
 
 ---
 ### **2. YARN Client Mode**
