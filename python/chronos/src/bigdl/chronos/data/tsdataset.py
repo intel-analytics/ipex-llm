@@ -333,6 +333,7 @@ class TSDataset:
         | "WEEKDAY": The day of the week of the time stamp, Monday=0, Sunday=6.
         | "WEEKOFYEAR": The ordinal week of the year of the time stamp.
         | "MONTH": The month of the time stamp.
+        | "YEAR": The year of the time stamp.
         | "IS_AWAKE": Bool value indicating whether it belongs to awake hours for the time stamp,
         | True for hours between 6A.M. and 1A.M.
         | "IS_BUSY_HOURS": Bool value indicating whether it belongs to busy hours for the time

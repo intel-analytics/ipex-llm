@@ -49,6 +49,7 @@ class TestFeature(ZooTestCase):
                                    'WEEKOFYEAR',
                                    'A',
                                    'B',
+                                   'YEAR',
                                    'values',
                                    'datetime'}
 

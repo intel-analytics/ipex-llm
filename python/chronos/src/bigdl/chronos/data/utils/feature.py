@@ -34,7 +34,7 @@ def _is_weekend(weekday):
     return (weekday >= 5).values.astype(np.int64)
 
 
-TIME_FEATURE = ("MINUTE", "DAY", "DAYOFYEAR", "HOUR", "WEEKDAY", "WEEKOFYEAR", "MONTH")
+TIME_FEATURE = ("MINUTE", "DAY", "DAYOFYEAR", "HOUR", "WEEKDAY", "WEEKOFYEAR", "MONTH", "YEAR")
 ADDITIONAL_TIME_FEATURE_HOUR = {"IS_AWAKE": _is_awake,
                                 "IS_BUSY_HOURS": _is_busy_hours}
 ADDITIONAL_TIME_FEATURE_WEEKDAY = {"IS_WEEKEND": _is_weekend}
@@ -45,6 +45,7 @@ FEATURE_INTERVAL = {"MINUTE": pd.Timedelta('1m'),
                     "WEEKDAY": pd.Timedelta('1D'),
                     "WEEKOFYEAR": pd.Timedelta('1W'),
                     "MONTH": pd.Timedelta('30D'),
+                    "YEAR": pd.Timedelta('365D'),
                     "IS_AWAKE": pd.Timedelta('1T'),
                     "IS_BUSY_HOURS": pd.Timedelta('1T'),
                     "IS_WEEKEND": pd.Timedelta('1D')}
@@ -54,7 +55,8 @@ FEATURE_BIN_NUM = {"MINUTE": range(0, 60),
                    "HOUR": range(0, 24),
                    "WEEKDAY": range(0, 7),
                    "WEEKOFYEAR": range(1, 54),
-                   "MONTH": range(1, 13)}
+                   "MONTH": range(1, 13),
+                   "YEAR": range(1970, 2099)}
 
 
 def _one_hot_encode_helper(df, class_name, class_range, features_generated):
