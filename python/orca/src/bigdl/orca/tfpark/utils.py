@@ -15,7 +15,7 @@
 #
 from bigdl.orca.tfpark.tfnet import TFNet
 from bigdl.orca.tfpark.tf_optimizer import BigDLMetric, TFModel
-from zoo.pipeline.api.keras import metrics as zmetrics
+from bigdl.dllib.keras import metrics as zmetrics
 
 
 def to_bigdl_metric(metric):
