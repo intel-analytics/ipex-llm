@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
+
 package com.intel.analytics.bigdl.orca.net.python
 
 import java.util.concurrent.{CopyOnWriteArrayList, TimeUnit}
@@ -25,10 +25,15 @@ import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.utils.python.api.JTensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
+import com.intel.analytics.bigdl.dllib.utils.python.api.EvaluatedResult
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.net.NetUtils
+import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch}
+import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, ValidationMethod, _}
 import com.intel.analytics.bigdl.orca.net._
 import org.apache.log4j.{Level, Logger}
+
+import org.apache.spark.api.java.JavaRDD
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -44,6 +49,18 @@ object PythonZooNet {
 
 
 class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
+  def tfnetEvaluate(model: AbstractModule[Activity, Activity, Float],
+                    valRDD: JavaRDD[MiniBatch[Float]],
+                    valMethods: JList[ValidationMethod[Float]])
+  : JList[EvaluatedResult] = {
+    val resultArray = TFNet.testMiniBatch(model, valRDD.rdd,
+      valMethods.asScala.toArray)
+    val testResultArray = resultArray.map { result =>
+      EvaluatedResult(result._1.result()._1, result._1.result()._2,
+        result._2.toString())
+    }
+    testResultArray.toList.asJava
+  }
 
   def newGraph(model: NetUtils[T, _],
                outputs: JList[String]): NetUtils[T, _] = {
@@ -60,11 +77,11 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     Net.loadBigDL[T](modulePath, weightPath)
   }
 
-  def netLoadCaffe(
-                    defPath: String,
-                    modelPath : String): AbstractModule[Activity, Activity, T] = {
-    Net.loadCaffe[T](defPath, modelPath)
-  }
+//  def netLoadCaffe(
+//                    defPath: String,
+//                    modelPath : String): AbstractModule[Activity, Activity, T] = {
+//    Net.loadCaffe[T](defPath, modelPath)
+//  }
 
   def netLoad(
                modulePath: String,
@@ -177,4 +194,3 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
   }
 
 }
-*/

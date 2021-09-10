@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.common.{PythonZoo, RDDWrapper}
+import com.intel.analytics.bigdl.dllib.utils.python.api.Sample
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
 import com.intel.analytics.bigdl.orca.tfpark._
 import org.apache.spark.api.java.JavaRDD
@@ -45,6 +46,26 @@ object PythonTFPark {
 
 
 class PythonTFPark[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
+
+  def zooRDDSampleToMiniBatch(rdd: JavaRDD[Sample],
+                              batchSizePerPartition: Int,
+                              dropRemainder: Boolean): RDDWrapper[MiniBatch[T]] = {
+    import com.intel.analytics.bigdl.orca.tfpark.SampleToMiniBatch
+    val partitionNum = rdd.rdd.getNumPartitions
+    val totalBatchSize = batchSizePerPartition * partitionNum
+    val transBroad = rdd.sparkContext.broadcast(new SampleToMiniBatch(
+      totalBatch = totalBatchSize,
+      None,
+      partitionNum = Some(partitionNum),
+      featurePaddingParam = None,
+      dropRemainder = dropRemainder))
+
+    val miniBatchRdd = rdd.rdd.map(toJSample).mapPartitions { iter =>
+      val localTransformer = transBroad.value.cloneTransformer()
+      localTransformer(iter)
+    }
+    RDDWrapper(miniBatchRdd)
+  }
 
   def createTFTrainingHelper(modelPath: String, config: Array[Byte] = null): Module[Float] = {
     TFTrainingHelper(modelPath, config)
