@@ -26,7 +26,7 @@ from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
 from zoo.chronos.data.utils.resample import resample_timeseries_dataframe
 from zoo.chronos.data.utils.split import split_timeseries_dataframe
 from zoo.chronos.data.utils.utils import _to_list, _check_type,\
-    _check_col_within, _check_col_no_na, _check_is_aligned
+    _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
 from tsfresh.utilities.dataframe_functions import roll_time_series
 from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
@@ -92,7 +92,8 @@ class TSDataset:
 
         :param df: a pandas dataframe for your raw time series data.
         :param dt_col: a str indicates the col name of datetime
-               column in the input data frame.
+               column in the input data frame, the dt_col must be sorted
+               from past to latest respectively for each id.
         :param target_col: a str or list indicates the col name of target column
                in the input data frame.
         :param id_col: (optional) a str indicates the col name of dataframe id. If
@@ -771,7 +772,7 @@ class TSDataset:
         '''
         return unscale_timeseries_numpy(data, self.scaler, self.scaler_index)
 
-    def _check_basic_invariants(self):
+    def _check_basic_invariants(self, strict_check=False):
         '''
         This function contains a bunch of assertions to make sure strict rules(the invariants)
         for the internal dataframe(self.df) must stands. If not, clear and user-friendly error
@@ -798,3 +799,7 @@ class TSDataset:
         # check no n/a in critical col
         _check_col_no_na(self.df, self.dt_col)
         _check_col_no_na(self.df, self.id_col)
+
+        # check dt sorted
+        if strict_check:
+            _check_dt_is_sorted(self.df, self.dt_col)
