@@ -59,6 +59,17 @@ def parse_fn(example):
 
 class TestTFDataset(ZooTestCase):
 
+    def get_raw_image_set(self, with_label):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        if with_label:
+            image_folder = os.path.join(resource_path, "cat_dog")
+        else:
+            image_folder = os.path.join(resource_path, "cat_dog/*")
+        from bigdl.dllib.feature.image import ImageSet
+        image_set = ImageSet.read(image_folder, with_label=with_label, sc=get_spark_context(),
+                                  one_based_label=False)
+        return image_set
+
     def setup_method(self, method):
         tf.keras.backend.clear_session()
         super(TestTFDataset, self).setup_method(method)
