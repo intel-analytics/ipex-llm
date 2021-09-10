@@ -16,8 +16,8 @@
 import pytest
 
 from bigdl.dllib.optim.optimizer import Adam, SGD, MaxEpoch
-from zoo.pipeline.api.keras.metrics import Accuracy
-from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.dllib.keras.metrics import Accuracy
+from bigdl.orca.test_zoo_utils import ZooTestCase
 import tensorflow as tf
 import numpy as np
 import tempfile

@@ -15,7 +15,7 @@
 #
 import pytest
 
-from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 import tensorflow as tf
 import numpy as np
 import os

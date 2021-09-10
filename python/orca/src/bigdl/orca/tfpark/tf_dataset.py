@@ -29,7 +29,7 @@ from bigdl.dllib.utils.nncontext import getOrCreateSparkContext
 from bigdl.dllib.feature.common import FeatureSet, SampleToMiniBatch, Preprocessing
 from bigdl.dllib.feature.image import ImagePreprocessing, ImageFeatureToSample
 from bigdl.dllib.utils import nest
-from bigdl.dllib.utils.file_utils import convert_row_to_numpy
+from bigdl.dllib.utils.utils import convert_row_to_numpy
 
 if sys.version >= '3':
     long = int
