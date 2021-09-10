@@ -20,7 +20,7 @@ import com.esotericsoftware.kryo.io.{Input, Output}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, StaticGraph}
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -110,7 +110,7 @@ class GraphNet[T](graph: Graph[T])(implicit val tag: ClassTag[T], implicit val e
 object GraphNet extends ContainerSerializable {
 
   ModuleSerializer.registerModule(
-    "com.intel.analytics.zoo.pipeline.api.net.GraphNet",
+    "com.intel.analytics.bigdl.dllib.net.GraphNet",
     GraphNet)
 
 

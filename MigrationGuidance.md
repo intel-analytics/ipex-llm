@@ -49,7 +49,7 @@ This guidance is used to provide guidance to BigDL and Analytics zoo users to mi
    ****feature/common/nnframes modules****
 
    Change ```import com.intel.analytics.zoo.XYZ``` to ```import com.intel.analytics.bigdl.dllib.XYZ```
-   
+
    ****Keras modules****
 
    Change ```import com.intel.analytics.zoo.pipeline.api.keras.XYZ``` to ```import com.intel.analytics.bigdl.dllib.keras.XYZ```

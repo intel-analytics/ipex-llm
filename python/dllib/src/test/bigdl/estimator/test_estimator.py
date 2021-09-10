@@ -26,8 +26,7 @@ from bigdl.dllib.utils.common import EvaluatedResult
 from test.bigdl.test_zoo_utils import ZooTestCase
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.dllib.utils.nncontext import init_nncontext, init_spark_conf
-import bigdl.dllib.utils.file_utils
-#import zoo.common
+from bigdl.dllib.utils.file_utils import Sample
 
 
 class TestEstimator(ZooTestCase):
@@ -108,7 +107,7 @@ class TestEstimator(ZooTestCase):
         labels = self.sc.parallelize(labels)
 
         sample_rdd = image_rdd.zip(labels).map(
-            lambda img_label: bigdl.dllib.utils.file_utils.Sample.from_ndarray(img_label[0], img_label[1]))
+            lambda img_label: Sample.from_ndarray(img_label[0], img_label[1]))
 
         data_set = FeatureSet.sample_rdd(sample_rdd)
 
