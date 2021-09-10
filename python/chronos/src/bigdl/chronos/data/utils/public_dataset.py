@@ -228,7 +228,7 @@ class PublicDataset:
 def download(url, path, chunk_size):
     """
     param url: File download source address, str or list.
-    param path: File save path.default path/name/name_data.csv.
+    param path: File save path, default path/name/name_data.csv.
     """
     req = requests.get(url, stream=True)
     file_size = int(req.headers['content-length'])
