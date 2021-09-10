@@ -13,7 +13,7 @@ pip install bigdl-nano[pytorch]
 ```
 Initialize environment variables with script `bigdl-nano-init` installed with bigdl-nano.
 ```
-bigdl-nano-init
+source bigdl-nano-init
 ``` 
 You may find environment variables set like follows:
 ```

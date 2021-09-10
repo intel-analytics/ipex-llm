@@ -50,51 +50,51 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     NNImageReader.readImages(path, sc.sc, minParitions, resizeH, resizeW, imageCodec)
   }
 
-//  def createNNEstimator(
-//      model: Module[T],
-//      criterion: Criterion[T],
-//      sampleTransformer: Preprocessing[(Any, Option[Any]), Sample[T]]
-//    ): NNEstimator[T] = {
-//    NNEstimator(model, criterion).setSamplePreprocessing(sampleTransformer)
-//  }
-//
-//  def createNNClassifier(
-//      model: Module[T],
-//      criterion: Criterion[T],
-//      samplePreprocessing: Preprocessing[(Any, Option[AnyVal]), Sample[T]]
-//    ): NNClassifier[T] = {
-//    NNClassifier(model, criterion).setSamplePreprocessing(samplePreprocessing)
-//  }
+  def createNNEstimator(
+      model: Module[T],
+      criterion: Criterion[T],
+      sampleTransformer: Preprocessing[(Any, Option[Any]), Sample[T]]
+    ): NNEstimator[T] = {
+    NNEstimator(model, criterion).setSamplePreprocessing(sampleTransformer)
+  }
 
-//  def createNNModel(
-//      model: Module[T],
-//      samplePreprocessing: Preprocessing[Any, Sample[T]]): NNModel[T] = {
-//    new NNModel(model).setSamplePreprocessing(samplePreprocessing)
-//  }
-//
-//  def createNNClassifierModel(
-//      model: Module[T],
-//      samplePreprocessing: Preprocessing[Any, Sample[T]]): NNClassifierModel[T] = {
-//    NNClassifierModel(model).setSamplePreprocessing(samplePreprocessing)
-//  }
-//
-//  def setOptimMethod(
-//      estimator: NNEstimator[T],
-//      optimMethod: OptimMethod[T]): NNEstimator[T] = {
-//    estimator.setOptimMethod(optimMethod)
-//  }
-//
-//  def setSamplePreprocessing(
-//      estimator: NNEstimator[T],
-//      samplePreprocessing: Preprocessing[(Any, Option[AnyVal]), Sample[T]]): NNEstimator[T] = {
-//    estimator.setSamplePreprocessing(samplePreprocessing)
-//  }
-//
-//  def setSamplePreprocessing(
-//      model: NNModel[T],
-//      samplePreprocessing: Preprocessing[Any, Sample[T]]): NNModel[T] = {
-//    model.setSamplePreprocessing(samplePreprocessing)
-//  }
+  def createNNClassifier(
+      model: Module[T],
+      criterion: Criterion[T],
+      samplePreprocessing: Preprocessing[(Any, Option[AnyVal]), Sample[T]]
+    ): NNClassifier[T] = {
+    NNClassifier(model, criterion).setSamplePreprocessing(samplePreprocessing)
+  }
+
+  def createNNModel(
+      model: Module[T],
+      samplePreprocessing: Preprocessing[Any, Sample[T]]): NNModel[T] = {
+    new NNModel(model).setSamplePreprocessing(samplePreprocessing)
+  }
+
+  def createNNClassifierModel(
+      model: Module[T],
+      samplePreprocessing: Preprocessing[Any, Sample[T]]): NNClassifierModel[T] = {
+    NNClassifierModel(model).setSamplePreprocessing(samplePreprocessing)
+  }
+
+  def setOptimMethod(
+      estimator: NNEstimator[T],
+      optimMethod: OptimMethod[T]): NNEstimator[T] = {
+    estimator.setOptimMethod(optimMethod)
+  }
+
+  def setSamplePreprocessing(
+      estimator: NNEstimator[T],
+      samplePreprocessing: Preprocessing[(Any, Option[AnyVal]), Sample[T]]): NNEstimator[T] = {
+    estimator.setSamplePreprocessing(samplePreprocessing)
+  }
+
+  def setSamplePreprocessing(
+      model: NNModel[T],
+      samplePreprocessing: Preprocessing[Any, Sample[T]]): NNModel[T] = {
+    model.setSamplePreprocessing(samplePreprocessing)
+  }
 
   def withOriginColumn(imageDF: DataFrame, imageColumn: String, originColumn: String): DataFrame = {
     NNImageSchema.withOriginColumn(imageDF, imageColumn, originColumn)
@@ -150,26 +150,26 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     BigDLAdapter(bt)
   }
 
-//  def setTrainSummary(
-//      estimator: NNEstimator[T],
-//      summary: TrainSummary
-//    ): NNEstimator[T] = {
-//    estimator.setTrainSummary(summary)
-//  }
-//
-//  def setValidation(
-//      estimator: NNEstimator[T],
-//      trigger: Trigger,
-//      validationDF: DataFrame,
-//      vMethods : JList[ValidationMethod[T]],
-//      batchSize: Int): NNEstimator[T] = {
-//    estimator.setValidation(trigger, validationDF, vMethods.asScala.toArray, batchSize)
-//  }
-//
-//  def setEndWhen(estimator: NNEstimator[T], trigger: Trigger): NNEstimator[T] = {
-//    estimator.setEndWhen(trigger)
-//  }
-//
+  def setTrainSummary(
+      estimator: NNEstimator[T],
+      summary: TrainSummary
+    ): NNEstimator[T] = {
+    estimator.setTrainSummary(summary)
+  }
+
+  def setValidation(
+      estimator: NNEstimator[T],
+      trigger: Trigger,
+      validationDF: DataFrame,
+      vMethods : JList[ValidationMethod[T]],
+      batchSize: Int): NNEstimator[T] = {
+    estimator.setValidation(trigger, validationDF, vMethods.asScala.toArray, batchSize)
+  }
+
+  def setEndWhen(estimator: NNEstimator[T], trigger: Trigger): NNEstimator[T] = {
+    estimator.setEndWhen(trigger)
+  }
+
 //  def setDataCacheLevel(
 //      estimator: NNEstimator[T],
 //      level: String,
@@ -183,164 +183,164 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 //    }
 //    estimator.setDataCacheLevel(memType)
 //  }
-//
-//  def setCheckpoint(
-//      estimator: NNEstimator[T],
-//      path: String,
-//      trigger: Trigger,
-//      isOverWrite: Boolean): NNEstimator[T] = {
-//    estimator.setCheckpoint(path, trigger, isOverWrite)
-//  }
-//
-//  def setValidationSummary(
-//      estimator: NNEstimator[T],
-//      value: ValidationSummary): NNEstimator[T] = {
-//    estimator.setValidationSummary(value)
-//  }
-//
-//  def setNNModelPreprocessing(
-//      model: NNModel[T],
-//      sampleTransformer: Preprocessing[Any, Sample[T]]): NNModel[T] = {
-//    model.setSamplePreprocessing(sampleTransformer)
-//  }
-//
-//  def nnEstimatorClearGradientClipping(estimator: NNEstimator[T]): Unit = {
-//    estimator.clearGradientClipping()
-//  }
-//
-//  def nnEstimatorSetConstantGradientClipping(
-//      estimator: NNEstimator[T],
-//      min: Float,
-//      max: Float): Unit = {
-//    estimator.setConstantGradientClipping(min, max)
-//  }
-//
-//  def nnEstimatorSetGradientClippingByL2Norm(
-//      estimator: NNEstimator[T],
-//      clipNorm: Float): Unit = {
-//    estimator.setGradientClippingByL2Norm(clipNorm)
-//  }
-//
-//  def saveNNModel(model: NNModel[T], path: String): Unit = {
-//    model.save(path)
-//  }
-//
-//  def loadNNModel(path: String): NNModel[_] = {
-//    val loaded = NNModel.load(path)
-//    loaded
-//  }
-//
-//  def loadNNClassifierModel(path: String): NNClassifierModel[_] = {
-//    NNClassifierModel.load(path)
-//  }
-//
-//  def getXGBClassifier(): XGBClassifier = {
-//    val model = new XGBClassifier()
-//    model
-//  }
-//
-//  def setXGBClassifierNthread(model: XGBClassifier, value: Int): Unit = {
-//    model.setNthread(value)
-//  }
-//
-//  def setXGBClassifierNumRound(model: XGBClassifier, value: Int): Unit = {
-//    model.setNumRound(value)
-//  }
-//
-//  def fitXGBClassifier(model: XGBClassifier, df : DataFrame): XGBClassifierModel = {
-//    model.fit(df)
-//  }
-//
-//  def setXGBClassifierNumWorkers(model: XGBClassifier, value: Int): Unit = {
-//    model.setNumWorkers(value)
-//  }
-//
-//  def setXGBClassifierMissing(model: XGBClassifier, value: Int): Unit = {
-//    model.setMissing(value)
-//  }
-//
-//  def loadXGBClassifierModel(path: String, numClasses: Int): XGBClassifierModel = {
-//    XGBClassifierModel.load(path, numClasses)
-//  }
-//
-//  def setFeaturesXGBClassifierModel(model: XGBClassifierModel,
-//                                          features: JList[String]): Unit = {
-//    model.setFeaturesCol(features.asScala.toArray)
-//  }
-//
-//  def setPredictionXGBClassifierModel(model: XGBClassifierModel,
-//                                            prediction: String): Unit = {
-//    model.setPredictionCol(prediction)
-//  }
-//
-//  def transformXGBClassifierModel(model: XGBClassifierModel,
-//                                        dataset: DataFrame): DataFrame = {
-//    model.transform(dataset)
-//  }
-//
-//  def getXGBRegressor(): XGBRegressor = {
-//    val model = new XGBRegressor()
-//    model
-//  }
-//
-//  def setXGBRegressorNthread(model: XGBRegressor, value: Int): Unit = {
-//    model.setNthread(value)
-//  }
-//
-//  def setXGBRegressorNumRound(model: XGBRegressor, value: Int): Unit = {
-//    model.setNumRound(value)
-//  }
-//
-//  def setXGBRegressorNumWorkers(model: XGBRegressor, value: Int): Unit = {
-//    model.setNumWorkers(value)
-//  }
-//
-//  def fitXGBRegressor(model: XGBRegressor, df : DataFrame): XGBRegressorModel = {
-//    model.fit(df)
-//  }
-//
-//  def loadXGBRegressorModel(path: String) : XGBRegressorModel = {
-//    XGBRegressorModel.load(path)
-//  }
-//
-//  def setPredictionXGBRegressorModel(model: XGBRegressorModel, prediction : String): Unit = {
-//    model.setPredictionCol(prediction)
-//  }
-//
-//  def setInferBatchSizeXGBRegressorModel(model: XGBRegressorModel, value : Int): Unit = {
-//    model.setInferBatchSize(value)
-//  }
-//
-//  def setFeaturesXGBRegressorModel(model: XGBRegressorModel, features: String): Unit = {
-//    model.setFeaturesCol(features)
-//  }
-//
-//  def transformXGBRegressorModel(model: XGBRegressorModel,
-//                                 dataset: DataFrame): DataFrame = {
-//    model.transform(dataset)
-//  }
-//
-//  def saveXGBRegressorModel(model: XGBRegressorModel, path: String): Unit = {
-//    model.save(path)
-//  }
-//
-//  def internalEval(estimator: NNEstimator[T],
-//                   dataFrame: DataFrame): JList[EvaluatedResult] = {
-//    estimator.internalEval(dataFrame)
-//  }
-//
-//  def setNNFeaturesCol(estimator: NNEstimator[T],
-//                       featuresColName: String): NNEstimator[T] = {
-//    estimator.setFeaturesCol(featuresColName)
-//  }
-//
-//  def setNNLabelCol(estimator: NNEstimator[T],
-//                    labelColName: String): NNEstimator[T] = {
-//    estimator.setLabelCol(labelColName)
-//  }
-//
-//  def setNNBatchSize(estimator: NNEstimator[T],
-//                     value: Int): NNEstimator[T] = {
-//    estimator.setBatchSize(value)
-//  }
+  
+  def setCheckpoint(
+      estimator: NNEstimator[T],
+      path: String,
+      trigger: Trigger,
+      isOverWrite: Boolean): NNEstimator[T] = {
+    estimator.setCheckpoint(path, trigger, isOverWrite)
+  }
+
+  def setValidationSummary(
+      estimator: NNEstimator[T],
+      value: ValidationSummary): NNEstimator[T] = {
+    estimator.setValidationSummary(value)
+  }
+
+  def setNNModelPreprocessing(
+      model: NNModel[T],
+      sampleTransformer: Preprocessing[Any, Sample[T]]): NNModel[T] = {
+    model.setSamplePreprocessing(sampleTransformer)
+  }
+
+  def nnEstimatorClearGradientClipping(estimator: NNEstimator[T]): Unit = {
+    estimator.clearGradientClipping()
+  }
+
+  def nnEstimatorSetConstantGradientClipping(
+      estimator: NNEstimator[T],
+      min: Float,
+      max: Float): Unit = {
+    estimator.setConstantGradientClipping(min, max)
+  }
+
+  def nnEstimatorSetGradientClippingByL2Norm(
+      estimator: NNEstimator[T],
+      clipNorm: Float): Unit = {
+    estimator.setGradientClippingByL2Norm(clipNorm)
+  }
+
+  def saveNNModel(model: NNModel[T], path: String): Unit = {
+    model.save(path)
+  }
+
+  def loadNNModel(path: String): NNModel[_] = {
+    val loaded = NNModel.load(path)
+    loaded
+  }
+
+  def loadNNClassifierModel(path: String): NNClassifierModel[_] = {
+    NNClassifierModel.load(path)
+  }
+
+  def getXGBClassifier(): XGBClassifier = {
+    val model = new XGBClassifier()
+    model
+  }
+
+  def setXGBClassifierNthread(model: XGBClassifier, value: Int): Unit = {
+    model.setNthread(value)
+  }
+
+  def setXGBClassifierNumRound(model: XGBClassifier, value: Int): Unit = {
+    model.setNumRound(value)
+  }
+
+  def fitXGBClassifier(model: XGBClassifier, df : DataFrame): XGBClassifierModel = {
+    model.fit(df)
+  }
+
+  def setXGBClassifierNumWorkers(model: XGBClassifier, value: Int): Unit = {
+    model.setNumWorkers(value)
+  }
+
+  def setXGBClassifierMissing(model: XGBClassifier, value: Int): Unit = {
+    model.setMissing(value)
+  }
+
+  def loadXGBClassifierModel(path: String, numClasses: Int): XGBClassifierModel = {
+    XGBClassifierModel.load(path, numClasses)
+  }
+
+  def setFeaturesXGBClassifierModel(model: XGBClassifierModel,
+                                          features: JList[String]): Unit = {
+    model.setFeaturesCol(features.asScala.toArray)
+  }
+
+  def setPredictionXGBClassifierModel(model: XGBClassifierModel,
+                                            prediction: String): Unit = {
+    model.setPredictionCol(prediction)
+  }
+
+  def transformXGBClassifierModel(model: XGBClassifierModel,
+                                        dataset: DataFrame): DataFrame = {
+    model.transform(dataset)
+  }
+
+  def getXGBRegressor(): XGBRegressor = {
+    val model = new XGBRegressor()
+    model
+  }
+
+  def setXGBRegressorNthread(model: XGBRegressor, value: Int): Unit = {
+    model.setNthread(value)
+  }
+
+  def setXGBRegressorNumRound(model: XGBRegressor, value: Int): Unit = {
+    model.setNumRound(value)
+  }
+
+  def setXGBRegressorNumWorkers(model: XGBRegressor, value: Int): Unit = {
+    model.setNumWorkers(value)
+  }
+
+  def fitXGBRegressor(model: XGBRegressor, df : DataFrame): XGBRegressorModel = {
+    model.fit(df)
+  }
+
+  def loadXGBRegressorModel(path: String) : XGBRegressorModel = {
+    XGBRegressorModel.load(path)
+  }
+
+  def setPredictionXGBRegressorModel(model: XGBRegressorModel, prediction : String): Unit = {
+    model.setPredictionCol(prediction)
+  }
+
+  def setInferBatchSizeXGBRegressorModel(model: XGBRegressorModel, value : Int): Unit = {
+    model.setInferBatchSize(value)
+  }
+
+  def setFeaturesXGBRegressorModel(model: XGBRegressorModel, features: String): Unit = {
+    model.setFeaturesCol(features)
+  }
+
+  def transformXGBRegressorModel(model: XGBRegressorModel,
+                                 dataset: DataFrame): DataFrame = {
+    model.transform(dataset)
+  }
+
+  def saveXGBRegressorModel(model: XGBRegressorModel, path: String): Unit = {
+    model.save(path)
+  }
+
+  def internalEval(estimator: NNEstimator[T],
+                   dataFrame: DataFrame): JList[EvaluatedResult] = {
+    estimator.internalEval(dataFrame)
+  }
+
+  def setNNFeaturesCol(estimator: NNEstimator[T],
+                       featuresColName: String): NNEstimator[T] = {
+    estimator.setFeaturesCol(featuresColName)
+  }
+
+  def setNNLabelCol(estimator: NNEstimator[T],
+                    labelColName: String): NNEstimator[T] = {
+    estimator.setLabelCol(labelColName)
+  }
+
+  def setNNBatchSize(estimator: NNEstimator[T],
+                     value: Int): NNEstimator[T] = {
+    estimator.setBatchSize(value)
+  }
 }
