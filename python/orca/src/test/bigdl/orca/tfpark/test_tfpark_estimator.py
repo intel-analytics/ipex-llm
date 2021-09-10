@@ -26,7 +26,7 @@ from bigdl.orca.tfpark import ZooOptimizer
 
 class TestTFParkEstimator(ZooTestCase):
     def get_raw_image_set(self, with_label):
-        resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
         if with_label:
             image_folder = os.path.join(resource_path, "cat_dog")
         else:
