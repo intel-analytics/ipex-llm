@@ -23,7 +23,10 @@ With the trusted Big Data analytics and ML/DL support, users can run standard Sp
 
 ### 2.1 Prerequisite
 
-Download scripts and dockerfiles from [this link](https://github.com/intel-analytics/analytics-zoo/tree/master/ppml).
+Download scripts and dockerfiles from [this link](https://github.com/intel-analytics/analytics-zoo). And do the following commands:
+```bash
+cd analytics-zoo/ppml/
+```
 
 1. Install SGX Driver
 
@@ -32,7 +35,9 @@ Download scripts and dockerfiles from [this link](https://github.com/intel-analy
     Check SGX driver with `ls /dev | grep sgx`. If SGX driver is not installed, please install [SGX DCAP driver](https://github.com/intel/SGXDataCenterAttestationPrimitives/tree/master/driver/linux):
 
     ```bash
-    ./ppml/scripts/install-graphene-driver.sh
+    cd scripts/
+    ./install-graphene-driver.sh
+    cd ..
     ```
 
 2. Generate key for SGX enclave
@@ -40,17 +45,22 @@ Download scripts and dockerfiles from [this link](https://github.com/intel-analy
    Generate the enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely. It will generate a file `enclave-key.pem` in the current working directory, which will be the  enclave key. To store the key elsewhere, modify the output file path.
 
     ```bash
+    cd scripts/
     openssl genrsa -3 -out enclave-key.pem 3072
+    cd ..
     ```
 
 3. Prepare keys for TLS with root permission (test only, need input security password for keys). Please also install jdk/openjdk and set the environment path of java path to get keytool.
 
     ```bash
-    sudo ./ppml/scripts/generate-keys.sh
+    cd scripts/
+    ./generate-keys.sh
+    cd ..
     ```
-    When entering pass phrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating password. Password should be longer than 6 bits and containing number and letter, and one sample password is "3456abcd". These passwords would be used for future remote attestations and to start SGX enclaves more securely. And This scripts will generate 5 files in `keys` dir (you can replace them with your own TLS keys).
+    When entering pass phrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating password. Password should be longer than 6 bits and containing number and letter, and one sample password is "3456abcd". These passwords would be used for future remote attestations and to start SGX enclaves more securely. And This scripts will generate 6 files in `./ppml/scripts/keys` dir (you can replace them with your own TLS keys).
 
     ```bash
+    keystore.jks
     keystore.pkcs12
     server.crt
     server.csr
@@ -61,9 +71,11 @@ Download scripts and dockerfiles from [this link](https://github.com/intel-analy
 4. Generate `password` to avoid plain text security password (used for key generation in `generate-keys.sh`) transfer.
 
     ```bash
-    ./ppml/scripts/generate-password.sh used_password_when_generate_keys
+    cd scripts/
+    ./generate-password.sh used_password_when_generate_keys
+    cd ..
     ```
-    This scrips will generate 2 files in `password` dir.
+    This scrips will generate 2 files in `./ppml/scripts/password` dir.
 
     ```bash
     key.txt
@@ -81,7 +93,7 @@ docker pull intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene
 Alternatively, you can build docker image from Dockerfile (this will take some time):
 
 ```bash
-cd ppml/trusted-big-data-ml/scala/docker-graphene
+cd trusted-big-data-ml/scala/docker-graphene
 ./build-docker-image.sh
 ```
 
@@ -93,18 +105,29 @@ Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
 
 1. Copy `keys` and `password`
     ```bash
-    cd ppml/trusted-big-data-ml/scala/docker-graphene
+    cd trusted-big-data-ml/scala/docker-graphene
     # copy keys and password into current directory
-    cp -r ../keys .
-    cp -r ../password .
+    cp -r ../.././../scripts/keys/ .
+    cp -r ../.././../scripts/password/ .
     ```
-2. To start the container, first modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:
+2. Prepare the data
+   To train a model with ppml in analytics zoo and bigdl, you need to prepare the data first. The Docker image is taking lenet and mnist as example. <br>
+   You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the files and put them in one folder(e.g. mnist). <br>
+   There are four files. **train-images-idx3-ubyte** contains train images, **train-labels-idx1-ubyte** is train label file, **t10k-images-idx3-ubyte** has validation images    and **t10k-labels-idx1-ubyte** contains validation labels. For more detail, please refer to the download page. <br>
+   After you decompress the gzip files, these files may be renamed by some decompress tools, e.g. **train-images-idx3-ubyte** is renamed to **train-images.idx3-ubyte**. Please change the name back before you run the example.  <br>
+   
+3. To start the container, first modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:
     ```bash
     ./deploy-local-spark-sgx.sh
     sudo docker exec -it spark-local bash
     cd /ppml/trusted-big-data-ml
     ./init.sh
     ```
+    **ENCLAVE_KEY_PATH** means the absolute path to the "enclave-key.pem", according to the above commands, the path would be like "analytics-zoo/ppml/scripts/enclave-key.pem". <br>
+    **DATA_PATH** means the absolute path to the data(like mnist) that would used later in the spark program. According to the above commands, the path would be like "analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene/mnist" <br>
+    **KEYS_PATH** means the absolute path to the keys you just created and copied to. According to the above commands, the path would be like "analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene/keys" <br>
+    **LOCAL_IP** means your local IP address. <br>
+
 ##### 2.2.2.2 Run Your Spark Program with Analytics Zoo PPML on SGX
 
 To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
