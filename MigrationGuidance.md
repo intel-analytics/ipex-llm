@@ -43,6 +43,7 @@ This guidance is used to provide guidance to BigDL and Analytics zoo users to mi
    ```bigdl.nn.keras.XYZ``` is deprecated and will be removed. Please use zoo keras api instead
 
 * **For Analytics Zoo users**
+
    ***scala application***
 
    ****feature/common/nnframes modules****

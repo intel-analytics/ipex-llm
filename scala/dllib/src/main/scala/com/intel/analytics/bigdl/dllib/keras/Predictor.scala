@@ -26,8 +26,8 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-//import com.intel.analytics.zoo.feature.image.ImageSet
-//import com.intel.analytics.zoo.feature.text._
+import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import org.apache.spark.rdd.RDD
 
@@ -322,23 +322,23 @@ trait Predictable[T]  {
    *        batchPerThread * rdd.getNumPartitions(distributed mode)
    *        or batchPerThread * numOfCores(local mode)
    */
-//  def predict(
-//               x: ImageSet,
-//               batchPerThread: Int): ImageSet = {
-//
-//    val resultImageFrame = x.toImageFrame() match {
-//      case distributedImageFrame: DistributedImageFrame =>
-//        Predictor(module, None, batchPerThread)
-//          .predictImage(distributedImageFrame, outputLayer = null)
-//      case localImageFrame: LocalImageFrame =>
-//        val predictor = LocalPredictor(module, None, batchPerCore = batchPerThread)
-//        val imageFrame = predictor.predictImage(localImageFrame, outputLayer = null,
-//          shareBuffer = false)
-//        predictor.shutdown()
-//        imageFrame
-//    }
-//    ImageSet.fromImageFrame(resultImageFrame)
-//  }
+  def predict(
+               x: ImageSet,
+               batchPerThread: Int): ImageSet = {
+
+    val resultImageFrame = x.toImageFrame() match {
+      case distributedImageFrame: DistributedImageFrame =>
+        Predictor(module, None, batchPerThread)
+          .predictImage(distributedImageFrame, outputLayer = null)
+      case localImageFrame: LocalImageFrame =>
+        val predictor = LocalPredictor(module, None, batchPerCore = batchPerThread)
+        val imageFrame = predictor.predictImage(localImageFrame, outputLayer = null,
+          shareBuffer = false)
+        predictor.shutdown()
+        imageFrame
+    }
+    ImageSet.fromImageFrame(resultImageFrame)
+  }
 
   /**
    * The default batchPerThread is 4.
@@ -347,10 +347,10 @@ trait Predictable[T]  {
    *
    * @param x Prediction data, ImageSet.
    */
-//  def predict(
-//               x: ImageSet): ImageSet = {
-//    predict(x, batchPerThread = 4)
-//  }
+  def predict(
+               x: ImageSet): ImageSet = {
+    predict(x, batchPerThread = 4)
+  }
 
   /**
    * Use a model to do prediction on TextSet.
@@ -360,23 +360,23 @@ trait Predictable[T]  {
    *        batchPerThread * rdd.getNumPartitions(distributed mode)
    *        or batchPerThread * numOfCores(local mode)
    */
-//  def predict(
-//               x: TextSet,
-//               batchPerThread: Int): TextSet = {
-//    x match {
-//      case distributed: DistributedTextSet =>
-//        TextPredictor[T](module, batchPerThread).predict(distributed)
-//      case local: LocalTextSet =>
-//        val features = local.array
-//        val samples = features.map(_.getSample).asInstanceOf[Array[Sample[T]]]
-//        val predictions = predict(samples, batchPerThread)
-//        val results = features.zip(predictions).map{case (feature, predict) =>
-//          feature(TextFeature.predict) = predict
-//          feature
-//        }
-//        TextSet.array(results).setWordIndex(x.getWordIndex)
-//    }
-//  }
+  def predict(
+               x: TextSet,
+               batchPerThread: Int): TextSet = {
+    x match {
+      case distributed: DistributedTextSet =>
+        TextPredictor[T](module, batchPerThread).predict(distributed)
+      case local: LocalTextSet =>
+        val features = local.array
+        val samples = features.map(_.getSample).asInstanceOf[Array[Sample[T]]]
+        val predictions = predict(samples, batchPerThread)
+        val results = features.zip(predictions).map{case (feature, predict) =>
+          feature(TextFeature.predict) = predict
+          feature
+        }
+        TextSet.array(results).setWordIndex(x.getWordIndex)
+    }
+  }
 
   /**
    * The default batchPerThread is 4.
@@ -385,10 +385,10 @@ trait Predictable[T]  {
    *
    * @param x Prediction data, TextSet.
    */
-//  def predict(
-//               x: TextSet): TextSet = {
-//    predict(x, batchPerThread = 4)
-//  }
+  def predict(
+               x: TextSet): TextSet = {
+    predict(x, batchPerThread = 4)
+  }
 
   /**
    * Use a model to predict for classes. By default, label predictions start from 0.
@@ -399,17 +399,17 @@ trait Predictable[T]  {
    * @param zeroBasedLabel Boolean. Whether result labels start from 0.
    *                       Default is true. If false, result labels start from 1.
    */
-//  def predictClasses(
-//                      x: RDD[Sample[T]],
-//                      batchPerThread: Int = 4,
-//                      zeroBasedLabel: Boolean = true): RDD[Int] = {
-//    KerasUtils.toZeroBasedLabel(zeroBasedLabel,
-//      Predictor.predictClass(x,
-//        batchSize = -1,
-//        model = module,
-//        batchPerPartition = batchPerThread,
-//        featurePaddingParam = None))
-//  }
+  def predictClasses(
+                      x: RDD[Sample[T]],
+                      batchPerThread: Int = 4,
+                      zeroBasedLabel: Boolean = true): RDD[Int] = {
+    com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils.toZeroBasedLabel(zeroBasedLabel,
+      Predictor.predictClass(x,
+        batchSize = -1,
+        model = module,
+        batchPerPartition = batchPerThread,
+        featurePaddingParam = None))
+  }
 
 }
 
@@ -442,21 +442,21 @@ class Predictor[T: ClassTag] private[bigdl](
     Predictor.predict(dataSet, batchSize, shareBuffer, model, batchPerPartition,
       featurePaddingParam)
   }
-//
-//
-//  /**
-//   * model predict DistributedImageFrame, return imageFrame with predicted tensor
-//   * @param imageFrame imageFrame that contains images
-//   * @param outputLayer if outputLayer is not null, the output of layer that matches
-//   *                      outputLayer will be used as predicted output
-//   * @param shareBuffer whether to share same memory for each batch predict results
-//   * @param predictKey key to store predicted result
-//   */
-//  def predictImage(imageFrame: DistributedImageFrame,
-//                   outputLayer: String = null,
-//                   shareBuffer: Boolean = false,
-//                   predictKey: String = ImageFeature.predict): DistributedImageFrame = {
-//    Predictor.predictImage(imageFrame, outputLayer, shareBuffer, predictKey, batchPerPartition,
-//      model, featurePaddingParam)
-//  }
+
+
+  /**
+   * model predict DistributedImageFrame, return imageFrame with predicted tensor
+   * @param imageFrame imageFrame that contains images
+   * @param outputLayer if outputLayer is not null, the output of layer that matches
+   *                      outputLayer will be used as predicted output
+   * @param shareBuffer whether to share same memory for each batch predict results
+   * @param predictKey key to store predicted result
+   */
+  def predictImage(imageFrame: DistributedImageFrame,
+                   outputLayer: String = null,
+                   shareBuffer: Boolean = false,
+                   predictKey: String = ImageFeature.predict): DistributedImageFrame = {
+    Predictor.predictImage(imageFrame, outputLayer, shareBuffer, predictKey, batchPerPartition,
+      model, featurePaddingParam)
+  }
 }
