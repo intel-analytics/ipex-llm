@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.nn.InitializationMethod
 import com.intel.analytics.bigdl.dllib.nn.Container
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasModel}
+import com.intel.analytics.bigdl.dllib.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.dllib.nn.{BatchNormalization => BNBatchNormalization}
 import com.intel.analytics.bigdl.dllib.utils.{Shape, Table}
 import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
@@ -859,7 +859,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 //  }
 
   def createZooKerasBidirectional(
-      layer: com.intel.analytics.bigdl.dllib.nn.keras.Recurrent[T],
+      layer: com.intel.analytics.bigdl.dllib.keras.Recurrent[T],
       mergeMode: String = "concat",
       inputShape: JList[Int] = null): Bidirectional[T] = {
     Bidirectional(layer, mergeMode, toScalaShape(inputShape))

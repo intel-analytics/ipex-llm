@@ -27,7 +27,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.layers.TimeDistributed
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.Accuracy
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.objectives.{RankHinge, SparseCategoricalCrossEntropy}
+import com.intel.analytics.bigdl.dllib.keras.objectives.{RankHinge, SparseCategoricalCrossEntropy}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
