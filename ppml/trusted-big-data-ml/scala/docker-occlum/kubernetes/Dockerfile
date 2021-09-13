@@ -30,10 +30,7 @@ RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-i
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* 
 RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
-    chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
-    mkdir -p /opt/spark && \
-    mkdir -p /opt/spark/work-dir && \
-    touch /opt/spark/RELEASE
+    chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 
 
 WORKDIR /root
@@ -52,13 +49,13 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so -P /lib/
 RUN wget https://archive.apache.org/dist/spark/spark-3.0.0/spark-3.0.0-bin-hadoop2.7.tgz -P /opt/
 RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/spark-network-common_2.12-3.0.0.jar/download -P /opt/
-RUN tar -xvzf /opt/spark-3.0.0-bin-hadoop2.7.tgz && mv /opt/spark-3.0.0-bin-hadoop2.7 /opt/spark 
+RUN cd /opt && tar -xvzf /opt/spark-3.0.0-bin-hadoop2.7.tgz && mv /opt/spark-3.0.0-bin-hadoop2.7 /opt/spark
 RUN rm /opt/spark-3.0.0-bin-hadoop2.7.tgz
-RUN cp /opt/spark-network-common_2.12-3.0.0.jar /opt/spark/jars/spark-network-common_2.12-3.0.0.jar
+RUN cp /opt/download /opt/spark/jars/spark-network-common_2.12-3.0.0.jar
 
 #COPY ./entrypoint.sh /opt/
-RUN cp /opt/spark/examples /bin/examples
-RUN cp /opt/spark/kubernetes/tests /opt/spark/tests
+RUN cp -r /opt/spark/examples /bin/examples
+RUN cp -r /opt/spark/kubernetes/tests /opt/spark/tests
 COPY build_spark_instance.sh /opt/
 ENV SPARK_HOME /opt/spark
 
