@@ -203,15 +203,16 @@ class TestLayer(ZooTestCase):
         m = ZModel(i1, s)
         # predict should not generate exception
         y = m.predict(a, distributed=False)
-#uncomment when migrate nn.keras to keras
-    # def test_regularizer(self):
-    #     model = ZSequential()
-    #     model.add(ZLayer.Dense(16, W_regularizer=regularizers.l2(0.001),
-    #                            activation='relu', input_shape=(10000,)))
-    #     model.summary()
-    #     model.compile(optimizer='rmsprop',
-    #                   loss='binary_crossentropy',
-    #                   metrics=['acc'])
+
+    def test_regularizer(self):
+        model = ZSequential()
+        model.add(ZLayer.Dense(16, W_regularizer=regularizers.l2(0.001),
+                               activation='relu', input_shape=(10000,)))
+        model.summary()
+        model.compile(optimizer='rmsprop',
+                      loss='binary_crossentropy',
+                      metrics=['acc'])
+
 # uncomment when Math310 and TimeDistributed fixed
     # def test_transformer_forward_backward(self):
     #     layer = ZLayer.TransformerLayer.init(
