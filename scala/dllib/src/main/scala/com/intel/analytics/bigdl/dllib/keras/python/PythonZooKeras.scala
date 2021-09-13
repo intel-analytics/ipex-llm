@@ -42,8 +42,8 @@ import com.intel.analytics.bigdl.dllib.keras.optimizers.{Adam, AdamWeightDecay, 
 import org.apache.spark.api.java.JavaRDD
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.text.TextSet
-//import com.intel.analytics.zoo.models.common.ZooModel
-//import com.intel.analytics.zoo.models.seq2seq.{Bridge, RNNDecoder, RNNEncoder}
+// import com.intel.analytics.zoo.models.common.ZooModel
+// import com.intel.analytics.zoo.models.seq2seq.{Bridge, RNNDecoder, RNNEncoder}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.{metrics => zmetrics}
 import com.intel.analytics.bigdl.dllib.net.GraphNet
@@ -844,14 +844,14 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       inputShape: JList[Int] = null): ThresholdedReLU[T] = {
     ThresholdedReLU(theta, toScalaShape(inputShape))
   }
-  
+
   // uncomment when migrate zoo model
 //  def createZooKerasTimeDistributed(
 //      layer: KerasLayer[Activity, Tensor[T], T],
 //      inputShape: JList[Int] = null): TimeDistributed[T] = {
 //    TimeDistributed(layer, toScalaShape(inputShape))
 //  }
-  
+
 //  def createZooKerasTimeDistributed(
 //      layer: ZooModel[Activity, Activity, T],
 //      inputShape: JList[Int]): TimeDistributed[T] = {
@@ -1322,7 +1322,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 //    inputShape: JList[Int] = null): RNNDecoder[T] = {
 //    RNNDecoder(rnns.asScala.toArray, embedding, toScalaShape(inputShape))
 //  }
-  
+
 //  def createZooKerasBridge(bridgeType: String, decoderHiddenSize: Int,
 //    bridge: KerasLayer[Tensor[T], Tensor[T], T]): KerasLayer[Activity, Activity, T] = {
 //    new Bridge(bridgeType, decoderHiddenSize, bridge)

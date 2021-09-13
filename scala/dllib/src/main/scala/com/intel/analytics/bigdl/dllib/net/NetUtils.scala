@@ -33,7 +33,7 @@ import org.apache.spark.utils.SparkUtils
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.slf4j.{Logger, LoggerFactory}
-//import org.tensorflow.DataType
+// import org.tensorflow.DataType
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.VectorBuilder

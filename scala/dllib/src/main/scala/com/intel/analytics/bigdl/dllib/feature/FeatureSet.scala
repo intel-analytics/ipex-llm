@@ -24,15 +24,15 @@ import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.{AbstractDataSet, DistributedDataSet, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
-//import com.intel.analytics.bigdl.dllib.utils.PythonInterpreter
+// import com.intel.analytics.bigdl.dllib.utils.PythonInterpreter
 import com.intel.analytics.bigdl.dllib.feature.common.{ArrayLike, ArrayLikeWrapper}
-//import com.intel.analytics.bigdl.dllib.feature.pmem._
+// import com.intel.analytics.bigdl.dllib.feature.pmem._
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.{SparkContext, TaskContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import org.slf4j.{Logger, LoggerFactory}
-//import jep._
+// import jep._
 
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
@@ -331,7 +331,7 @@ class CachedDistributedFeatureSet[T: ClassTag]
   }
 }
 //
-//object PythonFeatureSet{
+// object PythonFeatureSet{
 //  // One partition one loader
 //  protected def getLocalLoader(loaderName: String): String = {
 //    s"${loaderName}_${TaskContext.getPartitionId()}"
@@ -419,9 +419,9 @@ class CachedDistributedFeatureSet[T: ClassTag]
 //      Tensor[Float]()
 //    }
 //  }
-//}
+// }
 //
-//class PythonFeatureSet[T: ClassTag](
+// class PythonFeatureSet[T: ClassTag](
 //    dataset: Array[Byte],
 //    getLoader: (Int, Int, String) => String,
 //    getIterator: (String, String, Boolean) => String,
@@ -543,7 +543,7 @@ class CachedDistributedFeatureSet[T: ClassTag]
 //  override def toDistributed(): DistributedDataSet[T] = {
 //    new DistributedDataSetWrapper[T](this)
 //  }
-//}
+// }
 
 /**
  * Wrap a RDD as a FeatureSet. RDD will be persist on local disk, and will load

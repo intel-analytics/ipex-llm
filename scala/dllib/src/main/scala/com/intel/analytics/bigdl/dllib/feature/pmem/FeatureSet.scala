@@ -1,4 +1,4 @@
-///*
+// /*
 // * Copyright 2018 Analytics Zoo Authors.
 // *
 // * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,26 +14,27 @@
 // * limitations under the License.
 // */
 //
-//package com.intel.analytics.bigdl.dllib.feature.pmem
+// package com.intel.analytics.bigdl.dllib.feature.pmem
 //
-//import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, Sample}
-//import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
-//import com.intel.analytics.bigdl.dllib.feature.{CachedDistributedFeatureSet, DistributedFeatureSet}
-//import com.intel.analytics.bigdl.dllib.feature.common.ArrayLike
-//import org.apache.spark.rdd.RDD
+// import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, Sample}
+// import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+// import com.intel.analytics.bigdl.dllib.feature.{CachedDistributedFeatureSet,
+// DistributedFeatureSet}
+// import com.intel.analytics.bigdl.dllib.feature.common.ArrayLike
+// import org.apache.spark.rdd.RDD
 //
-//import scala.reflect.ClassTag
+// import scala.reflect.ClassTag
 //
-//private[bigdl] abstract class NativeArrayConverter[T: ClassTag]
+// private[bigdl] abstract class NativeArrayConverter[T: ClassTag]
 //  extends Serializable {
 //
 //  def getBytesPerRecord(record: T): Long
 //
 //  def toArray(recordIterator: Iterator[T],
 //      countPerPartition: Iterator[(Int, Long)]): Iterator[ArrayLike[T]]
-//}
+// }
 //
-//private[bigdl] class ByteRecordConverter(
+// private[bigdl] class ByteRecordConverter(
 //    memoryType: MemoryType = PMEM) extends NativeArrayConverter[ByteRecord] {
 //
 //  override def getBytesPerRecord(byteRecord: ByteRecord): Long = {
@@ -55,9 +56,9 @@
 //      }
 //      Iterator.single(ByteRecordArray(nativeArray, labels))
 //    }
-//}
+// }
 //
-//private[bigdl] case class ByteRecordArray(records: VarLenBytesArray,
+// private[bigdl] case class ByteRecordArray(records: VarLenBytesArray,
 //    label: Array[Float]) extends ArrayLike[ByteRecord] {
 //  override def length: Int = {
 //    records.recordNum
@@ -68,9 +69,9 @@
 //  override def free(): Unit = {
 //    records.free()
 //  }
-//}
+// }
 //
-//private[bigdl] class SampleConverter(
+// private[bigdl] class SampleConverter(
 //    memoryType: MemoryType = PMEM) extends NativeArrayConverter[Sample[Float]] {
 //
 //  override def getBytesPerRecord(sample: Sample[Float]): Long = {
@@ -96,9 +97,9 @@
 //    }
 //    Iterator.single(SampleArray(nativeArray, featureSizes, labelSizes))
 //  }
-//}
+// }
 //
-//private[bigdl] case class SampleArray(
+// private[bigdl] case class SampleArray(
 //    samples: VarLenFloatsArray,
 //    featureSizes: Array[Array[Array[Int]]],
 //    labelSizes: Array[Array[Array[Int]]]) extends ArrayLike[Sample[Float]] {
@@ -113,9 +114,9 @@
 //  override def free(): Unit = {
 //    samples.free()
 //  }
-//}
+// }
 //
-//private[bigdl] class ImageFeatureConverter(
+// private[bigdl] class ImageFeatureConverter(
 //      memoryType: MemoryType = PMEM) extends NativeArrayConverter[ImageFeature] {
 //
 //  override def getBytesPerRecord(imageFeature: ImageFeature): Long = {
@@ -145,14 +146,14 @@
 //    }
 //    Iterator.single(ImageFeatureArray(nativeArray, metrics))
 //  }
-//}
+// }
 //
-///**
+// /**
 // * Cached ImageFeatures in PMEM.
 // * @param bytesData bytes in PMEM.
 // * @param metrics ImageFeature without bytes, just some metrics.
 // */
-//private[bigdl] case class ImageFeatureArray(
+// private[bigdl] case class ImageFeatureArray(
 //      bytesData: VarLenBytesArray,
 //      metrics: Array[ImageFeature]) extends ArrayLike[ImageFeature] {
 //  override def length: Int = {
@@ -166,9 +167,9 @@
 //  override def free(): Unit = {
 //    bytesData.free()
 //  }
-//}
+// }
 //
-//object PmemFeatureSet {
+// object PmemFeatureSet {
 //
 //  private def rdd[T: ClassTag](data: RDD[T],
 //      nativeArrayConverter: NativeArrayConverter[T],
@@ -221,4 +222,5 @@
 //          s"${implicitly[ClassTag[T]].runtimeClass} is not supported for now")
 //    }
 //  }
-//}
+// }
+// }

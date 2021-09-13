@@ -128,7 +128,8 @@ class PythonFeatureSet[T: ClassTag](
                                      targetName: String = "",
                                      totalSize: Int,
                                      imports: String = "",
-                                     loaderName: String = s"loader${Integer.toHexString(java.util.UUID.randomUUID().hashCode())}"
+                                     loaderName: String = s"loader${Integer.toHexString(
+                                       java.util.UUID.randomUUID().hashCode())}"
                                    ) extends DistributedFeatureSet[T] {
   import PythonFeatureSet._
 

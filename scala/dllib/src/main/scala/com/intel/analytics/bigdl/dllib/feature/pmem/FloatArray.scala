@@ -1,4 +1,4 @@
-///*
+// /*
 // * Copyright 2018 Analytics Zoo Authors.
 // *
 // * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,11 @@
 // * limitations under the License.
 // */
 //
-//package com.intel.analytics.bigdl.dllib.feature.pmem
+// package com.intel.analytics.bigdl.dllib.feature.pmem
 //
-//import org.apache.spark.unsafe.Platform
+// import org.apache.spark.unsafe.Platform
 //
-//object FloatArray {
+// object FloatArray {
 //  def apply(iterator: Iterator[Float], numOfRecord: Int,
 //      memoryType: MemoryType = PMEM): FloatArray = {
 //    val nativeArray = new FloatArray(numOfRecord, memoryType = memoryType)
@@ -29,13 +29,13 @@
 //    }
 //    nativeArray
 //  }
-//}
+// }
 //
-///**
+// /**
 // * An float array with fixed size stored in native memory.
 // * @param recordNum number of item for this array.
 // */
-//class FloatArray(val recordNum: Int,
+// class FloatArray(val recordNum: Int,
 //    sizeOfRecordByBytes: Int = 4,
 //    memoryType: MemoryType = PMEM) extends NativeArray[Float](
 //  recordNum * sizeOfRecordByBytes, memoryType) {
@@ -55,9 +55,9 @@
 //    assert(index <= lastOffSet)
 //    index
 //  }
-//}
+// }
 //
-//object VarLenFloatsArray {
+// object VarLenFloatsArray {
 //  // Backward compatible with Spark.6
 //  val FLOAT_ARRAY_OFFSET = {
 //    var unsafe: sun.misc.Unsafe = null
@@ -78,10 +78,10 @@
 //      0
 //    }
 //  }
-//}
+// }
 //
 //
-//class VarLenFloatsArray(recordNum: Int, totalSizeByBytes: Long,
+// class VarLenFloatsArray(recordNum: Int, totalSizeByBytes: Long,
 //    memoryType: MemoryType = PMEM) extends NativeVarLenArray[Float](recordNum,
 //  totalSizeByBytes, memoryType, 2) {
 //
@@ -90,4 +90,4 @@
 //  }
 //
 //  override def getTypeOffSet(): Int = VarLenFloatsArray.FLOAT_ARRAY_OFFSET
-//}
+// }

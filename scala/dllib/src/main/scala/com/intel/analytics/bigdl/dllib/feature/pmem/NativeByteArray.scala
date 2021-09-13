@@ -1,4 +1,4 @@
-///*
+// /*
 // * Copyright 2018 Analytics Zoo Authors.
 // *
 // * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +14,11 @@
 // * limitations under the License.
 // */
 //
-//package com.intel.analytics.bigdl.dllib.feature.pmem
+// package com.intel.analytics.bigdl.dllib.feature.pmem
 //
-//import org.apache.spark.unsafe.Platform
+// import org.apache.spark.unsafe.Platform
 //
-//class VarLenBytesArray(recordNum: Int, totalSizeByBytes: Long,
+// class VarLenBytesArray(recordNum: Int, totalSizeByBytes: Long,
 //    memoryType: MemoryType = PMEM) extends NativeVarLenArray[Byte](recordNum,
 //  totalSizeByBytes, memoryType, 0) {
 //
@@ -27,9 +27,9 @@
 //  }
 //
 //  override def getTypeOffSet(): Int = Platform.BYTE_ARRAY_OFFSET
-//}
+// }
 //
-//class FixLenBytesArray(val numOfRecord: Long, val sizeOfRecordByByte: Int,
+// class FixLenBytesArray(val numOfRecord: Long, val sizeOfRecordByByte: Int,
 //    memoryType: MemoryType = PMEM) extends
 //  NativeArray[Array[Byte]](numOfRecord * sizeOfRecordByByte, memoryType) {
 //
@@ -55,5 +55,5 @@
 //    assert(index <= lastOffSet)
 //    index
 //  }
-//}
+// }
 //

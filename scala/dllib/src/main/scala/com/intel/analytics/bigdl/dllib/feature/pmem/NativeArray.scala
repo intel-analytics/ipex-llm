@@ -1,4 +1,4 @@
-///*
+// /*
 // * Copyright 2018 Analytics Zoo Authors.
 // *
 // * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,27 +14,27 @@
 // * limitations under the License.
 // */
 //
-//package com.intel.analytics.bigdl.dllib.feature.pmem
+// package com.intel.analytics.bigdl.dllib.feature.pmem
 //
-//import scala.collection.mutable.ArrayBuffer
+// import scala.collection.mutable.ArrayBuffer
 //
-//sealed trait MemoryType extends Serializable
+// sealed trait MemoryType extends Serializable
 //
-//case object PMEM extends MemoryType
+// case object PMEM extends MemoryType
 //
-//case object DRAM extends MemoryType
+// case object DRAM extends MemoryType
 //
-//case object DIRECT extends MemoryType
+// case object DIRECT extends MemoryType
 //
-//case class DISK_AND_DRAM(numSlice: Int) extends MemoryType
+// case class DISK_AND_DRAM(numSlice: Int) extends MemoryType
 //
-//sealed trait DataStrategy
+// sealed trait DataStrategy
 //
-//case object PARTITIONED extends DataStrategy
+// case object PARTITIONED extends DataStrategy
 //
-//case object REPLICATED extends DataStrategy
+// case object REPLICATED extends DataStrategy
 //
-//object MemoryType {
+// object MemoryType {
 //  def fromString(str: String): MemoryType = {
 //    val diskPattern = "DISK_(\\d+)".r
 //    str.toUpperCase() match {
@@ -47,21 +47,21 @@
 //              s"excepted PMEM, DRAM, DIRECT or DISK_n.")
 //    }
 //  }
-//}
+// }
 //
-//object NativeArray {
+// object NativeArray {
 //  private val natives = new ArrayBuffer[NativeArray[_]]()
 //
 //  def free(): Unit = {
 //    NativeArray.natives.map{_.free()}
 //  }
-//}
+// }
 //
-///**
+// /**
 // *
 // * @param totalBytes
 // */
-//abstract class NativeArray[T](totalBytes: Long, memoryType: MemoryType) {
+// abstract class NativeArray[T](totalBytes: Long, memoryType: MemoryType) {
 //
 //  assert(totalBytes > 0, s"The size of bytes should be larger than 0, but got: ${totalBytes}!")
 //
@@ -91,6 +91,6 @@
 //  }
 //
 //  protected def indexOf(i: Int): Long
-//}
+// }
 //
 //
