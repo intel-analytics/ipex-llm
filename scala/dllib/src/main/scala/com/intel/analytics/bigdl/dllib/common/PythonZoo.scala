@@ -32,7 +32,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, ValidationMethod, _}
 import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
 import com.intel.analytics.bigdl.dllib.feature.text.TextSet
-//import com.intel.analytics.zoo.pipeline.api.net.TFNet
+// import com.intel.analytics.zoo.pipeline.api.net.TFNet
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag

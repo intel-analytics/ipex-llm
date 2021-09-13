@@ -53,9 +53,9 @@ import com.intel.analytics.bigdl.dllib.autograd._
 import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.net.NetUtils
-//import com.intel.analytics.bigdl.dllib.Net.TorchModel
+// import com.intel.analytics.bigdl.dllib.Net.TorchModel
 import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
-//import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
+// import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
@@ -1075,7 +1075,7 @@ private[bigdl] object InternalOptimizerUtil {
       args: _*)
   }
 
-// uncomment when torch net migrate  
+// uncomment when torch net migrate
 //  // TODO: Delete this when switch to Bigdl 0.11.0.
 //  def getTorchModel[T: ClassTag](
 //      models: RDD[CacheV1[T]],
@@ -1201,7 +1201,8 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
 //      EngineRef.getCoreNumber()
 //    }
 //
-    val modelPerExecutor = EngineRef.getCoreNumber() // replace this line with above when migrating TorchNet
+    val modelPerExecutor = EngineRef.getCoreNumber() // replace this line with
+    // above when migrating TorchNet
     val partitionNum = distDataset.originRDD().partitions.length
     val modelParameters = InternalOptimizerUtil.getParametersFromModel(trainingModel)
 
@@ -1828,7 +1829,7 @@ object InternalDistriOptimizer {
 //        (0 until extraParamLength).foreach(i =>
 //          extraState(i) = models.map(_.localModels.head.getExtraParameter()(i)).first()
 //        )
-////        val extraState = models.map(_.localModels.head.getExtraParameter()).first()
+// //        val extraState = models.map(_.localModels.head.getExtraParameter()).first()
 //        trainingModel.setExtraParameter(extraState)
 //
 //        // make sure gradient is as the same length as weight
@@ -1862,7 +1863,8 @@ object InternalDistriOptimizer {
 //          gradientParameter.narrow(1, start, length).copy(gradients(pid))
 //        })
 //      case model: TorchModel =>
-//        // TODO: delete this when switch to bigdl 0.11.0 and TorchModel override setExtraParameters
+//        // TODO: delete this when switch to bigdl 0.11.0 and TorchModel override
+      //         setExtraParameters
 //        InternalOptimizerUtil.getTorchModel(
 //          models, parameters, model)
       case _ =>

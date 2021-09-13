@@ -34,7 +34,7 @@ import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
-//import com.intel.analytics.bigdl.dllib.feature.pmem.{DRAM, MemoryType}
+// import com.intel.analytics.bigdl.dllib.feature.pmem.{DRAM, MemoryType}
 import org.apache.spark.sql.SQLContext
 
 /**
@@ -717,7 +717,7 @@ class LocalTextSet(var array: Array[TextFeature]) extends TextSet {
 /**
  * DistributedTextSet is comprised of RDD of TextFeature.
  */
-//class DistributedTextSet(var rdd: RDD[TextFeature],
+// class DistributedTextSet(var rdd: RDD[TextFeature],
 //                         memoryType: MemoryType = DRAM) extends TextSet {
 class DistributedTextSet(var rdd: RDD[TextFeature]) extends TextSet {
   override def transform(transformer: Preprocessing[TextFeature, TextFeature]): TextSet = {

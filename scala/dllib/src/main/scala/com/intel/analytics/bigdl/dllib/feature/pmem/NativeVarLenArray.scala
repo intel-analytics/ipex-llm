@@ -1,4 +1,4 @@
-///*
+// /*
 // * Copyright 2018 Analytics Zoo Authors.
 // *
 // * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,13 @@
 // * limitations under the License.
 // */
 //
-//package com.intel.analytics.bigdl.dllib.feature.pmem
+// package com.intel.analytics.bigdl.dllib.feature.pmem
 //
-//import org.apache.spark.unsafe.Platform
+// import org.apache.spark.unsafe.Platform
 //
-//import scala.reflect.ClassTag
+// import scala.reflect.ClassTag
 //
-//private[bigdl] abstract class NativeVarLenArray[T: ClassTag](val recordNum: Int,
+// private[bigdl] abstract class NativeVarLenArray[T: ClassTag](val recordNum: Int,
 //    totalSizeByBytes: Long,
 //    memoryType: MemoryType, protected val moveStep: Int) extends
 //  NativeArray[Array[T]](totalSizeByBytes, memoryType) {
@@ -69,4 +69,4 @@
 //    assert(isValidIndex(i), s"Invalid index: ${i}")
 //    return indexer(i)
 //  }
-//}
+// }

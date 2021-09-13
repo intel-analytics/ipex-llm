@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Table}
 import com.intel.analytics.bigdl.dllib.common.zooUtils
-//import com.intel.analytics.zoo.models.common.ZooModel
+// import com.intel.analytics.zoo.models.common.ZooModel
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Logger
 import org.scalactic.TolerantNumerics

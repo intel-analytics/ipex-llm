@@ -30,10 +30,10 @@ import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{File, Shape}
-//import com.intel.analytics.zoo.models.caffe.CaffeLoader
+// import com.intel.analytics.zoo.models.caffe.CaffeLoader
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.dllib.utils.tf.{Session, TensorflowLoader}
-//import com.intel.analytics.zoo.common.Utils
+// import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.dllib.autograd.Variable
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, Merge, WordEmbedding}
@@ -231,7 +231,8 @@ object Net {
       activation
     }
     if (activation != null) {
-      Map(paramName -> s"'${com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils.getActivationName(trueActivation)}'")
+      Map(paramName -> s"'${com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils.
+        getActivationName(trueActivation)}'")
     } else {
       Map()
     }
@@ -351,7 +352,7 @@ object Net {
         throw new RuntimeException(s"Export Keras2 model failed:\n" + errorMsg.toString())
       }
     }
-    
+
 //    def export[T: ClassTag](
 //          model: Model[T],
 //          writer: BufferedWriter): Unit = {

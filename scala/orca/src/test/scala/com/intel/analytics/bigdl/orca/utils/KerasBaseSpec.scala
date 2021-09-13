@@ -27,7 +27,7 @@ import org.scalatest.Tag
 object NoKeras2 extends Tag("com.intel.analytics.zoo.pipeline.api")
 object Keras2Test extends Tag("com.intel.analytics.zoo.pipeline.api.keras2")
 
-/*abstract class KerasBaseSpec extends ZooSpecHelper {
+/* abstract class KerasBaseSpec extends ZooSpecHelper {
 
   protected def ifskipTest(): Unit = {
     // Skip unitest if environment is not ready

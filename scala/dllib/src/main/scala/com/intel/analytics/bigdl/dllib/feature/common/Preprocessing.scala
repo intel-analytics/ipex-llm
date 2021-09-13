@@ -53,9 +53,11 @@ trait Preprocessing[A, B] extends Transformer[A, B] {
 
 def apply(imageSet: ImageSet): ImageSet = {
     this match {
-case xs: com.intel.analytics.bigdl.dllib.feature.common.Preprocessing[com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature,com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature] => 
-imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
-case _ => throw new IllegalArgumentException("We expect " +
+      case xs: com.intel.analytics.bigdl.dllib.feature.common.Preprocessing[com.intel.analytics.
+      bigdl.dllib.feature.transform.vision.image.ImageFeature, com.intel.analytics.bigdl.dllib.
+      feature.transform.vision.image.ImageFeature] =>
+        imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
+      case _ => throw new IllegalArgumentException("We expect " +
         "Preprocessing[ImageFeature, ImageFeature] here")
 }
 //    if (this.isInstanceOf[Preprocessing[ImageFeature, ImageFeature]]) {

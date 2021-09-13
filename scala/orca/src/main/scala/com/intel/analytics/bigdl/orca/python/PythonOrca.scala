@@ -34,8 +34,8 @@ object PythonOrca {
 
 class PythonOrca[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo[T] {
   def inferenceModelDistriPredict(model: InferenceModel, sc: JavaSparkContext,
-                                  inputs: JavaRDD[JList[com.intel.analytics.bigdl.dllib.utils.python.api
-                                  .JTensor]],
+                                  inputs: JavaRDD[JList[com.intel.analytics.bigdl.dllib.
+                                  utils.python.api.JTensor]],
                                   inputIsTable: Boolean): JavaRDD[JList[Object]] = {
     val broadcastModel = sc.broadcast(model)
     inputs.rdd.mapPartitions(partition => {

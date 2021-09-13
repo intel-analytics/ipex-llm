@@ -183,7 +183,7 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 //    }
 //    estimator.setDataCacheLevel(memType)
 //  }
-  
+
   def setCheckpoint(
       estimator: NNEstimator[T],
       path: String,

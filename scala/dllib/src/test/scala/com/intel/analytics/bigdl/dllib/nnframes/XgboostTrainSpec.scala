@@ -37,7 +37,7 @@ class XgboostTrainSpec extends ZooSpecHelper {
       sc.stop()
     }
   }
-  
+
 /*
   "XGBClassifer train" should "work" in {
     if (!(scala.util.Properties.isMac || scala.util.Properties.isWin)) {

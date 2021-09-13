@@ -1,4 +1,4 @@
-///*
+// /*
 // * Copyright 2018 Analytics Zoo Authors.
 // *
 // * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,12 @@
 // * limitations under the License.
 // */
 //
-//package com.intel.analytics.bigdl.dllib.feature.pmem
+// package com.intel.analytics.bigdl.dllib.feature.pmem
 //
-//import com.intel.analytics.bigdl.dllib.feature.pmem._
-//import org.apache.spark.SparkEnv
+// import com.intel.analytics.bigdl.dllib.feature.pmem._
+// import org.apache.spark.SparkEnv
 //
-//object MemoryAllocator {
+// object MemoryAllocator {
 //
 //  def getInstance(memoryType: MemoryType = DIRECT): BasicMemoryAllocator = {
 //    memoryType match {
@@ -33,9 +33,9 @@
 //        throw new IllegalArgumentException(s"Not supported memoryType: ${memoryType}")
 //    }
 //  }
-//}
+// }
 //
-//object SparkPersistentMemoryAlocator {
+// object SparkPersistentMemoryAlocator {
 //  private val sparkConf = SparkEnv.get.conf
 //  private val memPaths = sparkConf.get(
 //    "analytics.zoo.pmem.paths", "/mnt/pmem0:/mnt/pmem1").split(":")
@@ -70,4 +70,4 @@
 //  def copy(destAddress: Long, srcAddress: Long, size: Long): Unit = {
 //    nativeAllocator.copy(destAddress, srcAddress, size)
 //  }
-//}
+// }

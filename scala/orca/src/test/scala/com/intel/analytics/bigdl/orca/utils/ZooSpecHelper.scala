@@ -144,6 +144,7 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
     }
     compareOutputAndGradInput(model1, model2, input, precision)
   }
+
 /*
   def testZooModelLoadSave[Model](model: ZooModel[Tensor[Float], Tensor[Float], Float],
                                   input: Tensor[Float],
@@ -167,7 +168,8 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
       .asInstanceOf[ZooModel[Table, Tensor[Float], Float]]
     require(loadedModel.modules.length == 1)
     compareOutputAndGradInputTable2Tensor(model, loadedModel, input, precision)
-  }*/
+  }
+*/
 }
 
 trait SerialSpecHelper extends ZooSpecHelper {

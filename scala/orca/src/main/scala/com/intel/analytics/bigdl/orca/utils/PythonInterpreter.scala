@@ -70,7 +70,7 @@ object PythonInterpreter {
       throw new RuntimeException("PYTHONHOME is unset, please set PYTHONHOME first.")
     }
     // Load TFNet before create interpreter, or the TFNet will throw an OMP error #13
-    //TFNetNative.isLoaded
+    // TFNetNative.isLoaded
     val createInterp = () => {
       val config: JepConfig = new JepConfig()
         config.setClassEnquirer(new NamingConventionClassEnquirer())

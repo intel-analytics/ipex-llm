@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
 import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
-//import com.intel.analytics.bigdl.dllib.feature.pmem.MemoryType
+// import com.intel.analytics.bigdl.dllib.feature.pmem.MemoryType
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD
@@ -181,7 +181,8 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
 //      val brace = if (creator) "()" else ""
 //      val load = s"""
 //                    |by${partId} = bytes(b % 256 for b in pyjarray)
-//                    |func${partId} = CloudPickleSerializer.loads(CloudPickleSerializer, by${partId})
+//                    |func${partId} = CloudPickleSerializer.loads(CloudPickleSerializer,
+  //                    by${partId})
 //                    |${localLoaderName} = func${partId}${brace}
 //                    |""".stripMargin
 //      load +
@@ -194,7 +195,8 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
 //           |
 //           |${localLoaderName}_rand_sampler=DistributedSampler(${localLoaderName}.dataset,
 //           |                                              ${nodeNumber}, ${partId}, True)
-//           |${localLoaderName}_seq_sampler=DistributedSequentialSampler(${localLoaderName}.dataset,
+//           |${localLoaderName}_seq_sampler=DistributedSequentialSampler(
+  //         |  ${localLoaderName}.dataset,
 //           |                                              ${nodeNumber}, ${partId})
 //           |
 //           |${loaderName}_bs_node = int(math.ceil(${localLoaderName}.batch_size / ${nodeNumber}))

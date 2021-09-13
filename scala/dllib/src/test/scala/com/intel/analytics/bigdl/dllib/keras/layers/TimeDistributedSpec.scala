@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-//package com.intel.analytics.bigdl.dllib.keras.layers
+// package com.intel.analytics.bigdl.dllib.keras.layers
 //
-//import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-//import com.intel.analytics.bigdl.dllib.keras.KerasLayer
-//import com.intel.analytics.bigdl.dllib.tensor.Tensor
-//import com.intel.analytics.bigdl.dllib.utils.Shape
-//import com.intel.analytics.bigdl.dllib.keras.models.Sequential
-//import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
+// import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+// import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+// import com.intel.analytics.bigdl.dllib.tensor.Tensor
+// import com.intel.analytics.bigdl.dllib.utils.Shape
+// import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+// import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 //
 //
-//class TimeDistributedSpec extends KerasBaseSpec {
+// class TimeDistributedSpec extends KerasBaseSpec {
 //
 //  "TimeDistributed Dense" should "be the same as Keras" in {
 //    val kerasCode =
@@ -94,9 +94,9 @@
 //      kerasCode, weightConverter = converter, precision = 1e-3)
 //  }
 //
-//}
+// }
 //
-//class TimeDistributedSerialTest extends ModuleSerializationTest {
+// class TimeDistributedSerialTest extends ModuleSerializationTest {
 //  override def test(): Unit = {
 //    val layer = TimeDistributed[Float](Dense[Float](8)
 //      .asInstanceOf[KerasLayer[Activity, Tensor[Float], Float]], inputShape = Shape(10, 12))
@@ -104,4 +104,4 @@
 //    val input = Tensor[Float](3, 10, 12).rand()
 //    runSerializationTest(layer, input)
 //  }
-//}
+// }
