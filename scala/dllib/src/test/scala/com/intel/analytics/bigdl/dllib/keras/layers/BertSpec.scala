@@ -20,7 +20,7 @@
 // import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 // import com.intel.analytics.bigdl.dllib.tensor.Tensor
 // import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
-// import com.intel.analytics.bigdl.dllib.autograd.Variable
+// import com.intel.analytics.bigdl.dllib.keras.autograd.Variable
 // import com.intel.analytics.bigdl.dllib.keras.models.Model
 // import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 // import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper

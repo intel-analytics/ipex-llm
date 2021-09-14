@@ -22,8 +22,8 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.keras.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Node
-import com.intel.analytics.bigdl.dllib.autograd
-import com.intel.analytics.bigdl.dllib.autograd._
+import com.intel.analytics.bigdl.dllib.keras.autograd
+import com.intel.analytics.bigdl.dllib.keras.autograd._
 import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.objectives.TensorLossFunction
 

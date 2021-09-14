@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
-import com.intel.analytics.bigdl.dllib.autograd.{AutoGrad, Variable}
+import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Variable}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.{GraphRef, KerasUtils}
 import com.intel.analytics.bigdl.dllib.keras.models.Model
 import com.intel.analytics.bigdl.dllib.keras.models.Model.{apply => _, _}

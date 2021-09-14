@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Narrow => BNarrow}
 import com.intel.analytics.bigdl.dllib.keras.layers.{Narrow => ZNarrow}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.bigdl.dllib.autograd.Parameter
+import com.intel.analytics.bigdl.dllib.keras.autograd.Parameter
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}

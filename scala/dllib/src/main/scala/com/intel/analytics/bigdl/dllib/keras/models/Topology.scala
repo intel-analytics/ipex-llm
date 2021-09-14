@@ -48,8 +48,8 @@ import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
 import com.intel.analytics.bigdl.dllib.feature.dataset
 import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.{Net, Predictable}
-import com.intel.analytics.bigdl.dllib.autograd.{Lambda, Variable}
-import com.intel.analytics.bigdl.dllib.autograd._
+import com.intel.analytics.bigdl.dllib.keras.autograd.{Lambda, Variable}
+import com.intel.analytics.bigdl.dllib.keras.autograd._
 import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.net.NetUtils

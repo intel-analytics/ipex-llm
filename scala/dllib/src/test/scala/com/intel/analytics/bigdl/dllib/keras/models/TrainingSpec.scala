@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape}
 import com.intel.analytics.bigdl.dllib.common.NNContext
 import com.intel.analytics.bigdl.dllib.feature.image._
-import com.intel.analytics.bigdl.dllib.autograd.{Variable, AutoGrad => A}
+import com.intel.analytics.bigdl.dllib.keras.autograd.{Variable, AutoGrad => A}
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers._
 import com.intel.analytics.bigdl.dllib.keras.python.PythonZooKeras

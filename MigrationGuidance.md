@@ -104,7 +104,11 @@ If you are a maven user and add above modules as dependency to your own project.
 
    ****Keras modules****
 
-   Change ```from zoo.pipeline.api.keras import *``` to ```from bigdl.dllib.keras import```
+   Change ```from zoo.pipeline.api.keras import *``` to ```from bigdl.dllib.keras import *```
+
+   ****Estimator modules****
+
+   Change ```from zoo.pipeline.api.estimator import *``` to ```from bigdl.dllib.estimator import *```
 
    ****tfpark modules****
 
