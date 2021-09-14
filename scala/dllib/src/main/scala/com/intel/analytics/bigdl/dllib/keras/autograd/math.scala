@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.autograd
+package com.intel.analytics.bigdl.dllib.keras.autograd
 
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, InferShape}

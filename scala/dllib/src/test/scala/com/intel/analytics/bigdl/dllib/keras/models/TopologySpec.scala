@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.keras.Net
-import com.intel.analytics.bigdl.dllib.autograd.{AutoGrad, Parameter, Variable}
+import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Parameter, Variable}
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers._
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest

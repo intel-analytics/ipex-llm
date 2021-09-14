@@ -33,7 +33,7 @@ import com.intel.analytics.bigdl.dllib.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.dllib.nn.{BatchNormalization => BNBatchNormalization}
 import com.intel.analytics.bigdl.dllib.utils.{Shape, Table}
 import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
-import com.intel.analytics.bigdl.dllib.autograd.{Constant, _}
+import com.intel.analytics.bigdl.dllib.keras.autograd.{Constant, _}
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, _}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import com.intel.analytics.bigdl.dllib.keras.models.{KerasNet, Model, Sequential}
