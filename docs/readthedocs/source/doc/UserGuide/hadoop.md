@@ -1,6 +1,6 @@
 # Hadoop/YARN User Guide
 
-Hadoop version: Hadoop >= 2.7 or CDH 5.X. Hadoop 3.X or CHD 6.X have not been tested and currently not supported.
+Hadoop version: Hadoop >= 2.7 or [CDH](https://www.cloudera.com/products/open-source/apache-hadoop/key-cdh-components.html) 5.X. Hadoop 3.X or CDH 6.X have not been tested and thus currently not supported.
 
 ---
 
