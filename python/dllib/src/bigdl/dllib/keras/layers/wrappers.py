@@ -16,40 +16,39 @@
 
 import sys
 
-from ..engine.topology import ZooKerasLayer
+from bigdl.dllib.keras.engine import ZooKerasLayer
 
 if sys.version >= '3':
     long = int
     unicode = str
 
-# uncomment when migrating zoo model
-# class TimeDistributed(ZooKerasLayer):
-#     """
-#     TimeDistributed wrapper.
-#     Apply a layer to every temporal slice of an input.
-#     The input should be at least 3D.
-#     The dimension of index one will be considered as the temporal dimension.
-#
-#     When you use this layer as the first layer of a model, you need to provide the argument
-#     input_shape (a shape tuple, does not include the batch dimension).
-#     name: String to specify the name of the wrapper. Default is None.
-#
-#     # Arguments
-#     layer: A layer instance.
-#     input_shape: A shape tuple, not including batch.
-#     name: String to set the name of the wrapper.
-#           If not specified, its name will by default to be a generated string.
-#
-#     >>> from bigdl.dllib.keras.layers import Dense
-#     >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12))
-#     creating: createZooKerasDense
-#     creating: createZooKerasTimeDistributed
-#     """
-#     def __init__(self, layer, input_shape=None, **kwargs):
-#         super(TimeDistributed, self).__init__(None,
-#                                               layer,
-#                                               list(input_shape) if input_shape else None,
-#                                               **kwargs)
+class TimeDistributed(ZooKerasLayer):
+    """
+    TimeDistributed wrapper.
+    Apply a layer to every temporal slice of an input.
+    The input should be at least 3D.
+    The dimension of index one will be considered as the temporal dimension.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+    name: String to specify the name of the wrapper. Default is None.
+
+    # Arguments
+    layer: A layer instance.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the wrapper.
+          If not specified, its name will by default to be a generated string.
+
+    >>> from bigdl.dllib.keras.layers import Dense
+    >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12))
+    creating: createZooKerasDense
+    creating: createZooKerasTimeDistributed
+    """
+    def __init__(self, layer, input_shape=None, **kwargs):
+        super(TimeDistributed, self).__init__(None,
+                                              layer,
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
 
 
 class Bidirectional(ZooKerasLayer):
