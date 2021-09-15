@@ -845,13 +845,13 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     ThresholdedReLU(theta, toScalaShape(inputShape))
   }
 
-  // uncomment when migrate zoo model
-//  def createZooKerasTimeDistributed(
-//      layer: KerasLayer[Activity, Tensor[T], T],
-//      inputShape: JList[Int] = null): TimeDistributed[T] = {
-//    TimeDistributed(layer, toScalaShape(inputShape))
-//  }
+  def createZooKerasTimeDistributed(
+      layer: KerasLayer[Activity, Tensor[T], T],
+      inputShape: JList[Int] = null): TimeDistributed[T] = {
+    TimeDistributed(layer, toScalaShape(inputShape))
+  }
 
+  // uncomment when migrate zoo model
 //  def createZooKerasTimeDistributed(
 //      layer: ZooModel[Activity, Activity, T],
 //      inputShape: JList[Int]): TimeDistributed[T] = {
