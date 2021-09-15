@@ -166,7 +166,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 @deprecated("`Model` is deprecated." +
   "com.intel.analytics.bigdl.dllib.keras is deprecated in BigDL 0.11, " +
   "and will be removed in future releases", "0.10.0")
-class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
+private[bigdl] class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
       private val _outputs : Seq[ModuleNode[T]])(implicit ev: TensorNumeric[T])
   extends KerasModel[T] {
   this.labor = doBuild(null)
@@ -266,7 +266,7 @@ object Model extends KerasLayerSerializable{
 @deprecated("`Sequential` is deprecated." +
   "com.intel.analytics.bigdl.dllib.keras is deprecated in BigDL 0.11, " +
   "and will be removed in future releases", "0.10.0")
-class Sequential[T: ClassTag]()
+private[bigdl] class Sequential[T: ClassTag]()
 (implicit ev: TensorNumeric[T]) extends KerasModel[T] {
 
   private[bigdl] var frozen: Boolean = false
