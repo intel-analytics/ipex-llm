@@ -141,7 +141,7 @@ RUN mkdir -p /opt/analytics-zoo-examples/python && \
     pip install --no-cache-dir --upgrade setuptools && \
     pip install --no-cache-dir numpy==1.18.1 scipy && \
     pip install --no-cache-dir pandas==1.0.3 && \
-    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py tensorflow==1.15.0 && \
+    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
     pip uninstall -y -q tornado && \
