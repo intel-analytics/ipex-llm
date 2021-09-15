@@ -111,6 +111,8 @@ if __name__ == "__main__":
     item_tbl = item_tbl\
         .encode_string(["item", "category"], [item_category_indices[0], category_index])\
         .distinct()
+    item_pdf = item_tbl.to_pandas()
+    item_cat_mapping = dict(zip(item_pdf.item, item_pdf.category))
 
     transaction_tbl = transaction_tbl\
         .encode_string(['user', 'item'], [user_index, item_category_indices[0]])\
@@ -121,8 +123,8 @@ if __name__ == "__main__":
         .add_negative_samples(item_size, item_col='item', neg_num=1)
 
     full_tbl = transaction_tbl.join(item_tbl, "item")\
-        .add_value_features(key_cols=["item_hist_seq", "neg_item_hist_seq"],
-                            tbl=item_tbl, key="item", value="category")\
+        .add_value_features(columns=["item_hist_seq", "neg_item_hist_seq"],
+                            mapping=item_cat_mapping, key="item", value="category")\
         .pad(cols=['item_hist_seq', 'category_hist_seq',
              'neg_item_hist_seq', 'neg_category_hist_seq'],
              seq_len=100,
