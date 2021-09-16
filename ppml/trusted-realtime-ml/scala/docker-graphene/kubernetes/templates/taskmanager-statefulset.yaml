@@ -40,10 +40,6 @@ spec:
         command: ["/bin/bash","-c"]
         args:
               - export FLINK_TASK_MANAGER_IP=$(hostname -I);
-                export OMP_NUM_THREADS=${CORE_NUM};
-                export KMP_AFFINITY=verbose,granularity=fine,compact,1,0;
-                export KMP_BLOCKTIME=20;
-                export KMP_SETTINGS=1;
                 cd /ppml/trusted-realtime-ml/java;
                 test "$SGX_MODE" = sgx && bash init.sh | tee ../init-java.log ;
                 instance_id=`echo $POD_NAME | awk -F '-' '{print $NF}'`;
