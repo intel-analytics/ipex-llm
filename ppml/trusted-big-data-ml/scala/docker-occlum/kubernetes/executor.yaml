@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: spark-deployment
+  namespace: default
+spec:
+  containers:
+  - name: spark-pi
+    image: occlum_spark:3.0
+    imagePullPolicy: Never
+    volumeMounts:
+    - name: sgx-enclave
+      mountPath: /dev/sgx/enclave
+    - name: sgx-provision
+      mountPath: /dev/sgx/provision
+    securityContext:
+      privileged: true
+  volumes:
+  - name: sgx-enclave
+    hostPath:
+      path: /dev/sgx_enclave
+  - name: sgx-provision
+    hostPath:
+      path: /dev/sgx_provision

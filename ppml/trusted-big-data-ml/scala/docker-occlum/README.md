@@ -1,4 +1,4 @@
-# Java Spark Occlum
+# Spark Local on Occlum
 
 ## Spark 2.4.6 local test
 
@@ -41,4 +41,3 @@ To run BigDL&ResNet&CIFAR-10 example, start the docker container with:
 bash start-spark-local.sh cifar
 ```
 The examples are run in the docker container. Attach it and see the results.
-
