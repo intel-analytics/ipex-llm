@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.dllib.keras
+import com.intel.analytics.bigdl.dllib.nn.keras
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{DnnGraph, Equivalent, Input, Output}
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -94,7 +94,7 @@ class IRconvertSpec extends BigDLSpecHelper {
   }
 
   def kerasLayer(classNum: Int, shape: Shape = Shape(28, 28, 3)): keras.Sequential[Float] = {
-    import com.intel.analytics.bigdl.dllib.keras._
+    import com.intel.analytics.bigdl.dllib.nn.keras._
     import com.intel.analytics.bigdl.dllib.utils.Shape
 
     val model = Sequential()
