@@ -22,7 +22,8 @@ if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then cmd_prefix="graphene-sgx 
 
 echo "### Launching Flink Taskmanager ###"
 
-eval ${cmd_prefix}bash -c \" /opt/jdk8/bin/java \
+ ${cmd_prefix}bash -c " export OMP_NUM_THREADS=${CORE_NUM} && export KMP_AFFINITY=verbose,granularity=fine,compact,1,0 && export KMP_BLOCKTIME=20 && export KMP_SETTINGS=1 && \
+    /opt/jdk8/bin/java \
     -XX:+UseG1GC \
     -Xms2g \
     -Xmx${xmx_size} \
@@ -60,4 +61,4 @@ eval ${cmd_prefix}bash -c \" /opt/jdk8/bin/java \
     -D taskmanager.memory.managed.size=${taskmanager_memory_managed_size} \
     -D taskmanager.cpu.cores=${core_num} \
     -D taskmanager.memory.task.heap.size=${taskmanager_memory_task_heap_size} \
-    -D taskmanager.memory.task.off-heap.size=953mb \" | tee ./flink-taskmanager-${sgx_mode}.log
+    -D taskmanager.memory.task.off-heap.size=953mb " 2>&1 | tee ./flink-taskmanager-${sgx_mode}.log
