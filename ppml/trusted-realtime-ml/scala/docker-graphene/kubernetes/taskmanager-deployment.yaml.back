@@ -24,9 +24,6 @@ spec:
         command: ["/bin/bash","-c"]
         args:
               - export FLINK_TASK_MANAGER_IP=$(hostname -I);
-                export OMP_NUM_THREADS=${CORE_NUM};
-                export KMP_AFFINITY=verbose,granularity=fine,compact,1,0;
-                export KMP_BLOCKTIME=20;
                 cd /ppml/trusted-realtime-ml/java;
                 test "$SGX_MODE" = sgx && bash init-java.sh | tee ../init-java.log ;
                 bash start-flink-taskmanager.sh | tee ../taskmanager.log;

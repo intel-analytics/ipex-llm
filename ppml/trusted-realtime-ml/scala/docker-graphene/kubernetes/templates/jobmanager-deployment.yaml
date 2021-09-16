@@ -34,11 +34,11 @@ spec:
               configMapKeyRef:
                 name: flink-config
                 key: flink.jobmanager.ip
-          - name: XMX_SIZE
-            valueFrom:
-              configMapKeyRef:
-                name: flink-config
-                key: xmx.size
+                #          - name: XMX_SIZE
+                #            valueFrom:
+                #              configMapKeyRef:
+                #                name: flink-config
+                #                key: xmx.size
           - name: SGX_MODE
             valueFrom:
               configMapKeyRef:
