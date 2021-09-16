@@ -113,4 +113,4 @@ To view the evaluation result of "not chosen" trails and find some insight or ev
 %load_ext tensorboard
 %tensorboard --logdir /tmp/autots_estimator/autots_estimator_leaderboard/
 ```
-Detailed information please refer to [visualization](https://test-az.readthedocs.io/en/visiual_tensorboard/doc/Chronos/Overview/chronos.html#visualization).
+Detailed information please refer to [Visualization](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#Visualization).

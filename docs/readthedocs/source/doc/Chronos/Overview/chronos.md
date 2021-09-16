@@ -142,7 +142,7 @@ A typical call of [`roll`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.da
 ```python
 # forecaster
 x, y = tsdata.roll(lookback=..., horizon=...).to_numpy()
-forecaster.fit(x, y)
+forecaster.fit((x, y))
 ```
 
 ##### **4.6.2 Pandas Exporting**
