@@ -77,6 +77,17 @@ class InferenceModel(JavaValue):
         callZooFunc(self.bigdl_type, "inferenceModelLoadOpenVINO",
                     self.value, model_path, weight_path, batch_size)
 
+    def load_openvino_ng(self, model_path, weight_path, batch_size=0):
+        """
+        Load an OpenVINI IR.
+
+        :param model_path: String. The file path to the OpenVINO IR xml file.
+        :param weight_path: String. The file path to the OpenVINO IR bin file.
+        :param batch_size: Int. Set batch Size, default is 0 (use default batch size).
+        """
+        callZooFunc(self.bigdl_type, "inferenceModelLoadOpenVINONg",
+                    self.value, model_path, weight_path, batch_size)
+
     def load_tensorflow(self, model_path, model_type="frozenModel", intra_op_parallelism_threads=1,
                         inter_op_parallelism_threads=1, use_per_session_threads=True):
         """
