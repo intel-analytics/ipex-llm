@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.models.maskrcnn.MaskRCNN
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.dllib.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.nn.ops.{RandomUniform => RandomUniformOps}
 import com.intel.analytics.bigdl.dllib.nn.tf.{DecodeRawSerializer, ParseExample, ParseSingleExample, StridedSlice}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer

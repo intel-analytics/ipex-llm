@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.nn.keras
 
-import com.intel.analytics.bigdl.nn.{Input => TInput}
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, Shape}
+import com.intel.analytics.bigdl.dllib.nn.{Input => TInput}
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.{Node, Shape}
 
 import scala.reflect.ClassTag
 
-@deprecated("com.intel.analytics.bigdl.nn.keras is deprecated in BigDL 0.11, " +
+@deprecated("com.intel.analytics.bigdl.dllib.nn.keras is deprecated in BigDL 0.11, " +
   "and will be removed in future releases", "0.10.0")
 class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T](KerasLayer.addBatch(inputShape)) {

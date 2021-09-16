@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.dllib.nn.keras
 
-import com.intel.analytics.bigdl.nn.Padding
-import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.nn.Padding
+import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 import scala.reflect.ClassTag
 
