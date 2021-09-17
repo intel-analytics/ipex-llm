@@ -1,0 +1,6 @@
+490c490,492
+<             lib = ctypes.CDLL(ctypes.util.find_library(libname))
+---
+>             #lib = ctypes.CDLL(ctypes.util.find_library(libname))
+>             lib = ctypes.CDLL('/lib/x86_64-linux-gnu/libuuid.so.1')
+>             print("###INFO lib:" + str(lib))
