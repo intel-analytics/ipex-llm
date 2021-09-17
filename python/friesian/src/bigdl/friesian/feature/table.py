@@ -751,9 +751,9 @@ class FeatureTable(Table):
         """
         return cls(Table._read_csv(paths, delimiter, header, names, dtype))
 
-    def encode_string(self, columns, indices,
-                      do_split=False, sep='\t', sort_for_array=False, keep_most_frequent=False,
-                      broadcast=True):
+    def encode_string(self, columns, indices, broadcast=True,
+                      do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False
+                      ):
         """
         Encode columns with provided list of StringIndex.
 
@@ -764,15 +764,15 @@ class FeatureTable(Table):
                Or it can be a dict or a list of dicts. In this case,
                the keys of the dict should be within the categorical column
                and the values are the target ids to be encoded.
+        :param broadcast: bool, whether need to broadcast index when encode string.
+        Default is True.
         :param do_split: bool, whether need to split column value to array to encode string.
         Default is False.
         :param sep: str, a string representing a regular expression to split a column value.
-        Default is '\t'
+        Default is ','.
         :param sort_for_array: bool, whether need to sort array columns. Default is False.
         :param keep_most_frequent: bool, whether need to keep most frequent value as the
         column value. Default is False.
-        :param broadcast: bool, whether need to broadcast index when encode string.
-        Default is True.
 
         :return: A new FeatureTable which transforms categorical features into unique integer
                  values with provided StringIndexes.
@@ -885,7 +885,7 @@ class FeatureTable(Table):
         return cross_hash_df
 
     def category_encode(self, columns, freq_limit=None, order_by_freq=False,
-                        do_split=False, sep='\t', sort_for_array=False, keep_most_frequent=False,
+                        do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False,
                         broadcast=True):
         """
         Category encode the given columns.
@@ -898,6 +898,15 @@ class FeatureTable(Table):
         :param order_by_freq: boolean, whether the result StringIndex will assign smaller indices
                to values with more frequencies. Default is False and in this case frequency order
                may not be preserved when assigning indices.
+        :param do_split: bool, whether need to split column value to array to encode string.
+        Default is False.
+        :param sep: str, a string representing a regular expression to split a column value.
+        Default is ','.
+        :param sort_for_array: bool, whether need to sort array columns. Default is False.
+        :param keep_most_frequent: bool, whether need to keep most frequent value as the
+        column value. Default is False.
+        :param broadcast: bool, whether need to broadcast index when encode string.
+        Default is True.
 
         :return: A tuple of a new FeatureTable which transforms categorical features into unique
                  integer values, and a list of StringIndex for the mapping.
@@ -1000,8 +1009,8 @@ class FeatureTable(Table):
         data_df = data_df.drop("friesian_onehot")
         return FeatureTable(data_df)
 
-    def gen_string_idx(self, columns, do_split=False, sep=',',
-                       freq_limit=None, order_by_freq=False):
+    def gen_string_idx(self, columns, freq_limit=None, order_by_freq=False,
+                       do_split=False, sep=','):
         """
         Generate unique index value of categorical features. The resulting index would
         start from 1 with 0 reserved for unknown features.
@@ -1010,8 +1019,6 @@ class FeatureTable(Table):
          dict is a mapping of source column names -> target column name if needs to combine multiple
          source columns to generate index.
          For example: {'src_cols':['a_user', 'b_user'], 'col_name':'user'}.
-        :param do_split: bool, whether need to split column value to array to generate index.
-        :param sep: str, a string representing a regular expression to split a column value.
         :param freq_limit: int, dict or None. Categories with a count/frequency below freq_limit
                will be omitted from the encoding. Can be represented as either an integer,
                dict. For instance, 15, {'col_4': 10, 'col_5': 2} etc. Default is None,
@@ -1019,6 +1026,10 @@ class FeatureTable(Table):
         :param order_by_freq: boolean, whether the result StringIndex will assign smaller indices
                to values with more frequencies. Default is False and in this case frequency order
                may not be preserved when assigning indices.
+        :param do_split: bool, whether need to split column value to array to generate index.
+        Default is False.
+        :param sep: str, a string representing a regular expression to split a column value.
+         Default is ','.
 
         :return: A StringIndex or a list of StringIndex.
         """
