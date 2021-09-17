@@ -25,7 +25,7 @@ spec:
         args:
               - export FLINK_TASK_MANAGER_IP=$(hostname -I);
                 cd /ppml/trusted-realtime-ml/java;
-                test "$SGX_MODE" = sgx && bash init-java.sh | tee ../init-java.log ;
+                test "$SGX_MODE" = sgx && bash init.sh | tee ../init.log ;
                 bash start-flink-taskmanager.sh | tee ../taskmanager.log;
                 tail -f /dev/null
 #        args: ["export FLINK_JOB_MANAGER_IP=flink-jobmanager; tail -f /dev/null"]
