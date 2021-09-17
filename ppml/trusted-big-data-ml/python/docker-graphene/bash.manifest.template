@@ -15,7 +15,7 @@ sgx.debug = 0
 sgx.isvprodid = 1
 sgx.isvsvn = 3
 
-loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.6/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli"
+loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.6/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
 loader.env.PATH = "/usr/lib/python3.6/bin:/:/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/jdk8/bin"
 loader.env.PYTHONHOME = "/usr/lib/python3.6"
 loader.env.PYTHONPATH = "/usr/lib/python36.zip:/usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages:/graphene/meson_build_output/lib/python3.6/site-packages"
