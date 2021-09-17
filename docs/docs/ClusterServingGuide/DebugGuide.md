@@ -42,3 +42,14 @@ Getting no result means after you call 1.`InputQueue.enqueue` and use `OutputQue
 If you get empty result, aka `[]`, means your input get no return, you could go to `$FLINK_HOME/log/flink-taskexecutor-...log` to check your output. If you are sure you have done above check and still get empty result, raise issue [here](https://github.com/intel-analytics/analytics-zoo/issues) and post this log.
 
 If you get invalid result, aka `NaN`, means your input does not match your model, please check your data shape. e.g. if you use Tensorflow Keras Model, you can use `model.predict(data)` locally to check if it works. This test also applies to other deep learning frameworks.
+
+
+### Troubleshooting
+
+1. `Duplicate registration of device factory for type XLA_CPU with the same priority 50`
+
+This error is caused by Flink ClassLoader. Please put cluster serving related jars into `${FLINK_HOME}/lib`.
+
+2. `servable Manager config dir not exist`
+
+Check if `servables.yaml` exists in current directory. If not, download from [github](https://github.com/intel-analytics/analytics-zoo/blob/master/ppml/trusted-realtime-ml/scala/docker-graphene/servables.yaml).
