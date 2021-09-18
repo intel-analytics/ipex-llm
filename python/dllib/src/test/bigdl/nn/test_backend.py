@@ -21,27 +21,82 @@ np.random.seed(1337)  # for reproducibility
 import pytest
 from keras.applications import *
 from bigdl.dllib.keras.converter import *
-from keras.applications.music_tagger_crnn import MusicTaggerCRNN
-
+from bigdl.dllib.nn.keras.backend import *
 from test.bigdl.test_utils import BigDLTestCase, TestModels
-from bigdl.dllib.keras.backend import *
 
 
-class TestApplication(BigDLTestCase):
+class TestBackend(BigDLTestCase):
 
     def assert_model(self, input_data, kmodel, rtol=1e-5, atol=1e-5):
         bmodel = DefinitionLoader.from_kmodel(kmodel)
-        self.compare_model(bmodel, kmodel, input_data, rtol, atol)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
 
-    def test_lenet(self):
-        K.set_image_dim_ordering("th")
-        kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
-        self.modelTest(input_data, kmodel, dump_weights=True)
+        keras_output = kmodel.predict(input_data)
+        bmodel.training(is_training=False)
+        bigdl_output = bmodel.forward(input_data)
 
+        self.assert_allclose(keras_output, bigdl_output, rtol=rtol, atol=atol)
+
+    def test_lenet_local_predict(self):
+        kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
+        model = with_bigdl_backend(kmodel)
+        model.predict(X_train)
+
+    def test_lenet_local(self):
+        kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
+        self.modelTest(X_train, kmodel, dump_weights=True)
+        kmodel.compile(loss='categorical_crossentropy',
+                       optimizer='adam',
+                       metrics=['accuracy'])
+        model = with_bigdl_backend(kmodel)
+
+        model.fit(X_train, y_train, batch_size=4, nb_epoch=2)
+        model.predict(X_train)
+        # TODO: support evaluate for local mode.
+        # model.evaluate(X_train, y_train)
+        print(model)
+
+    def test_lenet_distributed_ndarray(self):
+        kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
+        self.modelTest(X_train, kmodel, dump_weights=True)
+        kmodel.compile(loss='categorical_crossentropy',
+                       optimizer='adam',
+                       metrics=['accuracy'])
+        model = with_bigdl_backend(kmodel)
+
+        model.fit(X_train, y_train, batch_size=4, nb_epoch=2,
+                  validation_data=(X_train, y_train), is_distributed=True)
+        model.predict(X_train, is_distributed=True).collect()
+        model.evaluate(X_train, y_train, is_distributed=True)
+        print(model)
+
+    def test_lenet_distributed_rdd(self):
+        kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
+        sc = get_spark_context()
+        from bigdl.dllib.utils.common import Sample
+        from bigdl.dllib.utils.common import to_sample_rdd
+        training_rdd = to_sample_rdd(X_train, y_train)
+
+        self.modelTest(X_train, kmodel, dump_weights=True)
+        kmodel.compile(loss='categorical_crossentropy',
+                       optimizer='adam',
+                       metrics=['accuracy'])
+        model = with_bigdl_backend(kmodel)
+
+        model.fit(training_rdd, batch_size=4, nb_epoch=2,
+                  validation_data=training_rdd, is_distributed=True)
+        model.predict(X_train, is_distributed=True).collect()
+        model.evaluate(X_train, y_train, is_distributed=True)
+        print(model)
+
+    @pytest.mark.skip(reason="need to support evaluate locally before running the test")
     def test_text_classification(self):
-        # This example demonstrates the use of Convolution1D for text classification.
-        # This example is from Keras
-        K.set_image_dim_ordering("th")
+        '''This example demonstrates the use of Convolution1D for text classification.
+           This example is from Keras
+        '''
+
+        # TODO: support backend support
+
         import numpy as np
         np.random.seed(1337)  # for reproducibility
 
@@ -60,7 +115,7 @@ class TestApplication(BigDLTestCase):
         nb_filter = 250
         filter_length = 3
         hidden_dims = 250
-        nb_epoch = 1
+        nb_epoch = 2
 
         print('Loading data...')
         (X_train, y_train), (X_test, y_test) = imdb.load_data(nb_words=max_features)
@@ -108,70 +163,13 @@ class TestApplication(BigDLTestCase):
         model.fit(X_train, y_train,
                   batch_size=batch_size,
                   nb_epoch=nb_epoch,
-                  validation_data=(X_test, y_test),
-                  is_distributed=True)
+                  validation_data=(X_test, y_test))
         # 2017-09-22 15:53:45 INFO  DistriOptimizer$:657
         # - Top1Accuracy is Accuracy(correct: 21557, count: 25000, accuracy: 0.86228)
         # this result is from GlobalAveragePooling not GlobalMaxPooling.
-        model.predict(X_test, is_distributed=True)
-        model.evaluate(X_test, y_test, is_distributed=True)
+        model.predict(X_test)
+        model.evaluate(X_test, y_test)
         print(model)
-
-    def test_resnet50(self):
-        keras.backend.set_image_dim_ordering("th")
-        kmodel = resnet50.ResNet50(include_top=False,
-                                   input_shape=(3, 224, 224),
-                                   weights=None)
-        input_data = np.random.random([2, 3, 224, 224])
-        self.assert_model(input_data, kmodel)
-
-    def test_vgg16(self):
-        keras.backend.set_image_dim_ordering("th")
-        kmodel = vgg16.VGG16(include_top=False,
-                             input_shape=(3, 224, 224),
-                             weights=None)
-        input_data = np.random.random([2, 3, 224, 224])
-        self.assert_model(input_data, kmodel)
-
-    def test_vgg19(self):
-        keras.backend.set_image_dim_ordering("th")
-        kmodel = vgg19.VGG19(include_top=False,
-                             input_shape=(3, 224, 224),
-                             weights=None)
-        input_data = np.random.random([2, 3, 224, 224])
-        self.assert_model(input_data, kmodel)
-
-    @pytest.mark.skip(reason="need to fix todo before running the test")
-    def test_music_tagger_crnn(self):
-        # TODO: For the first BatchNormalization layer in the model, we don't support `axis=3`
-        keras.backend.set_image_dim_ordering("th")
-        kmodel = MusicTaggerCRNN(include_top=False, weights=None)
-        input_data = np.random.random([2, 1, 96, 1366])
-
-        bmodel = DefinitionLoader.from_kmodel(kmodel)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
-
-        keras_output = kmodel.predict(input_data)
-        bmodel.training(is_training=False)
-        bigdl_output = bmodel.forward(input_data)
-
-        self.assert_allclose(keras_output, bigdl_output, rtol=1e-6, atol=1e-6)
-
-    def test_inception_v3(self):
-        keras.backend.set_image_dim_ordering("th")
-        kmodel = inception_v3.InceptionV3(include_top=False,
-                                          input_shape=(3, 299, 299),
-                                          weights=None)
-        input_data = np.random.random([2, 3, 299, 299])
-
-        bmodel = DefinitionLoader.from_kmodel(kmodel)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
-
-        keras_output = kmodel.predict(input_data)
-        bmodel.training(is_training=False)
-        bigdl_output = bmodel.forward(input_data)
-
-        self.assert_allclose(keras_output, bigdl_output, rtol=1e-3, atol=1e-3)
 
 
 if __name__ == "__main__":
