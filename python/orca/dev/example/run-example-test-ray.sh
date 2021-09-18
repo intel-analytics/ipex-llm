@@ -156,22 +156,39 @@ time11=$((now-start))
 echo "#12 start example for chronos autolstm_nyc_taxi"
 start=$(date "+%s")
 
-if [ -f ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/lstm/nyc_taxi.csv ]
+if [ -f ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/auto_model/nyc_taxi.csv ]
 then
     echo "nyc_taxi.csv already exists"
 else
     wget -nv $FTP_URI/analytics-zoo-data/apps/nyc-taxi/nyc_taxi.csv -P \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/lstm/
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/auto_model/
 fi
 
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/lstm/autolstm_nyc_taxi.py \
-    --datadir ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/lstm/nyc_taxi.csv
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/auto_model/autolstm_nyc_taxi.py \
+    --datadir ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/auto_model/nyc_taxi.csv
 
 now=$(date "+%s")
 time12=$((now-start))
 
+echo "#13 start example for chronos autoprophet_nyc_taxi"
+start=$(date "+%s")
 
-echo "#13 start example for chronos autots_nyc_taxi"
+if [ -f ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/auto_model/nyc_taxi.csv ]
+then
+    echo "nyc_taxi.csv already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/apps/nyc-taxi/nyc_taxi.csv -P \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/auto_model/
+fi
+
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/auto_model/autoprophet_nyc_taxi.py \
+    --datadir ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/auto_model/nyc_taxi.csv \
+    --n_sampling 2
+
+now=$(date "+%s")
+time13=$((now-start))
+
+echo "#14 start example for chronos autots_nyc_taxi"
 start=$(date "+%s")
 
 if [ -f ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/quickstart/nyc_taxi.csv ]
@@ -186,7 +203,7 @@ python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/quickstart/autots_nyc_ta
     --datadir ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/quickstart/nyc_taxi.csv
 
 now=$(date "+%s")
-time13=$((now-start))
+time14=$((now-start))
 
 
 echo "Ray example tests finished"
@@ -202,4 +219,5 @@ echo "#9 orca auto-xgboost-classifier time used:$time9 seconds"
 echo "#10 orca auto-xgboost-regressor time used:$time10 seconds"
 echo "#11 orca autoestimator-pytorch time used:$time11 seconds"
 echo "#12 chronos autolstm_nyc_taxi time used:$time12 seconds"
-echo "#13 chronos autots_nyc_taxi time used:$time13 seconds"
+echo "#13 chronos autoprophet_nyc_taxi time used:$time13 seconds"
+echo "#14 chronos autots_nyc_taxi time used:$time14 seconds"
