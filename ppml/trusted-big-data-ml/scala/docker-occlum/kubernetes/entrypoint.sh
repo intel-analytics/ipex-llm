@@ -61,7 +61,6 @@ case "$SPARK_K8S_CMD" in
         -Xmx$SPARK_EXECUTOR_MEMORY \
         -Dos.name=Linux \
         -Dio.netty.availableProcessors=64 \
-        -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
         org.apache.spark.executor.CoarseGrainedExecutorBackend \
         --driver-url $SPARK_DRIVER_URL \
