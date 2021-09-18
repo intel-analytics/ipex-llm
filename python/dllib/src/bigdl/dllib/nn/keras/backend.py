@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.dllib.keras.optimization import *
+from bigdl.dllib.nn.keras.optimization import *
 from bigdl.dllib.utils.common import *
 
 
