@@ -2,33 +2,19 @@
 
 ## Pre-prerequisites
 
-Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
+* Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
+* Prepare image `intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-occlum-k8s:0.11-SNAPSHOT`
 
-1. Initialize and enable taint for master node
+Pull from Dockerhub
 
 ```bash
-swapoff -a && free -m
-kubeadm init --v=5 --node-name=master-node --pod-network-cidr=10.244.0.0/16
-
-mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-kubectl taint nodes --all node-role.kubernetes.io/master-
+docker pull intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-occlum-k8s:0.11-SNAPSHOT
 ```
 
-2. Deploy flannel and ingress-nginx service
+If Dockerhub is not accessable, we can build docker image with Dockerfile
 
-```bash
-kubectl apply -f flannel/deploy.yaml
-kubectl apply -f ingress-nginx/deploy.yaml
-```
-
-3. Add spark account
-
-```bash
-kubectl create serviceaccount spark
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+``` bash
+bash build-docker-image.sh
 ```
 
 ## Run Spark executor in Occlum:
