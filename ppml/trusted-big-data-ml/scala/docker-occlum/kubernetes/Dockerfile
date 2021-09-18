@@ -1,4 +1,3 @@
-
 FROM krallin/ubuntu-tini AS tini
 FROM occlum/occlum:0.24.0-ubuntu18.04 AS occlum
 
@@ -24,6 +23,7 @@ RUN wget https://archive.apache.org/dist/spark/spark-3.0.0/spark-3.0.0-bin-hadoo
 
 # Remove fork with libhadoop.so and spark-network-common_2.12-3.0.0.jar
 RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so -P /lib/ && \
+    rm -f /opt/spark/jars/spark-network-common_2.12-3.0.0.jar && \
     wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/spark-network-common_2.12-3.0.0.jar -P /opt/spark/jars
 
 COPY ./entrypoint.sh /opt/
