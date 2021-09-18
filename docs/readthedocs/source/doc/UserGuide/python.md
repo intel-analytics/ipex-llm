@@ -131,3 +131,20 @@ tensorflow-metadata==0.21.1
 tensorflow-probability==0.7.0
 Theano==1.0.4
 ```
+
+---
+### **5. Known Issues**
+
+- If you meet the following error when `pip install analytics-zoo`:
+```
+ERROR: Could not find a version that satisfies the requirement pypandoc (from versions: none)
+ERROR: No matching distribution found for pypandoc
+Could not import pypandoc - required to package PySpark
+Traceback (most recent call last):
+  File "/root/anaconda3/lib/python3.8/site-packages/setuptools/installer.py", line 126, in fetch_build_egg
+    subprocess.check_call(cmd)
+  File "/root/anaconda3/lib/python3.8/subprocess.py", line 364, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command '['/root/anaconda3/bin/python', '-m', 'pip', '--disable-pip-version-check', 'wheel', '--no-deps', '-w', '/tmp/tmprefr87ue', '--quiet', 'pypandoc']' returned non-zero exit status 1.
+```
+This is actually caused by `pip install pyspark` in your Python environment. You can fix it by running `pip install pypandoc` first and then `pip install analytics-zoo`.
