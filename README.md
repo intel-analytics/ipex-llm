@@ -42,7 +42,7 @@ For additional information, you may refer to:
 * [User Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com))
 
 ## Citing BigDL
-If you've found BigDL useful for your project, you can cite the [paper](https://arxiv.org/abs/1804.05839) as follows:
+If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/abs/1804.05839) as follows:
 
 ```
 @inproceedings{SOCC2019_BIGDL,
