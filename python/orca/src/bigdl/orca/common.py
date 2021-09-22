@@ -15,7 +15,7 @@
 #
 
 import os
-from zoo import ZooContext
+from bigdl.dllib.utils.nncontext import ZooContext
 
 
 class OrcaContextMeta(type):
@@ -154,7 +154,7 @@ class OrcaContext(metaclass=OrcaContextMeta):
 
     @staticmethod
     def get_ray_context():
-        from zoo.ray import RayContext
+        from bigdl.orca.ray import RayContext
         return RayContext.get()
 
 
@@ -196,14 +196,14 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
         if key in kwargs:
             spark_args[key] = kwargs[key]
     if cluster_mode == "spark-submit":
-        from zoo import init_nncontext
+        from bigdl.dllib.utils.nncontext import init_nncontext
         sc = init_nncontext(**spark_args)
     elif cluster_mode == "local":
         assert num_nodes == 1, "For Spark local mode, num_nodes should be 1"
         os.environ["SPARK_DRIVER_MEMORY"] = memory
         if "python_location" in kwargs:
             spark_args["python_location"] = kwargs["python_location"]
-        from zoo import init_spark_on_local
+        from bigdl.dllib.utils.nncontext import init_spark_on_local
         sc = init_spark_on_local(cores, **spark_args)
     elif cluster_mode.startswith("yarn"):  # yarn or yarn-client
         if cluster_mode == "yarn-cluster":
@@ -222,7 +222,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                     "hadoop_user_name", "spark_yarn_archive", "jars"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
-        from zoo import init_spark_on_yarn
+        from bigdl.dllib.utils.nncontext import init_spark_on_yarn
         sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
                                 conda_name=conda_env_name,
                                 num_executors=num_nodes, executor_cores=cores,
@@ -237,7 +237,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                     "extra_python_lib", "jars", "python_location"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
-        from zoo import init_spark_on_k8s
+        from bigdl.dllib.utils.nncontext import init_spark_on_k8s
         sc = init_spark_on_k8s(master=kwargs["master"],
                                container_image=kwargs["container_image"],
                                num_executors=num_nodes, executor_cores=cores,
@@ -247,7 +247,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                     "extra_python_lib", "jars", "master", "python_location", "enable_numa_binding"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
-        from zoo import init_spark_standalone
+        from bigdl.dllib.utils.nncontext import init_spark_standalone
         sc = init_spark_standalone(num_executors=num_nodes, executor_cores=cores,
                                    executor_memory=memory, **spark_args)
     else:
@@ -258,7 +258,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                 "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
         if key in kwargs:
             ray_args[key] = kwargs[key]
-    from zoo.ray import RayContext
+    from bigdl.orca.ray import RayContext
     ray_ctx = RayContext(sc, **ray_args)
     if init_ray_on_spark:
         driver_cores = 0  # This is the default value.
@@ -276,12 +276,12 @@ def stop_orca_context():
     # should do nothing.
     if SparkContext._active_spark_context is not None:
         print("Stopping orca context")
-        from zoo.ray import RayContext
+        from bigdl.orca.ray import RayContext
         ray_ctx = RayContext.get(initialize=False)
         if ray_ctx.initialized:
             ray_ctx.stop()
         sc = SparkContext.getOrCreate()
         if sc.getConf().get("spark.master").startswith("spark://"):
-            from zoo import stop_spark_standalone
+            from bigdl.dllib.utils.nncontext import stop_spark_standalone
             stop_spark_standalone()
         sc.stop()
