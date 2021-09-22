@@ -29,10 +29,11 @@ if [ -z ${SPARK_HOME+x} ]; then echo "SPARK_HOME is unset"; exit 1; else echo "S
 export PYSPARK_ZIP=`find $SPARK_HOME/python/lib  -type f -iname '*.zip' | tr "\n" ":"`
 
 #export PYTHONPATH=$PYTHONPATH:$PYSPARK_ZIP:$DL_PYTHON_DLLIB_HOME:$DL_PYTHON_HOME:$DL_PYTHON_HOME/:$DL_PYTHON_HOME/test/dev:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf
-export PYTHONPATH=$PYSPARK_ZIP:$BIGDL_HOME/dist/lib/bigdl-orca-0.14.0-SNAPSHOT-python-api.zip:$DL_PYTHON_HOME/test:$DL_PYTHON_HOME/test/:$DL_PYTHON_HOME/test/dev:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf
+export PYTHONPATH=$PYSPARK_ZIP:$BIGDL_HOME/dist/lib/bigdl-orca-0.14.0-SNAPSHOT-python-api.zip:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf
 echo "PYTHONPATH": $PYTHONPATH
 
-export BIGDL_CLASSPATH=$(find $BIGDL_HOME/dist/lib/ -name "*with-dependencies.jar" | head -n 1)
+export BIGDL_CLASSPATH=$(find $BIGDL_HOME/dist/lib/ -name "bigdl-orca*with-dependencies.jar" | head -n 1)
+export BIGDL_CLASSPATH=$(find $BIGDL_HOME/dist/lib/ -name "bigdl-dllib*with-dependencies.jar" | head -n 1):$BIGDL_CLASSPATH
 echo "BIGDL_CLASSPATH": $BIGDL_CLASSPATH
 
 if [[ ($SPARK_HOME == *"2.2.0"*) || ($SPARK_HOME == *"2.1.1"*) || ($SPARK_HOME == *"1.6.4"*) ]]; then
