@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zoo.common.utils import enable_multi_fs_load, enable_multi_fs_save
+from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 from bigdl.orca.data.utils import row_to_sample, xshard_to_sample
 from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe, bigdl_metric_results_to_dict, \
     process_xshards_of_pandas_dataframe

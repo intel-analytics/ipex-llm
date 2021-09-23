@@ -204,7 +204,7 @@ def ray_partitions_get_data_label(partition_list,
 
 # todo: this might be very slow
 def xshard_to_sample(data):
-    from zoo.common.utils import Sample
+    from bigdl.dllib.utils.file_utils import Sample
     data = check_type_and_convert(data, allow_list=True, allow_tuple=False)
     features = data["x"]
     length = features[0].shape[0]
