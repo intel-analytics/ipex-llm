@@ -29,7 +29,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
 from bigdl.orca.data.utils import process_spark_xshards
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 
 logger = logging.getLogger(__name__)
 

@@ -21,7 +21,7 @@ import pytest
 import mxnet as mx
 from mxnet import gluon
 from mxnet.gluon import nn
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 from bigdl.orca.learn.mxnet import Estimator, create_config
 
 np.random.seed(1337)  # for reproducibility

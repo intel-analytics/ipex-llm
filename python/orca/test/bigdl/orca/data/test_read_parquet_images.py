@@ -24,7 +24,7 @@ from bigdl.orca.data.image.parquet_dataset import ParquetDataset, read_parquet
 from bigdl.orca.data.image.utils import DType, FeatureType, SchemaField
 import tensorflow as tf
 
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 WIDTH, HEIGHT, NUM_CHANNELS = 224, 224, 3
