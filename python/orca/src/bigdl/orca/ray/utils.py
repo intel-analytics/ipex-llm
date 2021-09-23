@@ -15,7 +15,6 @@
 #
 
 import re
-import psutil
 
 
 def to_list(input):
@@ -59,5 +58,6 @@ def is_local(sc):
 
 
 def get_parent_pid(pid):
+    import psutil
     cur_proc = psutil.Process(pid)
     return cur_proc.ppid()
