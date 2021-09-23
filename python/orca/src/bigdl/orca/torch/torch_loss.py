@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import sys
-from bigdl.nn.criterion import Criterion
+from bigdl.dllib.nn.criterion import Criterion
 from pyspark.serializers import CloudPickleSerializer
 from importlib.util import find_spec
 

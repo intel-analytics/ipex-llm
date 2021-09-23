@@ -19,7 +19,7 @@ import io
 import torch
 
 from bigdl.dllib.nn.layer import Layer
-from bigdl.dllib.util.common import JTensor
+from bigdl.dllib.utils.common import JTensor
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.orca.torch.utils import trainable_param
 from bigdl.orca.torch import zoo_pickle_module
