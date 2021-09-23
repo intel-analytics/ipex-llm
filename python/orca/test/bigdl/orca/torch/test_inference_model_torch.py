@@ -18,12 +18,11 @@ import os
 import pytest
 
 from unittest import TestCase
-from zoo.pipeline.inference import InferenceModel
-
+from bigdl.orca.inference import InferenceModel
 from bigdl.orca.torch import zoo_pickle_module
 import torch
 import torchvision
-from zoo.common.nncontext import *
+from bigdl.dllib.utils.nncontext import *
 
 
 class TestInferenceModelTorch(TestCase):

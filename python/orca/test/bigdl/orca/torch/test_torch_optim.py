@@ -20,12 +20,12 @@ import pytest
 
 from unittest import TestCase
 from bigdl.orca.torch import TorchModel, TorchLoss, TorchOptim
-from zoo.common.nncontext import *
+from bigdl.dllib.utils.nncontext import *
 from torch.utils.data import TensorDataset, DataLoader
-from zoo.pipeline.estimator import *
-from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
-from zoo.pipeline.api.keras.metrics import Accuracy
-from zoo.feature.common import FeatureSet
+from bigdl.dllib.estimator import *
+from bigdl.dllib.optim.optimizer import MaxEpoch, EveryEpoch
+from bigdl.dllib.keras.metrics import Accuracy
+from bigdl.dllib.feature.common import FeatureSet
 
 
 class TestPytorchOptim(TestCase):

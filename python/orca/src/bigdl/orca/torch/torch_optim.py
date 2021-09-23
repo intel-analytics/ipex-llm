@@ -18,7 +18,7 @@ import io
 import torch
 from importlib.util import find_spec
 from bigdl.orca.torch import zoo_pickle_module
-from bigdl.optim.optimizer import OptimMethod
+from bigdl.dllib.optim.optimizer import OptimMethod
 
 if find_spec('jep') is None:
     raise Exception("jep not found, please install jep first.")
