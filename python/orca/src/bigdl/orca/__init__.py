@@ -34,6 +34,7 @@ JavaCreator.set_creator_class([])
 JavaCreator.add_creator_class("com.intel.analytics.bigdl.orca.tfpark.python.PythonTFPark")
 JavaCreator.add_creator_class("com.intel.analytics.bigdl.orca.net.python.PythonZooNet")
 JavaCreator.add_creator_class("com.intel.analytics.bigdl.orca.python.PythonOrca")
+JavaCreator.add_creator_class("com.intel.analytics.bigdl.orca.inference.PythonInferenceModel")
 #if not is_spark_below_ver("2.4"):
 #    JavaCreator.add_creator_class("com.intel.analytics.zoo.friesian.python.PythonFriesian")
 for clz in creator_classes:
