@@ -102,7 +102,7 @@ class AUC(Metric):
         self.threshold_num = threshold_num
 
     def get_bigdl_metric(self):
-        from zoo.pipeline.api.keras.metrics import AUC as KerasAUC
+        from bigdl.dllib.keras.metrics import AUC as KerasAUC
         return KerasAUC(threshold_num=self.threshold_num)
 
     def get_name(self):
@@ -118,7 +118,7 @@ class MAE(Metric):
     """
 
     def get_bigdl_metric(self):
-        from zoo.pipeline.api.keras.metrics import MAE as KerasMAE
+        from bigdl.dllib.keras.metrics import MAE as KerasMAE
         return KerasMAE()
 
     def get_pytorch_metric(self):
@@ -138,7 +138,7 @@ class MSE(Metric):
     """
 
     def get_bigdl_metric(self):
-        from zoo.pipeline.api.keras.metrics import MSE as KerasMSE
+        from bigdl.dllib.keras.metrics import MSE as KerasMSE
         return KerasMSE()
 
     def get_pytorch_metric(self):
@@ -166,7 +166,7 @@ class Accuracy(Metric):
         self.zero_based_label = zero_based_label
 
     def get_bigdl_metric(self):
-        from zoo.pipeline.api.keras.metrics import Accuracy as KerasAccuracy
+        from bigdl.dllib.keras.metrics import Accuracy as KerasAccuracy
         return KerasAccuracy(zero_based_label=self.zero_based_label)
 
     def get_pytorch_metric(self):
@@ -188,7 +188,7 @@ class SparseCategoricalAccuracy(Metric):
     """
 
     def get_bigdl_metric(self):
-        from zoo.pipeline.api.keras.metrics import \
+        from bigdl.dllib.keras.metrics import \
             SparseCategoricalAccuracy as KerasSparseCategoricalAccuracy
         return KerasSparseCategoricalAccuracy()
 
@@ -208,7 +208,7 @@ class CategoricalAccuracy(Metric):
     """
 
     def get_bigdl_metric(self):
-        from zoo.pipeline.api.keras.metrics import CategoricalAccuracy as KerasCategoricalAccuracy
+        from bigdl.dllib.keras.metrics import CategoricalAccuracy as KerasCategoricalAccuracy
         return KerasCategoricalAccuracy()
 
     def get_pytorch_metric(self):
@@ -227,7 +227,7 @@ class BinaryAccuracy(Metric):
     """
 
     def get_bigdl_metric(self):
-        from zoo.pipeline.api.keras.metrics import BinaryAccuracy as KerasBinaryAccuracy
+        from bigdl.dllib.keras.metrics import BinaryAccuracy as KerasBinaryAccuracy
         return KerasBinaryAccuracy()
 
     def get_pytorch_metric(self):
@@ -250,7 +250,7 @@ class Top5Accuracy(Metric):
     """
 
     def get_bigdl_metric(self):
-        from zoo.pipeline.api.keras.metrics import Top5Accuracy as KerasTop5Accuracy
+        from bigdl.dllib.keras.metrics import Top5Accuracy as KerasTop5Accuracy
         return KerasTop5Accuracy()
 
     def get_pytorch_metric(self):
