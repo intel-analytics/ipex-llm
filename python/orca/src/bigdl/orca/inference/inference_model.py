@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from bigdl.util.common import JavaValue
-from zoo.common.utils import callZooFunc
-from bigdl.nn.layer import Layer
-from zoo.pipeline.api.keras.engine import KerasNet
+from bigdl.dllib.utils.common import JavaValue
+from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.keras.engine.topology import KerasNet
+from bigdl.dllib.nn.layer import Layer
 import warnings
 
 
@@ -137,7 +137,7 @@ class InferenceModel(JavaValue):
         import os
         import io
         import torch
-        from zoo.pipeline.api.torch import zoo_pickle_module
+        from bigdl.orca.torch import zoo_pickle_module
         model = torch.load(model_path, pickle_module=zoo_pickle_module)
         bys = io.BytesIO()
         torch.save(model, bys, pickle_module=zoo_pickle_module)
