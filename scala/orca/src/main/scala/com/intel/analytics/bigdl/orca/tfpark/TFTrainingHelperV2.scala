@@ -81,9 +81,17 @@ class TFTrainingHelperV2(graphRunner: GraphRunner,
     }
   }
 
+  override def isTensorFlow(): Boolean = {
+    true
+  }
+
   override def afterRunGradient(): Unit = {
     super.afterRunGradient()
     if (this.isTraining()) shouldUpdateParameter = true
+  }
+
+  override def beforeGetModel(): Unit = {
+    moveWeightsOutOfTF()
   }
 
   def moveWeightsOutOfTF(): Unit = {
