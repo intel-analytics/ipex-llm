@@ -27,7 +27,7 @@ from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 
 import ray
 from ray.exceptions import RayActorError

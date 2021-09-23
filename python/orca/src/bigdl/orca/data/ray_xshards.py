@@ -22,7 +22,7 @@ import random
 from packaging import version
 
 from bigdl.orca.data import XShards
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 
 import logging
 logger = logging.getLogger(__name__)
