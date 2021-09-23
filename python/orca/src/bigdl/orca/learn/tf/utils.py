@@ -16,7 +16,7 @@
 
 import tensorflow as tf
 
-from zoo.tfpark.tf_dataset import TFDataset
+from bigdl.orca.tfpark.tf_dataset import TFDataset
 from bigdl.orca.data.utils import get_spec, flatten_xy
 
 

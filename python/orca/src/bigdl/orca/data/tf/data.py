@@ -15,13 +15,13 @@
 #
 import tensorflow as tf
 
-from zoo.tfpark.tf_dataset import TensorMeta
+from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from zoo.util import nest
 from zoo import getOrCreateSparkContext, get_node_and_core_number
 from zoo.common import callZooFunc
 from zoo.feature.common import FeatureSet
 from bigdl.orca.data import SparkXShards
-from zoo.tfpark import TFDataset
+from bigdl.orca.tfpark import TFDataset
 
 
 class TFDataDataset2(TFDataset):

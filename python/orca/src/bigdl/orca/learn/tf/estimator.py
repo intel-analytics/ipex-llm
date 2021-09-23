@@ -17,7 +17,7 @@ from pyspark.sql import DataFrame
 
 from bigdl.optim.optimizer import MaxEpoch
 
-from zoo.tfpark.tf_dataset import _standardize_keras_target_data
+from bigdl.orca.tfpark.tf_dataset import _standardize_keras_target_data
 from zoo.common.utils import enable_multi_fs_load, enable_multi_fs_load_static, \
     enable_multi_fs_save
 from bigdl.orca import OrcaContext
@@ -27,10 +27,10 @@ from bigdl.orca.learn.tf.utils import *
 from bigdl.orca.learn.trigger import Trigger
 from bigdl.orca.learn.utils import find_latest_checkpoint, convert_predict_rdd_to_xshard, \
     convert_predict_rdd_to_dataframe, process_xshards_of_pandas_dataframe
-from zoo.tfpark import KerasModel
-from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
-from zoo.tfpark.tf_optimizer import StatelessMetric
-from zoo.tfpark.utils import evaluate_metrics
+from bigdl.orca.tfpark import KerasModel
+from bigdl.orca.tfpark import TFOptimizer, TFNet, ZooOptimizer
+from bigdl.orca.tfpark.tf_optimizer import StatelessMetric
+from bigdl.orca.tfpark.utils import evaluate_metrics
 from zoo.util import nest
 from zoo.util.tf import save_tf_checkpoint, load_tf_checkpoint
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
