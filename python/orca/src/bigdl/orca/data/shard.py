@@ -19,7 +19,7 @@ from bigdl.orca.data.utils import *
 from bigdl.orca import OrcaContext
 from bigdl.dllib.utils.nncontext import init_nncontext
 from zoo import ZooContext, get_node_and_core_number
-from zoo.util import nest
+from bigdl.dllib.utils import nest
 
 
 class XShards(object):
