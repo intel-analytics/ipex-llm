@@ -18,7 +18,7 @@ import argparse
 import os
 from sklearn.model_selection import train_test_split
 from zoo import init_spark_on_local, init_spark_on_yarn
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 from bigdl.orca.automl.xgboost import AutoXGBRegressor
 from zoo.chronos.config.recipe import XgbRegressorSkOptRecipe, XgbRegressorGridRandomRecipe
 from zoo.chronos.config.base import Recipe
