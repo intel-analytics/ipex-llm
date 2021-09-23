@@ -30,7 +30,7 @@ You can also disable only one rule, by specifying its rule id, as specified in:
   override def finalize(): Unit = ...
   // scalastyle:on no.finalize
 -->
-<scalastyle:off>
+<scalastyle>
     <name>Scalastyle standard configuration</name>
 
     <check level="error" class="org.scalastyle.file.FileTabChecker" enabled="true"></check>
@@ -193,4 +193,4 @@ You can also disable only one rule, by specifying its rule id, as specified in:
     <check level="error" class="org.scalastyle.scalariform.EqualsHashCodeChecker" enabled="true"></check>
 
 
-</scalastyle:off>
+</scalastyle>
