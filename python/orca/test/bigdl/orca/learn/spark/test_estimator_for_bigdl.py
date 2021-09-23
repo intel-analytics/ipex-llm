@@ -23,11 +23,11 @@ from pyspark.sql.types import *
 from pyspark.sql.functions import col, udf
 
 from bigdl.dllib.utils.nncontext import *
-from zoo.feature.common import *
+from bigdl.dllib.feature.common import *
 from bigdl.orca.learn.bigdl import Estimator
 from bigdl.optim.optimizer import Adam, SGD, ValidationSummary
-from zoo.pipeline.api.keras import layers as ZLayer
-from zoo.pipeline.api.keras.models import Model as ZModel
+from bigdl.dllib.keras import layers as ZLayer
+from bigdl.dllib.keras.models import Model as ZModel
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.metrics import Accuracy, MAE
 from bigdl.orca.learn.trigger import EveryEpoch, SeveralIteration
@@ -76,7 +76,7 @@ class TestEstimatorForKeras(TestCase):
         return df
 
     def test_nnEstimator(self):
-        from zoo.pipeline.nnframes import NNModel
+        from bigdl.dllib.nnframes import NNModel
         linear_model = Sequential().add(Linear(2, 2))
         mse_criterion = MSECriterion()
         df, _ = self.get_estimator_df()

@@ -17,7 +17,7 @@ from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_s
 from bigdl.orca.data.utils import row_to_sample, xshard_to_sample
 from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe, bigdl_metric_results_to_dict, \
     process_xshards_of_pandas_dataframe
-from zoo.pipeline.estimator.estimator import Estimator as SparkEstimator
+from bigdl.dllib.estimator.estimator import Estimator as SparkEstimator
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
@@ -25,7 +25,7 @@ from bigdl.orca.learn.optimizers import Optimizer as OrcaOptimizer, SGD
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.data import SparkXShards
 from bigdl.optim.optimizer import MaxEpoch, OptimMethod
-from zoo.feature.common import FeatureSet
+from bigdl.dllib.feature.common import FeatureSet
 from torch.optim.optimizer import Optimizer as TorchOptimizer
 from torch.utils.data import DataLoader
 from pyspark.sql import DataFrame
