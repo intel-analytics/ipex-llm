@@ -16,7 +16,7 @@
 import os
 import numpy as np
 
-from zoo.common import get_file_list
+from bigdl.dllib.utils.file_utils import get_file_list
 from zoo.util.utils import convert_row_to_numpy
 
 
