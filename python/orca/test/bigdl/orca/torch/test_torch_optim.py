@@ -19,7 +19,7 @@ from torch import nn
 import pytest
 
 from unittest import TestCase
-from zoo.pipeline.api.torch import TorchModel, TorchLoss, TorchOptim
+from bigdl.orca.torch import TorchModel, TorchLoss, TorchOptim
 from zoo.common.nncontext import *
 from torch.utils.data import TensorDataset, DataLoader
 from zoo.pipeline.estimator import *
