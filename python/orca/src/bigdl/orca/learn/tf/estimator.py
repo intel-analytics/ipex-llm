@@ -31,8 +31,8 @@ from bigdl.orca.tfpark import KerasModel
 from bigdl.orca.tfpark import TFOptimizer, TFNet, ZooOptimizer
 from bigdl.orca.tfpark.tf_optimizer import StatelessMetric
 from bigdl.orca.tfpark.utils import evaluate_metrics
-from zoo.util import nest
-from zoo.util.tf import save_tf_checkpoint, load_tf_checkpoint
+from bigdl.dllib.utils import nest
+from bigdl.dllib.utils.tf import save_tf_checkpoint, load_tf_checkpoint
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 
 
