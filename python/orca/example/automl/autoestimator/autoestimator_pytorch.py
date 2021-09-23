@@ -19,9 +19,9 @@ import argparse
 
 import torch
 import torch.nn as nn
-from zoo.orca.automl.auto_estimator import AutoEstimator
-from zoo.orca.automl.pytorch_utils import LR_NAME
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca.automl.auto_estimator import AutoEstimator
+from bigdl.orca.automl.pytorch_utils import LR_NAME
+from bigdl.orca import init_orca_context, stop_orca_context
 
 
 class Net(nn.Module):
@@ -73,7 +73,7 @@ def get_train_val_data():
 
 
 def create_linear_search_space():
-    from zoo.orca.automl import hp
+    from bigdl.orca.automl import hp
     return {
         "dropout": hp.uniform(0.2, 0.3),
         "fc1_size": hp.choice([50, 64]),
@@ -102,7 +102,7 @@ def train_example(args):
     best_model = auto_est.get_best_model()
 
     y_hat = best_model(torch.from_numpy(val_data[0]).float()).detach().numpy()
-    from zoo.orca.automl.metrics import Evaluator
+    from bigdl.orca.automl.metrics import Evaluator
     accuracy = Evaluator.evaluate(metric="accuracy", y_true=val_data[1], y_pred=y_hat)
     print("Evaluate: accuracy is", accuracy)
 

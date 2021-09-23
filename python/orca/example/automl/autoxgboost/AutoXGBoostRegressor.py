@@ -19,7 +19,7 @@ import os
 from sklearn.model_selection import train_test_split
 from zoo import init_spark_on_local, init_spark_on_yarn
 from zoo.ray import RayContext
-from zoo.orca.automl.xgboost import AutoXGBRegressor
+from bigdl.orca.automl.xgboost import AutoXGBRegressor
 from zoo.chronos.config.recipe import XgbRegressorSkOptRecipe, XgbRegressorGridRandomRecipe
 from zoo.chronos.config.base import Recipe
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     best_model = auto_xgb_reg.get_best_model()
     y_hat = best_model.predict(X_val)
 
-    from zoo.orca.automl.metrics import Evaluator
+    from bigdl.orca.automl.metrics import Evaluator
     rmse = Evaluator.evaluate(metric="rmse", y_true=y_val, y_pred=y_hat)
     print(f"Evaluate: the square root of mean square error is {rmse:.2f}")
 
