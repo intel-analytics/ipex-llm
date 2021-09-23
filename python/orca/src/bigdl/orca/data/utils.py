@@ -17,7 +17,7 @@ import os
 import numpy as np
 
 from bigdl.dllib.utils.file_utils import get_file_list
-from zoo.util.utils import convert_row_to_numpy
+from bigdl.dllib.utils.utils import convert_row_to_numpy
 
 
 def list_s3_file(file_path, env):

@@ -29,7 +29,7 @@ from bigdl.dllib.utils.nncontext import init_nncontext
 from bigdl.orca import OrcaContext
 from bigdl.orca.data.tf.data import Dataset
 from bigdl.orca.learn.tf.estimator import Estimator
-from zoo.util.tf import save_tf_checkpoint, load_tf_checkpoint, get_checkpoint_state
+from bigdl.dllib.utils.tf import save_tf_checkpoint, load_tf_checkpoint, get_checkpoint_state
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 
