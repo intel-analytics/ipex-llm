@@ -15,12 +15,12 @@
 #
 from bigdl.orca.learn.metrics import Metric
 from bigdl.orca.learn.utils import bigdl_metric_results_to_dict
-from zoo.pipeline.nnframes import NNEstimator, NNModel
-from zoo.pipeline.estimator import Estimator as SparkEstimator
+from bigdl.dllib.nnframes import NNEstimator, NNModel
+from bigdl.dllib.estimator import Estimator as SparkEstimator
 from bigdl.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
 from bigdl.orca.data import SparkXShards
 from bigdl.optim.optimizer import MaxEpoch
-from zoo.feature.common import FeatureSet
+from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.learn.metrics import Accuracy
 from pyspark.sql.dataframe import DataFrame
 
@@ -52,7 +52,7 @@ class Estimator(object):
 
                Alternatively, user can set feature_preprocessing as Preprocessing[F, Tensor[T]]
                that transforms the feature data to a Tensor[T]. Some pre-defined Preprocessing are
-               provided in package zoo.feature. Multiple Preprocessing can be combined as a
+               provided in package bigdl.dllib.feature. Multiple Preprocessing can be combined as a
                ChainedPreprocessing.
 
                The feature_preprocessing will also be copied to the generated NNModel and applied
@@ -320,7 +320,7 @@ class BigDLEstimator(OrcaSparkEstimator):
 
                Alternatively, user can set feature_preprocessing as Preprocessing[F, Tensor[T]]
                that transforms the feature data to a Tensor[T]. Some pre-defined Preprocessing are
-               provided in package zoo.feature. Multiple Preprocessing can be combined as a
+               provided in package bigdl.dllib.feature. Multiple Preprocessing can be combined as a
                ChainedPreprocessing.
 
                The feature_preprocessing will also be copied to the generated NNModel and applied

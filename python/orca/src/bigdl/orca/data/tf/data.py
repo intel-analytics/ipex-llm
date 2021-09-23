@@ -19,7 +19,7 @@ from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from zoo.util import nest
 from zoo import getOrCreateSparkContext, get_node_and_core_number
 from bigdl.dllib.utils.file_utils import callZooFunc
-from zoo.feature.common import FeatureSet
+from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.tfpark import TFDataset
 
