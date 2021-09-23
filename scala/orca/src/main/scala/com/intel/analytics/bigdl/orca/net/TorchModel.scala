@@ -82,6 +82,10 @@ class TorchModel (
     (Array(weights), Array(gradients))
   }
 
+  override def isPyTorch(): Boolean = {
+    true
+  }
+
   val setWeightCode =
     s"""
         |w = torch.Tensor(newWeight)
