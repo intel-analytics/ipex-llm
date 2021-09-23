@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import pytest
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 from pyspark.sql.types import ArrayType, DoubleType
 from pyspark.sql import SparkSession
 

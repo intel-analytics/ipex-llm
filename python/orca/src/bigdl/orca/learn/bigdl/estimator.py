@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zoo.orca.learn.metrics import Metric
-from zoo.orca.learn.utils import bigdl_metric_results_to_dict
+from bigdl.orca.learn.metrics import Metric
+from bigdl.orca.learn.utils import bigdl_metric_results_to_dict
 from zoo.pipeline.nnframes import NNEstimator, NNModel
 from zoo.pipeline.estimator import Estimator as SparkEstimator
-from zoo.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
-from zoo.orca.data import SparkXShards
+from bigdl.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
+from bigdl.orca.data import SparkXShards
 from bigdl.optim.optimizer import MaxEpoch
 from zoo.feature.common import FeatureSet
-from zoo.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.metrics import Accuracy
 from pyspark.sql.dataframe import DataFrame
 
 
@@ -114,7 +114,7 @@ class BigDLEstimator(OrcaSparkEstimator):
         :param checkpoint_trigger: Orca Trigger to set a checkpoint.
         :return:
         """
-        from zoo.orca.learn.trigger import Trigger
+        from bigdl.orca.learn.trigger import Trigger
 
         assert batch_size > 0, "batch_size should be greater than 0"
 
@@ -160,7 +160,7 @@ class BigDLEstimator(OrcaSparkEstimator):
             self.nn_model = self.nn_estimator.fit(data)
             self.is_nnframe_fit = True
         elif isinstance(data, SparkXShards):
-            from zoo.orca.data.utils import xshard_to_sample
+            from bigdl.orca.data.utils import xshard_to_sample
 
             end_trigger = MaxEpoch(epochs)
             checkpoint_trigger = Trigger.convert_trigger(checkpoint_trigger)
@@ -218,8 +218,8 @@ class BigDLEstimator(OrcaSparkEstimator):
                 self.nn_model.setSamplePreprocessing(sample_preprocessing)
             return self.nn_model.transform(data)
         elif isinstance(data, SparkXShards):
-            from zoo.orca.data.utils import xshard_to_sample
-            from zoo.orca.learn.utils import convert_predict_rdd_to_xshard
+            from bigdl.orca.data.utils import xshard_to_sample
+            from bigdl.orca.learn.utils import convert_predict_rdd_to_xshard
             sample_rdd = data.rdd.flatMap(xshard_to_sample)
             result_rdd = self.model.predict(sample_rdd)
             return convert_predict_rdd_to_xshard(data, result_rdd)
@@ -268,7 +268,7 @@ class BigDLEstimator(OrcaSparkEstimator):
             result = self.nn_estimator._eval(data)
 
         elif isinstance(data, SparkXShards):
-            from zoo.orca.data.utils import xshard_to_sample
+            from bigdl.orca.data.utils import xshard_to_sample
             val_feature_set = FeatureSet.sample_rdd(data.rdd.flatMap(xshard_to_sample))
             result = self.estimator.evaluate(val_feature_set, self.metrics, batch_size)
         else:
@@ -375,7 +375,7 @@ class BigDLEstimator(OrcaSparkEstimator):
         """
         from bigdl.nn.layer import Model, Container
         from bigdl.optim.optimizer import OptimMethod
-        from zoo.orca.learn.utils import find_latest_checkpoint
+        from bigdl.orca.learn.utils import find_latest_checkpoint
         import os
 
         if version is None:

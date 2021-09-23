@@ -21,14 +21,14 @@ from unittest import TestCase
 import numpy as np
 import tensorflow as tf
 
-from zoo.orca.learn.trigger import SeveralIteration
+from bigdl.orca.learn.trigger import SeveralIteration
 from pyspark.sql.context import SQLContext
 
-import zoo.orca.data.pandas
+import bigdl.orca.data.pandas
 from zoo import init_nncontext
-from zoo.orca import OrcaContext
-from zoo.orca.data.tf.data import Dataset
-from zoo.orca.learn.tf.estimator import Estimator
+from bigdl.orca import OrcaContext
+from bigdl.orca.data.tf.data import Dataset
+from bigdl.orca.learn.tf.estimator import Estimator
 from zoo.util.tf import save_tf_checkpoint, load_tf_checkpoint, get_checkpoint_state
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
@@ -52,13 +52,13 @@ class TestEstimatorForGraph(TestCase):
         OrcaContext.train_data_store = "DRAM"
 
     def test_estimator_graph(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -81,7 +81,7 @@ class TestEstimatorForGraph(TestCase):
                 epochs=10,
                 validation_data=data_shard)
 
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -95,12 +95,12 @@ class TestEstimatorForGraph(TestCase):
         print(predictions)
 
     def test_estimator_graph_fit(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
         tf.reset_default_graph()
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -123,12 +123,12 @@ class TestEstimatorForGraph(TestCase):
                 validation_data=data_shard)
 
     def test_estimator_graph_evaluate(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
         tf.reset_default_graph()
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -150,12 +150,12 @@ class TestEstimatorForGraph(TestCase):
         print(result)
 
     def test_estimator_graph_predict(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
         tf.reset_default_graph()
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         est = Estimator.from_graph(
             inputs=[model.user, model.item],
@@ -172,12 +172,12 @@ class TestEstimatorForGraph(TestCase):
         print(predictions)
 
     def test_estimator_graph_pandas_dataframe(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
         tf.reset_default_graph()
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         est = Estimator.from_graph(
             inputs=[model.user, model.item],
@@ -202,12 +202,12 @@ class TestEstimatorForGraph(TestCase):
         print(predictions)
 
     def test_estimator_graph_fit_clip(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
         tf.reset_default_graph()
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -244,12 +244,12 @@ class TestEstimatorForGraph(TestCase):
                 validation_data=data_shard)
 
     def test_estimator_graph_checkpoint(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
         tf.reset_default_graph()
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -305,12 +305,12 @@ class TestEstimatorForGraph(TestCase):
         shutil.rmtree(temp)
 
     def test_estimator_graph_fit_dataset(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
         tf.reset_default_graph()
         model = SimpleModel()
 
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -341,7 +341,7 @@ class TestEstimatorForGraph(TestCase):
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         est = Estimator.from_graph(
             inputs=[model.user, model.item],
@@ -501,7 +501,7 @@ class TestEstimatorForGraph(TestCase):
         model = SimpleModel()
 
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -569,14 +569,14 @@ class TestEstimatorForGraph(TestCase):
         shutil.rmtree(temp)
 
     def test_estimator_graph_save_load(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
         # save
         model = SimpleModel()
 
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -624,7 +624,7 @@ class TestEstimatorForGraph(TestCase):
                 sess=sess
             )
 
-            data_shard = zoo.orca.data.pandas.read_csv(file_path)
+            data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
             def transform(df):
                 result = {
@@ -640,14 +640,14 @@ class TestEstimatorForGraph(TestCase):
         shutil.rmtree(temp)
 
     def test_estimator_save_load(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
         # save
         model = SimpleModel()
 
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -693,7 +693,7 @@ class TestEstimatorForGraph(TestCase):
             )
 
             est.load(model_checkpoint)
-            data_shard = zoo.orca.data.pandas.read_csv(file_path)
+            data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
             def transform(df):
                 result = {
@@ -709,13 +709,13 @@ class TestEstimatorForGraph(TestCase):
         shutil.rmtree(temp)
 
     def test_estimator_graph_with_bigdl_optim_method(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -725,8 +725,8 @@ class TestEstimatorForGraph(TestCase):
             return result
 
         data_shard = data_shard.transform_shard(transform)
-        from zoo.orca.learn.optimizers import SGD
-        from zoo.orca.learn.optimizers.schedule import Plateau
+        from bigdl.orca.learn.optimizers import SGD
+        from bigdl.orca.learn.optimizers.schedule import Plateau
         sgd = SGD(learningrate=0.1,
                   learningrate_schedule=Plateau("score",
                                                 factor=0.1,
@@ -745,12 +745,12 @@ class TestEstimatorForGraph(TestCase):
                 validation_data=data_shard)
 
     def test_estimator_graph_fit_mem_type(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
         tf.reset_default_graph()
 
         model = SimpleModel()
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {

@@ -15,8 +15,8 @@
 #
 
 from zoo.common.utils import get_file_list
-from zoo.orca.data import SparkXShards
-from zoo.orca.data.utils import get_size
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.data.utils import get_size
 from zoo.util.utils import convert_row_to_numpy
 import numpy as np
 
@@ -69,7 +69,7 @@ def find_latest_checkpoint(model_dir, model_type="bigdl"):
 
 def convert_predict_rdd_to_xshard(data, prediction_rdd):
     import numpy as np
-    from zoo.orca.data import SparkXShards
+    from bigdl.orca.data import SparkXShards
 
     def group_index(iter):
         for data in iter:
@@ -264,7 +264,7 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
 
 
 def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=False):
-    from zoo.orca import OrcaContext
+    from bigdl.orca import OrcaContext
     schema = data.schema
     shard_size = OrcaContext._shard_size
     numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.orca import OrcaContext
+from bigdl.orca import OrcaContext
 from zoo.common.nncontext import init_nncontext
 
 

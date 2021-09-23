@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 
 import mxnet as mx
-from zoo.orca.learn.mxnet import Estimator, create_config
+from bigdl.orca.learn.mxnet import Estimator, create_config
 
 np.random.seed(1337)  # for reproducibility
 

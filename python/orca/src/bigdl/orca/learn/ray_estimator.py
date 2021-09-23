@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from abc import abstractmethod
-from zoo.orca.learn.base_estimator import BaseEstimator
+from bigdl.orca.learn.base_estimator import BaseEstimator
 
 
 class Estimator(BaseEstimator):

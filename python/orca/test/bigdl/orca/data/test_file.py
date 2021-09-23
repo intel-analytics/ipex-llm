@@ -18,7 +18,7 @@ import os.path
 import shutil
 import tempfile
 
-from zoo.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text
+from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, makedirs, write_text
 
 
 class TestFile:

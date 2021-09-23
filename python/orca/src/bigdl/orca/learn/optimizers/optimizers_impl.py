@@ -16,7 +16,7 @@
 from abc import ABC, abstractmethod
 
 from bigdl.util.common import DOUBLEMAX
-from zoo.orca.learn.optimizers.schedule import Scheduler
+from bigdl.orca.learn.optimizers.schedule import Scheduler
 
 
 class Optimizer(ABC):
@@ -55,7 +55,7 @@ class SGD(Optimizer):
                  weightdecays=None):
         from bigdl.optim.optimizer import SGD as BSGD
         assert isinstance(learningrate_schedule, Scheduler),\
-            "learningrate_schedule should be an zoo.orca.learn.optimizers.schedule.Scheduler," \
+            "learningrate_schedule should be an bigdl.orca.learn.optimizers.schedule.Scheduler," \
             f" but got {learningrate_schedule}"
         self.optimizer = BSGD(learningrate,
                               learningrate_decay,

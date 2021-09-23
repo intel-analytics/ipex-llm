@@ -21,10 +21,10 @@ import pytest
 import tensorflow as tf
 
 from zoo import init_nncontext
-from zoo.orca.data import XShards
+from bigdl.orca.data import XShards
 
-import zoo.orca.data.pandas
-from zoo.orca.learn.tf2 import Estimator
+import bigdl.orca.data.pandas
+from bigdl.orca.learn.tf2 import Estimator
 from zoo.ray import RayContext
 import ray
 
@@ -348,7 +348,7 @@ class TestTFRayEstimator(TestCase):
         trainer.predict(df, feature_cols=["feature"]).collect()
 
     def test_dataframe_with_empty_partition(self):
-        from zoo.orca import OrcaContext
+        from bigdl.orca import OrcaContext
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 10)
 
@@ -390,7 +390,7 @@ class TestTFRayEstimator(TestCase):
             return model
 
         file_path = os.path.join(resource_path, "orca/learn/ncf2.csv")
-        train_data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        train_data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         config = {
             "lr": 0.8
@@ -410,7 +410,7 @@ class TestTFRayEstimator(TestCase):
         trainer.predict(train_data_shard, feature_cols=["user", "item"]).collect()
 
     def test_dataframe_shard_size(self):
-        from zoo.orca import OrcaContext
+        from bigdl.orca import OrcaContext
         OrcaContext._shard_size = 3
         sc = init_nncontext()
         rdd = sc.range(0, 10)
@@ -619,7 +619,7 @@ class TestTFRayEstimator(TestCase):
             model.add(vectorize_layer)
             return model
 
-        from zoo.orca import OrcaContext
+        from bigdl.orca import OrcaContext
         from pyspark.sql.types import StructType, StructField, StringType
         spark = OrcaContext.get_spark_session()
         schema = StructType([StructField("input", StringType(), True)])

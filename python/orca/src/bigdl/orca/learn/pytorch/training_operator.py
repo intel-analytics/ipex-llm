@@ -35,10 +35,10 @@ import collections
 import torch
 import numpy as np
 
-from zoo.orca.learn.metrics import Metric
-from zoo.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
+from bigdl.orca.learn.metrics import Metric
+from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
                                           NUM_SAMPLES)
-from zoo.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
+from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
                                               SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
 
 tqdm = None

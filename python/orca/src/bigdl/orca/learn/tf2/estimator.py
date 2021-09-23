@@ -21,14 +21,14 @@ import numpy as np
 import ray
 from zoo.common.utils import enable_multi_fs_load, enable_multi_fs_save
 
-from zoo.orca.data.ray_xshards import RayXShards
-from zoo.orca.learn.dl_cluster import RayDLCluster
-from zoo.orca.learn.tf2.tf_runner import TFRunner
-from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
-from zoo.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
+from bigdl.orca.data.ray_xshards import RayXShards
+from bigdl.orca.learn.dl_cluster import RayDLCluster
+from bigdl.orca.learn.tf2.tf_runner import TFRunner
+from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
+from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
-from zoo.orca.data.utils import process_spark_xshards
+from bigdl.orca.data.utils import process_spark_xshards
 from zoo.ray import RayContext
 
 logger = logging.getLogger(__name__)
@@ -146,7 +146,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)])
         elif backend == "horovod":
             # it is necessary to call self.run first to set horovod environment
-            from zoo.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
+            from bigdl.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
             horovod_runner = HorovodRayRunner(ray_ctx,
                                               worker_cls=TFRunner,
                                               worker_param=params,
@@ -217,7 +217,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             data_config=data_config
         )
 
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -299,7 +299,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             callbacks=callbacks,
             data_config=data_config,
         )
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
 
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
@@ -374,7 +374,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             callbacks=callbacks,
             data_config=data_config,
         )
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
 
         if isinstance(data, DataFrame):

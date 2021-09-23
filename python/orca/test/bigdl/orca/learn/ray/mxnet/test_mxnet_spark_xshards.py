@@ -22,9 +22,9 @@ import numpy as np
 import mxnet as mx
 from mxnet import gluon
 from mxnet.gluon import nn
-from zoo.orca import OrcaContext
-import zoo.orca.data.pandas
-from zoo.orca.learn.mxnet import Estimator, create_config
+from bigdl.orca import OrcaContext
+import bigdl.orca.data.pandas
+from bigdl.orca.learn.mxnet import Estimator, create_config
 
 
 def prepare_data_symbol(df):
@@ -92,17 +92,17 @@ class TestMXNetSparkXShards(TestCase):
     def test_xshards_symbol_with_val(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "../../../../resources")
         train_file_path = os.path.join(resource_path, "orca/learn/single_input_json/train")
-        train_data_shard = zoo.orca.data.pandas.read_json(
+        train_data_shard = bigdl.orca.data.pandas.read_json(
             train_file_path, orient='records', lines=False).transform_shard(prepare_data_symbol)
         test_file_path = os.path.join(resource_path, "orca/learn/single_input_json/test")
-        test_data_shard = zoo.orca.data.pandas.read_json(
+        test_data_shard = bigdl.orca.data.pandas.read_json(
             test_file_path, orient='records', lines=False).transform_shard(prepare_data_symbol)
         config = create_config(log_interval=1, seed=42)
         estimator = Estimator.from_mxnet(config=config, model_creator=get_symbol_model,
                                          validation_metrics_creator=get_metrics,
                                          eval_metrics_creator=get_metrics, num_workers=2)
         estimator.fit(train_data_shard, epochs=2)
-        train_data_shard2 = zoo.orca.data.pandas.read_json(
+        train_data_shard2 = bigdl.orca.data.pandas.read_json(
             train_file_path, orient='records', lines=False).transform_shard(prepare_data_symbol)
         estimator.fit(train_data_shard2, validation_data=test_data_shard, epochs=1, batch_size=32)
         estimator.shutdown()
@@ -110,7 +110,7 @@ class TestMXNetSparkXShards(TestCase):
     def test_xshards_symbol_without_val(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "../../../../resources")
         train_file_path = os.path.join(resource_path, "orca/learn/single_input_json/train")
-        train_data_shard = zoo.orca.data.pandas.read_json(
+        train_data_shard = bigdl.orca.data.pandas.read_json(
             train_file_path, orient='records', lines=False).transform_shard(prepare_data_symbol)
         config = create_config(log_interval=1, seed=42)
         estimator = Estimator.from_mxnet(config=config, model_creator=get_symbol_model,
@@ -121,10 +121,10 @@ class TestMXNetSparkXShards(TestCase):
     def test_xshards_gluon(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "../../../../resources")
         train_file_path = os.path.join(resource_path, "orca/learn/single_input_json/train")
-        train_data_shard = zoo.orca.data.pandas.read_json(
+        train_data_shard = bigdl.orca.data.pandas.read_json(
             train_file_path, orient='records', lines=False).transform_shard(prepare_data_gluon)
         test_file_path = os.path.join(resource_path, "orca/learn/single_input_json/train")
-        test_data_shard = zoo.orca.data.pandas.read_json(
+        test_data_shard = bigdl.orca.data.pandas.read_json(
             test_file_path, orient='records', lines=False).transform_shard(prepare_data_gluon)
         config = create_config(log_interval=1, seed=42)
         estimator = Estimator.from_mxnet(config=config, model_creator=get_gluon_model,

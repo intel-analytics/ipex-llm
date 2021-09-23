@@ -21,7 +21,7 @@ import uuid
 import random
 from packaging import version
 
-from zoo.orca.data import XShards
+from bigdl.orca.data import XShards
 from zoo.ray import RayContext
 
 import logging
@@ -146,7 +146,7 @@ class RayXShards(XShards):
         return [result[idx] for idx in range(self.num_partitions())]
 
     def to_spark_xshards(self):
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
         ray_ctx = RayContext.get()
         sc = ray_ctx.sc
         address = ray_ctx.redis_address

@@ -20,7 +20,7 @@ import pytest
 @pytest.fixture(autouse=True, scope='package')
 def orca_context_fixture(request):
     import os
-    from zoo.orca import OrcaContext, init_orca_context, stop_orca_context
+    from bigdl.orca import OrcaContext, init_orca_context, stop_orca_context
     OrcaContext._eager_mode = True
     access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
     secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")

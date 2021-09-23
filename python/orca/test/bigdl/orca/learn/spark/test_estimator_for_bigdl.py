@@ -24,14 +24,14 @@ from pyspark.sql.functions import col, udf
 
 from zoo.common.nncontext import *
 from zoo.feature.common import *
-from zoo.orca.learn.bigdl import Estimator
+from bigdl.orca.learn.bigdl import Estimator
 from bigdl.optim.optimizer import Adam, SGD, ValidationSummary
 from zoo.pipeline.api.keras import layers as ZLayer
 from zoo.pipeline.api.keras.models import Model as ZModel
-from zoo.orca.data import SparkXShards
-from zoo.orca.learn.metrics import Accuracy, MAE
-from zoo.orca.learn.trigger import EveryEpoch, SeveralIteration
-from zoo.orca.data.pandas import read_csv
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.learn.metrics import Accuracy, MAE
+from bigdl.orca.learn.trigger import EveryEpoch, SeveralIteration
+from bigdl.orca.data.pandas import read_csv
 
 
 class TestEstimatorForKeras(TestCase):
@@ -239,7 +239,7 @@ class TestEstimatorForKeras(TestCase):
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
         df, val_df = self.get_estimator_df()
-        from zoo.orca.learn.metrics import MAE
+        from bigdl.orca.learn.metrics import MAE
         est = Estimator.from_bigdl(model=model, loss=criterion, optimizer=Adam(), metrics=[MAE()],
                                    feature_preprocessing=SeqToTensor([2]),
                                    label_preprocessing=SeqToTensor([2]))

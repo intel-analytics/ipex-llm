@@ -38,7 +38,7 @@ class MPIRunner:
                 yield get_node_ip()
 
             from bigdl.util.common import get_node_and_core_number
-            from zoo.orca import OrcaContext
+            from bigdl.orca import OrcaContext
             sc = OrcaContext.get_spark_context()
             node_num, core_num = get_node_and_core_number()
             total_cores = node_num * core_num

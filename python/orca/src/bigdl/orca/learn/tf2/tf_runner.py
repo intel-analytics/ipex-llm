@@ -39,7 +39,7 @@ from contextlib import closing
 import logging
 import socket
 
-from zoo.orca.data.utils import ray_partitions_get_data_label
+from bigdl.orca.data.utils import ray_partitions_get_data_label
 
 logger = logging.getLogger(__name__)
 

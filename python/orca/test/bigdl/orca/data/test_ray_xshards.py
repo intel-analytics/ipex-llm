@@ -16,11 +16,11 @@
 import pytest
 import ray
 
-from zoo.orca.data.ray_xshards import RayXShards
+from bigdl.orca.data.ray_xshards import RayXShards
 
 
 def get_ray_xshards():
-    from zoo.orca.data import XShards
+    from bigdl.orca.data import XShards
     import numpy as np
 
     ndarray_dict = {"x": np.random.randn(10, 4), "y": np.random.randn(10, 4)}
