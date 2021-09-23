@@ -20,7 +20,7 @@ import torchvision
 import pytest
 
 from unittest import TestCase
-from zoo.pipeline.api.torch import TorchModel, TorchLoss
+from bigdl.orca.torch import TorchModel, TorchLoss
 from zoo.common.nncontext import *
 from torch.utils.data import TensorDataset, DataLoader
 from zoo.pipeline.estimator import *

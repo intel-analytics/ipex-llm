@@ -17,7 +17,7 @@ import sys
 import io
 import torch
 from importlib.util import find_spec
-from zoo.pipeline.api.torch import zoo_pickle_module
+from bigdl.orca.torch import zoo_pickle_module
 from bigdl.optim.optimizer import OptimMethod
 
 if find_spec('jep') is None:

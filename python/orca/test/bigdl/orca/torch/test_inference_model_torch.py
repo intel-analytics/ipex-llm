@@ -20,7 +20,7 @@ import pytest
 from unittest import TestCase
 from zoo.pipeline.inference import InferenceModel
 
-from zoo.pipeline.api.torch import zoo_pickle_module
+from bigdl.orca.torch import zoo_pickle_module
 import torch
 import torchvision
 from zoo.common.nncontext import *
