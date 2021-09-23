@@ -15,7 +15,7 @@
 #
 
 import ray
-from zoo.orca.cpu_info import schedule_workers
+from bigdl.orca.cpu_info import schedule_workers
 import os
 import sys
 import logging

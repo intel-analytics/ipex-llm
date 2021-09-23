@@ -19,11 +19,11 @@ import shutil
 
 import numpy as np
 import os
-from zoo.orca.data.image.parquet_dataset import ParquetDataset
-from zoo.orca.data.image.parquet_dataset import _write_ndarrays, write_from_directory, write_parquet
-from zoo.orca.data.image.utils import DType, FeatureType, SchemaField
-from zoo.orca.learn.tf.estimator import Estimator
-from zoo.orca.data.image import write_mnist, write_voc
+from bigdl.orca.data.image.parquet_dataset import ParquetDataset
+from bigdl.orca.data.image.parquet_dataset import _write_ndarrays, write_from_directory, write_parquet
+from bigdl.orca.data.image.utils import DType, FeatureType, SchemaField
+from bigdl.orca.learn.tf.estimator import Estimator
+from bigdl.orca.data.image import write_mnist, write_voc
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
@@ -150,7 +150,7 @@ def test_write_voc(orca_context_fixture, use_api=False):
     sc = orca_context_fixture
     temp_dir = tempfile.mkdtemp()
     try:
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
         dataset_path = os.path.join(resource_path, "VOCdevkit")
         output_path = os.path.join(temp_dir, "output_dataset")
         if use_api:

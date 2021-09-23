@@ -122,7 +122,7 @@ class MAE(Metric):
         return KerasMAE()
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.MAE()
 
     def get_name(self):
@@ -142,7 +142,7 @@ class MSE(Metric):
         return KerasMSE()
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.MSE()
 
     def get_name(self):
@@ -170,7 +170,7 @@ class Accuracy(Metric):
         return KerasAccuracy(zero_based_label=self.zero_based_label)
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         if not self.zero_based_label:
             raise ValueError("pytorch Accuracy does not support one based accuracy, "
                              "please set zero_based_label to True")
@@ -193,7 +193,7 @@ class SparseCategoricalAccuracy(Metric):
         return KerasSparseCategoricalAccuracy()
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.SparseCategoricalAccuracy()
 
     def get_name(self):
@@ -212,7 +212,7 @@ class CategoricalAccuracy(Metric):
         return KerasCategoricalAccuracy()
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.CategoricalAccuracy()
 
     def get_name(self):
@@ -231,7 +231,7 @@ class BinaryAccuracy(Metric):
         return KerasBinaryAccuracy()
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.BinaryAccuracy()
 
     def get_name(self):
@@ -254,7 +254,7 @@ class Top5Accuracy(Metric):
         return KerasTop5Accuracy()
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.Top5Accuracy()
 
     def get_name(self):
@@ -270,7 +270,7 @@ class BinaryCrossEntropy(Metric):
     """
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.BinaryCrossEntropy()
 
     def get_name(self):
@@ -286,7 +286,7 @@ class CategoricalCrossEntropy(Metric):
     """
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.CategoricalCrossEntropy()
 
     def get_name(self):
@@ -302,7 +302,7 @@ class SparseCategoricalCrossEntropy(Metric):
     """
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.SparseCategoricalCrossEntropy()
 
     def get_name(self):
@@ -317,7 +317,7 @@ class KLDivergence(Metric):
     """
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.KLDivergence()
 
     def get_name(self):
@@ -332,7 +332,7 @@ class Poisson(Metric):
     """
 
     def get_pytorch_metric(self):
-        from zoo.orca.learn.pytorch import pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_metrics
         return pytorch_metrics.Poisson()
 
     def get_name(self):

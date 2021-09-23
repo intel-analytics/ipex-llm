@@ -220,6 +220,6 @@ class MXNetRunner(object):
     def find_free_port(self):
         """Finds a free port on the current node."""
         if "port" not in self.__dict__:
-            from zoo.orca.learn.mxnet.utils import find_free_port
+            from bigdl.orca.learn.mxnet.utils import find_free_port
             self.port = find_free_port()
         return self.port

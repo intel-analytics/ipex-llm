@@ -20,12 +20,12 @@ import shutil
 import pytest
 from unittest import TestCase
 
-import zoo.orca.data
-import zoo.orca.data.pandas
-from zoo.orca import OrcaContext
-from zoo.orca.data import SharedValue
+import bigdl.orca.data
+import bigdl.orca.data.pandas
+from bigdl.orca import OrcaContext
+from bigdl.orca.data import SharedValue
 from zoo.common.nncontext import *
-from zoo.orca.data import SparkXShards
+from bigdl.orca.data import SparkXShards
 
 
 class TestSparkXShards(TestCase):
@@ -38,24 +38,24 @@ class TestSparkXShards(TestCase):
 
     def test_read_local_csv(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         data = data_shard.collect()
         assert len(data) == 2, "number of shard should be 2"
         df = data[0]
         assert "location" in df.columns, "location is not in columns"
         file_path = os.path.join(self.resource_path, "abc")
         with self.assertRaises(Exception) as context:
-            xshards = zoo.orca.data.pandas.read_csv(file_path)
+            xshards = bigdl.orca.data.pandas.read_csv(file_path)
         self.assertTrue('No such file or directory' in str(context.exception))
         file_path = os.path.join(self.resource_path, "image3d")
         with self.assertRaises(Exception) as context:
-            xshards = zoo.orca.data.pandas.read_csv(file_path)
+            xshards = bigdl.orca.data.pandas.read_csv(file_path)
         # This error is raised by pandas.errors.ParserError
         self.assertTrue('Error tokenizing data' in str(context.exception))
 
     def test_read_local_json(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = zoo.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
         data = data_shard.collect()
         assert len(data) == 2, "number of shard should be 2"
         df = data[0]
@@ -66,14 +66,14 @@ class TestSparkXShards(TestCase):
         secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
         if access_key_id and secret_access_key:
             file_path = "s3://analytics-zoo-data/nyc_taxi.csv"
-            data_shard = zoo.orca.data.pandas.read_csv(file_path)
+            data_shard = bigdl.orca.data.pandas.read_csv(file_path)
             data = data_shard.collect()
             df = data[0]
             assert "value" in df.columns, "value is not in columns"
 
     def test_repartition(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = zoo.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
         partitions_num_1 = data_shard.rdd.getNumPartitions()
         assert partitions_num_1 == 2, "number of partition should be 2"
         data_shard.cache()
@@ -87,7 +87,7 @@ class TestSparkXShards(TestCase):
 
     def test_apply(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = zoo.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
         data = data_shard.collect()
         assert data[0]["value"].values[0] > 0, "value should be positive"
 
@@ -101,7 +101,7 @@ class TestSparkXShards(TestCase):
 
     def test_read_csv_with_args(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path, sep=',', header=0)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path, sep=',', header=0)
         data = data_shard.collect()
         assert len(data) == 2, "number of shard should be 2"
         df = data[0]
@@ -109,12 +109,12 @@ class TestSparkXShards(TestCase):
 
     def test_partition_by_single_column(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         partitioned_shard = data_shard.partition_by(cols="location", num_partitions=4)
         partitions = partitioned_shard.rdd.glom().collect()
         assert len(partitions) == 4
 
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         partitioned_shard = data_shard.partition_by(cols="location", num_partitions=3)
         assert not data_shard.is_cached(), "data_shard should be uncached"
         assert partitioned_shard.is_cached(), "partitioned_shard should be cached"
@@ -123,13 +123,13 @@ class TestSparkXShards(TestCase):
 
     def test_unique(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         location_list = data_shard["location"].unique()
         assert len(location_list) == 6
 
     def test_split(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         trans_data_shard = data_shard.transform_shard(lambda df: (df[0:-1], df[-1:]))
         assert trans_data_shard.is_cached(), "trans_data_shard should be cached"
         shards_splits = trans_data_shard.split()
@@ -145,7 +145,7 @@ class TestSparkXShards(TestCase):
 
     def test_len(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         assert len(data_shard) == 14
         assert len(data_shard['ID']) == 14
         with self.assertRaises(Exception) as context:
@@ -173,11 +173,11 @@ class TestSparkXShards(TestCase):
     def test_save(self):
         temp = tempfile.mkdtemp()
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         path = os.path.join(temp, "data.pkl")
         data_shard.save_pickle(path)
-        shards = zoo.orca.data.XShards.load_pickle(path)
-        assert isinstance(shards, zoo.orca.data.SparkXShards)
+        shards = bigdl.orca.data.XShards.load_pickle(path)
+        assert isinstance(shards, bigdl.orca.data.SparkXShards)
         shutil.rmtree(temp)
 
     def test_transform(self):
@@ -186,7 +186,7 @@ class TestSparkXShards(TestCase):
             data2 = {'location': df['location'].values}
             return {'x': data1, 'y': data2}
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         assert data_shard.is_cached(), "data_shard should be cached"
         transformed_data_shard = data_shard.transform_shard(trans_func)
         assert not data_shard.is_cached(), "data_shard should be uncached"
@@ -207,7 +207,7 @@ class TestSparkXShards(TestCase):
             return df
 
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = zoo.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
         data = data_shard.collect()
         assert data[0]["value"].values[0] > 0, "value should be positive"
         col_name = "value"
@@ -221,7 +221,7 @@ class TestSparkXShards(TestCase):
 
     def test_get_item(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = zoo.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
         selected_shard = data_shard["value"]
         assert data_shard.is_cached(), "data_shard should be cached"
         assert not selected_shard.is_cached(), "selected_shard should not be cached"
@@ -235,7 +235,7 @@ class TestSparkXShards(TestCase):
 
     def test_for_each(self):
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        shards = zoo.orca.data.pandas.read_csv(file_path)
+        shards = bigdl.orca.data.pandas.read_csv(file_path)
 
         def get_item(data, key):
             return data[key]
@@ -252,7 +252,7 @@ class TestSparkXShards(TestCase):
             return df
 
         file_path = os.path.join(self.resource_path, "orca/data/json")
-        data_shard = zoo.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
+        data_shard = bigdl.orca.data.pandas.read_json(file_path, orient='columns', lines=True)
         data_shard = data_shard.repartition(2)
         data_shard.cache()
         transformed_shard = data_shard.transform_shard(negative, "value", 2)
@@ -283,7 +283,7 @@ class TestSparkXShards(TestCase):
     def test_transform_with_repartition(self):
         # shards of pandas dataframe
         file_path = os.path.join(self.resource_path, "orca/data/csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
         partitions = data_shard.rdd.glom().collect()
         for par in partitions:
             assert len(par) <= 1

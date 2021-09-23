@@ -16,8 +16,8 @@
 import math
 
 from zoo.pipeline.inference import InferenceModel
-from zoo.orca.data import SparkXShards
-from zoo.orca.learn.spark_estimator import Estimator as SparkEstimator
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 from zoo import get_node_and_core_number
 from zoo.util import nest
 from zoo.common.nncontext import init_nncontext
@@ -108,7 +108,7 @@ class OpenvinoEstimator(SparkEstimator):
         sc = init_nncontext()
 
         if isinstance(data, DataFrame):
-            from zoo.orca.learn.utils import dataframe_to_xshards, convert_predict_rdd_to_dataframe
+            from bigdl.orca.learn.utils import dataframe_to_xshards, convert_predict_rdd_to_dataframe
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,

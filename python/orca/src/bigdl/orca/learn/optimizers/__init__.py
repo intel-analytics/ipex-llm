@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from zoo.orca.learn.optimizers.optimizers_impl import *
+from bigdl.orca.learn.optimizers.optimizers_impl import *

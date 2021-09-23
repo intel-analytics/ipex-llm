@@ -15,8 +15,8 @@
 #
 from py4j.protocol import Py4JError
 
-from zoo.orca.data.utils import *
-from zoo.orca import OrcaContext
+from bigdl.orca.data.utils import *
+from bigdl.orca import OrcaContext
 from zoo.common.nncontext import init_nncontext
 from zoo import ZooContext, get_node_and_core_number
 from zoo.util import nest
@@ -85,7 +85,7 @@ class XShards(object):
         shard_num = node_num * core_num if num_shards is None else num_shards
         import numpy as np
         type_err_msg = """
-The types supported in zoo.orca.data.XShards.partition are
+The types supported in bigdl.orca.data.XShards.partition are
 1. np.ndarray
 2. a tuple, list, dict of np.ndarray
 3. nested structure made of tuple, list, dict with ndarray as the leaf value

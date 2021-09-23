@@ -21,8 +21,8 @@ import cloudpickle
 from pyspark.sql import DataFrame
 from torch.utils.data import Dataset, DataLoader
 from zoo.util.utils import get_node_ip
-from zoo.orca.learn.mpi.mpi_runner import MPIRunner
-from zoo.orca.learn.mpi.utils import *
+from bigdl.orca.learn.mpi.mpi_runner import MPIRunner
+from bigdl.orca.learn.mpi.utils import *
 
 
 class MPIEstimator:
@@ -364,7 +364,7 @@ def train_epoch(config, model, train_ld, train_batches, optimizer, loss, schedul
 # TODO: add loss
 def validate(config, model, valid_ld, metrics, validate_batches):
     import torch
-    from zoo.orca.learn.metrics import Metric
+    from bigdl.orca.learn.metrics import Metric
 
     model.eval()
     metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")

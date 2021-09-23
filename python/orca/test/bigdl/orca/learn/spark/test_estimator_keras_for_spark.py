@@ -19,11 +19,11 @@ from unittest import TestCase
 
 import tensorflow as tf
 
-from zoo.orca import OrcaContext
-from zoo.orca.learn.trigger import SeveralIteration
-from zoo.orca.learn.tf.estimator import Estimator
+from bigdl.orca import OrcaContext
+from bigdl.orca.learn.trigger import SeveralIteration
+from bigdl.orca.learn.tf.estimator import Estimator
 from zoo.common.nncontext import *
-from zoo.orca.learn.utils import convert_predict_rdd_to_dataframe
+from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe
 
 
 class TestEstimatorForKeras(TestCase):
@@ -81,13 +81,13 @@ class TestEstimatorForKeras(TestCase):
         return model
 
     def test_estimator_keras_xshards(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = self.create_model()
         file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -108,7 +108,7 @@ class TestEstimatorForKeras(TestCase):
         eval_result = est.evaluate(data_shard)
         print(eval_result)
 
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -122,13 +122,13 @@ class TestEstimatorForKeras(TestCase):
         assert predictions[0]['prediction'].shape[1] == 2
 
     def test_estimator_keras_xshards_options(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = self.create_model()
         file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -172,13 +172,13 @@ class TestEstimatorForKeras(TestCase):
         shutil.rmtree(temp)
 
     def test_estimator_keras_xshards_clip(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = self.create_model_with_clip()
         file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -197,13 +197,13 @@ class TestEstimatorForKeras(TestCase):
                 validation_data=data_shard)
 
     def test_estimator_keras_xshards_checkpoint(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = self.create_model()
         file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -313,13 +313,13 @@ class TestEstimatorForKeras(TestCase):
         assert 'acc Top1Accuracy' in eval_result
 
     def test_estimator_keras_tensorboard(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = self.create_model()
         file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -387,13 +387,13 @@ class TestEstimatorForKeras(TestCase):
         print(resultDF.collect()[0])
 
     def test_estimator_keras_save_load(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = self.create_model()
         file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -422,7 +422,7 @@ class TestEstimatorForKeras(TestCase):
 
         est = Estimator.load_keras_model(model_path)
 
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -437,13 +437,13 @@ class TestEstimatorForKeras(TestCase):
         shutil.rmtree(temp)
 
     def test_estimator_keras_weights_save_load(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = self.create_model()
         file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -475,7 +475,7 @@ class TestEstimatorForKeras(TestCase):
         est = Estimator.from_keras(model)
         est.load_keras_weights(model_path)
 
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -523,8 +523,8 @@ class TestEstimatorForKeras(TestCase):
                                                       np.random.randint(0, 50, size=(100, 1)),
                                                       np.ones(shape=(100,), dtype=np.int32)))
         dataset = dataset.map(lambda user, item, label: [(user, item), label])
-        from zoo.orca.learn.optimizers import SGD
-        from zoo.orca.learn.optimizers.schedule import Plateau
+        from bigdl.orca.learn.optimizers import SGD
+        from bigdl.orca.learn.optimizers.schedule import Plateau
         sgd = SGD(learningrate=0.1,
                   learningrate_schedule=Plateau("score",
                                                 factor=0.1,
@@ -560,13 +560,13 @@ class TestEstimatorForKeras(TestCase):
                 validation_data=dataset)
 
     def test_estimator_keras_xshards_with_mem_type(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = self.create_model()
         file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {
@@ -591,13 +591,13 @@ class TestEstimatorForKeras(TestCase):
         OrcaContext.train_data_store = "DRAM"
 
     def test_estimator_keras_xshards_disk_featureset_trigger(self):
-        import zoo.orca.data.pandas
+        import bigdl.orca.data.pandas
 
         tf.reset_default_graph()
 
         model = self.create_model()
         file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
-        data_shard = zoo.orca.data.pandas.read_csv(file_path)
+        data_shard = bigdl.orca.data.pandas.read_csv(file_path)
 
         def transform(df):
             result = {

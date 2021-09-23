@@ -16,8 +16,8 @@
 
 import os
 import tensorflow as tf
-from zoo.orca.data.image.imagenet_dataset import *
-from zoo.orca.data.image.parquet_dataset import _check_arguments
+from bigdl.orca.data.image.imagenet_dataset import *
+from bigdl.orca.data.image.parquet_dataset import _check_arguments
 
 
 def write_imagenet(imagenet_path: str,

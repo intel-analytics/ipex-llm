@@ -17,7 +17,7 @@ import torch
 
 
 def test_torch_Accuracy():
-    from zoo.orca.learn.pytorch.pytorch_metrics import Accuracy
+    from bigdl.orca.learn.pytorch.pytorch_metrics import Accuracy
     pred = torch.tensor([0, 2, 3, 4])
     target = torch.tensor([1, 2, 3, 4])
     acc = Accuracy()
@@ -30,7 +30,7 @@ def test_torch_Accuracy():
 
 
 def test_torch_BinaryAccuracy():
-    from zoo.orca.learn.pytorch.pytorch_metrics import BinaryAccuracy
+    from bigdl.orca.learn.pytorch.pytorch_metrics import BinaryAccuracy
     target = torch.tensor([1, 1, 0, 0])
     pred = torch.tensor([0.98, 1, 0, 0.6])
     bac = BinaryAccuracy()
@@ -43,7 +43,7 @@ def test_torch_BinaryAccuracy():
 
 
 def test_torch_CategoricalAccuracy():
-    from zoo.orca.learn.pytorch.pytorch_metrics import CategoricalAccuracy
+    from bigdl.orca.learn.pytorch.pytorch_metrics import CategoricalAccuracy
     pred = torch.tensor([[0.1, 0.9, 0.8], [0.05, 0.95, 0]])
     target = torch.tensor([[0, 0, 1], [0, 1, 0]])
     cacc = CategoricalAccuracy()
@@ -56,7 +56,7 @@ def test_torch_CategoricalAccuracy():
 
 
 def test_torch_SparseCategoricalAccuracy():
-    from zoo.orca.learn.pytorch.pytorch_metrics import SparseCategoricalAccuracy
+    from bigdl.orca.learn.pytorch.pytorch_metrics import SparseCategoricalAccuracy
     pred = torch.tensor([[0.1, 0.9, 0.8], [0.05, 0.95, 0]])
     target = torch.tensor([[2], [1]])
     scacc = SparseCategoricalAccuracy()
@@ -69,7 +69,7 @@ def test_torch_SparseCategoricalAccuracy():
 
 
 def test_torch_Top5Accuracy():
-    from zoo.orca.learn.pytorch.pytorch_metrics import Top5Accuracy
+    from bigdl.orca.learn.pytorch.pytorch_metrics import Top5Accuracy
     pred = torch.tensor([[0.1, 0.9, 0.8, 0.4, 0.5, 0.2],
                          [0.05, 0.95, 0, 0.4, 0.5, 0.2]])
     target = torch.tensor([2, 2])
@@ -84,7 +84,7 @@ def test_torch_Top5Accuracy():
 
 
 def test_torch_MAE():
-    from zoo.orca.learn.pytorch.pytorch_metrics import MAE
+    from bigdl.orca.learn.pytorch.pytorch_metrics import MAE
     pred = torch.tensor([[1, -2], [1, 1]])
     target = torch.tensor([[0, 1], [0, 1]])
     m = MAE()
@@ -105,7 +105,7 @@ def test_torch_MAE():
 
 
 def test_torch_MSE():
-    from zoo.orca.learn.pytorch.pytorch_metrics import MSE
+    from bigdl.orca.learn.pytorch.pytorch_metrics import MSE
     pred = torch.tensor([[1, -2], [1, 1]])
     target = torch.tensor([[1, 1], [1, 1]])
     m = MSE()
@@ -126,7 +126,7 @@ def test_torch_MSE():
 
 
 def test_torch_BinaryCrossEntropy():
-    from zoo.orca.learn.pytorch.pytorch_metrics import BinaryCrossEntropy
+    from bigdl.orca.learn.pytorch.pytorch_metrics import BinaryCrossEntropy
     pred = torch.tensor([[0.6, 0.4], [0.4, 0.6]])
     target = torch.tensor([[0, 1], [0, 0]])
     entropy = BinaryCrossEntropy()
@@ -139,7 +139,7 @@ def test_torch_BinaryCrossEntropy():
 
 
 def test_torch_CategoricalCrossEntropy():
-    from zoo.orca.learn.pytorch.pytorch_metrics import CategoricalCrossEntropy
+    from bigdl.orca.learn.pytorch.pytorch_metrics import CategoricalCrossEntropy
     pred = torch.tensor([[0.05, 0.95, 0], [0.1, 0.8, 0.1]])
     target = torch.tensor([[0, 1, 0], [0, 0, 1]])
     entropy = CategoricalCrossEntropy()
@@ -148,7 +148,7 @@ def test_torch_CategoricalCrossEntropy():
 
 
 def test_torch_SparseCategoricalCrossEntropy():
-    from zoo.orca.learn.pytorch.pytorch_metrics import SparseCategoricalCrossEntropy
+    from bigdl.orca.learn.pytorch.pytorch_metrics import SparseCategoricalCrossEntropy
     pred = torch.tensor([[0.05, 0.95, 0], [0.1, 0.8, 0.1]])
     target = torch.tensor([1, 2])
     entropy = SparseCategoricalCrossEntropy()
@@ -157,7 +157,7 @@ def test_torch_SparseCategoricalCrossEntropy():
 
 
 def test_torch_KLDivergence():
-    from zoo.orca.learn.pytorch.pytorch_metrics import KLDivergence
+    from bigdl.orca.learn.pytorch.pytorch_metrics import KLDivergence
     pred = torch.tensor([[0.6, 0.4], [0.4, 0.6]])
     target = torch.tensor([[0, 1], [0, 0]])
     div = KLDivergence()
@@ -166,7 +166,7 @@ def test_torch_KLDivergence():
 
 
 def test_torch_Poisson():
-    from zoo.orca.learn.pytorch.pytorch_metrics import Poisson
+    from bigdl.orca.learn.pytorch.pytorch_metrics import Poisson
     pred = torch.tensor([[1, 1], [0, 0]])
     target = torch.tensor([[0, 1], [0, 0]])
     poisson = Poisson()
