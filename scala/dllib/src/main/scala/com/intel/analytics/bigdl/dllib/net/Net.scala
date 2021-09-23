@@ -30,10 +30,9 @@ import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{File, Shape}
-// import com.intel.analytics.zoo.models.caffe.CaffeLoader
+import com.intel.analytics.bigdl.dllib.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.dllib.utils.tf.{Session, TensorflowLoader}
-// import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.dllib.keras.autograd.Variable
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, Merge, WordEmbedding}
@@ -183,26 +182,26 @@ object Net {
    * @param defPath  caffe model definition file path
    * @param modelPath caffe model binary file containing weight and bias
    */
-//  def loadCaffe[T: ClassTag](defPath: String, modelPath: String)(
-//      implicit ev: TensorNumeric[T]): GraphNet[T] = {
-//    val graph = CaffeLoader.loadCaffe[T](defPath, modelPath)._1
-//      .asInstanceOf[Graph[T]]
-//    new GraphNet[T](graph)
-//  }
-//
-//  private[bigdl] def saveToKeras2[T: ClassTag](
-//        model: Net,
-//        filePath: String,
-//        python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
-//    NetSaver.saveToKeras2(model.asInstanceOf[Module[T]], filePath, python)
-//  }
-//
-//  private[bigdl] def saveToTf[T: ClassTag](
-//        model: Net,
-//        dir: String,
-//        python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
-//    NetSaver.saveToTf(model.asInstanceOf[Module[T]], dir, python)
-//  }
+  def loadCaffe[T: ClassTag](defPath: String, modelPath: String)(
+      implicit ev: TensorNumeric[T]): GraphNet[T] = {
+    val graph = CaffeLoader.loadCaffe[T](defPath, modelPath)._1
+      .asInstanceOf[Graph[T]]
+    new GraphNet[T](graph)
+  }
+
+  private[bigdl] def saveToKeras2[T: ClassTag](
+        model: Net,
+        filePath: String,
+        python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
+    NetSaver.saveToKeras2(model.asInstanceOf[Module[T]], filePath, python)
+  }
+
+  private[bigdl] def saveToTf[T: ClassTag](
+        model: Net,
+        dir: String,
+        python: String = "python")(implicit ev: TensorNumeric[T]): Unit = {
+    NetSaver.saveToTf(model.asInstanceOf[Module[T]], dir, python)
+  }
 
   private[bigdl] def getName(name: String): String = {
     name.split("\\.").last
@@ -301,42 +300,42 @@ object Net {
         |import tensorflow as tf
       """.stripMargin + "\n"
 
-//    def save[T: ClassTag](
-//          module: Module[T],
-//          path: String,
-//          python: String,
-//          saveCommand: String)
-//          (implicit ev: TensorNumeric[T]): Unit = {
-//      val tmpDir = zooUtils.createTmpDir("ZooKeras")
-//      logger.info(s"Write model's temp file to ${tmpDir}")
-//      val modelFile = tmpDir.toString + s"/${module.getName()}.py"
-//      val bw = new BufferedWriter(new FileWriter(modelFile))
-//      bw.write(header)
-//      module match {
-//        case s: Sequential[T] => export(s, bw)
-//        case m: Model[T] => export(m, bw)
-//        case _ =>
-//          throw new IllegalArgumentException(s"${module.getClass.getName} is not supported.")
-//      }
-//      bw.write(saveWeights(module, tmpDir.toString))
-//      bw.write(saveCommand)
-//      bw.flush()
-//      bw.close()
-//      execCommand(s"${python} ${modelFile}")
-//      FileUtils.deleteDirectory(tmpDir.toFile())
-//    }
+    def save[T: ClassTag](
+          module: Module[T],
+          path: String,
+          python: String,
+          saveCommand: String)
+          (implicit ev: TensorNumeric[T]): Unit = {
+      val tmpDir = zooUtils.createTmpDir("ZooKeras")
+      logger.info(s"Write model's temp file to ${tmpDir}")
+      val modelFile = tmpDir.toString + s"/${module.getName()}.py"
+      val bw = new BufferedWriter(new FileWriter(modelFile))
+      bw.write(header)
+      module match {
+        case s: Sequential[T] => export(s, bw)
+        case m: Model[T] => export(m, bw)
+        case _ =>
+          throw new IllegalArgumentException(s"${module.getClass.getName} is not supported.")
+      }
+      bw.write(saveWeights(module, tmpDir.toString))
+      bw.write(saveCommand)
+      bw.flush()
+      bw.close()
+      execCommand(s"${python} ${modelFile}")
+      FileUtils.deleteDirectory(tmpDir.toFile())
+    }
 
-//    def saveToTf[T: ClassTag](m: Module[T], path: String, python: String)
-//                                 (implicit ev: TensorNumeric[T]): Unit = {
-//      val saveCommand = tfHeader +
-//        s"export_tf(K.get_session(), '${path}', model.inputs, model.outputs)\n"
-//      save(m, path, python, saveCommand)
-//    }
-//
-//    def saveToKeras2[T: ClassTag](m: Module[T], path: String, python: String)
-//                      (implicit ev: TensorNumeric[T]): Unit = {
-//      save(m, path, python, s"model.save('$path')\n")
-//    }
+    def saveToTf[T: ClassTag](m: Module[T], path: String, python: String)
+                                 (implicit ev: TensorNumeric[T]): Unit = {
+      val saveCommand = tfHeader +
+        s"export_tf(K.get_session(), '${path}', model.inputs, model.outputs)\n"
+      save(m, path, python, saveCommand)
+    }
+
+    def saveToKeras2[T: ClassTag](m: Module[T], path: String, python: String)
+                      (implicit ev: TensorNumeric[T]): Unit = {
+      save(m, path, python, s"model.save('$path')\n")
+    }
 
     def execCommand(command: String): Unit = {
       val proc = Runtime.getRuntime().exec(command)
@@ -353,18 +352,18 @@ object Net {
       }
     }
 
-//    def export[T: ClassTag](
-//          model: Model[T],
-//          writer: BufferedWriter): Unit = {
-//      val inputs = model.getInputs()
-//      val outputs = model.getOutputs()
-//      val nodes = model.labor.asInstanceOf[StaticGraph[T]].getSortedForwardExecutions()
-//      nodes.foreach(export(_, writer))
-//      val inputsName = inputs.map(_.element.getName).mkString(", ")
-//      val outputsName = outputs.map(_.element.getName).mkString(", ")
-//      writer.write(s"${model.getName()} = Model(inputs=[${inputsName}]," +
-//        s" outputs=[${outputsName}])\n")
-//    }
+    def export[T: ClassTag](
+          model: Model[T],
+          writer: BufferedWriter): Unit = {
+      val inputs = model.getInputs()
+      val outputs = model.getOutputs()
+      val nodes = model.labor.asInstanceOf[StaticGraph[T]].getSortedForwardExecutions()
+      nodes.foreach(export(_, writer))
+      val inputsName = inputs.map(_.element.getName).mkString(", ")
+      val outputsName = outputs.map(_.element.getName).mkString(", ")
+      writer.write(s"${model.getName()} = Model(inputs=[${inputsName}]," +
+        s" outputs=[${outputsName}])\n")
+    }
 
     def export[T: ClassTag](
           node: ModuleNode[T],
