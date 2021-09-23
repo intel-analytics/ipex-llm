@@ -17,7 +17,7 @@
 import os
 import sys
 import subprocess
-from zoo.util.utils import get_node_ip
+from bigdl.dllib.utils.utils import get_node_ip
 
 
 # Assumption:

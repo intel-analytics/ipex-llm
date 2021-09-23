@@ -20,7 +20,7 @@ import subprocess
 import cloudpickle
 from pyspark.sql import DataFrame
 from torch.utils.data import Dataset, DataLoader
-from zoo.util.utils import get_node_ip
+from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.learn.mpi.mpi_runner import MPIRunner
 from bigdl.orca.learn.mpi.utils import *
 
