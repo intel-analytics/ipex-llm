@@ -483,6 +483,22 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
+   * Check if the model is PyTorch model
+   * @return
+   */
+  def isPyTorch(): Boolean = {
+    false
+  }
+
+  /**
+   * Check if the model is TensorFlow model
+   * @return
+   */
+  def isTensorFlow(): Boolean = {
+    false
+  }
+
+  /**
    * Reset module parameters, which is re-initialize the parameter with given initMethod
    */
   def reset(): Unit = {}
@@ -642,6 +658,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     }
     this
   }
+
+  /**
+   * Operations before get model
+   * @return
+   */
+  def beforeGetModel(): Unit = {}
 
   /**
    * Get numeric type of module parameters
