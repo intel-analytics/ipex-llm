@@ -34,7 +34,7 @@ You can also disable only one rule, by specifying its rule id, as specified in:
     <name>Scalastyle standard configuration</name>
 
     <check level="error" class="org.scalastyle.file.FileTabChecker" enabled="true"></check>
-    <!--<check level="error" class="org.scalastyle.file.HeaderMatchesChecker" enabled="true">
+    <check level="error" class="org.scalastyle.file.HeaderMatchesChecker" enabled="true">
         <parameters>
             <parameter name="header"><![CDATA[/*
  * Copyright 2016 The BigDL Authors.
@@ -52,7 +52,7 @@ You can also disable only one rule, by specifying its rule id, as specified in:
  * limitations under the License.
  */]]></parameter>
         </parameters>
-    </check>-->
+    </check>
 
     <check level="error" class="org.scalastyle.scalariform.SpacesAfterPlusChecker" enabled="true"></check>
 
