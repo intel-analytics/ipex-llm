@@ -16,9 +16,9 @@
 
 from bigdl.util.common import get_node_and_core_number
 from zoo import init_nncontext
-from zoo.orca import OrcaContext
-from zoo.orca.data import SparkXShards
-from zoo.orca.data.utils import *
+from bigdl.orca import OrcaContext
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.data.utils import *
 
 
 def read_csv(file_path, **kwargs):

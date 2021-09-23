@@ -22,14 +22,14 @@ import pytest
 import torch
 import torch.nn as nn
 
-from zoo.orca import OrcaContext
-from zoo.orca.data.pandas import read_csv
-from zoo.orca.learn.metrics import Accuracy
+from bigdl.orca import OrcaContext
+from bigdl.orca.data.pandas import read_csv
+from bigdl.orca.learn.metrics import Accuracy
 
 from zoo import init_nncontext
-from zoo.orca.learn.pytorch import Estimator
-from zoo.orca.data import SparkXShards
-from zoo.orca.data.image.utils import chunks
+from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.data.image.utils import chunks
 
 
 np.random.seed(1337)  # for reproducibility
@@ -176,7 +176,7 @@ class TestPyTorchEstimator(TestCase):
 
     def test_spark_xshards(self):
         from zoo import init_nncontext
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
         estimator = get_estimator(workers_per_node=1)
         sc = init_nncontext()
         x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
@@ -209,7 +209,7 @@ class TestPyTorchEstimator(TestCase):
                            label_cols=["label"])
 
     def test_dataframe_shard_size_train_eval(self):
-        from zoo.orca import OrcaContext
+        from bigdl.orca import OrcaContext
         OrcaContext._shard_size = 30
         sc = init_nncontext()
         rdd = sc.range(0, 100)

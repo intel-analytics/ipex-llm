@@ -20,8 +20,8 @@ import shutil
 import pytest
 from unittest import TestCase
 import os
-from zoo.orca.data.image.parquet_dataset import ParquetDataset, read_parquet
-from zoo.orca.data.image.utils import DType, FeatureType, SchemaField
+from bigdl.orca.data.image.parquet_dataset import ParquetDataset, read_parquet
+from bigdl.orca.data.image.utils import DType, FeatureType, SchemaField
 import tensorflow as tf
 
 from zoo.ray import RayContext
@@ -106,7 +106,7 @@ class TestReadParquet(TestCase):
             shutil.rmtree(temp_dir)
 
     def test_parquet_images_training(self):
-        from zoo.orca.learn.tf2 import Estimator
+        from bigdl.orca.learn.tf2 import Estimator
         temp_dir = tempfile.mkdtemp()
         try:
             ParquetDataset.write("file://" + temp_dir, images_generator(), images_schema)

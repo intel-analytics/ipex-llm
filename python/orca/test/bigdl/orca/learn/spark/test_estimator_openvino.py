@@ -22,8 +22,8 @@ import numpy as np
 from bigdl.dataset.base import maybe_download
 
 from zoo import init_nncontext
-from zoo.orca.data import SparkXShards
-from zoo.orca.learn.openvino import Estimator
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.learn.openvino import Estimator
 
 property_path = os.path.join(os.path.split(__file__)[0],
                              "../../../../../../zoo/target/classes/app.properties")

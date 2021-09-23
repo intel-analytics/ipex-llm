@@ -21,11 +21,11 @@ import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset
 
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca.learn.pytorch import Estimator
-from zoo.orca.learn.optimizers import Adam
-from zoo.orca.learn.metrics import *
-from zoo.orca.learn.trigger import EveryEpoch
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.optimizers import Adam
+from bigdl.orca.learn.metrics import *
+from bigdl.orca.learn.trigger import EveryEpoch
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 

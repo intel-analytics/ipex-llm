@@ -14,16 +14,16 @@
 # limitations under the License.
 #
 from zoo.common.utils import enable_multi_fs_load, enable_multi_fs_save
-from zoo.orca.data.utils import row_to_sample, xshard_to_sample
-from zoo.orca.learn.utils import convert_predict_rdd_to_dataframe, bigdl_metric_results_to_dict, \
+from bigdl.orca.data.utils import row_to_sample, xshard_to_sample
+from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe, bigdl_metric_results_to_dict, \
     process_xshards_of_pandas_dataframe
 from zoo.pipeline.estimator.estimator import Estimator as SparkEstimator
-from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
-from zoo.orca.learn.pytorch.training_operator import TrainingOperator
-from zoo.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
-from zoo.orca.learn.optimizers import Optimizer as OrcaOptimizer, SGD
-from zoo.orca.learn.metrics import Accuracy
-from zoo.orca.data import SparkXShards
+from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
+from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
+from bigdl.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
+from bigdl.orca.learn.optimizers import Optimizer as OrcaOptimizer, SGD
+from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.data import SparkXShards
 from bigdl.optim.optimizer import MaxEpoch, OptimMethod
 from zoo.feature.common import FeatureSet
 from torch.optim.optimizer import Optimizer as TorchOptimizer
@@ -125,7 +125,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
 
-        from zoo.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
+        from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
         self.estimator = PyTorchRayEstimator(model_creator=model_creator,
                                              optimizer_creator=optimizer_creator,
                                              loss_creator=loss_creator,
@@ -278,7 +278,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                 return model(self.config)
             model = model_creator(self)
         if self.optimizer is None:
-            from zoo.orca.learn.optimizers.schedule import Default
+            from bigdl.orca.learn.optimizers.schedule import Default
             self.optimizer = SGD(learningrate_schedule=Default()).get_optimizer()
         elif isinstance(self.optimizer, TorchOptimizer):
             self.optimizer = TorchOptim.from_pytorch(self.optimizer)
@@ -286,7 +286,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             self.optimizer = self.optimizer.get_optimizer()
         else:
             raise ValueError("Only PyTorch optimizer and orca optimizer are supported")
-        from zoo.orca.learn.metrics import Metric
+        from bigdl.orca.learn.metrics import Metric
         self.metrics = Metric.convert_metrics_list(metrics)
         self.log_dir = None
         self.app_name = None
@@ -357,7 +357,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         :param checkpoint_trigger: Orca Trigger to set a checkpoint.
         :return: The trained estimator object.
         """
-        from zoo.orca.learn.trigger import Trigger
+        from bigdl.orca.learn.trigger import Trigger
 
         end_trigger = MaxEpoch(epochs)
         if isinstance(data, DataLoader):
@@ -418,11 +418,11 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                  is a dictionary of {'prediction': result}, where result is a numpy array or a list
                  of numpy arrays.
         """
-        from zoo.orca.learn.utils import convert_predict_rdd_to_xshard
+        from bigdl.orca.learn.utils import convert_predict_rdd_to_xshard
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols)
-            from zoo.orca.data.utils import xshard_to_sample
+            from bigdl.orca.data.utils import xshard_to_sample
             data_rdd = data.rdd.flatMap(xshard_to_sample)
 
         elif isinstance(data, DataFrame):
@@ -458,7 +458,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         :param validation_metrics: Orca validation metrics to be computed on validation_data.
         :return: validation results.
         """
-        from zoo.orca.data.utils import xshard_to_sample
+        from bigdl.orca.data.utils import xshard_to_sample
 
         assert data is not None, "validation data shouldn't be None"
         assert self.metrics is not None, "metrics shouldn't be None, please specify the metrics" \
@@ -572,7 +572,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         import os
         from bigdl.nn.layer import Model
         from bigdl.optim.optimizer import OptimMethod
-        from zoo.orca.learn.utils import find_latest_checkpoint
+        from bigdl.orca.learn.utils import find_latest_checkpoint
         from zoo.pipeline.api.torch import TorchModel
 
         if version is None:

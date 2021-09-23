@@ -15,7 +15,7 @@
 #
 
 from abc import abstractmethod
-from zoo.orca.learn.base_estimator import BaseEstimator
+from bigdl.orca.learn.base_estimator import BaseEstimator
 
 
 class Estimator(BaseEstimator):
@@ -33,7 +33,7 @@ class Estimator(BaseEstimator):
         :param validation_data: validation data. Validation data type should be the same
         as train data.
         :param checkpoint_trigger: when to trigger checkpoint during training.
-        Should be a zoo.orca.learn.trigger, like EveryEpoch(), SeveralIteration(num_iterations),etc.
+        Should be a bigdl.orca.learn.trigger, like EveryEpoch(), SeveralIteration(num_iterations),etc.
         """
         raise NotImplementedError
 

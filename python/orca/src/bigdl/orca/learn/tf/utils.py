@@ -17,7 +17,7 @@
 import tensorflow as tf
 
 from zoo.tfpark.tf_dataset import TFDataset
-from zoo.orca.data.utils import get_spec, flatten_xy
+from bigdl.orca.data.utils import get_spec, flatten_xy
 
 
 def xshards_to_tf_dataset(data_shard,

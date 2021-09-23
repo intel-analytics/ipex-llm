@@ -21,7 +21,7 @@ from pyspark.sql import SparkSession
 
 @pytest.fixture(autouse=True, scope='package')
 def orca_context_fixture():
-    from zoo.orca import init_orca_context, stop_orca_context
+    from bigdl.orca import init_orca_context, stop_orca_context
     sc = init_orca_context(cores=8)
 
     def to_array_(v):

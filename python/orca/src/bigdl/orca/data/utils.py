@@ -295,7 +295,7 @@ def _convert_list_tuple(data, allow_tuple, allow_list):
 
 
 def process_spark_xshards(spark_xshards, num_workers):
-    from zoo.orca.data.ray_xshards import RayXShards
+    from bigdl.orca.data.ray_xshards import RayXShards
     data = spark_xshards
     ray_xshards = RayXShards.from_spark_xshards(data)
     return ray_xshards

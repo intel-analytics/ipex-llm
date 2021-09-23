@@ -21,11 +21,11 @@ import subprocess
 import ray
 from dmlc_tracker.tracker import get_host_ip
 
-from zoo.orca.data.utils import ray_partitions_get_data_label, process_spark_xshards
+from bigdl.orca.data.utils import ray_partitions_get_data_label, process_spark_xshards
 from zoo.ray import RayContext
-from zoo.orca.learn.mxnet.mxnet_runner import MXNetRunner
-from zoo.orca.learn.mxnet.utils import find_free_port
-from zoo.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
+from bigdl.orca.learn.mxnet.mxnet_runner import MXNetRunner
+from bigdl.orca.learn.mxnet.utils import find_free_port
+from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 
 
 def partition_refs_to_creator(partition_refs, shuffle=False):
@@ -189,7 +189,7 @@ class MXNetEstimator(OrcaRayEstimator):
             assert self.validation_metrics_creator,\
                 "Metrics not defined for validation, please specify validation_metrics_creator " \
                 "when creating the Estimator"
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
         if isinstance(data, SparkXShards):
 
             ray_xshards = process_spark_xshards(data, self.num_workers)

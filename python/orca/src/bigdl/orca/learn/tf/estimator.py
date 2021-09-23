@@ -20,12 +20,12 @@ from bigdl.optim.optimizer import MaxEpoch
 from zoo.tfpark.tf_dataset import _standardize_keras_target_data
 from zoo.common.utils import enable_multi_fs_load, enable_multi_fs_load_static, \
     enable_multi_fs_save
-from zoo.orca import OrcaContext
-from zoo.orca.data.tf.data import Dataset, TFDataDataset2
-from zoo.orca.data import SparkXShards
-from zoo.orca.learn.tf.utils import *
-from zoo.orca.learn.trigger import Trigger
-from zoo.orca.learn.utils import find_latest_checkpoint, convert_predict_rdd_to_xshard, \
+from bigdl.orca import OrcaContext
+from bigdl.orca.data.tf.data import Dataset, TFDataDataset2
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.learn.tf.utils import *
+from bigdl.orca.learn.trigger import Trigger
+from bigdl.orca.learn.utils import find_latest_checkpoint, convert_predict_rdd_to_xshard, \
     convert_predict_rdd_to_dataframe, process_xshards_of_pandas_dataframe
 from zoo.tfpark import KerasModel
 from zoo.tfpark import TFOptimizer, TFNet, ZooOptimizer
@@ -33,7 +33,7 @@ from zoo.tfpark.tf_optimizer import StatelessMetric
 from zoo.tfpark.utils import evaluate_metrics
 from zoo.util import nest
 from zoo.util.tf import save_tf_checkpoint, load_tf_checkpoint
-from zoo.orca.learn.spark_estimator import Estimator as SparkEstimator
+from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 
 
 class Estimator(SparkEstimator):
@@ -59,7 +59,7 @@ class Estimator(SparkEstimator):
         :param session_config: tensorflow session configuration for training.
                Should be object of tf.ConfigProto
         :param checkpoint_trigger: when to trigger checkpoint during training.
-               Should be a zoo.orca.learn.trigger, like EveryEpoch(), SeveralIteration(
+               Should be a bigdl.orca.learn.trigger, like EveryEpoch(), SeveralIteration(
                num_iterations),etc.
         :param auto_shard_files: whether to automatically detect if the dataset is file-based and
                and apply sharding on files, otherwise sharding on records. Default is False.
@@ -436,7 +436,7 @@ class TensorFlowEstimator(Estimator):
         self.clip_norm = clip_norm
         self.clip_value = clip_value
         if optimizer is not None:
-            from zoo.orca.learn.optimizers import Optimizer
+            from bigdl.orca.learn.optimizers import Optimizer
             if isinstance(optimizer, Optimizer):
                 self.train_op = None
                 self.optimizer = optimizer.get_optimizer()
@@ -517,7 +517,7 @@ class TensorFlowEstimator(Estimator):
                the tuple is the value to feed to the tensor in training phase and the second one
                is the value to feed to the tensor in validation phase.
         :param checkpoint_trigger: when to trigger checkpoint during training.
-               Should be a zoo.orca.learn.trigger, like EveryEpoch(), SeveralIteration(
+               Should be a bigdl.orca.learn.trigger, like EveryEpoch(), SeveralIteration(
                num_iterations),etc.
         """
 
@@ -779,7 +779,7 @@ class KerasEstimator(Estimator):
         self.metrics = metrics
         self.tf_optimizer = None
         self.optimizer = optimizer
-        from zoo.orca.learn.optimizers import Optimizer
+        from bigdl.orca.learn.optimizers import Optimizer
         if self.optimizer is not None and isinstance(self.optimizer, Optimizer):
             self.optimizer = self.optimizer.get_optimizer()
         self.log_dir = None
@@ -818,7 +818,7 @@ class KerasEstimator(Estimator):
         :param session_config: tensorflow session configuration for training.
                Should be object of tf.ConfigProto
         :param checkpoint_trigger: when to trigger checkpoint during training.
-               Should be a zoo.orca.learn.trigger, like EveryEpoch(), SeveralIteration(
+               Should be a bigdl.orca.learn.trigger, like EveryEpoch(), SeveralIteration(
                num_iterations),etc.
         :param auto_shard_files: whether to automatically detect if the dataset is file-based and
                and apply sharding on files, otherwise sharding on records. Default is False.

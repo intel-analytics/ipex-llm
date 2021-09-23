@@ -18,7 +18,7 @@ from zoo.examples.orca.learn.horovod.pytorch_estimator import (model_creator,
                                                                scheduler_creator,
                                                                train_data_creator,
                                                                validation_data_creator)
-from zoo.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.pytorch import Estimator
 from unittest import TestCase
 import pytest
 import torch

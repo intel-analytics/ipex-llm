@@ -42,11 +42,11 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 import ray
-from zoo.orca import OrcaContext
-from zoo.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
-from zoo.orca.learn.pytorch.training_operator import TrainingOperator
-from zoo.orca.learn.pytorch import utils
-from zoo.orca.learn.pytorch.utils import find_free_port
+from bigdl.orca import OrcaContext
+from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
+from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
+from bigdl.orca.learn.pytorch import utils
+from bigdl.orca.learn.pytorch.utils import find_free_port
 
 logger = logging.getLogger(__name__)
 

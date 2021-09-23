@@ -22,10 +22,10 @@ import pytest
 import numpy as np
 from pyspark.sql.types import ArrayType, DoubleType
 
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca.data import SparkXShards
-from zoo.orca.data.image.utils import chunks
-from zoo.orca.learn.utils import convert_predict_rdd_to_dataframe, _dataframe_to_xshards, \
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.data.image.utils import chunks
+from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe, _dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, convert_predict_rdd_to_xshard, update_predict_xshards
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
@@ -170,7 +170,7 @@ class TestUtil(TestCase):
         assert result_df.selectExpr(expr).first()["error"] == 0
 
     def test_array2dict(self):
-        from zoo.orca.learn.utils import arrays2dict
+        from bigdl.orca.learn.utils import arrays2dict
         record_num = 100
         shard_size = 30
         data = [(np.float32(np.random.randn(1, 50)), np.float32([np.random.randint(0, 2,)]))
@@ -186,7 +186,7 @@ class TestUtil(TestCase):
                 assert d['y'].shape[0] == record_num % shard_size
 
     def test_array2dict_shard_size_none(self):
-        from zoo.orca.learn.utils import arrays2dict
+        from bigdl.orca.learn.utils import arrays2dict
         record_num = 100
         data = [(np.float32(np.random.randn(1, 50)), np.float32([np.random.randint(0, 2,)]))
                 for i in range(record_num)]
@@ -206,7 +206,7 @@ class TestUtil(TestCase):
         num_shards = shards.rdd.count()
         assert num_shards == num_partitions
 
-        from zoo.orca import OrcaContext
+        from bigdl.orca import OrcaContext
         OrcaContext._shard_size = 1
         shards = _dataframe_to_xshards(df, feature_cols=["feature"], label_cols=["label"])
         num_shards = shards.rdd.count()

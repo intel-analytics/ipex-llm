@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-from zoo.orca.data.pandas.preprocessing import read_csv
-from zoo.orca.data.pandas.preprocessing import read_json
-from zoo.orca.data.pandas.preprocessing import read_parquet
+from bigdl.orca.data.pandas.preprocessing import read_csv
+from bigdl.orca.data.pandas.preprocessing import read_json
+from bigdl.orca.data.pandas.preprocessing import read_parquet

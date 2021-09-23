@@ -18,12 +18,12 @@ from pyspark import SparkContext
 from pyspark.sql import SparkSession
 
 from zoo import init_nncontext
-from zoo.orca.data import SparkXShards
-from zoo.orca.data.file import open_text, write_text
-from zoo.orca.data.image.utils import chunks, dict_to_row, row_to_dict, encode_schema, \
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.data.file import open_text, write_text
+from bigdl.orca.data.image.utils import chunks, dict_to_row, row_to_dict, encode_schema, \
     decode_schema, SchemaField, FeatureType, DType, ndarray_dtype_to_dtype, \
     decode_feature_type_ndarray, pa_fs
-from zoo.orca.data.image.voc_dataset import VOCDatasets
+from bigdl.orca.data.image.voc_dataset import VOCDatasets
 from bigdl.util.common import get_node_and_core_number
 import os
 import numpy as np
@@ -123,7 +123,7 @@ class ParquetDataset:
         :param path:
         :return:
         """
-        from zoo.orca.data.tf.data import Dataset
+        from bigdl.orca.data.tf.data import Dataset
         xshards = ParquetDataset._read_as_xshards(path)
         return Dataset.from_tensor_slices(xshards)
 

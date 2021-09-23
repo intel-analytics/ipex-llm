@@ -21,10 +21,10 @@ import numbers
 import torch
 import numpy as np
 
-from zoo.orca.data.ray_xshards import RayXShards
-from zoo.orca.learn.pytorch.training_operator import TrainingOperator
-from zoo.orca.learn.pytorch.torch_runner import TorchRunner
-from zoo.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
+from bigdl.orca.data.ray_xshards import RayXShards
+from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
+from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
+from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
 from zoo.ray import RayContext
@@ -56,7 +56,7 @@ def check_for_failure(remote_values):
 def partition_refs_to_creator(partition_refs):
 
     def data_creator(config, batch_size):
-        from zoo.orca.data.utils import ray_partitions_get_data_label, index_data, get_size
+        from bigdl.orca.data.utils import ray_partitions_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
 
         class NDArrayDataset(Dataset):
@@ -161,7 +161,7 @@ class PyTorchRayEstimator:
             ])
 
         elif backend == "horovod":
-            from zoo.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
+            from bigdl.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
             self.horovod_runner = HorovodRayRunner(ray_ctx,
                                                    worker_cls=TorchRunner,
                                                    worker_param=params,
@@ -193,9 +193,9 @@ class PyTorchRayEstimator:
               label_cols=None):
         """
         See the documentation in
-        'zoo.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.fit'.
+        'bigdl.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.fit'.
         """
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
 
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
@@ -207,7 +207,7 @@ class PyTorchRayEstimator:
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
-            from zoo.orca.data.utils import process_spark_xshards
+            from bigdl.orca.data.utils import process_spark_xshards
             ray_xshards = process_spark_xshards(data, self.num_workers)
 
             def transform_func(worker, partition_refs):
@@ -275,9 +275,9 @@ class PyTorchRayEstimator:
                  label_cols=None):
         """
         See the documentation in
-        'zoo.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.evaluate'.
+        'bigdl.orca.learn.pytorch.estimator.PyTorchRayEstimatorWrapper.evaluate'.
         """
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
@@ -287,7 +287,7 @@ class PyTorchRayEstimator:
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
-            from zoo.orca.data.utils import process_spark_xshards
+            from bigdl.orca.data.utils import process_spark_xshards
             ray_xshards = process_spark_xshards(data, self.num_workers)
 
             def transform_func(worker, partition_refs):
@@ -327,7 +327,7 @@ class PyTorchRayEstimator:
                 batch_size=32,
                 feature_cols=None,
                 profile=False):
-        from zoo.orca.data import SparkXShards
+        from bigdl.orca.data import SparkXShards
         param = dict(
             batch_size=batch_size,
             profile=profile

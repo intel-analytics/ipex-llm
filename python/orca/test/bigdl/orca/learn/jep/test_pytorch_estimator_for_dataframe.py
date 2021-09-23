@@ -24,15 +24,15 @@ import numpy as np
 from pyspark.sql import SparkSession
 from pyspark.sql.types import ArrayType, DoubleType
 from pyspark.sql import SparkSession
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca.data.pandas import read_csv
-from zoo.orca.data import SparkXShards
-from zoo.orca.learn.pytorch import Estimator
-from zoo.orca.learn.metrics import Accuracy
-from zoo.orca.learn.trigger import EveryEpoch
-from zoo.orca.learn.optimizers import SGD
-from zoo.orca.learn.optimizers.schedule import Default
-from zoo.orca import OrcaContext
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data.pandas import read_csv
+from bigdl.orca.data import SparkXShards
+from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.trigger import EveryEpoch
+from bigdl.orca.learn.optimizers import SGD
+from bigdl.orca.learn.optimizers.schedule import Default
+from bigdl.orca import OrcaContext
 import tempfile
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")

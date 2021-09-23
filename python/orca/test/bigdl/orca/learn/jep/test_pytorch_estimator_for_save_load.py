@@ -22,11 +22,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca import OrcaContext
-from zoo.orca.learn.pytorch import Estimator
-from zoo.orca.learn.metrics import Accuracy
-from zoo.orca.learn.trigger import EveryEpoch
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca import OrcaContext
+from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.trigger import EveryEpoch
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
 
