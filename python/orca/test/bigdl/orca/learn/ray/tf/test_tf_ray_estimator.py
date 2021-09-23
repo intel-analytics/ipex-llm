@@ -25,7 +25,7 @@ from bigdl.orca.data import XShards
 
 import bigdl.orca.data.pandas
 from bigdl.orca.learn.tf2 import Estimator
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 import ray
 
 NUM_TRAIN_SAMPLES = 1000

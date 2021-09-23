@@ -22,7 +22,7 @@ import ray
 from dmlc_tracker.tracker import get_host_ip
 
 from bigdl.orca.data.utils import ray_partitions_get_data_label, process_spark_xshards
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 from bigdl.orca.learn.mxnet.mxnet_runner import MXNetRunner
 from bigdl.orca.learn.mxnet.utils import find_free_port
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator

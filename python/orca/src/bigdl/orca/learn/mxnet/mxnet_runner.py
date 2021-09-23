@@ -21,7 +21,7 @@ import subprocess
 import ray._private.services
 import mxnet as mx
 from mxnet import gluon
-from zoo.ray.utils import to_list
+from bigdl.orca.ray.utils import to_list
 
 
 class MXNetRunner(object):
