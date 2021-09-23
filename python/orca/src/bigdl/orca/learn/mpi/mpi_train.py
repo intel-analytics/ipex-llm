@@ -17,7 +17,7 @@
 import os
 import argparse
 import cloudpickle
-from zoo.util.utils import get_node_ip
+from bigdl.dllib.utils.utils import get_node_ip
 
 print("Worker on {} with global rank {}".format(get_node_ip(), os.environ.get("PMI_RANK", 0)))
 
