@@ -609,9 +609,9 @@ class TestEstimatorForKeras(TestCase):
 
         data_shard = data_shard.transform_shard(transform)
         from bigdl.optim.optimizer import SeveralIteration
-        from zoo.util.triggers import SeveralIteration as ZSeveralIteration
-        from zoo.util.triggers import MinLoss as ZMinLoss
-        from zoo.util.triggers import TriggerAnd as ZTriggerAnd
+        from bigdl.dllib.utils.triggers import SeveralIteration as ZSeveralIteration
+        from bigdl.dllib.utils.triggers import MinLoss as ZMinLoss
+        from bigdl.dllib.utils.triggers import TriggerAnd as ZTriggerAnd
         est = Estimator.from_keras(keras_model=model)
         OrcaContext.train_data_store = "DISK_2"
         with self.assertRaises(Exception) as context:
@@ -620,7 +620,7 @@ class TestEstimatorForKeras(TestCase):
                     epochs=10,
                     validation_data=data_shard,
                     checkpoint_trigger=SeveralIteration(2))
-        self.assertTrue('Please use a trigger defined in zoo.util.triggers'
+        self.assertTrue('Please use a trigger defined in bigdl.dllib.utils.triggers'
                         in str(context.exception))
 
         est.fit(data=data_shard,
