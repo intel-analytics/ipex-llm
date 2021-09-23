@@ -21,8 +21,8 @@ import torch
 from bigdl.nn.layer import Layer
 from bigdl.util.common import JTensor
 from zoo.common.utils import callZooFunc
-from zoo.pipeline.api.torch.utils import trainable_param
-from zoo.pipeline.api.torch import zoo_pickle_module
+from bigdl.orca.torch.utils import trainable_param
+from bigdl.orca.torch import zoo_pickle_module
 from importlib.util import find_spec
 
 if sys.version < '3.7':
