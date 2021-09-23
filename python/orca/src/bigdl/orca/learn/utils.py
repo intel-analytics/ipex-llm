@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.common.utils import get_file_list
+from bigdl.dllib.utils.file_utils import get_file_list
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
 from zoo.util.utils import convert_row_to_numpy

@@ -16,7 +16,7 @@
 
 import os
 
-from zoo.common.utils import callZooFunc
+from bigdl.dllib.utils.file_utils import callZooFunc
 
 
 def open_text(path):
