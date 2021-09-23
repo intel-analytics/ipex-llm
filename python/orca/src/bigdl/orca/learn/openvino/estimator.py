@@ -20,7 +20,7 @@ from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 from zoo import get_node_and_core_number
 from zoo.util import nest
-from zoo.common.nncontext import init_nncontext
+from bigdl.dllib.utils.nncontext import init_nncontext
 
 import numpy as np
 

@@ -15,7 +15,7 @@
 #
 
 from bigdl.orca import OrcaContext
-from zoo.common.nncontext import init_nncontext
+from bigdl.dllib.utils.nncontext import init_nncontext
 
 
 class elastic_search:
