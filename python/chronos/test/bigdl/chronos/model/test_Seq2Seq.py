@@ -21,7 +21,7 @@ import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 from zoo.chronos.model.Seq2Seq import LSTMSeq2Seq
-from zoo.chronos.feature.time_sequence import TimeSequenceFeatureTransformer
+from zoo.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
 import numpy as np

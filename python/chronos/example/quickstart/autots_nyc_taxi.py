@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 import pandas as pd
-from zoo.chronos.preprocessing.utils import train_val_test_split
+from zoo.chronos.autots.deprecated.preprocessing.utils import train_val_test_split
 from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca import OrcaContext
-from zoo.chronos.autots.forecast import AutoTSTrainer
-from zoo.chronos.config.recipe import LSTMGridRandomRecipe
-from zoo.chronos.autots.forecast import TSPipeline
+from zoo.chronos.autots.deprecated.forecast import AutoTSTrainer
+from zoo.chronos.autots.deprecated.config.recipe import LSTMGridRandomRecipe
+from zoo.chronos.autots.deprecated.forecast import TSPipeline
 import os
 import argparse
 import tempfile
