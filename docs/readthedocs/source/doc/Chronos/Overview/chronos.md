@@ -503,6 +503,7 @@ f.predict(test_tsdata_xshards, ...)
     - [Use AutoLSTM on nyc taxi dataset](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/auto_model/autolstm_nyc_taxi.py)
     - [Use AutoProphet on nyc taxi dataset](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/auto_model/autoprophet_nyc_taxi.py)
     - [High dimension time series forecasting with Chronos TCMFForecaster](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/tcmf/run_electricity.py)
+    - [Generate synthetic data with DPGANSimulator in a data-driven fashion](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/simulator)
 - Use cases
     - [Unsupervised Anomaly Detection](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)
     - [Unsupervised Anomaly Detection based on Forecasts](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)
