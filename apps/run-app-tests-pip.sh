@@ -623,10 +623,10 @@ time16=$((now-start))
 
 echo "#16 ray paramater-server time used:$time16 seconds"
 
-echo "#17 start app test for chronos-network-traffic-autots-forecasting"
+echo "#17 start app test for chronos-network-traffic-autots-forecasting-deprecated"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_deprecated
 
 FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data/data.csv"
 if [ -f "$FILENAME" ]
@@ -640,23 +640,23 @@ else
    echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
-sed -i 's/epochs=2/epochs=1/g;' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_deprecated.py
+sed -i 's/epochs=2/epochs=1/g;' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_deprecated.py
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
-python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_deprecated.py
 cd -
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
     clear_up
-    echo "chronos network-traffic-autots-forecasting failed"
+    echo "chronos network-traffic-autots-forecasting-deprecated failed"
     exit $exit_status
 fi
 now=$(date "+%s")
 time17=$((now-start))
-echo "#17 chronos-network-traffic-autots-forecasting time used:$time17 seconds"
+echo "#17 chronos-network-traffic-autots-forecasting-deprecated time used:$time17 seconds"
 
 echo "#18 start app test for chronos-network-traffic-model-forecasting"
 #timer
@@ -912,10 +912,10 @@ now=$(date "+%s")
 time24=$((now-start))
 echo "#24 chronos-stock-prediction-prophet time used:$time24 seconds"
 
-echo "#25 start app test for chronos-network-traffic-autots-forecasting-experimental"
+echo "#25 start app test for chronos-network-traffic-autots-forecasting"
 #timer
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_experimental
+${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting
 
 FILENAME="${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/data/data.csv"
 if [ -f "$FILENAME" ]
@@ -929,23 +929,23 @@ else
    echo "Finished downloading network traffic data"
 fi
 
-sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_experimental.py
-sed -i "s/cores=10/cores=4/g; s/epochs=5/epochs=1/g; s/n_sampling=4/n_sampling=1/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_experimental.py
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
+sed -i "s/cores=10/cores=4/g; s/epochs=5/epochs=1/g; s/n_sampling=4/n_sampling=1/g" ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
 cd ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/
 
-python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_experimental.py
+python ${ANALYTICS_ZOO_HOME}/../pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
 cd -
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
     clear_up
-    echo "chronos network-traffic-autots-forecasting-experimental failed"
+    echo "chronos network-traffic-autots-forecasting failed"
     exit $exit_status
 fi
 now=$(date "+%s")
 time25=$((now-start))
-echo "#25 chronos-network-traffic-autots-forecasting-experimental time used:$time25 seconds"
+echo "#25 chronos-network-traffic-autots-forecasting time used:$time25 seconds"
 
 fi
 

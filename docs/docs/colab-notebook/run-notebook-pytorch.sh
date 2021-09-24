@@ -4,7 +4,7 @@
 echo "Chronos test start"
 
 dir=${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/chronos
-pytorchFiles=("chronos_nyc_taxi_tsdataset_forecaster" "chronos_minn_traffic_anomaly_detector" "chronos_experimental_autots_nyc_taxi")
+pytorchFiles=("chronos_nyc_taxi_tsdataset_forecaster" "chronos_minn_traffic_anomaly_detector" "chronos_autots_nyc_taxi")
 index=1
 
 set -e

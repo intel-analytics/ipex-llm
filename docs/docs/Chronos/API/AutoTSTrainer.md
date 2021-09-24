@@ -8,7 +8,7 @@ It is built upon [Analytics Zoo AutoML module](https://github.com/intel-analytic
 
 ### \_\_init\_\_
 ```python
-from zoo.chronos.autots.forecast import AutoTSTrainer
+from zoo.chronos.autots.deprecated.forecast import AutoTSTrainer
 
 trainer = AutoTSTrainer(dt_col="datetime",
                          target_col="value",

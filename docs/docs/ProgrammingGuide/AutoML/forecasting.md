@@ -54,7 +54,7 @@ ray_ctx.init()
 * `future_seq_len` is how many data points ahead to predict.
 
 ```python
-from zoo.chronos.regression.time_sequence_predictor import TimeSequencePredictor
+from zoo.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
 
 tsp = TimeSequencePredictor(dt_col="datetime", target_col="value", extra_features_col=None,
                             future_seq_len=1)
@@ -92,7 +92,7 @@ pipeline.save("/tmp/saved_pipeline/my.ppl")
 * Load the _Pipeline_ object from a file
 
 ```python
-from zoo.chronos.pipeline.time_sequence import load_ts_pipeline
+from zoo.chronos.autots.deprecated.pipeline.time_sequence import load_ts_pipeline
 
 pipeline = load_ts_pipeline("/tmp/saved_pipeline/my.ppl")
 ```

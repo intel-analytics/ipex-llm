@@ -62,7 +62,7 @@ Detailed information please refer to [TSDataset API doc](https://analytics-zoo.r
 
 ```python
 import zoo.orca.automl.hp as hp
-from zoo.chronos.autots.experimental import AutoTSEstimator
+from zoo.chronos.autots import AutoTSEstimator
 auto_estimator = AutoTSEstimator(model='lstm', # the model name used for training
                                  search_space='normal', # a default hyper parameter search space
                                  past_seq_len=hp.randint(1, 10), # hp sampling function of past_seq_len for auto-tuning
@@ -101,7 +101,7 @@ print("Evaluate: the smape value is", smape)
 my_ppl_file_path = "/tmp/saved_pipeline"
 ts_pipeline.save(my_ppl_file_path)
 # restore the pipeline for further deployment
-from zoo.chronos.autots.experimental import TSPipeline
+from zoo.chronos.autots import TSPipeline
 loaded_ppl = TSPipeline.load(my_ppl_file_path)
 ```
 Detailed information please refer to [TSPipeline API doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autotsestimator.html#tspipeline-experimental).

@@ -163,7 +163,7 @@ sc = init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2, 
 Next, create an _AutoTSTrainer_.
 
 ```python
-from zoo.chronos.autots.forecast import AutoTSTrainer
+from zoo.chronos.autots.deprecated.forecast import AutoTSTrainer
 
 trainer = AutoTSTrainer(dt_col="datetime", target_col="value")
 ```

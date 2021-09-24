@@ -2,11 +2,15 @@ Chronos API
 ==================
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     autotsestimator.rst
     automodels.rst
-    autots.rst
     forecasters.rst
     anomaly_detectors.rst
     tsdataset.rst
+
+.. toctree::
+    :maxdepth: 1
+
+    autots.rst

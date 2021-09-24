@@ -242,7 +242,7 @@ def training_data_creator(config):
 `AutoTSEstimator` depends on the [Distributed Hyper-parameter Tuning](../../Orca/Overview/distribute-tuning.html) supported by Project Orca. It also provides time series only functionalities and optimization. Here is a typical initialization process.
 ```python
 import zoo.orca.automl.hp as hp
-from zoo.chronos.autots.experimental import AutoTSEstimator
+from zoo.chronos.autots import AutoTSEstimator
 auto_estimator = AutoTSEstimator(model='lstm',
                                  search_space='normal',
                                  past_seq_len=hp.randint(1, 10),
@@ -279,7 +279,7 @@ my_ppl_file_path = "/tmp/saved_pipeline"
 ts_pipeline.save(my_ppl_file_path)
 
 # restore the pipeline for further deployment
-from zoo.chronos.autots.experimental import TSPipeline
+from zoo.chronos.autots import TSPipeline
 loaded_ppl = TSPipeline.load(my_ppl_file_path)
 ```
 Detailed information please refer to [TSPipeline API doc](../../PythonAPI/Chronos/autotsestimator.html#tspipeline).

@@ -68,7 +68,7 @@ To create an AutoTSTrainer. Specify below arguments in constructor. See below ex
 * ```scheduler_params```: Optional(Dict). Necessary params of scheduler.
 
 ```python
-from zoo.chronos.autots.forecast import AutoTSTrainer
+from zoo.chronos.autots.deprecated.forecast import AutoTSTrainer
 
 trainer = AutoTSTrainer(dt_col="datetime",
                         target_col="value",
@@ -109,7 +109,7 @@ ts_pipeline.predict(test_df)
 Use ```TSPipeline.save/load``` to load from file or save to file. 
 
 ```python
-from zoo.chronos.autots.forecast import TSPipeline
+from zoo.chronos.autots.deprecated.forecast import TSPipeline
 loaded_ppl = TSPipeline.load(file)
 # ... do sth. e.g. incremental fitting
 loaded_ppl.save(another_file)

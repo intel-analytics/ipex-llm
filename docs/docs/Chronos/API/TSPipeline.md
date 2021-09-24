@@ -2,7 +2,7 @@
 
 A pipeline for time series forecasting. 
 ```python
-from zoo.chronos.autots.forecast import TSPipeline
+from zoo.chronos.autots.deprecated.forecast import TSPipeline
 ```
 __Note:__
 
@@ -52,7 +52,7 @@ evaluate(input_df,metrics=["mse"],multioutput='raw_values')
 Load and Save a TSPipeline can be used in below way.
 
 ```python
-from zoo.chronos.autots.forecast import TSPipeline
+from zoo.chronos.autots.deprecated.forecast import TSPipeline
 loaded_ppl = TSPipeline.load(file)
 # ... do sth. e.g. incremental fitting
 loaded_ppl.save(another_file)

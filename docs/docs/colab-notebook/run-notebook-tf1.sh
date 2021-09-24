@@ -41,26 +41,7 @@ fi
 now=$(date "+%s")
 time2=$((now - start))
 
-echo "#3 start test for chronos_autots_nyc_taxi.ipynb "
-if [ ! -f nyc_taxi.csv ]; then
-  wget https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv
-fi
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/chronos/chronos_autots_nyc_taxi
-sed -i '/get_ipython/s/^/#/' ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/chronos/chronos_autots_nyc_taxi.py
-start=$(date "+%s")
-python ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/chronos/chronos_autots_nyc_taxi.py
-
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "chronos_autots_nyc_taxi failed"
-  exit $exit_status
-fi
-
-now=$(date "+%s")
-time3=$((now - start))
-
-echo "#4 start test for ncf_xshards_pandas "
+echo "#3 start test for ncf_xshards_pandas "
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/orca/quickstart/ncf_xshards_pandas
 sed -i '/get_ipython/s/^/#/' ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/orca/quickstart/ncf_xshards_pandas.py
 start=$(date "+%s")
@@ -74,9 +55,9 @@ if [ $exit_status -ne 0 ]; then
 fi
 
 now=$(date "+%s")
-time4=$((now - start))
+time3=$((now - start))
 
-echo "#5 start test for basic_text_classification"
+echo "#4 start test for basic_text_classification"
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/orca/examples/basic_text_classification
 sed -i '/get_ipython/s/^/#/' ${ANALYTICS_ZOO_HOME}/docs/docs/colab-notebook/orca/examples/basic_text_classification.py
 start=$(date "+%s")
@@ -90,10 +71,9 @@ if [ $exit_status -ne 0 ]; then
 fi
 
 now=$(date "+%s")
-time5=$((now - start))
+time4=$((now - start))
 
 echo "#1 tf_lenet_mnist time used: $time1 seconds"
 echo "#2 keras_lenet_mnist time used: $time2 seconds"
-echo "#3 chronos_autots_nyc_taxi time used: $time3 seconds"
-echo "#4 ncf_xshards_pandas time used: $time4 seconds"
-echo "#5 basic_text_classification time used: $time5 seconds"
+echo "#3 ncf_xshards_pandas time used: $time3 seconds"
+echo "#4 basic_text_classification time used: $time4 seconds"
