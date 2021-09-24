@@ -257,6 +257,34 @@
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.scala-lang:scala-library</exclude>
+                                    <exclude>org.apache.spark:*</exclude>
+                                    <exclude>net.sf.py4j:*</exclude>
+                                    <exclude>org.apache.hadoop:*</exclude>
+                                    <exclude>org.apache.parquet:*</exclude>
+                                    <exclude>org.apache.orc:*</exclude>
+                                    <exclude>org.apache.avro:*</exclude>
+                                    <exclude>org.apache.ivy:*</exclude>
+                                    <exclude>org.xerial.snappy:*</exclude>
+                                    <exclude>org.glassfish.hk2:*</exclude>
+                                    <exclude>org.glassfish.jersey.core:*</exclude>
+                                    <exclude>org.codehaus.jackson:*</exclude>
+                                    <exclude>org.codehaus.janino:janino</exclude>
+                                    <exclude>io.netty:netty</exclude>
+                                    <exclude>org.apache.commons:commons-math3</exclude>
+                                    <exclude>org.apache.commons:commons-compress</exclude>
+                                    <exclude>org.scala-lang:scala-reflect</exclude>
+                                    <exclude>xerces:xercesImpl</exclude>
+                                    <exclude>org.scalanlp:*</exclude>
+                                    <exclude>net.sf.opencsv:*</exclude>
+                                    <exclude>com.github.rwl:*</exclude>
+                                    <exclude>org.spire-math:*</exclude>
+                                    <exclude>org.typelevel:*</exclude>
+                                    <exclude>com.chuusai:*</exclude>
+                                </excludes>
+                            </artifactSet>
                         </configuration>
                     </execution>
                 </executions>
