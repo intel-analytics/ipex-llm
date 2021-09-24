@@ -462,8 +462,8 @@ class DoppelGANgerGenerator(nn.Module):
             # output_feature.shape = (batch_size, feature_out_dim)
             new_output_all = []
             current_idx = 0
+            output_feature = self.mlp_rnn(out_rnn)
             for j in range(self.sample_len):
-                output_feature = self.mlp_rnn(out_rnn)
                 for k in range(len(self.feature_outputs)):
                     output = self.feature_outputs[k]
                     sub_output = output_feature[:, current_idx:current_idx+output.dim]
@@ -516,7 +516,11 @@ class DoppelGANgerGenerator(nn.Module):
         # batch_size * time * sample_len
         gen_flag_t = (gen_flag_t > 0.5).float()
         gen_flag_t = torch.unsqueeze(gen_flag_t, dim=2)
-        gen_flag_t = torch.tile(gen_flag_t, [1, 1, self.feature_out_dim])
+        # torch >= 1.8
+        # gen_flag_t = torch.tile(gen_flag_t, [1, 1, self.feature_out_dim])
+        # print("gen_flag_t old shape2:", gen_flag_t.shape)
+        # torch < 1.8
+        gen_flag_t = gen_flag_t.repeat(1, 1, self.feature_out_dim)
         # batch_size * time * (dim * sample_len)
         feature = feature * gen_flag_t
         feature = feature.view(batch_size, time * self.sample_len,
