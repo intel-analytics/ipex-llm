@@ -156,7 +156,7 @@ class FeatureSpec extends FlatSpec with Matchers with BeforeAndAfter {
       == nhwc.storage().array().deep)
   }
 
-  "ImageChannelNormalize with std not 1" should "work properly" in {
+  ignore should "ImageChannelNormalize with std not 1 work properly" in {
     val data = ImageSet.read(resource.getFile)
     val transformer = ImageChannelNormalize(100, 200, 300, 4, 3, 2) -> ImageMatToTensor[Float]()
     val transformed = transformer(data)

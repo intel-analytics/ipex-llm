@@ -128,7 +128,7 @@
     nExecutor should be(1)
   }
 
-  "readConf" should "be right" in {
+  ignore should "readConf be right" in {
     val conf = Engine.readConf
     val target = Map(
       "spark.shuffle.reduceLocality.enabled" -> "false",
@@ -142,7 +142,8 @@
     })
   }
 
-  "readConf" should "skip blockTransferService if bigdl.network.nio is set to false" in {
+  ignore should "readConf skip blockTransferService if bigdl.network.nio is" +
+    "set to false" in {
     System.setProperty("bigdl.network.nio", "false")
     val conf = Engine.readConf
     val target = Map(
