@@ -22,8 +22,10 @@ from zoo.chronos.simulator.doppelganger.data_module import DoppelGANgerDataModul
 from zoo.chronos.simulator.doppelganger.util import gen_attribute_input_noise,\
     gen_feature_input_noise, gen_feature_input_data_free, renormalize_per_sample
 from zoo.chronos.simulator.doppelganger.doppelganger_pl import DoppelGANger_pl
+from zoo.chronos.simulator.doppelganger.output import OutputType
 
 import torch
+import torch.nn.functional as F
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint
 
@@ -236,6 +238,20 @@ class DPGANSimulator:
             features, attributes, self.model.data_feature_outputs,
             self.model.data_attribute_outputs, gen_flags,
             num_real_attribute=self.num_real_attribute)  # -2 for addi attr
+
+        # post-process the attributes
+        output_list = []
+        current_idx = 0
+        for i in range(len(self.model.data_attribute_outputs)):
+            output_it = self.model.data_attribute_outputs[i]
+            if output_it.type_ == OutputType.DISCRETE:
+                sub_output = F.softmax(torch.from_numpy(attributes[:, current_idx:
+                                                                   current_idx+output_it.dim]))
+                sub_output_discrete = F.one_hot(torch.argmax(sub_output, dim=1),
+                                                num_classes=output_it.dim)
+                output_list.append(sub_output_discrete)
+            current_idx += output_it.dim
+        attributes = torch.cat(output_list, dim=1).numpy()
 
         return features, attributes, gen_flags, lengths
 
