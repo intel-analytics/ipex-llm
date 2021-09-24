@@ -81,7 +81,7 @@ def get_bigdl_packages():
 
 def setup_package():
     metadata = dict(
-        name='BigDL-dllib',
+        name='bigdl-dllib',
         version=VERSION,
         description='Distributed Deep Learning Library for Apache Spark',
         author='BigDL Authors',
