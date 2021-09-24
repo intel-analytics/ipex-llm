@@ -205,6 +205,23 @@ python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/quickstart/autots_nyc_ta
 now=$(date "+%s")
 time14=$((now-start))
 
+echo "#15 start example for chronos simulator-dpgansimulator-wwt"
+start=$(date "+%s")
+
+if [ -f ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/simulator/data_train_small.npz ]
+then
+    echo "data_train_small.npz already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/apps/doppelGANger_data/data_train_small.npz -P \
+    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/simulator/
+fi
+
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/simulator/dpgansimulator_wwt.py \
+    --datadir ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/simulator/data_train_small.npz\
+    --epoch 1 --plot_figures False
+
+now=$(date "+%s")
+time15=$((now-start))
 
 echo "Ray example tests finished"
 echo "#1 orca rl_pong time used:$time1 seconds"
@@ -221,3 +238,4 @@ echo "#11 orca autoestimator-pytorch time used:$time11 seconds"
 echo "#12 chronos autolstm_nyc_taxi time used:$time12 seconds"
 echo "#13 chronos autoprophet_nyc_taxi time used:$time13 seconds"
 echo "#14 chronos autots_nyc_taxi time used:$time14 seconds"
+echo "#15 chronos simulator-dpgansimulator-wwt time used:$time15 seconds"
