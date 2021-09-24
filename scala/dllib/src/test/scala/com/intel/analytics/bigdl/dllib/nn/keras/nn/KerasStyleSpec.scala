@@ -211,7 +211,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     }
   }
 
-  "save and reload model" should "work correctly" in {
+  ignore should "save and reload model work correctly" in {
     val input = Input[Float](inputShape = Shape(10))
     val d = Dense[Float](20).setName("dense1").inputs(input)
     val d2 = Dense[Float](5).setName("dense2").inputs(d)
@@ -225,7 +225,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val output = reloadedModel.forward(inputData)
   }
 
-  "save and reload sequential" should "work correctly" in {
+  ignore should "save and reload sequential work correctly" in {
     val kseq = KSequential[Float]()
     val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1")
     val d2 = Dense[Float](5).setName("dense2")
