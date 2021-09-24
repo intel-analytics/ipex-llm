@@ -46,6 +46,22 @@ import org.apache.spark.storage.StorageLevel
 import scala.reflect.ClassTag
 
 object PythonFeatureSet{
+
+  private[bigdl] def python[T: ClassTag](
+      dataset: Array[Byte],
+      getLoader: (Int, Int, String) => String,
+      getIterator: (String, String, Boolean) => String,
+      getNext: (String) => String,
+      inputName: String,
+      targetName: String,
+      totalSize: Int,
+      imports: String = "",
+      loaderName: String = s"loader${Integer.toHexString(java.util.UUID.randomUUID().hashCode())}"
+    ): PythonFeatureSet[T] = {
+    new PythonFeatureSet[T](dataset, getLoader, getIterator, getNext,
+      inputName, targetName, totalSize, imports)
+  }
+
   // One partition one loader
   protected def getLocalLoader(loaderName: String): String = {
     s"${loaderName}_${TaskContext.getPartitionId()}"
