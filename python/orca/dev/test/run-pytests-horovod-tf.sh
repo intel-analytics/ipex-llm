@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -16,26 +14,15 @@
 # limitations under the License.
 #
 
-# bigdl orca test only support pip, you have to install orca whl before running the script.
-#. `dirname $0`/prepare_env.sh
+set -ex
 
 cd "`dirname $0`"
-cd ../..
 
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
-#python -m pytest -v --doctest-modules ../../../../orca/src/bigdl/orca/tfpark
+ray stop -f
 
-exit_status_1=$?
-if [ $exit_status_1 -ne 0 ];
-then
-    exit $exit_status_1
-fi
-
-python -m pytest -v test/bigdl/orca/tfpark
-exit_status_2=$?
-if [ $exit_status_2 -ne 0 ];
-then
-    exit $exit_status_2
-fi
+echo "Running RayOnSpark tests"
+python -m pytest -v ../test/zoo/orca/learn/ray/tf/
+python -m pytest -v ../test/zoo/orca/data/test_read_parquet_images.py
