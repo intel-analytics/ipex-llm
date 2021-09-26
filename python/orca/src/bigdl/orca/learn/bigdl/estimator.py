@@ -347,7 +347,7 @@ class BigDLEstimator(OrcaSparkEstimator):
         if is_checkpoint:
             self.load_orca_checkpoint(checkpoint)
         else:
-            from bigdl.orca.net import Net
+            from bigdl.dllib.net import Net
             self.model = Net.load_bigdl(checkpoint + ".bigdl", checkpoint + ".bin")
 
             self.nn_estimator = NNEstimator(self.model, self.loss, self.feature_preprocessing,
