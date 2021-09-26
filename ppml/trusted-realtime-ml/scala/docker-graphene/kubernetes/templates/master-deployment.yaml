@@ -28,6 +28,8 @@ spec:
         ports:
         - containerPort: 6379
         env:
+          - name: CORE_NUM
+            value: "16"
           - name: FLINK_JOB_MANAGER_IP
             valueFrom:
               configMapKeyRef:

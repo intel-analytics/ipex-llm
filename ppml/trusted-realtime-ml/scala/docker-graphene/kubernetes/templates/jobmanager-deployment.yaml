@@ -28,7 +28,9 @@ spec:
             bash start-flink-jobmanager.sh | tee ../jobmanager.log; 
             tail -f /dev/null
 #        args: ["tail -f /dev/null"]
-        env: 
+        env:
+          - name: SGX_MEM_SIZE
+            value: "16G" 
           - name: FLINK_JOB_MANAGER_IP
             valueFrom:
               configMapKeyRef:
