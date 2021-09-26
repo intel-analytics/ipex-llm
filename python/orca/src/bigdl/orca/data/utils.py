@@ -224,7 +224,7 @@ def xshard_to_sample(data):
 
 
 def row_to_sample(row, schema, feature_cols, label_cols):
-    from bigdl.util.common import Sample
+    from bigdl.dllib.utils.common import Sample
     if label_cols:
         feature, label = convert_row_to_numpy(row, schema, feature_cols, label_cols)
         sample = Sample.from_ndarray(feature, label)

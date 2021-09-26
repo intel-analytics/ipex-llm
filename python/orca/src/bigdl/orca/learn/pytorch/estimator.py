@@ -24,7 +24,7 @@ from bigdl.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
 from bigdl.orca.learn.optimizers import Optimizer as OrcaOptimizer, SGD
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.data import SparkXShards
-from bigdl.optim.optimizer import MaxEpoch, OptimMethod
+from bigdl.dllib.optim.optimizer import MaxEpoch, OptimMethod
 from bigdl.dllib.feature.common import FeatureSet
 from torch.optim.optimizer import Optimizer as TorchOptimizer
 from torch.utils.data import DataLoader
@@ -264,7 +264,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 class PyTorchSparkEstimator(OrcaSparkEstimator):
     def __init__(self, model, loss, optimizer, config=None, metrics=None, model_dir=None,
                  bigdl_type="float"):
-        from zoo.pipeline.api.torch import TorchModel, TorchLoss, TorchOptim
+        from bigdl.orca.torch import TorchModel, TorchLoss, TorchOptim
         self.loss = loss
         self.optimizer = optimizer
         self.config = {} if config is None else config
@@ -535,7 +535,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         :return:
         """
 
-        from zoo.pipeline.api.torch import TorchModel
+        from bigdl.orca.torch import TorchModel
         import os
 
         try:
@@ -550,7 +550,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             try:
                 self.optimizer = OptimMethod.load(optim_path)
             except Exception:
-                raise ValueError("Cannot load the optimizer. Only `bigdl.optim.optimizer."
+                raise ValueError("Cannot load the optimizer. Only `bigdl.dllib.optim.optimizer."
                                  "OptimMethod` is supported for loading.")
         else:
             self.optimizer = None
@@ -570,10 +570,10 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         :return:
         """
         import os
-        from bigdl.nn.layer import Model
-        from bigdl.optim.optimizer import OptimMethod
+        from bigdl.dllib.nn.layer import Model
+        from bigdl.dllib.optim.optimizer import OptimMethod
         from bigdl.orca.learn.utils import find_latest_checkpoint
-        from zoo.pipeline.api.torch import TorchModel
+        from bigdl.orca.torch import TorchModel
 
         if version is None:
             path, prefix, version = find_latest_checkpoint(path, model_type="pytorch")
