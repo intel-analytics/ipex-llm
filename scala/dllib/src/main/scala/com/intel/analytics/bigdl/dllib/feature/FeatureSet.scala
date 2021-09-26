@@ -646,20 +646,6 @@ object DRAMFeatureSet {
 
 object FeatureSet {
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
-//  private[bigdl] def python[T: ClassTag](
-//      dataset: Array[Byte],
-//      getLoader: (Int, Int, String) => String,
-//      getIterator: (String, String, Boolean) => String,
-//      getNext: (String) => String,
-//      inputName: String,
-//      targetName: String,
-//      totalSize: Int,
-//      imports: String = "",
-//      loaderName: String = s"loader${Integer.toHexString(java.util.UUID.randomUUID().hashCode())}"
-//    ): PythonFeatureSet[T] = {
-//    new PythonFeatureSet[T](dataset, getLoader, getIterator, getNext,
-//      inputName, targetName, totalSize, imports)
-//  }
 
   def rdd[T: ClassTag](
        data: RDD[T],
