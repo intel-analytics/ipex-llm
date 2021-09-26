@@ -24,7 +24,7 @@ from bigdl.orca.data.image.utils import chunks, dict_to_row, row_to_dict, encode
     decode_schema, SchemaField, FeatureType, DType, ndarray_dtype_to_dtype, \
     decode_feature_type_ndarray, pa_fs
 from bigdl.orca.data.image.voc_dataset import VOCDatasets
-from bigdl.util.common import get_node_and_core_number
+from bigdl.dllib.utils.common import get_node_and_core_number
 import os
 import numpy as np
 import random

@@ -15,7 +15,7 @@
 #
 from pyspark.sql import DataFrame
 
-from bigdl.optim.optimizer import MaxEpoch
+from bigdl.dllib.optim.optimizer import MaxEpoch
 
 from bigdl.orca.tfpark.tf_dataset import _standardize_keras_target_data
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_load_static, \

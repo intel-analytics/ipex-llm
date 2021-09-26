@@ -17,15 +17,15 @@
 import shutil
 from unittest import TestCase
 
-from bigdl.nn.criterion import *
-from bigdl.nn.layer import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.nn.layer import *
 from pyspark.sql.types import *
 from pyspark.sql.functions import col, udf
 
 from bigdl.dllib.utils.nncontext import *
 from bigdl.dllib.feature.common import *
 from bigdl.orca.learn.bigdl import Estimator
-from bigdl.optim.optimizer import Adam, SGD, ValidationSummary
+from bigdl.dllib.optim.optimizer import Adam, SGD, ValidationSummary
 from bigdl.dllib.keras import layers as ZLayer
 from bigdl.dllib.keras.models import Model as ZModel
 from bigdl.orca.data import SparkXShards

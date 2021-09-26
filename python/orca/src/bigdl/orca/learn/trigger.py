@@ -49,7 +49,7 @@ class EveryEpoch(Trigger):
     >>> everyEpoch = EveryEpoch()
     """
     def __init__(self):
-        from bigdl.optim.optimizer import EveryEpoch
+        from bigdl.dllib.optim.optimizer import EveryEpoch
         self.trigger = EveryEpoch()
 
     def get_trigger(self):
@@ -69,7 +69,7 @@ class SeveralIteration(Trigger):
     >>> serveralIteration = SeveralIteration(2)
     """
     def __init__(self, interval):
-        from bigdl.optim.optimizer import SeveralIteration
+        from bigdl.dllib.optim.optimizer import SeveralIteration
         self.trigger = SeveralIteration(interval)
 
     def get_trigger(self):

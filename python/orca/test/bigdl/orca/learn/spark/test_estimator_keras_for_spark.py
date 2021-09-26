@@ -608,7 +608,7 @@ class TestEstimatorForKeras(TestCase):
             return result
 
         data_shard = data_shard.transform_shard(transform)
-        from bigdl.optim.optimizer import SeveralIteration
+        from bigdl.dllib.optim.optimizer import SeveralIteration
         from bigdl.dllib.utils.triggers import SeveralIteration as ZSeveralIteration
         from bigdl.dllib.utils.triggers import MinLoss as ZMinLoss
         from bigdl.dllib.utils.triggers import TriggerAnd as ZTriggerAnd
