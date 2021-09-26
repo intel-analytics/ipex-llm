@@ -30,6 +30,10 @@ spec:
                 tail -f /dev/null
 #        args: ["export FLINK_JOB_MANAGER_IP=flink-jobmanager; tail -f /dev/null"]
         env:
+          - name: CORE_NUM
+            value: "16"
+          - name: SGX_MEM_SIZE
+            value: "32G"
           - name: FLINK_JOB_MANAGER_IP
             valueFrom:
               configMapKeyRef:
