@@ -111,8 +111,6 @@ In `templates/flink-configuration-configmap.yaml`, configure `sgx.mode` to `sgx`
 		...
 		```
    - Pod resource allocation in `templates/master-deployment.yaml`
-		 
-		Note: Mount `benchmark` directory included in the test kit by adding volumes, make sure to replace `/path/to/benchmark/directory/` with path of `benchmark` directory on host.
 		```
 		...
 		env:
@@ -131,14 +129,6 @@ In `templates/flink-configuration-configmap.yaml`, configure `sgx.mode` to `sgx`
 	        sgx.intel.com/enclave: "1"
 	        sgx.intel.com/epc: 32Gi
 		...
-		volumeMounts:
-		  - name: benchmark
-	        mountPath: /ppml/trusted-realtime-ml/java/work/benchmark/
-		...
-		volumes:
-		  - name: benchmark
-	        hostPath:
-	          path: /path/to/benchmark/directory/
 		```
 
 ### Deploy Cluster Serving ###
@@ -157,6 +147,6 @@ In `templates/flink-configuration-configmap.yaml`, configure `sgx.mode` to `sgx`
 	$ kubectl exec <master-deployment-pod> -it -- bash
 	$ cd /ppml/trusted-realtime-ml/java/work/benchmark/
 	$ bash init-benchmark.sh
-	$ python3 e2e_throughput.py -n <image_num>
+	$ python3 e2e_throughput.py -n <image_num> -i ../data/ILSVRC2012_val_00000001.JPEG
 	```
 	The `e2e_throughput.py` script pushes test image for `-n` times (default 1000 if not manually set), and time the process from push images (enqueue) to retrieve all inference results (dequeue), to calculate cluster serving end-to-end throughput. The output should look like `Served xxx images in xxx sec, e2e throughput is xxx images/sec`

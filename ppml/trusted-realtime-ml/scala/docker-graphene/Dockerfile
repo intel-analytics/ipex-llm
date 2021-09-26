@@ -84,6 +84,7 @@ RUN git clone --single-branch --branch master https://github.com/intel-analytics
     mvn clean package -DskipTests -Dspark.version=${SPARK_VERSION} \
         -Dbigdl.artifactId=bigdl-SPARK_$SPARK_MAJOR_VERSION -P spark_2.4+ -Dbigdl.version=${BIGDL_VERSION}
 RUN cd /opt && \
+    wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG && \
     mkdir resnet50 && \
     cd resnet50 && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.bin/download" -O resnet_v1_50.bin && \
@@ -133,6 +134,7 @@ RUN mkdir -p /graphene && \
     mkdir -p /ppml/trusted-realtime-ml/java/work/password && \
     mkdir -p /ppml/trusted-realtime-ml/java/work/data && \
     mkdir -p /ppml/trusted-realtime-ml/java/work/models && \
+    mkdir -p /ppml/trusted-realtime-ml/java/work/benchmark && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
@@ -152,7 +154,10 @@ COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/wor
 COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar
 COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar
 COPY --from=analytics-zoo /opt/resnet50/ /ppml/trusted-realtime-ml/java/work/models/resnet50
+COPY --from=analytics-zoo /opt/ILSVRC2012_val_00000001.JPEG /ppml/trusted-realtime-ml/java/work/data/ILSVRC2012_val_00000001.JPEG
 COPY --from=analytics-zoo /analytics-zoo/scripts/cluster-serving/config.yaml /ppml/trusted-realtime-ml/java/config.yaml
+COPY --from=analytics-zoo /analytics-zoo/scripts/cluster-serving/perf-benchmark/e2e_throughput.py /ppml/trusted-realtime-ml/java/work/benchmark/e2e_throughput.py
+COPY --from=analytics-zoo /analytics-zoo/scripts/cluster-serving/perf-benchmark/requirement.yml /ppml/trusted-realtime-ml/java/work/benchmark/requirement.yml
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree && \
@@ -190,6 +195,7 @@ ADD ./init-cluster-serving.sh /ppml/trusted-realtime-ml/java/init-cluster-servin
 ADD ./start-cluster-serving-job.sh /ppml/trusted-realtime-ml/java/start-cluster-serving-job.sh
 ADD ./check-status.sh /ppml/trusted-realtime-ml/check-status.sh
 ADD ./start-all.sh /ppml/trusted-realtime-ml/start-all.sh
+ADD ./init-benchmark.sh /ppml/trusted-realtime-ml/java/work/benchmark/init-benchmark.sh
 
 RUN chmod a+x /ppml/trusted-realtime-ml/redis/init.sh && \
     chmod a+x /ppml/trusted-realtime-ml/redis/clean.sh && \
