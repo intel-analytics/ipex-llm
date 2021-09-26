@@ -239,7 +239,7 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     val loaderName: String =
       s"loader${Integer.toHexString(java.util.UUID.randomUUID().hashCode())}"
     val imports = s"""
-                     |from from bigdl.dllib.utils.nest import ptensor_to_numpy
+                     |from bigdl.dllib.utils.nest import ptensor_to_numpy
                      |import torch
                      |from torch.utils.data import DataLoader
                      |
