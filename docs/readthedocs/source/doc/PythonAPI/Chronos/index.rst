@@ -9,6 +9,7 @@ Chronos API
     forecasters.rst
     anomaly_detectors.rst
     tsdataset.rst
+    simulator.rst
 
 .. toctree::
     :maxdepth: 1
