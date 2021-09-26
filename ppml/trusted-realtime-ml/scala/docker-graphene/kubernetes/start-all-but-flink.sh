@@ -36,8 +36,8 @@ echo "http-frontend started"
 while ! nc -z $LOCAL_IP 10020; do
   sleep 1
 done
-./start-cluster-serving-job.sh &
+./start-cluster-serving-job.sh
 echo "cluster-serving-job started"
 
 
-bash /ppml/trusted-realtime-ml/check-status.sh
+bash /ppml/trusted-realtime-ml/check-status.sh redis frontend serving
