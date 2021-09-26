@@ -21,8 +21,8 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 from bigdl.orca import init_orca_context, stop_orca_context
-from zoo.chronos.config.recipe import XgbRegressorSkOptRecipe, XgbRegressorGridRandomRecipe
 from bigdl.orca.automl.xgboost import AutoXGBClassifier
+from bigdl.orca.automl import hp
 
 
 if __name__ == '__main__':
@@ -102,17 +102,17 @@ if __name__ == '__main__':
     num_rand_samples = 1
     n_estimators_range = (50, 1000)
     max_depth_range = (2, 15)
-    # max_features_range = (0.1, 0.8)
 
     config = {"tree_method": 'hist', "learning_rate": 0.1, "gamma": 0.1,
               "min_child_weight": 30, "reg_lambda": 1, "scale_pos_weight": 2,
               "subsample": 1}
 
     if opt.mode == 'skopt':
-        recipe = XgbRegressorSkOptRecipe(num_rand_samples=num_rand_samples,
-                                         n_estimators_range=n_estimators_range,
-                                         max_depth_range=max_depth_range,
-                                         ),
+        search_space = {
+            "n_estimators": hp.randint(n_estimators_range[0], n_estimators_range[1]),
+            "max_depth": hp.randint(max_depth_range[0], max_depth_range[1]),
+            "lr": hp.loguniform(1e-4, 1e-1)
+        }
         search_alg = "skopt"
         scheduler = "AsyncHyperBand"
         scheduler_params = dict(
@@ -122,10 +122,11 @@ if __name__ == '__main__':
             brackets=3,
         )
     else:
-        recipe = XgbRegressorGridRandomRecipe(num_rand_samples=num_rand_samples,
-                                              n_estimators=list(n_estimators_range),
-                                              max_depth=list(max_depth_range),
-                                              )
+        search_space = {
+            "n_estimators": hp.grid_search(list(n_estimators_range)),
+            "max_depth": hp.grid_search(list(max_depth_range)),
+            "lr": hp.loguniform(1e-4, 1e-1)
+        }
         search_alg = None
         scheduler = None
         scheduler_params = None
@@ -137,8 +138,8 @@ if __name__ == '__main__':
                      validation_data=(X_val, y_val),
                      metric="error",
                      metric_mode="min",
-                     n_sampling=recipe.num_samples,
-                     search_space=recipe.search_space(),
+                     n_sampling=num_rand_samples,
+                     search_space=search_space,
                      search_alg=search_alg,
                      search_alg_params=None,
                      scheduler=scheduler,
