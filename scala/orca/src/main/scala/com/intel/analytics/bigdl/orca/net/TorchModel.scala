@@ -56,9 +56,9 @@ class TorchModel (
          |import torch.nn.functional as F
          |import torchvision
          |import io
-         |from zoo.util.nest import ptensor_to_numpy
-         |from zoo.pipeline.api.torch.utils import trainable_param
-         |from zoo.pipeline.api.torch import zoo_pickle_module
+         |from bigdl.dllib.utils.nest import ptensor_to_numpy
+         |from bigdl.orca.torch.utils import trainable_param
+         |from bigdl.orca.torch import zoo_pickle_module
          |
          |by = bytes(b % 256 for b in model_bytes)
          |${getName()} = torch.load(io.BytesIO(by), pickle_module=zoo_pickle_module)
@@ -308,7 +308,7 @@ object TorchModel {
 
   /**
    * Get an inference-only model from a pytorch model.
-   * This model file should be save by `torch.save` with zoo.pipeline.api.torch.zoo_pickle_module.
+   * This model file should be save by `torch.save` with bigdl.orca.torch.zoo_pickle_module.
    * Like: torch.save(model, "/tmp/xxx.pt", pickle_module=zoo_pickle_module)
    * @param Path model file
    * @return TorchModel
