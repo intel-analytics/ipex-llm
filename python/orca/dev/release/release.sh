@@ -73,7 +73,7 @@ wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
 echo "Packing python distribution:   $wheel_command"
 ${wheel_command}
 
-upload_command="twine upload python/orca/src/dist/BigDL_orca-${bigdl_version}-py2.py3-none-${verbose_pname}.whl"
+upload_command="twine upload python/orca/src/dist/bigdl_orca-${bigdl_version}-py3-none-${verbose_pname}.whl"
 echo "Please manually upload with this command:  $upload_command"
 
 #$upload_command

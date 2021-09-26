@@ -16,7 +16,8 @@
 # limitations under the License.
 #
 
-. `dirname $0`/prepare_env.sh
+# bigdl orca test only support pip, you have to install orca whl before running the script.
+#. `dirname $0`/prepare_env.sh
 
 cd "`dirname $0`"
 
