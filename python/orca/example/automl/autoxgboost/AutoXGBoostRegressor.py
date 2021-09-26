@@ -19,23 +19,7 @@ import os
 from sklearn.model_selection import train_test_split
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.automl.xgboost import AutoXGBRegressor
-from zoo.chronos.config.recipe import XgbRegressorSkOptRecipe, XgbRegressorGridRandomRecipe
-from zoo.chronos.config.base import Recipe
-
-
-class XgbSigOptRecipe(Recipe):
-    def __init__(
-            self,
-            num_rand_samples=10,
-    ):
-        """
-        """
-        super(self.__class__, self).__init__()
-
-        self.num_samples = num_rand_samples
-
-    def search_space(self):
-        return dict()
+from bigdl.orca.automl import hp
 
 
 if __name__ == '__main__':
@@ -105,8 +89,7 @@ if __name__ == '__main__':
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, random_state=2)
 
-    config = {'random_state': 2,
-              'min_child_weight': 3}
+    config = {'random_state': 2}
 
     recipe = None
 
@@ -117,12 +100,12 @@ if __name__ == '__main__':
     min_child_weight = [1, 2, 3]
 
     if opt.mode == 'skopt':
-        recipe = XgbRegressorSkOptRecipe(num_rand_samples=num_rand_samples,
-                                         n_estimators_range=n_estimators_range,
-                                         max_depth_range=max_depth_range,
-                                         lr=lr,
-                                         min_child_weight=min_child_weight
-                                         )
+        search_space = {
+            "n_estimators": hp.randint(n_estimators_range[0], n_estimators_range[1]),
+            "max_depth": hp.randint(max_depth_range[0], max_depth_range[1]),
+            "lr": hp.loguniform(lr[0], lr[-1]),
+            "min_child_weight": hp.choice(min_child_weight),
+        }
         search_alg = "skopt"
         search_alg_params = None
         scheduler = "AsyncHyperBand"
@@ -177,7 +160,7 @@ if __name__ == '__main__':
             space=space,
             name=experiment_name,
             max_concurrent=1)
-        recipe = XgbSigOptRecipe(num_rand_samples=num_rand_samples)
+        search_space = dict()
         search_alg = "sigopt"
         search_alg_params = search_alg_params
         scheduler = "AsyncHyperBand"
@@ -188,12 +171,12 @@ if __name__ == '__main__':
             brackets=3,
         )
     else:
-        recipe = XgbRegressorGridRandomRecipe(
-            num_rand_samples=num_rand_samples,
-            n_estimators=list(n_estimators_range),
-            max_depth=list(max_depth_range),
-            lr=lr,
-            min_child_weight=min_child_weight)
+        search_space = {
+            "n_estimators": hp.grid_search(list(n_estimators_range)),
+            "max_depth": hp.grid_search(list(max_depth_range)),
+            "lr": hp.loguniform(1e-4, 1e-1),
+            "min_child_weight": hp.choice(min_child_weight),
+        }
         search_alg = None
         search_alg_params = None
         scheduler = None
@@ -206,8 +189,8 @@ if __name__ == '__main__':
     auto_xgb_reg.fit(data=(X_train, y_train),
                      validation_data=(X_val, y_val),
                      metric="rmse",
-                     n_sampling=recipe.num_samples,
-                     search_space=recipe.search_space(),
+                     n_sampling=num_rand_samples,
+                     search_space=search_space,
                      search_alg=search_alg,
                      search_alg_params=None,
                      scheduler=scheduler,
