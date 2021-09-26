@@ -20,6 +20,7 @@
 #. `dirname $0`/prepare_env.sh
 
 cd "`dirname $0`"
+cd ../..
 
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
@@ -32,7 +33,7 @@ then
     exit $exit_status_1
 fi
 
-python -m pytest -v ../bigdl/orca/tfpark
+python -m pytest -v test/bigdl/orca/tfpark
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
