@@ -39,18 +39,18 @@ fi
 
 ray stop -f
 
-#echo "Running orca learn ray tests"
-#python -m pytest -v ../test/zoo/orca/learn/ray \
-#       --ignore=../test/zoo/orca/learn/ray/pytorch/test_estimator_horovod_backend.py \
-#       --ignore=../test/zoo/orca/learn/ray/tf/
-#exit_status_2=$?
-#if [ $exit_status_2 -ne 0 ];
-#then
-#    exit $exit_status_2
-#fi
-#
-#ray stop -f
-#
+echo "Running orca learn ray tests"
+python -m pytest -v test/bigdl/orca/learn/ray \
+      --ignore=test/bigdl/orca/learn/ray/pytorch/test_estimator_horovod_backend.py \
+      --ignore=test/bigdl/orca/learn/ray/tf/
+exit_status_2=$?
+if [ $exit_status_2 -ne 0 ];
+then
+   exit $exit_status_2
+fi
+
+ray stop -f
+
 echo "Running orca automl tests"
 python -m pytest -v test/bigdl/orca/automl
 exit_status_3=$?
@@ -73,13 +73,13 @@ ray stop -f
 #
 #ray stop -f
 #
-#echo "Running orca data tests"
-#python -m pytest -v ../test/zoo/orca/data \
-#       --ignore=../test/zoo/orca/data/test_read_parquet_images.py
-#exit_status_5=$?
-#if [ $exit_status_5 -ne 0 ];
-#then
-#    exit $exit_status_5
-#fi
-#
-#ray stop -f
+echo "Running orca data tests"
+python -m pytest -v test/bigdl/orca/data \
+      --ignore=test/bigdl/orca/data/test_read_parquet_images.py
+exit_status_5=$?
+if [ $exit_status_5 -ne 0 ];
+then
+   exit $exit_status_5
+fi
+
+ray stop -f
