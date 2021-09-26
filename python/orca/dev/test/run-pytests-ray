@@ -20,6 +20,7 @@
 #. `dirname $0`/prepare_env.sh
 
 cd "`dirname $0`"
+cd ../..
 
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
@@ -27,9 +28,9 @@ export PYSPARK_DRIVER_PYTHON=python
 ray stop -f
 
 echo "Running RayOnSpark tests"
-python -m pytest -v ../bigdl/orca/ray/ \
-	--ignore=../bigdl/orca/ray/integration/ \
-	--ignore=../bigdl/orca/ray/test_reinit_raycontext.py
+python -m pytest -v test/bigdl/orca/ray/ \
+	--ignore=test/bigdl/orca/ray/integration/ \
+	--ignore=test/bigdl/orca/ray/test_reinit_raycontext.py
 exit_status_1=$?
 if [ $exit_status_1 -ne 0 ];
 then
@@ -51,15 +52,12 @@ ray stop -f
 #ray stop -f
 #
 echo "Running orca automl tests"
-cd ../..
 python -m pytest -v test/bigdl/orca/automl
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
 then
     exit $exit_status_3
 fi
-
-cd "`dirname $0`"
 
 ray stop -f
 
