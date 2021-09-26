@@ -60,6 +60,7 @@ cd /ppml/trusted-big-data-ml
 ./init.sh
 vim start-spark-local-pi-sgx.sh
 ```
+If you run ./init.sh meeting failure, please try to exit the container and then follow the commands of [docs of PPML](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/readthedocs/source/doc/PPML/Overview/ppml.md#21-prerequisite), and recreated the keys and password directory following those commands. Then modify those PATHs in the ./deploy-local-spark-sgx.sh, and rerun the ./deploy-local-spark-sgx.sh to build one new container. <br>
 Add these code in `start-spark-local-pi-sgx.sh`: <br>
 ```bash
 #!/bin/bash
