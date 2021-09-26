@@ -203,7 +203,7 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     val imports =
       s"""
         |import tensorflow as tf
-        |from zoo.util.nest import flatten
+        |from bigdl.dllib.utils.nest import flatten
         |sess = tf.Session()
         |""".stripMargin
     def getIterator(iterName: String, loaderName: String, train: Boolean): String = {
@@ -239,7 +239,7 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     val loaderName: String =
       s"loader${Integer.toHexString(java.util.UUID.randomUUID().hashCode())}"
     val imports = s"""
-                     |from zoo.util.nest import ptensor_to_numpy
+                     |from from bigdl.dllib.utils.nest import ptensor_to_numpy
                      |import torch
                      |from torch.utils.data import DataLoader
                      |
@@ -279,7 +279,7 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
         s"""
            |from torch.utils.data.distributed import DistributedSampler
            |from torch.utils.data.sampler import RandomSampler
-           |from zoo.pipeline.api.torch.utils import DistributedSequentialSampler
+           |from bigdl.orca.torch.utils import DistributedSequentialSampler
            |from torch.utils.data import DataLoader
            |import math
            |
