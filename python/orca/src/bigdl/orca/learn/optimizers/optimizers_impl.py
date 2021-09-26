@@ -15,7 +15,7 @@
 #
 from abc import ABC, abstractmethod
 
-from bigdl.util.common import DOUBLEMAX
+from bigdl.dllib.utils.common import DOUBLEMAX
 from bigdl.orca.learn.optimizers.schedule import Scheduler
 
 
@@ -53,7 +53,7 @@ class SGD(Optimizer):
                  learningrate_schedule=None,
                  learningrates=None,
                  weightdecays=None):
-        from bigdl.optim.optimizer import SGD as BSGD
+        from bigdl.dllib.optim.optimizer import SGD as BSGD
         assert isinstance(learningrate_schedule, Scheduler),\
             "learningrate_schedule should be an bigdl.orca.learn.optimizers.schedule.Scheduler," \
             f" but got {learningrate_schedule}"
@@ -88,7 +88,7 @@ class Adagrad(Optimizer):
                  learningrate=1e-3,
                  learningrate_decay=0.0,
                  weightdecay=0.0):
-        from bigdl.optim.optimizer import Adagrad as BAdagrad
+        from bigdl.dllib.optim.optimizer import Adagrad as BAdagrad
         self.optimizer = BAdagrad(learningrate, learningrate_decay,
                                   weightdecay, bigdl_type="float")
 
@@ -131,7 +131,7 @@ class LBFGS(Optimizer):
                  verbose=False,
                  linesearch=None,
                  linesearch_options=None):
-        from bigdl.optim.optimizer import LBFGS as BLBFGS
+        from bigdl.dllib.optim.optimizer import LBFGS as BLBFGS
         self.optimizer = BLBFGS(
             max_iter,
             max_eval,
@@ -162,7 +162,7 @@ class Adadelta(Optimizer):
     def __init__(self,
                  decayrate=0.9,
                  epsilon=1e-10):
-        from bigdl.optim.optimizer import Adadelta as BAdadelta
+        from bigdl.dllib.optim.optimizer import Adadelta as BAdadelta
         self.optimizer = BAdadelta(decayrate,
                                    epsilon,
                                    bigdl_type="float")
@@ -189,7 +189,7 @@ class Adam(Optimizer):
                  beta1=0.9,
                  beta2=0.999,
                  epsilon=1e-8):
-        from bigdl.optim.optimizer import Adam as BAdam
+        from bigdl.dllib.optim.optimizer import Adam as BAdam
         self.optimizer = BAdam(learningrate,
                                learningrate_decay,
                                beta1,
@@ -220,7 +220,7 @@ class ParallelAdam(Optimizer):
                  beta2=0.999,
                  epsilon=1e-8,
                  parallel_num=-1):
-        from bigdl.optim.optimizer import ParallelAdam as BParallelAdam
+        from bigdl.dllib.optim.optimizer import ParallelAdam as BParallelAdam
         self.optimizer = BParallelAdam(learningrate,
                                        learningrate_decay,
                                        beta1,
@@ -260,7 +260,7 @@ class Ftrl(Optimizer):
                  l1_regularization_strength=0.0,
                  l2_regularization_strength=0.0,
                  l2_shrinkage_regularization_strength=0.0):
-        from bigdl.optim.optimizer import Ftrl as BFtrl
+        from bigdl.dllib.optim.optimizer import Ftrl as BFtrl
         self.optimizer = BFtrl(learningrate,
                                learningrate_power,
                                initial_accumulator_value,
@@ -289,7 +289,7 @@ class Adamax(Optimizer):
                  beta1=0.9,
                  beta2=0.999,
                  epsilon=1e-38):
-        from bigdl.optim.optimizer import Adamax as BAdamax
+        from bigdl.dllib.optim.optimizer import Adamax as BAdamax
         self.optimizer = BAdamax(learningrate,
                                  beta1,
                                  beta2,
@@ -316,7 +316,7 @@ class RMSprop(Optimizer):
                  learningrate_decay=0.0,
                  decayrate=0.99,
                  epsilon=1e-8):
-        from bigdl.optim.optimizer import RMSprop as BRMSprop
+        from bigdl.dllib.optim.optimizer import RMSprop as BRMSprop
         self.optimizer = BRMSprop(learningrate,
                                   learningrate_decay,
                                   decayrate,

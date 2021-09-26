@@ -19,7 +19,7 @@ from bigdl.dllib.nnframes import NNEstimator, NNModel
 from bigdl.dllib.estimator import Estimator as SparkEstimator
 from bigdl.orca.learn.spark_estimator import Estimator as OrcaSparkEstimator
 from bigdl.orca.data import SparkXShards
-from bigdl.optim.optimizer import MaxEpoch
+from bigdl.dllib.optim.optimizer import MaxEpoch
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.learn.metrics import Accuracy
 from pyspark.sql.dataframe import DataFrame
@@ -83,7 +83,7 @@ class BigDLEstimator(OrcaSparkEstimator):
         self.nn_estimator = NNEstimator(self.model, self.loss, self.feature_preprocessing,
                                         self.label_preprocessing)
         if self.optimizer is None:
-            from bigdl.optim.optimizer import SGD
+            from bigdl.dllib.optim.optimizer import SGD
             self.optimizer = SGD()
         self.nn_estimator.setOptimMethod(self.optimizer)
         self.estimator = SparkEstimator(self.model, self.optimizer, self.model_dir)
@@ -147,8 +147,8 @@ class BigDLEstimator(OrcaSparkEstimator):
                 self.nn_estimator.setValidation(validation_trigger, validation_data,
                                                 self.metrics, batch_size)
             if self.log_dir is not None and self.app_name is not None:
-                from bigdl.optim.optimizer import TrainSummary
-                from bigdl.optim.optimizer import ValidationSummary
+                from bigdl.dllib.optim.optimizer import TrainSummary
+                from bigdl.dllib.optim.optimizer import ValidationSummary
                 train_summary = TrainSummary(log_dir=self.log_dir, app_name=self.app_name)
                 self.nn_estimator.setTrainSummary(train_summary)
                 val_summary = ValidationSummary(log_dir=self.log_dir, app_name=self.app_name)
@@ -260,8 +260,8 @@ class BigDLEstimator(OrcaSparkEstimator):
             self.nn_estimator.setValidation(None, None,
                                             self.metrics, batch_size)
             if self.log_dir is not None and self.app_name is not None:
-                from bigdl.optim.optimizer import TrainSummary
-                from bigdl.optim.optimizer import ValidationSummary
+                from bigdl.dllib.optim.optimizer import TrainSummary
+                from bigdl.dllib.optim.optimizer import ValidationSummary
                 val_summary = ValidationSummary(log_dir=self.log_dir, app_name=self.app_name)
                 self.nn_estimator.setValidationSummary(val_summary)
 
@@ -347,13 +347,13 @@ class BigDLEstimator(OrcaSparkEstimator):
         if is_checkpoint:
             self.load_orca_checkpoint(checkpoint)
         else:
-            from zoo.pipeline.api.net import Net
+            from bigdl.orca.net import Net
             self.model = Net.load_bigdl(checkpoint + ".bigdl", checkpoint + ".bin")
 
             self.nn_estimator = NNEstimator(self.model, self.loss, self.feature_preprocessing,
                                             self.label_preprocessing)
             if self.optimizer is None:
-                from bigdl.optim.optimizer import SGD
+                from bigdl.dllib.optim.optimizer import SGD
                 self.optimizer = SGD()
             self.nn_estimator.setOptimMethod(self.optimizer)
             self.estimator = SparkEstimator(self.model, self.optimizer, self.model_dir)
@@ -373,8 +373,8 @@ class BigDLEstimator(OrcaSparkEstimator):
         :param prefix: optimMethod prefix, for example 'optimMethod-Sequentialf53bddcc'
         :return:
         """
-        from bigdl.nn.layer import Model, Container
-        from bigdl.optim.optimizer import OptimMethod
+        from bigdl.dllib.nn.layer import Model, Container
+        from bigdl.dllib.optim.optimizer import OptimMethod
         from bigdl.orca.learn.utils import find_latest_checkpoint
         import os
 

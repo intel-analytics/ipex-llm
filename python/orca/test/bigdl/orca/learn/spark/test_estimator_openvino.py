@@ -19,7 +19,7 @@ import tempfile
 from unittest import TestCase
 
 import numpy as np
-from bigdl.dataset.base import maybe_download
+from bigdl.dllib.feature.dataset.base import maybe_download
 
 from bigdl.dllib.utils.nncontext import init_nncontext
 from bigdl.orca.data import SparkXShards

@@ -37,7 +37,7 @@ class Poly(Scheduler):
     creating: createPoly
     """
     def __init__(self, power, max_iteration):
-        from bigdl.optim.optimizer import Poly as BPoly
+        from bigdl.dllib.optim.optimizer import Poly as BPoly
         self.scheduler = BPoly(power, max_iteration)
 
     def get_scheduler(self):
@@ -57,7 +57,7 @@ class Exponential(Scheduler):
     creating: createExponential
     """
     def __init__(self, decay_step, decay_rate, stair_case=False):
-        from bigdl.optim.optimizer import Exponential as BExponential
+        from bigdl.dllib.optim.optimizer import Exponential as BExponential
         self.scheduler = BExponential(decay_step, decay_rate, stair_case)
 
     def get_scheduler(self):
@@ -78,7 +78,7 @@ class Step(Scheduler):
     creating: createStep
     """
     def __init__(self, step_size, gamma):
-        from bigdl.optim.optimizer import Step as BStep
+        from bigdl.dllib.optim.optimizer import Step as BStep
 
         self.scheduler = BStep(step_size, gamma)
 
@@ -98,7 +98,7 @@ class Default(Scheduler):
     creating: createDefault
     """
     def __init__(self):
-        from bigdl.optim.optimizer import Default as BDefault
+        from bigdl.dllib.optim.optimizer import Default as BDefault
 
         self.scheduler = BDefault()
 
@@ -135,7 +135,7 @@ class Plateau(Scheduler):
                  epsilon=1e-4,
                  cooldown=0,
                  min_lr=0.0):
-        from bigdl.optim.optimizer import Plateau as BPlateau
+        from bigdl.dllib.optim.optimizer import Plateau as BPlateau
 
         self.scheduler = BPlateau(monitor, factor, patience, mode, epsilon,
                                   cooldown, min_lr)
@@ -156,7 +156,7 @@ class Warmup(Scheduler):
     creating: createWarmup
     """
     def __init__(self, delta):
-        from bigdl.optim.optimizer import Warmup as BWarmup
+        from bigdl.dllib.optim.optimizer import Warmup as BWarmup
 
         self.scheduler = BWarmup(delta)
 
@@ -177,7 +177,7 @@ class MultiStep(Scheduler):
     creating: createMultiStep
     """
     def __init__(self, step_sizes, gamma):
-        from bigdl.optim.optimizer import MultiStep as BMultiStep
+        from bigdl.dllib.optim.optimizer import MultiStep as BMultiStep
 
         self.scheduler = BMultiStep(step_sizes, gamma)
 
@@ -201,7 +201,7 @@ class SequentialSchedule(Scheduler):
 
     """
     def __init__(self, iteration_per_epoch):
-        from bigdl.optim.optimizer import SequentialSchedule as BSequentialSchedule
+        from bigdl.dllib.optim.optimizer import SequentialSchedule as BSequentialSchedule
 
         self.scheduler = BSequentialSchedule(iteration_per_epoch)
 
