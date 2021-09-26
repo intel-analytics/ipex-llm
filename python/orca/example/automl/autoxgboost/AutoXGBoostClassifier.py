@@ -20,8 +20,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.model_selection import train_test_split
-from zoo import init_spark_on_local, init_spark_on_yarn
-from bigdl.orca.ray import RayContext
+from bigdl.orca import init_orca_context, stop_orca_context
 from zoo.chronos.config.recipe import XgbRegressorSkOptRecipe, XgbRegressorGridRandomRecipe
 from bigdl.orca.automl.xgboost import AutoXGBClassifier
 
@@ -32,13 +31,12 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--path', type=str,
                         default="./data/airline_14col.data",
                         help='Training data path')
-    parser.add_argument('--hadoop_conf', type=str,
-                        help='The path to the hadoop configuration folder. Required if you '
-                             'wish to run on yarn clusters. Otherwise, run in local mode.')
-    parser.add_argument('--conda_name', type=str,
-                        help='The name of conda environment. Required if you '
-                             'wish to run on yarn clusters.')
-    parser.add_argument('--executor_cores', type=int, default=4,
+    parser.add_argument('--cluster_mode',
+                        type=str,
+                        default='local',
+                        choices=['local', 'yarn'],
+                        help='The mode for the Spark cluster.')
+    parser.add_argument('--cores', type=int, default=4,
                         help='The number of executor cores you want to use.')
     parser.add_argument('-n', '--num_workers', type=int, default=2,
                         help='The number of workers to be launched.')
@@ -46,17 +44,13 @@ if __name__ == '__main__':
                         choices=['gridrandom', 'skopt'],
                         help='The search algorithm to use.')
     opt = parser.parse_args()
-    if opt.hadoop_conf:
-        assert opt.conda_name is not None, "conda_name must be specified for yarn mode"
-        sc = init_spark_on_yarn(
-            hadoop_conf=opt.hadoop_conf,
-            conda_name=opt.conda_name,
-            num_executors=opt.num_workers,
-            executor_cores=opt.executor_cores)
+    if opt.cluster_mode == "yarn":
+        init_orca_context(cluster_mode="yarn-client",
+                          num_nodes=opt.num_workers,
+                          cores=opt.cores,
+                          init_ray_on_spark=True)
     else:
-        sc = init_spark_on_local(cores="*")
-    ray_ctx = RayContext(sc=sc)
-    ray_ctx.init()
+        init_orca_context(cores=opt.cores, init_ray_on_spark=True)
 
     input_cols = [
         "Year",
@@ -157,3 +151,4 @@ if __name__ == '__main__':
     from bigdl.orca.automl.metrics import Evaluator
     accuracy = Evaluator.evaluate(metric="accuracy", y_true=y_val, y_pred=y_hat)
     print("Evaluate: accuracy is", accuracy)
+    stop_orca_context()
