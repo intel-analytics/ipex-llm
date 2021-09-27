@@ -28,7 +28,7 @@ from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.trigger import EveryEpoch
 from bigdl.orca.learn.optimizers import Adam
 
-resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
 
 class TestEstimatorForSparkCreator(TestCase):

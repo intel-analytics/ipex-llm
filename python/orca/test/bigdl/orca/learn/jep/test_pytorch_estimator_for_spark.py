@@ -33,7 +33,7 @@ from bigdl.orca.learn.optimizers.schedule import Default
 from bigdl.orca import OrcaContext
 import tempfile
 
-resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
 
 class TestEstimatorForSpark(TestCase):

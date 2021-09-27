@@ -23,7 +23,7 @@ from bigdl.orca.data.file import open_image, open_text, load_numpy, exists, make
 
 class TestFile:
     def setup_method(self, method):
-        self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        self.resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 
     def test_open_local_text(self):
         file_path = os.path.join(self.resource_path, "qa/relations.txt")

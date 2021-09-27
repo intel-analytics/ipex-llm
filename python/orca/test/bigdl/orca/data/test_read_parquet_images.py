@@ -26,7 +26,7 @@ import tensorflow as tf
 
 from bigdl.orca.ray import RayContext
 
-resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 WIDTH, HEIGHT, NUM_CHANNELS = 224, 224, 3
 
 

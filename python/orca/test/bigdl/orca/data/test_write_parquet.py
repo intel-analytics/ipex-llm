@@ -25,7 +25,7 @@ from bigdl.orca.data.image.utils import DType, FeatureType, SchemaField
 from bigdl.orca.learn.tf.estimator import Estimator
 from bigdl.orca.data.image import write_mnist, write_voc
 
-resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 
 
 def test_write_parquet_simple(orca_context_fixture):
