@@ -23,6 +23,7 @@ export PYSPARK_DRIVER_PYTHON=python
 
 ray stop -f
 
+cd ../../
 echo "Running RayOnSpark tests"
-python -m pytest -v ../test/zoo/orca/learn/ray/tf/
-python -m pytest -v ../test/zoo/orca/data/test_read_parquet_images.py
+python -m pytest -v test/bigdl/orca/learn/ray/tf/
+python -m pytest -v test/bigdl/orca/data/test_read_parquet_images.py
