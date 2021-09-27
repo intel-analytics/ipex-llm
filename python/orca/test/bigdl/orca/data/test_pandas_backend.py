@@ -51,7 +51,7 @@ class TestSparkXShards(TestCase):
         with self.assertRaises(Exception) as context:
             xshards = bigdl.orca.data.pandas.read_csv(file_path)
         # This error is raised by pandas.errors.ParserError
-        self.assertTrue('Error tokenizing data' in str(context.exception))
+        self.assertTrue('Error tokenizing data' in str(context.exception), str(context.exception))
 
     def test_read_local_json(self):
         file_path = os.path.join(self.resource_path, "orca/data/json")
