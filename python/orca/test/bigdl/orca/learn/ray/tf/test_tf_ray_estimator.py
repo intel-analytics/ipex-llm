@@ -34,7 +34,7 @@ NUM_TEST_SAMPLES = 400
 import os
 
 resource_path = os.path.join(
-    os.path.realpath(os.path.dirname(__file__)), "../../../../resources")
+    os.path.realpath(os.path.dirname(__file__)), "../../../resources")
 
 
 def linear_dataset(a=2, size=1000):

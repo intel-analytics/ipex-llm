@@ -257,7 +257,7 @@ class TestEstimatorForKeras(TestCase):
         assert len(mae_result) == 4
 
     def test_xshards_spark_estimator(self):
-        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
         def transform(df):
             result = {
@@ -336,7 +336,7 @@ class TestEstimatorForKeras(TestCase):
             assert (r3_c[0]["prediction"] == r2_c[0]["prediction"]).all()
 
     def test_xshards_spark_estimator_multi_inputs(self):
-        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
         def transform(df):
             result = {

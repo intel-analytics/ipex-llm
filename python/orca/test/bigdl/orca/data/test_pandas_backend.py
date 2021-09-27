@@ -30,7 +30,7 @@ from bigdl.orca.data import SparkXShards
 
 class TestSparkXShards(TestCase):
     def setup_method(self, method):
-        self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        self.resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
         OrcaContext.pandas_read_backend = "pandas"
 
     def tearDown(self):
