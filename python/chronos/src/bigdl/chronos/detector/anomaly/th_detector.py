@@ -16,7 +16,7 @@
 
 import math
 import numpy as np
-from zoo.chronos.anomaly.abstract import AnomalyDetector
+from zoo.chronos.detector.anomaly.abstract import AnomalyDetector
 
 from abc import ABC, abstractmethod
 

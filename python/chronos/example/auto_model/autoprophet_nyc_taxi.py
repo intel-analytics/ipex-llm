@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 import argparse
 
-from zoo.chronos.forecast.prophet_forecaster import ProphetForecaster
+from zoo.chronos.forecaster.prophet_forecaster import ProphetForecaster
 from zoo.chronos.autots.model.auto_prophet import AutoProphet
 from zoo.orca.common import init_orca_context, stop_orca_context
 

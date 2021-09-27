@@ -18,7 +18,7 @@ import pytest
 import numpy as np
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
-from zoo.chronos.anomaly.ae_detector import AEDetector
+from zoo.chronos.detector.anomaly.ae_detector import AEDetector
 
 
 class TestAEDetector(ZooTestCase):
