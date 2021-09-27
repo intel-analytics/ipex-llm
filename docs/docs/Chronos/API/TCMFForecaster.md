@@ -21,7 +21,7 @@ __Ubuntu 16.04 or later__ and __macOS 10.12.6 or later__.
 
 
 ```python
-from zoo.chronos.forecast.tcmf_forecaster import TCMFForecaster
+from zoo.chronos.forecaster.tcmf_forecaster import TCMFForecaster
 model = TCMFForecaster(
          vbsize=128,
          hbsize=256,

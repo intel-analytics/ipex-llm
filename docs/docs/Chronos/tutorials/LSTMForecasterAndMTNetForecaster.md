@@ -27,8 +27,8 @@ Below are some example code to create forecast models.
 
 ```python
 #import forecast models
-from zoo.chronos.forecast.lstm_forecaster import LSTMForecaster
-from zoo.chronos.forecast.mtnet_forecaster import MTNetForecaster
+from zoo.chronos.forecaster.lstm_forecaster import LSTMForecaster
+from zoo.chronos.forecaster.mtnet_forecaster import MTNetForecaster
 
 #build a lstm forecast model
 lstm_forecaster = LSTMForecaster(target_dim=1, 

@@ -39,7 +39,7 @@ df = tsdata.resample("5min")\
 Chronos provides many anomaly detector for anomaly detection, here we use DBScan as an example. More anomaly detector can be found [here](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html).
 
 ```python
-from zoo.chronos.anomaly import DBScanDetector
+from zoo.chronos.detector.anomaly import DBScanDetector
 
 ad = DBScanDetector(eps=0.3, min_samples=6)
 ad.fit(df['value'].to_numpy())

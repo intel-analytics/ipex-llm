@@ -66,7 +66,7 @@ init_orca_context(cluster_mode="yarn-client",
 ### **Step 2: Create a TCMFForecaster**
 
 ```python
-from zoo.chronos.forecast.tcmf_forecaster import TCMFForecaster
+from zoo.chronos.forecaster.tcmf_forecaster import TCMFForecaster
 model = TCMFForecaster(
         vbsize=128,
         hbsize=256,
