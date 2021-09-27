@@ -15,7 +15,7 @@
 #
 import math
 
-from zoo.pipeline.inference import InferenceModel
+from bigdl.orca.inference import InferenceModel
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 from bigdl.dllib.utils.common import get_node_and_core_number
