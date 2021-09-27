@@ -28,7 +28,7 @@ from bigdl.orca.learn.openvino import Estimator
 property_path = os.path.join(os.path.split(__file__)[0],
                              "../../../../../../zoo/target/classes/app.properties")
 data_url = "http://10.239.45.10:8081/repository/raw"
-resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
 # todo enable latter
 # with open(property_path) as f:

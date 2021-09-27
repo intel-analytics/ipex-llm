@@ -28,7 +28,7 @@ from bigdl.orca.data.image.utils import chunks
 from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe, _dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, convert_predict_rdd_to_xshard, update_predict_xshards
 
-resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 
 
 class TestUtil(TestCase):

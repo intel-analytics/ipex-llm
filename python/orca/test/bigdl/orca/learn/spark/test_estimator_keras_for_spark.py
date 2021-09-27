@@ -28,7 +28,7 @@ from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe
 
 class TestEstimatorForKeras(TestCase):
     def setup_method(self, method):
-        self.resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
         OrcaContext.train_data_store = "DRAM"
 
     def create_model(self):
