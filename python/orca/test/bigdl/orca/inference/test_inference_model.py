@@ -26,7 +26,7 @@ import tarfile
 
 np.random.seed(1337)  # for reproducibility
 
-resource_path = os.path.join(__file__, "../resources")
+resource_path = os.path.join(__file__, "../../resources")
 # property_path = os.path.join(os.path.split(__file__)[0],
 #                              "../../../../../zoo/target/classes/app.properties")
 data_url = "https://s3-ap-southeast-1.amazonaws.com"
