@@ -17,7 +17,7 @@
 from zoo.chronos.model.tcmf_model import TCMFNdarrayModelWrapper, \
     TCMFXshardsModelWrapper
 from zoo.orca.data import SparkXShards
-from zoo.chronos.forecast.abstract import Forecaster
+from zoo.chronos.forecaster.abstract import Forecaster
 
 
 class TCMFForecaster(Forecaster):
