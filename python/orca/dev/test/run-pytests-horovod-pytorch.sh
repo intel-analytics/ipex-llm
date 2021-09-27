@@ -25,8 +25,9 @@ export PYSPARK_DRIVER_PYTHON=python
 
 ray stop -f
 
+cd ../../
 echo "Running RayOnSpark tests"
-python -m pytest -v ../test/zoo/orca/learn/ray/pytorch/test_estimator_horovod_backend.py
+python -m pytest -v test/bigdl/orca/learn/ray/pytorch/test_estimator_horovod_backend.py
 
 
 # echo "Running chronos tcmf distributed test"
