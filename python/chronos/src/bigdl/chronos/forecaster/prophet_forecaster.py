@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.chronos.forecast.abstract import Forecaster
+from zoo.chronos.forecaster.abstract import Forecaster
 from zoo.chronos.model.prophet import ProphetModel
 
 

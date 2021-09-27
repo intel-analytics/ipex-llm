@@ -15,7 +15,7 @@
 #
 
 from zoo.chronos.model.MTNet_keras import MTNetKeras as MTNetKerasModel
-from zoo.chronos.forecast.tfpark_forecaster import TFParkForecaster
+from zoo.chronos.forecaster.tfpark_forecaster import TFParkForecaster
 
 
 class MTNetForecaster(TFParkForecaster):

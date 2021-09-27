@@ -19,7 +19,7 @@ import pandas as pd
 import tempfile
 import os
 
-from zoo.chronos.forecast.prophet_forecaster import ProphetForecaster
+from zoo.chronos.forecaster.prophet_forecaster import ProphetForecaster
 from unittest import TestCase
 import pytest
 

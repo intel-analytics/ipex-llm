@@ -14,21 +14,20 @@
 # limitations under the License.
 #
 
-from zoo.chronos.forecast.base_forecaster import BasePytorchForecaster
-from zoo.chronos.forecast.utils import set_pytorch_seed
-from zoo.chronos.model.Seq2Seq_pytorch import Seq2SeqPytorch
-from zoo.chronos.model.Seq2Seq_pytorch import model_creator, optimizer_creator, loss_creator
+from zoo.chronos.forecaster.base_forecaster import BasePytorchForecaster
+from zoo.chronos.forecaster.utils import set_pytorch_seed
+from zoo.chronos.model.VanillaLSTM_pytorch import VanillaLSTMPytorch
+from zoo.chronos.model.VanillaLSTM_pytorch import model_creator, optimizer_creator, loss_creator
 
 
-class Seq2SeqForecaster(BasePytorchForecaster):
+class LSTMForecaster(BasePytorchForecaster):
     """
-        Example:
-            >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
-            >>> forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                               future_seq_len=2,
-                                               input_feature_num=1,
-                                               output_feature_num=1,
-                                               ...)
+    Example:
+        >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+        >>> forecaster = LSTMForecaster(past_seq_len=24,
+                                        input_feature_num=2,
+                                        output_feature_num=2,
+                                        ...)
             >>> forecaster.fit((x_train, y_train))
             >>> forecaster.to_local()  # if you set distributed=True
             >>> test_pred = forecaster.predict(x_test)
@@ -36,14 +35,13 @@ class Seq2SeqForecaster(BasePytorchForecaster):
             >>> forecaster.save({ckpt_name})
             >>> forecaster.restore({ckpt_name})
     """
+
     def __init__(self,
                  past_seq_len,
-                 future_seq_len,
                  input_feature_num,
                  output_feature_num,
-                 lstm_hidden_dim=64,
-                 lstm_layer_num=2,
-                 teacher_forcing=False,
+                 hidden_dim=32,
+                 layer_num=1,
                  dropout=0.1,
                  optimizer="Adam",
                  loss="mse",
@@ -54,22 +52,15 @@ class Seq2SeqForecaster(BasePytorchForecaster):
                  workers_per_node=1,
                  distributed_backend="torch_distributed"):
         """
-        Build a TCN Forecast Model.
-
-        TCN Forecast may fall into local optima. Please set repo_initialization
-        to False to alleviate the issue. You can also change a random seed to
-        work around.
+        Build a LSTM Forecast Model.
 
         :param past_seq_len: Specify the history time steps (i.e. lookback).
-        :param future_seq_len: Specify the output time steps (i.e. horizon).
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
-        :param lstm_hidden_dim: LSTM hidden channel for decoder and encoder.
-               The value defaults to 64.
-        :param lstm_layer_num: LSTM layer number for decoder and encoder.
-               The value defaults to 2.
-        :param teacher_forcing: If use teacher forcing in training. The value
-               defaults to False.
+        :param hidden_dim: Specify the hidden dim of each lstm layer. The value
+               defaults to 32.
+        :param layer_num: Specify the number of lstm layer to be used. The value
+               defaults to 1.
         :param dropout: Specify the dropout close possibility (i.e. the close
                possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
@@ -97,22 +88,21 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         # config setting
         self.data_config = {
             "past_seq_len": past_seq_len,
-            "future_seq_len": future_seq_len,
+            "future_seq_len": 1,  # lstm model only supports 1 step prediction
             "input_feature_num": input_feature_num,
             "output_feature_num": output_feature_num
         }
         self.config = {
             "lr": lr,
             "loss": loss,
-            "lstm_hidden_dim": lstm_hidden_dim,
-            "lstm_layer_num": lstm_layer_num,
-            "teacher_forcing": teacher_forcing,
+            "hidden_dim": hidden_dim,
+            "layer_num": layer_num,
             "optim": optimizer,
             "dropout": dropout
         }
 
         # model creator settings
-        self.local_model = Seq2SeqPytorch
+        self.local_model = VanillaLSTMPytorch
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator

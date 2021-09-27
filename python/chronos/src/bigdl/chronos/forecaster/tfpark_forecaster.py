@@ -17,7 +17,7 @@
 from abc import ABCMeta, abstractmethod
 from zoo.tfpark import KerasModel as TFParkKerasModel
 import tensorflow as tf
-from zoo.chronos.forecast.abstract import Forecaster
+from zoo.chronos.forecaster.abstract import Forecaster
 
 
 class TFParkForecaster(TFParkKerasModel, Forecaster, metaclass=ABCMeta):
