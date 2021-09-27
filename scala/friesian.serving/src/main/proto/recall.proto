@@ -1,0 +1,42 @@
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+syntax = "proto3";
+
+option java_package = "com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall";
+option java_outer_classname = "RecallProto";
+option objc_class_prefix = "RTG";
+
+package recall;
+import "google/protobuf/empty.proto";
+
+// Interface exported by the server.
+service Recall {
+    rpc searchCandidates(Query) returns (Candidates) {}
+    rpc addItem(Item) returns (google.protobuf.Empty) {}
+    rpc getMetrics(google.protobuf.Empty) returns (ServerMessage) {}
+    rpc resetMetrics(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+}
+
+message Query {
+    int32 userID = 1;
+    int32 k = 2;
+}
+
+message Candidates {
+    repeated int32 candidate = 1;
+}
+
+message Item {
+    int32 itemID = 1;
+}
+
+message ServerMessage {
+    string str = 1;
+}
+
+
