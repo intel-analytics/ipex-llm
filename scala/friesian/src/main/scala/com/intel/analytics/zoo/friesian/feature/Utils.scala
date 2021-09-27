@@ -20,7 +20,9 @@ import java.util
 import java.util.{List => JList}
 
 import org.apache.spark.TaskContext
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.functions.{col, udf}
+import org.apache.spark.sql.types.{ArrayType, IntegerType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import scala.collection.{immutable, mutable}
@@ -258,5 +260,31 @@ private[friesian] object Utils {
     val colValue = full_rows(index).getAs[T](colName)
     val historySeq = full_rows.slice(lowerBound, index).map(row => row.getAs[T](colName))
     Seq(colValue, historySeq)
+  }
+
+  def addValueSingleCol(df: DataFrame, colName: String, mapBr: Broadcast[Map[Int, Int]],
+                        key: String, value: String): DataFrame = {
+
+    val colTypes = df.schema.fields.filter(x => x.name.equalsIgnoreCase(colName))
+    val lookup = mapBr.value
+    if(colTypes.length > 0) {
+      val colType = colTypes(0)
+      val replaceUdf = colType.dataType match {
+        case IntegerType => udf((x: Int) => lookup.getOrElse(x, 0))
+        case ArrayType(IntegerType, _) =>
+          udf((arr: WrappedArray[Int]) => arr.map(x => lookup.getOrElse(x, 0)))
+        case ArrayType(ArrayType(IntegerType, _), _) =>
+          udf((mat: WrappedArray[WrappedArray[Int]]) =>
+            mat.map(arr => arr.map(x => lookup.getOrElse(x, 0))))
+        case _ => throw new IllegalArgumentException(
+          s"Unsupported data type ${colType.dataType.typeName} " +
+            s"of column ${colType.name} in addValueFeatures")
+      }
+
+      df.withColumn(colName.replace(key, value), replaceUdf(col(colName)))
+
+    } else {
+      df
+    }
   }
 }

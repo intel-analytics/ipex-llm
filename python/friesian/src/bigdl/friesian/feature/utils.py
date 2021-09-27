@@ -74,6 +74,10 @@ def add_neg_hist_seq(df, item_size, item_history_col, neg_num):
     return callZooFunc("float", "addNegHisSeq", df, item_size, item_history_col, neg_num)
 
 
+def add_value_features(df, cols, map_df, key, value):
+    return callZooFunc("float", "addValueFeatures", df, cols, map_df, key, value)
+
+
 def mask(df, mask_cols, seq_len):
     return callZooFunc("float", "mask", df, mask_cols, seq_len)
 

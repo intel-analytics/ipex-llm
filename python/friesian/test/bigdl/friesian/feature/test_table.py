@@ -242,14 +242,13 @@ class TestTable(TestCase):
     def test_gen_reindex_mapping(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
-        feature_tbl.show(20, False)
         string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"],
                                                      freq_limit={"col_4": 1, "col_5": 1},
                                                      order_by_freq=False)
         tbl = feature_tbl.encode_string(["col_4", "col_5"], string_idx_list)
-        index_dicts = tbl.gen_reindex_mapping(["col_4", "col_5"], 2)
-        assert(index_dicts[0][2] == 1)
-        assert(index_dicts[1][2] == 1)
+        index_tbls = tbl.gen_reindex_mapping(["col_4", "col_5"], 1)
+        assert(index_tbls[0].size() == 3)
+        assert(index_tbls[1].size() == 2)
 
     def test_gen_string_idx_union(self):
         file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
@@ -557,10 +556,9 @@ class TestTable(TestCase):
             .toDF(["item", "category"]).withColumn("item", col("item").cast("Integer")) \
             .withColumn("category", col("category").cast("Integer"))
         tbl = FeatureTable(df)
-        mapping = dict([(0, 0), (1, 0), (2, 0), (3, 0), (4, 1), (5, 1), (6, 1), (8, 2), (9, 2)])
         tbl2 = tbl.add_neg_hist_seq(9, "item_hist_seq", 4)
         tbl3 = tbl2.add_value_features(["item_hist_seq", "neg_item_hist_seq"],
-                                       mapping, "item", "category")
+                                       FeatureTable(df2), "item", "category")
         assert tbl3.df.select("category_hist_seq").count() == 3
         assert tbl3.df.select("neg_category_hist_seq").count() == 3
         assert tbl3.df.filter("name like '%alice%'").select("neg_category_hist_seq").count() == 1
@@ -573,11 +571,12 @@ class TestTable(TestCase):
                                                      freq_limit={"col_4": 1, "col_5": 1},
                                                      order_by_freq=False)
         tbl_with_index = feature_tbl.encode_string(["col_4", "col_5"], string_idx_list)
-        index_dicts = tbl_with_index.gen_reindex_mapping(["col_4", "col_5"], 2)
-        reindexed = tbl_with_index.reindex(["col_4", "col_5"], index_dicts)
-        assert(reindexed.filter(col("col_4") == 0).size() == 3)
+        index_tbls = tbl_with_index.gen_reindex_mapping(["col_4", "col_5"], 2)
+
+        reindexed = tbl_with_index.reindex(["col_4", "col_5"], index_tbls)
+        assert(reindexed.filter(col("col_4") == 0).size() == 2)
         assert(reindexed.filter(col("col_4") == 1).size() == 2)
-        assert(reindexed.filter(col("col_5") == 0).size() == 2)
+        assert(reindexed.filter(col("col_5") == 0).size() == 1)
         assert(reindexed.filter(col("col_5") == 1).size() == 3)
 
     def test_pad(self):
