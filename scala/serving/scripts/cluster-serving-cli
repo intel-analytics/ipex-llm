@@ -1,0 +1,86 @@
+#!/usr/bin/python3
+
+import yaml
+import httpx
+import os
+
+jobs_yaml = "/tmp/cluster-serving-jobs.yaml"
+
+def get_flink_rest():
+    if not os.path.exists("config.yaml"):
+        raise Exception("You must in Cluster Serving working directory, "
+                        "and have config.yaml to execute the command")
+    with open("config.yaml") as f:
+        conf_dict = yaml.load(f)
+        if not conf_dict['flink']['rest']:
+            flink_rest = "http://localhost:8081"
+        else:
+            flink_rest = "http://" + conf_dict['flink']['rest']
+    print("Sending request to ", flink_rest)
+    return flink_rest
+
+def list_jobs():
+    print("Listing running Cluster Serving jobs:")
+    cnt = 0
+    if os.path.exists(jobs_yaml):
+        with open(jobs_yaml) as f:
+            running_dict = yaml.load(f)
+            for value in running_dict.values():
+                cnt += 1
+                print("Job name:", value['name'],
+                      "| Job id:", value['id'])
+    print("Cluster Serving jobs", cnt, "totally")
+
+
+def stop_job(job_name=None):
+    if os.path.exists(jobs_yaml):
+        with open(jobs_yaml) as f:
+            running_dict = yaml.load(f)
+            if not job_name:
+                os.remove(jobs_yaml)
+                for value in running_dict.values():
+                    this_name = value['name']
+                    this_id = value['id']
+                    stop_job_with_id(this_name, this_id)
+
+            else:
+                to_remove = []
+                for key in running_dict:
+                    this_id = running_dict[key]['id']
+                    this_name = running_dict[key]['name']
+                    if this_name == job_name:
+                        try:
+                            stop_job_with_id(this_name, this_id)
+                            to_remove.append(key)
+                        except Exception as e:
+                            print(e)
+                for k in to_remove:
+                    running_dict.pop(k)
+                with open(jobs_yaml, "w") as f2:
+                    yaml.dump(running_dict, f2)
+
+
+def stop_job_with_id(name, job_id):
+    flink_rest = get_flink_rest()
+    res = httpx.patch(flink_rest + "/jobs/" + job_id)
+    if res.status_code != 202:
+        print("Job", name, "could not be cancelled, please check your Flink REST config")
+        raise Exception("Cancel request to Flink REST failed.")
+    else:
+        print("Job with id", job_id, "terminated.")
+
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) == 1:
+        exit(1)
+    if (sys.argv[1] == "list"):
+        list_jobs()
+    elif (sys.argv[1] == "stop"):
+        if len(sys.argv) == 2:
+            stop_job()
+        else:
+            stop_job(sys.argv[2])
+    else:
+        raise TypeError("Not supported for command: "
+                        + sys.argv[1] + ", please refer to document.")
