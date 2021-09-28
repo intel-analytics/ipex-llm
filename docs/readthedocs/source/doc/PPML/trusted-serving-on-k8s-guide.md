@@ -10,7 +10,7 @@ Prior to deploying PPML Cluster Serving, please make sure the following is setup
 ## Deploy Trusted Realtime ML for Kubernetes ##
 1. Pull docker image from dockerhub
 	```
-	$ docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene-1.2-rc1:0.12.0-SNAPSHOT
+	$ docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.12.0-SNAPSHOT
 	```
 2. Pull the source code of Analytics Zoo and enter PPML graphene k8s directory
 	```
@@ -139,6 +139,7 @@ In `templates/flink-configuration-configmap.yaml`, configure `sgx.mode` to `sgx`
 		$ helm install ppml ./
 		```   
 2. Port forwarding
+
    Set up port forwarding of jobmanager Rest port for access to Flink WebUI on host
    1. Run `kubectl port-forward <flink-jobmanager-pod> --address 0.0.0.0 8081:8081` to forward jobmanager’s web UI port to 8081 on host.
    2. Navigate to `http://<host-IP>:8081` in web browser to check status of Flink cluster and job.
