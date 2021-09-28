@@ -22,12 +22,11 @@ echo "Running Jep tests"
 set -ex
 
 cd ../../
-# todo bigdl-2.0 enable these tests when orca is migrated
-# python -m pytest -v ../test/zoo/orca/learn/jep/test_pytorch_estimator_for_spark.py
-# python -m pytest -v ../test/zoo/orca/learn/jep/test_pytorch_estimator_for_dataloader.py
-# python -m pytest -v ../test/zoo/orca/learn/jep/test_pytorch_estimator_for_spark_creator.py
-# python -m pytest -v ../test/zoo/orca/learn/jep/test_pytorch_estimator_for_dataframe.py
-# python -m pytest -v ../test/zoo/orca/learn/jep/test_pytorch_estimator_for_save_load.py
+python -m pytest -v test/bigdl/orca/learn/jep/test_pytorch_estimator_for_spark.py
+python -m pytest -v test/bigdl/orca/learn/jep/test_pytorch_estimator_for_dataloader.py
+python -m pytest -v test/bigdl/orca/learn/jep/test_pytorch_estimator_for_spark_creator.py
+python -m pytest -v test/bigdl/orca/learn/jep/test_pytorch_estimator_for_dataframe.py
+python -m pytest -v test/bigdl/orca/learn/jep/test_pytorch_estimator_for_save_load.py
 python -m pytest -v test/bigdl/orca/torch/test_torch_estimator.py
 python -m pytest -v test/bigdl/orca/torch/test_torch.py
 python -m pytest -v test/bigdl/orca/torch/test_torch_optim.py

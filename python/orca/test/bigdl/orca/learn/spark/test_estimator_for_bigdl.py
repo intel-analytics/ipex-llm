@@ -75,70 +75,69 @@ class TestEstimatorForKeras(TestCase):
         df = self.sqlContext.createDataFrame(data, schema)
         return df
 
-    # todo bigdl-2.0 enable this after bigdl.dllib.net merged
-    # def test_nnEstimator(self):
-    #     from bigdl.dllib.nnframes import NNModel
-    #     linear_model = Sequential().add(Linear(2, 2))
-    #     mse_criterion = MSECriterion()
-    #     df, _ = self.get_estimator_df()
-    #     est = Estimator.from_bigdl(model=linear_model, loss=mse_criterion, optimizer=Adam(),
-    #                                feature_preprocessing=SeqToTensor([2]),
-    #                                label_preprocessing=SeqToTensor([2]))
-    #     res0 = est.predict(df)
-    #     res0_c = res0.collect()
-    #     est.fit(df, 2, batch_size=4)
-    #     nn_model = NNModel(est.get_model(), feature_preprocessing=SeqToTensor([2]))
-    #     res1 = nn_model.transform(df)
-    #     res2 = est.predict(df)
-    #     res1_c = res1.collect()
-    #     res2_c = res2.collect()
-    #     assert type(res1).__name__ == 'DataFrame'
-    #     assert type(res2).__name__ == 'DataFrame'
-    #     assert len(res1_c) == len(res2_c)
-    #     for idx in range(len(res1_c)):
-    #         assert res1_c[idx]["prediction"] == res2_c[idx]["prediction"]
-    #     with tempfile.TemporaryDirectory() as tempdirname:
-    #         temp_path = os.path.join(tempdirname, "model")
-    #         est.save(temp_path)
-    #         est2 = Estimator.from_bigdl(model=linear_model, loss=mse_criterion)
-    #         est2.load(temp_path, optimizer=Adam(), loss=mse_criterion,
-    #                   feature_preprocessing=SeqToTensor([2]), label_preprocessing=SeqToTensor([2]))
-    #         est2.set_constant_gradient_clipping(0.1, 1.2)
-    #         est2.clear_gradient_clipping()
-    #         res3 = est2.predict(df)
-    #         res3_c = res3.collect()
-    #         assert type(res3).__name__ == 'DataFrame'
-    #         assert len(res1_c) == len(res3_c)
-    #         for idx in range(len(res1_c)):
-    #             assert res1_c[idx]["prediction"] == res3_c[idx]["prediction"]
-    #         est2.fit(df, 4, batch_size=4)
+    def test_nnEstimator(self):
+        from bigdl.dllib.nnframes import NNModel
+        linear_model = Sequential().add(Linear(2, 2))
+        mse_criterion = MSECriterion()
+        df, _ = self.get_estimator_df()
+        est = Estimator.from_bigdl(model=linear_model, loss=mse_criterion, optimizer=Adam(),
+                                   feature_preprocessing=SeqToTensor([2]),
+                                   label_preprocessing=SeqToTensor([2]))
+        res0 = est.predict(df)
+        res0_c = res0.collect()
+        est.fit(df, 2, batch_size=4)
+        nn_model = NNModel(est.get_model(), feature_preprocessing=SeqToTensor([2]))
+        res1 = nn_model.transform(df)
+        res2 = est.predict(df)
+        res1_c = res1.collect()
+        res2_c = res2.collect()
+        assert type(res1).__name__ == 'DataFrame'
+        assert type(res2).__name__ == 'DataFrame'
+        assert len(res1_c) == len(res2_c)
+        for idx in range(len(res1_c)):
+            assert res1_c[idx]["prediction"] == res2_c[idx]["prediction"]
+        with tempfile.TemporaryDirectory() as tempdirname:
+            temp_path = os.path.join(tempdirname, "model")
+            est.save(temp_path)
+            est2 = Estimator.from_bigdl(model=linear_model, loss=mse_criterion)
+            est2.load(temp_path, optimizer=Adam(), loss=mse_criterion,
+                      feature_preprocessing=SeqToTensor([2]), label_preprocessing=SeqToTensor([2]))
+            est2.set_constant_gradient_clipping(0.1, 1.2)
+            est2.clear_gradient_clipping()
+            res3 = est2.predict(df)
+            res3_c = res3.collect()
+            assert type(res3).__name__ == 'DataFrame'
+            assert len(res1_c) == len(res3_c)
+            for idx in range(len(res1_c)):
+                assert res1_c[idx]["prediction"] == res3_c[idx]["prediction"]
+            est2.fit(df, 4, batch_size=4)
 
-    #     data = self.sc.parallelize([
-    #         ((2.0, 1.0), (1.0, 2.0)),
-    #         ((1.0, 2.0), (2.0, 1.0)),
-    #         ((2.0, 1.0), (1.0, 2.0)),
-    #         ((1.0, 2.0), (2.0, 1.0))])
-    #     data_shard = SparkXShards(data)
-    #     data_shard = data_shard.transform_shard(lambda feature_label_tuple: {
-    #         "x": np.stack([np.expand_dims(np.array(feature_label_tuple[0][0]), axis=0),
-    #                        np.expand_dims(np.array(feature_label_tuple[0][1]), axis=0)], axis=1),
-    #         "y": np.stack([np.expand_dims(np.array(feature_label_tuple[1][0]), axis=0),
-    #                        np.expand_dims(np.array(feature_label_tuple[1][1]), axis=0)], axis=1)
-    #     })
-    #     res4 = est.predict(data_shard)
-    #     res4_c = res4.collect()
-    #     assert type(res4).__name__ == 'SparkXShards'
-    #     for idx in range(len(res4_c)):
-    #         assert abs(res4_c[idx]["prediction"][0][0] - res3_c[idx]["prediction"][0]) == 0
-    #         assert abs(res4_c[idx]["prediction"][0][1] - res3_c[idx]["prediction"][1]) == 0
-    #     est.fit(data_shard, 1, batch_size=4)
-    #     res5 = est.predict(data_shard)
-    #     res5_c = res5.collect()
-    #     res6 = est.predict(df)
-    #     res6_c = res6.collect()
-    #     for idx in range(len(res5_c)):
-    #         assert abs(res5_c[idx]["prediction"][0][0] - res6_c[idx]["prediction"][0]) == 0
-    #         assert abs(res5_c[idx]["prediction"][0][1] - res6_c[idx]["prediction"][1]) == 0
+        data = self.sc.parallelize([
+            ((2.0, 1.0), (1.0, 2.0)),
+            ((1.0, 2.0), (2.0, 1.0)),
+            ((2.0, 1.0), (1.0, 2.0)),
+            ((1.0, 2.0), (2.0, 1.0))])
+        data_shard = SparkXShards(data)
+        data_shard = data_shard.transform_shard(lambda feature_label_tuple: {
+            "x": np.stack([np.expand_dims(np.array(feature_label_tuple[0][0]), axis=0),
+                           np.expand_dims(np.array(feature_label_tuple[0][1]), axis=0)], axis=1),
+            "y": np.stack([np.expand_dims(np.array(feature_label_tuple[1][0]), axis=0),
+                           np.expand_dims(np.array(feature_label_tuple[1][1]), axis=0)], axis=1)
+        })
+        res4 = est.predict(data_shard)
+        res4_c = res4.collect()
+        assert type(res4).__name__ == 'SparkXShards'
+        for idx in range(len(res4_c)):
+            assert abs(res4_c[idx]["prediction"][0][0] - res3_c[idx]["prediction"][0]) == 0
+            assert abs(res4_c[idx]["prediction"][0][1] - res3_c[idx]["prediction"][1]) == 0
+        est.fit(data_shard, 1, batch_size=4)
+        res5 = est.predict(data_shard)
+        res5_c = res5.collect()
+        res6 = est.predict(df)
+        res6_c = res6.collect()
+        for idx in range(len(res5_c)):
+            assert abs(res5_c[idx]["prediction"][0][0] - res6_c[idx]["prediction"][0]) == 0
+            assert abs(res5_c[idx]["prediction"][0][1] - res6_c[idx]["prediction"][1]) == 0
 
     def test_nnEstimator_evaluation(self):
         df = self.get_estimator_df2()
@@ -257,85 +256,84 @@ class TestEstimatorForKeras(TestCase):
         assert len(loss_result) == 5
         assert len(mae_result) == 4
 
-    # todo bigdl-2.0 enable this after bigdl.dllib.net merged
-    # def test_xshards_spark_estimator(self):
-    #     resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+    def test_xshards_spark_estimator(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
-    #     def transform(df):
-    #         result = {
-    #             "x": np.stack([df['user'].to_numpy(), df['item'].to_numpy()], axis=1),
-    #             "y": df['label'].to_numpy()
-    #         }
-    #         return result
+        def transform(df):
+            result = {
+                "x": np.stack([df['user'].to_numpy(), df['item'].to_numpy()], axis=1),
+                "y": df['label'].to_numpy()
+            }
+            return result
 
-    #     file_path = os.path.join(resource_path, "orca/learn/ncf2.csv")
-    #     data_shard = read_csv(file_path)
-    #     data_shard = data_shard.transform_shard(transform)
-    #     model = Sequential()
-    #     model.add(Linear(2, 2))
-    #     model.add(LogSoftMax())
-    #     optim_method = SGD(learningrate=0.01)
-    #     with tempfile.TemporaryDirectory() as temp_dir_name:
-    #         estimator = Estimator.from_bigdl(model=model, optimizer=optim_method,
-    #                                          loss=ClassNLLCriterion(),
-    #                                          metrics=Accuracy(),
-    #                                          model_dir=temp_dir_name,
-    #                                          feature_preprocessing=SeqToTensor([2]),
-    #                                          label_preprocessing=SeqToTensor([1]))
-    #         estimator.set_constant_gradient_clipping(0.1, 1.2)
-    #         r1 = estimator.predict(data=data_shard)
-    #         r_c = r1.collect()
-    #         estimator.set_tensorboard(log_dir=temp_dir_name, app_name="test")
-    #         estimator.fit(data=data_shard, epochs=5, batch_size=8, validation_data=data_shard,
-    #                       checkpoint_trigger=EveryEpoch())
-    #         summary = estimator.get_train_summary(tag="Loss")
-    #         temp_path = os.path.join(temp_dir_name, "save_model")
-    #         estimator.save(temp_path)
-    #         with self.assertRaises(Exception) as context:
-    #             Estimator.from_bigdl(model=model, optimizer=optim_method,
-    #                                  loss=ClassNLLCriterion(),
-    #                                  metrics=['accuracy'],
-    #                                  model_dir=temp_dir_name,
-    #                                  feature_preprocessing=SeqToTensor([2]),
-    #                                  label_preprocessing=SeqToTensor([1]))
-    #         self.assertTrue('Only orca metrics are supported, but get str' in
-    #                         str(context.exception))
-    #         eval_result = estimator.evaluate(data=data_shard,
-    #                                          batch_size=8)
-    #         assert isinstance(eval_result, dict)
-    #         result = estimator.predict(data=data_shard)
-    #         assert type(result).__name__ == 'SparkXShards'
-    #         result_c = result.collect()
-    #         df = self.get_estimator_df2()
-    #         r0 = estimator.predict(df)
-    #         r0_c = r0.collect()
-    #         assert type(r0).__name__ == 'DataFrame'
-    #         for idx in range(len(r0_c)):
-    #             assert abs(r0_c[idx]["prediction"][0] - result_c[0]["prediction"][idx][0]) <= 1e-06
-    #             assert abs(r0_c[idx]["prediction"][1] - result_c[0]["prediction"][idx][1]) <= 1e-06
-    #         estimator.fit(data=df, epochs=6, batch_size=8, validation_data=df,
-    #                       validation_trigger=EveryEpoch())
-    #         summary = estimator.get_train_summary("Loss")
+        file_path = os.path.join(resource_path, "orca/learn/ncf2.csv")
+        data_shard = read_csv(file_path)
+        data_shard = data_shard.transform_shard(transform)
+        model = Sequential()
+        model.add(Linear(2, 2))
+        model.add(LogSoftMax())
+        optim_method = SGD(learningrate=0.01)
+        with tempfile.TemporaryDirectory() as temp_dir_name:
+            estimator = Estimator.from_bigdl(model=model, optimizer=optim_method,
+                                             loss=ClassNLLCriterion(),
+                                             metrics=Accuracy(),
+                                             model_dir=temp_dir_name,
+                                             feature_preprocessing=SeqToTensor([2]),
+                                             label_preprocessing=SeqToTensor([1]))
+            estimator.set_constant_gradient_clipping(0.1, 1.2)
+            r1 = estimator.predict(data=data_shard)
+            r_c = r1.collect()
+            estimator.set_tensorboard(log_dir=temp_dir_name, app_name="test")
+            estimator.fit(data=data_shard, epochs=5, batch_size=8, validation_data=data_shard,
+                          checkpoint_trigger=EveryEpoch())
+            summary = estimator.get_train_summary(tag="Loss")
+            temp_path = os.path.join(temp_dir_name, "save_model")
+            estimator.save(temp_path)
+            with self.assertRaises(Exception) as context:
+                Estimator.from_bigdl(model=model, optimizer=optim_method,
+                                     loss=ClassNLLCriterion(),
+                                     metrics=['accuracy'],
+                                     model_dir=temp_dir_name,
+                                     feature_preprocessing=SeqToTensor([2]),
+                                     label_preprocessing=SeqToTensor([1]))
+            self.assertTrue('Only orca metrics are supported, but get str' in
+                            str(context.exception))
+            eval_result = estimator.evaluate(data=data_shard,
+                                             batch_size=8)
+            assert isinstance(eval_result, dict)
+            result = estimator.predict(data=data_shard)
+            assert type(result).__name__ == 'SparkXShards'
+            result_c = result.collect()
+            df = self.get_estimator_df2()
+            r0 = estimator.predict(df)
+            r0_c = r0.collect()
+            assert type(r0).__name__ == 'DataFrame'
+            for idx in range(len(r0_c)):
+                assert abs(r0_c[idx]["prediction"][0] - result_c[0]["prediction"][idx][0]) <= 1e-06
+                assert abs(r0_c[idx]["prediction"][1] - result_c[0]["prediction"][idx][1]) <= 1e-06
+            estimator.fit(data=df, epochs=6, batch_size=8, validation_data=df,
+                          validation_trigger=EveryEpoch())
+            summary = estimator.get_train_summary("Loss")
 
-    #         # test load from checkpoint
-    #         est2 = Estimator.from_bigdl(model=Sequential(), optimizer=None, loss=None,
-    #                                     metrics=[Accuracy()],
-    #                                     model_dir=None)
-    #         est2.load(temp_dir_name, loss=ClassNLLCriterion(), is_checkpoint=True)
-    #         r2 = est2.predict(data=data_shard)
-    #         r2_c = r2.collect()
-    #         assert (result_c[0]["prediction"] == r2_c[0]["prediction"]).all()
-    #         # resume training
-    #         est2.fit(data=data_shard, epochs=10, batch_size=8, validation_data=data_shard,
-    #                  checkpoint_trigger=EveryEpoch())
-    #         est2.evaluate(data=data_shard, batch_size=8)
-    #         # test load from saved model
-    #         est3 = Estimator.from_bigdl(model=Sequential(), optimizer=None, loss=None,
-    #                                     model_dir=None)
-    #         est3.load(temp_path, optimizer=optim_method, loss=ClassNLLCriterion())
-    #         r3 = est3.predict(data=data_shard)
-    #         r3_c = r3.collect()
-    #         assert (r3_c[0]["prediction"] == r2_c[0]["prediction"]).all()
+            # test load from checkpoint
+            est2 = Estimator.from_bigdl(model=Sequential(), optimizer=None, loss=None,
+                                        metrics=[Accuracy()],
+                                        model_dir=None)
+            est2.load(temp_dir_name, loss=ClassNLLCriterion(), is_checkpoint=True)
+            r2 = est2.predict(data=data_shard)
+            r2_c = r2.collect()
+            assert (result_c[0]["prediction"] == r2_c[0]["prediction"]).all()
+            # resume training
+            est2.fit(data=data_shard, epochs=10, batch_size=8, validation_data=data_shard,
+                     checkpoint_trigger=EveryEpoch())
+            est2.evaluate(data=data_shard, batch_size=8)
+            # test load from saved model
+            est3 = Estimator.from_bigdl(model=Sequential(), optimizer=None, loss=None,
+                                        model_dir=None)
+            est3.load(temp_path, optimizer=optim_method, loss=ClassNLLCriterion())
+            r3 = est3.predict(data=data_shard)
+            r3_c = r3.collect()
+            assert (r3_c[0]["prediction"] == r2_c[0]["prediction"]).all()
 
     def test_xshards_spark_estimator_multi_inputs(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
