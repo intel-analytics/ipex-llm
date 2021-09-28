@@ -15,6 +15,7 @@
 #
 
 import os
+import sys
 import hashlib
 import numpy as np
 from functools import reduce
@@ -1273,19 +1274,22 @@ class FeatureTable(Table):
         df = add_negative_samples(self.df, item_size, item_col, label_col, neg_num)
         return FeatureTable(df)
 
-    def add_hist_seq(self, cols, user_col, sort_col='time', min_len=1, max_len=100):
+    def add_hist_seq(self, cols, user_col, sort_col='time',
+                     min_len=1, max_len=100, num_seqs=2147483647):
         """
-        Generate a list of item visits in history
+        Add a column of history visits into table.
 
         :param cols: a list of str, columns need to be aggregated
         :param user_col: str, user column.
         :param sort_col: str, sort by sort_col
-        :param min_len: int, minimal length of a history list
-        :param max_len: int, maximal length of a history list
+        :param min_len: int, minimal length of a history seq
+        :param max_len: int, maximal length of a history seq
+        :param num_seqs: int, default is 2147483647, max 4bite integer,
+         it means to to keep all seqs; it only keeps last one if num_seqs=1.
 
         :return: FeatureTable
         """
-        df = add_hist_seq(self.df, cols, user_col, sort_col, min_len, max_len)
+        df = add_hist_seq(self.df, cols, user_col, sort_col, min_len, max_len, num_seqs)
         return FeatureTable(df)
 
     def add_neg_hist_seq(self, item_size, item_history_col, neg_num):
