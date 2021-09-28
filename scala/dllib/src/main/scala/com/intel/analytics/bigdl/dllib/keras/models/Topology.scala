@@ -1810,60 +1810,61 @@ object InternalDistriOptimizer {
                             trainingModel: Module[T])(implicit ev: TensorNumeric[T])
   : Module[T] = {
 
-    trainingModel match {
-      // uncomment when migrating TFTrainingHelperV2 and TorchModel
-//      case _: TFTrainingHelperV2 =>
-//        val partitionNum = models.partitions.length
-//        models.mapPartitions(iter => {
-//          iter.next().localModels.head.asInstanceOf[TFTrainingHelperV2].moveWeightsOutOfTF()
-//          Iterator.single(1)
-//        }).reduce(_ + _)
-//
-//        val extraParamLength = models.map(_.localModels.head.getExtraParameter().length).first()
-//        val extraState = new Array[Tensor[T]](extraParamLength)
-//        (0 until extraParamLength).foreach(i =>
-//          extraState(i) = models.map(_.localModels.head.getExtraParameter()(i)).first()
-//        )
-// //        val extraState = models.map(_.localModels.head.getExtraParameter()).first()
-//        trainingModel.setExtraParameter(extraState)
-//
-//        // make sure gradient is as the same length as weight
-//        val parameterArray = trainingModel.parameters()
-//        (0 until parameterArray._2.length).foreach(i =>
-//          parameterArray._2(i).resizeAs(parameterArray._1(i))
-//        )
-//
-//        val (parameter, gradientParameter) =
-//          InternalOptimizerUtil.getParametersFromModel(trainingModel)
-//
-//        val (weights, gradients) = models.mapPartitions(iter => {
-//          val cached = iter.next()
-//          val curPartitionId = TaskContext.getPartitionId()
-//          val (offset, size) =
-//            InternalOptimizerUtil.getLocalPartitionRangeFromParameters(parameters)
-//          val weightTensor = Tensor[T](size)
-//          weightTensor.copy(cached.modelWeights.head.narrow(1, offset, size))
-//          Iterator.single((Map(curPartitionId -> weightTensor),
-//            Map(curPartitionId -> parameters.gradientPartition)))
-//        }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
-//
-//        val taskSize = parameters.size / partitionNum
-//        require(taskSize != 0, "parameter length should not less than partition number")
-//        val extraSize = parameters.size % partitionNum
-//
-//        (0 until partitionNum).map(pid => {
-//          val start = parameters.paramOffset + pid * taskSize + math.min(pid, extraSize)
-//          val length = taskSize + (if (pid < extraSize) 1 else 0)
-//          parameter.narrow(1, start, length).copy(weights(pid))
-//          gradientParameter.narrow(1, start, length).copy(gradients(pid))
-//        })
-//      case model: TorchModel =>
-//        // TODO: delete this when switch to bigdl 0.11.0 and TorchModel override
-      //         setExtraParameters
-//        InternalOptimizerUtil.getTorchModel(
-//          models, parameters, model)
-      case _ =>
-        InternalOptimizerUtil.getModel(models, parameters, trainingModel)
+    if (trainingModel.isTensorFlow()) {
+
+      // We have a special treatment here for TFTraingingHelperV2, which currently is the
+      // only class that isTensorFlow() evaluates to true.
+      // TFTrainingHelperV2 uses AllReduceParameter to sync gradient, not weights, so we cannot
+      // get weight partitions from it. We need to get the weights directly from model.
+      // The different code section is commented below.
+      val partitionNum = models.partitions.length
+      models.mapPartitions(iter => {
+        iter.next().localModels.head.beforeGetModel()
+        Iterator.single(1)
+      }).reduce(_ + _)
+
+      val extraParamLength = models.map(_.localModels.head.getExtraParameter().length).first()
+      val extraState = new Array[Tensor[T]](extraParamLength)
+      (0 until extraParamLength).foreach(i =>
+        extraState(i) = models.map(_.localModels.head.getExtraParameter()(i)).first()
+      )
+      trainingModel.setExtraParameter(extraState)
+
+      // make sure gradient is as the same length as weight
+      val parameterArray = trainingModel.parameters()
+      (0 until parameterArray._2.length).foreach(i =>
+        parameterArray._2(i).resizeAs(parameterArray._1(i))
+      )
+
+      val (parameter, gradientParameter) =
+        InternalOptimizerUtil.getParametersFromModel(trainingModel)
+
+      val (weights, gradients) = models.mapPartitions(iter => {
+        val cached = iter.next()
+        val curPartitionId = TaskContext.getPartitionId()
+        // different code section from regular getModel
+        // section start
+        val (offset, size) =
+          InternalOptimizerUtil.getLocalPartitionRangeFromParameters(parameters)
+        val weightTensor = Tensor[T](size)
+        weightTensor.copy(cached.modelWeights.head.narrow(1, offset, size))
+        Iterator.single((Map(curPartitionId -> weightTensor),
+          Map(curPartitionId -> parameters.gradientPartition)))
+        // section end
+      }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
+
+      val taskSize = parameters.size / partitionNum
+      require(taskSize != 0, "parameter length should not less than partition number")
+      val extraSize = parameters.size % partitionNum
+
+      (0 until partitionNum).map(pid => {
+        val start = parameters.paramOffset + pid * taskSize + math.min(pid, extraSize)
+        val length = taskSize + (if (pid < extraSize) 1 else 0)
+        parameter.narrow(1, start, length).copy(weights(pid))
+        gradientParameter.narrow(1, start, length).copy(gradients(pid))
+      })
+    } else {
+      InternalOptimizerUtil.getModel(models, parameters, trainingModel)
     }
     trainingModel
   }
