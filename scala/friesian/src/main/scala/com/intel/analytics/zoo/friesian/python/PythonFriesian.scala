@@ -235,7 +235,8 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
                  userCol: String,
                  timeCol: String,
                  minLength: Int,
-                 maxLength: Int): DataFrame = {
+                 maxLength: Int,
+                 nunSeqs: Int = Int.MaxValue): DataFrame = {
 
     df.sparkSession.conf.set("spark.sql.legacy.allowUntypedScalaUDF", "true")
     val colNames: Array[String] = cols.asScala.toArray
@@ -251,39 +252,46 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     val genHisUDF = udf(f = (his_collect: Seq[Row]) => {
 
       val full_rows: Array[Row] = his_collect.sortBy(x => x.getAs[Long](timeCol)).toArray
-
       val n = full_rows.length
 
-      val result: Seq[Row] = (minLength to n - 1).map(i => {
-        val lowerBound = if (i < maxLength) {
-          0
-        } else {
-          i - maxLength
-        }
+      val couples: Seq[(Int, Int)] = {
+        (minLength to n - 1).map(i => {
+          val lowerBound = if (i < maxLength) {
+            0
+          } else {
+            i - maxLength
+          }
+          (lowerBound, i)
+        })
+      }
 
+
+      val result: Seq[Row] = couples.takeRight(nunSeqs).map(x => {
         val rowValue: Array[Any] = colsWithType.flatMap(col => {
           if (colNames.contains(col.name)) {
             col.dataType.typeName match {
-              case "integer" => Utils.get1row[Int](full_rows, col.name, i, lowerBound)
-              case "double" => Utils.get1row[Double](full_rows, col.name, i, lowerBound)
-              case "float" => Utils.get1row[Float](full_rows, col.name, i, lowerBound)
-              case "long" => Utils.get1row[Long](full_rows, col.name, i, lowerBound)
+              case "integer" => Utils.get1row[Int](full_rows, col.name, x._2, x._1)
+              case "double" => Utils.get1row[Double](full_rows, col.name, x._2, x._1)
+              case "float" => Utils.get1row[Float](full_rows, col.name, x._2, x._1)
+              case "long" => Utils.get1row[Long](full_rows, col.name, x._2, x._1)
               case _ => throw new IllegalArgumentException(
                 s"Unsupported data type ${col.dataType.typeName} " +
                   s"of column ${col.name} in add_hist_seq")
             }
           } else {
-            val colValue: Any = full_rows(i).getAs(col.name)
+            val colValue: Any = full_rows(x._2).getAs(col.name)
             Seq(colValue)
           }
         })
         Row.fromSeq(rowValue)
       })
+
       result
     }, schema)
 
     val allColumns = colsWithType.map(x => col(x.name))
     df.groupBy(userCol).agg(collect_list(struct(allColumns: _*)).as("friesian_his_collect"))
+      .filter("size(friesian_his_collect) > 1")
       .withColumn("friesian_history", explode(genHisUDF(col("friesian_his_collect"))))
       .select(userCol, "friesian_history.*")
   }
