@@ -64,42 +64,6 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     testResultArray.toList.asJava
   }
 
-  def newGraph(model: NetUtils[T, _],
-               outputs: JList[String]): NetUtils[T, _] = {
-    model.newGraph(outputs.asScala).asInstanceOf[NetUtils[T, _]]
-  }
-
-  def freezeUpTo(model: NetUtils[T, _], names: JList[String]): Unit = {
-    model.freezeUpTo(names.asScala: _*)
-  }
-
-  def netLoadBigDL(
-                    modulePath: String,
-                    weightPath : String): AbstractModule[Activity, Activity, T] = {
-    Net.loadBigDL[T](modulePath, weightPath)
-  }
-
-//  def netLoadCaffe(
-//                    defPath: String,
-//                    modelPath : String): AbstractModule[Activity, Activity, T] = {
-//    Net.loadCaffe[T](defPath, modelPath)
-//  }
-
-  def netLoad(
-               modulePath: String,
-               weightPath : String): AbstractModule[Activity, Activity, T] = {
-    Net.load[T](modulePath, weightPath)
-  }
-
-  def netLoadTorch(
-                    path: String): AbstractModule[Activity, Activity, T] = {
-    Net.loadTorch[T](path)
-  }
-
-  def netToKeras(value: NetUtils[T, _]): KerasLayer[Activity, Activity, T] = {
-    value.toKeras()
-  }
-
   def createTFNet(
                    path: String,
                    inputNames: JList[String],
