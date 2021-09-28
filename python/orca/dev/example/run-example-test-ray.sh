@@ -221,6 +221,22 @@ python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/simulator/dpgansimulator
 now=$(date "+%s")
 time15=$((now-start))
 
+echo "#16 start example for chronos distributed_training_network_traffic"
+start=$(date "+%s")
+
+if [ -f ~/.chronos/dataset/network_traffic/network_traffic_data.csv ]
+then
+    echo "network_traffic_data.csv already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ~/.chronos/dataset/network_traffic/
+    mv ~/.chronos/dataset/network_traffic/data.csv ~/.chronos/dataset/network_traffic/network_traffic_data.csv
+fi
+
+python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/chronos/examples/distributed/distributed_training_network_traffic.py
+
+now=$(date "+%s")
+time16=$((now-start))
+
 echo "Ray example tests finished"
 echo "#1 orca rl_pong time used:$time1 seconds"
 echo "#2 orca async_parameter_server time used:$time2 seconds"
@@ -237,3 +253,4 @@ echo "#12 chronos autolstm_nyc_taxi time used:$time12 seconds"
 echo "#13 chronos autoprophet_nyc_taxi time used:$time13 seconds"
 echo "#14 chronos autots_nyc_taxi time used:$time14 seconds"
 echo "#15 chronos simulator-dpgansimulator-wwt time used:$time15 seconds"
+echo "#16 chronos distributed_training_network_traffic time used:$time16 seconds"
