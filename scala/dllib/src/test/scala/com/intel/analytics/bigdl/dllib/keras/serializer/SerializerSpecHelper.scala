@@ -80,7 +80,7 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
     val filterBuilder = new FilterBuilder()
     val reflectionsBuilder = new ConfigurationBuilder()
       .filterInputsBy(filterBuilder)
-    reflectionsBuilder.addUrls(ClasspathHelper.forPackage("com.intel.analytics.bigdl.nn"))
+    reflectionsBuilder.addUrls(ClasspathHelper.forPackage("com.intel.analytics.bigdl.dllib.nn"))
     getPackagesForTest().foreach {p =>
       reflectionsBuilder.addUrls(ClasspathHelper.forPackage(p))
     }

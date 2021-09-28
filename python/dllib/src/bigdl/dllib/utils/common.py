@@ -74,6 +74,7 @@ class JavaCreator(SingletonMixin):
         "com.intel.analytics.bigdl.dllib.feature.python.PythonFeatureSet",
         "com.intel.analytics.bigdl.dllib.keras.python.PythonZooKeras",
         "com.intel.analytics.bigdl.dllib.keras.python.PythonAutoGrad",
+        "com.intel.analytics.bigdl.dllib.net.python.PythonDllibNet",
         "com.intel.analytics.bigdl.dllib.estimator.python.PythonEstimator"
     ]
 
