@@ -19,6 +19,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.analytics.bigdl</groupId>
+            <artifactId>bigdl-dllib</artifactId>
+            <version>0.14.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-orca</artifactId>
             <version>0.14.0-SNAPSHOT</version>
