@@ -34,9 +34,6 @@ class TestPublicDataset(ZooTestCase):
         public_data = PublicDataset(name, path, redownload=False, with_split=False)
 
         # illegle input.
-        with pytest.raises(OSError):
-            PublicDataset(name, path, redownload=True).get_public_data(chunk_size=1024)
-
         with pytest.raises(AssertionError):
             PublicDataset(name, path, redownload=False).get_public_data(chunk_size='1024')
 
