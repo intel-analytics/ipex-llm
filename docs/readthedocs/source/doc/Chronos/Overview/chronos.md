@@ -5,9 +5,10 @@ _Chronos_ is an application framework for building large-scale time series analy
 
 You can use _Chronos_ to do:
 
-- Data pre/post-processing and feature generation (using [TSDataset](#data-processing-and-feature-engineering))
-- Time Series Forecasting (using [Standalone Forecasters](#use-standalone-forecaster-pipeline) or [AutoTS](#use-autots-pipeline) (AutoML enabled pipelines))
-- Anomaly Detection (using [Anomaly Detectors](#anomaly-detection))
+- **Data pre/post-processing and feature generation** (using [TSDataset](#data-processing-and-feature-engineering))
+- **Time Series Forecasting** (using [Standalone Forecasters](#use-standalone-forecaster-pipeline), [Auto Models](#use-auto-forecasting-model) (with HPO) or [AutoTS](#use-autots-pipeline) (full AutoML enabled pipelines))
+- **Anomaly Detection** (using [Anomaly Detectors](#anomaly-detection))
+- **Synthetic Data Generation** (using [Simulators](#generate-synthetic-data))
 
 ---
 ### **2 Install**
@@ -115,7 +116,7 @@ A time series dataset needs to be sampling and exporting as numpy ndarray/datalo
     You don't need to call any sampling or exporting methods introduced in this section when using `AutoTSEstimator`.
 ```
 ##### **4.6.1 Roll sampling**
-Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.to_numpy) or pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.to_torch_data_loader).
+Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.to_numpy) or pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.to_torch_data_loader).
 
 ```eval_rst
 .. note:: 
@@ -399,11 +400,25 @@ DBScanDetector uses DBSCAN clustering algortihm for anomaly detection.
 View anomaly detection [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb) and [DBScanDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-dbscan-detector) for more details.
 
 ---
-### **7 Useful Functionalities**
+### **7 Generate Synthetic Data**
+
+Chronos provides simulators to generate synthetic time series data for users who want to conquer limited data access in a deep learning/machine learning project or only want to generate some synthetic data to play with.
+
+```eval_rst
+.. note::
+    DPGANSimulator is the only simulator chronos provides at the moment, more simulators are on their way.
+```
+
+#### **7.1 DPGANSimulator**
+`DPGANSimulator` adopt DoppelGANger raised in [Using GANs for Sharing Networked Time Series Data: Challenges, Initial Promise, and Open Questions](http://arxiv.org/abs/1909.13403). The method is data-driven unsupervised method based on deep learning model with GAN (Generative Adversarial Networks) structure. The model features a pair of seperate attribute generator and feature generator and their corresponding discriminators `DPGANSimulator` also supports a rich and comprehensive input data (training data) format and outperform other algorithms in many evalution metrics.
+
+Users may refer to detailed [API doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/simulator.html#module-zoo.chronos.simulator.doppelganger_simulator).
+
+---
+### **8 Useful Functionalities**
 
 <span id="Visualization"></span>
-
-#### **7.1 AutoML Visualization**
+#### **8.1 AutoML Visualization**
 
 AutoML visualization provides two kinds of visualization. You may use them while fitting on auto models or AutoTS pipeline.
 * During the searching process, the visualizations of each trail are shown and updated every 30 seconds. (Monitor view)
@@ -453,7 +468,7 @@ You can enable a tensorboard view in jupyter notebook by the following code.
 %tensorboard --logdir <logs_dir>/<name>_leaderboard/
 ```
 
-#### **7.2 ONNX/ONNX Runtime support**
+#### **8.2 ONNX/ONNX Runtime support**
 Users may export their trained(w/wo auto tuning) model to ONNX file and deploy it on other service. Chronos also provides an internal onnxruntime inference support for those **users who pursue low latency and higher throughput during inference on a single node**.
 
 LSTM, TCN and Seq2seq has supported onnx in their forecasters, auto models and AutoTS. When users use these built-in models, they may call `predict_with_onnx`/`evaluate_with_onnx` for prediction or evaluation. They may also call `export_onnx_file` to export the onnx model file and `build_onnx` to change the onnxruntime's setting(not necessary).
@@ -463,7 +478,7 @@ f = Forecaster(...)
 f.fit(...)
 f.predict_with_onnx(...)
 ```
-#### **7.3 Distributed training**
+#### **8.3 Distributed training**
 LSTM, TCN and Seq2seq users can easily train their forecasters in a distributed fashion to **handle extra large dataset and utilize a cluster**. The functionality is powered by Project Orca.
 ```python
 f = Forecaster(..., distributed=True)
@@ -472,7 +487,7 @@ f.predict(...)
 f.to_local()  # collect the forecaster to single node
 f.predict_with_onnx(...)  # onnxruntime only supports single node
 ```
-#### **7.4 XShardsTSDataset**
+#### **8.4 XShardsTSDataset**
 ```eval_rst
 .. warning::
     `XShardsTSDataset` is still experimental.
@@ -494,7 +509,7 @@ f.fit(tsdata_xshards, ...)
 f.predict(test_tsdata_xshards, ...)
 ```
 
-### **8 Examples and Demos**
+### **9 Examples and Demos**
 - Quickstarts
     - [Use AutoTSEstimator for Time-Series Forecasting](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html)
     - [Use TSDataset and Forecaster for Time-Series Forecasting](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.html)
