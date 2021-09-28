@@ -1,0 +1,25 @@
+#!/bin/bash
+
+
+# try call py script
+# pip install will add following script to path, but no pip would not
+cluster-serving-py-setup.py &&
+
+if [ -f config.yaml ]; then
+  echo "Cluster Serving config file prepared."
+else
+  echo "Failed to find config file. Initialization failed."
+fi
+
+if mv *-serving.jar zoo.jar ; then
+    echo "Cluster Serving environment set up. Initialization success."
+else
+  if [ -f zoo.jar ]; then
+    echo "Cluster Serving environment already set up. Initialization success."
+  else
+    echo "Failed to find *-serving jar or zoo.jar in current directory, will download it... If this is too slow, please go to Analytics Zoo repo to download it manually."
+    download-serving-jar.sh
+  fi
+fi
+
+
