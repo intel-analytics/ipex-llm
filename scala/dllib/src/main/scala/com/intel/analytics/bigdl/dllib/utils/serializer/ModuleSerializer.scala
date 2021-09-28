@@ -231,9 +231,9 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.dllib.nn.CAddTable", CAddTable)
     registerModule("com.intel.analytics.bigdl.dllib.nn.StaticGraph", Graph)
     registerModule("com.intel.analytics.bigdl.dllib.nn.DynamicGraph", Graph)
-    registerModule("com.intel.analytics.bigdl.dllib.keras.Model", Model)
-    registerModule("com.intel.analytics.bigdl.dllib.keras.Sequential", KSequential)
-    registerModule("com.intel.analytics.bigdl.dllib.keras.layers.KerasLayerWrapper",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.keras.Model", Model)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.keras.Sequential", KSequential)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.keras.layers.KerasLayerWrapper",
       KerasLayerSerializer)
     registerModule("com.intel.analytics.bigdl.dllib.nn.MapTable", MapTable)
     registerModule("com.intel.analytics.bigdl.dllib.nn.Maxout", Maxout)

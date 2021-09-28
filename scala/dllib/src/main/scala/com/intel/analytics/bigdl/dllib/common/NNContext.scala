@@ -184,7 +184,7 @@ object NNContext {
   }
 
   /**
-   * Read spark conf values from spark-analytics-zoo.conf
+   * Read spark conf values from spark-bigdl.conf
    */
   private[bigdl] def readConf: Seq[(String, String)] = {
     val stream: InputStream = getClass.getResourceAsStream("/spark-bigdl.conf")
