@@ -13,3 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from bigdl.dllib.utils.engine import prepare_env
+prepare_env()

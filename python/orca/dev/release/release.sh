@@ -32,7 +32,7 @@ fi
 platform=$1
 spark_profile=$2
 quick=$3
-bigdl_version=$(python -c "exec(open('$BIGDL_DIR/python/orca/src/bigdl/version.py').read()); print(__version__)")
+bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 
 cd ${BIGDL_DIR}/scala
 if [ "$platform" ==  "mac" ]; then
