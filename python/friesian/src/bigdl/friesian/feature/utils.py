@@ -66,8 +66,9 @@ def add_negative_samples(df, item_size, item_col, label_col, neg_num):
     return callZooFunc("float", "addNegSamples", df, item_size, item_col, label_col, neg_num)
 
 
-def add_hist_seq(df, cols, user_col, sort_col, min_len, max_len):
-    return callZooFunc("float", "addHistSeq", df, cols, user_col, sort_col, min_len, max_len)
+def add_hist_seq(df, cols, user_col, sort_col, min_len, max_len, num_seqs):
+    return callZooFunc("float", "addHistSeq", df, cols, user_col, sort_col, min_len, max_len,
+                       num_seqs)
 
 
 def add_neg_hist_seq(df, item_size, item_history_col, neg_num):

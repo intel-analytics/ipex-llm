@@ -329,6 +329,38 @@ class FriesianSpec extends ZooSpecHelper {
     assert(dft.columns.contains("other_hist_seq"))
   }
 
+  "addHisSeq numSeqs" should "work properly" in {
+    val data = sc.parallelize(Seq(
+      Row("rose", "A", 1, 2.0f, "2019-07-01 12:01:19.000"),
+      Row("jack", "B", 1, 2.0f, "2019-07-01 12:01:19.000"),
+      Row("jack", "A", 2, 2.0f, "2019-08-01 12:01:19.000"),
+      Row("jack", "C", 3, 2.0f, "2019-09-01 12:01:19.000"),
+      Row("jack", "D", 4, 1.0f, "2019-10-01 12:01:19.000"),
+      Row("jack", "A", 5, 1.0f, "2019-11-01 12:01:19.000"),
+      Row("jack", "E", 6, 1.0f, "2019-12-01 12:01:19.000"),
+      Row("jack", "F", 7, 0.0f, "2019-12-02 12:01:19.000"),
+      Row("alice", "G", 4, 0.0f, "2019-09-01 12:01:19.000"),
+      Row("alice", "H", 5, 1.0f, "2019-10-01 12:01:19.000"),
+      Row("alice", "I", 6, 0.0f, "2019-11-01 12:01:19.000")))
+    val schema = StructType(Array(
+      StructField("name", StringType, true),
+      StructField("category", StringType, true),
+      StructField("item", IntegerType, true),
+      StructField("other", FloatType, true),
+      StructField("time", StringType, true)
+    ))
+    val df = sqlContext.createDataFrame(data, schema)
+      .withColumn("ts", col("time").cast("timestamp").cast("long"))
+
+    val dft = friesian.addHistSeq(df, Array("item", "other").toList.asJava, "name",
+      "ts", 1, 4, 1)
+    assert(dft.count() == 2)
+    assert(dft.filter(df("name") === "alice").count() == 1)
+    assert(dft.filter(df("name") === "jack").count() == 1)
+    assert(dft.columns.contains("item_hist_seq"))
+    assert(dft.columns.contains("other_hist_seq"))
+  }
+
   "addNegSamples" should "work properly" in {
     val data = sc.parallelize(Seq(
       Row("jack", 1, "2019-07-01 12:01:19.000"),
