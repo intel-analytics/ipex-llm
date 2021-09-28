@@ -26,13 +26,7 @@ TEMP_PATH = "bigdl/share/orca"
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
-try:
-    exec(open('bigdl/version.py').read())
-except IOError:
-    print("Failed to load Bigdl version file for packaging. You must be in Bigdl's python dir.")
-    sys.exit(-1)
-
-VERSION = __version__
+VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
 building_error_msg = """
 If you are packing python API from BigDL source, you must build BigDL first
