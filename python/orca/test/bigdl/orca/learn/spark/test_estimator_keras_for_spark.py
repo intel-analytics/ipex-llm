@@ -490,30 +490,30 @@ class TestEstimatorForKeras(TestCase):
         shutil.rmtree(temp)
 
     # todo bigdl-2.0 need to enable this after issue in tfpark has been fixed
-    # def test_estimator_keras_learning_rate_schedule(self):
-    #     tf.reset_default_graph()
+    def test_estimator_keras_learning_rate_schedule(self):
+        tf.reset_default_graph()
 
-    #     # loss = reduce_sum(w)
-    #     # dloss/dw = 1
-    #     model = self.create_model_lr_schedule(0.1, 1, 0.1)
+        # loss = reduce_sum(w)
+        # dloss/dw = 1
+        model = self.create_model_lr_schedule(0.1, 1, 0.1)
 
-    #     dataset = tf.data.Dataset.from_tensor_slices((np.ones((16, 8)),
-    #                                                   np.zeros((16, 1))))
-    #     est = Estimator.from_keras(keras_model=model)
-    #     weights_before = model.get_weights()[0]
-    #     est.fit(data=dataset,
-    #             batch_size=8,
-    #             epochs=1,
-    #             validation_data=dataset)
+        dataset = tf.data.Dataset.from_tensor_slices((np.ones((16, 8)),
+                                                      np.zeros((16, 1))))
+        est = Estimator.from_keras(keras_model=model)
+        weights_before = model.get_weights()[0]
+        est.fit(data=dataset,
+                batch_size=8,
+                epochs=1,
+                validation_data=dataset)
 
-    #     sess = tf.keras.backend.get_session()
-    #     iteartion = sess.run(model.optimizer.iterations)
-    #     weights_after = model.get_weights()[0]
-    #     first_step = weights_before - 0.1
-    #     second_step = first_step - 0.01
+        sess = tf.keras.backend.get_session()
+        iteartion = sess.run(model.optimizer.iterations)
+        weights_after = model.get_weights()[0]
+        first_step = weights_before - 0.1
+        second_step = first_step - 0.01
 
-    #     assert iteartion == 2
-    #     assert np.allclose(second_step, weights_after)
+        assert iteartion == 2
+        assert np.allclose(second_step, weights_after)
 
     def test_estimator_keras_with_bigdl_optim_method(self):
         tf.reset_default_graph()
