@@ -63,7 +63,7 @@ class TrainingSpec extends ZooSpecHelper {
     }
   }
 
-  "initNNContext" should "contain spark-analytics-zoo.conf properties" in {
+  "initNNContext" should "contain spark-bigdl.conf properties" in {
     sc = SparkContext.getOrCreate()
     sc.stop()
     val conf = new SparkConf()
