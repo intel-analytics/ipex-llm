@@ -55,11 +55,11 @@ def _parse_args():
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--input_transaction', type=str, required=True,
+    parser.add_argument('--input_transaction', type=str,
                         help="transaction files.")
-    parser.add_argument('--input_meta', type=str, required=True,
+    parser.add_argument('--input_meta', type=str,
                         help="item metadata file")
-    parser.add_argument('--output')
+    parser.add_argument('--output', default=".")
     parser.add_argument(
         '--write_mode',
         choices=['overwrite', 'errorifexists'],
@@ -89,57 +89,43 @@ if __name__ == "__main__":
         ['reviewerID', 'asin', 'unixReviewTime']) \
         .rename({'reviewerID': 'user', 'asin': 'item', 'unixReviewTime': 'time'}) \
         .dropna(columns=['user', 'item'])
+    transaction_tbl.cache()
     print("transaction_tbl, ", transaction_tbl.size())
 
-    # read meta data
-    def get_category(x):
-        cat = x[0][-1] if x[0][-1] is not None else "default"
-        return cat.strip().lower()
-    trans_label = lambda x: [1 - float(x), float(x)]
-
-    item_tbl = FeatureTable.read_json(args.input_meta).select(['asin', 'categories'])\
-        .dropna(columns=['asin', 'categories']) \
-        .apply("categories", "category", get_category, "string") \
-        .rename({"asin": "item"}).drop("categories").distinct()
+    item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
+        .apply("category", "category", lambda x: x.lower() if x is not None else "default")
+    item_tbl.cache()
     print("item_tbl, ", item_tbl.size())
 
-    user_index = transaction_tbl.gen_string_idx('user', 1)
-    item_category_indices = item_tbl.gen_string_idx(["item", "category"], 1)
-    item_size = item_category_indices[0].size()
-    category_index = item_category_indices[1]
+    user_index = transaction_tbl.gen_string_idx('user', freq_limit=1)
+    item_cat_indices = item_tbl.gen_string_idx(["item", "category"], freq_limit=1)
+    item_size = item_cat_indices[0].size()
 
     item_tbl = item_tbl\
-        .encode_string(["item", "category"], [item_category_indices[0], category_index])\
-        .distinct()
-    item_pdf = item_tbl.to_pandas()
-    item_cat_mapping = dict(zip(item_pdf.item, item_pdf.category))
+        .encode_string(["item", "category"], item_cat_indices)
 
-    transaction_tbl = transaction_tbl\
-        .encode_string(['user', 'item'], [user_index, item_category_indices[0]])\
-        .dropna(columns="item")\
+    full_tbl = transaction_tbl\
+        .encode_string(['user', 'item'], [user_index, item_cat_indices[0]])\
         .add_hist_seq(cols=['item'], user_col="user",
-                      sort_col='time', min_len=1, max_len=100)\
+                      sort_col='time', min_len=1, max_len=100, num_seqs=1)\
         .add_neg_hist_seq(item_size, 'item_hist_seq', neg_num=5)\
-        .add_negative_samples(item_size, item_col='item', neg_num=1)
-
-    full_tbl = transaction_tbl.join(item_tbl, "item")\
-        .add_value_features(columns=["item_hist_seq", "neg_item_hist_seq"],
-                            mapping=item_cat_mapping, key="item", value="category")\
+        .add_negative_samples(item_size, item_col='item', neg_num=1)\
+        .add_value_features(columns=["item", "item_hist_seq", "neg_item_hist_seq"],
+                            dict_tbl=item_tbl, key="item", value="category")\
         .pad(cols=['item_hist_seq', 'category_hist_seq',
              'neg_item_hist_seq', 'neg_category_hist_seq'],
              seq_len=100,
              mask_cols=['item_hist_seq']) \
         .apply("item_hist_seq", "item_hist_seq_len", len, "int") \
-        .apply("label", "label", trans_label, "array<float>")
+        .apply("label", "label", lambda x: [1 - float(x), float(x)], "array<float>")
 
     # write out
-    user_index.write_parquet(args.output)
-    item_category_indices[0].write_parquet(args.output + "item_index")
-    category_index.write_parquet(args.output + "category_index")
+    user_index.write_parquet(args.output + "user_index")
+    item_cat_indices[0].write_parquet(args.output + "item_index")
+    item_cat_indices[1].write_parquet(args.output + "category_index")
     item_tbl.write_parquet(args.output + "item2cat")
     full_tbl.write_parquet(args.output + "data")
 
-    print("final output count, ", full_tbl.size())
-    stop_orca_context()
     end = time.time()
+    stop_orca_context()
     print(f"perf preprocessing time: {(end - begin):.2f}s")
