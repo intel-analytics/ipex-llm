@@ -29,6 +29,9 @@ RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data
 COPY ./entrypoint.sh /opt/
 COPY ./init.sh /opt/
 
+RUN chmod a+x /opt/entrypoint.sh && \
+    chmod a+x /opt/init.sh
+
 WORKDIR /opt/
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
