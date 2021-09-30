@@ -16,10 +16,10 @@
 
 
 from zoo.orca.data.shard import SparkXShards
-from zoo.chronos.data.utils.utils import _to_list, _check_type
-from zoo.chronos.data.utils.roll import roll_timeseries_dataframe
-from zoo.chronos.data.utils.split import split_timeseries_dataframe
-from zoo.chronos.data.experimental.utils import add_row, transform_to_dict
+from bigdl.chronos.data.utils.utils import _to_list, _check_type
+from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
+from bigdl.chronos.data.utils.split import split_timeseries_dataframe
+from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
 
 _DEFAULT_ID_COL_NAME = "id"
 _DEFAULT_ID_PLACEHOLDER = "0"

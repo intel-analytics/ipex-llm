@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zoo.chronos.data.utils.public_dataset import PublicDataset
+from bigdl.chronos.data.utils.public_dataset import PublicDataset
 
 
 def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwargs):
     """
     Get public dataset.
 
-    >>> from zoo.chronos.data.repo_dataset import get_public_dataset
+    >>> from bigdl.chronos.data.repo_dataset import get_public_dataset
     >>> tsdata_network_traffic = get_public_dataset(name="network_traffic")
 
     :param name: str, public dataset name, e.g. "network traffic".

@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 
-from zoo.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
-from zoo.chronos.autots.deprecated.config.recipe import *
-from zoo.chronos.autots.deprecated.pipeline.time_sequence import load_ts_pipeline
-from zoo.chronos.utils import deprecated
+from bigdl.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
+from bigdl.chronos.autots.deprecated.config.recipe import *
+from bigdl.chronos.autots.deprecated.pipeline.time_sequence import load_ts_pipeline
+from bigdl.chronos.utils import deprecated
 
 
-@deprecated('Please use `zoo.chronos.autots.AutoTSEstimator` instead.')
+@deprecated('Please use `bigdl.chronos.autots.AutoTSEstimator` instead.')
 class AutoTSTrainer:
     """
     The Automated Time Series Forecast Trainer
@@ -119,7 +119,7 @@ class TSPipeline:
         return self.internal.save(pipeline_file)
 
     @staticmethod
-    @deprecated('Please use `zoo.chronos.autots.TSPipeline` instead.')
+    @deprecated('Please use `bigdl.chronos.autots.TSPipeline` instead.')
     def load(pipeline_file):
         """
         load(pipeline_file)

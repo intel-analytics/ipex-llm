@@ -16,7 +16,7 @@
 #
 from zoo.orca.automl.model.base_pytorch_model import PytorchModelBuilder
 from zoo.orca.automl.auto_estimator import AutoEstimator
-from zoo.chronos.model.tcn import model_creator
+from bigdl.chronos.model.tcn import model_creator
 from .base_automodel import BasePytorchAutomodel
 
 

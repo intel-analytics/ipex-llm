@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.data.utils.public_dataset import PublicDataset
+from bigdl.chronos.data.utils.public_dataset import PublicDataset
 
 
 class TestPublicDataset(ZooTestCase):

@@ -17,7 +17,7 @@
 #
 
 from zoo.orca.automl.auto_estimator import AutoEstimator
-from zoo.chronos.model.arima import ARIMABuilder
+from bigdl.chronos.model.arima import ARIMABuilder
 
 
 # -
@@ -46,7 +46,7 @@ class AutoARIMA:
 
         :param p: Int or hp sampling function from an integer space for hyperparameter p
                of the ARIMA model.
-               For hp sampling, see zoo.chronos.orca.automl.hp for more details.
+               For hp sampling, see bigdl.chronos.orca.automl.hp for more details.
                e.g. hp.randint(0, 3).
         :param q: Int or hp sampling function from an integer space for hyperparameter q
                of the ARIMA model.
@@ -56,7 +56,7 @@ class AutoARIMA:
                e.g. hp.choice([True, False]).
         :param P: Int or hp sampling function from an integer space for hyperparameter P
                of the ARIMA model.
-               For hp sampling, see zoo.chronos.orca.automl.hp for more details.
+               For hp sampling, see bigdl.chronos.orca.automl.hp for more details.
                e.g. hp.randint(0, 3).
         :param Q: Int or hp sampling function from an integer space for hyperparameter Q
                of the ARIMA model.

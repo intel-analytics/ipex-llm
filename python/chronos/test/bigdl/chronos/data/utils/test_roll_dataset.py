@@ -18,8 +18,8 @@ import pytest
 import numpy as np
 import pandas as pd
 import random
-from zoo.chronos.data import TSDataset
-from zoo.chronos.data.utils.roll_dataset import RollDataset
+from bigdl.chronos.data import TSDataset
+from bigdl.chronos.data.utils.roll_dataset import RollDataset
 
 
 def get_ts_df():

@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from zoo.chronos.autots.deprecated.feature.utils import save_config
-from zoo.chronos.autots.deprecated.feature.abstract import BaseFeatureTransformer
+from bigdl.chronos.autots.deprecated.feature.utils import save_config
+from bigdl.chronos.autots.deprecated.feature.abstract import BaseFeatureTransformer
 
 
 class IdentityTransformer(BaseFeatureTransformer):

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.chronos.autots.model.auto_prophet import AutoProphet
+from bigdl.chronos.autots.model.auto_prophet import AutoProphet
 
 import os
 import numpy as np

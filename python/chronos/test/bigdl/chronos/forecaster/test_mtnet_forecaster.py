@@ -16,11 +16,11 @@
 
 import pytest
 import numpy as np
-from zoo.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
+from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 import tensorflow as tf
 import pandas as pd
 
-from zoo.chronos.forecaster.mtnet_forecaster import MTNetForecaster
+from bigdl.chronos.forecaster.mtnet_forecaster import MTNetForecaster
 from unittest import TestCase
 
 

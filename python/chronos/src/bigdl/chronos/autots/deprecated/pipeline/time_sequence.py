@@ -16,11 +16,11 @@
 import os
 import time
 
-from zoo.chronos.autots.deprecated.feature.utils import save_config
-from zoo.chronos.autots.deprecated.pipeline.base import Pipeline
-from zoo.chronos.autots.deprecated.model.time_sequence import TimeSequenceModel
-from zoo.chronos.autots.deprecated.pipeline.parameters import DEFAULT_CONFIG_DIR, DEFAULT_PPL_DIR
-from zoo.chronos.utils import deprecated
+from bigdl.chronos.autots.deprecated.feature.utils import save_config
+from bigdl.chronos.autots.deprecated.pipeline.base import Pipeline
+from bigdl.chronos.autots.deprecated.model.time_sequence import TimeSequenceModel
+from bigdl.chronos.autots.deprecated.pipeline.parameters import DEFAULT_CONFIG_DIR, DEFAULT_PPL_DIR
+from bigdl.chronos.utils import deprecated
 
 
 class TimeSequencePipeline(Pipeline):
@@ -121,7 +121,7 @@ class TimeSequencePipeline(Pipeline):
         return config_file
 
 
-@deprecated('Please use `zoo.chronos.autots.TSPipeline` instead.')
+@deprecated('Please use `bigdl.chronos.autots.TSPipeline` instead.')
 def load_ts_pipeline(file):
     model = TimeSequenceModel()
     model.restore(file)

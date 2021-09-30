@@ -19,7 +19,7 @@ import pandas as pd
 import numpy as np
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.data.utils.feature import generate_dt_features, generate_global_features
+from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
 import tsfresh
 
 

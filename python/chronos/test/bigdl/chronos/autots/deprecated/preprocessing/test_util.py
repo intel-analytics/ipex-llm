@@ -15,7 +15,7 @@
 #
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.autots.deprecated.preprocessing.utils import train_val_test_split
+from bigdl.chronos.autots.deprecated.preprocessing.utils import train_val_test_split
 import pandas as pd
 import numpy as np
 

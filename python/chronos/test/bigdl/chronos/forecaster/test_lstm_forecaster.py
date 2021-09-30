@@ -19,7 +19,7 @@ import tempfile
 import os
 import torch
 
-from zoo.chronos.forecaster.lstm_forecaster import LSTMForecaster
+from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
 from zoo.orca import init_orca_context, stop_orca_context
 from unittest import TestCase
 import pytest

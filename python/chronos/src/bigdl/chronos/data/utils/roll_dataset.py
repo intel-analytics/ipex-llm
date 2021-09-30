@@ -18,7 +18,7 @@ import numpy as np
 from torch.utils.data import Dataset
 import torch
 
-from zoo.chronos.data.utils.utils import _check_cols_no_na, _to_list
+from bigdl.chronos.data.utils.utils import _check_cols_no_na, _to_list
 
 
 def get_roll_start_idx(df, id_col, window_size):

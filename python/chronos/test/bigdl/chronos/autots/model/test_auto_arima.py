@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.chronos.autots.model.auto_arima import AutoARIMA
+from bigdl.chronos.autots.model.auto_arima import AutoARIMA
 
 import numpy as np
 from unittest import TestCase

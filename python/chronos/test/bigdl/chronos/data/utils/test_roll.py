@@ -20,7 +20,7 @@ import numpy as np
 import random
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.data.utils.roll import roll_timeseries_dataframe
+from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 
 
 class TestRollTimeSeries(ZooTestCase):
