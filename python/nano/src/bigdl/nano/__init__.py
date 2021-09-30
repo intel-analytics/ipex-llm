@@ -16,7 +16,7 @@
 import os
 from logging import warning
 
-envs_checklist = ["LD_PRELOAD", "MALLOC_CONF", "OMP_NUM_THREADS", "KMP_AFFINITY",
+envs_checklist = ["LD_PRELOAD", "OMP_NUM_THREADS", "KMP_AFFINITY",
                   "KMP_BLOCKTIME"]
 
 _unset_envs = []
