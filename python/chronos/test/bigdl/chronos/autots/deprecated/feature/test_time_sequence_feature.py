@@ -16,7 +16,7 @@
 
 import pytest
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.autots.deprecated.feature.utils import save, restore
 from bigdl.chronos.autots.deprecated.feature.time_sequence import *
 from numpy.testing import assert_array_almost_equal
