@@ -410,7 +410,7 @@ class LocalModel(object):
             import ray
 
             # check whether there has been an activate ray context yet.
-            from zoo.ray import RayContext
+            from bigdl.orca.ray import RayContext
             ray_ctx = RayContext.get()
             Ymat_id = ray.put(self.Ymat)
             covariates_id = ray.put(self.covariates)
