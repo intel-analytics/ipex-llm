@@ -17,7 +17,7 @@ import pytest
 import pandas as pd
 import random
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.data.repo_dataset import get_public_dataset
 
 

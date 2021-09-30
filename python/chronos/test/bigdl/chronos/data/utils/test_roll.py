@@ -19,7 +19,7 @@ import pandas as pd
 import numpy as np
 import random
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 
 
