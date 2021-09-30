@@ -31,17 +31,12 @@ fi
 
 platform=$1
 spark_profile=$2
-quick=$3
 bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 
 cd ${BIGDL_DIR}/scala
 if [ "$platform" ==  "mac" ]; then
-    echo "Building bigdl for mac system"
-    dist_profile="-P mac -P $spark_profile"
     verbose_pname="macosx_10_11_x86_64"
 elif [ "$platform" == "linux" ]; then
-    echo "Building bigdl for linux system"
-    dist_profile="-P linux -P $spark_profile"
     verbose_pname="manylinux1_x86_64"
 else
     echo "unsupport platform"
