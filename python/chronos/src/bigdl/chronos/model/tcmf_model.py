@@ -119,7 +119,7 @@ class TCMF(BaseModel):
 
     @staticmethod
     def get_default_num_workers():
-        from zoo.ray import RayContext
+        from bigdl.orca.ray import RayContext
         try:
             ray_ctx = RayContext.get(initialize=False)
             num_workers = ray_ctx.num_ray_nodes
@@ -152,7 +152,7 @@ class TCMF(BaseModel):
             num_workers = TCMF.get_default_num_workers()
         if num_workers > 1:
             import ray
-            from zoo.ray import RayContext
+            from bigdl.orca.ray import RayContext
             try:
                 RayContext.get(initialize=False)
             except:

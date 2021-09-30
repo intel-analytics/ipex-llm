@@ -22,7 +22,7 @@ from bigdl.orca.automl.metrics import Evaluator
 from bigdl.chronos.autots.deprecated.pipeline.time_sequence import TimeSequencePipeline
 from bigdl.orca.automl.search.utils import process
 from bigdl.chronos.autots.deprecated.config.recipe import *
-from zoo.ray import RayContext
+from bigdl.orca.ray import RayContext
 from bigdl.orca.automl.auto_estimator import AutoEstimator
 
 
