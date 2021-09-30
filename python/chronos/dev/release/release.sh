@@ -21,7 +21,7 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../../..; pwd)"
 echo $BIGDL_DIR
-BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/orca/src; pwd)"
+BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/chronos/src; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 if (( $# < 2)); then
@@ -61,19 +61,19 @@ sdist_command="python setup.py sdist"
 echo "packing source code: ${sdist_command}"
 $sdist_command
 
-if [ -d "${BIGDL_DIR}/python/orca/src/build" ]; then
-   rm -r ${BIGDL_DIR}/python/orca/src/build
+if [ -d "${BIGDL_DIR}/python/chronos/src/build" ]; then
+   rm -r ${BIGDL_DIR}/python/chronos/src/build
 fi
 
-if [ -d "${BIGDL_DIR}/python/orca/src/dist" ]; then
-   rm -r ${BIGDL_DIR}/python/orca/src/dist
+if [ -d "${BIGDL_DIR}/python/chronos/src/dist" ]; then
+   rm -r ${BIGDL_DIR}/python/chronos/src/dist
 fi
 
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
 echo "Packing python distribution:   $wheel_command"
 ${wheel_command}
 
-upload_command="twine upload python/orca/src/dist/bigdl_orca-${bigdl_version}-py3-none-${verbose_pname}.whl"
+upload_command="twine upload python/chronos/src/dist/bigdl_chronos-${bigdl_version}-py3-none-${verbose_pname}.whl"
 echo "Please manually upload with this command:  $upload_command"
 
 #$upload_command
