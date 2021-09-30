@@ -15,7 +15,7 @@
 #
 
 from abc import ABCMeta, abstractmethod
-from zoo.tfpark import KerasModel as TFParkKerasModel
+from bigdl.orca.tfpark import KerasModel as TFParkKerasModel
 import tensorflow as tf
 from bigdl.chronos.forecaster.abstract import Forecaster
 
