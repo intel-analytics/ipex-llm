@@ -17,8 +17,8 @@ import argparse
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-from zoo.orca.automl.metrics import Evaluator
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca.automl.metrics import Evaluator
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
 from bigdl.chronos.data.repo_dataset import get_public_dataset
 

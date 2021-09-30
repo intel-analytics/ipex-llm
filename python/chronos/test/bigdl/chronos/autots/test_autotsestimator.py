@@ -23,7 +23,7 @@ from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
 from bigdl.chronos.data import TSDataset
-from zoo.orca.automl import hp
+from bigdl.orca.automl import hp
 import pandas as pd
 
 
@@ -97,11 +97,11 @@ def model_creator(config):
 
 class TestAutoTrainer(TestCase):
     def setUp(self) -> None:
-        from zoo.orca import init_orca_context
+        from bigdl.orca import init_orca_context
         init_orca_context(cores=8, init_ray_on_spark=True)
 
     def tearDown(self) -> None:
-        from zoo.orca import stop_orca_context
+        from bigdl.orca import stop_orca_context
         stop_orca_context()
 
     def test_fit_third_party_feature(self):

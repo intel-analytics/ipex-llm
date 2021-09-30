@@ -192,8 +192,8 @@ class TestChronosModelTCMFForecaster(TestCase):
                         in str(context.exception))
 
     def test_forecast_tcmf_xshards(self):
-        from zoo.orca import OrcaContext
-        import zoo.orca.data.pandas
+        from bigdl.orca import OrcaContext
+        import bigdl.orca.data.pandas
         import pandas as pd
         OrcaContext.pandas_read_backend = "pandas"
 
@@ -221,7 +221,7 @@ class TestChronosModelTCMFForecaster(TestCase):
             data = np.random.rand(300, 480)
             df = pd.DataFrame(data)
             df.to_csv(temp.name)
-            shard = zoo.orca.data.pandas.read_csv(temp.name)
+            shard = bigdl.orca.data.pandas.read_csv(temp.name)
         shard.cache()
         shard_train = shard.transform_shard(preprocessing, 'id', 'data')
         with self.assertRaises(Exception) as context:
@@ -269,7 +269,7 @@ class TestChronosModelTCMFForecaster(TestCase):
     def test_forecast_tcmf_distributed(self):
         input = dict({'id': self.id, 'y': self.data})
 
-        from zoo.orca import init_orca_context, stop_orca_context
+        from bigdl.orca import init_orca_context, stop_orca_context
 
         init_orca_context(cores=4, spark_log_level="INFO", init_ray_on_spark=True,
                           object_store_memory="1g")

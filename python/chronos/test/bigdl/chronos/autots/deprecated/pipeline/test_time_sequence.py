@@ -23,7 +23,7 @@ from bigdl.chronos.autots.deprecated.pipeline.time_sequence import load_ts_pipel
 from bigdl.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
 from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 from bigdl.chronos.autots.deprecated.model.time_sequence import TimeSequenceModel
-from zoo.orca.automl.metrics import Evaluator
+from bigdl.orca.automl.metrics import Evaluator
 from bigdl.chronos.autots.deprecated.config.recipe import *
 
 import numpy as np

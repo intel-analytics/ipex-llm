@@ -48,7 +48,7 @@ def rm_missing_weeks(start_dts, missing_lens, df):
     return df
 
 import pandas as pd
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 raw_df = pd.read_csv("data/data.csv")
 

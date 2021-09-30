@@ -18,7 +18,7 @@ from bigdl.chronos.autots.model.auto_arima import AutoARIMA
 
 import numpy as np
 from unittest import TestCase
-from zoo.orca.automl import hp
+from bigdl.orca.automl import hp
 
 
 def get_data():
@@ -32,11 +32,11 @@ def get_data():
 
 class TestAutoARIMA(TestCase):
     def setUp(self) -> None:
-        from zoo.orca import init_orca_context
+        from bigdl.orca import init_orca_context
         init_orca_context(cores=8, init_ray_on_spark=True)
 
     def tearDown(self) -> None:
-        from zoo.orca import stop_orca_context
+        from bigdl.orca import stop_orca_context
         stop_orca_context()
 
     def test_fit(self):

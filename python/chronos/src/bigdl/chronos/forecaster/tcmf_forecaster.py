@@ -16,7 +16,7 @@
 
 from bigdl.chronos.model.tcmf_model import TCMFNdarrayModelWrapper, \
     TCMFXshardsModelWrapper
-from zoo.orca.data import SparkXShards
+from bigdl.orca.data import SparkXShards
 from bigdl.chronos.forecaster.abstract import Forecaster
 
 

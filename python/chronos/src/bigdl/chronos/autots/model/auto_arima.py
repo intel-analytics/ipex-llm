@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-from zoo.orca.automl.auto_estimator import AutoEstimator
+from bigdl.orca.automl.auto_estimator import AutoEstimator
 from bigdl.chronos.model.arima import ARIMABuilder
 
 

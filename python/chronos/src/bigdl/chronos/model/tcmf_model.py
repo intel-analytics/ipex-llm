@@ -15,9 +15,9 @@
 from abc import ABCMeta, abstractmethod
 
 from bigdl.chronos.model.tcmf import DeepGLO
-from zoo.orca.automl.metrics import Evaluator
-from zoo.orca.automl.model.abstract import BaseModel
-from zoo.orca.data import SparkXShards, XShards
+from bigdl.orca.automl.metrics import Evaluator
+from bigdl.orca.automl.model.abstract import BaseModel
+from bigdl.orca.data import SparkXShards, XShards
 import pickle
 import numpy as np
 import pandas as pd

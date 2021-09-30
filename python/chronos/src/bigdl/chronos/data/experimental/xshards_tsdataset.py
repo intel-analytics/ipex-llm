@@ -15,7 +15,7 @@
 #
 
 
-from zoo.orca.data.shard import SparkXShards
+from bigdl.orca.data.shard import SparkXShards
 from bigdl.chronos.data.utils.utils import _to_list, _check_type
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
@@ -90,7 +90,7 @@ class XShardsTSDataset:
         >>> # 01        2019-01-01    2.3     0                   9
         >>> # 00        2019-01-02    2.4     3                   4
         >>> # 01        2019-01-02    2.6     0                   2
-        >>> from zoo.orca.data.pandas import read_csv
+        >>> from bigdl.orca.data.pandas import read_csv
         >>> shards = read_csv(csv_path)
         >>> tsdataset = XShardsTSDataset.from_xshards(shards, dt_col="datetime",
         >>>                                           target_col="value", id_col="id",
