@@ -44,25 +44,18 @@ For source code and more information, please visit our GitHub page:
  https://github.com/intel-analytics/analytics-zoo
 '''
 
-analytics_zoo_home = os.path.abspath(__file__ + "/../../../../")
-SCRIPTS_TARGET = os.path.join(analytics_zoo_home, "scripts/cluster-serving/")
+analytics_zoo_home = os.path.abspath(__file__ + "/../../../")
+SCRIPTS_TARGET = os.path.join(analytics_zoo_home, "scala/serving/scripts/")
 TMP_PATH = "zoo/conf"
 if os.path.exists(TMP_PATH):
     rmtree(TMP_PATH)
 copytree(SCRIPTS_TARGET, TMP_PATH)
-try:
-    with open('../../zoo/__init__.py', 'r') as f:
-        for line in f.readlines():
-            if '__version__' in line:
-                VERSION = line.strip().replace("\"", "").split(" ")[2]
-except IOError:
-    print("Failed to load Analytics Zoo version file for packaging. \
-      You must be in Analytics Zoo's pyzoo dir.")
-    sys.exit(-1)
+
 
 
 def setup_package():
-    script_names = os.listdir(SCRIPTS_TARGET)
+    script_names = [f for f in os.listdir(SCRIPTS_TARGET) if
+                    os.path.isfile(os.path.join(SCRIPTS_TARGET, f))]
     scripts = list(map(lambda script: os.path.join(
         SCRIPTS_TARGET, script), script_names))
 
