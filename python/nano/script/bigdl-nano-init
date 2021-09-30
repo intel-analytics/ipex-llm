@@ -13,9 +13,14 @@ function disable-openmp-var {
 	export DISABLE_OPENMP_VAR=1
 }
 
-function disable-jemalloc-var {
+function enable-jemalloc-var {
 	echo "Option: Disable jemalloc and unset related variables"
-	export DISABLE_JEMALLOC_VAR=1
+	export ENABLE_JEMALLOC_VAR=1
+}
+
+function disable-tcmalloc-var {
+	echo "Option: Disable tcmalloc and unset related variables"
+	export DISABLE_TCMALLOC_VAR=1
 }
 
 function enable-tensorflow-var {
@@ -38,19 +43,23 @@ function display-help {
         echo "Optional options:"
         echo "    -h, --help                Display this help message and exit."
         echo "    -o, --disable-openmp      Disable openMP and unset related variables"
-        echo "    -j, --disable-jemalloc    Disable jemalloc and unset related variables"
+        echo "    -j, --enable-jemalloc     Enable jemalloc and unset related variables"
+		echo "	  -c, --disable-tcmalloc   Disable tcmalloc and unset related variables"
 		echo "    -t, --enable-tensorflow   Enable tensorflow optimaztion"
 }
 
-while getopts ":ojht-:" opt; do
+while getopts ":ojhtc-:" opt; do
 	case ${opt} in
 		- )
 			case "${OPTARG}" in
 				disable-openmp)
 					disable-openmp-var
 					;;
-				disable-jemalloc)
-					disable-jemalloc-var
+				enable-jemalloc)
+					enable-jemalloc-var
+					;;
+				disable-tcmalloc)
+					disable-tcmalloc-var
 					;;
 				enable-tensorflow)
 					enable-tensorflow-var
@@ -69,7 +78,10 @@ while getopts ":ojht-:" opt; do
 			disable-openmp-var
 			;;
 		j )
-			disable-jemalloc-var
+			enable-jemalloc-var
+			;;
+		c )
+			disable-tcmalloc-var
 			;;
 		t )
 			enable-tensorflow-var
@@ -89,6 +101,7 @@ shift $((OPTIND -1))
 # Init
 OPENMP=0
 JEMALLOC=0
+TCMALLOC=0
 
 # Find conda dir
 if [ $0 != $BASH_SOURCE ]; then
@@ -144,6 +157,9 @@ fi
 # Detect jemalloc library
 JEMALLOC=1
 
+# Detect tcmalloc library
+TCMALLOC=1
+
 # set env variables
 echo "Setting MALLOC_CONF..."
 export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1"
@@ -154,11 +170,21 @@ if [ -z "${LD_PRELOAD:-}" ]; then
 	if [[ $OPENMP -eq 1 && -z "${DISABLE_OPENMP_VAR:-}" ]]; then
 		export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
 	fi
-	if [[ $JEMALLOC -eq 1 && -z "${DISABLE_JEMALLOC_VAR:-}" ]]; then
+	if [[ $JEMALLOC -eq 1 && ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
+	    DISABLE_TCMALLOC_VAR=1
 		if [ -z "${LD_PRELOAD:-}" ]; then
 			export LD_PRELOAD="${LIB_DIR}/libjemalloc.so"
 		else
 			export LD_PRELOAD="${LD_PRELOAD} ${NANO_DIR}/libs/libjemalloc.so"
+		fi
+	fi
+
+	# Set TCMALLOC lib path
+	if [[ $TCMALLOC -eq 1 && -z "${DISABLE_TCMALLOC_VAR:-}" ]]; then
+		if [ -z "${LD_PRELOAD:-}" ]; then
+			export LD_PRELOAD="${LIB_DIR}/libtcmalloc.so"
+		else
+			export LD_PRELOAD="${LD_PRELOAD} ${NANO_DIR}/libs/libtcmalloc.so"
 		fi
 	fi
 fi
@@ -174,11 +200,17 @@ if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
 	unset DISABLE_OPENMP_VAR
 	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libiomp5\.so//g" | sed "s/.*libiomp5\.so\s*//g"`
 fi
-if [ ! -z "${DISABLE_JEMALLOC_VAR:-}" ]; then
+if [ -z "${ENABLE_JEMALLOC_VAR:-}" ]; then
+	unset ENABLE_JEMALLOC_VAR
 	unset MALLOC_CONF
-	unset DISABLE_JEMALLOC_VAR
 	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libjemalloc\.so//g" | sed "s/.*libjemalloc\.so\s*//g"`
 fi
+
+if [ ! -z "${DISABLE_TCMALLOC_VAR:-}" ]; then
+	unset DISABLE_TCMALLOC_VAR
+	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libtcmalloc\.so//g" | sed "s/.*libtcmalloc\.so\s*//g"`
+fi
+
 if [ -z "${LD_PRELOAD:-}" ]; then
 	unset LD_PRELOAD
 fi

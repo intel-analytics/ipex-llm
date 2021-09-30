@@ -80,12 +80,12 @@ def _find_library(library_name: str, priority_dir: Union[str, None] = None) -> U
     return res[0].decode("utf-8") if len(res) > 0 else None
 
 
-def init_nano(use_jemalloc: bool = True, use_openmp: bool = True,
+def init_nano(use_malloc: str = "tc", use_openmp: bool = True,
               print_environment: bool = False) -> None:
     """
     Configure necessary environment variables for jemalloc and openmp libraries.
-    :param use_jemalloc: If this is set to True, then use jemalloc library. Otherwise disable
-        jemalloc and related environment variables.
+    :param use_malloc: Allocator to be chosen, either "je" for jemalloc or "tc" for tcmalloc.
+        default as tcmalloc.
     :param use_openmp: If this is set to True, then use intel openmp library. Otherwise disable
         openmp and related environment variables.
     :param print_environment: If this is set to True, print all environment variables after
@@ -111,6 +111,7 @@ def init_nano(use_jemalloc: bool = True, use_openmp: bool = True,
     conda_lib_dir = conda_dir + "/lib" if conda_dir is not None else None
     openmp_lib_dir = _find_library("libiomp5.so", conda_lib_dir)
     jemalloc_lib_dir = _find_library("libjemalloc.so", conda_lib_dir)
+    tc_malloc_lib_dir = _find_library("libtcmalloc.so", conda_lib_dir)
     ld_preload_list = []
 
     # Detect Intel OpenMP library
@@ -143,6 +144,11 @@ def init_nano(use_jemalloc: bool = True, use_openmp: bool = True,
     else:
         warnings.warn("jemalloc library (libjemalloc.so) is nor found.")
 
+    if tc_malloc_lib_dir is not None:
+        ld_preload_list.append(tc_malloc_lib_dir)
+    else:
+        warnings.warn("tcmalloc library (libtcmalloc.so) is nor found.")
+
     # Set LD_PRELOAD
     if not _env_variable_is_set("LD_PRELOAD", env_copy):
         env_copy["LD_PRELOAD"] = " ".join(ld_preload_list)
@@ -155,12 +161,16 @@ def init_nano(use_jemalloc: bool = True, use_openmp: bool = True,
         env_copy.pop("KMP_BLOCKTIME")
         ld_preload = [lib for lib in ld_preload if "libiomp5.so" not in lib]
 
-    if not use_jemalloc:
+    if use_malloc is not "je":
         env_copy.pop("MALLOC_CONF")
         ld_preload = [lib for lib in ld_preload if "libjemalloc.so" not in lib]
 
+    if use_malloc is not "tc":
+        ld_preload = [lib for lib in ld_preload if "libtcmalloc.so" not in lib]
+
     env_copy["LD_PRELOAD"] = " ".join(ld_preload)
     env_copy["BIGDL_NANO_CHILD"] = "1"
+
     if print_environment:
         print(env_copy)
 
