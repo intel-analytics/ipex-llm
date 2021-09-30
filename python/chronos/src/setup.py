@@ -22,7 +22,7 @@ from shutil import copyfile, copytree, rmtree
 import fnmatch
 from setuptools import setup
 
-TEMP_PATH = "bigdl/share/orca"
+TEMP_PATH = "bigdl/share/chronos"
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
@@ -41,7 +41,7 @@ and run sdist.
 
 
 def build_from_source():
-    code_path = bigdl_home + "/python/orca/src/bigdl/orca/common.py"
+    code_path = bigdl_home + "/python/chronos/src/bigdl/chronos/utils.py"
     print("Checking: %s to see if build from source" % code_path)
     if os.path.exists(code_path):
         return True
@@ -59,14 +59,14 @@ def init_env():
         if os.path.exists(TEMP_PATH):
             rmtree(TEMP_PATH)
         copytree(dist_source, TEMP_PATH)
-        copyfile(bigdl_home + "/python/orca/src/bigdl/orca/automl/__init__.py", TEMP_PATH + "/__init__.py")
+        copyfile(bigdl_home + "/python/chronos/src/bigdl/chronos/model/__init__.py", TEMP_PATH + "/__init__.py")
     else:
         print("Do nothing for release installation")
 
 
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__ + "/..")
-    bigdl_packages = ['bigdl.share.orca']
+    bigdl_packages = ['bigdl.share.chronos']
     source_dir = os.path.join(bigdl_python_home, "bigdl")
     for dirpath, dirs, files in os.walk(source_dir):
         package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
@@ -81,7 +81,7 @@ def get_bigdl_packages():
 
 def setup_package():
     metadata = dict(
-        name='bigdl-orca',
+        name='bigdl-chronos',
         version=VERSION,
         description='Seamlessly scale out TensorFlow and PyTorch for Big Data (using Spark & Ray)',
         author='BigDL Authors',
@@ -101,7 +101,7 @@ def setup_package():
                                    'tsfresh==0.17.0']},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
-        package_data={"bigdl.share.orca": ['lib/bigdl-orca*.jar']},
+        package_data={"bigdl.share.chronos": ['lib/bigdl-chronos*.jar']},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
