@@ -20,8 +20,8 @@ ray_ctx = None
 
 @pytest.fixture(autouse=True, scope='function')
 def automl_fixture():
-    from zoo import init_spark_on_local
-    from zoo.ray import RayContext
+    from bigdl.dllib.utils.nncontext import init_spark_on_local
+    from bigdl.orca.ray import RayContext
     sc = init_spark_on_local(cores=4, spark_log_level="INFO")
     ray_ctx = RayContext(sc=sc, object_store_memory="1g")
     ray_ctx.init()
