@@ -132,7 +132,7 @@ class BasePytorchAutomodel:
         your data (e.g. use .scale() on the TSDataset) please follow the following code
         snap to evaluate your result if you need to evaluate on unscaled data.
 
-        >>> from zoo.automl.metrics import Evaluator
+        >>> from bigdl.orca.automl.metrics import Evaluator
         >>> y_hat = automodel.predict(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
@@ -173,7 +173,7 @@ class BasePytorchAutomodel:
         your data (e.g. use .scale() on the TSDataset) please follow the following code
         snap to evaluate your result if you need to evaluate on unscaled data.
 
-        >>> from zoo.automl.metrics import Evaluator
+        >>> from bigdl.orca.automl.metrics import Evaluator
         >>> y_hat = automodel.predict_with_onnx(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
