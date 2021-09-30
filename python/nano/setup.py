@@ -133,7 +133,8 @@ def setup_package():
 
     lib_urls = [
         "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
-        "https://github.com/leonardozcm/libjpeg-turbo/releases/download/2.1.1/libturbojpeg.so.0.2.0"
+        "https://github.com/leonardozcm/libjpeg-turbo/releases/download/2.1.1/libturbojpeg.so.0.2.0",
+        "https://github.com/leonardozcm/tcmalloc/releases/download/v1/libtcmalloc.so"
     ]
     for url in lib_urls:
         download_libs(url)
@@ -150,7 +151,7 @@ def setup_package():
                         "pytorch": pytorch_requires},
         packages=get_nano_packages(),
         package_data={"bigdl.nano": [
-            "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0"]},
+            "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]},
         package_dir={'': 'src'},
         scripts=['script/bigdl-nano-init']
     )
