@@ -16,7 +16,7 @@
 
 import pytest
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.model.prophet import ProphetModel
 import numpy as np
 import os

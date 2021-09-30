@@ -18,7 +18,7 @@ import tempfile
 
 import pytest
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.autots.deprecated.pipeline.time_sequence import load_ts_pipeline
 from bigdl.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
 from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer

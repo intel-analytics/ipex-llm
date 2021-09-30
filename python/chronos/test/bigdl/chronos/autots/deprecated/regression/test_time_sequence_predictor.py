@@ -15,7 +15,7 @@
 #
 import pytest
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.autots.deprecated.model.time_sequence import TimeSequenceModel
 from bigdl.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
 import pandas as pd

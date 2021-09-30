@@ -17,7 +17,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 
 from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
 from bigdl.chronos.detector.anomaly import ThresholdDetector

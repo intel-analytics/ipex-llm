@@ -18,7 +18,7 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe, \
     _last_impute_timeseries_dataframe, _const_impute_timeseries_dataframe, \
     _linear_impute_timeseries_dataframe

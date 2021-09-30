@@ -21,7 +21,7 @@ import tempfile
 import os
 import shutil
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.data import TSDataset
 
 from pandas.testing import assert_frame_equal

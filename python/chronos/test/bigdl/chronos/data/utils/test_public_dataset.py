@@ -17,7 +17,7 @@ import os
 import pandas as pd
 import pytest
 
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.data.utils.public_dataset import PublicDataset
 
 

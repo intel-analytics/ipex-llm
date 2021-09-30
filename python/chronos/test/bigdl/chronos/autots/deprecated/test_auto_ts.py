@@ -16,7 +16,7 @@
 
 import pytest
 import numpy as np
-from test.zoo.pipeline.utils.test_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 
 from bigdl.chronos.autots.deprecated.config.recipe import LSTMGridRandomRecipe, MTNetGridRandomRecipe
 from bigdl.chronos.autots.deprecated.forecast import AutoTSTrainer
