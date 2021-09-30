@@ -18,8 +18,8 @@
 
 import pandas as pd
 
-from zoo.orca.automl.auto_estimator import AutoEstimator
-import zoo.orca.automl.hp as hp
+from bigdl.orca.automl.auto_estimator import AutoEstimator
+import bigdl.orca.automl.hp as hp
 from bigdl.chronos.model.prophet import ProphetBuilder
 
 

@@ -15,12 +15,12 @@
 #
 
 from bigdl.chronos.forecaster.abstract import Forecaster
-from zoo.orca.data.shard import SparkXShards
+from bigdl.orca.data.shard import SparkXShards
 from bigdl.chronos.forecaster.utils import\
     np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard
 import numpy as np
-from zoo.orca.learn.pytorch.estimator import Estimator
-from zoo.orca.learn.metrics import MSE, MAE
+from bigdl.orca.learn.pytorch.estimator import Estimator
+from bigdl.orca.learn.metrics import MSE, MAE
 
 ORCA_METRICS = {"mse": MSE, "mae": MAE}
 
@@ -182,7 +182,7 @@ class BasePytorchForecaster(Forecaster):
         if you want to evaluate on a single node(which is common practice), please call
         .to_local().evaluate(data, ...)
 
-        >>> from zoo.orca.automl.metrics import Evaluator
+        >>> from bigdl.orca.automl.metrics import Evaluator
         >>> y_hat = forecaster.predict(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods
@@ -240,7 +240,7 @@ class BasePytorchForecaster(Forecaster):
         your data (e.g. use .scale() on the TSDataset) please follow the following code
         snap to evaluate your result if you need to evaluate on unscaled data.
 
-        >>> from zoo.orca.automl.metrics import Evaluator
+        >>> from bigdl.orca.automl.metrics import Evaluator
         >>> y_hat = forecaster.predict(x)
         >>> y_hat_unscaled = tsdata.unscale_numpy(y_hat) # or other customized unscale methods
         >>> y_unscaled = tsdata.unscale_numpy(y) # or other customized unscale methods

@@ -17,7 +17,7 @@
 import os
 
 from bigdl.chronos.data import TSDataset
-from zoo.orca.automl.metrics import Evaluator
+from bigdl.orca.automl.metrics import Evaluator
 
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
 DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
@@ -194,7 +194,7 @@ class TSPipeline:
             data_process = pickle.load(f)
         with open(best_config_path, "rb") as f:
             best_config = pickle.load(f)
-        from zoo.orca.automl.model.base_pytorch_model import PytorchBaseModel
+        from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
         best_model = PytorchBaseModel(**model_init)
         best_model.restore(model_path)
         return TSPipeline(best_model, best_config, **data_process)

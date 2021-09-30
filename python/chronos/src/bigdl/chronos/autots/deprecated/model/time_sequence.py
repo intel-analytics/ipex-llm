@@ -15,7 +15,7 @@
 #
 from copy import deepcopy
 
-from zoo.orca.automl.model.abstract import BaseModel, ModelBuilder
+from bigdl.orca.automl.model.abstract import BaseModel, ModelBuilder
 from bigdl.chronos.model.VanillaLSTM import VanillaLSTM
 from bigdl.chronos.model.Seq2Seq import LSTMSeq2Seq
 from bigdl.chronos.model.MTNet_keras import MTNetKeras
@@ -23,7 +23,7 @@ from bigdl.chronos.autots.deprecated.feature.utils import save_config
 from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 from bigdl.chronos.autots.deprecated.preprocessing.impute import LastFillImpute, FillZeroImpute
 from bigdl.chronos.utils import deprecated
-from zoo.orca.automl.metrics import Evaluator
+from bigdl.orca.automl.metrics import Evaluator
 
 import pandas as pd
 import os

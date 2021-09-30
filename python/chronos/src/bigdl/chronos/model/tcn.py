@@ -43,7 +43,7 @@ import warnings
 import torch
 import torch.nn as nn
 from torch.nn.utils import weight_norm
-from zoo.orca.automl.model.base_pytorch_model import PytorchBaseModel, \
+from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel, \
     PYTORCH_REGRESSION_LOSS_MAP
 
 

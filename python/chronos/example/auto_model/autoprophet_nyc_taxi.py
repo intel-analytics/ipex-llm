@@ -19,7 +19,7 @@ import argparse
 
 from bigdl.chronos.forecaster.prophet_forecaster import ProphetForecaster
 from bigdl.chronos.autots.model.auto_prophet import AutoProphet
-from zoo.orca.common import init_orca_context, stop_orca_context
+from bigdl.orca.common import init_orca_context, stop_orca_context
 
 
 def get_data(args):

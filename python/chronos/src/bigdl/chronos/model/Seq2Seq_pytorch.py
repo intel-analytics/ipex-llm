@@ -17,7 +17,7 @@
 import torch
 import torch.nn as nn
 
-from zoo.orca.automl.model.base_pytorch_model import PytorchBaseModel, \
+from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel, \
     PYTORCH_REGRESSION_LOSS_MAP
 import numpy as np
 

@@ -21,7 +21,7 @@ import pytest
 import tempfile
 
 from bigdl.chronos.autots.model.auto_lstm import AutoLSTM
-from zoo.orca.automl import hp
+from bigdl.orca.automl import hp
 
 input_feature_dim = 10
 output_feature_dim = 2
@@ -79,11 +79,11 @@ def get_auto_estimator():
 
 class TestAutoLSTM(TestCase):
     def setUp(self) -> None:
-        from zoo.orca import init_orca_context
+        from bigdl.orca import init_orca_context
         init_orca_context(cores=8, init_ray_on_spark=True)
 
     def tearDown(self) -> None:
-        from zoo.orca import stop_orca_context
+        from bigdl.orca import stop_orca_context
         stop_orca_context()
 
     def test_fit_np(self):

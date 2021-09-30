@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import zoo.orca.automl.hp as hp
+import bigdl.orca.automl.hp as hp
 
 
 AUTO_MODEL_SUPPORT_LIST = ["lstm", "tcn", "seq2seq"]

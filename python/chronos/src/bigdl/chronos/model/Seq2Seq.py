@@ -20,8 +20,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, LSTM, Dense
 import tensorflow.keras as keras
 
-from zoo.orca.automl.model.abstract import BaseModel
-from zoo.orca.automl.metrics import Evaluator
+from bigdl.orca.automl.model.abstract import BaseModel
+from bigdl.orca.automl.metrics import Evaluator
 
 
 class LSTMSeq2Seq(BaseModel):
