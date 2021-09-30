@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from zoo.chronos.model.MTNet_keras import MTNetKeras as MTNetKerasModel
-from zoo.chronos.forecaster.tfpark_forecaster import TFParkForecaster
+from bigdl.chronos.model.MTNet_keras import MTNetKeras as MTNetKerasModel
+from bigdl.chronos.forecaster.tfpark_forecaster import TFParkForecaster
 
 
 class MTNetForecaster(TFParkForecaster):

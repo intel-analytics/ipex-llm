@@ -18,8 +18,8 @@ import numpy as np
 import argparse
 from sklearn.preprocessing import StandardScaler
 
-from zoo.chronos.data.repo_dataset import get_public_dataset
-from zoo.chronos.autots.model.auto_lstm import AutoLSTM
+from bigdl.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.autots.model.auto_lstm import AutoLSTM
 from zoo.orca.automl import hp
 from zoo.orca import init_orca_context, stop_orca_context
 from zoo.orca.automl.metrics import Evaluator

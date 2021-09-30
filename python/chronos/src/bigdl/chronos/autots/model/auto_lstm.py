@@ -16,7 +16,7 @@
 #
 from zoo.orca.automl.model.base_pytorch_model import PytorchModelBuilder
 from zoo.orca.automl.auto_estimator import AutoEstimator
-from zoo.chronos.model.VanillaLSTM_pytorch import model_creator
+from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator
 from .base_automodel import BasePytorchAutomodel
 
 
@@ -50,7 +50,7 @@ class AutoLSTM(BasePytorchAutomodel):
         :param loss: String or pytorch/tf.keras loss instance or pytorch loss creator function.
         :param metric: String. The evaluation metric name to optimize. e.g. "mse"
         :param hidden_dim: Int or hp sampling function from an integer space. The number of features
-               in the hidden state `h`. For hp sampling, see zoo.chronos.orca.automl.hp for more
+               in the hidden state `h`. For hp sampling, see bigdl.chronos.orca.automl.hp for more
                details. e.g. hp.grid_search([32, 64]).
         :param layer_num: Int or hp sampling function from an integer space. Number of recurrent
                layers. e.g. hp.randint(1, 3)

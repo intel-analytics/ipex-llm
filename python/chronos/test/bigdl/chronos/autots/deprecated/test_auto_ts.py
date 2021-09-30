@@ -18,9 +18,9 @@ import pytest
 import numpy as np
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
-from zoo.chronos.autots.deprecated.config.recipe import LSTMGridRandomRecipe, MTNetGridRandomRecipe
-from zoo.chronos.autots.deprecated.forecast import AutoTSTrainer
-from zoo.chronos.autots.deprecated.forecast import TSPipeline
+from bigdl.chronos.autots.deprecated.config.recipe import LSTMGridRandomRecipe, MTNetGridRandomRecipe
+from bigdl.chronos.autots.deprecated.forecast import AutoTSTrainer
+from bigdl.chronos.autots.deprecated.forecast import TSPipeline
 
 import pandas as pd
 

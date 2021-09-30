@@ -19,8 +19,8 @@ from sklearn.preprocessing import MinMaxScaler
 
 from zoo.orca.automl.metrics import Evaluator
 from zoo.orca import init_orca_context, stop_orca_context
-from zoo.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
-from zoo.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
+from bigdl.chronos.data.repo_dataset import get_public_dataset
 
 
 def get_tsdata():

@@ -16,7 +16,7 @@
 
 import os
 
-from zoo.chronos.data import TSDataset
+from bigdl.chronos.data import TSDataset
 from zoo.orca.automl.metrics import Evaluator
 
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
@@ -212,6 +212,6 @@ class TSPipeline:
 
     def _tsdataset_unscale(self, y):
         if self._scaler:
-            from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
+            from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
             y = unscale_timeseries_numpy(y, self._scaler, self._scaler_index)
         return y

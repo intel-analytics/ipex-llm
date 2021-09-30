@@ -19,7 +19,7 @@ import pandas as pd
 import numpy as np
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.data.utils.resample import resample_timeseries_dataframe
+from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 
 
 def get_ugly_ts_df():

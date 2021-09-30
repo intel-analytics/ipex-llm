@@ -18,8 +18,8 @@ import argparse
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-from zoo.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
-from zoo.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
+from bigdl.chronos.data.repo_dataset import get_public_dataset
 
 
 def get_tsdata():

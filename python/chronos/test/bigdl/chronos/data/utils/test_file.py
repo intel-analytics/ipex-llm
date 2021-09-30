@@ -16,7 +16,7 @@
 import os
 import shutil
 import tempfile
-from zoo.chronos.data.utils.file import parquet2pd
+from bigdl.chronos.data.utils.file import parquet2pd
 import pandas as pd
 import numpy as np
 

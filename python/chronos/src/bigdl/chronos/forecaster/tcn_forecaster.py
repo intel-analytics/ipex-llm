@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from zoo.chronos.forecaster.base_forecaster import BasePytorchForecaster
-from zoo.chronos.forecaster.utils import set_pytorch_seed
-from zoo.chronos.model.tcn import TCNPytorch
-from zoo.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
+from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
+from bigdl.chronos.forecaster.utils import set_pytorch_seed
+from bigdl.chronos.model.tcn import TCNPytorch
+from bigdl.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
 
 
 class TCNForecaster(BasePytorchForecaster):

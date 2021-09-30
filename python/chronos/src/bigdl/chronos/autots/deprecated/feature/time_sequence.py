@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from zoo.chronos.autots.deprecated.feature.utils import save_config
-from zoo.chronos.autots.deprecated.feature.abstract import BaseFeatureTransformer
-from zoo.chronos.utils import deprecated
+from bigdl.chronos.autots.deprecated.feature.utils import save_config
+from bigdl.chronos.autots.deprecated.feature.abstract import BaseFeatureTransformer
+from bigdl.chronos.utils import deprecated
 
 import sklearn
 from sklearn.preprocessing import StandardScaler

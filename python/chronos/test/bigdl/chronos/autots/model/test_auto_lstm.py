@@ -20,7 +20,7 @@ from unittest import TestCase
 import pytest
 import tempfile
 
-from zoo.chronos.autots.model.auto_lstm import AutoLSTM
+from bigdl.chronos.autots.model.auto_lstm import AutoLSTM
 from zoo.orca.automl import hp
 
 input_feature_dim = 10

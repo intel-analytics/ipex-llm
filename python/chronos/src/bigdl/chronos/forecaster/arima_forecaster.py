@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from zoo.chronos.forecaster.abstract import Forecaster
-from zoo.chronos.model.arima import ARIMAModel
+from bigdl.chronos.forecaster.abstract import Forecaster
+from bigdl.chronos.model.arima import ARIMAModel
 
 
 class ARIMAForecaster(Forecaster):

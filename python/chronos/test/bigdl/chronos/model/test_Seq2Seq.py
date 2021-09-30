@@ -20,8 +20,8 @@ import tempfile
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.model.Seq2Seq import LSTMSeq2Seq
-from zoo.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
+from bigdl.chronos.model.Seq2Seq import LSTMSeq2Seq
+from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
 import numpy as np

@@ -18,9 +18,9 @@ import pickle
 import os
 import numpy as np
 
-from zoo.chronos.simulator.doppelganger.util import gen_attribute_input_noise,\
+from bigdl.chronos.simulator.doppelganger.util import gen_attribute_input_noise,\
     gen_feature_input_noise, gen_feature_input_data_free, renormalize_per_sample
-from zoo.chronos.simulator.doppelganger.output import OutputType
+from bigdl.chronos.simulator.doppelganger.output import OutputType
 
 import torch
 import torch.nn.functional as F
@@ -169,7 +169,7 @@ class DPGANSimulator:
         real_data["data_feature"] = data_feature
         real_data["data_attribute"] = data_attribute
         real_data["data_gen_flag"] = data_gen_flag
-        from zoo.chronos.simulator.doppelganger.data_module import DoppelGANgerDataModule
+        from bigdl.chronos.simulator.doppelganger.data_module import DoppelGANgerDataModule
         self.data_module = DoppelGANgerDataModule(real_data=real_data,
                                                   feature_outputs=feature_outputs,
                                                   attribute_outputs=attribute_outputs,
@@ -187,7 +187,7 @@ class DPGANSimulator:
                 pickle.dump(self.data_module.data_attribute_outputs, f)
 
         # build the model
-        from zoo.chronos.simulator.doppelganger.doppelganger_pl import DoppelGANger_pl
+        from bigdl.chronos.simulator.doppelganger.doppelganger_pl import DoppelGANger_pl
         self.model = DoppelGANger_pl(data_feature_outputs=self.data_module.data_feature_outputs,
                                      data_attribute_outputs=self.data_module.data_attribute_outputs,
                                      L_max=self.L_max,
@@ -283,7 +283,7 @@ class DPGANSimulator:
         with open(os.path.join(path_dir, ATTRIBUTE_OUTPUT), "rb") as f:
             data_attribute_outputs = pickle.load(f)
         path_dir_model = os.path.join(path_dir, "model")
-        from zoo.chronos.simulator.doppelganger.doppelganger_pl import DoppelGANger_pl
+        from bigdl.chronos.simulator.doppelganger.doppelganger_pl import DoppelGANger_pl
         self.model =\
             DoppelGANger_pl.load_from_checkpoint(os.path.join(path_dir_model, model_version),
                                                  data_feature_outputs=data_feature_outputs,
