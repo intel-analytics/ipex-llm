@@ -19,9 +19,9 @@ import pandas as pd
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
-from zoo.chronos.autots.deprecated.preprocessing.impute.LastFill import LastFill
-from zoo.chronos.autots.deprecated.preprocessing.impute import FillZeroImpute
+from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
+from bigdl.chronos.autots.deprecated.preprocessing.impute.LastFill import LastFill
+from bigdl.chronos.autots.deprecated.preprocessing.impute import FillZeroImpute
 
 
 class TestDataImputation(ZooTestCase):

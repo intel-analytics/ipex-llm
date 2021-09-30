@@ -20,7 +20,7 @@ from unittest import TestCase
 import pytest
 import tempfile
 
-from zoo.chronos.autots.model.auto_tcn import AutoTCN
+from bigdl.chronos.autots.model.auto_tcn import AutoTCN
 from zoo.orca.automl import hp
 
 input_feature_dim = 10

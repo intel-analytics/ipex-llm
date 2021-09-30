@@ -16,11 +16,11 @@
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.autots.deprecated.model.time_sequence import TimeSequenceModel
-from zoo.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
+from bigdl.chronos.autots.deprecated.model.time_sequence import TimeSequenceModel
+from bigdl.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
 import pandas as pd
 import numpy as np
-from zoo.chronos.autots.deprecated.pipeline.time_sequence import TimeSequencePipeline
+from bigdl.chronos.autots.deprecated.pipeline.time_sequence import TimeSequencePipeline
 
 
 class TestTimeSequencePredictor(ZooTestCase):
@@ -52,7 +52,7 @@ class TestTimeSequencePredictor(ZooTestCase):
         assert isinstance(pipeline.model, TimeSequenceModel)
 
     def test_fit_LSTMGridRandomRecipe(self):
-        from zoo.chronos.autots.deprecated.config.recipe import LSTMGridRandomRecipe
+        from bigdl.chronos.autots.deprecated.config.recipe import LSTMGridRandomRecipe
         train_df, _, future_seq_len = self.create_dataset()
         tsp = TimeSequencePredictor(dt_col="datetime",
                                     target_col="value",
@@ -73,7 +73,7 @@ class TestTimeSequencePredictor(ZooTestCase):
         assert pipeline.config["past_seq_len"] == 2
 
     def test_fit_BayesRecipe(self):
-        from zoo.chronos.autots.deprecated.config.recipe import BayesRecipe
+        from bigdl.chronos.autots.deprecated.config.recipe import BayesRecipe
         train_df, _, future_seq_len = self.create_dataset()
         tsp = TimeSequencePredictor(dt_col="datetime",
                                     target_col="value",

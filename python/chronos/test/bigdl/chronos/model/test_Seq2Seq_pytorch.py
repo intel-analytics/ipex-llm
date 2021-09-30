@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from unittest import TestCase
-from zoo.chronos.model.Seq2Seq_pytorch import Seq2SeqPytorch
+from bigdl.chronos.model.Seq2Seq_pytorch import Seq2SeqPytorch
 import numpy as np
 import tempfile
 import os

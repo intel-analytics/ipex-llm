@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from zoo.chronos.autots.deprecated.config.base import Recipe
+from bigdl.chronos.autots.deprecated.config.base import Recipe
 from zoo.orca.automl import hp
-from zoo.chronos.utils import deprecated
+from bigdl.chronos.utils import deprecated
 
 
 @deprecated('Please use `zoo.orca.automl.hp` instead.')

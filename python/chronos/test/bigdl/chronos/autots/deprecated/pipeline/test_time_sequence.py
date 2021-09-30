@@ -19,12 +19,12 @@ import tempfile
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.autots.deprecated.pipeline.time_sequence import load_ts_pipeline
-from zoo.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
-from zoo.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
-from zoo.chronos.autots.deprecated.model.time_sequence import TimeSequenceModel
+from bigdl.chronos.autots.deprecated.pipeline.time_sequence import load_ts_pipeline
+from bigdl.chronos.autots.deprecated.regression.time_sequence_predictor import TimeSequencePredictor
+from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
+from bigdl.chronos.autots.deprecated.model.time_sequence import TimeSequenceModel
 from zoo.orca.automl.metrics import Evaluator
-from zoo.chronos.autots.deprecated.config.recipe import *
+from bigdl.chronos.autots.deprecated.config.recipe import *
 
 import numpy as np
 import pandas as pd

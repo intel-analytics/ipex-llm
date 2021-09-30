@@ -18,7 +18,7 @@ import pandas as pd
 import random
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.data.repo_dataset import get_public_dataset
 
 
 class TestRepoDataset(ZooTestCase):

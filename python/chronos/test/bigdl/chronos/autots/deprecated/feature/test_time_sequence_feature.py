@@ -17,14 +17,14 @@
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.autots.deprecated.feature.utils import save, restore
-from zoo.chronos.autots.deprecated.feature.time_sequence import *
+from bigdl.chronos.autots.deprecated.feature.utils import save, restore
+from bigdl.chronos.autots.deprecated.feature.time_sequence import *
 from numpy.testing import assert_array_almost_equal
 import json
 import tempfile
 import shutil
 
-from zoo.chronos.autots.deprecated.preprocessing.utils import train_val_test_split
+from bigdl.chronos.autots.deprecated.preprocessing.utils import train_val_test_split
 
 
 class TestTimeSequenceFeature(ZooTestCase):

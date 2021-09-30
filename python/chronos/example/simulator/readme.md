@@ -12,7 +12,7 @@ We will use WWT (Wikipedia Web Traffic) dataset stated in the [paper](http://arx
 `DPGANSimulator` also require the meta data for the training data, for WWT dataset, the meta data can be stated as following.
 ```python
 # feature outputs
-from zoo.chronos.simulator.doppelganger.output import Output, OutputType, Normalization
+from bigdl.chronos.simulator.doppelganger.output import Output, OutputType, Normalization
 
 
 feature_outputs = [Output(type_=OutputType.CONTINUOUS, dim=1, normalization=Normalization.MINUSONE_ONE)]

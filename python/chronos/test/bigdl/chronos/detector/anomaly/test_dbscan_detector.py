@@ -18,7 +18,7 @@ import pytest
 import numpy as np
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
-from zoo.chronos.detector.anomaly.dbscan_detector import DBScanDetector
+from bigdl.chronos.detector.anomaly.dbscan_detector import DBScanDetector
 
 
 class TestDBScanDetector(ZooTestCase):

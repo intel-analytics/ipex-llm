@@ -18,14 +18,14 @@ import pandas as pd
 import numpy as np
 import functools
 
-from zoo.chronos.data.utils.feature import generate_dt_features, generate_global_features
-from zoo.chronos.data.utils.impute import impute_timeseries_dataframe
-from zoo.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
-from zoo.chronos.data.utils.roll import roll_timeseries_dataframe
-from zoo.chronos.data.utils.scale import unscale_timeseries_numpy
-from zoo.chronos.data.utils.resample import resample_timeseries_dataframe
-from zoo.chronos.data.utils.split import split_timeseries_dataframe
-from zoo.chronos.data.utils.utils import _to_list, _check_type,\
+from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
+from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
+from bigdl.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
+from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
+from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
+from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
+from bigdl.chronos.data.utils.split import split_timeseries_dataframe
+from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
 from tsfresh.utilities.dataframe_functions import roll_time_series
@@ -218,7 +218,7 @@ class TSDataset:
         >>>                                   extra_feature_col=["extra feature 1",
         >>>                                                      "extra feature 2"])
         """
-        from zoo.chronos.data.utils.file import parquet2pd
+        from bigdl.chronos.data.utils.file import parquet2pd
         columns = _to_list(dt_col, name="dt_col") + \
             _to_list(target_col, name="target_col") + \
             _to_list(id_col, name="id_col") + \
@@ -656,7 +656,7 @@ class TSDataset:
                 raise ValueError("You must input lookback if roll is True")
             if horizon is None:
                 raise ValueError("You must input horizon if roll is True")
-            from zoo.chronos.data.utils.roll_dataset import RollDataset
+            from bigdl.chronos.data.utils.roll_dataset import RollDataset
             feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
                 else self.feature_col
             target_col = _to_list(target_col, "target_col") if target_col is not None \

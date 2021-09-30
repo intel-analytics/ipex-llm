@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zoo.chronos.autots.deprecated.regression.base_predictor import BasePredictor
-from zoo.chronos.utils import deprecated
+from bigdl.chronos.autots.deprecated.regression.base_predictor import BasePredictor
+from bigdl.chronos.utils import deprecated
 
 
-@deprecated('Please use `zoo.chronos.autots.AutoTSEstimator` instead.')
+@deprecated('Please use `bigdl.chronos.autots.AutoTSEstimator` instead.')
 class TimeSequencePredictor(BasePredictor):
     """
     Trains a model that predicts future time sequence from past sequence.
@@ -62,7 +62,7 @@ class TimeSequencePredictor(BasePredictor):
                          scheduler_params=scheduler_params)
 
     def get_model_builder(self):
-        from zoo.chronos.autots.deprecated.model.time_sequence import TSModelBuilder
+        from bigdl.chronos.autots.deprecated.model.time_sequence import TSModelBuilder
         model_builder = TSModelBuilder(
             dt_col=self.dt_col,
             target_cols=self.target_col,

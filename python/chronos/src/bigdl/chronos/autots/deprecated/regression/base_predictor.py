@@ -19,9 +19,9 @@ import os
 from abc import abstractmethod
 
 from zoo.orca.automl.metrics import Evaluator
-from zoo.chronos.autots.deprecated.pipeline.time_sequence import TimeSequencePipeline
+from bigdl.chronos.autots.deprecated.pipeline.time_sequence import TimeSequencePipeline
 from zoo.orca.automl.search.utils import process
-from zoo.chronos.autots.deprecated.config.recipe import *
+from bigdl.chronos.autots.deprecated.config.recipe import *
 from zoo.ray import RayContext
 from zoo.orca.automl.auto_estimator import AutoEstimator
 

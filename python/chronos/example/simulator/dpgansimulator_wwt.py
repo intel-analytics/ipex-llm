@@ -50,8 +50,8 @@ import numpy as np
 import argparse
 import matplotlib.pyplot as plt
 
-from zoo.chronos.simulator import DPGANSimulator
-from zoo.chronos.simulator.doppelganger.output import Output, OutputType, Normalization
+from bigdl.chronos.simulator import DPGANSimulator
+from bigdl.chronos.simulator.doppelganger.output import Output, OutputType, Normalization
 
 EPS = 1e-8
 

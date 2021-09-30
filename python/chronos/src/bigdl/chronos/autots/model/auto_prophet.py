@@ -20,7 +20,7 @@ import pandas as pd
 
 from zoo.orca.automl.auto_estimator import AutoEstimator
 import zoo.orca.automl.hp as hp
-from zoo.chronos.model.prophet import ProphetBuilder
+from bigdl.chronos.model.prophet import ProphetBuilder
 
 
 # -
@@ -48,7 +48,7 @@ class AutoProphet:
 
         :param changepoint_prior_scale: Int or hp sampling function from an integer space
             for hyperparameter changepoint_prior_scale for the Prophet model.
-            For hp sampling, see zoo.chronos.orca.automl.hp for more details.
+            For hp sampling, see bigdl.chronos.orca.automl.hp for more details.
             e.g. hp.loguniform(0.001, 0.5).
         :param seasonality_prior_scale: hyperparameter seasonality_prior_scale for the
             Prophet model.

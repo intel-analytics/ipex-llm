@@ -161,7 +161,7 @@ class ProphetBuilder(ModelBuilder):
            https://facebook.github.io/prophet/docs/diagnostics.html#hyperparameter-tuning
         for the parameter names to specify.
         """
-        from zoo.chronos.model.prophet import ProphetModel
+        from bigdl.chronos.model.prophet import ProphetModel
         model = ProphetModel()
         model._build(**config)
         return model

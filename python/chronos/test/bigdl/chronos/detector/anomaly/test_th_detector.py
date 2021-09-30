@@ -19,8 +19,8 @@ import numpy as np
 import pandas as pd
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
-from zoo.chronos.forecaster.lstm_forecaster import LSTMForecaster
-from zoo.chronos.detector.anomaly import ThresholdDetector
+from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
+from bigdl.chronos.detector.anomaly import ThresholdDetector
 
 
 class TestThresholdDetector(ZooTestCase):

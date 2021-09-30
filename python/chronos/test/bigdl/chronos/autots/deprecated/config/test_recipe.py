@@ -17,7 +17,7 @@
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.autots.deprecated.config.recipe import *
+from bigdl.chronos.autots.deprecated.config.recipe import *
 
 
 class TestTimeSequencePredictor(ZooTestCase):

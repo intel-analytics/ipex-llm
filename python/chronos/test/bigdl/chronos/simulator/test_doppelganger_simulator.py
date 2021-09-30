@@ -45,8 +45,8 @@ import tempfile
 import numpy as np
 import pytest
 
-from zoo.chronos.simulator import DPGANSimulator
-from zoo.chronos.simulator.doppelganger.output import Output, OutputType, Normalization
+from bigdl.chronos.simulator import DPGANSimulator
+from bigdl.chronos.simulator.doppelganger.output import Output, OutputType, Normalization
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
 

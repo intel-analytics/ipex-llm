@@ -17,10 +17,10 @@
 import types
 
 from zoo.orca.automl.auto_estimator import AutoEstimator
-from zoo.chronos.data import TSDataset
+from bigdl.chronos.data import TSDataset
 import zoo.orca.automl.hp as hp
-from zoo.chronos.autots.model import AutoModelFactory
-from zoo.chronos.autots.tspipeline import TSPipeline
+from bigdl.chronos.autots.model import AutoModelFactory
+from bigdl.chronos.autots.tspipeline import TSPipeline
 
 
 class AutoTSEstimator:

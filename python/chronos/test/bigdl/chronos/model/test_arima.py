@@ -17,7 +17,7 @@
 import pytest
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.model.arima import ARIMAModel
+from bigdl.chronos.model.arima import ARIMAModel
 import numpy as np
 import os
 from numpy.testing import assert_array_almost_equal

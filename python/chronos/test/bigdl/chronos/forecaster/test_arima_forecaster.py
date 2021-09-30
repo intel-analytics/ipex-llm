@@ -18,7 +18,7 @@ import numpy as np
 import tempfile
 import os
 
-from zoo.chronos.forecaster.arima_forecaster import ARIMAForecaster
+from bigdl.chronos.forecaster.arima_forecaster import ARIMAForecaster
 from unittest import TestCase
 import pytest
 

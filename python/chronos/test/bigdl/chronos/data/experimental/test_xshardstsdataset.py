@@ -21,8 +21,8 @@ import random
 import os
 
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-from zoo.chronos.data import TSDataset
-from zoo.chronos.data.experimental import XShardsTSDataset
+from bigdl.chronos.data import TSDataset
+from bigdl.chronos.data.experimental import XShardsTSDataset
 from zoo.orca.data.pandas import read_csv
 from zoo.orca.common import init_orca_context, stop_orca_context
 

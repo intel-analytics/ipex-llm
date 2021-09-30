@@ -21,8 +21,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
-from zoo.chronos.autots import AutoTSEstimator, TSPipeline
-from zoo.chronos.data import TSDataset
+from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
+from bigdl.chronos.data import TSDataset
 from zoo.orca.automl import hp
 import pandas as pd
 

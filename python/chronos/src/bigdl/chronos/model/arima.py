@@ -170,7 +170,7 @@ class ARIMABuilder(ModelBuilder):
            https://alkaline-ml.com/pmdarima/modules/generated/pmdarima.arima.ARIMA.html#pmdarima.arima.ARIMA
         for the parameter names to specify.
         """
-        from zoo.chronos.model.arima import ARIMAModel
+        from bigdl.chronos.model.arima import ARIMAModel
         model = ARIMAModel()
         model._build(**config)
         return model
