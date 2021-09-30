@@ -16,9 +16,9 @@
 
 import types
 
-from zoo.orca.automl.auto_estimator import AutoEstimator
+from bigdl.orca.automl.auto_estimator import AutoEstimator
 from bigdl.chronos.data import TSDataset
-import zoo.orca.automl.hp as hp
+import bigdl.orca.automl.hp as hp
 from bigdl.chronos.autots.model import AutoModelFactory
 from bigdl.chronos.autots.tspipeline import TSPipeline
 
@@ -90,7 +90,7 @@ class AutoTSEstimator:
         :param optimizer: String or pyTorch optimizer creator function or
                tf.keras optimizer instance.
         :param past_seq_len: Int or or hp sampling function. The number of historical steps (i.e.
-               lookback) used for forecasting. For hp sampling, see zoo.orca.automl.hp for more
+               lookback) used for forecasting. For hp sampling, see bigdl.orca.automl.hp for more
                details. The values defaults to 2.
         :param future_seq_len: Int. The number of future steps to forecast. The value defaults
                to 1.
@@ -125,7 +125,7 @@ class AutoTSEstimator:
 
         if isinstance(model, types.FunctionType) and backend == "torch":
             # pytorch 3rd party model
-            from zoo.orca.automl.auto_estimator import AutoEstimator
+            from bigdl.orca.automl.auto_estimator import AutoEstimator
             self.model = AutoEstimator.from_torch(model_creator=model,
                                                   optimizer=optimizer,
                                                   loss=loss,

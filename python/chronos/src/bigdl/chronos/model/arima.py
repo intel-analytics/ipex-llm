@@ -19,8 +19,8 @@ from pmdarima.arima import ARIMA
 from pmdarima.arima import ndiffs
 from pmdarima.arima import nsdiffs
 
-from zoo.orca.automl.metrics import Evaluator
-from zoo.orca.automl.model.abstract import BaseModel, ModelBuilder
+from bigdl.orca.automl.metrics import Evaluator
+from bigdl.orca.automl.model.abstract import BaseModel, ModelBuilder
 
 
 class ARIMAModel(BaseModel):

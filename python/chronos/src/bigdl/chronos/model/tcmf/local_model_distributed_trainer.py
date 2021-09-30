@@ -143,7 +143,7 @@ def model_creator(config):
 
 
 def train_yseq_hvd(workers_per_node, epochs, **config):
-    from zoo.orca.learn.pytorch import Estimator
+    from bigdl.orca.learn.pytorch import Estimator
     estimator = Estimator.from_torch(
         model=model_creator,
         optimizer=optimizer_creator,

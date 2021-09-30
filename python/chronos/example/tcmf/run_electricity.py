@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import argparse
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 import numpy as np
 from bigdl.chronos.forecaster.tcmf_forecaster import TCMFForecaster
 import tempfile
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     target_value = dict({"y": target_data})
 
     # evaluate with prediction results
-    from zoo.orca.automl.metrics import Evaluator
+    from bigdl.orca.automl.metrics import Evaluator
     evaluate_mse = Evaluator.evaluate("mse", target_data, yhat)
 
     # You can also evaluate directly without prediction results.

@@ -20,7 +20,7 @@ import os
 import torch
 
 from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 from unittest import TestCase
 import pytest
 
@@ -141,7 +141,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         train_data, val_data, test_data = create_data()
         print("original", train_data[0].dtype)
         init_orca_context(cores=4, memory="2g")
-        from zoo.orca.data import XShards
+        from bigdl.orca.data import XShards
 
         def transform_to_dict(data):
             return {'x': data[0], 'y': data[1]}

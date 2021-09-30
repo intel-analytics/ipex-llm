@@ -18,12 +18,12 @@ import pandas as pd
 import os
 from abc import abstractmethod
 
-from zoo.orca.automl.metrics import Evaluator
+from bigdl.orca.automl.metrics import Evaluator
 from bigdl.chronos.autots.deprecated.pipeline.time_sequence import TimeSequencePipeline
-from zoo.orca.automl.search.utils import process
+from bigdl.orca.automl.search.utils import process
 from bigdl.chronos.autots.deprecated.config.recipe import *
 from zoo.ray import RayContext
-from zoo.orca.automl.auto_estimator import AutoEstimator
+from bigdl.orca.automl.auto_estimator import AutoEstimator
 
 
 ALLOWED_FIT_METRICS = ("mse", "mae", "r2")

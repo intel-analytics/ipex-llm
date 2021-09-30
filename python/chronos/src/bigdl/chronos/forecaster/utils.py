@@ -19,7 +19,7 @@ import random
 import numpy
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
-from zoo.orca.data import XShards
+from bigdl.orca.data import XShards
 
 
 def np_to_creator(data):

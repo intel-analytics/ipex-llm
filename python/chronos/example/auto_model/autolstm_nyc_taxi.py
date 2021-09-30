@@ -20,9 +20,9 @@ from sklearn.preprocessing import StandardScaler
 
 from bigdl.chronos.data.repo_dataset import get_public_dataset
 from bigdl.chronos.autots.model.auto_lstm import AutoLSTM
-from zoo.orca.automl import hp
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca.automl.metrics import Evaluator
+from bigdl.orca.automl import hp
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.automl.metrics import Evaluator
 
 
 def get_tsdata():
