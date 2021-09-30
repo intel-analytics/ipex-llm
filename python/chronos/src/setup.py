@@ -22,51 +22,15 @@ from shutil import copyfile, copytree, rmtree
 import fnmatch
 from setuptools import setup
 
-TEMP_PATH = "bigdl/share/chronos"
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
-building_error_msg = """
-If you are packing python API from BigDL source, you must build BigDL first
-and run sdist.
-    To build BigDL with maven you can run:
-      cd $BigDL_HOME
-      ./make-dist.sh
-    Building the source dist is done in the Python directory:
-      cd python
-      python setup.py sdist
-      pip install dist/*.tar.gz"""
-
-
-def build_from_source():
-    code_path = bigdl_home + "/python/chronos/src/bigdl/chronos/utils.py"
-    print("Checking: %s to see if build from source" % code_path)
-    if os.path.exists(code_path):
-        return True
-    return False
-
-
-def init_env():
-    if build_from_source():
-        print("Start to build distributed package")
-        print("HOME OF BIGDL: " + bigdl_home)
-        dist_source = bigdl_home + "/dist"
-        if not os.path.exists(dist_source):
-            print(building_error_msg)
-            sys.exit(-1)
-        if os.path.exists(TEMP_PATH):
-            rmtree(TEMP_PATH)
-        copytree(dist_source, TEMP_PATH)
-        copyfile(bigdl_home + "/python/chronos/src/bigdl/chronos/model/__init__.py", TEMP_PATH + "/__init__.py")
-    else:
-        print("Do nothing for release installation")
-
 
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__ + "/..")
-    bigdl_packages = ['bigdl.share.chronos']
+    bigdl_packages = []
     source_dir = os.path.join(bigdl_python_home, "bigdl")
     for dirpath, dirs, files in os.walk(source_dir):
         package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
@@ -101,7 +65,6 @@ def setup_package():
                                    'tsfresh==0.17.0']},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
-        package_data={"bigdl.share.chronos": ['lib/bigdl-chronos*.jar']},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
@@ -115,11 +78,4 @@ def setup_package():
 
 
 if __name__ == '__main__':
-    try:
-        init_env()
-        setup_package()
-    except Exception as e:
-        raise e
-    finally:
-        if build_from_source() and os.path.exists(TEMP_PATH):
-            rmtree(TEMP_PATH)
+    setup_package()
