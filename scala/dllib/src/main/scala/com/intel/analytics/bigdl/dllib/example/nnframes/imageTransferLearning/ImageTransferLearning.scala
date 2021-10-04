@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.examples.nnframes.imageTransferLearning
+package com.intel.analytics.bigdl.dllib.examples.nnframes.imageTransferLearning
 
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.Adam
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.zoo.pipeline.nnframes._
-import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.feature.image._
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.optim.Adam
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.nnframes._
+import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.feature.image._
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
@@ -62,6 +62,7 @@ object ImageTransferLearning {
         .setPredictionCol("embedding")
 
       val lrModel = Sequential().add(Linear(1000, 2)).add(LogSoftMax())
+      import com.intel.analytics.bigdl.dllib.keras.objectives.ZooClassNLLCriterion
       val classifier = NNClassifier(lrModel, ZooClassNLLCriterion[Float](), Array(1000))
         .setFeaturesCol("embedding")
         .setOptimMethod(new Adam[Float]())

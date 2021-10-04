@@ -16,17 +16,17 @@
 
 import os
 
-from bigdl.nn.criterion import *
-from bigdl.nn.layer import *
-from bigdl.optim.optimizer import Adam
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.optim.optimizer import Adam
 from pyspark.ml import Pipeline
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import DoubleType, StringType
 
-from zoo.common.nncontext import *
-from zoo.feature.image import *
-from zoo.pipeline.nnframes import *
+from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.feature.image import *
+from bigdl.dllib.nnframes import *
 
 from optparse import OptionParser
 

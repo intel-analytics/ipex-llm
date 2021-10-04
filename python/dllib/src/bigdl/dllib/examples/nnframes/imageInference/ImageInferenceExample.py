@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 
-from bigdl.nn.layer import Model
+from bigdl.dllib.nn.layer import Model
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import StringType
 
-from zoo.common.nncontext import *
-from zoo.feature.image import *
-from zoo.pipeline.nnframes import *
+from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.feature.image import *
+from bigdl.dllib.nnframes import *
 
 from optparse import OptionParser
 import sys
