@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.zoo.examples.nnframes.imageInference
+package com.intel.analytics.bigdl.dllib.examples.nnframes.imageInference
 
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils.LoggerFilter
-import com.intel.analytics.zoo.pipeline.nnframes._
-import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.feature.image._
+import com.intel.analytics.bigdl.dllib.nn.Module
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
+import com.intel.analytics.bigdl.dllib.nnframes._
+import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.feature.image._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 import scopt.OptionParser
