@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package com.intel.analytics.bigdl.dllib.example.imageclassification
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, Transformer}
@@ -45,3 +46,4 @@ class RowToByteRecords(colName: String)
     )
   }
 }
+*/

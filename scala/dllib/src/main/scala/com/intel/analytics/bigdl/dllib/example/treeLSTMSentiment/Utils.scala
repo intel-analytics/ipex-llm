@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package com.intel.analytics.bigdl.dllib.example.treeLSTMSentiment
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
@@ -250,3 +251,4 @@ object Utils {
     optimizerVersion: Option[String] = None
   ) extends AbstractTextClassificationParams
 }
+*/
