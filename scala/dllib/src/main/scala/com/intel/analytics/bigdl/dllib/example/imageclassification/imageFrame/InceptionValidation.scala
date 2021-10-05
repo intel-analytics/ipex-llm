@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package com.intel.analytics.bigdl.dllib.example.imageclassification.imageFrame
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet.SeqFileFolder
@@ -71,3 +72,4 @@ object InceptionValidation {
     })
   }
 }
+*/

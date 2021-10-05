@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package com.intel.analytics.bigdl.dllib.example.loadmodel
 
 import java.nio.charset.StandardCharsets
@@ -141,4 +142,4 @@ object VGGPreprocessor {
     validImageFeatures.map(x => x[Sample[Float]](ImageFeature.sample))
   }
 }
-
+*/

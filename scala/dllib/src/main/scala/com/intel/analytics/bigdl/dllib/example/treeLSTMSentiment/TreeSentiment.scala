@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package com.intel.analytics.bigdl.dllib.example.treeLSTMSentiment
 
 import com.intel.analytics.bigdl._
@@ -51,3 +52,4 @@ object TreeLSTMSentiment {
       .add(treeLSTMModule)
   }
 }
+*/

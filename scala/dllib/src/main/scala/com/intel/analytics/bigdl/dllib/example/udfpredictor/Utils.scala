@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package com.intel.analytics.bigdl.dllib.example.udfpredictor
 
 import java.io.{File, InputStream, PrintWriter}
@@ -209,3 +210,4 @@ object Utils {
       .action((x, c) => c.copy(testDir = x))
   }
 }
+*/

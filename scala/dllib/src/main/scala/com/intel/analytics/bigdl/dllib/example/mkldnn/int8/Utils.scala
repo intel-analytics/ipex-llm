@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package com.intel.analytics.bigdl.dllib.example.mkldnn.int8
 
 import scopt.OptionParser
@@ -65,3 +66,4 @@ object Utils {
         .action((x, c) => c.copy(batchSize = x))
     }
 }
+*/
