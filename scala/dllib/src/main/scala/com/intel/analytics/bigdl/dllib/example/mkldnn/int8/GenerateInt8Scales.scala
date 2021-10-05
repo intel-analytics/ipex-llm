@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*
 package com.intel.analytics.bigdl.dllib.example.mkldnn.int8
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch}
@@ -95,3 +95,4 @@ object GenerateInt8Scales {
     }
   }
 }
+*/

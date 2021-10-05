@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/*
 package com.intel.analytics.bigdl.dllib.example.mkldnn.int8
 
 import com.intel.analytics.bigdl.dllib.models.resnet.ImageNetDataSet
@@ -58,3 +59,4 @@ object ImageNetInference {
     })
   }
 }
+*/
