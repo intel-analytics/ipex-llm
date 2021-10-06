@@ -118,7 +118,10 @@ trait ModuleSerializable extends Loadable with Savable{
 
     val (tags, numerics) = getTypes(context)
     val model = context.bigdlModule
-    val moduleType = model.getModuleType
+    var moduleType = model.getModuleType
+    if (!moduleType.contains("dllib") && moduleType.contains("bigdl.nn")) {
+      moduleType = moduleType.replace("bigdl.nn", "bigdl.dllib.nn")
+    }
     val cls = Class.forName(moduleType)
 
     val modelAttributes = model.getAttrMap.asScala.map{
