@@ -4,7 +4,7 @@ ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
 
 THIS_DIR ?= /ppml/trusted-big-data-ml
 JDK_HOME ?= /opt/jdk8
-SPARK_HOME ?= $(THIS_DIR)/work/spark-2.4.6
+SPARK_HOME ?= $(THIS_DIR)/work/spark-3.1.2
 SPARK_USER ?= root
 SPARK_LOCAL_IP ?= 127.0.0.1
 WORK_DIR ?= $(THIS_DIR)/work

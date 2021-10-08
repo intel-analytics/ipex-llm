@@ -1,0 +1,22 @@
+2025a2026,2046
+>
+>   private[spark] val SGX_ENABLED =
+>     ConfigBuilder("spark.kubernetes.sgx.enabled")
+>       .doc("If set to true, spark executors on kubernetes will run in sgx.")
+>       .version("3.1.2")
+>       .booleanConf
+>       .createWithDefault(false)
+>
+>   private[spark] val SGX_MEM_SIZE =
+>     ConfigBuilder("spark.kubernetes.sgx.mem")
+>       .doc("Amount of memory to use for the sgx initialized, in GiB unless otherwise specified.")
+>       .version("3.1.2")
+>       .bytesConf(ByteUnit.GiB)
+>       .createWithDefaultString("16g")
+>
+>   private[spark] val SGX_JVM_MEM_SIZE =
+>     ConfigBuilder("spark.kubernetes.sgx.jvm.mem")
+>       .doc("Amount of memory to use for the jvm run in sgx, in GiB unless otherwise specified.")
+>       .version("3.1.2")
+>       .bytesConf(ByteUnit.GiB)
+>       .createWithDefaultString("16g")
