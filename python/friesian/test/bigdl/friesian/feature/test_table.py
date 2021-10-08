@@ -25,7 +25,7 @@ from pyspark.sql.functions import col, concat, max, min, array, udf
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType, \
     DoubleType
 
-from zoo.orca import OrcaContext
+from bigdl.orca import OrcaContext
 from zoo.friesian.feature import FeatureTable, StringIndex, TargetCode
 from zoo.common.nncontext import *
 

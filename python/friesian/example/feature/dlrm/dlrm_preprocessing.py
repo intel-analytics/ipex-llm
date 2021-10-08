@@ -18,7 +18,7 @@ import os
 from time import time
 from argparse import ArgumentParser
 
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 from zoo.friesian.feature import FeatureTable
 
 

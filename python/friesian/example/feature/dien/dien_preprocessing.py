@@ -18,7 +18,7 @@ import sys
 import os
 import time
 from pyspark import StorageLevel
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 from pyspark.sql.functions import udf, col
 from zoo.friesian.feature import FeatureTable
 from pyspark.sql.types import StringType, ArrayType, FloatType
