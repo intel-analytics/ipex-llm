@@ -22,8 +22,8 @@ from argparse import ArgumentParser
 from time import time
 from functools import reduce
 
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca.data.file import makedirs, write_text, exists
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data.file import makedirs, write_text, exists
 from zoo import init_nncontext
 
 LABEL_COL = 0
