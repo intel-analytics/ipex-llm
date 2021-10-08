@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from zoo.common.nncontext import *
-from zoo.pipeline.api.autograd import *
-from zoo.pipeline.api.keras.layers import *
-from zoo.pipeline.api.keras.models import *
+from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.keras.autograd import *
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import *
 
 
 def mean_absolute_error(y_true, y_pred):
