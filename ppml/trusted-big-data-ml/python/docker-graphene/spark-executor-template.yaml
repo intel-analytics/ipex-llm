@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-executor
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: enclave-key
+        mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+      - name: dev-gsgx
+        mountPath: /dev/gsgx
+      - name: device-plugin
+        mountPath: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        mountPath: /var/run/aesmd/aesm.socket
+    #resources:
+      #requests:
+        #cpu: 16
+        #memory: 128Gi
+        #sgx.intel.com/epc: 133258905600
+        #sgx.intel.com/enclave: 10
+        #sgx.intel.com/provision: 10
+      #limits:
+        #cpu: 16
+        #memory: 128Gi
+        #sgx.intel.com/epc: 133258905600
+        #sgx.intel.com/enclave: 10
+        #sgx.intel.com/provision: 10
+  volumes:
+    - name: enclave-key
+      hostPath:
+        path:  /home/sdp/glorysdj/enclave-key.pem
+    - name: dev-gsgx
+      hostPath:
+        path: /dev/gsgx
+    - name: device-plugin
+      hostPath:
+        path: /var/lib/kubelet/device-plugins
+    - name: aesm-socket
+      hostPath:
+        path: /var/run/aesmd/aesm.socket

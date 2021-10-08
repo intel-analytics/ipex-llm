@@ -1,7 +1,3 @@
-521c521,522
-<     FileUtil.chmod(targetFile.getAbsolutePath, "a+x")
----
->     println("######################### fork chmod is forbidden !!!" + targetFile.getAbsolutePath)
+562a563,564
+>     println("INFO fork chmod is forbidden !!!" + targetFile.getAbsolutePath)
 >     // FileUtil.chmod(targetFile.getAbsolutePath, "a+x")
-1221a1223
->     println("###################### processbuilder in utils.executeCommand, " + command)
