@@ -123,7 +123,35 @@ time4=$((now - start))
 
 clear_up
 
+echo "start example test for autograd"
+#timer
+start=$(date "+%s")
+
+export SPARK_DRIVER_MEMORY=2g
+python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/autograd/custom.py
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "autograd-custom failed"
+  exit $exit_status
+fi
+
+python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/autograd/customloss.py
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "autograd_customloss failed"
+  exit $exit_status
+fi
+
+unset SPARK_DRIVER_MEMORY
+now=$(date "+%s")
+time5=$((now - start))
+
+clear_up
+
 echo "#1 mnist cnn time used: $time1 seconds"
 echo "#2 imdb cnn lstm time used: $time2 seconds"
 echo "#3 lenet time used: $time3 seconds"
 echo "#4 nnframes time used: $time4 seconds"
+echo "#5 autograd time used: $time5 seconds"
