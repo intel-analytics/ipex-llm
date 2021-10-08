@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -60,8 +60,8 @@ from tensorflow import keras
 
 import argparse
 
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca.learn.tf.estimator import Estimator
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.learn.tf.estimator import Estimator
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",

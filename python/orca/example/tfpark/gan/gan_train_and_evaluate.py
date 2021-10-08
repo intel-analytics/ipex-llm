@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 from bigdl.optim.optimizer import MaxIteration
 from zoo.tfpark.gan.gan_estimator import GANEstimator
 
-from zoo import init_nncontext
+from bigdl.dllib.utils.nncontext import init_nncontext
 from zoo.tfpark import TFDataset
 from zoo.tfpark import ZooOptimizer
 import numpy as np

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ from zoo.common.nncontext import *
 from zoo.feature.image import *
 from zoo.pipeline.api.keras.metrics import *
 from zoo.pipeline.nnframes import *
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca.learn.tf.estimator import Estimator
-from zoo.orca.learn.trigger import EveryEpoch, SeveralIteration
-from zoo.orca.data.image import write_tfrecord, read_tfrecord
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.learn.tf.estimator import Estimator
+from bigdl.orca.learn.trigger import EveryEpoch, SeveralIteration
+from bigdl.orca.data.image import write_tfrecord, read_tfrecord
 from inception_preprocessing import preprocess_for_train, \
     preprocess_for_eval
 from nets import inception_v1
@@ -220,8 +220,8 @@ if __name__ == "__main__":
     loss = tf.reduce_mean(tf.losses.sparse_softmax_cross_entropy(logits=logits,
                                                                  labels=labels))
 
-    from zoo.orca.learn.optimizers.schedule import SequentialSchedule, Warmup, Poly
-    from zoo.orca.learn.optimizers import SGD
+    from bigdl.orca.learn.optimizers.schedule import SequentialSchedule, Warmup, Poly
+    from bigdl.orca.learn.optimizers import SGD
 
     iterationPerEpoch = int(ceil(float(1281167) / options.batchSize))
     if options.maxEpoch:

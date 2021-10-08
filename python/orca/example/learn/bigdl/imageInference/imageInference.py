@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ from pyspark.sql.types import StringType, DoubleType
 
 from zoo.feature.image import *
 from zoo.pipeline.nnframes import *
-from zoo.orca.learn.bigdl.estimator import Estimator
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca.learn.bigdl.estimator import Estimator
+from bigdl.orca import init_orca_context, stop_orca_context
 
 
 def inference(image_path, model_path, batch_size, sc):

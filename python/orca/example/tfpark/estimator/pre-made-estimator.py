@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import pandas as pd
 import tensorflow as tf
 from optparse import OptionParser
 from tensorflow_estimator.python.estimator.canned import prediction_keys
-from zoo import init_nncontext
+from bigdl.dllib.utils.nncontext import init_nncontext
 from zoo.tfpark import TFDataset, TFEstimator
 from zoo.tfpark import ZooOptimizer
 
