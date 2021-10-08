@@ -15,7 +15,6 @@
 #
 
 import os
-import sys
 import hashlib
 import numpy as np
 from functools import reduce
@@ -31,7 +30,7 @@ from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadc
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler, VectorAssembler, Bucketizer
 
-from zoo.orca import OrcaContext
+from bigdl.orca import OrcaContext
 from zoo.friesian.feature.utils import *
 
 JAVA_INT_MIN = -2147483648
