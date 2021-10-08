@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.friesian.python
+package com.intel.analytics.bigdl.friesian.python
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.common.PythonZoo
-import com.intel.analytics.zoo.friesian.feature.Utils
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import java.util.{List => JList}
 
+import com.intel.analytics.bigdl.friesian.feature.Utils
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.expressions.Window
@@ -31,7 +31,6 @@ import org.apache.spark.sql.functions.{col, rand, row_number, spark_partition_id
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
 import scala.collection.mutable.WrappedArray
-import scala.util.Random
 import scala.math.pow
 
 object PythonFriesian {
