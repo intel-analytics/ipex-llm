@@ -26,10 +26,9 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType, 
     DoubleType
 
 from bigdl.orca import OrcaContext
-from zoo.friesian.feature import FeatureTable, StringIndex, TargetCode
-from zoo.common.nncontext import *
+from bigdl.friesian.feature import FeatureTable, StringIndex, TargetCode
+from bigdl.dllib.utils.nncontext import *
 
-import shutil
 
 
 class TestTable(TestCase):

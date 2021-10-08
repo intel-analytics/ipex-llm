@@ -14,17 +14,14 @@
 # limitations under the License.
 #
 
-from zoo.friesian.feature import FeatureTable
-
 import os
-
-from argparse import ArgumentParser
 from time import time
-from functools import reduce
+from argparse import ArgumentParser
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.file import makedirs, write_text, exists
-from zoo import init_nncontext
+from bigdl.friesian.feature import FeatureTable
+
 
 LABEL_COL = 0
 INT_COLS = ["c{}".format(i) for i in list(range(1, 14))]
