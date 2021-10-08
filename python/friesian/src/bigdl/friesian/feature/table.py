@@ -31,7 +31,7 @@ from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler, VectorAssembler, Bucketizer
 
 from bigdl.orca import OrcaContext
-from zoo.friesian.feature.utils import *
+from bigdl.friesian.feature.utils import *
 
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647

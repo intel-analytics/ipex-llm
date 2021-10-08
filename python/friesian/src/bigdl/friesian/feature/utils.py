@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.common.utils import callZooFunc
+from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
     DoubleType
 
