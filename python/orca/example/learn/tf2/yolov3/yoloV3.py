@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,9 +50,9 @@ from tensorflow.keras.layers import Add, Concatenate, Conv2D, Input, Lambda, \
     LeakyReLU, MaxPool2D, UpSampling2D, ZeroPadding2D, BatchNormalization
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.losses import binary_crossentropy, sparse_categorical_crossentropy
-from zoo.orca.data.image.parquet_dataset import read_parquet, write_parquet
-from zoo.orca.learn.tf2 import Estimator
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data.image.parquet_dataset import read_parquet, write_parquet
+from bigdl.orca.learn.tf2 import Estimator
+from bigdl.orca import init_orca_context, stop_orca_context
 import numpy as np
 import ray
 import tempfile

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 import sys
 from optparse import OptionParser
 
-import zoo.orca.data.pandas
-from zoo.orca import init_orca_context, stop_orca_context
+import bigdl.orca.data.pandas
+from bigdl.orca import init_orca_context, stop_orca_context
 
 
 def process_feature(df, awake_begin=6, awake_end=23):
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # read data
     file_path = options.file_path
-    data_shard = zoo.orca.data.pandas.read_csv(file_path)
+    data_shard = bigdl.orca.data.pandas.read_csv(file_path)
     data = data_shard.collect()
 
     # repartition

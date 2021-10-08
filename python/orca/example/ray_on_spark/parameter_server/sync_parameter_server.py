@@ -1,7 +1,7 @@
 # This file is adapted from https://github.com/ray-project/ray/blob
 # /master/examples/parameter_server/sync_parameter_server.py
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ from __future__ import print_function
 import argparse
 import os
 
-from zoo.examples.ray_on_spark.parameter_server import model
+from bigdl.example.ray_on_spark.parameter_server import model
 import numpy as np
 import ray
 
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca import OrcaContext
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca import OrcaContext
 
 os.environ["LANG"] = "C.UTF-8"
 parser = argparse.ArgumentParser(description="Run the synchronous parameter "

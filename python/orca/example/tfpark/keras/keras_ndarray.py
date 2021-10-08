@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 import sys
 
 import tensorflow as tf
-from zoo import init_nncontext
+from bigdl.dllib.utils.nncontext import init_nncontext
 from bigdl.dataset import mnist
 from zoo.tfpark import KerasModel
 

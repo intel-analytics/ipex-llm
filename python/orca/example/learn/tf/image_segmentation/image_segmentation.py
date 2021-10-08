@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import numpy as np
 
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca.data import XShards
-from zoo.orca.learn.tf.estimator import Estimator
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data import XShards
+from bigdl.orca.learn.tf.estimator import Estimator
 
 
 def load_data_from_zip(file_path, file):

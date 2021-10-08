@@ -1,7 +1,7 @@
 # This file is adapted from https://github.com/ray-project/ray/blob
 # /master/python/ray/rllib/examples/multiagent_two_trainers.py
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ from ray.rllib.agents.ppo.ppo_tf_policy import PPOTFPolicy
 from ray.rllib.tests.test_multi_agent_env import MultiAgentCartPole
 from ray.tune.logger import pretty_print
 from ray.tune.registry import register_env
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca import OrcaContext
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca import OrcaContext
 
 os.environ["LANG"] = "C.UTF-8"
 

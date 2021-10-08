@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from zoo.orca import init_orca_context, stop_orca_context
-from zoo.orca.learn.pytorch import Estimator
-from zoo.orca.learn.metrics import Accuracy
-from zoo.orca.learn.trigger import EveryEpoch
+from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.trigger import EveryEpoch
 
 
 parser = argparse.ArgumentParser(description='PyTorch Cifar10 Example')

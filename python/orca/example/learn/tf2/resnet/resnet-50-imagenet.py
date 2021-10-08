@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 import os
 import argparse
 import tensorflow as tf
@@ -376,7 +376,7 @@ if __name__ == "__main__":
     if not os.path.exists(args.log_dir):
         os.mkdir(args.log_dir)
 
-    from zoo.orca.learn.tf2 import Estimator
+    from bigdl.orca.learn.tf2 import Estimator
     import tensorflow as tf
 
     global_batch_size = args.worker_num * args.batch_size_per_worker
