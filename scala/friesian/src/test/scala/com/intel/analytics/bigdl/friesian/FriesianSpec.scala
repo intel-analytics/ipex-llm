@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.friesian
+package com.intel.analytics.bigdl.friesian
 
 import java.net.URL
 
-import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import com.intel.analytics.zoo.friesian.python.PythonFriesian
+import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.friesian.python.PythonFriesian
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{StructField, _}
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.{StructField, _}
+import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -34,7 +33,7 @@ import scala.collection.mutable
 class FriesianSpec extends ZooSpecHelper {
   var sqlContext: SQLContext = _
   var sc: SparkContext = _
-  val resource: URL = getClass.getClassLoader.getResource("friesian")
+  val resource: URL = getClass.getClassLoader.getResource("")
   val friesian = PythonFriesian.ofFloat()
 
   override def doBefore(): Unit = {

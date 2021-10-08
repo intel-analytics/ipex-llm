@@ -183,6 +183,7 @@
         <module>common/spark-version</module>
         <module>dllib</module>
         <module>orca</module>
+        <module>friesian</module>
         <module>friesian.serving</module>
         <module>grpc</module>
         <module>serving</module>
