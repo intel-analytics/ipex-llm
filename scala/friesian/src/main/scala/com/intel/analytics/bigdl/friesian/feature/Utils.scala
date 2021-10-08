@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.friesian.feature
+package com.intel.analytics.bigdl.friesian.feature
 
 import java.util
 import java.util.{List => JList}
