@@ -36,5 +36,4 @@ BIGDL_CLASSPATH=$(find $BIGDL_HOME/dist/lib/ -name "bigdl-friesian-*with-depende
 BIGDL_CLASSPATH="$(find $BIGDL_HOME/dist/lib/ -name "bigdl-orca-*with-dependencies.jar" | xargs ):$BIGDL_CLASSPATH"
 BIGDL_CLASSPATH="$(find $BIGDL_HOME/dist/lib/ -name "bigdl-dllib-*with-dependencies.jar" | xargs ):$BIGDL_CLASSPATH"
 export BIGDL_CLASSPATH=$BIGDL_CLASSPATH
-
 echo "BIGDL_CLASSPATH": $BIGDL_CLASSPATH
