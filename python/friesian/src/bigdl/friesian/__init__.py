@@ -13,3 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.utils.zoo_engine import prepare_env, is_spark_below_ver
+
+prepare_env()
+if not is_spark_below_ver("2.4"):
+   JavaCreator.add_creator_class("com.intel.analytics.bigdl.friesian.python.PythonFriesian")
+else:
+   warnings.warn("You are strongly recommended to use Spark > 2.4 for Friesian")
