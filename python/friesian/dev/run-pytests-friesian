@@ -21,7 +21,7 @@
 cd "`dirname $0`"
 
 echo "Running Friesian feature tests"
-python -m pytest -v ../test/bigdl/friesian/feature/test_table.py
+python -m pytest -v ../test/bigdl/friesian/feature/
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
