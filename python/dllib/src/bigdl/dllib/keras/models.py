@@ -49,7 +49,7 @@ class Sequential(KerasNet):
             return False
 
     def add(self, model):
-        from bigdl.dllib.autograd import Lambda
+        from bigdl.dllib.keras.autograd import Lambda
         if (isinstance(model, Lambda)):
             if not self.is_built():
                 if not model.input_shape:
