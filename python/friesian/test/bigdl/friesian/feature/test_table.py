@@ -30,7 +30,6 @@ from bigdl.friesian.feature import FeatureTable, StringIndex, TargetCode
 from bigdl.dllib.utils.nncontext import *
 
 
-
 class TestTable(TestCase):
     def setup_method(self, method):
         """ setup any state tied to the execution of the given method in a
