@@ -42,15 +42,6 @@ else
     echo "unsupport platform"
 fi
 
-bigdl_build_command="bash make-dist.sh ${dist_profile}"
-if [ "$quick" == "true" ]; then
-    echo "Skip disting BigDL"
-else
-    echo "Dist BigDL: $bigdl_build_command"
-    cd ${BIGDL_DIR}/scala
-    $bigdl_build_command
-fi
-
 cd $BIGDL_PYTHON_DIR
 sdist_command="python setup.py sdist"
 echo "packing source code: ${sdist_command}"
