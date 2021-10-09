@@ -17,7 +17,7 @@ wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/mni
 
 # Run the example
 export SPARK_DRIVER_MEMORY=2g
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/keras/mnist_cnn.py
+python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/keras/mnist_cnn.py --max_epoch 2
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
@@ -50,7 +50,7 @@ echo "#3 start example test for lenet"
 start=$(date "+%s")
 
 export SPARK_DRIVER_MEMORY=2g
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/lenet/lenet.py
+python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/lenet/lenet.py --maxEpoch 2
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
@@ -108,7 +108,7 @@ fi
 echo "start example test for nnframes transfer learning"
 python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f analytics-zoo-data/data/dogs-vs-cats/samples
+  -f analytics-zoo-data/data/dogs-vs-cats/samples --nb_epoch 2
 
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
@@ -120,8 +120,6 @@ fi
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
 time4=$((now - start))
-
-clear_up
 
 echo "start example test for autograd"
 #timer
