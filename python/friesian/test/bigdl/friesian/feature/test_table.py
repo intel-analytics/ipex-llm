@@ -36,10 +36,10 @@ class TestTable(TestCase):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
+        self.resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 
     def test_apply(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         feature_tbl = feature_tbl.fillna(0, "col_1")
         # udf on single column
@@ -55,7 +55,7 @@ class TestTable(TestCase):
         assert out_values == ["xxxx"] * len(out_values)
 
     def test_apply_with_data(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         feature_tbl = feature_tbl.fillna(0, "col_1")
         # udf on single column
@@ -67,7 +67,7 @@ class TestTable(TestCase):
         assert(feature_tbl.filter(col("out") == 0).size() == 1)
 
     def test_fillna_int(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         filled_tbl = feature_tbl.fillna(5, ["col_2", "col_3"])
         assert isinstance(filled_tbl, FeatureTable), "filled_tbl should be a FeatureTable"
@@ -87,7 +87,7 @@ class TestTable(TestCase):
         self.assertTrue('do not exist in this Table' in str(context.exception))
 
     def test_fillna_double(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         filled_tbl = feature_tbl.fillna(3.2, ["col_2", "col_3"])
         assert isinstance(filled_tbl, FeatureTable), "filled_tbl should be a FeatureTable"
@@ -104,7 +104,7 @@ class TestTable(TestCase):
                                                                 "filled with 5"
 
     def test_fillna_long(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         filled_tbl = feature_tbl.fillna(3, ["col_1", "col_2", "col_3"])
         assert isinstance(filled_tbl, FeatureTable), "filled_tbl should be a FeatureTable"
@@ -118,7 +118,7 @@ class TestTable(TestCase):
                                                                    "filled"
 
     def test_fillna_string(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         with self.assertRaises(Exception) as context:
             feature_tbl.fillna(3.2, ["col_4", "col_5"])
@@ -198,7 +198,7 @@ class TestTable(TestCase):
                                                                "should be equal"
 
     def test_gen_string_idx(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit=1)
         assert string_idx_list[0].size() == 3, "col_4 should have 3 indices"
@@ -219,7 +219,7 @@ class TestTable(TestCase):
             self.assertTrue('col_4 should be a column of the DataFrame' in str(context.exception))
 
     def test_gen_string_idx_dict(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit={"col_4": 1,
                                                                                      "col_5": 3})
@@ -232,14 +232,14 @@ class TestTable(TestCase):
         assert string_idx_list[1].size() == 1, "col_5 should have 1 indices"
 
     def test_gen_string_idx_none(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"], freq_limit=None)
         assert string_idx_list[0].size() == 3, "col_4 should have 3 indices"
         assert string_idx_list[1].size() == 2, "col_5 should have 2 indices"
 
     def test_gen_reindex_mapping(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"],
                                                      freq_limit={"col_4": 1, "col_5": 1},
@@ -250,7 +250,7 @@ class TestTable(TestCase):
         assert(index_tbls[1].size() == 2)
 
     def test_gen_string_idx_union(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         string_idx_list1 = feature_tbl \
             .gen_string_idx(["col_4", 'col_5'],
@@ -275,7 +275,7 @@ class TestTable(TestCase):
         assert new_tbl3.max("col_5").to_list("max")[0] == 4, "col_5 max value should be 4"
 
     def test_gen_string_idx_split(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         to_list_str = udf(lambda arr: ','.join(arr))
         df = feature_tbl.dropna(['col_4', 'col_5']).df.withColumn("list1", array('col_4', 'col_5'))\
@@ -301,7 +301,7 @@ class TestTable(TestCase):
             "encode list with keep most frequent should only keep one int"
 
     def test_clip(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         clip_tbl = feature_tbl.clip(["col_1", "col_2", "col_3"], min=2, max=None)
         assert isinstance(clip_tbl, FeatureTable), "clip_tbl should be a FeatureTable"
@@ -335,7 +335,7 @@ class TestTable(TestCase):
                                                                           "and <= 1"
 
     def test_dropna(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         dropped_tbl = feature_tbl.dropna(["col_1", "col_4"])
         assert isinstance(dropped_tbl, FeatureTable), "dropped_tbl should be a FeatureTable"
@@ -362,7 +362,7 @@ class TestTable(TestCase):
             "col_3 and col_5 should not both have null values"
 
     def test_fill_median(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         with self.assertRaises(Exception) as context:
             feature_tbl.fill_median(["col_4", "col_5"])
@@ -377,7 +377,7 @@ class TestTable(TestCase):
                                                                    "filled"
 
     def test_filter(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         filtered_tbl = feature_tbl.filter(feature_tbl.col_1 == 1)
         assert filtered_tbl.size() == 3, "Only 3 out of 5 rows has value 1 for col_1"
@@ -386,7 +386,7 @@ class TestTable(TestCase):
         assert filtered_tbl2.size() == 1, "Only 1 out of 5 rows has value 1 for col_1 and col_2"
 
     def test_rename(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         name_dict = {"col_1": "new_col1", "col_4": "new_col4"}
         rename_tbl = feature_tbl.rename(name_dict)
@@ -397,7 +397,7 @@ class TestTable(TestCase):
         assert "new_col4" in cols, "new_col4 should be a column of the renamed tbl."
 
     def test_log(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         log_tbl = feature_tbl.log(["col_1", "col_2", "col_3"])
         assert isinstance(log_tbl, FeatureTable), "log_tbl should be a FeatureTable"
@@ -408,7 +408,7 @@ class TestTable(TestCase):
         assert log_tbl.df.filter("col_3 == 1").count() == 0, "col_3 should != 1"
 
     def test_merge(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         merged_tbl = feature_tbl.merge_cols(["col_1", "col_2", "col_3"], "int_cols")
         assert "col_1" not in merged_tbl.df.columns, "col_1 shouldn't be a column of merged_tbl"
@@ -416,7 +416,7 @@ class TestTable(TestCase):
         assert "col_1" in feature_tbl.df.columns, "col_1 should be a column of feature_tbl"
 
     def test_norm(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path).fillna(0, ["col_2", "col_3"])
         normalized_tbl, min_max_dic = feature_tbl.min_max_scale(["col_2"])
         max_value = normalized_tbl.df.select("col_2") \
@@ -432,7 +432,7 @@ class TestTable(TestCase):
         tbl2 = FeatureTable(feature_tbl.df.withColumn("col2-col3", array(["col_2", "col_3"])))
         normalized_tbl2, min_max_dic2 = tbl2.min_max_scale(["col_2", "col2-col3"])
 
-        test_file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data3.parquet")
+        test_file_path = os.path.join(self.resource_path, "parquet/data3.parquet")
         test_tbl = FeatureTable.read_parquet(test_file_path).fillna(0, ["col_2", "col_3"])
         scaled = test_tbl.transform_min_max_scale(["col_2"], min_max_dic)
         max_value = scaled.df.select("col_2") \
@@ -459,7 +459,7 @@ class TestTable(TestCase):
             "col2-col3 shouldn't be less than 0 after normalization"
 
     def test_cross(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path).fillna(0, ["col_2", "col_3"])
         crossed_tbl = feature_tbl.cross_columns([["col_2", "col_3"]], [100])
         assert "col_2_col_3" in crossed_tbl.df.columns, "crossed column is not created"
@@ -570,7 +570,7 @@ class TestTable(TestCase):
         assert tbl3.df.filter("name == 'rose'").select("neg_category_hist_seq").count() == 1
 
     def test_reindex(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         string_idx_list = feature_tbl.gen_string_idx(["col_4", "col_5"],
                                                      freq_limit={"col_4": 1, "col_5": 1},
@@ -604,7 +604,7 @@ class TestTable(TestCase):
         assert "list_mask" in tbl2.df.columns
 
     def test_median(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         with self.assertRaises(Exception) as context:
             feature_tbl.median(["col_4", "col_5"])
@@ -649,7 +649,7 @@ class TestTable(TestCase):
             in str(context.exception))
 
     def test_select(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         select_tbl = feature_tbl.select("col_1", "col_2")
         assert "col_1" in select_tbl.df.columns, "col_1 shoul be selected"
@@ -864,7 +864,7 @@ class TestTable(TestCase):
             ["adult", "adult", "minor", "senior", "adult", "infant", "adult", "adult", "adult"]
 
     def test_columns(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         col_names = feature_tbl.columns
         assert isinstance(col_names, list), "col_names should be a list of strings"
@@ -1050,7 +1050,7 @@ class TestTable(TestCase):
         assert total_line_2 == total_distinct_line, "all rows should be distinct"
 
     def test_group_by(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data2.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data2.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
 
         groupby_tbl1 = feature_tbl.group_by("col_4", agg={"col_1": ["sum", "count"]})
@@ -1079,8 +1079,8 @@ class TestTable(TestCase):
             "first of col_1 should be 0 for all col_4 = 'b' and col_5 = 'dd' in groupby_tbl4"
 
     def test_append_column(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/")
-        df = FeatureTable.read_csv(file_path+"data.csv", header=True)
+        file_path = os.path.join(self.resource_path, "data.csv")
+        df = FeatureTable.read_csv(file_path, header=True)
         df = df.append_column("z", 0)
         assert df.select("z").size() == 4
         assert df.filter("z == 0").size() == 4
@@ -1105,7 +1105,7 @@ class TestTable(TestCase):
         assert rows == shuffled_rows
 
     def test_write_parquet(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data1.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         feature_tbl.write_parquet("saved.parquet")
         loaded_tbl = FeatureTable.read_parquet("saved.parquet")
@@ -1113,7 +1113,7 @@ class TestTable(TestCase):
             shutil.rmtree("saved.parquet")
 
     def test_read_csv(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/data.csv")
+        file_path = os.path.join(self.resource_path, "data.csv")
         feature_tbl = FeatureTable.read_csv(file_path, header=True)
         assert feature_tbl.size() == 4
         columns = feature_tbl.columns
@@ -1121,7 +1121,7 @@ class TestTable(TestCase):
         records = feature_tbl.df.collect()
         assert isinstance(records[0][0], float)
         assert isinstance(records[0][1], str) and isinstance(records[0][1], str)
-        file_path2 = os.path.join(self.resource_path, "friesian/feature/data_no_header.csv")
+        file_path2 = os.path.join(self.resource_path, "data_no_header.csv")
         feature_tbl2 = FeatureTable.read_csv(file_path2, names=["col1", "_col2", "col3"],
                                              dtype={"col1": "int"})
         assert feature_tbl2.size() == 4
@@ -1136,7 +1136,7 @@ class TestTable(TestCase):
         assert isinstance(records3[0][1], str) and isinstance(records3[0][1], str)
 
     def test_category_encode_and_one_hot_encode(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/data.csv")
+        file_path = os.path.join(self.resource_path, "data.csv")
         feature_tbl = FeatureTable.read_csv(file_path, header=True)
         feature_tbl, indices = feature_tbl.category_encode(columns=["col2", "col3"])
         assert isinstance(indices, list) and len(indices) == 2
@@ -1168,7 +1168,7 @@ class TestTable(TestCase):
                 assert record[i+5] == 0
 
     def test_split(self):
-        file_path = os.path.join(self.resource_path, "orca/learn/ncf.csv")
+        file_path = os.path.join(self.resource_path, "ncf.csv")
         feature_tbl = FeatureTable.read_csv(file_path, header=True, dtype="int")
         tbl1, tbl2 = feature_tbl.split([0.8, 0.2], seed=1128)
         total_size = feature_tbl.size()
@@ -1177,7 +1177,7 @@ class TestTable(TestCase):
         assert size1 + size2 == total_size
 
     def test_target_encode(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data2.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data2.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         with self.assertRaises(Exception) as context:
             feature_tbl.target_encode("col_4", "target", kfold=-1)
@@ -1235,7 +1235,7 @@ class TestTable(TestCase):
             "target_tbl3 should have one more column col_4_col_5_te_target"
 
     def test_encode_target(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data2.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data2.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         spark = OrcaContext.get_spark_session()
 
@@ -1277,7 +1277,7 @@ class TestTable(TestCase):
             "col_4_te_col_3 should not exist in target_tbl2 since col_3 is not in target_cols"
 
     def test_difference_lag(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data2.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data2.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         with self.assertRaises(Exception) as context:
             feature_tbl.difference_lag("col_4", "col_4")
@@ -1311,7 +1311,7 @@ class TestTable(TestCase):
             "c1p1 should be the same in diff_tbl4 and in diff_tbl2"
 
     def test_cache(self):
-        file_path = os.path.join(self.resource_path, "friesian/feature/parquet/data2.parquet")
+        file_path = os.path.join(self.resource_path, "parquet/data2.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
         feature_tbl.cache()
         assert feature_tbl.df.is_cached, "Cache table should be cached"
