@@ -41,12 +41,11 @@ data_url = "https://s3-ap-southeast-1.amazonaws.com"
 
 class TestInferenceModel(ZooTestCase):
 
-    # todo bigdl-2.0 new code cannot load old model, because the classes are diferent
-    # def test_load_bigdl(self):
-    #     model = InferenceModel(3)
-    #     model.load_bigdl(os.path.join(resource_path, "models/bigdl/bigdl_lenet.model"))
-    #     input_data = np.random.random([4, 28, 28, 1])
-    #     output_data = model.predict(input_data)
+    def test_load_bigdl(self):
+        model = InferenceModel(3)
+        model.load_bigdl(os.path.join(resource_path, "models/bigdl/bigdl_lenet.model"))
+        input_data = np.random.random([4, 28, 28, 1])
+        output_data = model.predict(input_data)
 
     def test_load_caffe(self):
         model = InferenceModel(10)

@@ -489,7 +489,6 @@ class TestEstimatorForKeras(TestCase):
         assert predictions[0]['prediction'].shape[1] == 2
         shutil.rmtree(temp)
 
-    # todo bigdl-2.0 need to enable this after issue in tfpark has been fixed
     def test_estimator_keras_learning_rate_schedule(self):
         tf.reset_default_graph()
 
