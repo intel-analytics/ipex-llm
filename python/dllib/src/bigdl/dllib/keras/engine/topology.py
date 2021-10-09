@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import bigdl.dllib.autograd as autograd
+import bigdl.dllib.keras.autograd as autograd
 from bigdl.dllib.feature.image import ImageSet
 from bigdl.dllib.feature.text import TextSet
 from bigdl.dllib.feature.common import FeatureSet
@@ -66,7 +66,7 @@ class KerasNet(ZooKerasLayer):
         if isinstance(loss, six.string_types):
             criterion = to_bigdl_criterion(loss)
         if callable(loss):
-            from bigdl.dllib.autograd import CustomLoss
+            from bigdl.dllib.keras.autograd import CustomLoss
             criterion = CustomLoss(loss, self.get_output_shape()[1:])
         if metrics and all(isinstance(metric, six.string_types) for metric in metrics):
             metrics = to_bigdl_metrics(metrics, loss)
