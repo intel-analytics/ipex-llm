@@ -33,13 +33,13 @@ from numpy.testing import assert_array_almost_equal
 class TestXShardsTSDataset(ZooTestCase):
 
     def setup_method(self, method):
-        self.resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources/")
+        self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources/")
 
     def teardown_method(self, method):
         pass
 
     def test_xshardstsdataset_initialization(self):
-        shards_single = read_csv(os.path.join(self.resource_path, "chronos/single.csv"))
+        shards_single = read_csv(os.path.join(self.resource_path, "single.csv"))
         tsdata = XShardsTSDataset.from_xshards(shards_single, dt_col="datetime", target_col="value",
                                                extra_feature_col=["extra feature"], id_col="id")
         assert tsdata._id_list == [0]
@@ -67,7 +67,7 @@ class TestXShardsTSDataset(ZooTestCase):
         assert tsdata.shards.num_partitions() == 1
 
     def test_xshardstsdataset_initialization_multiple(self):
-        shards_multiple = read_csv(os.path.join(self.resource_path, "chronos/multiple.csv"))
+        shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
         # legal input
         tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
                                                target_col="value",
@@ -97,7 +97,7 @@ class TestXShardsTSDataset(ZooTestCase):
         assert tsdata.shards.num_partitions() == 1
 
     def test_xshardstsdataset_split(self):
-        shards_multiple = read_csv(os.path.join(self.resource_path, "chronos/multiple.csv"))
+        shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
         # only train and test
         tsdata_train, tsdata_valid, tsdata_test =\
             XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime", target_col="value",
@@ -121,7 +121,7 @@ class TestXShardsTSDataset(ZooTestCase):
         assert tsdata_test.target_col[0] != "new value"
 
     def test_xshardstsdataset_roll_multiple_id(self):
-        shards_multiple = read_csv(os.path.join(self.resource_path, "chronos/multiple.csv"))
+        shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
         horizon = random.randint(1, 10)
         lookback = random.randint(1, 20)
 
