@@ -40,9 +40,8 @@ This is the only place where you need to specify local or distributed mode. View
 You can then define the Keras model in the _Creator Function_ using the standard TensroFlow 2 APIs.
 
 ```python
-import tensorflow as tf
-
 def model_creator(config):
+    import tensorflow as tf
     model = tf.keras.Sequential(
         [tf.keras.layers.Conv2D(20, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
                                 input_shape=(28, 28, 1), padding='valid'),

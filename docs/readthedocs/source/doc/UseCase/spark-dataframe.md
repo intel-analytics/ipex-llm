@@ -40,10 +40,10 @@ train_data, test_data = df.randomSplit([0.8, 0.2], 100)
 This example defines NCF model in the _Creator Function_ using TensroFlow 2 APIs as follows.
 
 ```python
-from tensorflow import keras
-import tensorflow as tf
-
 def model_creator(config):
+    from tensorflow import keras
+    import tensorflow as tf
+    
     embedding_size=16
     user = keras.layers.Input(dtype=tf.int32, shape=(None,))
     item = keras.layers.Input(dtype=tf.int32, shape=(None,))
