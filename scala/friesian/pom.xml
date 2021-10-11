@@ -40,6 +40,7 @@
             <artifactId>${core.artifactId}</artifactId>
             <version>0.12.0-SNAPSHOT</version>
             <type>${core.dependencyType}</type>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
