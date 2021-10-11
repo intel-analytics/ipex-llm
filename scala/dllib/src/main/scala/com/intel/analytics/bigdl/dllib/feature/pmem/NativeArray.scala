@@ -13,42 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
+
 // package com.intel.analytics.bigdl.dllib.feature.pmem
-//
-// import scala.collection.mutable.ArrayBuffer
-//
-// sealed trait MemoryType extends Serializable
-//
+package com.intel.analytics.bigdl.dllib.feature
+
+ import scala.collection.mutable.ArrayBuffer
+
+ sealed trait MemoryType extends Serializable
+
 // case object PMEM extends MemoryType
-//
-// case object DRAM extends MemoryType
-//
+
+ case object DRAM extends MemoryType
+
 // case object DIRECT extends MemoryType
-//
-// case class DISK_AND_DRAM(numSlice: Int) extends MemoryType
-//
-// sealed trait DataStrategy
-//
-// case object PARTITIONED extends DataStrategy
-//
-// case object REPLICATED extends DataStrategy
-//
-// object MemoryType {
-//  def fromString(str: String): MemoryType = {
-//    val diskPattern = "DISK_(\\d+)".r
-//    str.toUpperCase() match {
+
+ case class DISK_AND_DRAM(numSlice: Int) extends MemoryType
+
+ sealed trait DataStrategy
+
+ case object PARTITIONED extends DataStrategy
+
+ case object REPLICATED extends DataStrategy
+
+ object MemoryType {
+  def fromString(str: String): MemoryType = {
+    val diskPattern = "DISK_(\\d+)".r
+    str.toUpperCase() match {
 //      case "PMEM" => PMEM
-//      case "DRAM" => DRAM
+      case "DRAM" => DRAM
 //      case "DIRECT" => DIRECT
-//      case diskPattern(num) => DISK_AND_DRAM(num.toInt)
-//      case default =>
-//        throw new IllegalArgumentException(s"Unknown memory type $default," +
-//              s"excepted PMEM, DRAM, DIRECT or DISK_n.")
-//    }
-//  }
-// }
-//
+      case diskPattern(num) => DISK_AND_DRAM(num.toInt)
+      case default =>
+        throw new IllegalArgumentException(s"Unknown memory type $default," +
+              s"excepted DRAM or DISK_n.")
+    }
+  }
+ }
+
 // object NativeArray {
 //  private val natives = new ArrayBuffer[NativeArray[_]]()
 //
@@ -56,7 +57,7 @@
 //    NativeArray.natives.map{_.free()}
 //  }
 // }
-//
+
 // /**
 // *
 // * @param totalBytes
@@ -92,5 +93,5 @@
 //
 //  protected def indexOf(i: Int): Long
 // }
-//
-//
+
+
