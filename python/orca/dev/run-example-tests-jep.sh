@@ -14,7 +14,7 @@ else
   wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
 fi
 
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/pytorch/train/mnist/main.py --dir analytics-zoo-data/data
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py --dir analytics-zoo-data/data
 
 now=$(date "+%s")
 time1=$((now - start))
@@ -30,10 +30,10 @@ else
 fi
 
 sed "s/epochs=2/epochs=1/g;s/batch_size=4/batch_size=256/g" \
-  ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10.py \
-  >${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10_tmp.py
+  ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py \
+  >${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10_tmp.py
 
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/cifar10_tmp.py
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10_tmp.py
 
 now=$(date "+%s")
 time2=$((now - start))
@@ -50,10 +50,10 @@ else
 fi
 
 sed "s/epochs=5/epochs=1/g;s/batch_size=4/batch_size=256/g" \
-    ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/fashion_mnist/fashion_mnist.py \
-    > ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py
+    ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py \
+    > ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py
 
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py
 
 now=$(date "+%s")
 time3=$((now - start))
@@ -69,7 +69,7 @@ if [ ! -d dataset/BSDS300/images ]; then
   tar -xzf BSDS300-images.tgz -C dataset
 fi
 
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/super_resolution/super_resolution.py
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py
 
 now=$(date "+%s")
 time4=$((now - start))
