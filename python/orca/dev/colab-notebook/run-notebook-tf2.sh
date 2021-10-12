@@ -27,7 +27,7 @@ time1=$((now - start))
 
 echo "#2 start test for ncf_dataframe.ipynb"
 start=$(date "+%s")
-${ANALYTICS_ZOO_HOME}/python/orca/dev/colab-notebook/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/orca/quickstart/ncf_dataframe
+${ANALYTICS_ZOO_HOME}/python/orca/dev/colab-notebook/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_dataframe
 sed -i '/get_ipython/s/^/#/' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_dataframe.py
 python ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_dataframe.py
 
