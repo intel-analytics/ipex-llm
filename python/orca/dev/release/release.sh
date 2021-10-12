@@ -52,10 +52,13 @@ else
 fi
 
 bigdl_build_command="bash make-dist.sh ${dist_profile}"
-
-echo "Dist BigDL: $bigdl_build_command"
-cd ${BIGDL_DIR}/scala
-$bigdl_build_command
+if [ "$quick" == "true" ]; then
+    echo "Skip disting BigDL"
+else
+    echo "Dist BigDL: $bigdl_build_command"
+    cd ${BIGDL_DIR}/scala
+    $bigdl_build_command
+fi
 
 cd $BIGDL_PYTHON_DIR
 sdist_command="python setup.py sdist"
