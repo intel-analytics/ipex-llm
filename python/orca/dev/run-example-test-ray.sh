@@ -45,13 +45,13 @@ start=$(date "+%s")
 
 # get_mnist_iterator in MXNet requires the data to be placed in the `data` folder of the running directory.
 # The running directory of integration test is ${ANALYTICS_ZOO_ROOT}.
-if [ -f ${ANALYTICS_ZOO_ROOT}/data/mnist.zip ]
+if [ -f ${BIGDL_ROOT}/data/mnist.zip ]
 then
     echo "mnist.zip already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P ${ANALYTICS_ZOO_ROOT}/data
+    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P ${BIGDL_ROOT}/data
 fi
-unzip -q ${ANALYTICS_ZOO_ROOT}/data/mnist.zip -d ${ANALYTICS_ZOO_ROOT}/data
+unzip -q ${BIGDL_ROOT}/data/mnist.zip -d ${BIGDL_ROOT}/data
 
 python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256
 now=$(date "+%s")
@@ -64,8 +64,8 @@ if [ -d ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/data ]
 then
     echo "fashion-mnist already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/data/fashion-mnist.zip -P ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/fashion_mnist/
-    unzip ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/fashion_mnist/fashion-mnist.zip
+    wget -nv $FTP_URI/analytics-zoo-data/data/fashion-mnist.zip -P ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/
+    unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion-mnist.zip
 fi
 
 sed "s/epochs=5/epochs=1/g;s/batch_size=4/batch_size=256/g" \
@@ -97,10 +97,10 @@ time7=$((now-start))
 echo "#8 start example for orca cifar10"
 start=$(date "+%s")
 
-if [ -d ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10/data ]; then
+if [ -d ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/data ]; then
   echo "Cifar10 already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/cifar10.zip -P ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/pytorch/cifar10
+  wget -nv $FTP_URI/analytics-zoo-data/cifar10.zip -P ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10
   unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.zip
 fi
 
