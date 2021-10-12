@@ -1,0 +1,8 @@
+name = "Analytics Zoo"
+version = "0.1"
+description = "An open source Big Data AI platform (for distributed TensorFlow, PyTorch and Keras on Apache Spark & Ray)"
+license = "Apache-2.0"
+repository = "https://github.com/intel-analytics/analytics-zoo"
+documentation = "https://analytics-zoo-doc.readthedocs.io/en/latest/"
+
+
