@@ -649,47 +649,47 @@ object FeatureSet {
 
   def rdd[T: ClassTag](
        data: RDD[T],
-//       memoryType: MemoryType = DRAM,
+//       memoryType: MemoryType.Value = MemoryType.DRAM,
+       memoryType: MemoryType = DRAM,
 //       dataStrategy: DataStrategy = PARTITIONED,
        sequentialOrder: Boolean = false,
        shuffle: Boolean = true): DistributedFeatureSet[T] = {
     val nodeNumber = Engine.nodeNumber()
-    val repartitionedData = data.coalesce(nodeNumber, true).setName(data.name)
-    DRAMFeatureSet.rdd(repartitionedData, sequentialOrder, shuffle)
-    }
+//    val repartitionedData = data.coalesce(nodeNumber, true).setName(data.name)
+//    DRAMFeatureSet.rdd(repartitionedData, sequentialOrder, shuffle)
+//    }
 //    dataStrategy match {
 //      case PARTITIONED =>
-//        val nodeNumber = Engine.nodeNumber()
-//        val repartitionedData = data.coalesce(nodeNumber, true).setName(data.name)
-//        memoryType match {
-//          case DRAM =>
-//            DRAMFeatureSet.rdd(repartitionedData, sequentialOrder, shuffle)
+      val repartitionedData = data.coalesce(nodeNumber, true).setName(data.name)
+      memoryType match {
+        case DRAM =>
+          DRAMFeatureSet.rdd(repartitionedData, sequentialOrder, shuffle)
 //          case PMEM =>
 //            logger.info("~~~~~~~ Caching with AEP ~~~~~~~")
 //            PmemFeatureSet.rdd(repartitionedData, PMEM, sequentialOrder, shuffle)
 //          case DIRECT =>
 //            logger.info("~~~~~~~ Caching with DIRECT ~~~~~~~")
 //            PmemFeatureSet.rdd[T](repartitionedData, DIRECT, sequentialOrder, shuffle)
-//          case diskM: DISK_AND_DRAM =>
-//            logger.info(s"~~~~~~~ Caching with DISK_AND_DRAM(${diskM.numSlice}) ~~~~~~~")
-//            if (sequentialOrder) {
-//              throw new IllegalArgumentException("DiskFeatureSet does not support" +
-//                " sequentialOrder.")
-//            }
-//
-//            if (!shuffle) {
-//              throw new IllegalArgumentException("DiskFeatureSet must use shuffle.")
-//            }
-//            new DiskFeatureSet[T](data, diskM.numSlice)
-//          case _ =>
-//            throw new IllegalArgumentException(
-//              s"MemoryType: ${memoryType} is not supported at the moment")
-//        }
-//
+        case diskM: DISK_AND_DRAM =>
+          logger.info(s"~~~~~~~ Caching with DISK_AND_DRAM(${diskM.numSlice}) ~~~~~~~")
+          if (sequentialOrder) {
+            throw new IllegalArgumentException("DiskFeatureSet does not support" +
+              " sequentialOrder.")
+          }
+
+          if (!shuffle) {
+            throw new IllegalArgumentException("DiskFeatureSet must use shuffle.")
+          }
+          new DiskFeatureSet[T](data, diskM.numSlice)
+        case _ =>
+          throw new IllegalArgumentException(
+            s"MemoryType: ${memoryType} is not supported at the moment")
+      }
+
 //      case _ =>
 //        throw new IllegalArgumentException(
 //          s"DataStrategy ${dataStrategy} is not supported at the moment")
-//
-//    }
+
+    }
 //  }
 }
