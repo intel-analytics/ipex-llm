@@ -9,7 +9,7 @@ clear_up () {
 echo "#1 Start ray horovod pytorch example tests"
 start=$(date "+%s")
 # run example
-python ${ANALYTICS_ZOO_ROOT}/pyzoo/zoo/examples/orca/learn/horovod/pytorch_estimator.py --cluster_mode yarn --num_nodes 2 
+python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn --num_nodes 2 
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
