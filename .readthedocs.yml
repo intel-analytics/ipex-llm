@@ -1,0 +1,15 @@
+# .readthedocs.yml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+# Required
+version: 2
+
+sphinx:
+  configuration: docs/readthedocs/source/conf.py
+
+python:
+  install:
+    - method: pip
+      path: .
+    - requirements: docs/readthedocs/requirements-doc.txt
