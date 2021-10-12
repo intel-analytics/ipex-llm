@@ -24,15 +24,17 @@ echo $BIGDL_DIR
 BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/orca/src; pwd)"
 echo $BIGDL_PYTHON_DIR
 
-if (( $# < 1)); then
+if (( $# < 2)); then
   echo "Usage: release.sh platform mvn_parameters"
-  echo "Usage example: bash release.sh linux"
+  echo "Usage example: bash release.sh linux false"
+  echo "Usage example: bash release.sh linux true"
   echo "you can also add other profiles such as: -Dspark.version=2.4.6 -P spark_2.x"
   exit -1
 fi
 
 platform=$1
-profiles=${*:2}
+quick=$2
+profiles=${*:3}
 
 bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 
