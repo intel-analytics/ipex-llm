@@ -61,15 +61,15 @@ mv orca/pom.xml orca/pom.xml.origin
 cat orca/pom.xml.origin | sed 's/<artifactId>bigdl-orca<\/artifactId>/<artifactId>bigdl-orca-${SPARK_PLATFORM}<\/artifactId>/' > orca/pom.xml
 
 function deploy {
-    mvn clean install -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3
-    cd common/spark-version && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ../..
-    cd dllib && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
-    cd orca && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
+    mvn clean install -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 ${*:4}
+    cd common/spark-version && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 ${*:4} && cd ../..
+    cd dllib && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 ${*:4} && cd ..
+    cd orca && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 ${*:4} && cd ..
 }
 
-deploy 2.1.1 SPARK_2.1 '-P spark_2.x'
-deploy 2.2.0 SPARK_2.2 '-P spark_2.x'
-deploy 2.3.1 SPARK_2.3 '-P spark_2.x'
+deploy 2.1.1 SPARK_2.1 '-P spark_2.x' -pl '!friesian'
+deploy 2.2.0 SPARK_2.2 '-P spark_2.x' -pl '!friesian'
+deploy 2.3.1 SPARK_2.3 '-P spark_2.x' -pl '!friesian'
 deploy 2.4.6 SPARK_2.4 '-P spark_2.x'
 
 mv dllib/pom.xml.origin dllib/pom.xml
