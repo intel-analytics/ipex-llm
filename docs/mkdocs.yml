@@ -1,0 +1,178 @@
+site_name: Analytics Zoo
+theme: null
+extra_css: [extra.css]
+theme_dir: mkdocs_windmill 
+repo_name: 'Fork on GitHub '
+repo_url: 'https://github.com/intel-analytics/analytics-zoo'
+google_analytics: ['UA-125166209-1', 'analytics-zoo.github.io']
+extra:
+    version: latest
+    article_nav_top: false
+    article_nav_bottom: false
+
+pages:
+- Overview: index.md 
+- Getting Started: gettingstarted.md
+- Releases: 
+  - Download: release-download.md 
+  - Documentation: release-docs.md
+- User Guide:
+  - Docker User Guide: DockerUserGuide/index.md
+  - Python:
+    - Install: PythonUserGuide/install.md
+    - Run: PythonUserGuide/run.md
+    - Develop: DeveloperGuide/python.md
+    - Library version: PythonUserGuide/python-lib-version.md
+    - FAQ: PythonUserGuide/python-faq.md
+  - Scala: 
+    - Install: ScalaUserGuide/install.md
+    - Run: ScalaUserGuide/run.md
+  - Examples: examples.md
+- Programming Guide: 
+  - Pipeline APIs:
+    - DataFrame and ML Pipeline: ProgrammingGuide/nnframes.md
+    - Autograd: ProgrammingGuide/autograd.md
+    - Transfer Learning: ProgrammingGuide/transferlearning.md
+    - Model Serving: ProgrammingGuide/inference.md
+  - TFPark:
+    - TFPark Overview: ProgrammingGuide/TFPark/tensorflow.md
+    - How To Import Data: ProgrammingGuide/TFPark/how-to-import-data.md
+    - Text Models: ProgrammingGuide/TFPark/text-models.md
+    - BERT Classifier: ProgrammingGuide/TFPark/bert-classifier.md
+  - PyTorch: ProgrammingGuide/pytorch.md
+  - RayOnSpark: ProgrammingGuide/rayonspark.md
+  - Cluster Serving: ClusterServingGuide/ProgrammingGuide.md
+  - AutoML:
+    - Overview: ProgrammingGuide/AutoML/overview.md
+    - Time Series Forecasting: ProgrammingGuide/AutoML/forecasting.md
+    - Visualization: ProgrammingGuide/AutoML/visualization.md
+  - Feature Engineering:
+    - Working with Images: ProgrammingGuide/workingwithimages.md
+    - Working with Texts: ProgrammingGuide/workingwithtexts.md
+  - Built-in Models:
+    - Object Detection API: ProgrammingGuide/object-detection.md
+    - Image Classification API: ProgrammingGuide/image-classification.md
+    - Text Classification API: ProgrammingGuide/text-classification.md
+    - Recommendation API: ProgrammingGuide/recommendation.md
+    - Anomaly Detection API: ProgrammingGuide/anomaly-detection.md
+    - Text Matching API: ProgrammingGuide/text-matching.md
+    - Sequence to Sequence API: ProgrammingGuide/seq2seq.md
+  - Visualization: ProgrammingGuide/visualization.md
+  - Reference Use Cases: ProgrammingGuide/usercases-overview.md
+  - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
+  - Run on Google Colab: ProgrammingGuide/run-notebook-colab.md
+  - Run on Databricks: ProgrammingGuide/AnalyticsZoo-on-Databricks.md
+  - Run on Kubernetes cluster: ProgrammingGuide/k8s.md
+- White Paper:
+  - BigDL: wp-bigdl.md
+- API Guide:
+  - Pipeline APIs:
+    - NNFrames: APIGuide/PipelineAPI/nnframes.md
+    - Autograd-Math: APIGuide/PipelineAPI/math.md
+    - Autograd-Variable: APIGuide/PipelineAPI/variable.md
+    - Net: APIGuide/PipelineAPI/net.md
+    - Inference: APIGuide/PipelineAPI/inference.md
+    - Estimator: APIGuide/PipelineAPI/estimator.md
+  - TFPark API:
+    - KerasModel: APIGuide/TFPark/model.md
+    - TFEstimator: APIGuide/TFPark/estimator.md
+    - TFOptimizer: APIGuide/TFPark/tf-optimizer.md
+    - TFPredictor: APIGuide/TFPark/tf-pred.md
+    - TFDataset: APIGuide/TFPark/tf-dataset.md
+    - GANEstimator: APIGuide/TFPark/gan-estimator.md
+    - Text Models: APIGuide/TFPark/text-models.md
+    - BERT Classifier: APIGuide/TFPark/bert-classifier.md
+  - Cluster Serving: ClusterServingGuide/APIGuide.md
+  - AutoML:
+    - TimeSequencePredictor: APIGuide/AutoML/time-sequence-predictor.md
+    - Recipe: APIGuide/AutoML/recipe.md
+    - TimeSequencePipeline: APIGuide/AutoML/time-sequence-pipeline.md
+  - Feature Engineering:
+    - FeatureSet: APIGuide/FeatureEngineering/featureset.md
+    - Relation: APIGuide/FeatureEngineering/relation.md
+    - Image: APIGuide/FeatureEngineering/image.md
+    - Text: APIGuide/FeatureEngineering/text.md
+  - Models:
+    - Object Detection: APIGuide/Models/object-detection.md
+    - Image Classification: APIGuide/Models/image-classification.md
+    - Text Classification: APIGuide/Models/text-classification.md
+    - Recommendation: APIGuide/Models/recommendation.md
+    - Anomaly Detection: APIGuide/Models/anomaly-detection.md
+    - Text Matching: APIGuide/Models/text-matching.md
+    - Sequence to Sequence: APIGuide/Models/seq2seq.md
+- Keras-Style API Guide:
+  - Python Guide: KerasStyleAPIGuide/keras-api-python.md
+  - Scala Guide: KerasStyleAPIGuide/keras-api-scala.md
+  - Layers:
+    - Activation: KerasStyleAPIGuide/Layers/activation.md
+    - Initialization: KerasStyleAPIGuide/Layers/initialization.md
+    - Core Layers: KerasStyleAPIGuide/Layers/core.md
+    - Convolutional Layers: KerasStyleAPIGuide/Layers/convolutional.md
+    - Pooling Layers: KerasStyleAPIGuide/Layers/pooling.md
+    - Recurrent Layers: KerasStyleAPIGuide/Layers/recurrent.md
+    - Normalization Layers: KerasStyleAPIGuide/Layers/normalization.md
+    - Embedding Layers: KerasStyleAPIGuide/Layers/embedding.md
+    - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
+    - Advanced Activations: KerasStyleAPIGuide/Layers/advanced-activation.md
+    - Layer Wrappers: KerasStyleAPIGuide/Layers/wrappers.md
+    - Self Attention Layers: KerasStyleAPIGuide/Layers/self-attention.md
+  - Optimization:
+    - Train, evaluate or predict a model: KerasStyleAPIGuide/Optimization/training.md
+    - Optimizers: KerasStyleAPIGuide/Optimization/optimizers.md
+    - Objectives: KerasStyleAPIGuide/Optimization/objectives.md
+#- Keras2-Style API Guide:
+#  - Python Guide: Keras2StyleAPIGuide/keras-api-python.md
+#  - Scala Guide: Keras2StyleAPIGuide/keras-api-scala.md
+#  - Layers:
+#    - Activation: Keras2StyleAPIGuide/Layers/activation.md
+#    - Initialization: Keras2StyleAPIGuide/Layers/initialization.md
+#    - Core Layers: Keras2StyleAPIGuide/Layers/core.md
+#    - Convolutional Layers: Keras2StyleAPIGuide/Layers/convolutional.md
+#    - Pooling Layers: Keras2StyleAPIGuide/Layers/pooling.md
+#    - Merge Layers: Keras2StyleAPIGuide/Layers/merge.md
+#    - Recurrent Layers: Keras2StyleAPIGuide/Layers/recurrent.md
+#    - Normalization Layers: Keras2StyleAPIGuide/Layers/normalization.md
+#    - Embedding Layers: Keras2StyleAPIGuide/Layers/embedding.md
+#    - Dropout Layers: Keras2StyleAPIGuide/Layers/dropout.md
+#    - Advanced Activations: Keras2StyleAPIGuide/Layers/advanced-activation.md
+#    - Layer Wrappers: Keras2StyleAPIGuide/Layers/wrappers.md
+#  - Optimization:
+#    - Train, evaluate or predict a model: Keras2StyleAPIGuide/Optimization/training.md
+#    - Optimizers: Keras2StyleAPIGuide/Optimization/optimizer.md
+#    - Losses: Keras2StyleAPIGuide/Optimization/loss.md
+- Project Chronos:
+  - Overview: Chronos/overview.md
+  - Reference Use Cases:
+    - Network Traffic: Chronos/UseCase/network-traffic.md
+  - Tutorials:
+    - Built-in Models:
+      - LSTMForecaster and MTNetForecaster: Chronos/tutorials/LSTMForecasterAndMTNetForecaster.md
+      - TCMFForecaster: Chronos/tutorials/TCMFForecaster.md
+    - AutoTS: Chronos/tutorials/Autots.md
+  - Algorithms:
+    - MTNet: Chronos/Algorithm/MTNetAlgorithm.md
+    - LSTM: Chronos/Algorithm/LSTMAlgorithm.md
+  - API:
+    - Built-in Models:
+      - LSTMForecaster: Chronos/API/LSTMForecaster.md
+      - MTNetForecaster: Chronos/API/MTNetForecaster.md
+      - TCMFForecaster: Chronos/API/TCMFForecaster.md
+      - TCNForecaster: Chronos/API/TCNForecaster.md
+    - AutoTS:
+      - AutoTSTrainer: Chronos/API/AutoTSTrainer.md
+      - TSPipeline: Chronos/API/TSPipeline.md
+- Project Orca:
+  - Overview: Orca/overview.md
+#- OrcaContext: Orca/Overview/orca-context.md
+  - Data: Orca/data.md
+  - TensorFlow Quickstart: Orca/orca-tf-quickstart.md
+  - TensorFlow Keras Quickstart: Orca/orca-keras-quickstart.md
+  - TensorFlow Estimator: Orca/orca-tf-estimator.md
+  - PyTorch Quickstart: Orca/orca-pytorch-quickstart.md
+  - PyTorch Estimator: Orca/orca-pytorch-estimator.md
+  - OpenVINO Estimator: Orca/orca-openvino-estimator.md
+  - BigDL Estimator: Orca/orca-bigdl-estimator.md
+- Powered by: powered-by.md
+- Presentations: presentations.md
+- Meetup & Webinar: meetup.md
+- FAQ and Known Issues: known-issues.md
