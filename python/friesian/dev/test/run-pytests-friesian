@@ -16,12 +16,12 @@
 # limitations under the License.
 #
 
-. `dirname $0`/prepare_env.sh
+. `dirname $0`/../prepare_env.sh
 
 cd "`dirname $0`"
 
 echo "Running Friesian feature tests"
-python -m pytest -v ../test/bigdl/friesian/feature/
+python -m pytest -v ../../test/bigdl/friesian/feature/
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
