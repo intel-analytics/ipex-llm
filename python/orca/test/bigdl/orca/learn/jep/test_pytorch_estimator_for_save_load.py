@@ -64,7 +64,7 @@ class TestEstimatorForSaveAndLoad(TestCase):
         criterion = nn.NLLLoss()
         adam = torch.optim.Adam(model.parameters(), 0.001)
 
-        dir = "./dataset"
+        dir = "/tmp/dataset/"
         batch_size = 320
         train_loader = torch.utils.data.DataLoader(
             datasets.MNIST(dir, train=True, download=True,

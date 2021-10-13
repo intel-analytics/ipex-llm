@@ -21,6 +21,16 @@ cd "`dirname $0`"
 echo "Running Jep tests"
 set -ex
 
+if [[ ! -z "${DATA_STORE_URI}" ]]; then
+    if [[ -d /tmp/datasets/ ]]; then
+        rm -rf /tmp/datasets/MNIST/
+    fi
+    wget  $DATA_STORE_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P /tmp/datasets/MNIST/raw
+    wget  $DATA_STORE_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P /tmp/datasets/MNIST/raw
+    wget  $DATA_STORE_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P /tmp/datasets/MNIST/raw
+    wget  $DATA_STORE_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/datasets/MNIST/raw
+fi
+
 cd ../../
 python -m pytest -v test/bigdl/orca/learn/jep/test_pytorch_estimator_for_spark.py
 python -m pytest -v test/bigdl/orca/learn/jep/test_pytorch_estimator_for_dataloader.py
