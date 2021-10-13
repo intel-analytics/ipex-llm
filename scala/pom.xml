@@ -187,6 +187,7 @@
         <module>friesian.serving</module>
         <module>grpc</module>
         <module>serving</module>
+        <module>assembly</module>
     </modules>
 
     <distributionManagement>
