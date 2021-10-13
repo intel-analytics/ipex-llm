@@ -21,6 +21,7 @@ from functools import reduce
 from py4j.protocol import Py4JError
 
 import pyspark.sql.functions as F
+from pyspark.sql.column import Column
 from pyspark.sql import Row, Window
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
     DoubleType, ArrayType, DataType, StructType, StringType, StructField
@@ -636,16 +637,28 @@ class Table:
         df = df.filter(pyspark_col('rank') == 1).drop('rank', 'id')
         return self._clone(df)
 
-    def append_column(self, name, value):
+
+    def append_column(self, name, column):
         """
         Append a column with a constant value to the Table.
 
         :param name: str, the name of the new column.
-        :param value: The constant column value for the new column.
+        :param column: pyspark.sql.column.Column, new column to be added into the table.
 
         :return: A new Table with the appended column.
         """
-        return self._clone(self.df.withColumn(name, lit(value)))
+        assert(isinstance(column, Column), "column should be a pyspark.sql.column.Column")
+        return self._clone(self.df.withColumn(name, column))
+
+    def subtract(self, other):
+        """
+        Return a new :class:`Table` containing rows in this :class:`Table`
+        but not in another :class:`Table`
+
+        :param other: Table.
+        :return: A new Table.
+        """
+        return self._clone(self.df.subtract(other.df))
 
     def __getattr__(self, name):
         """
