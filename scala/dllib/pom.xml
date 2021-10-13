@@ -379,14 +379,29 @@
 
     <profiles>
         <profile>
-            <id>per_platform</id>
+            <id>linux</id>
             <properties>
               <bigdl-core-all-scope>provided</bigdl-core-all-scope>
             </properties>
             <dependencies>
               <dependency>
                 <groupId>com.intel.analytics.bigdl.core.dist</groupId>
-                <artifactId>${os-flag}</artifactId>
+                <artifactId>linux64</artifactId>
+                <version>0.14.0-SNAPSHOT</version>
+                <type>pom</type>
+              </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>mac</id>
+            <properties>
+              <bigdl-core-all-scope>provided</bigdl-core-all-scope>
+            </properties>
+            <dependencies>
+              <dependency>
+                <groupId>com.intel.analytics.bigdl.core.dist</groupId>
+                <artifactId>mac</artifactId>
                 <version>0.14.0-SNAPSHOT</version>
                 <type>pom</type>
               </dependency>
