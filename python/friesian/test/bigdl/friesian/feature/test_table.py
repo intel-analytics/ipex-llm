@@ -21,7 +21,7 @@ import hashlib
 import operator
 from unittest import TestCase
 
-from pyspark.sql.functions import col, concat, max, min, array, udf
+from pyspark.sql.functions import col, concat, max, min, array, udf, lit
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType, \
     DoubleType
 
@@ -1079,16 +1079,16 @@ class TestTable(TestCase):
 
     def test_append_column(self):
         file_path = os.path.join(self.resource_path, "data.csv")
-        df = FeatureTable.read_csv(file_path, header=True)
-        df = df.append_column("z", 0)
-        assert df.select("z").size() == 4
-        assert df.filter("z == 0").size() == 4
-        df = df.append_column("str", "a")
-        assert df.select("str").size() == 4
-        assert df.filter("str == 'a'").size() == 4
-        df = df.append_column("float", 1.2)
-        assert df.select("float").size() == 4
-        assert df.filter("float == 1.2").size() == 4
+        tbl = FeatureTable.read_csv(file_path, header=True)
+        tbl = tbl.append_column("z", lit(0))
+        assert tbl.select("z").size() == 4
+        assert tbl.filter("z == 0").size() == 4
+        tbl = tbl.append_column("str", lit("a"))
+        assert tbl.select("str").size() == 4
+        assert tbl.filter("str == 'a'").size() == 4
+        tbl = tbl.append_column("float", lit(1.2))
+        assert tbl.select("float").size() == 4
+        assert tbl.filter("float == 1.2").size() == 4
 
     def test_ordinal_shuffle(self):
         spark = OrcaContext.get_spark_session()
