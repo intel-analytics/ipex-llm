@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>bigdl-dllib</artifactId>
+    <artifactId>bigdl-dllib_${spark.version}</artifactId>
     <packaging>jar</packaging>
 
     <properties>

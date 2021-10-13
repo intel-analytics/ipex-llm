@@ -20,7 +20,7 @@ This guidance is used to provide guidance to BigDL and Analytics zoo users to mi
    ```
    <dependency>
        <groupId>com.intel.analytics.bigdl</groupId>
-       <artifactId>bigdl-dllib</artifactId>
+       <artifactId>bigdl-dllib_{spark_version}</artifactId>
        <version>${BIGDL_VERSION}</version>
    </dependency>
    ```
@@ -62,7 +62,7 @@ If you are a maven user and add above modules as dependency to your own project.
    ```
    <dependency>
        <groupId>com.intel.analytics.bigdl</groupId>
-       <artifactId>bigdl-dllib</artifactId>
+       <artifactId>bigdl-dllib_{spark_version}</artifactId>
        <version>${BIGDL_VERSION}</version>
    </dependency>
    ```
@@ -80,7 +80,7 @@ If you are a maven user and add above modules as dependency to your own project.
    ```
    <dependency>
        <groupId>com.intel.analytics.bigdl</groupId>
-       <artifactId>bigdl-orca</artifactId>
+       <artifactId>bigdl-orca_{spark_version}</artifactId>
        <version>${BIGDL_VERSION}</version>
    </dependency>
    ```
