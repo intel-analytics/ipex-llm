@@ -765,7 +765,7 @@ class TFOptimizer:
                 if isinstance(checkpoint_trigger, EveryEpoch):
                     checkpoint_trigger = ZEveryEpoch()
                 elif not isinstance(checkpoint_trigger, ZooTrigger):
-                    raise Exception("Please use a trigger defined in zoo.util.triggers")
+                    raise Exception("Please use a trigger defined in bigdl.dllib.utils.triggers")
 
         if self.tf_model.val_methods and self.val_data is not None:
             self.estimator.train_minibatch(train_set=self.train_data,
