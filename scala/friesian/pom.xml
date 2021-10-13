@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>bigdl-friesian</artifactId>
+    <artifactId>bigdl-friesian_${spark.version}</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -25,13 +25,13 @@
     <dependencies>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
-            <artifactId>bigdl-dllib</artifactId>
+            <artifactId>bigdl-dllib_${spark.version}</artifactId>
             <version>0.14.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
-            <artifactId>bigdl-orca</artifactId>
+            <artifactId>bigdl-orca_${spark.version}</artifactId>
             <version>0.14.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
