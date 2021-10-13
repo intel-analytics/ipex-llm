@@ -67,7 +67,7 @@ class TestEstimatorForSaveAndLoad(TestCase):
         dir = "/tmp/dataset/"
         batch_size = 320
         train_loader = torch.utils.data.DataLoader(
-            datasets.MNIST(dir, train=True,
+            datasets.MNIST(dir, train=True, download=True,
                            transform=transforms.Compose([
                                transforms.ToTensor(),
                                transforms.Normalize((0.1307,), (0.3081,))
