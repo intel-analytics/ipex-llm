@@ -30,7 +30,7 @@ if [ -z ${SPARK_HOME+x} ]; then echo "SPARK_HOME is unset"; exit 1; else echo "S
 export PYSPARK_ZIP=`find $SPARK_HOME/python/lib  -type f -iname '*.zip' | tr "\n" ":"`
 
 #export PYTHONPATH=$PYTHONPATH:$PYSPARK_ZIP:$DL_PYTHON_DLLIB_HOME:$DL_PYTHON_HOME:$DL_PYTHON_HOME/:$DL_PYTHON_HOME/test/dev:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf
-export PYTHONPATH=$PYTHONPATH:$DL_PYTHON_HOME:$DL_PYTHON_DLLIB_HOME:$DL_PYTHON_ORCA_HOME;PYSPARK_ZIP:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf:$DL_PYTHON_HOME/..
+export PYTHONPATH=$PYTHONPATH:$DL_PYTHON_HOME:$DL_PYTHON_DLLIB_HOME:$PYSPARK_ZIP:$DL_PYTHON_ORCA_HOME:$PYSPARK_ZIP:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf
 echo "PYTHONPATH": $PYTHONPATH
 
 export BIGDL_CLASSPATH=$(find $BIGDL_HOME/dist/lib/ -name "bigdl-orca*with-dependencies.jar" | head -n 1)
