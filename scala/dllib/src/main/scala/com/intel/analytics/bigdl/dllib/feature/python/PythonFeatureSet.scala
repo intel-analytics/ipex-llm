@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
 import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
-// import com.intel.analytics.bigdl.dllib.feature.pmem.MemoryType
+import com.intel.analytics.bigdl.dllib.feature.MemoryType
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD
@@ -66,10 +66,8 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
         sequentialOrder: Boolean, shuffle: Boolean): FeatureSet[ImageFeature] = {
     require(imageFrame.isDistributed(), "Only support distributed ImageFrame")
     loadOpenCv(imageFrame.toDistributed().rdd.sparkContext)
-//    FeatureSet.rdd(imageFrame.toDistributed().rdd, MemoryType.fromString(memoryType),
-//      sequentialOrder = sequentialOrder, shuffle = shuffle)
-    FeatureSet.rdd(imageFrame.toDistributed().rdd,
-      sequentialOrder = sequentialOrder, shuffle = shuffle)
+   FeatureSet.rdd(imageFrame.toDistributed().rdd, MemoryType.fromString(memoryType),
+     sequentialOrder = sequentialOrder, shuffle = shuffle)
   }
 
   def createFeatureSetFromRDD(
@@ -77,10 +75,8 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
         memoryType: String,
         sequentialOrder: Boolean,
         shuffle: Boolean): FeatureSet[Any] = {
-//    FeatureSet.rdd(data, MemoryType.fromString(memoryType),
-//      sequentialOrder = sequentialOrder, shuffle = shuffle)
-    FeatureSet.rdd(data,
-      sequentialOrder = sequentialOrder, shuffle = shuffle)
+   FeatureSet.rdd(data, MemoryType.fromString(memoryType),
+     sequentialOrder = sequentialOrder, shuffle = shuffle)
   }
 
   def createSampleFeatureSetFromRDD(data: JavaRDD[Sample],
@@ -89,11 +85,9 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
                                     shuffle: Boolean)
   : FeatureSet[JSample[T]] = {
     FeatureSet.rdd(toJSample(data),
-//      MemoryType.fromString(memoryType),
-//      sequentialOrder = sequentialOrder,
-//      shuffle = shuffle)
-      sequentialOrder = sequentialOrder,
-      shuffle = shuffle)
+     MemoryType.fromString(memoryType),
+     sequentialOrder = sequentialOrder,
+     shuffle = shuffle)
   }
 
   def transformFeatureSet(featureSet: FeatureSet[Any],
