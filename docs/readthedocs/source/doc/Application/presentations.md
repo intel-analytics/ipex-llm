@@ -7,6 +7,10 @@
 
 **Talks:**
 
+- Mobile Order Click-Through Rate (CTR) Recommendation with Ray on Apache Spark at Burger King, [Ray Summit 2021](https://www.anyscale.com/events/2021/06/22/mobile-order-click-through-rate-ctr-recommendation-with-ray-on-apache-spark-at-burger-king), June 2021, ([slides](https://files.speakerdeck.com/presentations/1870110b5adf4bfc8f0c76255a417f09/Kai_Huang_and_Luyang_Wang.pdf))
+
+- Offer Recommendation System with Apache Spark at Burger King, [Data + AI Summit 2021](https://databricks.com/session_na21/offer-recommendation-system-with-apache-spark-at-burger-king), May 2021, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/20210526Offer%20Recommendation.pdf))
+
 - Context-aware Fast Food Recommendation with Ray on Apache Spark at Burger King, [Data + AI Summit Europe 2020](https://databricks.com/session_eu20/context-aware-fast-food-recommendation-with-ray-on-apache-spark-at-burger-king), November 2020, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1118%20Context-aware%20Fast%20Food%20Recommendation%20with%20Ray%20on%20Apache%20Spark%20at%20Burger%20King.pdf))
 
 - Cluster Serving: Distributed Model Inference using Apache Flink in Analytics Zoo, [Flink Forward 2020](https://www.flink-forward.org/global-2020/conference-program#cluster-serving--distributed-model-inference-using-apache-flink-in-analytics-zoo), October 2020, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1020%20Cluster%20Serving%20Distributed%20Model%20Inference%20using%20Apache%20Flink%20in%20Analytics%20Zoo%20.pdf))
