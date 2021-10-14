@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>bigdl-grpc-spark_${spark.version}</artifactId>
+    <artifactId>bigdl-grpc</artifactId>
     <packaging>jar</packaging>
 
     <properties>
