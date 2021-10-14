@@ -60,8 +60,8 @@ def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
     if cpu_procs is None:
         cpu_procs = schedule_workers(nprocs)
 
-    init_KMP_AFFINITY = os.environ["KMP_AFFINITY"]
-    init_OMP_NUM_THREADS = os.environ["OMP_NUM_THREADS"]
+    init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY")
+    init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS")
 
     for i in range(nprocs):
         os.environ["KMP_AFFINITY"] = f"granularity=fine,proclist"\

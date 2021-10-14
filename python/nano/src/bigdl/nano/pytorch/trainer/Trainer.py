@@ -68,11 +68,10 @@ class Trainer(pl.Trainer):
             use_ipex = False
 
         if num_processes == 1:
+            accelerator = None
             if use_ipex:
                 from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
                 accelerator = IPEXAccelerator(enable_bf16=enable_bf16)
-            else:
-                accelerator = None
             super().__init__(accelerator=accelerator, *args, **kwargs)
         else:
             plugin = None
@@ -94,15 +93,14 @@ class Trainer(pl.Trainer):
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
                 from bigdl.nano.pytorch.plugins.ray_distributed import RayPlugin
-                plugin = RayPlugin(num_workers=num_processes,
-                                   use_ipex=use_ipex)  # type: ignore
+                plugin = RayPlugin(num_workers=num_processes,  # type: ignore
+                                   use_ipex=use_ipex)
 
+            accelerator = None
             if use_ipex:
                 from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
                 accelerator = IPEXAccelerator(training_type_plugin=plugin,  # type: ignore
                                               enable_bf16=enable_bf16)
-            else:
-                accelerator = None
 
             super().__init__(accelerator=accelerator,
                              plugins=[plugin], *args, **kwargs)
