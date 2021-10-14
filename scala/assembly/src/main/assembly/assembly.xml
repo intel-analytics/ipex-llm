@@ -79,5 +79,47 @@
           <include>bigdl-serving*-python-api.zip</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <outputDirectory>/examples/dllib</outputDirectory>
+      <directory>${project.parent.basedir}/../python/dllib/src/bigdl/dllib/examples</directory>
+      <includes>
+          <include>/**</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/examples/orca</outputDirectory>
+      <directory>${project.parent.basedir}/../python/orca/example</directory>
+      <includes>
+          <include>/**</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/examples/chronos</outputDirectory>
+      <directory>${project.parent.basedir}/../python/chronos/example</directory>
+      <includes>
+          <include>/**</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/examples/friesian</outputDirectory>
+      <directory>${project.parent.basedir}/../python/friesian/example</directory>
+      <includes>
+          <include>/**</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/examples/nano</outputDirectory>
+      <directory>${project.parent.basedir}/../python/nano/example</directory>
+      <includes>
+          <include>/**</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/examples/serving</outputDirectory>
+      <directory>${project.parent.basedir}/../python/serving/example</directory>
+      <includes>
+          <include>/**</include>
+      </includes>
+    </fileSet>
   </fileSets>
 </assembly>
