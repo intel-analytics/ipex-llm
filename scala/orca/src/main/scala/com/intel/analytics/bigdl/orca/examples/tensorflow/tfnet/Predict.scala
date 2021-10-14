@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.examples.tensorflow.tfnet
+package com.intel.analytics.bigdl.orca.examples.tensorflow.tfnet
 
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.feature.image.{ImageMatToTensor, ImageResize, ImageSet, ImageSetToSample}
-import com.intel.analytics.zoo.pipeline.api.net.TFNet
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.feature.image.{ImageMatToTensor, ImageResize, ImageSet, ImageSetToSample}
+import com.intel.analytics.bigdl.orca.net.TFNet
 import org.apache.log4j.{Level, Logger}
 import scopt.OptionParser
 
