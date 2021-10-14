@@ -116,13 +116,16 @@ if __name__ == "__main__":
     tbl = FeatureTable.read_parquet(paths)
     idx_list = tbl.gen_string_idx(CAT_COLS, freq_limit=args.frequency_limit)
 
-    train_data = FeatureTable.read_parquet(paths[:-1])
-    train_preprocessed = preprocess_and_save(train_data, idx_list, "train", args.output_folder)
-
     if args.days == 24:  # Full Criteo dataset
+        # Exclude the last path day_23.parquet since the first half of day_23 is separated for test.
+        train_data = FeatureTable.read_parquet(paths[:-1])
+        train_preprocessed = preprocess_and_save(train_data, idx_list, "train", args.output_folder)
         test_data = FeatureTable.read_parquet(
             os.path.join(args.input_folder, "day_23_test.parquet"))
         test_preprocessed = preprocess_and_save(test_data, idx_list, "test", args.output_folder)
+    else:
+        train_data = FeatureTable.read_parquet(paths)
+        train_preprocessed = preprocess_and_save(train_data, idx_list, "train", args.output_folder)
 
     time_end = time()
     print("Total preprocessing time: ", time_end - time_start)
