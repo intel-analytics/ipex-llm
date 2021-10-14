@@ -9,9 +9,9 @@
 
 - Mobile Order Click-Through Rate (CTR) Recommendation with Ray on Apache Spark at Burger King, [Ray Summit 2021](https://www.anyscale.com/events/2021/06/22/mobile-order-click-through-rate-ctr-recommendation-with-ray-on-apache-spark-at-burger-king), June 2021, ([slides](https://files.speakerdeck.com/presentations/1870110b5adf4bfc8f0c76255a417f09/Kai_Huang_and_Luyang_Wang.pdf))
 
-- Deep Reinforcement Learning Recommenders using RayOnSpark, **Data + AI Summit 2021**, June 2021, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210527DeepReinforcementLearningRecommendersUsingRayOnSpark2.pdf))
+- Deep Reinforcement Learning Recommenders using RayOnSpark, **Data + AI Summit 2021**, May 2021, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210527DeepReinforcementLearningRecommendersUsingRayOnSpark2.pdf))
 
-- Cluster Serving: Deep Learning Model Serving for Big Data, **Data + AI Summit 2021**, June 2021, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210526Cluster-Serving.pdf))
+- Cluster Serving: Deep Learning Model Serving for Big Data, **Data + AI Summit 2021**, May 2021, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210526Cluster-Serving.pdf))
 
 - Offer Recommendation System with Apache Spark at Burger King, [Data + AI Summit 2021](https://databricks.com/session_na21/offer-recommendation-system-with-apache-spark-at-burger-king), May 2021, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/20210526Offer%20Recommendation.pdf))
 
