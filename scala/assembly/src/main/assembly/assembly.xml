@@ -19,64 +19,64 @@
       <outputDirectory>/jars</outputDirectory>
       <directory>${project.parent.basedir}/dllib/target</directory>
       <includes>
-          <include>bigdl-dllib-*-jar-with-dependencies.jar</include>
+          <include>bigdl-dllib*-jar-with-dependencies.jar</include>
       </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/jars</outputDirectory>
       <directory>${project.parent.basedir}/orca/target</directory>
       <includes>
-          <include>bigdl-orca-*-jar-with-dependencies.jar</include>
+          <include>bigdl-orca*-jar-with-dependencies.jar</include>
       </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/jars</outputDirectory>
       <directory>${project.parent.basedir}/friesian/target</directory>
       <includes>
-          <include>bigdl-friesian-*-jar-with-dependencies.jar</include>
+          <include>bigdl-friesian*-jar-with-dependencies.jar</include>
       </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/jars</outputDirectory>
       <directory>${project.parent.basedir}/friesian.serving/target</directory>
       <includes>
-          <include>bigdl-friesian-serving-*.jar</include>
-          <include>/serving/target/bigdl-serving-*-jar-with-dependencies.jar</include>
+          <include>bigdl-friesian-serving*.jar</include>
+          <include>/serving/target/bigdl-serving*-jar-with-dependencies.jar</include>
       </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/jars</outputDirectory>
       <directory>${project.parent.basedir}/serving/target</directory>
       <includes>
-          <include>/serving/target/bigdl-serving-*-serving.jar</include>
+          <include>/serving/target/bigdl-serving*-serving.jar</include>
       </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/python</outputDirectory>
       <directory>${project.parent.basedir}/dllib/target</directory>
       <includes>
-          <include>bigdl-dllib-*-python-api.zip</include>
+          <include>bigdl-dllib*-python-api.zip</include>
       </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/python</outputDirectory>
       <directory>${project.parent.basedir}/orca/target</directory>
       <includes>
-          <include>bigdl-orca-*-python-api.zip</include>
+          <include>bigdl-orca*-python-api.zip</include>
       </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/python</outputDirectory>
       <directory>${project.parent.basedir}/friesian/target</directory>
       <includes>
-          <include>bigdl-friesian-*-python-api.zip</include>
+          <include>bigdl-friesian*-python-api.zip</include>
       </includes>
     </fileSet>
     <fileSet>
       <outputDirectory>/python</outputDirectory>
       <directory>${project.parent.basedir}/serving/target</directory>
       <includes>
-          <include>bigdl-serving-*-python-api.zip</include>
+          <include>bigdl-serving*-python-api.zip</include>
       </includes>
     </fileSet>
   </fileSets>
