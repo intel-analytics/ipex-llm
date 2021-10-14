@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Analytics Zoo Authors.
+ * Copyright 2016 The BigDL Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.examples.localEstimator
+package com.intel.analytics.bigdl.dllib.examples.localEstimator
 
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.dataset.ByteRecord
-import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
-import com.intel.analytics.bigdl.utils.File
-import com.intel.analytics.zoo.pipeline.estimator.EstimateSupportive
+import com.intel.analytics.bigdl.dllib.feature.dataset.ByteRecord
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.LabeledBGRImage
+import com.intel.analytics.bigdl.dllib.utils.File
+import com.intel.analytics.bigdl.dllib.estimator.EstimateSupportive
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable.ArrayBuffer

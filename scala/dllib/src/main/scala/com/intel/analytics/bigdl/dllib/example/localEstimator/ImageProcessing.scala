@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Analytics Zoo Authors.
+ * Copyright 2016 The BigDL Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.examples.localEstimator
+package com.intel.analytics.bigdl.dllib.examples.localEstimator
 
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.nio.ByteBuffer
 
-import com.intel.analytics.bigdl.dataset.image.{BGRImage, GreyImage, LabeledBGRImage, LabeledGreyImage}
-import com.intel.analytics.bigdl.dataset.{ByteRecord, MiniBatch}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator
-import com.intel.analytics.zoo.pipeline.estimator.EstimateSupportive
+import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BGRImage, GreyImage, LabeledBGRImage, LabeledGreyImage}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, MiniBatch}
+import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.estimator.EstimateSupportive
 
 trait ImageProcessing extends EstimateSupportive {
   val normalize = 255f
