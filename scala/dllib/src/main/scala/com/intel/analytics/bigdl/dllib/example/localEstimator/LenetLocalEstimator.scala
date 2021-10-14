@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Analytics Zoo Authors.
+ * Copyright 2016 The BigDL Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.examples.localEstimator
+package com.intel.analytics.bigdl.dllib.examples.localEstimator
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.ZooClassNLLCriterion
-import com.intel.analytics.bigdl.optim.{Adam, Loss, Top1Accuracy}
-import com.intel.analytics.zoo.pipeline.estimator.LocalEstimator
+import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
+import com.intel.analytics.bigdl.dllib.nn.ZooClassNLLCriterion
+import com.intel.analytics.bigdl.dllib.optim.{Adam, Loss, Top1Accuracy}
+import com.intel.analytics.bigdl.dllib.estimator.LocalEstimator
 import org.slf4j.LoggerFactory
 import scopt.OptionParser
 
