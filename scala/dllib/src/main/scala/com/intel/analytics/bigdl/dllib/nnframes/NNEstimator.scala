@@ -25,10 +25,10 @@ import com.intel.analytics.bigdl.dllib.utils.python.api.EvaluatedResult
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Tensor, DoubleType => TensorDouble, FloatType => TensorFloat}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
-import com.intel.analytics.bigdl.dllib.utils.{File, T, Engine}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, File, T}
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
-import com.intel.analytics.bigdl.dllib.feature.FeatureSet
+import com.intel.analytics.bigdl.dllib.feature.{DRAM, FeatureSet, MemoryType}
 import com.intel.analytics.bigdl.dllib.feature.common.{Preprocessing, _}
 // import com.intel.analytics.zoo.feature.pmem.{DRAM, MemoryType}
  import com.intel.analytics.bigdl.dllib.keras.Net
@@ -151,10 +151,10 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
    * release the current cache, and load another 1/n into memory.
    * By default, DRAM is used.
    */
-//  final val dataCacheLevel = new Param[MemoryType](
-//    this, "dataCacheLevel", "cache the data in memory, disk, ")
-//
-//  def getDataCacheLevel: MemoryType = $(dataCacheLevel)
+  final val dataCacheLevel = new Param[MemoryType](
+    this, "dataCacheLevel", "cache the data in memory, disk, ")
+
+  def getDataCacheLevel: MemoryType = $(dataCacheLevel)
 }
 
 /**
@@ -263,11 +263,11 @@ class NNEstimator[T: ClassTag] private[bigdl](
 
   setDefault(cachingSample, true)
 
-//  def setDataCacheLevel(value: MemoryType): this.type = {
-//    set(dataCacheLevel, value)
-//  }
-//
-//  setDefault(dataCacheLevel, DRAM)
+  def setDataCacheLevel(value: MemoryType): this.type = {
+    set(dataCacheLevel, value)
+  }
+
+  setDefault(dataCacheLevel, DRAM)
 
   /**
    * Clear clipping params, in this case, clipping will not be applied.
@@ -414,11 +414,11 @@ class NNEstimator[T: ClassTag] private[bigdl](
     }
 
     val initialDataSet = if ($(cachingSample)) {
-//      FeatureSet.rdd(sp.apply(featureAndLabel), memoryType = $(dataCacheLevel))
-      FeatureSet.rdd(sp.apply(featureAndLabel))
+      FeatureSet.rdd(sp.apply(featureAndLabel), memoryType = $(dataCacheLevel))
+//      FeatureSet.rdd(sp.apply(featureAndLabel))
     } else {
-//      FeatureSet.rdd(featureAndLabel, memoryType = $(dataCacheLevel)).transform(sp)
-      FeatureSet.rdd(featureAndLabel).transform(sp)
+      FeatureSet.rdd(featureAndLabel, memoryType = $(dataCacheLevel)).transform(sp)
+//      FeatureSet.rdd(featureAndLabel).transform(sp)
     }
 
     initialDataSet.transform(SampleToMiniBatch[T](batchSize))
