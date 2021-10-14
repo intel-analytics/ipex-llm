@@ -170,19 +170,18 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     estimator.setEndWhen(trigger)
   }
 
-//  def setDataCacheLevel(
-//      estimator: NNEstimator[T],
-//      level: String,
-//      numSlice: Int = 4): NNEstimator[T] = {
-//    val memType = level.trim.toUpperCase match {
-//      case "DRAM" => DRAM
-//      case "PMEM" => PMEM
-//      case "DISK_AND_DRAM" => DISK_AND_DRAM(numSlice)
-//      case "DIRECT" => DIRECT
-//      case _ => throw new IllegalArgumentException(s"$level is not supported.")
-//    }
-//    estimator.setDataCacheLevel(memType)
-//  }
+  def setDataCacheLevel(
+      estimator: NNEstimator[T],
+      level: String,
+      numSlice: Int = 4): NNEstimator[T] = {
+     import com.intel.analytics.bigdl.dllib.feature._
+    val memType = level.trim.toUpperCase match {
+      case "DRAM" => DRAM
+      case "DISK_AND_DRAM" => DISK_AND_DRAM(numSlice)
+      case _ => throw new IllegalArgumentException(s"$level is not supported.")
+    }
+    estimator.setDataCacheLevel(memType)
+  }
 
   def setCheckpoint(
       estimator: NNEstimator[T],

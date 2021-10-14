@@ -261,23 +261,22 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         """
         return self.endWhen
 
-    # def setDataCacheLevel(self, level, numSlice=None):
-    #     """
-    #     :param level: string, "DRAM", "PMEM" or "DISK_AND_DRAM".
-    #             If it's DRAM, will cache dataset into dynamic random-access memory
-    #             If it's PMEM, will cache dataset into Intel Optane DC Persistent Memory
-    #             If it's DISK_AND_DRAM, will cache dataset into disk, and only hold 1/numSlice
-    #               of the data into memory during the training. After going through the
-    #               1/numSlice, we will release the current cache, and load another slice into
-    #               memory.
-    #     """
-    #     pythonBigDL_method_name = "setDataCacheLevel"
-    #     callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value, level, numSlice)
-    #     self.dataCacheLevel = level if numSlice is None else (level, numSlice)
-    #     return self
-    #
-    # def getDataCacheLevel(self):
-    #     return self.dataCacheLevel
+    def setDataCacheLevel(self, level, numSlice=None):
+        """
+        :param level: string, "DRAM" or "DISK_AND_DRAM".
+                If it's DRAM, will cache dataset into dynamic random-access memory
+                If it's DISK_AND_DRAM, will cache dataset into disk, and only hold 1/numSlice
+                  of the data into memory during the training. After going through the
+                  1/numSlice, we will release the current cache, and load another slice into
+                  memory.
+        """
+        pythonBigDL_method_name = "setDataCacheLevel"
+        callZooFunc(self.bigdl_type, pythonBigDL_method_name, self.value, level, numSlice)
+        self.dataCacheLevel = level if numSlice is None else (level, numSlice)
+        return self
+
+    def getDataCacheLevel(self):
+        return self.dataCacheLevel
 
     def setLearningRate(self, val):
         """
