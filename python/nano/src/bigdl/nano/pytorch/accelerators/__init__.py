@@ -19,12 +19,21 @@ from .ipex_torchfunctional import apply_torch_functional_replacement
 from typing import Dict, List, Tuple
 import pickle
 import copy
-from intel_pytorch_extension.ops.save import *
+from logging import warning
 import torch
 _torch_save = torch.save
 
 # To replace torch.save in ipex, you need to import and exec their __init__.py first.
 # And then you can replace torch.save with your customized function.
+try:
+    from intel_pytorch_extension.ops.save import *
+except ImportError:
+    warning("IPEXAccelerator requires intel_pytorch_extension installed, \
+    please run `pip install torch_ipex -f https://software.intel.com/ipex-whl-stable` \
+    to get IPEX ready.")
+    # process needs to stop here
+    raise ImportError
+
 # Note that you need to temporarily store original torch.save,
 # because it will be modified in ipex.ops.save.
 torch.save = _torch_save

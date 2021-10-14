@@ -91,45 +91,16 @@ def parse_find_index_page(url):
 
 def setup_package():
 
-    py_version = sys.version_info
-
-    assert py_version.major == 3, "Nano only supports python3.x"
-
-    ipex_version = "1.8.0"
-    ipex_version_major = "1.8"
-    ipex_whl_name = f"torch_ipex-{ipex_version}-cp{py_version.major}{py_version.minor}" \
-                    f"-cp{py_version.major}{py_version.minor}m-linux_x86_64.whl"
-    ipex_link = f"https://intel-optimized-pytorch.s3.cn-north-1.amazonaws.com.cn/wheels/" \
-                f"v{ipex_version_major}/{ipex_whl_name}"
-
-    torch_links = parse_find_index_page(
-        "https://download.pytorch.org/whl/torch_stable.html")
-    torchvision_version = "0.9.0"
-    pytorch_version = "1.8.0"
-    pytorch_url_suffix = "m-linux_x86_64.whl" if py_version.minor < 8 else "-linux_x86_64.whl"
-
-    torchvision_whl_name = f"cpu/torchvision-{torchvision_version}%2Bcpu-cp{py_version.major}{py_version.minor}" \
-                           f"-cp{py_version.major}{py_version.minor}" + pytorch_url_suffix
-    pytorch_whl_name = f"cpu/torch-{pytorch_version}%2Bcpu-cp{py_version.major}{py_version.minor}" \
-                       f"-cp{py_version.major}{py_version.minor}" + pytorch_url_suffix
-
-    # both pytorch_lightning and ipex depends on pytorch
-    # listing it here to make sure installing the correct version
-    pytorch_link = "https://download.pytorch.org/whl/" + \
-        torch_links[pytorch_whl_name]
-    torchvision_link = "https://download.pytorch.org/whl/" + \
-        torch_links[torchvision_whl_name]
-
     install_requires = ["intel-openmp"]
 
     tensorflow_requires = ["intel-tensorflow"]
 
-    pytorch_requires = ["pytorch_lightning",
+    pytorch_requires = ["torch==1.8.0",
+                        "torchvision",
+                        "pytorch_lightning",
                         "opencv-python-headless",
                         "PyTurboJPEG",
-                        "opencv-transforms",
-                        f"torch_ipex @ {ipex_link}",
-                        f"torchvision @ {torchvision_link}"]
+                        "opencv-transforms"]
 
     lib_urls = [
         "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
