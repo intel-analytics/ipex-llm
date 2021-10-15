@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.orca.automl.search import SearchEngineFactory
 from bigdl.orca.automl.search.ray_tune import RayTuneSearchEngine
 from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder

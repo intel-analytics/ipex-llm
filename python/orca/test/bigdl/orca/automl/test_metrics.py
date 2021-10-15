@@ -15,7 +15,7 @@
 #
 
 import numpy as np
-from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.orca.automl.metrics import ME, MAE, MSE, RMSE, MSLE, R2
 
 from bigdl.orca.automl.metrics import MPE, MAPE, MSPE, sMAPE, MDAPE, sMDAPE
