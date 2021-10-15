@@ -1,0 +1,110 @@
+{% set name = "bigdl-nano" %}
+{% set version = "0.0.1" %}
+
+package:
+    name: bigdl-nano.base
+    version: {{ version }}
+
+build:
+    number: 0
+    skip: True # [py<36]
+    skip: True # [win]
+    noarch: python
+    script_env:
+      - http_proxy
+      - https_proxy
+
+source:
+    # Uncomment this line to build from local 
+    path: ../../nano
+    
+    # Uncomment this line to build from source
+    # Unavailable for now
+    # git_url: https://github.com/analytics-zoo/bigdl-nano-poc.git
+    include_recipe: True
+
+requirements:
+    build:
+       - python
+       - setuptools
+
+    run:
+        - python
+        - 'intel-openmp >=2021.2.0'
+        - 'opencv-python-headless'
+
+test:
+    imports:
+        - bigdl.nano
+
+outputs:
+    - name: bigdl-nano.base
+    - name: bigdl-nano.pytorch
+      version: {{ version }}
+      build:
+        number: 0
+        skip: True # [py<36]
+        skip: True # [win]
+        noarch: python
+        script_env:
+            - http_proxy
+            - https_proxy
+      requirements:
+        build:
+            - python
+            - setuptools
+        run:
+            - {{ pin_subpackage("bigdl-nano.base", exact=True) }}
+            - 'pytorch-lightning >=1.3.0'
+            - 'opencv_transforms'
+            - 'intel_pytorch_extension'
+            - 'cpuonly >=1.0'
+            - 'pytorch ==1.8.0'
+            - 'torchvision ==0.9.0'
+      test:
+        imports:
+            - bigdl.nano.pytorch
+    - name: bigdl-nano.tf
+      version: {{ version }}
+      build:
+        number: 0
+        skip: True # [py<37]
+        skip: True # [win]
+        noarch: python
+        script_env:
+            - http_proxy
+            - https_proxy
+      requirements:
+        build:
+            - python
+            - setuptools
+        run:
+            - {{ pin_subpackage("bigdl-nano.base", exact=True) }}
+            - 'tensorflow >=2.5'
+      test:
+          imports:
+            - bigdl.nano.tf
+    - name: bigdl-nano
+      version: {{ version }}
+      build:
+        number: 0
+        skip: True # [py<36]
+        skip: True # [win]
+        noarch: python
+        script_env:
+            - http_proxy
+            - https_proxy
+      requirements:
+        build:
+            - python
+            - setuptools
+        run:
+            - {{ pin_subpackage("bigdl-nano.pytorch", exact=True) }}
+      test:
+        imports:
+            - bigdl.nano.pytorch
+      
+
+about:
+    home: https://github.com/intel-analytics/analytics-zoo/tree/bigdl-2.0
+    description: bigdl-nano

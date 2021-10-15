@@ -1,0 +1,182 @@
+syntax = "proto3";
+package com.intel.analytics.bigdl.serialization;
+import "google/protobuf/any.proto";
+message BigDLModule
+{
+    string name = 1; //module name
+    repeated BigDLModule subModules = 2; // sub modules
+    // deprecated, please use parameters
+    BigDLTensor weight = 3; // weight for each layer, serialized data are stored as either float or double
+    // deprecated, please use parameters
+    BigDLTensor bias = 4; // bias for each layer
+    repeated string preModules = 5; //pre modules of the same hierarchy
+    repeated string nextModules = 6; //next modules of the same hierachy
+    string moduleType = 7; //module type to identify a module like linear, graph, etc
+    map<string, AttrValue> attr = 8; // module attributes
+    string version = 9; //version of this module
+    bool train = 10; // is module status in train
+    string namePostfix = 11; // name post fix
+    int32 id = 12; // unique ID of this module , used for shared modules
+    Shape inputShape = 13; // input shape
+    Shape outputShape = 14; //output shape
+    bool hasParameters  = 15; // indicator if module has parameters
+    repeated BigDLTensor parameters = 16; // parameters, e.g., weight and bias
+    bool isMklInt8Enabled = 17;
+    int32 inputDimMasks = 18;
+    repeated AttrValue inputScales = 19;
+    int32 outputDimMasks = 20;
+    repeated AttrValue outputScales = 21;
+    int32 weightDimMasks = 22;
+    repeated AttrValue weightScales = 23;
+}
+enum VarFormat {
+    EMPTY_FORMAT = 0;
+    DEFAULT = 1;
+    ONE_D = 2;
+    IN_OUT = 3;
+    OUT_IN = 4;
+    IN_OUT_KW_KH = 5;
+    OUT_IN_KW_KH = 6;
+    GP_OUT_IN_KW_KH = 7;
+    GP_IN_OUT_KW_KH = 8;
+    OUT_IN_KT_KH_KW = 9;
+}
+enum InitMethodType {
+    EMPTY_INITIALIZATION = 0;
+    RANDOM_UNIFORM = 1;
+    RANDOM_UNIFORM_PARAM = 2;
+    RANDOM_NORMAL = 3;
+    ZEROS = 4;
+    ONES = 5;
+    CONST = 6;
+    XAVIER = 7;
+    BILINEARFILLER = 8;
+}
+enum RegularizerType {
+    L1L2Regularizer = 0;
+    L1Regularizer = 1;
+    L2Regularizer = 2;
+}
+
+enum InputDataFormat {
+    NCHW = 0;
+    NHWC = 1;
+}
+
+enum TensorType {
+    DENSE = 0;
+    QUANT = 1;
+}
+
+message InitMethod {
+    InitMethodType methodType = 1;
+    repeated double data = 2;
+}
+message BigDLTensor{
+    DataType datatype = 1;
+    repeated int32 size = 2; //size of tensor
+    repeated int32 stride = 3; //stride of tensor
+    int32 offset = 4; //offset
+    int32 dimension = 5; // dimension
+    int32 nElements = 6; //total number of elements
+    bool isScalar = 7; // is scalar tensor
+    TensorStorage storage = 8; // reference to storage
+    int32 id = 9; // tensor ID, used for tensor sharing
+    TensorType tensorType = 10;
+}
+
+message TensorStorage {
+    DataType datatype = 1;
+    repeated float float_data = 2; //float tensor element
+    repeated double double_data = 3; //double tensor element
+    repeated bool bool_data = 4; //boolean tensor element
+    repeated string string_data = 5; //string tensor element
+    repeated int32 int_data = 6; //int tensor element
+    repeated int64 long_data = 7; //long tensor element
+    repeated bytes bytes_data = 8; //byte tensor element
+    int32 id = 9; // storage Id, used for storage sharing
+}
+
+message Regularizer {
+    RegularizerType regularizerType = 1;
+    repeated double regularData = 2;
+}
+
+enum DataType {
+    INT32 = 0;
+    INT64 = 1;
+    FLOAT = 2;
+    DOUBLE = 3;
+    STRING = 4;
+    BOOL = 5;
+    CHAR = 6;
+    SHORT = 7;
+    BYTES = 8;
+    REGULARIZER = 9;
+    TENSOR = 10;
+    VARIABLE_FORMAT= 11;
+    INITMETHOD = 12;
+    MODULE = 13;
+    NAME_ATTR_LIST = 14;
+    ARRAY_VALUE = 15;
+    DATA_FORMAT = 16;
+    CUSTOM = 17;
+    SHAPE = 18;
+}
+
+message AttrValue {
+    message ArrayValue {
+        int32 size = 1;
+        DataType datatype = 2;
+        repeated int32 i32 = 3;                         // "Array(int32)"
+        repeated int64 i64 = 4 ;        // "Array(int64)"
+        repeated float flt = 5 ;        // "Array(float)"
+        repeated double dbl = 6 ;        // "Array(double)"
+        repeated string str = 7;                        // "Array(string)"
+        repeated bool boolean = 8 ;         // "Array(bool)"
+        repeated Regularizer  Regularizer = 9 ;         // "Array(Regularizer)"
+        repeated BigDLTensor tensor = 10;         // "Array(BigDLTensor)"
+        repeated VarFormat variableFormat = 11; // "Array(VariableFormat)"
+        repeated InitMethod initMethod = 12;         // "Array(BigDLTensor)"
+        repeated BigDLModule bigDLModule = 13; // "Array(BigDLModel)"
+        repeated NameAttrList nameAttrList = 14; //
+        repeated InputDataFormat dataFormat = 15; // "Array(DataFormat)"
+        repeated google.protobuf.Any custom = 16; // "Array(Any)"
+        repeated Shape shape = 17; // "Array(Shape)"
+    }
+    DataType dataType = 1;
+    string subType = 2; // specific for custom data
+    oneof value {
+        int32 int32Value = 3; // int32 value
+        int64 int64Value = 4; //int64 value
+        float floatValue = 5; //float value
+        double doubleValue = 6; //float value
+        string stringValue = 7; // string value
+        bool boolValue = 8; // bool value
+        Regularizer regularizerValue = 9; // Regularizer
+        BigDLTensor tensorValue = 10; //tensor value
+        VarFormat variableFormatValue= 11; //Variable format
+        InitMethod initMethodValue = 12; // init method
+        BigDLModule bigDLModuleValue = 13; // big DL module
+        NameAttrList nameAttrListValue = 14; // name attribute list
+        ArrayValue arrayValue = 15; //array value of any type
+        InputDataFormat dataFormatValue = 16; // data format
+        google.protobuf.Any customValue = 17; // custom value
+        Shape shape = 18; // Shape value
+    }
+}
+message NameAttrList {
+    string name = 1;
+    map<string, AttrValue> attr = 2;
+}
+
+message Shape {
+    enum ShapeType {
+        SINGLE = 0;
+        MULTI = 1;
+    }
+    ShapeType shapeType = 1;
+    int32 ssize = 2;
+    repeated int32 shapeValue = 3;
+    repeated Shape shape = 4;
+}

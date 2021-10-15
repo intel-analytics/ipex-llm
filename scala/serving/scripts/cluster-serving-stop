@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# parse config file
+function parse_yaml {
+   local prefix=$2
+   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+   sed -ne "s|^\($s\):|\1|" \
+        -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
+   awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
+      }
+   }'
+}
+
+if [ -f "running" ]; then
+    rm running
+    echo "Stop signal sent to serving."
+    parse_yaml config.yaml
+    eval $(parse_yaml config.yaml)
+    if [ "${params_performance_mode}" == "ON" ]; then
+      if [ "${spark_master}" == "local[*]" ] || [ -z "${spark_master}" ]; then
+        echo "Stop standalone cluster..."
+        cluster-with-numactl.sh stop || ./cluster-with-numactl.sh stop
+      fi
+    fi
+else
+    echo "Serving is not running, stop operation ignored."
+fi
+
+if cluster-serving-cli; then
+  cluster-serving-cli stop
+else
+  if [ -z "CS_PATH" ]; then
+    echo "If you install Cluster Serving not by pip, please set CS_PATH variable"
+    exit 1
+  ${CS_PATH}/cluster-serving-cli stop
+fi
+
