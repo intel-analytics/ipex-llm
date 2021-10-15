@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.examples.localEstimator
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
-//import com.intel.analytics.bigdl.ZooClassNLLCriterion
+// import com.intel.analytics.bigdl.ZooClassNLLCriterion
 import com.intel.analytics.bigdl.dllib.keras.objectives.ZooClassNLLCriterion
 import com.intel.analytics.bigdl.dllib.optim.{Adam, Loss, Top1Accuracy}
 import com.intel.analytics.bigdl.dllib.estimator.LocalEstimator
