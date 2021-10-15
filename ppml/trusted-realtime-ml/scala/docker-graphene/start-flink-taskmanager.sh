@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -x
+
+core_num=$CORE_NUM
+job_manager_host=$FLINK_JOB_MANAGER_IP
+job_manager_rest_port=$FLINK_JOB_MANAGER_REST_PORT
+job_manager_rpc_port=$FLINK_JOB_MANAGER_RPC_PORT
+task_manager_host=$FLINK_TASK_MANAGER_IP
+task_manager_data_port=$FLINK_TASK_MANAGER_DATA_PORT
+task_manager_rpc_port=$FLINK_TASK_MANAGER_RPC_PORT
+task_manager_taskslots_num=$FLINK_TASK_MANAGER_TASKSLOTS_NUM
+secure_password=`openssl rsautl -inkey /ppml/trusted-realtime-ml/java/work/password/key.txt -decrypt </ppml/trusted-realtime-ml/java/work/password/output.bin`
+flink_home=$FLINK_HOME
+flink_version=$FLINK_VERSION
+taskmanager_memory_task_heap_size=$TASKMANAGER_MEMORY_TASK_HEAP_SIZE
+taskmanager_memory_managed_size=$TASKMANAGER_MEMORY_MANAGED_SIZE
+xmx_size=$XMX_SIZE
+sgx_mode=$SGX_MODE
+
+if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then cmd_prefix="graphene-sgx ./"; fi
+
+echo "### Launching Flink Taskmanager ###"
+
+ ${cmd_prefix}bash -c " export OMP_NUM_THREADS=${CORE_NUM} && export KMP_AFFINITY=verbose,granularity=fine,compact,1,0 && export KMP_BLOCKTIME=20 && export KMP_SETTINGS=1 && \
+    /opt/jdk8/bin/java \
+    -XX:+UseG1GC \
+    -Xms2g \
+    -Xmx${xmx_size} \
+    -XX:ActiveProcessorCount=${core_num} \
+    -XX:MaxDirectMemorySize=1207959552 \
+    -XX:MaxMetaspaceSize=268435456 \
+    -Djdk.tls.client.protocols="TLSv1,TLSv1.1,TLSv1.2" \
+    -Dorg.apache.flink.shaded.netty4.io.netty.tryReflectionSetAccessible=true \
+    -Dorg.apache.flink.shaded.netty4.io.netty.eventLoopThreads=${core_num} \
+    -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
+    -Dlog.file=${flink_home}/log/flink-taskexecutor-0-${sgx_mode}.log \
+    -Dlog4j.configurationFile=file:${flink_home}/conf/log4j.properties \
+    -Dlogback.configurationFile=file:${flink_home}/conf/logback.xml \
+    -classpath ${flink_home}/lib/flink-csv-${flink_version}.jar:${flink_home}/lib/flink-dist_2.11-${flink_version}.jar:${flink_home}/lib/flink-json-${flink_version}.jar:${flink_home}/lib/flink-shaded-zookeeper-3.4.14.jar:${flink_home}/lib/flink-table_2.11-${flink_version}.jar:${flink_home}/lib/flink-table-blink_2.11-${flink_version}.jar:${flink_home}/lib/log4j-1.2-api-2.12.1.jar:${flink_home}/lib/log4j-api-2.12.1.jar:${flink_home}/lib/log4j-core-2.12.1.jar:${flink_home}/lib/log4j-slf4j-impl-2.12.1.jar::: org.apache.flink.runtime.taskexecutor.TaskManagerRunner \
+    --configDir ${flink_home}/conf \
+    -D rest.bind-address=${job_manager_host} \
+    -D rest.bind-port=${job_manager_rest_port} \
+    -D jobmanager.rpc.address=${job_manager_host} \
+    -D jobmanager.rpc.port=${job_manager_rpc_port} \
+    -D jobmanager.heap.size=5g \
+    -D security.ssl.internal.enabled=true \
+    -D security.ssl.internal.keystore=/ppml/trusted-realtime-ml/java/work/keys/keystore.pkcs12 \
+    -D security.ssl.internal.truststore=/ppml/trusted-realtime-ml/java/work/keys/keystore.pkcs12 \
+    -D security.ssl.internal.keystore-password=${secure_password} \
+    -D security.ssl.internal.truststore-password=${secure_password} \
+    -D security.ssl.internal.key-password=${secure_password} \
+    -D taskmanager.host=${task_manager_host} \
+    -D taskmanager.data.port=${task_manager_data_port} \
+    -D taskmanager.rpc.port=${task_manager_rpc_port} \
+    -D taskmanager.numberOfTaskSlots=${task_manager_taskslots_num} \
+    -D taskmanager.memory.framework.off-heap.size=128mb \
+    -D taskmanager.memory.network.max=1024mb \
+    -D taskmanager.memory.network.min=1024mb \
+    -D taskmanager.memory.framework.heap.size=128mb \
+    -D taskmanager.memory.managed.size=${taskmanager_memory_managed_size} \
+    -D taskmanager.cpu.cores=${core_num} \
+    -D taskmanager.memory.task.heap.size=${taskmanager_memory_task_heap_size} \
+    -D taskmanager.memory.task.off-heap.size=953mb " 2>&1 | tee ./flink-taskmanager-${sgx_mode}.log
