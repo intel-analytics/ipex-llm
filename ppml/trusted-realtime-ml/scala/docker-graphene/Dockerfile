@@ -1,3 +1,6 @@
+ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ARG SPARK_VERSION=3.1.2
+
 # stage.1 graphene
 FROM ubuntu:18.04 AS graphene
 ARG GRAPHENE_BRANCH=branch-1.2-rc1
@@ -54,35 +57,19 @@ RUN cd /opt && \
     rm flink-${FLINK_VERSION}-bin-scala_2.11.tgz
 RUN ls -al /opt
 
-# stage.3 analytics-zoo
-FROM ubuntu:18.04 as analytics-zoo
-ARG HTTP_PROXY_HOST
-ARG HTTP_PROXY_PORT
-ARG HTTPS_PROXY_HOST
-ARG HTTPS_PROXY_PORT
-ARG ANALYTICS_ZOO_VERSION=0.12.0-SNAPSHOT
-ARG BIGDL_VERSION=0.13.0
-ARG SPARK_VERSION=2.4.6
-ARG SPARK_MAJOR_VERSION=2.4
-ENV ANALYTICS_ZOO_VERSION	${ANALYTICS_ZOO_VERSION}
+# stage.3 bigdl
+FROM ubuntu:18.04 as bigdl
+ARG BIGDL_VERSION
+ARG SPARK_VERSION
 ENV SPARK_VERSION		${SPARK_VERSION}
 ENV BIGDL_VERSION		${BIGDL_VERSION}
-ENV JAVA_HOME			/opt/jdk8
-ENV PATH			${JAVA_HOME}/bin:${PATH}
-
-COPY --from=flink /opt/jdk  /opt/jdk8
-
+ENV BIGDL_HOME		        /bigdl-${BIGDL_VERSION}
 RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils curl wget unzip git maven
-RUN git clone --single-branch --branch master https://github.com/intel-analytics/analytics-zoo.git && \
-    cd analytics-zoo/zoo && \
-    export MAVEN_OPTS="-XX:ReservedCodeCacheSize=512m -XX:MaxPermSize=3G \
-        -Dhttp.proxyHost=$HTTP_PROXY_HOST \
-        -Dhttp.proxyPort=$HTTP_PROXY_PORT \
-        -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
-        -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
-    mvn clean package -DskipTests -Dspark.version=${SPARK_VERSION} \
-        -Dbigdl.artifactId=bigdl-SPARK_$SPARK_MAJOR_VERSION -P spark_2.4+ -Dbigdl.version=${BIGDL_VERSION}
+    apt-get install -y apt-utils curl wget unzip git
+RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
+    chmod a+x ./download-bigdl.sh
+RUN ./download-bigdl.sh && \
+    rm bigdl*.zip
 RUN cd /opt && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG && \
     mkdir resnet50 && \
@@ -90,13 +77,11 @@ RUN cd /opt && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.bin/download" -O resnet_v1_50.bin && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml/download" -O resnet_v1_50.xml
 
-# stage.4 az ppml
+# stage.4 ppml
 FROM ubuntu:18.04
-ARG ANALYTICS_ZOO_VERSION=0.12.0-SNAPSHOT
-ARG BIGDL_VERSION=0.13.0
-ARG SPARK_VERSION=2.4.6
+ARG BIGDL_VERSION
+ARG SPARK_VERSION
 ARG FLINK_VERSION=1.11.3
-ENV ANALYTICS_ZOO_VERSION		${ANALYTICS_ZOO_VERSION}
 ENV SPARK_VERSION			${SPARK_VERSION}
 ENV BIGDL_VERSION			${BIGDL_VERSION}
 ENV JAVA_HOME				/opt/jdk8
@@ -151,13 +136,9 @@ COPY --from=graphene /redis.tar.gz /ppml/trusted-realtime-ml/redis
 COPY --from=flink /opt/jdk  /opt/jdk8
 COPY --from=flink /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}
-COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-serving.jar
-COPY --from=analytics-zoo /analytics-zoo/zoo/target/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar
-COPY --from=analytics-zoo /opt/resnet50/ /ppml/trusted-realtime-ml/java/work/models/resnet50
-COPY --from=analytics-zoo /opt/ILSVRC2012_val_00000001.JPEG /ppml/trusted-realtime-ml/java/work/data/ILSVRC2012_val_00000001.JPEG
-COPY --from=analytics-zoo /analytics-zoo/scripts/cluster-serving/config.yaml /ppml/trusted-realtime-ml/java/config.yaml
-COPY --from=analytics-zoo /analytics-zoo/scripts/cluster-serving/perf-benchmark/e2e_throughput.py /ppml/trusted-realtime-ml/java/work/benchmark/e2e_throughput.py
-COPY --from=analytics-zoo /analytics-zoo/scripts/cluster-serving/perf-benchmark/requirement.yml /ppml/trusted-realtime-ml/java/work/benchmark/requirement.yml
+COPY --from=bigdl /bigdl-${BIGDL_VERSION}/jars/bigdl-serving*-jar-with-dependencies.jar /ppml/trusted-realtime-ml/java/work/bigdl-serving-jar-with-dependencies.jar
+COPY --from=bigdl /opt/resnet50/ /ppml/trusted-realtime-ml/java/work/models/resnet50
+COPY --from=bigdl /opt/ILSVRC2012_val_00000001.JPEG /ppml/trusted-realtime-ml/java/work/data/ILSVRC2012_val_00000001.JPEG
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree && \
