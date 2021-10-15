@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.Ranking
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.*;
 import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
-import com.intel.analytics.bigdl.grpc.ZooGrpcServer;
+import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import com.intel.analytics.bigdl.orca.inference.InferenceModel;
 import io.grpc.ServerInterceptors;
 import io.grpc.stub.StreamObserver;
@@ -46,7 +46,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-public class RankingServer extends ZooGrpcServer {
+public class RankingServer extends GrpcServerBase {
     private static final Logger logger = Logger.getLogger(RankingServer.class.getName());
 
     /**
