@@ -1,7 +1,6 @@
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
 ARG TINI_VERSION=v0.18.0
-ARG SPARK_VERSION=3.1.2
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 
@@ -129,7 +128,7 @@ RUN cd /opt && \
     ls /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-3.2.0.jar
 
 # stage.3 bigdl
-FROM ubuntu:18.04 as analytics-zoo
+FROM ubuntu:18.04 as bigdl
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ENV SPARK_VERSION		${SPARK_VERSION}
