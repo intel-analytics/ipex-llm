@@ -16,9 +16,9 @@
 
 import pickle
 import argparse
-import os
 from pyspark.sql.functions import array
 from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data.file import exists, makedirs
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.learn.tf2.estimator import Estimator
 from model import *
@@ -122,7 +122,10 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     train_tbl, min_max_dic = train_tbl.min_max_scale(num_cols + ratio_cols)
     test_tbl = test_tbl.transform_min_max_scale(num_cols + ratio_cols, min_max_dic)
 
-    with open(os.path.join(args.model_dir, "stats/min_max.pkl"), 'wb') as f:
+    stats_dir = os.path.join(args.model_dir, 'stats')
+    if not exists(stats_dir):
+        makedirs(stats_dir)
+    with open(os.path.join(stats_dir, "min_max.pkl"), 'wb') as f:
         pickle.dump(min_max_dic, f)
 
     user_col_info = ColumnInfoTower(indicator_cols=["enaging_user_is_verified"],
@@ -217,7 +220,7 @@ if __name__ == '__main__':
 
     output_dir = args.data_dir + "/embed_reindex"
     for i, c in enumerate(embed_cols):
-        reindex_tbls[i].write_parquet(output_dir + "_c")
+        reindex_tbls[i].write_parquet(output_dir + "_" + c)
 
     train_config = {"lr": 1e-3,
                     "user_col_info": user_info,
@@ -227,3 +230,5 @@ if __name__ == '__main__':
 
     train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
           model_dir=args.model_dir)
+
+    stop_orca_context()
