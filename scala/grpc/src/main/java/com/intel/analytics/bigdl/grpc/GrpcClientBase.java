@@ -30,16 +30,31 @@ import java.util.function.Function;
  * All Analytics Zoo gRPC clients are based on ZooGrpcClient
  * To implement specific gRPC client, overwrite parseConfig() and loadServices() method
  */
-@Deprecated
-public class ZooGrpcClient extends AbstractZooGrpc {
-    protected static final Logger logger = Logger.getLogger(ZooGrpcClient.class.getName());
+
+public class GrpcClientBase extends AbstractGrpcBase {
+    protected static final Logger logger = Logger.getLogger(GrpcClientBase.class.getName());
     protected String target;
     protected final String clientUUID;
     protected ManagedChannel channel;
 
-    public ZooGrpcClient(String[] args) {
+    public GrpcClientBase(String[] args) {
         clientUUID = UUID.randomUUID().toString();
         this.args = args;
+        this.channel = null;
+    }
+
+    /**
+     * Channel could be set so that same channel could be used for multiple clients
+     * to avoid Channel creating cost
+     * If no channel is set, a new Channel would be created when build() method is called
+     * @param channel the Channel used for gRPC
+     */
+    public void setChannel(ManagedChannel channel) {
+        this.channel = channel;
+    }
+
+    public String getClientUUID() {
+        return clientUUID;
     }
 
     protected void parseConfig() throws IOException {}
@@ -52,10 +67,12 @@ public class ZooGrpcClient extends AbstractZooGrpc {
 
     public void build() throws IOException {
         parseConfig();
-        channel = ManagedChannelBuilder.forTarget(target)
-                // Channels are secure by default (via SSL/TLS).
-                .usePlaintext()
-                .build();
+        if (channel == null) {
+            channel = ManagedChannelBuilder.forTarget(target)
+                    // Channels are secure by default (via SSL/TLS).
+                    .usePlaintext()
+                    .build();
+        }
         loadServices();
     }
 

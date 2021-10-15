@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.Feature
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.*;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
-import com.intel.analytics.bigdl.grpc.ZooGrpcServer;
+import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import com.intel.analytics.bigdl.orca.inference.InferenceModel;
 import com.intel.analytics.bigdl.friesian.serving.recall.faiss.swighnswlib.floatArray;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features;
@@ -50,7 +50,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class RecallServer extends ZooGrpcServer {
+public class RecallServer extends GrpcServerBase {
     private static final Logger logger = Logger.getLogger(RecallServer.class.getName());
 
     public RecallServer(String[] args) {

@@ -34,12 +34,12 @@ import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
 /**
- * All Analytics Zoo gRPC servers are based on ZooGrpcServer
+ * All Analytics Zoo gRPC servers are based on GrpcServerBase
  * To implement specific gRPC server, overwrite parseConfig() method
  * This class could also be directly used for start a single service
  */
-public abstract class ZooGrpcServer extends AbstractZooGrpc {
-    protected static final Logger logger = Logger.getLogger(ZooGrpcServer.class.getName());
+public abstract class GrpcServerBase extends AbstractGrpcBase {
+    protected static final Logger logger = Logger.getLogger(GrpcServerBase.class.getName());
     protected int port;
     protected Server server;
     protected LinkedList<BindableService> serverServices = new LinkedList<BindableService>();
@@ -56,13 +56,13 @@ public abstract class ZooGrpcServer extends AbstractZooGrpc {
      * One Server could support multiple services.
      * @param args
      */
-    public ZooGrpcServer(String[] args) {
+    public GrpcServerBase(String[] args) {
         this.args = args;
     }
 
     public void parseConfig() throws Exception {}
 
-    /** Entrypoint of ZooGrpcServer */
+    /** Entrypoint of GrpcServerBase */
     public void build() throws Exception {
         parseConfig();
         ServerBuilder builder = ServerBuilder.forPort(port);
@@ -112,7 +112,7 @@ public abstract class ZooGrpcServer extends AbstractZooGrpc {
                 // Use stderr here since the logger may have been reset by its JVM shutdown hook.
                 System.err.println("*** shutting down gRPC server since JVM is shutting down");
                 try {
-                    ZooGrpcServer.this.stop();
+                    GrpcServerBase.this.stop();
                 } catch (InterruptedException e) {
                     e.printStackTrace(System.err);
                 }
