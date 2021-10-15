@@ -13,37 +13,6 @@ export BIGDL_CLASSPATH=${ANALYTICS_ZOO_JAR}
 
 set -e
 
-echo "#1 start example test for image-classification"
-#timer
-start=$(date "+%s")
-
-echo "check if model directory exists"
-if [ ! -d analytics-zoo-models ]; then
-  mkdir analytics-zoo-models
-fi
-
-if [ -f analytics-zoo-models/analytics-zoo_squeezenet_imagenet_0.1.0.model ]; then
-  echo "analytics-zoo-models/analytics-zoo_squeezenet_imagenet_0.1.0.model already exists"
-else
-  wget -nv $FTP_URI/analytics-zoo-models/image-classification/analytics-zoo_squeezenet_imagenet_0.1.0.model \
-    -P analytics-zoo-models
-fi
-
-${SPARK_HOME}/bin/spark-submit \
-  --master ${MASTER} \
-  --driver-memory 20g \
-  --executor-memory 20g \
-  --py-files ${ANALYTICS_ZOO_PYZIP},${BIGDL_ROOT}/python/orca/example/imageclassification/predict.py \
-  --jars ${ANALYTICS_ZOO_JAR} \
-  --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
-  --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-  ${BIGDL_ROOT}/python/orca/example/imageclassification/predict.py \
-  -f ${HDFS_URI}/kaggle/train_100 \
-  --model analytics-zoo-models/analytics-zoo_squeezenet_imagenet_0.1.0.model \
-  --topN 5
-now=$(date "+%s")
-time1=$((now - start))
-
 echo "#2 start example test for openvino"
 #timer
 start=$(date "+%s")
@@ -100,27 +69,6 @@ time3=$((now - start))
 echo "#4 start example test for tensorflow"
 #timer
 start=$(date "+%s")
-echo "start example test for tensorflow tfnet"
-if [ -f analytics-zoo-models/ssd_mobilenet_v1_coco_2017_11_17.tar.gz ]; then
-  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-else
-  wget -nv $FTP_URI/analytics-zoo-models/tensorflow/ssd_mobilenet_v1_coco_2017_11_17.tar.gz \
-    -P analytics-zoo-models
-  tar zxf analytics-zoo-models/ssd_mobilenet_v1_coco_2017_11_17.tar.gz -C analytics-zoo-models/
-fi
-${SPARK_HOME}/bin/spark-submit \
-  --master ${MASTER} \
-  --driver-memory 200g \
-  --executor-memory 200g \
-  --properties-file ${ANALYTICS_ZOO_CONF} \
-  --py-files ${ANALYTICS_ZOO_PYZIP},${BIGDL_ROOT}/pyzoo/zoo/examples/tensorflow/tfnet/predict.py \
-  --jars ${ANALYTICS_ZOO_JAR} \
-  --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
-  --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-  ${BIGDL_ROOT}/python/orca/exampletfnet/predict.py \
-  --image ${HDFS_URI}/kaggle/train_100 \
-  --model analytics-zoo-models/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb
-
 if [ -f analytics-zoo-models/resnet_50_saved_model.zip ]; then
   echo "analytics-zoo-models/resnet_50_saved_model.zip already exists."
 else
