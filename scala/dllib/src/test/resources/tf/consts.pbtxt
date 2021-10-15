@@ -1,0 +1,252 @@
+node {
+  name: "bool_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_BOOL
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_BOOL
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        bool_val: true
+        bool_val: false
+        bool_val: true
+        bool_val: false
+      }
+    }
+  }
+}
+node {
+  name: "float_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_FLOAT
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_FLOAT
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\000\000\200?\000\000\000@\000\000@@\000\000\200@"
+      }
+    }
+  }
+}
+node {
+  name: "double_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_DOUBLE
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_DOUBLE
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\000\000\000\000\000\020@"
+      }
+    }
+  }
+}
+node {
+  name: "int_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT32
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT32
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000"
+      }
+    }
+  }
+}
+node {
+  name: "long_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT64
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT64
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\001\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\000\000\000\000\004\000\000\000\000\000\000\000"
+      }
+    }
+  }
+}
+node {
+  name: "int8_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT8
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT8
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\001\002\003\004"
+      }
+    }
+  }
+}
+node {
+  name: "uint8_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_UINT8
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_UINT8
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\001\002\003\004"
+      }
+    }
+  }
+}
+node {
+  name: "int16_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_INT16
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_INT16
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        tensor_content: "\001\000\002\000\003\000\004\000"
+      }
+    }
+  }
+}
+node {
+  name: "uint16_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_UINT16
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_UINT16
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        int_val: 1
+        int_val: 2
+        int_val: 3
+        int_val: 4
+      }
+    }
+  }
+}
+node {
+  name: "string_const"
+  op: "Const"
+  attr {
+    key: "dtype"
+    value {
+      type: DT_STRING
+    }
+  }
+  attr {
+    key: "value"
+    value {
+      tensor {
+        dtype: DT_STRING
+        tensor_shape {
+          dim {
+            size: 4
+          }
+        }
+        string_val: "a"
+        string_val: "b"
+        string_val: "c"
+        string_val: "d"
+      }
+    }
+  }
+}
+versions {
+  producer: 22
+}

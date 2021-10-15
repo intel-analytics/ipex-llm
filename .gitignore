@@ -1,0 +1,49 @@
+# Compile products
+*.pyc
+*.class
+*.crc
+*.o
+
+# SBT, Maven specific
+.cache
+.history
+.lib/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+dependency-reduced-pom.xml
+
+# IDE specific
+.scala_dependencies
+.worksheet
+*.iml
+.idea/
+
+# macOS specific
+.DS_Store
+
+# data files
+model*.[0-9]*
+state*.[0-9]*
+
+# other
+nohup.out
+*.log
+*.lock
+*.un~
+*.idx
+.ipynb_checkpoints/
+.project
+.settings/
+*/.cache-main
+*/.cache-tests
+*/.classpath
+*/.project
+*/.settings/
+*.so
+__pycache__
+*.egg-info
+target
+build
+dist

@@ -1,0 +1,10 @@
+## Analytics-zoo Cluster Serving
+
+modelPath: /path
+jobName:
+modelParallelism: 10
+inputAlreadyBatched: true
+wrong_config: 123
+# test int password should be parsed as string
+secureStructStorePassword: 123456
+

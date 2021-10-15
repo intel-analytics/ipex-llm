@@ -1,0 +1,15 @@
+#!/usr/bin/python3
+
+from zoo.serving.client import InputQueue
+import cv2
+import os
+import time
+
+input_api = InputQueue()
+base_path = os.getcwd()
+arr = cv2.imread("cat1.jpeg")
+
+
+for i in range(10000):
+    input_api.enqueue_image("x", arr)
+print("10000 images enqueued")

@@ -1,0 +1,42 @@
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+syntax = "proto3";
+
+option java_package = "com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender";
+option java_outer_classname = "RecommenderProto";
+option objc_class_prefix = "RTG";
+
+package recommender;
+import "google/protobuf/empty.proto";
+
+// Interface exported by the server.
+service Recommender {
+    rpc getRecommendIDs(RecommendRequest) returns (RecommendIDProbs) {}
+    rpc getMetrics(google.protobuf.Empty) returns (ServerMessage) {}
+    rpc resetMetrics(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc getClientMetrics(google.protobuf.Empty) returns (ServerMessage) {}
+}
+
+message IDProbs {
+    repeated int32 ID = 1;
+    repeated float prob = 2;
+}
+
+message RecommendRequest {
+    int32 recommendNum = 1;
+    int32 candidateNum = 2;
+    repeated int32 ID = 3;
+}
+
+message RecommendIDProbs {
+    repeated IDProbs IDProbList = 1;
+}
+
+message ServerMessage {
+    string str = 1;
+}

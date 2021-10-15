@@ -191,6 +191,7 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
+
 time9=$((now - start))
 
 echo "#10 start test for orca bigdl imageInference"
@@ -218,7 +219,6 @@ fi
 now=$(date "+%s")
 time10=$((now - start))
 
-echo "#1 image-classification time used: $time1 seconds"
 echo "#2 openvino time used: $time2 seconds"
 echo "#3 vnni/openvino time used: $time3 seconds"
 echo "#4 tensorflow time used: $time4 seconds"
@@ -228,4 +228,5 @@ echo "#7 orca tf transfer_learning time used:$time7 seconds"
 echo "#8 orca tf basic_text_classification time used:$time8 seconds"
 echo "#9 orca bigdl attention time used:$time9 seconds"
 echo "#10 orca bigdl imageInference time used:$time10 seconds"
+
 

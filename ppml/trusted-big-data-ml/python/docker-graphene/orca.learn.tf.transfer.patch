@@ -1,0 +1,67 @@
+52,56c52,57
+< dataset_dir = "datasets"
+< zip_file = tf.keras.utils.get_file(
+<     origin="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
+<     fname="cats_and_dogs_filtered.zip", extract=True, cache_dir="./")
+< base_dir, _ = os.path.splitext(zip_file)
+---
+> dataset_dir = "/root/.keras/datasets"
+> #zip_file = tf.keras.utils.get_file(
+> #    origin="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
+> #    fname="cats_and_dogs_filtered.zip", extract=True, cache_dir="./")
+> #base_dir, _ = os.path.splitext(zip_file)
+> base_dir = "/root/.keras/datasets/cats_and_dogs_filtered"
+66a68
+> print("INFO orca inited")
+73c75
+< print('Total training cat images:', len(os.listdir(train_cats_dir)))
+---
+> print('INFO Total training cat images:', len(os.listdir(train_cats_dir)))
+77c79
+< print('Total training dog images:', len(os.listdir(train_dogs_dir)))
+---
+> print('INFO Total training dog images:', len(os.listdir(train_dogs_dir)))
+81c83
+< print('Total validation cat images:', len(os.listdir(validation_cats_dir)))
+---
+> print('INFO Total validation cat images:', len(os.listdir(validation_cats_dir)))
+85c87
+< print('Total validation dog images:', len(os.listdir(validation_dogs_dir)))
+---
+> print('INFO Total validation dog images:', len(os.listdir(validation_dogs_dir)))
+96a99
+> print("INFO @@ start build dataset")
+97a101
+> print("INFO @@ start build dataset" + str(builder))
+101a106
+> print("INFO @@ end build dataset")
+106,108c111,117
+< base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
+<                                                include_top=False,
+<                                                weights='imagenet')
+---
+> #base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
+> #                                               include_top=False,
+> #                                               weights='imagenet')
+> print("INFO @@ start load model")
+> base_model = tf.keras.applications.mobilenet_v2.MobileNetV2(input_shape=IMG_SHAPE, include_top=False, weights='/root/.keras/models/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_160_no_top.h5')
+> #base_model.load_weights('/root/.keras/models/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_160_no_top.h5')
+> print("INFO @@ end load model")
+124c133
+< epochs = 3
+---
+> epochs = 1
+125a135
+> print("INFO @@ estimator:" + str(est))
+132c142
+< print(result)
+---
+> print("INFO: " + str(result))
+163c173
+< print("==>unfreeze")
+---
+> print("INFO ==>unfreeze")
+165c175
+< print(result)
+---
+> print("INFO: "+ str(result))
