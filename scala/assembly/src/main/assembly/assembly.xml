@@ -48,7 +48,7 @@
       <outputDirectory>/jars</outputDirectory>
       <directory>${project.parent.basedir}/serving/target</directory>
       <includes>
-          <include>/serving/target/bigdl-serving*-serving.jar</include>
+          <include>/serving/target/bigdl-serving*-jar-with-dependencies.jar</include>
       </includes>
     </fileSet>
     <fileSet>

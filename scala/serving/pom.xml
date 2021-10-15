@@ -260,7 +260,7 @@
                         </goals>
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>serving</shadedClassifierName>
+                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                         </configuration>
                     </execution>
                 </executions>
