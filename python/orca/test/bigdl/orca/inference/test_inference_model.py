@@ -26,17 +26,17 @@ import tarfile
 
 np.random.seed(1337)  # for reproducibility
 
-resource_path = os.path.join(__file__, "../../resources")
-# property_path = os.path.join(os.path.split(__file__)[0],
-#                              "../../../../../zoo/target/classes/app.properties")
+resource_path = os.path.join(os.path.dirname(__file__), "../resources")
+property_path = os.path.join(os.path.dirname(__file__),
+                             "../../../../../../scala/target/classes/app.properties")
 data_url = "https://s3-ap-southeast-1.amazonaws.com"
-# with open(property_path) as f:
-#     for _ in range(2):  # skip the first two lines
-#         next(f)
-#     for line in f:
-#         if "data-store-url" in line:
-#             line = line.strip()
-#             data_url = line.split("=")[1].replace("\\", "")
+with open(property_path) as f:
+    for _ in range(2):  # skip the first two lines
+        next(f)
+    for line in f:
+        if "data-store-url" in line:
+            line = line.strip()
+            data_url = line.split("=")[1].replace("\\", "")
 
 
 class TestInferenceModel(ZooTestCase):
@@ -54,19 +54,18 @@ class TestInferenceModel(ZooTestCase):
         input_data = np.random.random([4, 3, 8, 8])
         output_data = model.predict(input_data)
 
-    # todo bigdl-2.0 does not work now
-    # def test_load_openvino(self):
-    #     local_path = self.create_temp_dir()
-    #     model = InferenceModel(1)
-    #     model_url = data_url + "/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml"
-    #     weight_url = data_url + "/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.bin"
-    #     model_path = maybe_download("resnet_v1_50.xml",
-    #                                 local_path, model_url)
-    #     weight_path = maybe_download("resnet_v1_50.bin",
-    #                                  local_path, weight_url)
-    #     model.load_openvino(model_path, weight_path)
-    #     input_data = np.random.random([4, 1, 224, 224, 3])
-    #     model.predict(input_data)
+    def test_load_openvino(self):
+        local_path = self.create_temp_dir()
+        model = InferenceModel(1)
+        model_url = data_url + "/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml"
+        weight_url = data_url + "/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.bin"
+        model_path = maybe_download("resnet_v1_50.xml",
+                                    local_path, model_url)
+        weight_path = maybe_download("resnet_v1_50.bin",
+                                     local_path, weight_url)
+        model.load_openvino(model_path, weight_path)
+        input_data = np.random.random([4, 1, 224, 224, 3])
+        model.predict(input_data)
 
 
 if __name__ == "__main__":

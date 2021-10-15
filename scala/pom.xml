@@ -176,7 +176,9 @@
         <breeze.version>0.13.2</breeze.version>
         <spark-scope>provided</spark-scope>
 
-        <bigdl-core-all-scope>compile</bigdl-core-all-scope>
+	<bigdl-core-all-scope>compile</bigdl-core-all-scope>
+        <data-store-url>http://download.tensorflow.org</data-store-url>
+
     </properties>
 
     <modules>
@@ -493,6 +495,24 @@
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>write-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>
+                                ${project.build.outputDirectory}/app.properties
+                            </outputFile>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
