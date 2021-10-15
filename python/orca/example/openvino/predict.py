@@ -19,9 +19,9 @@ import numpy as np
 from os.path import join
 from optparse import OptionParser
 
-from zoo.common.nncontext import init_nncontext
-from zoo.feature.image import ImageSet
-from zoo.pipeline.inference import InferenceModel
+from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.feature.image import ImageSet
+from bigdl.orca.inference import InferenceModel
 
 
 if __name__ == "__main__":
