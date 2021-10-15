@@ -769,6 +769,7 @@ class TestNNClassifer():
 
     def test_NNModel_NNClassifier_pipeline_save_load(self):
         if self.sc.version.startswith("2.3") or self.sc.version.startswith("2.4"):
+            pytest.skip("unsupported on spark2.3/2.4")
             from pyspark.ml.feature import MinMaxScaler
             from pyspark.ml.linalg import Vectors
 
