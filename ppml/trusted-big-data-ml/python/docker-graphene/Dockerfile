@@ -1,3 +1,10 @@
+ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ARG SPARK_VERSION=3.1.2
+ARG TINI_VERSION=v0.18.0
+ARG SPARK_VERSION=3.1.2
+ARG JDK_VERSION=8u192
+ARG JDK_URL=your_jdk_url
+
 # stage.1 graphene
 FROM ubuntu:18.04 AS graphene
 ARG GRAPHENE_BRANCH=branch-210913
@@ -32,9 +39,9 @@ ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
-ARG SPARK_VERSION=3.1.2
-ARG JDK_VERSION=8u192
-ARG JDK_URL=your_jdk_url
+ARG SPARK_VERSION
+ARG JDK_VERSION
+ARG JDK_URL
 ENV SPARK_VERSION	${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk$JDK_VERSION
 ENV PATH                ${JAVA_HOME}/bin:${PATH}
@@ -122,65 +129,28 @@ RUN cd /opt && \
     ls /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-3.2.0.jar
 
 # stage.3 bigdl
-FROM ubuntu:18.04 AS bigdl
-ARG HTTP_PROXY_HOST
-ARG HTTP_PROXY_PORT
-ARG HTTPS_PROXY_HOST
-ARG HTTPS_PROXY_PORT
-ENV JAVA_HOME           /opt/jdk8
-ENV PATH                ${JAVA_HOME}/bin:${PATH}
-
-ADD bigdl.lenet.training.patch /bigdl.lenet.training.patch
-ADD bigdl.serde.patch /bigdl.serde.patch
-COPY --from=spark /opt/jdk  /opt/jdk8
-
-RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils maven git
-
-#bigdl
-RUN git clone https://github.com/intel-analytics/BigDL.git && \
-    cd BigDL && \
-    git apply /bigdl.lenet.training.patch && \
-    echo $'\nlog4j.logger.io.netty=ERROR' >> ./spark/dl/src/main/resources/log4j.properties && \
-    git status && \
-    export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
-        -Dhttp.proxyHost=$HTTP_PROXY_HOST \
-        -Dhttp.proxyPort=$HTTP_PROXY_PORT \
-        -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
-        -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
-    bash make-dist.sh -P spark_2.x
-
-# stage.4 analytics-zoo
 FROM ubuntu:18.04 as analytics-zoo
-ARG ANALYTICS_ZOO_VERSION=0.12.0-SNAPSHOT
-ARG BIGDL_VERSION=0.13.0
-ARG SPARK_VERSION=3.1.2
-ENV ANALYTICS_ZOO_VERSION	${ANALYTICS_ZOO_VERSION}
+ARG BIGDL_VERSION
+ARG SPARK_VERSION
 ENV SPARK_VERSION		${SPARK_VERSION}
 ENV BIGDL_VERSION		${BIGDL_VERSION}
-ENV ANALYTICS_ZOO_HOME		/analytics-zoo-${ANALYTICS_ZOO_VERSION}
-ADD orca.data.patch		/opt/orca.data.patch
-ADD orca.learn.tf.text.patch	/opt/orca.learn.tf.text.patch
-ADD orca.learn.tf.transfer.patch /opt/orca.learn.tf.transfer.patch
+ENV BIGDL_HOME		        /bigdl-${BIGDL_VERSION}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
-RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/master/docker/zoo/download-analytics-zoo.sh && \
-    chmod a+x ./download-analytics-zoo.sh
-RUN ./download-analytics-zoo.sh && \
-    cd /opt && git clone --depth 1 https://github.com/intel-analytics/analytics-zoo.git
-RUN patch /opt/analytics-zoo/pyzoo/zoo/examples/orca/data/spark_pandas.py /opt/orca.data.patch && \
-    patch /opt/analytics-zoo/pyzoo/zoo/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py /opt/orca.learn.tf.text.patch && \
-    patch /opt/analytics-zoo/pyzoo/zoo/examples/orca/learn/tf/transfer_learning/transfer_learning.py /opt/orca.learn.tf.transfer.patch
+RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
+    chmod a+x ./download-bigdl.sh
+RUN ./download-bigdl.sh && \
+    rm bigdl*.zip
 
-# stage.5 az ppml
+# stage.4 ppml
 FROM ubuntu:18.04
-ARG ANALYTICS_ZOO_VERSION=0.12.0-SNAPSHOT
-ARG SPARK_VERSION=3.1.2
-ARG TINI_VERSION=v0.18.0
-ENV ANALYTICS_ZOO_VERSION		${ANALYTICS_ZOO_VERSION}
+ARG BIGDL_VERSION
+ARG SPARK_VERSION
+ARG TINI_VERSION
+ENV BIGDL_VERSION		        ${BIGDL_VERSION}
 ENV SPARK_VERSION			${SPARK_VERSION}
 ENV SPARK_HOME				/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
-ENV ANALYTICS_ZOO_HOME			/ppml/trusted-big-data-ml/work/analytics-zoo-${ANALYTICS_ZOO_VERSION}
+ENV BIGDL_HOME                          /ppml/trusted-big-data-ml/work/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME				/opt/jdk8
 ENV PATH				/graphene/meson_build_output/bin:${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP				127.0.0.1
@@ -232,11 +202,7 @@ COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spa
 COPY --from=spark /opt/spark/core/target/spark-core_2.12-$SPARK_VERSION.jar /opt/spark-core_2.12-$SPARK_VERSION.jar
 COPY --from=spark /opt/spark/resource-managers/kubernetes/core/target/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar
 COPY --from=spark /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-3.2.0.jar /opt/hadoop-common-3.2.0.jar
-COPY --from=bigdl /BigDL/dist/lib/bigdl-*-jar-with-dependencies.jar /ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar
-COPY --from=bigdl /BigDL/dist/lib/bigdl-*-python-api.zip /ppml/trusted-big-data-ml/work/bigdl-python-api.zip
-COPY --from=bigdl /BigDL/pyspark/bigdl/examples /ppml/trusted-big-data-ml/work/examples/bigdl
-COPY --from=analytics-zoo /analytics-zoo-${ANALYTICS_ZOO_VERSION} /ppml/trusted-big-data-ml/work/analytics-zoo-${ANALYTICS_ZOO_VERSION}
-COPY --from=analytics-zoo /opt/analytics-zoo/pyzoo/zoo/examples /ppml/trusted-big-data-ml/work/examples/pyzoo
+COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree zip && \
