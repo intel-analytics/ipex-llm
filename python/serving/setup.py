@@ -44,9 +44,10 @@ For source code and more information, please visit our GitHub page:
  https://github.com/intel-analytics/analytics-zoo
 '''
 
-analytics_zoo_home = os.path.abspath(__file__ + "/../../../")
-SCRIPTS_TARGET = os.path.join(analytics_zoo_home, "scala/serving/scripts/")
-TMP_PATH = "zoo/conf"
+bigdl_home = os.path.abspath(__file__ + "/../../../")
+VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
+SCRIPTS_TARGET = os.path.join(bigdl_home, "scala/serving/scripts/")
+TMP_PATH = "bigdl/conf"
 if os.path.exists(TMP_PATH):
     rmtree(TMP_PATH)
 copytree(SCRIPTS_TARGET, TMP_PATH)
@@ -60,7 +61,7 @@ def setup_package():
         SCRIPTS_TARGET, script), script_names))
 
     metadata = dict(
-        name='analytics-zoo-serving',
+        name='bigdl-serving',
         version=VERSION,
         description='A unified Data Analytics and AI platform for distributed TensorFlow, Keras, '
                     'PyTorch, Apache Spark/Flink and Ray',
@@ -69,10 +70,10 @@ def setup_package():
         author='Analytics Zoo Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        url='https://github.com/intel-analytics/analytics-zoo',
-        packages=['zoo.serving', 'zoo.conf'],
-        package_dir={'zoo.serving': '../serving/'},
-        package_data={"zoo.conf": ['config.yaml']},
+        url='https://github.com/intel-analytics/bigdl',
+        packages=['bigdl.serving', 'bigdl.conf'],
+        package_dir={'bigdl.serving': '../serving/'},
+        package_data={"bigdl.conf": ['config.yaml']},
         include_package_data=False,
         scripts=scripts,
         install_requires=['redis', 'pyyaml', 'httpx', 'pyarrow', 'opencv-python'],
