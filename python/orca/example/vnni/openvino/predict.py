@@ -16,10 +16,10 @@
 
 from optparse import OptionParser
 
-from zoo.pipeline.inference import InferenceModel
-from zoo.common.nncontext import init_nncontext
-from zoo.feature.image import *
-from zoo.pipeline.nnframes import *
+from bigdl.orca.inference import InferenceModel
+from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.feature.image import *
+from bigdl.dllib.nnframes import *
 
 BATCH_SIZE = 4
 
