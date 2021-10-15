@@ -1,0 +1,46 @@
+From 55463fa49ad46ffef0dcd00b6c253a8e1f7421de Mon Sep 17 00:00:00 2001
+From: glorysdj <glorysdj@gmail.com>
+Date: Wed, 9 Dec 2020 01:49:12 -0500
+Subject: [PATCH] add save model to lenet
+
+---
+ .../main/scala/com/intel/analytics/bigdl/models/lenet/Train.scala    | 4 ++++
+ .../com/intel/analytics/bigdl/utils/serializer/ModuleLoader.scala    | 5 +++++
+ 2 files changed, 9 insertions(+)
+
+diff --git a/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/Train.scala b/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/Train.scala
+index b60f2ba..527158b 100644
+--- a/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/Train.scala
++++ b/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet/Train.scala
+@@ -104,6 +104,10 @@ object Train {
+         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
+         .optimize()
+ 
++      println(s"############# train optimized")
++      model.saveModule("/ppml/trusted-big-data-ml/work/models/lenet.model", "/ppml/trusted-big-data-ml/work/models/lenet.weight", true)
++      println(s"############# model saved")
++
+       sc.stop()
+     })
+   }
+diff --git a/spark/dl/src/main/scala/com/intel/analytics/bigdl/utils/serializer/ModuleLoader.scala b/spark/dl/src/main/scala/com/intel/analytics/bigdl/utils/serializer/ModuleLoader.scala
+index 7f475b5..0c36daa 100644
+--- a/spark/dl/src/main/scala/com/intel/analytics/bigdl/utils/serializer/ModuleLoader.scala
++++ b/spark/dl/src/main/scala/com/intel/analytics/bigdl/utils/serializer/ModuleLoader.scala
+@@ -240,8 +240,13 @@ object ModulePersister {
+     } else {
+       val serializeResult = serializeModule(module, BigDLStorage)
+       val tensorStorages = serializeResult.storages.filter(_._2.isInstanceOf[Array[_]])
++      val t1 = System.currentTimeMillis()
+       File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
++      val t2 = System.currentTimeMillis()
++      println(s"############# ModuleLoader.saveToFile File.saveBytes end, used ${t2-t1} ms")
+       saveWeightsToFile(weightPath, tensorStorages, overwrite)
++      val t3 = System.currentTimeMillis()
++      println(s"############# ModuleLoader.saveToFile saveWeightsToFile end, used ${t3-t2} ms")
+     }
+   }
+ 
+-- 
+2.7.4
+

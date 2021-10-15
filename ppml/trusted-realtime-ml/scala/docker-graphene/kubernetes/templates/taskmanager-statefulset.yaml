@@ -1,0 +1,138 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-taskmanager-headless-svc
+spec:
+  clusterIP: None
+  ports:
+  - name: rpc
+    port: 6125
+  selector:
+    app: analytics-zoo-ppml-trusted-realtime-ml-graphene
+    component: flinkmanager
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: flink-taskmanager
+spec:
+  serviceName: flink-taskmanager-headless-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-zoo-ppml-trusted-realtime-ml-graphene
+      component: taskmanager
+  template:
+    metadata:
+      labels:
+        app: analytics-zoo-ppml-trusted-realtime-ml-graphene
+        component: taskmanager
+    spec:
+      tolerations:
+      - key: sgx.intel.com/epc
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: taskmanager
+        image:   {{ .Values.image }}
+        command: ["/bin/bash","-c"]
+        args:
+              - export FLINK_TASK_MANAGER_IP=$(hostname -I);
+                cd /ppml/trusted-realtime-ml/java;
+                test "$SGX_MODE" = sgx && bash init.sh | tee ../init-java.log ;
+                instance_id=`echo $POD_NAME | awk -F '-' '{print $NF}'`;
+                cpu_start=$[instance_id*CORE_NUM] && cpu_end=$[cpu_start+CORE_NUM-1] && export cpuset=${cpu_start}-${cpu_end};
+                taskset -c $cpuset bash start-flink-taskmanager.sh 2>&1 | tee ../taskmanager.log;
+                tail -f /dev/null
+#        args: ["export FLINK_JOB_MANAGER_IP=flink-jobmanager; tail -f /dev/null"]
+        env:
+          - name: CORE_NUM
+            value: "4"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: FLINK_JOB_MANAGER_IP
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: flink.jobmanager.ip
+          - name: TASKMANAGER_MEMORY_MANAGED_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: taskmanager.memory.managed.size
+          - name: TASKMANAGER_MEMORY_TASK_HEAP_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: taskmanager.memory.task.heap.size
+          - name: XMX_SIZE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: xmx.size
+          - name: FLINK_TASK_MANAGER_RPC_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: taskmanager.rpc.port
+          - name: SGX_MODE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: sgx.mode
+         ports:
+        - containerPort: 6125
+          name: rpc
+#        resources:
+#          requests:
+#            cpu: 10
+#            memory: 128G
+#            sgx.intel.com/epc: 133258905600
+#          limits:
+#            cpu: 12
+#            memory: 128G
+#            sgx.intel.com/epc: 133258905600
+#        livenessProbe:
+#          tcpSocket:
+#            port: 6122
+#          initialDelaySeconds: 30
+#          periodSeconds: 60
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: enclave-keys
+          mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+        - name: java-secure-keys
+          mountPath: /ppml/trusted-realtime-ml/java/work/keys
+        - name: java-secure-password
+          mountPath: /ppml/trusted-realtime-ml/java/work/password
+        - name: device-plugin
+          mountPath: /var/lib/kubelet/device-plugins
+        - name: dev-gsgx
+          mountPath: /dev/gsgx
+        - name: aesm-socket
+          mountPath: /var/run/aesmd/aesm.socket
+      volumes:
+      - name: enclave-keys
+        hostPath:
+          path:  {{ .Values.enclaveKeysPath }}
+      - name: java-secure-keys
+        secret:
+          secretName: ssl-keys
+      - name: java-secure-password
+        secret:
+          secretName: ssl-password
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: dev-gsgx
+        hostPath:
+          path: /dev/gsgx
+      - name: aesm-socket
+        hostPath:
+          path: /var/run/aesmd/aesm.socket
+

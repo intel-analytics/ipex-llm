@@ -1,0 +1,4 @@
+786c786
+<   public static final boolean isSetsidAvailable = isSetsidSupported();
+---
+>   public static final boolean isSetsidAvailable = false; //isSetsidSupported();

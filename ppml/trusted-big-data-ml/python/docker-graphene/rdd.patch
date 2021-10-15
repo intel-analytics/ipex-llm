@@ -1,0 +1,15 @@
+144a145,147
+>     import warnings
+>     warnings.warn("###PYTHONWARN### sockfile " + str(sockfile), category=None, stacklevel=1, source=None)
+>     warnings.warn("###PYTHONWARN### sock " + str(sock), category=None, stacklevel=1, source=None)
+148a152,158
+>     import time
+>     time.sleep(60)
+>     warnings.warn("###PYTHONWARN###: " + "WAIT A MIN", category=None, stacklevel=1, source=None)
+>     time.sleep(60)
+>     warnings.warn("###PYTHONWARN###: " + "WAIT A MIN", category=None, stacklevel=1, source=None)
+>     time.sleep(60)
+>     warnings.warn("###PYTHONWARN###: " + "WAIT A MIN", category=None, stacklevel=1, source=None)
+816a827,828
+>         warnings.warn("###PYTHONWARN###: socket info " + str(sock_info), category=None, stacklevel=1, source=None)
+>         warnings.warn("###PYTHONWARN###: " + type(self._jrdd_deserializer).__name__, category=None, stacklevel=1, source=None)
