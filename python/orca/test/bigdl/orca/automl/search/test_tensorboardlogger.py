@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 import pytest
-
-from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.orca.automl.search import TensorboardLogger
 import numpy as np
 import random

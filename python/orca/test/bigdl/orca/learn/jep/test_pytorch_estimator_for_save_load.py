@@ -66,21 +66,13 @@ class TestEstimatorForSaveAndLoad(TestCase):
 
         dir = "/tmp/dataset/"
         batch_size = 320
-        train_loader = torch.utils.data.DataLoader(
-            datasets.MNIST(dir, train=True, download=True,
-                           transform=transforms.Compose([
-                               transforms.ToTensor(),
-                               transforms.Normalize((0.1307,), (0.3081,))
-                           ])),
-            batch_size=batch_size, shuffle=True)
 
-        test_loader = torch.utils.data.DataLoader(
-            datasets.MNIST(dir, train=False,
-                           transform=transforms.Compose([
-                               transforms.ToTensor(),
-                               transforms.Normalize((0.1307,), (0.3081,))
-                           ])),
-            batch_size=batch_size, shuffle=False)
+        images = torch.randn(1000 * 28 * 28, dtype=torch.float32).view(1000, 1, 28, 28)
+        labels = torch.randint(0, 10, (1000,), dtype=torch.long)
+
+        dataset = torch.utils.data.TensorDataset(images, labels)
+        train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        test_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
         # epoch 1
         est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion,

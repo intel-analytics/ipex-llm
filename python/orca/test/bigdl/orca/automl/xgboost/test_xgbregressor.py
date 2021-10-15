@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from test.bigdl.test_zoo_utils import ZooTestCase
+from bigdl.orca.test_zoo_utils import ZooTestCase
 
 import numpy as np
 import pandas as pd
