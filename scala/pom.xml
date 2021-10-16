@@ -189,6 +189,7 @@
         <module>friesian.serving</module>
         <module>grpc</module>
         <module>serving</module>
+        <module>ppml</module>
         <module>assembly</module>
     </modules>
 
