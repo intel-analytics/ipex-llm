@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallPr
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.*;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
-import com.intel.analytics.bigdl.grpc.GrpcServerBase;
+import com.intel.analytics.bigdl.grpc.ZooGrpcServer;
 import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RecommenderServer extends GrpcServerBase {
+public class RecommenderServer extends ZooGrpcServer {
     private static final Logger logger = Logger.getLogger(RecommenderServer.class.getName());
 
     public RecommenderServer(String[] args) {
