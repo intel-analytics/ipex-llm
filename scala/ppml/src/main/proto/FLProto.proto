@@ -1,0 +1,216 @@
+//
+// Copyright 2021 BigDL Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+syntax = 'proto3';
+
+
+//option java_multiple_files = true;
+option java_package = "com.intel.analytics.bigdl.ppml.generated";
+option java_outer_classname = "FLProto";
+
+// PSI proto
+service PSIService {
+    // Gives SHA256 Hash salt
+    rpc getSalt (SaltRequest) returns (SaltReply) {}
+    rpc uploadSet (UploadSetRequest) returns (UploadSetResponse) {}
+    rpc downloadIntersection (DownloadIntersectionRequest) returns (DownloadIntersectionResponse) {}
+}
+service NNService {
+    rpc UploadTrain(UploadRequest) returns (UploadResponse) {}
+    rpc DownloadTrain(DownloadRequest) returns (DownloadResponse) {}
+    rpc UploadEvaluate(EvaluateRequest) returns (EvaluateResponse) {}
+}
+service GBService {
+    rpc UploadSplitTrain(UploadSplitRequest) returns (UploadResponse) {}
+    rpc DownloadSplitTrain(DownloadSplitRequest) returns (DownloadSplitResponse) {}
+    rpc Register(RegisterRequest) returns (RegisterResponse) {}
+    rpc UploadTreeEval(UploadTreeEvalRequest) returns (UploadResponse) {}
+    rpc UploadTreeLeaves(UploadTreeLeavesRequest) returns (UploadResponse) {}
+    rpc PredictTree(PredictTreeRequest) returns (PredictTreeResponse) {}
+}
+enum SIGNAL {
+    SUCCESS = 0;
+    WAIT = 1;
+    TIMEOUT = 2;
+    EMPTY_INPUT = 3;
+    ERROR = 4;
+}
+
+message SaltRequest {
+    string task_id = 1;
+    int32 client_num = 2;
+    string secure_code = 3;
+}
+
+message SaltReply {
+    string salt_reply = 1;
+}
+
+message UploadSetRequest {
+    string task_id = 1;
+    string client_id = 2;
+    int32 split = 3;
+    int32 num_split = 4;
+    int32 split_length = 5;
+    int32 total_length = 6;
+    repeated string hashedID = 7;
+}
+
+message UploadSetResponse {
+    string task_id = 1;
+    SIGNAL status = 2;
+}
+
+message DownloadIntersectionRequest {
+    string task_id = 1;
+    int32 split = 2;
+}
+
+message DownloadIntersectionResponse {
+    string task_id = 1;
+    SIGNAL status = 2;
+    int32 split = 3;
+    int32 num_split = 4;
+    int32 split_length = 5;
+    int32 total_length = 6;
+    repeated string intersection = 7;
+}
+
+
+message FloatTensor {
+    repeated int32 shape = 1;
+    repeated float tensor = 2;
+}
+//
+message Table {
+    TableMetaData metaData = 1;
+    map<string, FloatTensor> table = 2;
+}
+//
+message TableMetaData {
+    string name = 1;
+    int32 version = 2;
+}
+
+message TreeLeaves {
+    string treeID = 1;
+    repeated int32 leafIndex = 2;
+    repeated float leafOutput = 3;
+}
+
+message UploadTreeLeavesRequest {
+    string clientuuid = 1;
+    TreeLeaves treeLeaves = 2;
+}
+
+message DataSplit {
+    string treeID = 1;
+    string nodeID = 2;
+    int32 featureID = 3;
+    float splitValue = 4;
+    float gain = 5;
+    int32 setLength = 6;
+    repeated int32 itemSet = 7;
+    string clientUid = 8;
+}
+
+
+message TreePredict {
+    string treeID = 1;
+    repeated bool predicts = 2;
+}
+
+message BoostPredict {
+    repeated TreePredict predicts = 1;
+}
+
+message BoostEval {
+    repeated TreePredict evaluates = 1;
+}
+
+message DownloadRequest {
+    TableMetaData metaData = 1;
+}
+
+message DownloadResponse {
+    Table data = 1;
+    string response = 2;
+    int32 code = 3;
+}
+
+message UploadRequest {
+    string clientuuid = 1;
+    Table data = 2;
+}
+
+message UploadResponse {
+    string response = 1;
+    int32 code = 2;
+}
+
+message RegisterRequest {
+    string clientuuid = 1;
+    string token = 2;
+}
+
+message RegisterResponse {
+    string response = 1;
+    int32 code = 2;
+}
+
+message EvaluateRequest {
+    string clientuuid = 1;
+    Table data = 2;
+    bool last = 3;
+}
+
+message EvaluateResponse {
+    Table data = 1;
+    string response = 2;
+    int32 code = 3;
+}
+
+message UploadTreeEvalRequest {
+    string clientuuid = 1;
+    int32 version = 2;
+    repeated BoostEval treeEval = 3;
+}
+
+message UploadSplitRequest {
+    string clientuuid = 1;
+    DataSplit split = 2;
+}
+
+message PredictTreeRequest {
+    string clientuuid = 1;
+    repeated BoostEval treeEval = 2;
+    int32 bsVersion = 3;
+}
+
+message PredictTreeResponse {
+    Table result = 1;
+}
+
+message DownloadSplitRequest {
+    string clientuuid = 1;
+    string treeID = 2;
+    string nodeID = 3;
+}
+
+message DownloadSplitResponse {
+    DataSplit split = 1;
+    string response = 2;
+    int32 code = 3;
+}

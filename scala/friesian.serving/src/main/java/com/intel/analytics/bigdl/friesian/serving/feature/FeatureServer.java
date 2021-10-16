@@ -22,7 +22,7 @@ import com.google.protobuf.Empty;
 import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
-import com.intel.analytics.bigdl.grpc.ZooGrpcServer;
+import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import com.intel.analytics.bigdl.orca.inference.InferenceModel;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs;
@@ -54,7 +54,7 @@ enum SearchType {
     ITEM, USER
 }
 
-public class FeatureServer extends ZooGrpcServer {
+public class FeatureServer extends GrpcServerBase {
     private static final Logger logger = Logger.getLogger(FeatureServer.class.getName());
 
     /** Create a Feature server. */

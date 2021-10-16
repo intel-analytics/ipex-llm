@@ -20,7 +20,7 @@ import org.apache.commons.cli.*;
 
 import java.io.IOException;
 
-public abstract class AbstractZooGrpc {
+public abstract class AbstractGrpcBase {
     protected String[] args;
     protected Options options = new Options();
     protected String configPath;
