@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.common.zooUtils
-import com.intel.analytics.zoo.core.TFNetNative
+import com.intel.analytics.bigdl.orca.tf.TFNetNative
 import com.intel.analytics.bigdl.dllib.keras.Predictable
 import com.intel.analytics.bigdl.dllib.net.{SerializationHolder, RegistryMap, NetUtils}
 import com.intel.analytics.bigdl.dllib.net.NetUtils._

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.common.zooUtils
-import com.intel.analytics.zoo.core.TFNetNative
+import com.intel.analytics.bigdl.orca.tf.TFNetNative
 import org.slf4j.LoggerFactory
 import org.tensorflow.DataType
 import org.tensorflow.framework.GraphDef
