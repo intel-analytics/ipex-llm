@@ -20,7 +20,7 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.orca.utils.{PythonInterpreter, PythonInterpreterTest}
-import com.intel.analytics.zoo.core.TFNetNative
+import com.intel.analytics.bigdl.orca.tf.TFNetNative
 import com.intel.analytics.bigdl.orca.utils.ZooSpecHelper
 import org.apache.log4j.{Level, Logger}
 

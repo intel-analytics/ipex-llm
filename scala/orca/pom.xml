@@ -30,12 +30,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.intel.analytics.zoo</groupId>
-            <artifactId>${core.artifactId}</artifactId>
-            <version>0.14.0-SNAPSHOT</version>
-            <type>${core.dependencyType}</type>
-        </dependency>
-        <dependency>
             <groupId>org.tensorflow</groupId>
             <artifactId>proto</artifactId>
             <version>1.15.0</version>
@@ -461,23 +455,55 @@
         </profile>
 
         <profile>
+            <id>all_platform</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.intel.analytics.zoo</groupId>
+                    <artifactId>zoo-core-dist-all</artifactId>
+                    <version>0.14.0-SNAPSHOT</version>
+                    <type>jar</type>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
             <id>linux</id>
             <properties>
-                <core.artifactId>zoo-core-dist-linux64</core.artifactId>
-                <core.dependencyType>pom</core.dependencyType>
                 <spark-mllib-scope>provided</spark-mllib-scope>
-            </properties>
+	        </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.intel.analytics.zoo</groupId>
+                    <artifactId>zoo-core-dist-linux64</artifactId>
+                    <version>0.14.0-SNAPSHOT</version>
+                    <type>pom</type>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.intel.analytics.zoo</groupId>
+                            <artifactId>zoo-core-tfnet-linux</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+            </dependencies>
+
         </profile>
 
         <profile>
             <id>mac</id>
             <properties>
-                <core.artifactId>zoo-core-dist-mac</core.artifactId>
-                <core.dependencyType>pom</core.dependencyType>
                 <spark-mllib-scope>provided</spark-mllib-scope>
             </properties>
-            <!--these are not supported right now, added to make the project compiles-->
             <dependencies>
+                <dependency>
+                    <groupId>com.intel.analytics.zoo</groupId>
+                    <artifactId>zoo-core-dist-mac</artifactId>
+                    <version>0.14.0-SNAPSHOT</version>
+                    <type>pom</type>
+                </dependency>
+                <!--these are not supported right now, added to make the project compiles-->
                 <dependency>
                     <groupId>com.intel.analytics.zoo</groupId>
                     <artifactId>zoo-core-mkl-linux</artifactId>
