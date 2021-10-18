@@ -109,9 +109,16 @@ def get_bigdl_classpath():
     """
     if os.getenv("BIGDL_CLASSPATH"):
         return os.environ["BIGDL_CLASSPATH"]
+    jar_paths = get_bigdl_jars()
+    return ":".join(jar_paths)
+
+def get_bigdl_jars():
+    """
+    Get and return the jar path for bigdl if exists.
+    """
     jar_dir = os.path.abspath(__file__ + "/../../../")
     jar_paths = glob.glob(os.path.join(jar_dir, "share/*/lib/*.jar"))
-    return ":".join(jar_paths)
+    return jar_paths
 
 
 def is_spark_below_2_2():

@@ -115,8 +115,8 @@ def get_analytics_zoo_classpath():
             if not os.path.exists(path):
                 raise ValueError("Path {} specified BIGDL_CLASSPATH does not exist.".format(path))
         return os.environ["BIGDL_CLASSPATH"]
-    jar_dir = os.path.abspath(__file__ + "/../../")
-    jar_paths = glob.glob(os.path.join(jar_dir, "share/lib/*.jar"))
+    jar_dir = os.path.abspath(__file__ + "/../../../")
+    jar_paths = glob.glob(os.path.join(jar_dir, "share/orca/lib/*.jar"))
     if jar_paths:
         assert len(jar_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
         return jar_paths[0]
