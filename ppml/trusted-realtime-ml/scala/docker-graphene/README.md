@@ -1,5 +1,5 @@
 # Trusted Realtime ML
-SGX-based Trusted Big Data ML allows user to run end-to-end Intel Analytics Zoo cluster serving with Flink local and distributed cluster on Graphene-SGX.
+SGX-based Trusted Big Data ML allows user to run end-to-end Intel BigDL cluster serving with Flink local and distributed cluster on Graphene-SGX.
 
 *Please mind the IP and file path settings. They should be changed to the IP/path of your own SGX server on which you are running the programs.*
 
@@ -18,7 +18,7 @@ To launch Trusted Realtime ML on Graphene-SGX, you need to install graphene-sgx-
 ```
 
 ### Prepare the keys
-The PPML in Analytics Zoo needs secured keys to enable Flink TLS, https and TLS enabled Redis. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
+The PPML in BigDL needs secured keys to enable Flink TLS, https and TLS enabled Redis. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
 ```bash
 sudo ../../../scripts/generate-keys.sh
@@ -38,7 +38,7 @@ Next, you need to store the password you used for key generation, i.e., `generat
 
 ### Run the PPML as Docker containers
 #### In local mode
-##### Start the container to run analytics zoo cluster serving in ppml.
+##### Start the container to run BigDL cluster serving in ppml.
 Before running the following command, please modify the paths in `start-local-cluster-serving.sh` first. <br>
 Then run the example with docker: <br>
 ```bash

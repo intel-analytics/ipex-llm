@@ -14,7 +14,7 @@ Before running the following command, please modify the paths in `build-docker-i
 
 ### Prepare the keys
 
-PPML in analytics zoo needs secured keys to enable Flink TLS, https and TLS enabled Redis. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
+PPML in BigDL needs secured keys to enable Flink TLS, https and TLS enabled Redis. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
 ```bash
 sudo ../../../scripts/generate-keys.sh
