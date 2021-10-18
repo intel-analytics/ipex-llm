@@ -132,21 +132,22 @@ def get_conda_python_path():
 
 
 def get_executor_conda_zoo_classpath(conda_path):
-    zoo_classpath, bigdl_classpath = get_zoo_bigdl_classpath_on_driver()
-    zoo_jar_name = zoo_classpath.split("/")[-1]
-    bigdl_jar_name = bigdl_classpath.split("/")[-1]
+    from bigdl.dllib.utils.engine import get_bigdl_jars
+    bigdl_jars = get_bigdl_jars()
     python_interpreter_name = get_conda_python_path().split("/")[-1]  # Python version
     prefix = "{}/lib/{}/site-packages/"\
         .format(conda_path, python_interpreter_name)
-    return ["{}/zoo/share/lib/{}".format(prefix, zoo_jar_name),
-            "{}/bigdl/share/lib/{}".format(prefix, bigdl_jar_name)]
-
+    executor_classpath=[]
+    for jar_path in list(bigdl_jars):
+        postfix = "/".join(jar_path.split("/")[-5:])
+        executor_classpath.append("{}/{}".format(prefix, postfix))
+    return executor_classpath
 
 def get_zoo_bigdl_classpath_on_driver():
     from bigdl.dllib.utils.engine import get_bigdl_classpath
     bigdl_classpath = get_bigdl_classpath()
     assert bigdl_classpath, "Cannot find BigDL classpath, please check your installation"
-    return bigdl_classpath, bigdl_classpath
+    return bigdl_classpath
 
 
 def set_python_home():
