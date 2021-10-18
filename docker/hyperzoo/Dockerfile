@@ -77,6 +77,7 @@ ARG SPARK_VERSION
 ARG SPARK_HOME
 ARG TINI_VERSION
 
+ENV BIGDL_HOME                          /opt/bigdl-${BIGDL_VERSION}
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
@@ -98,7 +99,7 @@ ENV RUNTIME_DRIVER_MEMORY               10g
 ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
 ENV SPARK_HOME                          /opt/spark
 ENV HADOOP_CONF_DIR                     /opt/hadoop-conf
-ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,${BIGDL_HOME}/jars/bigdl-friesian-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar
+ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:${BIGDL_HOME}/jars/bigdl-friesian-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar
 ENV JAVA_HOME                           /opt/jdk
 ENV REDIS_HOME                          /opt/redis-5.0.5
 ENV PYTHONPATH                          ${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:/opt/models/research/slim
