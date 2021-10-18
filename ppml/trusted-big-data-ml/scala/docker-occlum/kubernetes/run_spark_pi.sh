@@ -7,7 +7,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --class org.apache.spark.examples.SparkPi \
     --conf spark.executor.instances=1 \
     --conf spark.rpc.netty.dispatcher.numThreads=32 \
-    --conf spark.kubernetes.container.image=intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-occlum-k8s:0.11-SNAPSHOT \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-k8s:0.14.0-SNAPSHOT \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.kubernetes.driver.podTemplateFile=./executor.yaml \
