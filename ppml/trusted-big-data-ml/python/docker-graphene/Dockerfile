@@ -246,18 +246,12 @@ ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
 
-RUN zip -u /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_$SPARK_VERSION-0.12.0-SNAPSHOT-jar-with-dependencies.jar ./tracker.py && \
-    unzip /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_$SPARK_VERSION-0.12.0-SNAPSHOT-jar-with-dependencies.jar log4j.properties && \
+RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar ./tracker.py && \
+    unzip ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar log4j.properties && \
     echo $'\nlog4j.logger.io.netty=ERROR' >> log4j.properties && \
-    zip -u /ppml/trusted-big-data-ml/work/analytics-zoo-0.12.0-SNAPSHOT/lib/analytics-zoo-bigdl_0.13.0-spark_$SPARK_VERSION-0.12.0-SNAPSHOT-jar-with-dependencies.jar log4j.properties && \
+    zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar log4j.properties && \
     patch /usr/local/lib/python3.6/dist-packages/dill/_dill.py ./_dill.py.patch && \
     patch /usr/lib/python3.6/uuid.py ./python-uuid.patch && \
-    #rm $SPARK_HOME/jars/flatbuffers*.jar && \
-    #wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/google/flatbuffers/flatbuffers-java/1.9.0/flatbuffers-java-1.9.0.jar && \
-    #rm $SPARK_HOME/jars/arrow*.jar &&\
-    #wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/org/apache/arrow/arrow-format/0.11.0/arrow-format-0.11.0.jar && \
-    #wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/org/apache/arrow/arrow-memory/0.11.0/arrow-memory-0.11.0.jar && \
-    #wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/org/apache/arrow/arrow-vector/0.11.0/arrow-vector-0.11.0.jar && \
     rm $SPARK_HOME/jars/spark-core_2.12-$SPARK_VERSION.jar && \
     rm $SPARK_HOME/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     rm $SPARK_HOME/jars/hadoop-common-3.2.0.jar && \
