@@ -16,7 +16,7 @@
 
 from optparse import OptionParser
 
-from bigdl.nn.layer import Model
+from bigdl.dllib.nn.layer import Model
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import StringType, DoubleType
 
