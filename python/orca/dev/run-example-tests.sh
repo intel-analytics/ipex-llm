@@ -13,7 +13,82 @@ export BIGDL_CLASSPATH=${ANALYTICS_ZOO_JAR}
 
 set -e
 
-echo "#15 start example test for orca data"
+echo "#2 start example test for openvino"
+#timer
+start=$(date "+%s")
+if [ -f analytics-zoo-models/faster_rcnn_resnet101_coco.xml ]; then
+  echo "analytics-zoo-models/faster_rcnn_resnet101_coco already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.xml \
+    -P analytics-zoo-models
+  wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.bin \
+    -P analytics-zoo-models
+fi
+if [ -d analytics-zoo-data/data/object-detection-coco ]; then
+  echo "analytics-zoo-data/data/object-detection-coco already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
+  unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data
+fi
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+  --master ${MASTER} \
+  --driver-memory 10g \
+  --executor-memory 10g \
+  ${BIGDL_ROOT}/python/orca/example/openvino/predict.py \
+  --image analytics-zoo-data/data/object-detection-coco \
+  --model analytics-zoo-models/faster_rcnn_resnet101_coco.xml
+now=$(date "+%s")
+time2=$((now - start))
+
+echo "#3 start example for vnni/openvino"
+#timer
+start=$(date "+%s")
+if [ -d analytics-zoo-models/vnni ]; then
+  echo "analytics-zoo-models/resnet_v1_50.xml already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/openvino/vnni/resnet_v1_50.zip \
+    -P analytics-zoo-models
+  unzip -q analytics-zoo-models/resnet_v1_50.zip -d analytics-zoo-models/vnni
+fi
+if [ -d analytics-zoo-data/data/object-detection-coco ]; then
+  echo "analytics-zoo-data/data/object-detection-coco already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
+  unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data
+fi
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+  --master ${MASTER} \
+  --driver-memory 2g \
+  --executor-memory 2g \
+  ${BIGDL_ROOT}/python/orca/example/vnni/openvino/predict.py \
+  --model analytics-zoo-models/vnni/resnet_v1_50.xml \
+  --image analytics-zoo-data/data/object-detection-coco
+now=$(date "+%s")
+time3=$((now - start))
+
+echo "#4 start example test for tensorflow"
+#timer
+start=$(date "+%s")
+if [ -f analytics-zoo-models/resnet_50_saved_model.zip ]; then
+  echo "analytics-zoo-models/resnet_50_saved_model.zip already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/tensorflow/resnet_50_saved_model.zip \
+    -P analytics-zoo-models
+  unzip analytics-zoo-models/resnet_50_saved_model.zip -d analytics-zoo-models/resnet_50_saved_model
+fi
+
+echo "start example test for TFPark freeze saved model 9"
+${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+  --master local[4] \
+  --driver-memory 10g \
+  ${BIGDL_ROOT}/python/orca/example/freeze_saved_model/freeze.py \
+  --saved_model_path analytics-zoo-models/resnet_50_saved_model \
+  --output_path analytics-zoo-models/resnet_50_tfnet
+
+now=$(date "+%s")
+time4=$((now - start))
+
+echo "#5 start example test for orca data"
 if [ -f analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv ]; then
   echo "analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv already exists"
 else
@@ -30,9 +105,9 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
   -f analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv
 
 now=$(date "+%s")
-time15=$((now - start))
+time5=$((now - start))
 
-echo "#16 start test for orca tf imagesegmentation"
+echo "#6 start test for orca tf imagesegmentation"
 #timer
 start=$(date "+%s")
 # prepare data
@@ -60,9 +135,9 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time16=$((now - start))
+time6=$((now - start))
 
-echo "#17 start test for orca tf transfer_learning"
+echo "#7 start test for orca tf transfer_learning"
 #timer
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
@@ -76,9 +151,9 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time17=$((now - start))
+time7=$((now - start))
 
-echo "#18 start test for orca tf basic_text_classification"
+echo "#8 start test for orca tf basic_text_classification"
 #timer
 start=$(date "+%s")
 sed "s/epochs=100/epochs=10/g" \
@@ -95,9 +170,9 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time18=$((now - start))
+time8=$((now - start))
 
-echo "#19 start test for orca bigdl attention"
+echo "#9 start test for orca bigdl attention"
 #timer
 start=$(date "+%s")
 sed "s/max_features = 20000/max_features = 200/g;s/max_len = 200/max_len = 20/g;s/hidden_size=128/hidden_size=8/g;s/memory=\"100g\"/memory=\"20g\"/g;s/driver_memory=\"20g\"/driver_memory=\"3g\"/g" \
@@ -116,9 +191,10 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time19=$((now - start))
 
-echo "#20 start test for orca bigdl imageInference"
+time9=$((now - start))
+
+echo "#10 start test for orca bigdl imageInference"
 #timer
 start=$(date "+%s")
 if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
@@ -141,27 +217,16 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time20=$((now - start))
+time10=$((now - start))
 
-# echo "#21 start test for orca inception_v1"
-# start=$(date "+%s")
+echo "#2 openvino time used: $time2 seconds"
+echo "#3 vnni/openvino time used: $time3 seconds"
+echo "#4 tensorflow time used: $time4 seconds"
+echo "#5 orca data time used:$time5 seconds"
+echo "#6 orca tf imagesegmentation time used:$time6 seconds"
+echo "#7 orca tf transfer_learning time used:$time7 seconds"
+echo "#8 orca tf basic_text_classification time used:$time8 seconds"
+echo "#9 orca bigdl attention time used:$time9 seconds"
+echo "#10 orca bigdl imageInference time used:$time10 seconds"
 
-# ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
-#   --master ${MASTER} \
-#   --driver-memory 2g \
-#   --executor-memory 10g \
-#   ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py \
-#   -b 8 -f ${ANALYTICS_ZOO_ROOT}/pyzoo/test/zoo/resources/imagenet_to_tfrecord --imagenet ./imagenet 
-
-# now=$(date "+%s")
-# time21=$((now - start))
-
-
-echo "#15 orca data time used:$time15 seconds"
-echo "#16 orca tf imagesegmentation time used:$time16 seconds"
-echo "#17 orca tf transfer_learning time used:$time17 seconds"
-echo "#18 orca tf basic_text_classification time used:$time18 seconds"
-echo "#19 orca bigdl attention time used:$time19 seconds"
-echo "#20 orca bigdl imageInference time used:$time20 seconds"
-#echo "#21 orca inception_v1 time used:$time21 seconds"
 
