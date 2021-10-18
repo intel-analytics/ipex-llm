@@ -1,6 +1,6 @@
 <div align="center">
 
-<p align="center"> <img src="docs/readthedocs/image/bigdl_logo.png" height="100px"><br></p>
+<p align="center"> <img src="docs/readthedocs/image/bigdl_logo.jpg" height="140px"><br></p>
 
 **Building Large-Scale AI Applications for Distributed Big Data**
 
@@ -37,7 +37,7 @@ pip install bigdl
 To install latest nightly build, use ```pip install --pre --upgrade bigdl```; see [Python](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/python.html)  and [Scala](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/scala.html) user guide for more details.
 
 ## Getting Started with DLlib
-DLlib is a distributed deep learning library for Apache Spark; with DLlib,  users can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
+**DLlib** is a distributed deep learning library for Apache Spark; with DLlib,  users can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
 
 First, call `initNNContext` at the beginning of the code: 
 
