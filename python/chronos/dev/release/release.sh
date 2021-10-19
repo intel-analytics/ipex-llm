@@ -25,12 +25,19 @@ BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/chronos/src; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 if (( $# < 2)); then
-  echo "Bad parameters. Usage: release.sh mac spark_2.x"
+  echo "Bad parameters. Usage: release.sh linux default"
+  echo "Bad parameters. Usage: release.sh mac 0.14.0.dev1"
   exit -1
 fi
 
 platform=$1
-spark_profile=$2
+version=$2
+
+if [ "${version}" != "default" ]; then
+    echo "User specified version: ${version}"
+    echo $version > $BIGDL_DIR/python/version.txt
+fi
+
 bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 
 cd ${BIGDL_DIR}/scala
