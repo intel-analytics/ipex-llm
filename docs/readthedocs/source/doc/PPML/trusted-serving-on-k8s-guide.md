@@ -10,9 +10,9 @@ Prior to deploying PPML Cluster Serving, please make sure the following is setup
 ## Deploy Trusted Realtime ML for Kubernetes ##
 1. Pull docker image from dockerhub
 	```
-	$ docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.12.0-SNAPSHOT
+	$ docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:0.14.0-SNAPSHOT
 	```
-2. Pull the source code of Analytics Zoo and enter PPML graphene k8s directory
+2. Pull the source code of Analytics Zoo/BigDL and enter PPML graphene k8s directory
 	```
 	$ git clone https://github.com/intel-analytics/analytics-zoo.git
 	$ cd analytics-zoo/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes
