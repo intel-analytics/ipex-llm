@@ -1,6 +1,6 @@
 #!/bin/bash
 clear_up () {
-    echo "Clearing up environment. Uninstalling analytics-zoo"
+    echo "Clearing up environment. Uninstalling bigdl"
     pip uninstall -y bigdl-chronos
     pip uninstall -y bigdl-orca
     pip uninstall -y bigdl-dllib
