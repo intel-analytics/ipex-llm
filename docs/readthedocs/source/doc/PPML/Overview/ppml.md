@@ -4,7 +4,7 @@
 Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. Analytics Zoo ***PPML*** combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
 
 ## 1.1 PPML for Big Data AI
-Analytics Zoo provides a distributed PPML platform for protecting the *end-to-end Big Data AI pipeline* (from data ingestion, data analysis, all the way to machine learning and deep learning). In particular, it extends the single-node [Trusted Execution Environment](https://en.wikipedia.org/wiki/Trusted_execution_environment) to provide a *Trusted Cluster Environment*, so as to run unmodified Big Data analysis and ML/DL programs in a secure fashion on (private or public) cloud:
+Analytics Zoo/BigDL provides a distributed PPML platform for protecting the *end-to-end Big Data AI pipeline* (from data ingestion, data analysis, all the way to machine learning and deep learning). In particular, it extends the single-node [Trusted Execution Environment](https://en.wikipedia.org/wiki/Trusted_execution_environment) to provide a *Trusted Cluster Environment*, so as to run unmodified Big Data analysis and ML/DL programs in a secure fashion on (private or public) cloud:
 
  * Compute and memory protected by SGX Enclaves
  * Network communication protected by remote attestation and TLS
@@ -16,7 +16,7 @@ That is, even when the program runs in an untrusted cloud environment, all the d
 In the current release, two types of trusted Big Data AI applications are supported:
 
 1. Big Data analytics and ML/DL (supporting [Apache Spark](https://spark.apache.org/) and [BigDL](https://github.com/intel-analytics/BigDL))
-2. Realtime compute and ML/DL (supporting [Apache Flink](https://flink.apache.org/) and Analytics Zoo [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song))
+2. Realtime compute and ML/DL (supporting [Apache Flink](https://flink.apache.org/) and BigDL [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song))
 
 ## 2. Trusted Big Data Analytics and ML
 With the trusted Big Data analytics and ML/DL support, users can run standard Spark data analysis (such as Spark SQL, Dataframe, MLlib, etc.) and distributed deep learning (using BigDL) in a secure and trusted fashion.
@@ -87,7 +87,7 @@ cd analytics-zoo/ppml/
 
 Pull docker image from Dockerhub
 ```bash
-docker pull intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-scala-graphene:0.12.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:0.14.0-SNAPSHOT
 ```
 
 Alternatively, you can build docker image from Dockerfile (this will take some time):
@@ -263,7 +263,7 @@ Then stop the service:
 Pull docker image from Dockerhub
 
 ```bash
-docker pull intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-python-graphene:0.11-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14-SNAPSHOT
 ```
 
 Alternatively, you can build docker image from Dockerfile (this will take some time):
@@ -697,12 +697,12 @@ Pull docker image from Dockerhub
 
 ```bash
 # For Graphene
-docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-graphene:0.12.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:0.14.0-SNAPSHOT
 ```
 
 ```bash
 # For Occlum
-docker pull intelanalytics/analytics-zoo-ppml-trusted-realtime-ml-scala-occlum:0.12.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:0.14.0-SNAPSHOT
 ```
 
 Also, you can build docker image from Dockerfile (this will take some time).
@@ -782,7 +782,7 @@ After all services are ready, you can directly push inference requests int queue
 ```python
 from zoo.serving.client import InputQueue
 input_api = InputQueue()
-input_api.enqueue('my-image1', user_define_key={"path: 'path/to/image1'})
+input_api.enqueue('my-image1', user_define_key={"path": 'path/to/image1'})
 ```
 
 Cluster Serving service is a long running service in container, you can stop it as follows:
