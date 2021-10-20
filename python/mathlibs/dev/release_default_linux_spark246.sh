@@ -34,6 +34,5 @@ if (( $# < 1)); then
 fi
 
 version=$1
-quick=$2
 
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} true -Dspark.version=2.4.6 -P spark_2.x
+bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} true -Dspark.version=2.4.6 -P spark_2.x

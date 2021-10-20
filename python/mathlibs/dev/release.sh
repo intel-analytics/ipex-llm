@@ -26,18 +26,17 @@ echo $BIGDL_PYTHON_DIR
 
 
 if (( $# < 4)); then
-  echo "Usage: release.sh platform version quick_build upload mvn_parameters"
-  echo "Usage example: bash release.sh linux default false true"
-  echo "Usage example: bash release.sh linux 0.14.0.dev1 true true"
+  echo "Usage: release.sh platform version upload mvn_parameters"
+  echo "Usage example: bash release.sh linux default true"
+  echo "Usage example: bash release.sh linux 0.14.0.dev1 false"
   echo "If needed, you can also add other profiles such as: -Dspark.version=2.4.6 -P spark_2.x"
   exit -1
 fi
 
 platform=$1
 version=$2
-quick=$3  # Whether to rebuild the jar; quick=true means not rebuilding the jar
-upload=$4  # Whether to upload the whl to pypi
-profiles=${*:5}
+upload=$3  # Whether to upload the whl to pypi
+profiles=${*:4}
 
 if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
@@ -57,6 +56,14 @@ elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
 else
     echo "Unsupported platform"
+fi
+
+if [ -d "${BIGDL_DIR}/python/mathlibs/src/build" ]; then
+   rm -r ${BIGDL_DIR}/python/mathlibs/src/build
+fi
+
+if [ -d "${BIGDL_DIR}/python/mathlibs/src/dist" ]; then
+   rm -r ${BIGDL_DIR}/python/mathlibs/src/dist
 fi
 
 cd $BIGDL_PYTHON_DIR
