@@ -17,7 +17,7 @@
 #
 
 # This is the default script with maven parameters to release bigdl-orca together with
-# bigdl-tf and bigdl-math built on top of Spark 2.4.6 for linux.
+# bigdl-tf and bigdl-math built on top of Spark 2.4.6 for mac.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
@@ -26,21 +26,21 @@ BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../../..; pwd)"
 echo $BIGDL_DIR
 
 if (( $# < 2)); then
-  echo "Usage: all_release_default_linux_spark246.sh version quick_build"
-  echo "Usage example: bash all_release_default_linux_spark246.sh default true"
-  echo "Usage example: bash all_release_default_linux_spark246.sh 0.14.0.dev1 false"
+  echo "Usage: all_release_default_mac_spark246.sh version quick_build"
+  echo "Usage example: bash all_release_default_mac_spark246.sh default true"
+  echo "Usage example: bash all_release_default_mac_spark246.sh 0.14.0.dev1 false"
   exit -1
 fi
 
 version=$1
 quick=$2
 
-bash ${RUN_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} ${quick}
+bash ${RUN_SCRIPT_DIR}/release_default_mac_spark246.sh ${version} ${quick}
 
 TF_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/tflibs/dev; pwd)"
 echo $TF_SCRIPT_DIR
-bash ${TF_SCRIPT_DIR}/release_default_linux_spark246.sh ${version}
+bash ${TF_SCRIPT_DIR}/release_default_mac_spark246.sh ${version}
 
 MATH_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/mathlibs/dev; pwd)"
 echo $MATH_SCRIPT_DIR
-bash ${MATH_SCRIPT_DIR}/release_default_linux_spark246.sh ${version}
+bash ${MATH_SCRIPT_DIR}/release_default_mac_spark246.sh ${version}
