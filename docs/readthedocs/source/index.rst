@@ -1,9 +1,7 @@
-Analytics Zoo Documentation
+BigDL Documentation
 ===========================
 
 ------
-
-`Analytics Zoo <https://github.com/intel-analytics/analytics-zoo>`_ is an open source Big Data AI platform, and includes the following features for scaling end-to-end AI to distributed Big Data:
 
 BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the original `BigDL <https://github.com/intel-analytics/BigDL/tree/branch-0.14>`_ and `Analytics Zoo <https://github.com/intel-analytics/analytics-zoo>`_ projects, providing the following features:
 
