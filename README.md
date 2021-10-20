@@ -183,7 +183,8 @@ Finally, call ```fit``` on _AutoTSEstimator_, which applies AutoML to find the b
 
 ```python
 #train a pipeline with AutoML support
-ts_pipeline = autotsest.fit(tsdata_train, tsdata_valid)
+ts_pipeline = autotsest.fit(data=tsdata_train,
+                            validation_data=tsdata_valid)
 
 #predict
 ts_pipeline.predict(tsdata_test)
