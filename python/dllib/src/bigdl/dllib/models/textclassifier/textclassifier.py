@@ -24,7 +24,9 @@ from bigdl.dllib.nn.layer import *
 from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.utils.common import *
-from bigdl.dllib.utils.common import Sample
+from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.utils.utils import detect_conda_env_name
+import os
 import datetime as dt
 
 
@@ -165,6 +167,7 @@ if __name__ == "__main__":
     parser.add_option("-p", "--p", dest="p", default="0.0")
     parser.add_option("-d", "--data_path", dest="data_path", default="/tmp/news20/")
     parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
+    parser.add_option("--on-yarn", action="store_true",  dest="onYarn", default=False)
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
@@ -177,12 +180,21 @@ if __name__ == "__main__":
         sequence_len = 500
         max_words = 5000
         training_split = 0.8
-        sc = SparkContext(appName="text_classifier",
-                          conf=create_spark_conf())
         data_path = options.data_path
-        redire_spark_logs()
-        show_bigdl_info_logs()
-        init_engine()
+        if options.onYarn:
+            hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+            assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                    "set the environment variable HADOOP_CONF_DIR"
+            conda_env_name = detect_conda_env_name()
+            sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
+                    conda_name=conda_env_name,
+                    num_executors=2,
+                    executor_cores=2,
+                    executor_memory="5g",
+                    driver_memory="2g")
+        else:
+            sc = init_spark_on_local(cores=4)
+
         set_optimizer_version(options.optimizerVersion)
         train(sc, data_path,
               batch_size,
