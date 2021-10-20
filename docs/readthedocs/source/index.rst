@@ -5,9 +5,11 @@ Analytics Zoo Documentation
 
 `Analytics Zoo <https://github.com/intel-analytics/analytics-zoo>`_ is an open source Big Data AI platform, and includes the following features for scaling end-to-end AI to distributed Big Data:
 
-* `Orca <doc/Orca/Overview/orca.html>`_: seamlessly scale out TensorFlow and PyTorch for Big Data (using Spark & Ray)
+BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the original `BigDL <https://github.com/intel-analytics/BigDL/tree/branch-0.14>`_ and `Analytics Zoo <https://github.com/intel-analytics/analytics-zoo>`_ projects, providing the following features:
+
+* **DLlib**: distributed deep learning library for Apache Spark (including support for `Spark ML pipeline <doc/UseCase/nnframes.html>`_ and `Keras-like <doc/UseCase/keras-api.html>`_ APIs) 
+* `Orca <doc/Orca/Overview/orca.html>`_: seamlessly scale out TensorFlow and PyTorch pipelines for distributed Big Data
 * `RayOnSpark <doc/Ray/Overview/ray.html>`_: run Ray programs directly on Big Data clusters
-* **BigDL Extensions**: high-level `Spark ML pipeline <doc/UseCase/nnframes.html>`_ and `Keras-like <doc/UseCase/keras-api.html>`_ APIs for BigDL 
 * `Chronos <doc/Chronos/Overview/chronos.html>`_: scalable time series analysis using AutoML
 * `PPML <doc/PPML/Overview/ppml.html>`_: privacy preserving big data analysis and machine learning (*experimental*)
 
