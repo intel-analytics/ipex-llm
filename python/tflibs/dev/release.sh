@@ -53,11 +53,15 @@ else
 fi
 
 if [ -d "${BIGDL_DIR}/python/tflibs/src/build" ]; then
-   rm -r ${BIGDL_DIR}/python/mathlibs/src/build
+   rm -r ${BIGDL_DIR}/python/tflibs/src/build
 fi
 
 if [ -d "${BIGDL_DIR}/python/tflibs/src/dist" ]; then
-   rm -r ${BIGDL_DIR}/python/mathlibs/src/dist
+   rm -r ${BIGDL_DIR}/python/tflibs/src/dist
+fi
+
+if [ -d "${BIGDL_DIR}/python/tflibs/src/bigdl_tf.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/tflibs/src/bigdl_tf.egg-info
 fi
 
 cd $BIGDL_PYTHON_DIR

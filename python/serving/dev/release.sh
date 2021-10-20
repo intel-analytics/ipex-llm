@@ -51,6 +51,10 @@ if [ -d "${BIGDL_DIR}/python/serving/src/dist" ]; then
    rm -r ${BIGDL_DIR}/python/serving/src/dist
 fi
 
+if [ -d "${BIGDL_DIR}/python/serving/src/bigdl_serving.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/serving/src/bigdl_serving.egg-info
+fi
+
 cd $BIGDL_PYTHON_DIR
 wheel_command="python setup.py bdist_wheel --universal"
 echo "Packing python distribution: $wheel_command"

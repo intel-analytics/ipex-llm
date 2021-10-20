@@ -56,3 +56,5 @@ bash ${CHRONOS_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} ${upload
 SERVING_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/serving/dev; pwd)"
 echo $SERVING_SCRIPT_DIR
 bash ${SERVING_SCRIPT_DIR}/release.sh ${version} ${upload}
+
+# TODO: upload all whls in the very end at the same time

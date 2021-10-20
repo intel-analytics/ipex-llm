@@ -81,6 +81,10 @@ if [ -d "${BIGDL_DIR}/python/dllib/src/dist" ]; then
    rm -r ${BIGDL_DIR}/python/dllib/src/dist
 fi
 
+if [ -d "${BIGDL_DIR}/python/dllib/src/bigdl_dllib.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/dllib/src/bigdl_dllib.egg-info
+fi
+
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}

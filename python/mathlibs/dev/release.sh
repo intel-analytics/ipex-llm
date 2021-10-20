@@ -60,6 +60,10 @@ if [ -d "${BIGDL_DIR}/python/mathlibs/src/dist" ]; then
    rm -r ${BIGDL_DIR}/python/mathlibs/src/dist
 fi
 
+if [ -d "${BIGDL_DIR}/python/mathlibs/src/bigdl_math.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/mathlibs/src/bigdl_math.egg-info
+fi
+
 cd $BIGDL_PYTHON_DIR
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
 echo "Packing python distribution: $wheel_command"
