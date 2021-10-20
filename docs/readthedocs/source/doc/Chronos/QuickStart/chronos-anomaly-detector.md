@@ -1,4 +1,4 @@
-# Use Anomaly Detector for Unsupervised Anomaly Detection
+# Anomaly Detector
 
 ---
 
