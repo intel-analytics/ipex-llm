@@ -46,8 +46,8 @@ BigDL Documentation
    :caption: DLlib Overview
 
    doc/DLlib/Overview/dllib.md
-   doc/UseCase/keras-api.md
-   doc/UseCase/nnframes.md
+   doc/DLlib/Overview/keras-api.md
+   doc/DLlib/Overview/nnframes.md
 
 .. toctree::
    :maxdepth: 1
