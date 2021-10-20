@@ -28,7 +28,7 @@ echo $BIGDL_PYTHON_DIR
 if (( $# < 4)); then
   echo "Usage: release.sh platform version upload mvn_parameters"
   echo "Usage example: bash release.sh linux default true"
-  echo "Usage example: bash release.sh linux 0.14.0.dev1 false"
+  echo "Usage example: bash release.sh mac 0.14.0.dev1 false"
   echo "If needed, you can also add other profiles such as: -Dspark.version=2.4.6 -P spark_2.x"
   exit -1
 fi

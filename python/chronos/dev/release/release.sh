@@ -24,14 +24,16 @@ echo $BIGDL_DIR
 BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/chronos/src; pwd)"
 echo $BIGDL_PYTHON_DIR
 
-if (( $# < 2)); then
-  echo "Bad parameters. Usage: release.sh linux default"
-  echo "Bad parameters. Usage: release.sh mac 0.14.0.dev1"
+if (( $# < 3)); then
+  echo "Usage: release.sh platform version upload"
+  echo "Usage example: bash release.sh linux default false"
+  echo "Usage example: bash release.sh mac 0.14.0.dev1 true"
   exit -1
 fi
 
 platform=$1
 version=$2
+upload=$3  # Whether to upload the whl to pypi
 
 if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
@@ -40,18 +42,17 @@ fi
 
 bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 
-cd ${BIGDL_DIR}/scala
 if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux1_x86_64"
 else
-    echo "unsupport platform"
+    echo "Unsupported platform"
 fi
 
 cd $BIGDL_PYTHON_DIR
 sdist_command="python setup.py sdist"
-echo "packing source code: ${sdist_command}"
+echo "Packing source code: ${sdist_command}"
 $sdist_command
 
 if [ -d "${BIGDL_DIR}/python/chronos/src/build" ]; then
@@ -63,10 +64,11 @@ if [ -d "${BIGDL_DIR}/python/chronos/src/dist" ]; then
 fi
 
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
-echo "Packing python distribution:   $wheel_command"
+echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
-upload_command="twine upload python/chronos/src/dist/bigdl_chronos-${bigdl_version}-py3-none-${verbose_pname}.whl"
-echo "Please manually upload with this command:  $upload_command"
-
-#$upload_command
+if [ ${upload} == true ]; then
+    upload_command="twine upload python/chronos/src/dist/bigdl_chronos-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    echo "Please manually upload with this command:  $upload_command"
+    $upload_command
+fi

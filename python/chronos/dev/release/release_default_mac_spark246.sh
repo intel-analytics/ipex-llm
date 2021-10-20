@@ -16,9 +16,9 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release bigdl-friesian built on top of
+# This is the default script with maven parameters to release bigdl-chronos built on top of
 # Spark 2.4.6 for mac.
-# Note that if the maven parameters to build bigdl-friesian need to be changed,
+# Note that if the maven parameters to build bigdl-chronos need to be changed,
 # make sure to change this file accordingly.
 # If you want to customize the release, please use release.sh and specify maven parameters instead.
 
@@ -35,5 +35,4 @@ fi
 
 version=$1
 
-# TODO: change upload to true after uploading to pypi is enabled
-bash ${RUN_SCRIPT_DIR}/release.sh mac ${version} 
+bash ${RUN_SCRIPT_DIR}/release.sh mac ${version} true
