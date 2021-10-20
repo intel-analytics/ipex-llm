@@ -1,8 +1,8 @@
-name = "Analytics Zoo"
+name = "BigDL"
 version = "2.0"
 description = "An open source Big Data AI platform (for distributed TensorFlow, PyTorch and Keras on Apache Spark & Ray)"
 license = "Apache-2.0"
-repository = "https://github.com/intel-analytics/analytics-zoo"
-documentation = "https://analytics-zoo.readthedocs.io/en/latest/"
+repository = "https://github.com/intel-analytics/BigDL"
+documentation = "https://bigdl.readthedocs.io/en/branch-2.0/"
 
 
