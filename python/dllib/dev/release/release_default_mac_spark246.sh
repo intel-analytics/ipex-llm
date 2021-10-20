@@ -26,7 +26,7 @@ set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 
-if (( $# < 2)); then
+if (( $# < 3)); then
   echo "Usage: release_default_mac_spark246.sh version quick_build upload"
   echo "Usage example: bash release_default_mac_spark246.sh default true true"
   echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 false true"
