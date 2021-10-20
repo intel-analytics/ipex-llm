@@ -175,7 +175,6 @@ Next, create an _AutoTSEstimator_.
 
 ```python
 from bigdl.chronos.autots import AutoTSEstimator
-import bigdl.orca.automl.hp as hp
 
 autotsest = AutoTSEstimator(model='lstm')
 ```
