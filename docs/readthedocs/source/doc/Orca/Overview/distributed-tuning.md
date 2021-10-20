@@ -1,4 +1,4 @@
-# Distributed Hyper-parameter Tuning
+# Distributed Hyper-Parameter Tuning
 
 ---
 
