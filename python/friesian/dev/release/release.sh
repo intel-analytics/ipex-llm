@@ -70,7 +70,7 @@ fi
 
 cd $BIGDL_PYTHON_DIR
 sdist_command="python setup.py sdist"
-echo "packing source code: ${sdist_command}"
+echo "Packing source code: ${sdist_command}"
 $sdist_command
 
 if [ -d "${BIGDL_DIR}/python/friesian/src/build" ]; then
