@@ -65,7 +65,7 @@ if [ -d "${BIGDL_DIR}/python/mathlibs/src/bigdl_math.egg-info" ]; then
 fi
 
 cd $BIGDL_PYTHON_DIR
-wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
+wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 

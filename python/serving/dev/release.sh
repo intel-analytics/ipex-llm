@@ -56,7 +56,7 @@ if [ -d "${BIGDL_DIR}/python/serving/src/bigdl_serving.egg-info" ]; then
 fi
 
 cd $BIGDL_PYTHON_DIR
-wheel_command="python setup.py bdist_wheel --universal"
+wheel_command="python setup.py bdist_wheel --universal --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 

@@ -85,12 +85,12 @@ if [ -d "${BIGDL_DIR}/python/dllib/src/bigdl_dllib.egg-info" ]; then
    rm -r ${BIGDL_DIR}/python/dllib/src/bigdl_dllib.egg-info
 fi
 
-wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
+wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl_dllib-${bigdl_version}-py2.py3-none-${verbose_pname}.whl"
+    upload_command="twine upload dist/bigdl_dllib-${bigdl_version}-py3-none-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi

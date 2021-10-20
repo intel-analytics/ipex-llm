@@ -85,7 +85,7 @@ if [ -d "${BIGDL_DIR}/python/orca/src/bigdl_orca.egg-info" ]; then
    rm -r ${BIGDL_DIR}/python/orca/src/bigdl_orca.egg-info
 fi
 
-wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
+wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 

@@ -67,7 +67,7 @@ if [ -d "${BIGDL_DIR}/python/chronos/src/bigdl_chronos.egg-info" ]; then
    rm -r ${BIGDL_DIR}/python/chronos/src/bigdl_chronos.egg-info
 fi
 
-wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
+wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
