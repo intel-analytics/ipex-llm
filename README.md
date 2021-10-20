@@ -155,25 +155,39 @@ To train a time series model with AutoML, first initialize [Orca Context](https:
 from bigdl.orca import init_orca_context
 
 #cluster_mode can be "local", "k8s" or "yarn"
-sc = init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True)
+init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True)
 ```
 
-Next, create an _AutoTSTrainer_.
+Then, create _TSDataset_ for your data.
+```python
+from bigdl.chronos.data import TSDataset
+
+tsdata_train, tsdata_valid, tsdata_test\
+        = TSDataset.from_pandas(df, 
+                                dt_col="dt_col", 
+                                target_col="target_col", 
+                                with_split=True, 
+                                val_ratio=0.1, 
+                                test_ratio=0.1)
+```
+
+Next, create an _AutoTSEstimator_.
 
 ```python
-from bigdl.chronos.autots.deprecated.forecast import AutoTSTrainer
+from bigdl.chronos.autots import AutoTSEstimator
+import bigdl.orca.automl.hp as hp
 
-trainer = AutoTSTrainer(dt_col="datetime", target_col="value")
+autotsest = AutoTSEstimator(model='lstm')
 ```
 
-Finally, call ```fit``` on _AutoTSTrainer_, which applies AutoML to find the best model and hyper-parameters; it returns a _TSPipeline_ which can be used for prediction or evaluation.
+Finally, call ```fit``` on _AutoTSEstimator_, which applies AutoML to find the best model and hyper-parameters; it returns a _TSPipeline_ which can be used for prediction or evaluation.
 
 ```python
 #train a pipeline with AutoML support
-ts_pipeline = trainer.fit(train_df, validation_df)
+ts_pipeline = autotsest.fit(tsdata_train, tsdata_valid)
 
 #predict
-ts_pipeline.predict(test_df)
+ts_pipeline.predict(tsdata_test)
 ```
 
 See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [example](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.
