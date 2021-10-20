@@ -53,7 +53,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/analytics-zoo',
         packages=get_bigdl_packages(),
-        install_requires=['bigdl-orca'],
+        install_requires=['bigdl-orca=='+VERSION],
         extras_require={'all': ['tensorflow>=1.15.0,<2.0.0', 'h5py==2.10.0',
                                 'ray[tune]==1.2.0', 'psutil', 'aiohttp==3.7.0',
                                 'aioredis==1.1.0', 'setproctitle', 'hiredis==1.1.0',
