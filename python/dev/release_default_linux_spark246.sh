@@ -46,10 +46,10 @@ echo $ORCA_SCRIPT_DIR
 bash ${ORCA_SCRIPT_DIR}/all_release_default_linux_spark246.sh ${version} true ${upload}
 
 FRIESIAN_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/friesian/dev/release; pwd)"
-echo $DLLIB_SCRIPT_DIR
-bash ${DLLIB_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} true ${upload}
+echo $FRIESIAN_SCRIPT_DIR
+bash ${FRIESIAN_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} true ${upload}
 
-CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/friesian/dev/release; pwd)"
+CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
 echo $CHRONOS_SCRIPT_DIR
 bash ${CHRONOS_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} ${upload}
 
