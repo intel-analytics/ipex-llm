@@ -30,7 +30,7 @@ html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 #html_theme = "sphinx_book_theme"
 html_theme_options = {
-    "repository_url": "https://github.com/intel-analytics/analytics-zoo",
+    "repository_url": "https://github.com/intel-analytics/BigDL",
     "use_repository_button": True,
     "use_issues_button": True,
     "use_edit_page_button": True,
@@ -46,9 +46,9 @@ source_suffix = {'.rst': 'restructuredtext',
 
 master_doc = 'index'
 
-project = 'Analytics Zoo'
-copyright = '2020, Analytics Zoo Authors'
-author = 'Analytics Zoo Authors'
+project = 'BigDL'
+copyright = '2020, BigDL Authors'
+author = 'BigDL Authors'
 
 # The short X.Y version
 #version = ''
@@ -139,7 +139,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Analytics Zoo Documentation'
+htmlhelp_basename = 'BigDL Documentation'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -166,8 +166,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'analytics-zoo.tex', 'analytics-zoo Documentation',
-     'analytice-zoo', 'manual'),
+    (master_doc, 'bigdl.tex', 'bigdl Documentation',
+     'bigdl', 'manual'),
 ]
 
 
@@ -176,7 +176,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'analytics-zoo', 'analytics-zoo Documentation',
+    (master_doc, 'bigdl', 'bigdl Documentation',
      [author], 1)
 ]
 
@@ -187,8 +187,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'analytics-zoo', 'analytics-zoo Documentation',
-     author, 'analytics-zoo', 'One line description of project.',
+    (master_doc, 'bigdl', 'bigdl Documentation',
+     author, 'bigdl', 'One line description of project.',
      'Miscellaneous'),
 ]
 
