@@ -58,3 +58,4 @@ echo $SERVING_SCRIPT_DIR
 bash ${SERVING_SCRIPT_DIR}/release.sh ${version} ${upload}
 
 # TODO: upload all whls in the very end at the same time
+# TODO: add for mac
