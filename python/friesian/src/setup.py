@@ -88,9 +88,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
-        # TODO: add bigdl-orca as dependency and change to bigdl-orca[ray] in extras_require
-        install_requires=['pyspark==2.4.6', 'conda-pack==0.3.1',
-                          'packaging', 'filelock'],
+        install_requires=['bigdl-orca=='+VERSION],
         extras_require={'train': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
                                 'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1']},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
