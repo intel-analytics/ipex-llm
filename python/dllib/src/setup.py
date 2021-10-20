@@ -81,7 +81,7 @@ def setup_package():
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        url='https://github.com/intel-analytics/Bigdl',
+        url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         install_requires=['numpy>=1.7', 'pyspark==2.4.6', 'six>=1.10.0'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
