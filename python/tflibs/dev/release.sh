@@ -26,17 +26,15 @@ echo $BIGDL_PYTHON_DIR
 
 
 if (( $# < 4)); then
-  echo "Usage: release.sh platform version upload mvn_parameters"
+  echo "Usage: release.sh platform version upload"
   echo "Usage example: bash release.sh linux default true"
   echo "Usage example: bash release.sh mac 0.14.0.dev false"
-  echo "If needed, you can also add other profiles such as: -Dspark.version=2.4.6 -P spark_2.x"
   exit -1
 fi
 
 platform=$1
 version=$2
 upload=$3  # Whether to upload the whl to pypi
-profiles=${*:4}
 
 if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
@@ -47,12 +45,8 @@ bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
-    echo "Building bigdl for mac system"
-    dist_profile="-P mac $profiles"
     verbose_pname="macosx_10_11_x86_64"
 elif [ "$platform" == "linux" ]; then
-    echo "Building bigdl for linux system"
-    dist_profile="-P linux $profiles"
     verbose_pname="manylinux2010_x86_64"
 else
     echo "Unsupported platform"

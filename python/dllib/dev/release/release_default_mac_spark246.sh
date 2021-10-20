@@ -27,13 +27,14 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 
 if (( $# < 2)); then
-  echo "Usage: release_default_mac_spark246.sh version quick_build"
-  echo "Usage example: bash release_default_mac_spark246.sh default true"
-  echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 false"
+  echo "Usage: release_default_mac_spark246.sh version quick_build upload"
+  echo "Usage example: bash release_default_mac_spark246.sh default true true"
+  echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 false true"
   exit -1
 fi
 
 version=$1
 quick=$2
+upload=$3
 
-bash ${RUN_SCRIPT_DIR}/release.sh mac ${version} ${quick} true -Dspark.version=2.4.6 -P spark_2.x
+bash ${RUN_SCRIPT_DIR}/release.sh mac ${version} ${quick} ${upload} -Dspark.version=2.4.6 -P spark_2.x
