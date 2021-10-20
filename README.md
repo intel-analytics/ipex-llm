@@ -37,12 +37,12 @@ pip install bigdl
 To install latest nightly build, use ```pip install --pre --upgrade bigdl```; see [Python](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/python.html)  and [Scala](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/scala.html) user guide for more details.
 
 ## Getting Started with DLlib
-**DLlib** is a distributed deep learning library for Apache Spark; with DLlib,  users can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
+**DLlib** is a distributed deep learning library for Apache Spark; with DLlib, users can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
 
 First, call `initNNContext` at the beginning of the code: 
 
 ```scala
-import com.intel.analytics.zoo.common.NNContext
+import com.intel.analytics.bigdl.dllib.common.NNContext
 val sc = NNContext.initNNContext()
 ```
 
