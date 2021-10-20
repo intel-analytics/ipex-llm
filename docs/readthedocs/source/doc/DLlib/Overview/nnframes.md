@@ -1,4 +1,4 @@
-# Use Spark ML Pipeline for DLlib
+# Spark ML Pipeline Support
 
 ## 1. NNFrames Overview
 
