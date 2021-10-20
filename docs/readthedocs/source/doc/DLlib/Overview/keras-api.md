@@ -1,4 +1,4 @@
-# DLlib Keras-Like API 
+# Keras-Like API 
 
 ## 1. Introduction
 [DLlib](dllib.md) provides __Keras-like API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) for distributed deep learning on Apache Spark. Users can easily use the Keras-like API to create a neural network model, and train, evaluate or tune it in a distributed fashion on Spark.
