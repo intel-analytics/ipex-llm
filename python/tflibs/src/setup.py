@@ -26,7 +26,7 @@ def setup_package():
     metadata = dict(
         name='bigdl-tf',
         version=VERSION,
-        description='Dependent Libraries for bigdl-orca(tf)',
+        description='TensorFlow Dependency Library for bigdl-orca',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
