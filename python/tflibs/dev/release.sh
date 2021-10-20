@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -20,7 +21,7 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
 echo $BIGDL_DIR
-BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/tflibs; pwd)"
+BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/tflibs/src; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 
@@ -60,12 +61,11 @@ fi
 
 cd $BIGDL_PYTHON_DIR
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
-echo "Packing python distribution:   $wheel_command"
+echo "Packing python distribution: $wheel_command"
 ${wheel_command}
-cd -
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload python/tflibs/dist/bigdl_tf-${bigdl_version}-py3-none-${verbose_pname}.whl"
-    echo "Please manually upload with this command:  $upload_command"
+    upload_command="twine upload dist/bigdl_tf-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi

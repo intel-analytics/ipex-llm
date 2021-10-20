@@ -63,7 +63,6 @@ cd $BIGDL_PYTHON_DIR
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
-pwd
 
 if [ ${upload} == true ]; then
     upload_command="twine upload dist/bigdl_math-${bigdl_version}-py3-none-${verbose_pname}.whl"
