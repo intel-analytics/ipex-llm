@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export ANALYTICS_ZOO_HOME=${ANALYTICS_ZOO_ROOT}/dist
+export ANALYTICS_ZOO_HOME=${ANALYTICS_ZOO_ROOT}
 
 clear_up () {
     echo "Clearing up environment. Uninstalling analytics-zoo"
@@ -55,6 +55,18 @@ echo "#1 using_variational_autoencoder_and_deep_feature_loss_to_generate_faces t
 echo "#2 start app test for using_variational_autoencoder_to_generate_digital_numbers"
 #timer
 start=$(date "+%s")
+
+# get mnist
+if [[ ! -z "${FTP_URI}" ]]; then
+    if [[ -d /tmp/datasets/ ]]; then
+        rm -rf /tmp/datasets/MNIST/
+    fi
+    wget  $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P /tmp/dataset/MNIST/raw
+    wget  $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P /tmp/dataset/MNIST/raw
+    wget  $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P /tmp/dataset/MNIST/raw
+    wget  $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/dataset/MNIST/raw
+fi
+
 
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_digital_numbers
 
