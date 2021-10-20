@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -20,23 +21,20 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
 echo $BIGDL_DIR
-BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/tflibs; pwd)"
+BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/tflibs/src; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 
 if (( $# < 4)); then
-  echo "Usage: release.sh platform version quick_build upload mvn_parameters"
-  echo "Usage example: bash release.sh linux default false true"
-  echo "Usage example: bash release.sh linux 0.14.0.dev1 true true"
-  echo "If needed, you can also add other profiles such as: -Dspark.version=2.4.6 -P spark_2.x"
+  echo "Usage: release.sh platform version upload"
+  echo "Usage example: bash release.sh linux default true"
+  echo "Usage example: bash release.sh mac 0.14.0.dev false"
   exit -1
 fi
 
 platform=$1
 version=$2
-quick=$3  # Whether to rebuild the jar; quick=true means not rebuilding the jar
-upload=$4  # Whether to upload the whl to pypi
-profiles=${*:5}
+upload=$3  # Whether to upload the whl to pypi
 
 if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
@@ -47,25 +45,32 @@ bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
-    echo "Building bigdl for mac system"
-    dist_profile="-P mac $profiles"
     verbose_pname="macosx_10_11_x86_64"
 elif [ "$platform" == "linux" ]; then
-    echo "Building bigdl for linux system"
-    dist_profile="-P linux $profiles"
     verbose_pname="manylinux2010_x86_64"
 else
     echo "Unsupported platform"
 fi
 
+if [ -d "${BIGDL_DIR}/python/tflibs/src/build" ]; then
+   rm -r ${BIGDL_DIR}/python/tflibs/src/build
+fi
+
+if [ -d "${BIGDL_DIR}/python/tflibs/src/dist" ]; then
+   rm -r ${BIGDL_DIR}/python/tflibs/src/dist
+fi
+
+if [ -d "${BIGDL_DIR}/python/tflibs/src/bigdl_tf.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/tflibs/src/bigdl_tf.egg-info
+fi
+
 cd $BIGDL_PYTHON_DIR
-wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
-echo "Packing python distribution:   $wheel_command"
+wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
+echo "Packing python distribution: $wheel_command"
 ${wheel_command}
-cd -
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload python/tflibs/dist/bigdl_tf-${bigdl_version}-py3-none-${verbose_pname}.whl"
-    echo "Please manually upload with this command:  $upload_command"
+    upload_command="twine upload dist/bigdl_tf-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi
