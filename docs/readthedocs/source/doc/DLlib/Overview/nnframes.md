@@ -1,24 +1,12 @@
-# Use Spark ML Pipeline for BigDL
+# Use Spark ML Pipeline for DLlib
 
 ## 1. NNFrames Overview
 
-`NNFrames` in Analytics Zoo provides to provide Spark DataFrame and and ML Pipeline support for [BigDL](https://github.com/intel-analytics/bigdl). It provides both Python and Scala interfaces, and is compatible with both Spark 2.x and Spark 3.x.
-
-
-**Highlights**
-
-- Easy-to-use DataFrame(DataSet)-based API for training, prediction and evaluation with deep learning models.
-
-- Effortless integration with Spark ML pipeline and compatibility with other feature transformers and algorithms in Spark ML.
-
-- In a few lines, run large scale inference or transfer learning from pre-trained models of Keras, Tensorflow, PyTorch or BigDL.
-
-- Rich toolset for feature extraction and processing, including image, audio and texts.
-
+`NNFrames` in [DLlib](dllib.md) provides Spark DataFrame and ML Pipeline support of distributed deep learning on Apache Spark. It includes both Python and Scala interfaces, and is compatible with both Spark 2.x and Spark 3.x.
 
 **Examples**
 
-The examples are included in the Analytics Zoo source code.
+The examples are included in the DLlib source code.
 
 - image classification: model inference using pre-trained Inception v1 model. (See [Scala version](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/nnframes/imageInference) and [Python version](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/nnframes/imageInference))
 - image classification: transfer learning from pre-trained Inception v1 model. (See [Scala version](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/nnframes/imageTransferLearning) and [Python version](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/nnframes/imageTransferLearning))
