@@ -1,9 +1,9 @@
-# Use Keras-Like API for DLlib
+# DLlib Keras-Like API 
 
 ## 1. Introduction
 [DLlib](dllib.md) provides __Keras-like API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) for distributed deep learning on Apache Spark. Users can easily use the Keras-like API to create a neural network model, and train, evaluate or tune it in a distributed fashion on Spark.
 
-To define a model in Scala using the Keras-like API, now one just need to import the following packages:
+To define a model in Scala using the Keras-like API, one just needs to import the following packages:
 
 ```scala
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
