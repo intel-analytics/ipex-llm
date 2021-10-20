@@ -19,7 +19,7 @@ BigDL makes it easy for data scientists and data engineers to build end-to-end, 
  
  * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning (*experimental*)
 
-For more information, you may [read the docs](https://analytics-zoo.readthedocs.io/).
+For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
 ---
 
