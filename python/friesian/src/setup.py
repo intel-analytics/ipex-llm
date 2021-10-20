@@ -18,8 +18,8 @@
 
 import os
 import sys
-from shutil import copytree, rmtree
 import fnmatch
+from shutil import copytree, rmtree
 from setuptools import setup
 
 TEMP_PATH = "bigdl/share/friesian"
@@ -86,7 +86,7 @@ def setup_package():
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        url='https://github.com/intel-analytics/analytics-zoo',
+        url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         # TODO: add bigdl-orca as dependency and change to bigdl-orca[ray] in extras_require
         install_requires=['pyspark==2.4.6', 'conda-pack==0.3.1',

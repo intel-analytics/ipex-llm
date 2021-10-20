@@ -16,22 +16,13 @@
 # limitations under the License.
 #
 
-
 import os
-import fnmatch
 from setuptools import setup
-import urllib.request
-import os
-import stat
-import sys
-import re
-from html.parser import HTMLParser
 
-bigdl_home = os.path.abspath(__file__ + "/../../..")
+bigdl_home = os.path.abspath(__file__ + "/../../../..")
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
 def setup_package():
-
     metadata = dict(
         name='bigdl-math',
         version=VERSION,
@@ -42,7 +33,6 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=["bigdl.share.tflibs"],
         package_data={"bigdl.share.tflibs": ["libiomp5.so", "libmklml_intel.so"]},
-        package_dir={'': 'src'},
     )
 
     setup(**metadata)
