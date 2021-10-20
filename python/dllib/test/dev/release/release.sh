@@ -57,7 +57,7 @@ else
     echo "unsupport platform"
 fi
 
-bigdl_build_command="bash make-dist.sh ${dist_profile}"
+bigdl_build_command="mvn -f ${BIGDL_DIR}/scala clean package -DskipTests ${dist_profile}"
 if [ "$quick" == "true" ]; then
     echo "Skip disting BigDL"
 else

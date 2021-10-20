@@ -36,4 +36,4 @@ fi
 version=$1
 
 # TODO: change upload to true after uploading to pypi is enabled
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} false -Dspark.version=2.4.6 -P spark_2.x
+bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} false -Dspark.version=2.4.6 -P spark_2.x -pl 'common/spark-version' -pl 'dllib'
