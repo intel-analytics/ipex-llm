@@ -82,11 +82,11 @@ if [ -d "${BIGDL_DIR}/python/friesian/src/dist" ]; then
 fi
 
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
-echo "Packing python distribution:   $wheel_command"
+echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
     upload_command="twine upload python/friesian/src/dist/bigdl_friesian-${bigdl_version}-py3-none-${verbose_pname}.whl"
-    echo "Please manually upload with this command:  $upload_command"
+    echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi

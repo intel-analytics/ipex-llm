@@ -26,14 +26,14 @@ set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 
-if (( $# < 1)); then
-  echo "Usage: release_default_linux_spark246.sh version"
-  echo "Usage example: bash release_default_linux_spark246.sh default"
-  echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1"
+if (( $# < 2)); then
+  echo "Usage: release_default_linux_spark246.sh version quick_build"
+  echo "Usage example: bash release_default_linux_spark246.sh default true"
+  echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 false"
   exit -1
 fi
 
 version=$1
+quick=$2
 
-# TODO: change upload to true after uploading to pypi is enabled
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} false false -Dspark.version=2.4.6 -P spark_2.x
+bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} true -Dspark.version=2.4.6 -P spark_2.x
