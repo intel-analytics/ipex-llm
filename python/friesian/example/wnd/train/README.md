@@ -28,8 +28,8 @@ __Options:__
 * For validation data, execute this command to change csv to parquet files:
 ```bash
 python valid_to_parquet.py \
-    --input_folder /path/to/the/folder/of/valid_csv \
-    --output_foler /path/to/the/folder/to/save/preprocessed
+    --input_file /path/to/the/folder/of/valid_csv \
+    --output_folder /path/to/the/folder/to/save/preprocessed
 ```
 __Options:__
 * `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn or standalone. Default to be local.
@@ -39,7 +39,7 @@ __Options:__
 * `num_nodes`: The number of nodes to use in the cluster. Default to be 8.
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
-* `input_folder`: The path to the folder of validation csv file.
+* `input_file`: The path to the validation csv file.
 * `output_folder`: The path to the folder of save the preprocessed data.
 
 ## Running command

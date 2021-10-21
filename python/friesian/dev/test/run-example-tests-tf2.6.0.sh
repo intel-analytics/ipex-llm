@@ -42,10 +42,11 @@ python ../../example/two_tower/train_2tower.py \
 now=$(date "+%s")
 time1=$((now - start))
 
+echo "#2 start example test for wnd train"
 #timer
 start=$(date "+%s")
 if [ -d data/input_wnd ]; then
-  echo "data/wnd already exists"
+  echo "data/input_wnd already exists"
 else
   wget -nv $FTP_URI/analytics-zoo-data/input_wnd.tar.gz -P data
   tar -xvzf data/input_wnd.tar.gz -C data
@@ -60,6 +61,9 @@ python ../../example/wnd/train/wnd_train_recsys.py \
 
 now=$(date "+%s")
 time2=$((now - start))
+
+rm -rf data
+rm -rf result
 
 echo "#1 two tower train time used: $time1 seconds"
 echo "#2 wnd train time used: $time2 seconds"

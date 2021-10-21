@@ -135,8 +135,8 @@ def _parse_args():
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--input_folder', type=str, required=True,
-                        help="Path to the folder of parquet files.")
+    parser.add_argument('--input_file', type=str, required=True,
+                        help="Path to the validation csv file.")
     parser.add_argument('--output_folder', type=str, default=".",
                         help="The path to save the preprocessed data to parquet files. ")
 
@@ -161,7 +161,7 @@ if __name__ == '__main__':
                           conf=conf)
 
     start = time()
-    val_tbl = FeatureTable.read_csv(os.path.join(args.input_folder, "valid"),
+    val_tbl = FeatureTable.read_csv(args.input_file,
                                     delimiter="\x01",
                                     names=RecsysSchema().toColumns(),
                                     dtype=RecsysSchema().toDtype())

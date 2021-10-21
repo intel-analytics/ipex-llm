@@ -85,6 +85,57 @@ python ../../example/wnd/wnd_preprocessing.py \
 now=$(date "+%s")
 time3=$((now - start))
 
+echo "#4 start example test for wnd recsys train data converting"
+#timer
+start=$(date "+%s")
+if [ -d data/input_wnd ]; then
+  echo "data/input_wnd already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/input_wnd.tar.gz -P data
+  tar -xvzf data/input_wnd.tar.gz -C data
+fi
+python ../../example/wnd/train/convert_train.py \
+    --input_folder ./data/input_wnd/parquet \
+    --output_folder ./result
+now=$(date "+%s")
+time4=$((now - start))
+
+echo "#5 start example test for wnd recsys test data converting"
+#timer
+start=$(date "+%s")
+if [ -d data/input_wnd ]; then
+  echo "data/input_wnd already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/input_wnd.tar.gz -P data
+  tar -xvzf data/input_wnd.tar.gz -C data
+fi
+python ../../example/wnd/train/valid_to_parquet.py \
+    --executor_cores 6 \
+    --executor_memory 50g \
+    --input_file ./data/input_wnd/valid \
+    --output_folder ./result
+now=$(date "+%s")
+time5=$((now - start))
+
+
+echo "#6 start example test for wnd recsys train/test data preprocessing"
+#timer
+start=$(date "+%s")
+if [ -d data/input_wnd ]; then
+  echo "data/input_wnd already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/input_wnd.tar.gz -P data
+  tar -xvzf data/input_wnd.tar.gz -C data
+fi
+python ../../example/wnd/train/wnd_preprocess_recsys.py \
+    --executor_cores 6 \
+    --executor_memory 50g \
+    --train_files 0-0 \
+    --input_folder ./data/input_wnd \
+    --output_folder ./result
+now=$(date "+%s")
+time6=$((now - start))
+
 
 rm -rf data
 rm -rf result
