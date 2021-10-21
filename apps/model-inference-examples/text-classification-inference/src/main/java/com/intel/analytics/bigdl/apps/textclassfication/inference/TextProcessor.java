@@ -1,7 +1,7 @@
 package com.intel.analytics.bigdl.apps.textclassfication.inference;
 
 import com.intel.analytics.bigdl.apps.textclassfication.processing.JTextProcessing;
-import com.intel.analytics.bigdl.serving.pipeline.inference.JTensor;
+import com.intel.analytics.bigdl.orca.inference.JTensor;
 
 import java.io.File;
 import java.util.Map;

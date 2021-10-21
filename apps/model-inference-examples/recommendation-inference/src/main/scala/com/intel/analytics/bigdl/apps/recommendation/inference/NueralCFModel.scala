@@ -1,9 +1,9 @@
 package com.intel.analytics.bigdl.apps.recommendation.inference
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.serving.pipeline.inference.InferenceModel
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.orca.inference.InferenceModel
 
 class NueralCFModel extends InferenceModel{
 

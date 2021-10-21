@@ -4,7 +4,7 @@ import java.io.{File, FileInputStream}
 import java.{io, util}
 import java.util.{List => JList}
 
-import com.intel.analytics.zoo.pipeline.inference.JTensor
+import com.intel.analytics.bigdl.orca.inference.JTensor
 import org.apache.commons.io.FileUtils
 import org.apache.flink.api.common.functions.RichMapFunction
 import org.apache.flink.api.common.typeinfo.TypeInformation

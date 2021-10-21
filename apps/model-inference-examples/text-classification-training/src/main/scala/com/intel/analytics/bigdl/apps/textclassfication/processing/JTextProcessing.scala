@@ -4,7 +4,7 @@ import java.io.File
 import java.lang.{Float => JFloat, Integer => JInt}
 import java.util.{List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.serving.pipeline.inference.{InferenceSupportive, JTensor}
+import com.intel.analytics.bigdl.orca.inference.{InferenceSupportive, JTensor}
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
