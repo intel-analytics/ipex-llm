@@ -30,10 +30,10 @@ def setup_package():
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        packages=["bigdl.share.tflibs"],
+        packages=["bigdl.share.tflibs.linux-x86_64"],
         url='https://github.com/intel-analytics/BigDL',
-        package_data={"bigdl.share.tflibs": ["libtensorflow_framework.so",
-                                             "libtensorflow_jni.so"]}
+        package_data={"bigdl.share.tflibs.linux-x86_64": ["libtensorflow_framework-zoo.so",
+                                                          "libtensorflow_jni.so"]}
     )
 
     setup(**metadata)

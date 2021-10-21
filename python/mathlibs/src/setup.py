@@ -31,8 +31,8 @@ def setup_package():
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
-        packages=["bigdl.share.tflibs"],
-        package_data={"bigdl.share.tflibs": ["libiomp5.so", "libmklml_intel.so"]}
+        packages=["bigdl.share.tflibs.linux-x86_64"],
+        package_data={"bigdl.share.tflibs.linux-x86_64": ["libiomp5.so", "libmklml_intel.so"]}
     )
 
     setup(**metadata)

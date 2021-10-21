@@ -46,8 +46,16 @@ echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
+    # Todo: append dylibs
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
+    apt-get install patchelf
+    FRAMEWORK_SO="$(readlink -f linux-x86_64/libtensorflow_framework.so)"
+    rm linux-x86_64/libtensorflow_framework.so
+    rm linux-x86_64/libtensorflow_framework.so.1
+    mv "${FRAMEWORK_SO}" "linux-x86_64/libtensorflow_framework-zoo.so"
+    patchelf --set-soname libtensorflow_framework-zoo.so linux-x86_64/libtensorflow_framework-zoo.so
+    patchelf --replace-needed libtensorflow_framework.so.1 libtensorflow_framework-zoo.so linux-x86_64/libtensorflow_jni.so
 else
     echo "Unsupported platform"
 fi
