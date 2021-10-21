@@ -27,42 +27,23 @@ $ [/tmp/news20]$ tree . -L 1
 ```
 - The example code would automatically download the data during the first run.
 
-### Run via pip install
+### Run on local
 - [Install from pip](https://bigdl-project.github.io/0.14.0-SNAPSHOT/#PythonUserGuide/install-from-pip/)
 - Optional: check [Run after pip install](https://bigdl-project.github.io/0.14.0-SNAPSHOT/#PythonUserGuide/run-from-pip/)
 - Run the following command locally
 ```
-python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max_epoch 3 --model cnn
+python textclassifier.py --max_epoch 20 --model cnn
       
 ```
 
-### Run via spark-submit
+### Run on yarn
 - [Install without pip](https://bigdl-project.github.io/0.14.0-SNAPSHOT/#PythonUserGuide/install-without-pip/)
 - Optional: check [Run without pip](https://bigdl-project.github.io/0.14.0-SNAPSHOT/#PythonUserGuide/run-without-pip/)
 - Run the following command
 ```{r, engine='sh'}
-        PYTHONHASHSEED=0
-        BigDL_HOME=...
-        SPARK_HOME=...
-        MASTER=...
-        PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
-        BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
-        PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
+export HADOOP_CONF_DIR=... #Fill the path to your hadoop conf dir
+python textclassifier.py --max_epoch 20 --model cnn --on-yarn
 
-        ${SPARK_HOME}/bin/spark-submit \
-            --master ${MASTER} \
-            --driver-cores 4  \
-            --driver-memory 25g  \
-            --total-executor-cores 4  \
-            --executor-cores 4  \
-            --executor-memory 20g \
-            --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py  \
-            --jars ${BigDL_JAR_PATH} \
-            --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
-            --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-            --conf spark.executorEnv.PYTHONHASHSEED=${PYTHONHASHSEED} \
-            ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py \
-             --model cnn
 ```
 * `--data_path` option can be used to set the path for downloading news20 data, the default value is /tmp/news20. Make sure that you have write permission to the specified path.
 
@@ -78,6 +59,8 @@ which are `cnn`, `lstm` and `gru`, default is `cnn`
 * `--learning_rate` option can be used to set learning rate, default is 0.05.
 
 * `--optimizerVersion` option can be used to set DistriOptimizer version, the value can be "optimizerV1" or "optimizerV2".
+
+* `--on-yarn` option to run on yarn cluster, environment variable `HADOOP_CONF_DIR` should be set correctly.
 
 To verify the accuracy, search "accuracy" from log:
 
