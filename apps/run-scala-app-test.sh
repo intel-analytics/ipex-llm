@@ -58,7 +58,7 @@ echo "# Test 2.1 text-classification-inference:SimpleDriver"
 start=$(date "+%s")
 
 java -cp target/text-classification-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
--DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/apps/model-inference-examples/analytics-zoo-data/data/glove/glove/glove.6B.300d.txt \
+-DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/data/glove/glove/glove.6B.300d.txt \
 -DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl \
 com.intel.analytics.bigdl.apps.textclassfication.inference.SimpleDriver
 
@@ -70,7 +70,7 @@ echo "# Test 2.2 text-classification-inference:WebServiceDriver"
 #timer
 start=$(date "+%s")
 
-mvn spring-boot:run -DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/apps/model-inference-examples/analytics-zoo-data/data/glove/glove/glove.6B.300d.txt \
+mvn spring-boot:run -DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/data/glove/glove/glove.6B.300d.txt \
 -DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl &
 while :
 do
