@@ -22,6 +22,9 @@ import urllib
 #sys.path.insert(0, '.')
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath("../../../python/"))
+sys.path.insert(0, os.path.abspath("../../../python/chronos/src/"))
+sys.path.insert(0, os.path.abspath("../../../python/dllib/src/"))
+sys.path.insert(0, os.path.abspath("../../../python/orca/src/"))
 
 
 # -- Project information -----------------------------------------------------
