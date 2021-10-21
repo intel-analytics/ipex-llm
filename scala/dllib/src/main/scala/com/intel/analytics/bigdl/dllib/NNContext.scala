@@ -17,12 +17,13 @@
 package com.intel.analytics.bigdl.dllib
 
 import com.intel.analytics.bigdl.dllib.utils._
-
 import java.io.InputStream
 import java.util.Properties
 
+import com.intel.analytics.bigdl.dllib.common.zooUtils
 import org.apache.log4j.Logger
 import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext, SparkException}
+
 import sys.env
 
 /**
