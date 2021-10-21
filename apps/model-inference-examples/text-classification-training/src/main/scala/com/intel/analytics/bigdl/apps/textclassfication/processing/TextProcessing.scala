@@ -2,7 +2,7 @@ package com.intel.analytics.bigdl.apps.textclassfication.processing
 
 import java.io.File
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.slf4j.LoggerFactory
 
 import scala.collection.immutable.ListMap

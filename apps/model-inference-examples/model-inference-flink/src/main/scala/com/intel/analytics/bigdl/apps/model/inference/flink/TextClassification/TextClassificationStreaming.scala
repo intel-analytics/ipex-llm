@@ -4,7 +4,7 @@ import scala.collection.JavaConverters._
 import java.util.{List => JList}
 import java.util
 
-import com.intel.analytics.bigdl.serving.pipeline.inference.JTensor
+import com.intel.analytics.bigdl.orca.inference.JTensor
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time

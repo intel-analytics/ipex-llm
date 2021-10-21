@@ -1,7 +1,7 @@
 package com.intel.analytics.bigdl.apps.recommendation.inference;
 
-import com.intel.analytics.bigdl.serving.pipeline.inference.AbstractInferenceModel;
-import com.intel.analytics.bigdl.serving.pipeline.inference.JTensor;
+import com.intel.analytics.bigdl.orca.inference.AbstractInferenceModel;
+import com.intel.analytics.bigdl.orca.inference.JTensor;
 
 import java.util.ArrayList;
 import java.util.List;

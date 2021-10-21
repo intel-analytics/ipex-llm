@@ -1,7 +1,7 @@
 package com.intel.analytics.bigdl.apps.model.inference.flink.ImageClassification
 
-import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BoundingBox
 import com.intel.analytics.bigdl.dllib.feature.image.OpenCVMethod
 import org.opencv.core.Rect
 import org.opencv.imgcodecs.Imgcodecs

@@ -1,6 +1,6 @@
 package com.intel.analytics.bigdl.apps.model.inference.flink.TextClassification
 
-import com.intel.analytics.bigdl.serving.pipeline.inference.InferenceModel
+import com.intel.analytics.bigdl.orca.inference.InferenceModel
 
 class TextClassificationInferenceModel(val supportedConcurrentNum: Int, val stopWordsCount: Int, val sequenceLength: Int, val embeddingFilePath: String)
   extends InferenceModel(supportedConcurrentNum) with Serializable {

@@ -2,18 +2,18 @@ package com.intel.analytics.bigdl.apps.textclassfication.training
 
 import java.io.File
 
-import com.intel.analytics.bigdl.dataset.{Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.optim.{Adagrad, Trigger}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.feature.dataset.{Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dllib.optim.{Adagrad, Trigger}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.apps.textclassfication.processing.TextProcessing
-import com.intel.analytics.bigdl.common.NNContext
-import com.intel.analytics.bigdl.feature.FeatureSet
-import com.intel.analytics.bigdl.serving.pipeline.api.keras.layers._
-import com.intel.analytics.bigdl.serving.pipeline.api.keras.metrics.Accuracy
-import com.intel.analytics.bigdl.serving.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.serving.pipeline.api.keras.objectives.SparseCategoricalCrossEntropy
-import com.intel.analytics.bigdl.serving.pipeline.estimator.Estimator
+import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.feature.FeatureSet
+import com.intel.analytics.bigdl.dllib.keras.layers._
+import com.intel.analytics.bigdl.dllib.keras.metrics.Accuracy
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.objectives.SparseCategoricalCrossEntropy
+import com.intel.analytics.bigdl.dllib.estimator.Estimator
 import org.apache.spark.SparkConf
 import org.slf4j.{Logger, LoggerFactory}
 import scopt.OptionParser
