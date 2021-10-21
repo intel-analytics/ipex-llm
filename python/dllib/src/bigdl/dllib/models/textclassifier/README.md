@@ -28,8 +28,6 @@ $ [/tmp/news20]$ tree . -L 1
 - The example code would automatically download the data during the first run.
 
 ### Run on local
-- [Install from pip](https://bigdl-project.github.io/0.14.0-SNAPSHOT/#PythonUserGuide/install-from-pip/)
-- Optional: check [Run after pip install](https://bigdl-project.github.io/0.14.0-SNAPSHOT/#PythonUserGuide/run-from-pip/)
 - Run the following command locally
 ```
 python textclassifier.py --max_epoch 20 --model cnn
@@ -37,8 +35,6 @@ python textclassifier.py --max_epoch 20 --model cnn
 ```
 
 ### Run on yarn
-- [Install without pip](https://bigdl-project.github.io/0.14.0-SNAPSHOT/#PythonUserGuide/install-without-pip/)
-- Optional: check [Run without pip](https://bigdl-project.github.io/0.14.0-SNAPSHOT/#PythonUserGuide/run-without-pip/)
 - Run the following command
 ```{r, engine='sh'}
 export HADOOP_CONF_DIR=... #Fill the path to your hadoop conf dir
