@@ -13,42 +13,96 @@ You can use _Chronos_ to do:
 ---
 ### **2 Install**
 
-Install analytics-zoo with target `[automl]` to install the additional dependencies for _Chronos_. 
+Install `bigdl-chronos` and with target `[all]` to install the additional dependencies for _Chronos_. 
 
 ```bash
 conda create -n my_env python=3.7
 conda activate my_env
-pip install --pre --upgrade analytics-zoo[automl]
+# stable version
+pip install --upgrade bigdl-chronos[all]
+# nightly built version
+pip install --pre --upgrade bigdl-chronos[all]
 ```
 ---
-### **3 Initialization**
+### **3 Run**
 
-_Chronos_ uses [Orca](../../Orca/Overview/orca.md) to enable distributed training and AutoML capabilities. Init orca as below when you want to:
+_Chronos_ uses [Orca](../../Orca/Overview/orca.md) to enable distributed training and AutoML capabilities. Initial orca as below when you want to:
 
-1. Use the distributed mode of a standalone forecaster.
+1. Use the distributed mode of a forecaster.
 2. Use automl to distributedly tuning your model.
+3. Use `XshardsTSDataset` to process time series dataset in distribution fashion.
+
+Otherwise, there is no need to initialize an orca context.
 
 View [Orca Context](../../Orca/Overview/orca-context.md) for more details. Note that argument `init_ray_on_spark` must be `True` for _Chronos_. 
 
 ```python
-if args.cluster_mode == "local":
-    init_orca_context(cluster_mode="local", cores=4, init_ray_on_spark=True) # run in local mode
-elif args.cluster_mode == "k8s":
-    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, init_ray_on_spark=True) # run on K8s cluster
-elif args.cluster_mode == "yarn":
-    init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, init_ray_on_spark=True) # run on Hadoop YARN cluster
+from bigdl.orca.common import init_orca_context, stop_orca_context
+
+# run in local mode
+init_orca_context(cluster_mode="local", cores=4, init_ray_on_spark=True)
+# run on K8s cluster
+init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, init_ray_on_spark=True)
+# run on Hadoop YARN cluster
+init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, init_ray_on_spark=True)
+
+# >>> Start of Chronos Application >>>
+# ...
+# <<< End of Chronos Application <<<
+
+stop_orca_context()
 ```
 View [Quick Start](../QuickStart/chronos-autotsest-quickstart.md) for a more detailed example. 
 
 ---
+### **4 Get Started**
+This example run a forecasting task with automl optimization with `AutoTSEstimator` on New York City Taxi Dataset.
+
+To run this example, install the following: `pip install --pre --upgrade bigdl-chronos[all]`.
+
+```python
+from bigdl.orca.automl import hp
+from bigdl.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.autots import AutoTSEstimator
+from bigdl.orca import init_orca_context, stop_orca_context
+from sklearn.preprocessing import StandardScaler
+
+# initial orca context
+init_orca_context(cluster_mode="local", cores=4, memory="8g")
+
+# load dataset
+tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='nyc_taxi')
+
+# dataset preprocessing
+stand = StandardScaler()
+for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
+    tsdata.gen_dt_feature().impute()\
+          .scale(stand, fit=tsdata is tsdata_train)
+
+# AutoTSEstimator initalization
+autotsest = AutoTSEstimator(model="tcn",
+                            past_seq_len=hp.randint(50, 200),
+                            future_seq_len=10)
+
+# AutoTSEstimator fitting
+tsppl = autotsest.fit(tsdata_train,
+                      validation_data=tsdata_val)
+
+# Evaluation
+autotsest_mse = tsppl.evaluate(tsdata_test)
+
+# stop orca context
+stop_orca_context()
+```
+---
 <span id="TSDataset"></span>
-### **4 Data Processing and Feature Engineering**
+### **5 Data Processing and Feature Engineering**
 
 Time series data is a special data formulation with its specific operations. _Chronos_ provides [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) as a time series dataset abstract for data processing (e.g. impute, deduplicate, resample, scale/unscale, roll sampling) and auto feature engineering (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods. [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) can be initialized from a pandas dataframe and be directly used in `AutoTSEstimator`. It can also be converted to a pandas dataframe or numpy ndarray for Forecasters and Anomaly Detectors.
 
 [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) is designed for general time series processing while providing many specific operations for the convenience of different tasks(e.g. forecasting, anomaly detection).
 
-#### **4.1 Basic concepts**
+#### **5.1 Basic concepts**
 A time series can be interpreted as a sequence of real value whose order is timestamp. While a time series dataset can be a combination of one or a huge amount of time series. It may contain multiple time series since users may collect different time series in the same/different period of time (e.g. An AIops dataset may have CPU usage ratio and memory usage ratio data for two servers at a period of time. This dataset contains four time series). 
 
 In [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html), we provide **2** possible dimensions to construct a high dimension time series dataset (i.e. **feature dimension** and **id dimension**).
@@ -57,8 +111,8 @@ In [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html), we provide **2** possi
 
 All the preprocessing operations will be done on each independent time series(i.e on both feature dimension and id dimension), while feature scaling will be only carried out on the feature dimension.
 
-#### **4.2 Create a TSDataset**
-Currently [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) only supports initializing from a pandas dataframe through [`TSDataset.from_pandas`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.from_pandas). A typical valid time series dataframe `df` is shown below.
+#### **5.2 Create a TSDataset**
+Currently [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) only supports initializing from a pandas dataframe through [`TSDataset.from_pandas`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_pandas). A typical valid time series dataframe `df` is shown below.
 
 You can initialize a [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) by simply:
 ```python
@@ -80,13 +134,13 @@ tsdata = TSDataset.from_pandas(df,
 `target_col` is a list of all elements along feature dimension, while `id_col` is the identifier that distinguishes the id dimension. `dt_col` is the datetime column. For `extra_feature_col`(not shown in this case), you should list those features that you are not interested for your task (e.g. you will **not** perform forecasting or anomaly detection task on this col).
 
 If you are building a prototype for your forecasting/anomaly detection task and you need to split you dataset to train/valid/test set, you can use `with_split` parameter.[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) supports split with ratio by `val_ratio` and `test_ratio`.
-#### **4.3 Time series dataset preprocessing**
-[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) now supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.impute), [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.deduplicate) and [`resample`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.resample). You may fill the missing point by [`impute`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.impute) in different modes. You may remove the records that are totally the same by [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.deduplicate). You may change the sample frequency by [`resample`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.resample). A typical cascade call for preprocessing is:
+#### **5.3 Time series dataset preprocessing**
+[`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) now supports [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute), [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate) and [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). You may fill the missing point by [`impute`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.impute) in different modes. You may remove the records that are totally the same by [`deduplicate`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.deduplicate). You may change the sample frequency by [`resample`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.resample). A typical cascade call for preprocessing is:
 ```python
 tsdata.deduplicate().resample(interval="2s").impute()
 ```
-#### **4.4 Feature scaling**
-Scaling all features to one distribution is important, especially when we want to train a machine learning/deep learning system. [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) supports all the scalers in sklearn through [`scale`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.scale) and [`unscale`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.unscale) method. Since a scaler should not fit on the validation and test set, a typical call for scaling operations is:
+#### **5.4 Feature scaling**
+Scaling all features to one distribution is important, especially when we want to train a machine learning/deep learning system. [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) supports all the scalers in sklearn through [`scale`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.scale) and [`unscale`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.unscale) method. Since a scaler should not fit on the validation and test set, a typical call for scaling operations is:
 ```python
 from sklearn.preprocessing import StandardScaler
 scale = StandardScaler()
@@ -97,7 +151,7 @@ for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
 for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
     tsdata.unscale()
 ```
-[`unscale_numpy`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.unscale_numpy) is specially designed for forecasters. Users may unscale the output of a forecaster by this operation. A typical call is:
+[`unscale_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.unscale_numpy) is specially designed for forecasters. Users may unscale the output of a forecaster by this operation. A typical call is:
 ```python
 x, y = tsdata_test.scale(scaler)\
                   .roll(lookback=..., horizon=...)\
@@ -107,16 +161,16 @@ unscaled_yhat = tsdata_test.unscale_numpy(yhat)
 unscaled_y = tsdata_test.unscale_numpy(y)
 # calculate metric by unscaled_yhat and unscaled_y
 ```
-#### **4.5 Feature generation**
-Other than historical target data and other extra feature provided by users, some additional features can be generated automatically by [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html). [`gen_dt_feature`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.gen_dt_feature) helps users to generate 10 datetime related features(e.g. MONTH, WEEKDAY, ...). [`gen_global_feature`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.gen_global_feature) and [`gen_rolling_feature`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.gen_rolling_feature) are powered by tsfresh to generate aggregated features (e.g. min, max, ...) for each time series or rolling windows respectively.
-#### **4.6 Sampling and exporting**
+#### **5.5 Feature generation**
+Other than historical target data and other extra feature provided by users, some additional features can be generated automatically by [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html). [`gen_dt_feature`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.gen_dt_feature) helps users to generate 10 datetime related features(e.g. MONTH, WEEKDAY, ...). [`gen_global_feature`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.gen_global_feature) and [`gen_rolling_feature`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.gen_rolling_feature) are powered by tsfresh to generate aggregated features (e.g. min, max, ...) for each time series or rolling windows respectively.
+#### **5.6 Sampling and exporting**
 A time series dataset needs to be sampling and exporting as numpy ndarray/dataloader to be used in machine learning and deep learning models(e.g. forecasters, anomaly detectors, auto models, etc.).
 ```eval_rst
 .. warning::
     You don't need to call any sampling or exporting methods introduced in this section when using `AutoTSEstimator`.
 ```
-##### **4.6.1 Roll sampling**
-Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.to_numpy) or pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.to_torch_data_loader).
+##### **5.6.1 Roll sampling**
+Roll sampling (or sliding window sampling) is useful when you want to train a RR type supervised deep learning forecasting model. It works as the [diagram](#RR-forecast-image) shows. Please refer to the API doc [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll) for detailed behavior. Users can simply export the sampling result as numpy ndarray by [`to_numpy`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_numpy) or pytorch dataloader [`to_torch_data_loader`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.to_torch_data_loader).
 
 ```eval_rst
 .. note:: 
@@ -139,14 +193,14 @@ Roll sampling (or sliding window sampling) is useful when you want to train a RR
     Please follow the same shape if you use customized data creator.
 ```
 
-A typical call of [`roll`](../../PythonAPI/Chronos/tsdataset.html#zoo.chronos.data.tsdataset.TSDataset.roll) is as following:
+A typical call of [`roll`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.roll) is as following:
 ```python
 # forecaster
 x, y = tsdata.roll(lookback=..., horizon=...).to_numpy()
 forecaster.fit((x, y))
 ```
 
-##### **4.6.2 Pandas Exporting**
+##### **5.6.2 Pandas Exporting**
 Now we support pandas dataframe exporting through `to_pandas()` for users to carry out their own transformation. Here is an example of using only one time series for anomaly detection.
 ```python
 # anomaly detector on "target" col
@@ -156,7 +210,7 @@ anomaly_detector.fit(x)
 View [TSDataset API Doc](../../PythonAPI/Chronos/tsdataset.html#) for more details. 
 
 ---
-### **5 Forecasting** 
+### **6 Forecasting** 
 
 _Chronos_ provides both deep learning/machine learning models and traditional statistical models for forecasting.
 
@@ -182,15 +236,15 @@ There're three ways to do forecasting:
 \*\*\*  Auto tuning of MTNet is only supported in our deprecated AutoTS API.<br>
 
 
-#### **5.1 Time Series Forecasting Concepts**
+#### **6.1 Time Series Forecasting Concepts**
 Time series forecasting is one of the most popular tasks on time series data. **In short, forecasing aims at predicting the future by using the knowledge you can learn from the history.**
 
-##### **5.1.1 Traditional Statistical(TS) Style**
+##### **6.1.1 Traditional Statistical(TS) Style**
 Traditionally, Time series forecasting problem was formulated with rich mathematical fundamentals and statistical models. Typically, one model can only handle one time series and fit on the whole time series before the last observed timestamp and predict the next few steps. Training(fit) is needed every time you change the last observed timestamp.
 
 ![](../Image/forecast-TS.png)
 
-##### **5.1.2 Regular Regression(RR) Style**
+##### **6.1.2 Regular Regression(RR) Style**
 Recent years, common deep learning architectures (e.g. RNN, CNN, Transformer, etc.) are being successfully applied to forecasting problem. Forecasting is transformed to a supervised learning regression problem in this style. A model can predict several time series. Typically, a sampling process based on sliding-window is needed, some terminology is explained as following:
 
 - `lookback` / `past_seq_len`: the length of historical data along time. This number is tunable.
@@ -201,27 +255,27 @@ Recent years, common deep learning architectures (e.g. RNN, CNN, Transformer, et
 <span id="RR-forecast-image"></span>
 ![](../Image/forecast-RR.png)
 
-#### **5.2 Use AutoTS Pipeline**
+#### **6.2 Use AutoTS Pipeline**
 For AutoTS Pipeline, we will leverage `AutoTSEstimator`, `TSPipeline` and preferably `TSDataset`. A typical usage of AutoTS pipeline basically contains 3 steps.
 1. Prepare a `TSDataset` or customized data creator.
 2. Init a `AutoTSEstimator` and call `.fit()` on the data.
 3. Use the returned `TSPipeline` for further development.
 ```eval_rst
 .. warning::
-    `AutoTSTrainer` workflow has been deprecated, no feature updates or performance improvement will be carried out. Users of `AutoTSTrainer` may refer to `Chronos API doc <https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autots.html>`_.
+    `AutoTSTrainer` workflow has been deprecated, no feature updates or performance improvement will be carried out. Users of `AutoTSTrainer` may refer to `Chronos API doc <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autots.html>`_.
 ```
 ```eval_rst
 .. note::
     `AutoTSEstimator` currently only support pytorch backend.
 ```
-View [Quick Start](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for a more detailed example.
+View [Quick Start](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for a more detailed example.
 
-##### **5.2.1 Prepare dataset**
+##### **6.2.1 Prepare dataset**
 `AutoTSEstimator` support 2 types of data input. 
 
 You can easily prepare your data in `TSDataset` (recommended). You may refer to [here](#TSDataset) for the detailed information to prepare your `TSDataset` with proper data processing and feature generation. Here is a typical `TSDataset` preparation.
 ```python
-from zoo.chronos.data import TSDataset
+from bigdl.chronos.data import TSDataset
 from sklearn.preprocessing import StandardScaler
 
 tsdata_train, tsdata_val, tsdata_test\
@@ -239,11 +293,11 @@ from torch.utils.data import DataLoader
 def training_data_creator(config):
     return Dataloader(..., batch_size=config['batch_size'])
 ```
-##### **5.2.2 Create an AutoTSEstimator**
+##### **6.2.2 Create an AutoTSEstimator**
 `AutoTSEstimator` depends on the [Distributed Hyper-parameter Tuning](../../Orca/Overview/distribute-tuning.html) supported by Project Orca. It also provides time series only functionalities and optimization. Here is a typical initialization process.
 ```python
-import zoo.orca.automl.hp as hp
-from zoo.chronos.autots import AutoTSEstimator
+import bigdl.orca.automl.hp as hp
+from bigdl.chronos.autots import AutoTSEstimator
 auto_estimator = AutoTSEstimator(model='lstm',
                                  search_space='normal',
                                  past_seq_len=hp.randint(1, 10),
@@ -255,7 +309,7 @@ We prebuild three defualt search space for each build-in model, which you can us
 `past_seq_len` can be set as a hp sample function, the proper range is highly related to your data. A range between 0.5 cycle and 3 cycle is reasonable.
 
 `selected_features` is set to "auto" by default, where the `AutoTSEstimator` will find the best subset of extra features to help the forecasting task.
-##### **5.2.3 Fit on AutoTSEstimator**
+##### **6.2.3 Fit on AutoTSEstimator**
 Fitting on `AutoTSEstimator` is fairly easy. A `TSPipeline` will be returned once fitting is completed.
 ```python
 ts_pipeline = auto_estimator.fit(data=tsdata_train,
@@ -263,8 +317,8 @@ ts_pipeline = auto_estimator.fit(data=tsdata_train,
                                  batch_size=hp.randint(32, 64),
                                  epochs=5)
 ```
-Detailed information and settings please refer to [AutoTSEstimator API doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autotsestimator.html#id1).
-##### **5.2.4 Development on TSPipeline**
+Detailed information and settings please refer to [AutoTSEstimator API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autotsestimator.html#id1).
+##### **6.2.4 Development on TSPipeline**
 You may carry out predict, evaluate, incremental training or save/load for further development.
 ```python
 # predict with the best trial
@@ -280,7 +334,7 @@ my_ppl_file_path = "/tmp/saved_pipeline"
 ts_pipeline.save(my_ppl_file_path)
 
 # restore the pipeline for further deployment
-from zoo.chronos.autots import TSPipeline
+from bigdl.chronos.autots import TSPipeline
 loaded_ppl = TSPipeline.load(my_ppl_file_path)
 ```
 Detailed information please refer to [TSPipeline API doc](../../PythonAPI/Chronos/autotsestimator.html#tspipeline).
@@ -294,7 +348,7 @@ Detailed information please refer to [TSPipeline API doc](../../PythonAPI/Chrono
     Incremental fitting on TSPipeline just update the model weights the standard way, which does not involve AutoML.
 ```
 
-#### **5.3 Use Standalone Forecaster Pipeline**
+#### **6.3 Use Standalone Forecaster Pipeline**
 
 _Chronos_ provides a set of standalone time series forecasters without AutoML support, including deep learning models as well as traditional statistical models.
 
@@ -313,55 +367,55 @@ The input data can be easily get from `TSDataset`.
 View [Quick Start](../QuickStart/chronos-tsdataset-forecaster-quickstart.md) for a more detailed example. Refer to [API docs](../../PythonAPI/Chronos/forecasters.html) of each Forecaster for detailed usage instructions and examples.
 
 <span id="LSTMForecaster"></span>
-###### **5.3.1 LSTMForecaster**
+###### **6.3.1 LSTMForecaster**
 
 LSTMForecaster wraps a vanilla LSTM model, and is suitable for univariate time series forecasting.
 
 View Network Traffic Prediction [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) and [LSTMForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#lstmforecaster) for more details.
 
 <span id="Seq2SeqForecaster"></span>
-###### **5.3.2 Seq2SeqForecaster**
+###### **6.3.2 Seq2SeqForecaster**
 
 Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suitable for multivariant & multistep time series forecasting.
 
 View [Seq2SeqForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#seq2seqforecaster) for more details.
 
 <span id="TCNForecaster"></span>
-###### **5.3.3 TCNForecaster**
+###### **6.3.3 TCNForecaster**
 
 Temporal Convolutional Networks (TCN) is a neural network that use convolutional architecture rather than recurrent networks. It supports multi-step and multi-variant cases. Causal Convolutions enables large scale parallel computing which makes TCN has less inference time than RNN based model such as LSTM.
 
 View Network Traffic multivariate multistep Prediction [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb) and [TCNForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcnforecaster) for more details.
 
 <span id="MTNetForecaster"></span>
-###### **5.3.4 MTNetForecaster**
+###### **6.3.4 MTNetForecaster**
 
 MTNetForecaster wraps a MTNet model. The model architecture mostly follows the [MTNet paper](https://arxiv.org/abs/1809.02105) with slight modifications, and is suitable for multivariate time series forecasting.
 
 View Network Traffic Prediction [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) and [MTNetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#mtnetforecaster) for more details.
 
 <span id="TCMFForecaster"></span>
-###### **5.3.5 TCMFForecaster**
+###### **6.3.5 TCMFForecaster**
 
 TCMFForecaster wraps a model architecture that follows implementation of the paper [DeepGLO paper](https://arxiv.org/abs/1905.03806) with slight modifications. It is especially suitable for extremely high dimensional (up-to millions) multivariate time series forecasting.
 
 View High-dimensional Electricity Data Forecasting [example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/tcmf/run_electricity.py) and [TCMFForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcmfforecaster) for more details.
 
 <span id="ARIMAForecaster"></span>
-###### **5.3.6 ARIMAForecaster**
+###### **6.3.6 ARIMAForecaster**
 
 ARIMAForecaster wraps a ARIMA model and is suitable for univariate time series forecasting. It works best with data that show evidence of non-stationarity in the sense of mean (and an initial differencing step (corresponding to the "I, integrated" part of the model) can be applied one or more times to eliminate the non-stationarity of the mean function.
 
 View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#arimaforecaster) for more details.
 
 <span id="ProphetForecaster"></span>
-###### **5.3.7 ProphetForecaster**
+###### **6.3.7 ProphetForecaster**
 
 ProphetForecaster wraps the Prophet model ([site](https://github.com/facebook/prophet)) which is an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects and is suitable for univariate time series forecasting. It works best with time series that have strong seasonal effects and several seasons of historical data and is robust to missing data and shifts in the trend, and typically handles outliers well.
 
 View Stock Prediction [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/fsi/stock_prediction_prophet.ipynb) and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#prophetforecaster) for more details.
 
-#### **5.4 Use Auto forecasting model**
+#### **6.4 Use Auto forecasting model**
 Auto forecasting models are designed to be used exactly the same as Forecasters. The only difference is that you can set hp search function to the hyperparameters and the `.fit()` method will search the best hyperparameter setting.
 ```python
 # set hyperparameters in hp search function, loss, metric...
@@ -374,33 +428,33 @@ f.predict(...)
 The input data can be easily get from `TSDataset`. Users can refer to detailed [API doc](../../PythonAPI/Chronos/automodels.html).
 
 ---
-### **6 Anomaly Detection**
+### **7 Anomaly Detection**
 
 Anomaly Detection detects abnormal samples in a given time series. _Chronos_ provides a set of unsupervised anomaly detectors. 
 
 View some examples notebooks for [Datacenter AIOps](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/chronos/use-case/AIOps).
 
-#### **6.1 ThresholdDetector**
+#### **7.1 ThresholdDetector**
 
 ThresholdDetector detects anomaly based on threshold. It can be used to detect anomaly on a given time series ([notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)), or used together with [Forecasters](#forecasting) to detect anomaly on new coming samples ([notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)). 
 
 View [ThresholdDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-th-detector) for more details.
 
 
-#### **6.2 AEDetector**
+#### **7.2 AEDetector**
 
 AEDetector detects anomaly based on the reconstruction error of an autoencoder network. 
 
 View anomaly detection [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb) and [AEDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-ae-detector) for more details.
 
-#### **6.3 DBScanDetector**
+#### **7.3 DBScanDetector**
 
 DBScanDetector uses DBSCAN clustering algortihm for anomaly detection. 
 
 View anomaly detection [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb) and [DBScanDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-dbscan-detector) for more details.
 
 ---
-### **7 Generate Synthetic Data**
+### **8 Generate Synthetic Data**
 
 Chronos provides simulators to generate synthetic time series data for users who want to conquer limited data access in a deep learning/machine learning project or only want to generate some synthetic data to play with.
 
@@ -409,16 +463,16 @@ Chronos provides simulators to generate synthetic time series data for users who
     DPGANSimulator is the only simulator chronos provides at the moment, more simulators are on their way.
 ```
 
-#### **7.1 DPGANSimulator**
+#### **8.1 DPGANSimulator**
 `DPGANSimulator` adopt DoppelGANger raised in [Using GANs for Sharing Networked Time Series Data: Challenges, Initial Promise, and Open Questions](http://arxiv.org/abs/1909.13403). The method is data-driven unsupervised method based on deep learning model with GAN (Generative Adversarial Networks) structure. The model features a pair of seperate attribute generator and feature generator and their corresponding discriminators `DPGANSimulator` also supports a rich and comprehensive input data (training data) format and outperform other algorithms in many evalution metrics.
 
-Users may refer to detailed [API doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/simulator.html#module-zoo.chronos.simulator.doppelganger_simulator).
+Users may refer to detailed [API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/simulator.html#module-bigdl.chronos.simulator.doppelganger_simulator).
 
 ---
-### **8 Useful Functionalities**
+### **9 Useful Functionalities**
 
 <span id="Visualization"></span>
-#### **8.1 AutoML Visualization**
+#### **9.1 AutoML Visualization**
 
 AutoML visualization provides two kinds of visualization. You may use them while fitting on auto models or AutoTS pipeline.
 * During the searching process, the visualizations of each trail are shown and updated every 30 seconds. (Monitor view)
@@ -468,7 +522,7 @@ You can enable a tensorboard view in jupyter notebook by the following code.
 %tensorboard --logdir <logs_dir>/<name>_leaderboard/
 ```
 
-#### **8.2 ONNX/ONNX Runtime support**
+#### **9.2 ONNX/ONNX Runtime support**
 Users may export their trained(w/wo auto tuning) model to ONNX file and deploy it on other service. Chronos also provides an internal onnxruntime inference support for those **users who pursue low latency and higher throughput during inference on a single node**.
 
 LSTM, TCN and Seq2seq has supported onnx in their forecasters, auto models and AutoTS. When users use these built-in models, they may call `predict_with_onnx`/`evaluate_with_onnx` for prediction or evaluation. They may also call `export_onnx_file` to export the onnx model file and `build_onnx` to change the onnxruntime's setting(not necessary).
@@ -478,7 +532,7 @@ f = Forecaster(...)
 f.fit(...)
 f.predict_with_onnx(...)
 ```
-#### **8.3 Distributed training**
+#### **9.3 Distributed training**
 LSTM, TCN and Seq2seq users can easily train their forecasters in a distributed fashion to **handle extra large dataset and utilize a cluster**. The functionality is powered by Project Orca.
 ```python
 f = Forecaster(..., distributed=True)
@@ -487,7 +541,7 @@ f.predict(...)
 f.to_local()  # collect the forecaster to single node
 f.predict_with_onnx(...)  # onnxruntime only supports single node
 ```
-#### **8.4 XShardsTSDataset**
+#### **9.4 XShardsTSDataset**
 ```eval_rst
 .. warning::
     `XShardsTSDataset` is still experimental.
@@ -509,7 +563,7 @@ f.fit(tsdata_xshards, ...)
 f.predict(test_tsdata_xshards, ...)
 ```
 
-### **9 Examples and Demos**
+### **10 Examples and Demos**
 - Quickstarts
     - [Use AutoTSEstimator for Time-Series Forecasting](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html)
     - [Use TSDataset and Forecaster for Time-Series Forecasting](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.html)
