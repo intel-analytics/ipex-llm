@@ -41,7 +41,7 @@ ${SPARK_HOME}/bin/spark-shell \
     --batchSize 2000 --nbEpoch 2 \
     --trainDataDir "${BIGDL_ROOT}/data/news20/20news-18828" \
     --embeddingFile "${BIGDL_ROOT}/data/glove/glove/glove.6B.300d.txt" \
-    --modelSaveDirPath "models/text-classification.bigdl"
+    --modelSaveDirPath "${BIGDL_ROOT}/models/text-classification.bigdl"
 
 now=$(date "+%s")
 time1=$((now-start))
@@ -59,7 +59,7 @@ start=$(date "+%s")
 
 java -cp target/text-classification-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 -DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/data/glove/glove/glove.6B.300d.txt \
--DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl \
+-DMODEL_PATH=${BIGDL_ROOT}/models/text-classification.bigdl \
 com.intel.analytics.bigdl.apps.textclassfication.inference.SimpleDriver
 
 now=$(date "+%s")
