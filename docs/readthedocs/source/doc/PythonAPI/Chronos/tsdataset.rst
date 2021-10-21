@@ -1,7 +1,7 @@
-TSDataset
+TsDataset
 ===========
 
-chronos.data.tsdataset
+Tsdataset
 ----------------------------------------
 
 Time series data is a special data formulation with specific operations. TSDataset is an abstract of time series dataset, which provides various data processing operations (e.g. impute, deduplicate, resample, scale/unscale, roll) and feature engineering methods (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods.
@@ -12,7 +12,7 @@ TSDataset can be initialized from a pandas dataframe and be converted to a panda
     :undoc-members:
     :show-inheritance:
 
-chronos.data.experimental.xshards_tsdataset
+Xshards_tsdataset
 ----------------------------------------
 
 Time series data is a special data formulation with specific operations. XShardsTSDataset is an abstract of time series dataset, which provides various data processing operations (e.g. impute, deduplicate, resample, scale/unscale, roll) and feature engineering methods (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods.

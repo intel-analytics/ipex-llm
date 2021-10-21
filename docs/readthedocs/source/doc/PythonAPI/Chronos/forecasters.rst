@@ -102,7 +102,7 @@ For the detailed algorithm description, please refer to `here <https://github.co
     :show-inheritance:
     
     
-chronos.forecast.tfpark_forecaster
+TFPark_forecaster
 ----------------------------------------
 
 .. automodule:: bigdl.chronos.forecaster.tfpark_forecaster
@@ -110,7 +110,7 @@ chronos.forecast.tfpark_forecaster
     :undoc-members:
     :show-inheritance:
 
-chronos.forecast.base_forecaster.BasePytorchForecaster
+BasePytorchForecaster
 ----------------------------------------
 
 .. autoclass:: bigdl.chronos.forecaster.base_forecaster.BasePytorchForecaster
