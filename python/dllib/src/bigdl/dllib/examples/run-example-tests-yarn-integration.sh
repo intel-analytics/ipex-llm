@@ -5,7 +5,7 @@ clear_up() {
 }
 
 
-"#3 start test for dllib textclassifier"
+echo "#3 start test for dllib textclassifier"
 #timer
 start=$(date "+%s")
 #run the example
@@ -22,15 +22,15 @@ fi
 now=$(date "+%s")
 time3=$((now - start))
 
-"start test for dllib rnn"
-"start test for dllib custom"
-"start test for dllib custom loss"
-"start test for dllib imageframe inception validation"
-"start test for dllib keras imdb bigdl backend"
-"start test for dllib keras imdb cnn lstm"
-"start test for dllib keras mnist cnn"
-"start test for dllib nnframes image transfer learning"
-"start test for dllib nnframes image inference"
+echo "start test for dllib rnn"
+echo "start test for dllib custom"
+echo "start test for dllib custom loss"
+echo "start test for dllib imageframe inception validation"
+echo "start test for dllib keras imdb bigdl backend"
+echo "start test for dllib keras imdb cnn lstm"
+echo "start test for dllib keras mnist cnn"
+echo "start test for dllib nnframes image transfer learning"
+echo "start test for dllib nnframes image inference"
 
 echo "#1 start test for dllib lenet5"
 
