@@ -42,7 +42,7 @@ To install latest nightly build, use ```pip install --pre --upgrade bigdl```; se
 First, call `initNNContext` at the beginning of the code: 
 
 ```scala
-import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.NNContext
 val sc = NNContext.initNNContext()
 ```
 
