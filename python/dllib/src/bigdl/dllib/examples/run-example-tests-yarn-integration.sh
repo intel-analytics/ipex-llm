@@ -6,6 +6,22 @@ clear_up() {
 
 
 "#3 start test for dllib textclassifier"
+#timer
+start=$(date "+%s")
+#run the example
+rm -rf /tmp/news20
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/text_data /tmp/news20
+ls /tmp/news20
+python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/models/textclassifier/textclassifier.py --on-yarn --max_epoch 3 --model cnn
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "dllib textclassifier failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time3=$((now - start))
+
 "start test for dllib rnn"
 "start test for dllib custom"
 "start test for dllib custom loss"
