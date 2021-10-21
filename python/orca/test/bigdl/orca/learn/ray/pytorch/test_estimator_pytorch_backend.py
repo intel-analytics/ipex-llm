@@ -26,7 +26,7 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.learn.metrics import Accuracy
 
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
@@ -175,7 +175,7 @@ class TestPyTorchEstimator(TestCase):
         estimator.shutdown()
 
     def test_spark_xshards(self):
-        from bigdl.dllib.utils.nncontext import init_nncontext
+        from bigdl.dllib.nncontext import init_nncontext
         from bigdl.orca.data import SparkXShards
         estimator = get_estimator(workers_per_node=1)
         sc = init_nncontext()

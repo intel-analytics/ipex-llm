@@ -17,7 +17,7 @@
 from pyspark import SparkContext
 from pyspark.sql import SparkSession
 
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.file import open_text, write_text
 from bigdl.orca.data.image.utils import chunks, dict_to_row, row_to_dict, encode_schema, \

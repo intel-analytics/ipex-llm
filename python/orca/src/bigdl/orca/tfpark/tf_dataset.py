@@ -25,7 +25,7 @@ from bigdl.dllib.feature.transform.vision.image import FeatureTransformer
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.utils.file_utils import Sample, JTensor
-from bigdl.dllib.utils.nncontext import getOrCreateSparkContext
+from bigdl.dllib.nncontext import getOrCreateSparkContext
 from bigdl.dllib.feature.common import FeatureSet, SampleToMiniBatch, Preprocessing
 from bigdl.dllib.feature.image import ImagePreprocessing, ImageFeatureToSample
 from bigdl.dllib.utils import nest

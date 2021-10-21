@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.common
+package com.intel.analytics.bigdl.dllib
 
 import com.intel.analytics.bigdl.dllib.utils._
 

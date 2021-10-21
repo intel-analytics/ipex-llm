@@ -25,7 +25,7 @@ from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.utils.common import EvaluatedResult
 from test.bigdl.test_zoo_utils import ZooTestCase
 from bigdl.dllib.feature.common import FeatureSet
-from bigdl.dllib.utils.nncontext import init_nncontext, init_spark_conf
+from bigdl.dllib.nncontext import init_nncontext, init_spark_conf
 from bigdl.dllib.utils.file_utils import Sample
 
 

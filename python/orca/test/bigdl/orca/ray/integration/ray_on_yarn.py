@@ -17,7 +17,7 @@
 
 import ray
 
-from bigdl.dllib.utils.nncontext import init_spark_on_yarn
+from bigdl.dllib.nncontext import init_spark_on_yarn
 from bigdl.orca.ray import RayContext
 
 slave_num = 2
