@@ -102,7 +102,7 @@ For the detailed algorithm description, please refer to `here <https://github.co
     :show-inheritance:
     
     
-TFPark_forecaster
+TFParkForecaster
 ----------------------------------------
 
 .. automodule:: bigdl.chronos.forecaster.tfpark_forecaster
