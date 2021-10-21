@@ -49,7 +49,6 @@ if [ "$platform" ==  "mac" ]; then
     # Todo: append dylibs
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
-    apt-get install patchelf
     FRAMEWORK_SO="$(readlink -f linux-x86_64/libtensorflow_framework.so)"
     rm linux-x86_64/libtensorflow_framework.so
     rm linux-x86_64/libtensorflow_framework.so.1
