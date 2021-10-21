@@ -148,6 +148,7 @@ RUN mkdir -p /opt/bigdl-examples/python && \
     pip install --no-cache-dir cmake==3.16.3 && \
     pip install --no-cache-dir torch==1.7.1 torchvision==0.8.2 && \
     pip install --no-cache-dir horovod==0.19.2 && \
+    pip install --no-cache-dir xgboost && \
 #tf2
     pip install --no-cache-dir pyarrow && \
     pip install opencv-python==4.2.0.34 && \
