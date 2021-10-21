@@ -1,17 +1,17 @@
-GRAPHENEDIR ?= /graphene
-SGX_SIGNER_KEY ?= /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+GRAPHENEDIR ?= ../..
+SGX_SIGNER_KEY ?= $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem
 ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
+
+G_JAVA_XMX ?= 2G
+G_SGX_SIZE ?= 8G
+G_SGX_THREAD_NUM ?= 256
 
 THIS_DIR ?= /ppml/trusted-big-data-ml
 JDK_HOME ?= /opt/jdk8
 SPARK_HOME ?= $(THIS_DIR)/work/spark-3.1.2
+WORK_DIR ?= $(THIS_DIR)/work
 SPARK_USER ?= root
 SPARK_LOCAL_IP ?= 127.0.0.1
-WORK_DIR ?= $(THIS_DIR)/work
-
-G_JAVA_XMX ?= 2G
-G_SGX_SIZE ?= 65536M
-G_SGX_THREAD_NUM ?= 256
 
 ifeq ($(DEBUG),1)
 GRAPHENE_LOG_LEVEL = debug
@@ -20,65 +20,63 @@ GRAPHENE_LOG_LEVEL = error
 endif
 
 .PHONY: all
-all: bash.manifest
+all: bash.manifest | pal_loader
 ifeq ($(SGX),1)
-all: bash.manifest.sgx bash.sig bash.token
+all: bash.token
 endif
 
+include $(GRAPHENEDIR)/Scripts/Makefile.configs
+PYTHONVERSION = python3.6
+include /graphene/Scripts/Makefile.python
+
 bash.manifest: bash.manifest.template
-	graphene-manifest \
-                -Dsgx_enclave_size=$(G_SGX_SIZE) \
-                -Dlog_level=$(GRAPHENE_LOG_LEVEL) \
-                -Dexecdir=$(shell dirname $(shell which bash)) \
-                -Darch_libdir=$(ARCH_LIBDIR) \
-                -Djdk_home=$(JDK_HOME) \
-                -Dspark_local_ip=$(SPARK_LOCAL_IP) \
-                -Dspark_user=$(SPARK_USER) \
-                -Dspark_home=$(SPARK_HOME) \
-                -Dwork_dir=$(WORK_DIR) \
-                $< >$@
+	sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
+             -e 's|$$(GRAPHENE_LOG_LEVEL)|'"$(GRAPHENE_LOG_LEVEL)"'|g' \
+             -e 's|$$(EXECPATH)|'"$(shell which bash)"'|g' \
+             -e 's|$$(EXECDIR)|'"$(shell dirname $(shell which bash))"'|g' \
+             -e 's|$$(ARCH_LIBDIR)|'"$(ARCH_LIBDIR)"'|g' \
+             -e 's|$$(JDK_HOME)|'"$(JDK_HOME)"'|g' \
+             -e 's|$$(SPARK_HOME)|'"$(SPARK_HOME)"'|g' \
+             -e 's|$$(SPARK_LOCAL_IP)|'"$(SPARK_LOCAL_IP)"'|g' \
+             -e 's|$$(SPARK_USER)|'"$(SPARK_USER)"'|g' \
+             -e 's|$$(WORK_DIR)|'"$(WORK_DIR)"'|g' \
+             -e 's|$$(PYTHONDISTHOME)|'"$(PYTHONDISTHOME)"'|g' \
+             -e 's|$$(PYTHONHOME)|'"$(PYTHONHOME)"'|g' \
+             -e 's|$$(PYTHONEXEC)|'"$(PYTHONEXEC)"'|g' \
+             -e 's|$$(G_SGX_SIZE)|'"$(G_SGX_SIZE)"'|g' \
+             $< > $@
 
 bash.manifest.sgx: bash.manifest
-	@test -s $(SGX_SIGNER_KEY) || \
-            { echo "SGX signer private key was not found, please specify SGX_SIGNER_KEY!"; exit 1; }
-	graphene-sgx-sign \
-                --key $(SGX_SIGNER_KEY) \
-                --libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
-                --manifest bash.manifest \
-                --output $@
+	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
+                -libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
+                -key $(SGX_SIGNER_KEY) \
+                -manifest $< -output $@
 
 bash.sig: bash.manifest.sgx
 
 bash.token: bash.sig
-	graphene-sgx-get-token --output bash.token --sig bash.sig
-
-ifeq ($(SGX),)
-GRAPHENE = graphene-direct
-else
-GRAPHENE = graphene-sgx
-endif
+	$(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
+                -output bash.token -sig bash.sig
+pal_loader:
+	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
 
 .PHONY: regression
 regression: all
 	@mkdir -p scripts/testdir
 
-	$(GRAPHENE) ./bash -c "ls" > OUTPUT
-	@grep -q "Makefile" OUTPUT && echo "[ Success 1/7 ]"
+	./pal_loader ./bash -c "ls" > OUTPUT
+	@grep -q "Makefile" OUTPUT && echo "[ Success 1/6 ]"
 	@rm OUTPUT
 
-	$(GRAPHENE) ./bash -c "cd scripts && bash bash_test.sh 1" > OUTPUT
-	@grep -q "hello 1" OUTPUT      && echo "[ Success 2/7 ]"
-	@grep -q "createdfile" OUTPUT  && echo "[ Success 3/7 ]"
-	@grep -q "somefile" OUTPUT     && echo "[ Success 4/7 ]"
-	@grep -q "current date" OUTPUT && echo "[ Success 5/7 ]"
+	./pal_loader ./bash -c "cd scripts && bash bash_test.sh 1" > OUTPUT
+	@grep -q "hello 1" OUTPUT      && echo "[ Success 2/6 ]"
+	@grep -q "createdfile" OUTPUT  && echo "[ Success 3/6 ]"
+	@grep -q "somefile" OUTPUT     && echo "[ Success 4/6 ]"
+	@grep -q "current date" OUTPUT && echo "[ Success 5/6 ]"
 	@rm OUTPUT
 
-	$(GRAPHENE) ./bash -c "cd scripts && bash bash_test.sh 3" > OUTPUT
-	@grep -q "hello 3" OUTPUT      && echo "[ Success 6/7 ]"
-	@rm OUTPUT
-
-	$(GRAPHENE) ./bash -c "readlink /proc/self/exe" > OUTPUT
-	@grep -qE "^(/usr)?/bin/readlink" OUTPUT && echo "[ Success 7/7 ]"
+	./pal_loader ./bash -c "cd scripts && bash bash_test.sh 3" > OUTPUT
+	@grep -q "hello 3" OUTPUT      && echo "[ Success 6/6 ]"
 	@rm OUTPUT
 
 	@rm -rf scripts/testdir
@@ -86,7 +84,7 @@ regression: all
 
 .PHONY: clean
 clean:
-	$(RM) *.manifest *.manifest.sgx *.token *.sig OUTPUT scripts/testdir/*
+	$(RM) *.manifest *.manifest.sgx *.token *.sig trusted-libs pal_loader OUTPUT scripts/testdir/*
 
 .PHONY: distclean
 distclean: clean
