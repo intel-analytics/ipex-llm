@@ -9,7 +9,7 @@ AutoTSTrainer
 
 AutoTSTrainer trains a time series pipeline (including data processing, feature engineering, and model) with AutoML.
 
-.. autoclass:: bigdlchronos.autots.deprecated.forecast.AutoTSTrainer
+.. autoclass:: bigdl.chronos.autots.deprecated.forecast.AutoTSTrainer
     :members:
     :show-inheritance:
 
@@ -19,7 +19,7 @@ TSPipeline
 
 A pipeline for time series forecasting.
 
-.. autoclass:: bigdlchronos.autots.deprecated.forecast.TSPipeline
+.. autoclass:: bigdl.chronos.autots.deprecated.forecast.TSPipeline
     :members:
     :show-inheritance:
 
@@ -29,58 +29,58 @@ Recipe
 
 Recipe is used for search configuration for AutoTSTrainer.
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.SmokeRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.SmokeRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.MTNetSmokeRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.MTNetSmokeRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.TCNSmokeRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.TCNSmokeRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.PastSeqParamHandler
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.PastSeqParamHandler
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.GridRandomRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.GridRandomRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.LSTMSeq2SeqRandomRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.LSTMSeq2SeqRandomRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.LSTMGridRandomRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.LSTMGridRandomRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.Seq2SeqRandomRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.Seq2SeqRandomRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.MTNetGridRandomRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.MTNetGridRandomRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.TCNGridRandomRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.TCNGridRandomRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.RandomRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.RandomRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.BayesRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.BayesRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.XgbRegressorGridRandomRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.XgbRegressorGridRandomRecipe
     :members:
     :show-inheritance:
 
-.. autoclass:: bigdlchronos.autots.deprecated.config.recipe.XgbRegressorSkOptRecipe
+.. autoclass:: bigdl.chronos.autots.deprecated.config.recipe.XgbRegressorSkOptRecipe
     :members:
     :show-inheritance:
