@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml;
 
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import com.intel.analytics.bigdl.ppml.psi.PSIServiceImpl;
-// import com.intel.analytics.bigdl.ppml.vfl.NNServiceImpl;
+import com.intel.analytics.bigdl.ppml.vfl.NNServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +46,11 @@ public class FLServer extends GrpcServerBase {
         }
         // start all services without providing service list
         serverServices.add(new PSIServiceImpl());
-//        serverServices.add(new NNServiceImpl());
+        serverServices.add(new NNServiceImpl());
     }
 
     public static void main(String[] args) throws Exception {
         FLServer flServer = new FLServer(args);
-        flServer.parseConfig();
         // Set aggregator here
         flServer.build();
         flServer.start();

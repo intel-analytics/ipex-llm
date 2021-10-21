@@ -18,8 +18,8 @@ package com.intel.analytics.bigdl.ppml;
 
 import com.intel.analytics.bigdl.grpc.GrpcClientBase;
 import com.intel.analytics.bigdl.ppml.generated.FLProto;
-// import com.intel.analytics.bigdl.ppml.vfl.NNStub;
 import com.intel.analytics.bigdl.ppml.psi.PSIStub;
+import com.intel.analytics.bigdl.ppml.vfl.NNStub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ public class FLClient extends GrpcClientBase {
      * VFL includes Private Set Intersection, Neural Network, Gradient Boosting
      */
     public PSIStub psiStub;
-//    public NNStub nnStub;
+    public NNStub nnStub;
     public FLClient() { this(null); }
     public FLClient(String[] args) {
         super(args);
@@ -54,7 +54,7 @@ public class FLClient extends GrpcClientBase {
     @Override
     public void loadServices() {
         psiStub = new PSIStub(channel, taskID);
-//        nnStub = new NNStub(channel, clientUUID);
+        nnStub = new NNStub(channel, clientUUID);
     }
 
     public void shutdown() {
@@ -81,15 +81,15 @@ public class FLClient extends GrpcClientBase {
         return psiStub.downloadIntersection();
     }
     // NN stub
-//    public FLProto.DownloadResponse downloadTrain(String modelName, int flVersion) {
-//        return nnStub.downloadTrain(modelName, flVersion);
-//    }
-//    public FLProto.UploadResponse uploadTrain(FLProto.Table data) {
-//        return nnStub.uploadTrain(data);
-//    }
-//    public FLProto.EvaluateResponse evaluate(FLProto.Table data, boolean lastBatch) {
-//        return nnStub.evaluate(data, lastBatch);
-//    }
+    public FLProto.DownloadResponse downloadTrain(String modelName, int flVersion) {
+        return nnStub.downloadTrain(modelName, flVersion);
+    }
+    public FLProto.UploadResponse uploadTrain(FLProto.Table data) {
+        return nnStub.uploadTrain(data);
+    }
+    public FLProto.EvaluateResponse evaluate(FLProto.Table data, boolean lastBatch) {
+        return nnStub.evaluate(data, lastBatch);
+    }
 
 
 }

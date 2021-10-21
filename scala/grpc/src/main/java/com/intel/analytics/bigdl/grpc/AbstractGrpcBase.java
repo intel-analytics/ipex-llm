@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.grpc;
 
 import org.apache.commons.cli.*;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
@@ -28,6 +29,7 @@ public abstract class AbstractGrpcBase {
 
     protected <T> T getConfigFromYaml(Class<T> valueType, String defaultConfigPath)
             throws IOException {
+        Logger logger = Logger.getLogger(getClass().getName());
         options.addOption(new Option(
                 "c", "config", true, "config path"));
         CommandLineParser parser = new DefaultParser();
@@ -44,13 +46,18 @@ public abstract class AbstractGrpcBase {
         assert cmd != null;
         configPath = cmd.getOptionValue("config", defaultConfigPath);
         if (configPath != null) {
-            System.out.println("Load config from " + configPath);
+            logger.info("Load config from " + configPath);
             // config YAML passed, use config YAML first, command-line could overwrite
             assert valueType != null;
-            return ConfigParser.loadConfigFromPath(configPath, valueType);
+            try {
+                return ConfigParser.loadConfigFromPath(configPath, valueType);
+            } catch (IOException e) {
+                return null;
+            }
+
         }
         else {
-            System.out.println("Config is not provided, using default");
+            logger.info("Config is not provided, using default");
             return null;
         }
     }
