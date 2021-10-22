@@ -57,4 +57,4 @@ SERVING_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/serving/dev; pwd)"
 echo $SERVING_SCRIPT_DIR
 bash ${SERVING_SCRIPT_DIR}/release.sh ${version} ${upload}
 
-# TODO: whether need to upload all whls in the very end at the same time?
+# TODO: may need to upload all whls in the very end at the same time in case any build fails?
