@@ -27,7 +27,7 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType, 
 
 from bigdl.orca import OrcaContext
 from bigdl.friesian.feature import FeatureTable, StringIndex, TargetCode
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 
 
 class TestTable(TestCase):

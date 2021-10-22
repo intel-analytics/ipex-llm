@@ -17,7 +17,7 @@ import sys
 
 import tensorflow as tf
 import numpy as np
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import KerasModel, TFDataset
 
 

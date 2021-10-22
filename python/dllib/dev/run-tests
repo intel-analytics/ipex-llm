@@ -33,15 +33,15 @@ do
     export PYTHON_EXECUTABLE=$p
     export PYSPARK_PYTHON=$p
     export PYSPARK_DRIVER_PYTHON=$p
-    $p -m pytest -v --junitxml result_bigdl_${p}.xml --doctest-modules ../../../dllib/src/bigdl \
-    --ignore=../../../dllib/src/bigdl/dllib/feature/dataset/ \
-    --ignore=../../../dllib/src/bigdl/dllib/utils/tf_utils.py \
-    --ignore=../../../dllib/src/bigdl/dllib/examples/ \
-    --ignore=../../../dllib/src/bigdl/dllib/models/ && \
-    $p -m pytest -v --junitxml result_test_${p}.xml  ../../../../python/dllib/test/ \
-    --ignore=../../../dllib/test/bigdl/caffe/ \
-    --ignore=../../../dllib/test/bigdl/test_utils.py \
-    --ignore=../../../dllib/test/bigdl/test_zoo_util.py
+    $p -m pytest -v --junitxml result_bigdl_${p}.xml --doctest-modules ../../dllib/src/bigdl \
+    --ignore=../../dllib/src/bigdl/dllib/feature/dataset/ \
+    --ignore=../../dllib/src/bigdl/dllib/utils/tf_utils.py \
+    --ignore=../../dllib/src/bigdl/dllib/examples/ \
+    --ignore=../../dllib/src/bigdl/dllib/models/ && \
+    $p -m pytest -v --junitxml result_test_${p}.xml  ../../../python/dllib/test/ \
+    --ignore=../../dllib/test/bigdl/caffe/ \
+    --ignore=../../dllib/test/bigdl/test_utils.py \
+    --ignore=../../dllib/test/bigdl/test_zoo_util.py
 
     exit_status=$?
     if [ $exit_status -ne 0 ];

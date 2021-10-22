@@ -15,7 +15,7 @@
 #
 from optparse import OptionParser
 import tensorflow as tf
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset, TFPredictor
 import numpy as np
 import sys

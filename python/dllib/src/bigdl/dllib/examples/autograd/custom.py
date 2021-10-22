@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.keras.autograd import *
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.keras.models import *

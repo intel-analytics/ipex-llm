@@ -27,7 +27,7 @@ echo $BIGDL_PYTHON_DIR
 if (( $# < 4)); then
   echo "Usage: release.sh platform version quick_build upload mvn_parameters"
   echo "Usage example: bash release.sh linux default false true"
-  echo "Usage example: bash release.sh linux 0.14.0.dev1 true true"
+  echo "Usage example: bash release.sh mac 0.14.0.dev1 true true"
   echo "If needed, you can also add other profiles such as: -Dspark.version=2.4.6 -P spark_2.x"
   exit -1
 fi
@@ -70,7 +70,7 @@ fi
 
 cd $BIGDL_PYTHON_DIR
 sdist_command="python setup.py sdist"
-echo "packing source code: ${sdist_command}"
+echo "Packing source code: ${sdist_command}"
 $sdist_command
 
 if [ -d "${BIGDL_DIR}/python/friesian/src/build" ]; then
@@ -81,12 +81,16 @@ if [ -d "${BIGDL_DIR}/python/friesian/src/dist" ]; then
    rm -r ${BIGDL_DIR}/python/friesian/src/dist
 fi
 
-wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"
-echo "Packing python distribution:   $wheel_command"
+if [ -d "${BIGDL_DIR}/python/friesian/src/bigdl_friesian.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/friesian/src/bigdl_friesian.egg-info
+fi
+
+wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
+echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload python/friesian/src/dist/bigdl_friesian-${bigdl_version}-py3-none-${verbose_pname}.whl"
-    echo "Please manually upload with this command:  $upload_command"
+    upload_command="twine upload dist/bigdl_friesian-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi

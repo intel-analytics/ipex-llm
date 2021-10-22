@@ -1,4 +1,4 @@
-# Use AutoTSEstimator for Time-Series Forecasting
+# AutoTSEstimator
 
 ---
 
