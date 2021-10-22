@@ -24,7 +24,7 @@ from bigdl.dllib.nn.layer import *
 from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.utils.common import *
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.utils.utils import detect_conda_env_name
 import os
 import datetime as dt

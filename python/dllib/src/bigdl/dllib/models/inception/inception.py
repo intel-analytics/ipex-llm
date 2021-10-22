@@ -21,7 +21,7 @@ from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.nn.initialization_method import *
 from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.feature.transform.vision.image import *
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.utils.utils import detect_conda_env_name
 import os
 from math import ceil
