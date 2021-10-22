@@ -52,7 +52,7 @@ os.environ['PYTHONHOME']="/usr/local"
 Install the latest pre-release version. 
 ```bash
 # Install latest pre-release version of BigDL
-# Installing BigDL from pip will automatically install pyspark, bigdl and their dependencies.
+# Installing BigDL from pip will automatically install all BigDL modules and their dependencies.
 !pip install --pre --upgrade bigdl
 ```
 
