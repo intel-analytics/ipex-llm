@@ -62,3 +62,25 @@ com.intel.analytics.bigdl.apps.textclassfication.inference.SimpleDriver
 now=$(date "+%s")
 time2=$((now-start))
 echo "#App[Model-inference-example] Test 3.1: text-classification-inference:SimpleDriver time used:$time2 seconds"
+
+echo "# Test 2.2 text-classification-inference:WebServiceDriver"
+#timer
+start=$(date "+%s")
+
+mvn spring-boot:run -DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/apps/model-inference-examples/analytics-zoo-data/data/glove/glove/glove.6B.300d.txt \
+-DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl &
+while :
+do
+  curl -d hello -x "" http://localhost:8080/predict > 1.log &
+if [ -n "$(grep "class" ${BIGDL_ROOT}/apps/model-inference-examples/text-classification-inference/1.log)" ];then
+    echo "----Find-----"
+    kill -9 $(ps -ef | grep text-classification | grep -v grep |awk '{print $2}')
+    rm 1.log
+    sleep 1s
+    break
+fi
+done
+
+now=$(date "+%s")
+time3=$((now-start))
+echo "#App[Model-inference-example] Test 3.2: text-classification-inference:WebServiceDriver time used:$time3 seconds"
