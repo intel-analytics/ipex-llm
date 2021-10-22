@@ -34,8 +34,8 @@ def impute_timeseries_dataframe(df,
     '''
     assert dt_col in df.columns, f"dt_col {dt_col} can not be found in df."
     assert pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col"
-    assert mode in ["last", "const", "linear"],\
-        f"mode should be one of [\"last\", \"const\", \"linear\"], but found {mode}."
+    assert mode in ['last', 'const', 'linear'],\
+        f"mode should be one of ['last', 'const', 'linear'], but found {mode}."
 
     res_df = None
     if mode == "last":

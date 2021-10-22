@@ -164,9 +164,9 @@ class BasePytorchForecaster(Forecaster):
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
         if self.distributed:
-            raise NotImplementedError("ONNX inference has not been supported for distributed\
-                                       forecaster. You can call .to_local() to transform the\
-                                       forecaster to a non-distributed version.")
+            raise NotImplementedError("ONNX inference has not been supported for distributed",
+                                      "forecaster. You can call .to_local() to transform the",
+                                      "forecaster to a non-distributed version.")
         if not self.internal.model_built:
             raise RuntimeError("You must call fit or restore first before calling predict!")
         return self.internal.predict_with_onnx(data, batch_size=batch_size, dirname=dirname)
@@ -265,9 +265,9 @@ class BasePytorchForecaster(Forecaster):
         :return: A list of evaluation results. Each item represents a metric.
         """
         if self.distributed:
-            raise NotImplementedError("ONNX inference has not been supported for distributed\
-                                       forecaster. You can call .to_local() to transform the\
-                                       forecaster to a non-distributed version.")
+            raise NotImplementedError("ONNX inference has not been supported for distributed",
+                                      "forecaster. You can call .to_local() to transform the",
+                                      "forecaster to a non-distributed version.")
         if not self.internal.model_built:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
         return self.internal.evaluate_with_onnx(data[0], data[1],
@@ -371,12 +371,12 @@ class BasePytorchForecaster(Forecaster):
         '''
         import onnxruntime
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
-            raise RuntimeError("sess_options should be an onnxruntime.SessionOptions instance"
+            raise RuntimeError("sess_options should be an onnxruntime.SessionOptions instance",
                                f", but f{type(sess_options)}")
         if self.distributed:
-            raise NotImplementedError("build_onnx has not been supported for distributed\
-                                       forecaster. You can call .to_local() to transform the\
-                                       forecaster to a non-distributed version.")
+            raise NotImplementedError("build_onnx has not been supported for distributed",
+                                      "forecaster. You can call .to_local() to transform the",
+                                      "forecaster to a non-distributed version.")
         import torch
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
@@ -392,9 +392,9 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the onnx file.
         """
         if self.distributed:
-            raise NotImplementedError("export_onnx_file has not been supported for distributed\
-                                       forecaster. You can call .to_local() to transform the\
-                                       forecaster to a non-distributed version.")
+            raise NotImplementedError("export_onnx_file has not been supported for distributed",
+                                      "forecaster. You can call .to_local() to transform the",
+                                      "forecaster to a non-distributed version.")
         import torch
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])

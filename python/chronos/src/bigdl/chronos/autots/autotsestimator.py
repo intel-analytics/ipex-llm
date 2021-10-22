@@ -272,9 +272,9 @@ class AutoTSEstimator:
         # append feature selection into search space
         # TODO: more flexible setting
         all_features = train_data.feature_col
-        if self.selected_features not in ("all", "auto"):
-            raise ValueError(f"Only \"all\" and \"auto\" are supported for selected_features,\
-                but found {self.selected_features}")
+        if self.selected_features not in ('all', 'auto'):
+            raise ValueError("Only 'all' and 'auto' are supported for selected_features,",
+                             f"but found {self.selected_features}")
         if self.selected_features == "auto":
             if len(all_features) == 0:
                 search_space['selected_features'] = all_features
