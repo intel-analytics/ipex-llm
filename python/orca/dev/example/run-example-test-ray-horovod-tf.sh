@@ -28,29 +28,29 @@ start=$(date "+%s")
 #  wget -nv $FTP_URI/analytics-zoo-data/yolov3/voc2012.names -P analytics-zoo-data
 #fi
 
-if [ -f analytics-zoo-data/coco.names ]; then
-  echo "analytics-zoo-data/coco.names already exists."
+if [ -f tmp/coco.names ]; then
+  echo "tmp/coco.names already exists."
 else
-  wget -nv $FTP_URI/analytics-zoo-data/yolov3/coco.names -P analytics-zoo-data
+  wget -nv $FTP_URI/analytics-zoo-data/yolov3/coco.names -P tmp
 fi
 
-if [ -f analytics-zoo-data/VOCdevkit.zip ]; then
-  echo "analytics-zoo-data/VOCdevkit.zip already exists."
+if [ -f tmp/VOCdevkit.zip ]; then
+  echo "tmp/VOCdevkit.zip already exists."
 else
-  wget -nv $FTP_URI/analytics-zoo-data/yolov3/VOCdevkit.zip -P analytics-zoo-data
-  unzip -q analytics-zoo-data/VOCdevkit.zip -d analytics-zoo-data/VOCdevkit
+  wget -nv $FTP_URI/analytics-zoo-data/yolov3/VOCdevkit.zip -P tmp
+  unzip -q tmp/VOCdevkit.zip -d tmp/VOCdevkit
 fi
 
-if [ -f analytics-zoo-models/checkpoints.zip ]; then
-  echo "analytics-zoo-models/checkpoints already exists."
+if [ -f models/checkpoints.zip ]; then
+  echo "models/checkpoints already exists."
 else
   wget -nv $FTP_URI/analytics-zoo-models/yolov3/checkpoints.zip \
-    -P analytics-zoo-models
-  unzip -q analytics-zoo-models/checkpoints.zip -d analytics-zoo-models
+    -P models
+  unzip -q models/checkpoints.zip -d models
 fi
 
 echo "yolov3 predict"
-python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/predict.py --checkpoint analytics-zoo-models/checkpoints/yolov3.tf --names analytics-zoo-data/coco.names --class_num 80 --image analytics-zoo-data/VOCdevkit/VOCdevkit/VOC2007/JPEGImages/000005.jpg
+python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/predict.py --checkpoint models/checkpoints/yolov3.tf --names tmp/coco.names --class_num 80 --image tmp/VOCdevkit/VOCdevkit/VOC2007/JPEGImages/000005.jpg
 
 now=$(date "+%s")
 time2=$((now-start))
