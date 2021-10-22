@@ -17,7 +17,7 @@
 #
 
 # This is the default script with maven parameters to release all bigdl packages built on top of
-# Spark 2.4.6 for linux.
+# Spark 2.4.6 for mac.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
@@ -26,9 +26,9 @@ BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../..; pwd)"
 echo $BIGDL_DIR
 
 if (( $# < 2)); then
-  echo "Usage: release_default_linux_spark246.sh version upload"
-  echo "Usage example: bash release_default_linux_spark246.sh default true"
-  echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 false"
+  echo "Usage: release_default_mac_spark246.sh version upload"
+  echo "Usage example: bash release_default_mac_spark246.sh default true"
+  echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 false"
   exit -1
 fi
 
@@ -39,22 +39,18 @@ upload=$2
 # Since make_dist is invoked in dllib, all other packages can directly use quick build.
 DLLIB_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/dllib/dev/release; pwd)"
 echo $DLLIB_SCRIPT_DIR
-bash ${DLLIB_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} false ${upload}
+bash ${DLLIB_SCRIPT_DIR}/release_default_mac_spark246.sh ${version} false ${upload}
 
 ORCA_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/orca/dev/release; pwd)"
 echo $ORCA_SCRIPT_DIR
-bash ${ORCA_SCRIPT_DIR}/all_release_default_linux_spark246.sh ${version} true ${upload}
+bash ${ORCA_SCRIPT_DIR}/all_release_default_mac_spark246.sh ${version} true ${upload}
 
 FRIESIAN_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/friesian/dev/release; pwd)"
 echo $FRIESIAN_SCRIPT_DIR
-bash ${FRIESIAN_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} true ${upload}
+bash ${FRIESIAN_SCRIPT_DIR}/release_default_mac_spark246.sh ${version} true ${upload}
 
 CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
 echo $CHRONOS_SCRIPT_DIR
-bash ${CHRONOS_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} ${upload}
+bash ${CHRONOS_SCRIPT_DIR}/release_default_mac_spark246.sh ${version} ${upload}
 
-SERVING_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/serving/dev; pwd)"
-echo $SERVING_SCRIPT_DIR
-bash ${SERVING_SCRIPT_DIR}/release.sh ${version} ${upload}
-
-# TODO: whether need to upload all whls in the very end at the same time?
+# Serving has a universal jar for all platforms and is released in the linux script.
