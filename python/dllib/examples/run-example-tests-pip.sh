@@ -94,7 +94,7 @@ fi
 export SPARK_DRIVER_MEMORY=20g
 
 echo "start example test for nnframes imageInference"
-python ${BIGDL_ROOT}/dllib/examples/nnframes/imageInference/ImageInferenceExample.py \
+python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageInference/ImageInferenceExample.py \
   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f ${HDFS_URI}/kaggle/train_100
 
