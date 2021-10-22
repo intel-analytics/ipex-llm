@@ -44,46 +44,45 @@ now=$(date "+%s")
 time1=$((now-start))
 echo "#App[Model-inference-example] Test 1: text-classification-training time used:$time1 seconds"
 
-echo "# Test Apps -- 2.text-classification-inference"
+# echo "# Test Apps -- 2.text-classification-inference"
+# cd ${BIGDL_ROOT}/apps/model-inference-examples/text-classification-inference
+# mvn clean
+# mvn clean package
 
-cd ${BIGDL_ROOT}/apps/model-inference-examples/text-classification-inference
-mvn clean
-mvn clean package
-
-echo "# Test 2.1 text-classification-inference:SimpleDriver"
-#timer
-start=$(date "+%s")
-
-java -cp target/text-classification-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
--DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/apps/model-inference-examples/tmp/data/glove/glove/glove.6B.300d.txt \
--DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl \
-com.intel.analytics.bigdl.apps.textclassfication.inference.SimpleDriver
-
-now=$(date "+%s")
-time2=$((now-start))
-echo "#App[Model-inference-example] Test 3.1: text-classification-inference:SimpleDriver time used:$time2 seconds"
-
-# echo "# Test 2.2 text-classification-inference:WebServiceDriver"
+# echo "# Test 2.1 text-classification-inference:SimpleDriver"
 # #timer
 # start=$(date "+%s")
 
-# mvn spring-boot:run -DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/apps/model-inference-examples/tmp/data/glove/glove/glove.6B.300d.txt \
-# -DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl &
-# while :
-# do
-#   curl -d hello -x "" http://localhost:8080/predict > 1.log &
-# if [ -n "$(grep "class" ${BIGDL_ROOT}/apps/model-inference-examples/text-classification-inference/1.log)" ];then
-#     echo "----Find-----"
-#     kill -9 $(ps -ef | grep text-classification | grep -v grep |awk '{print $2}')
-#     rm 1.log
-#     sleep 1s
-#     break
-# fi
-# done
+# java -cp target/text-classification-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+# -DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/apps/model-inference-examples/tmp/data/glove/glove/glove.6B.300d.txt \
+# -DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl \
+# com.intel.analytics.bigdl.apps.textclassfication.inference.SimpleDriver
 
 # now=$(date "+%s")
-# time3=$((now-start))
-# echo "#App[Model-inference-example] Test 3.2: text-classification-inference:WebServiceDriver time used:$time3 seconds"
+# time2=$((now-start))
+# echo "#App[Model-inference-example] Test 3.1: text-classification-inference:SimpleDriver time used:$time2 seconds"
+
+# # echo "# Test 2.2 text-classification-inference:WebServiceDriver"
+# # #timer
+# # start=$(date "+%s")
+
+# # mvn spring-boot:run -DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/apps/model-inference-examples/tmp/data/glove/glove/glove.6B.300d.txt \
+# # -DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl &
+# # while :
+# # do
+# #   curl -d hello -x "" http://localhost:8080/predict > 1.log &
+# # if [ -n "$(grep "class" ${BIGDL_ROOT}/apps/model-inference-examples/text-classification-inference/1.log)" ];then
+# #     echo "----Find-----"
+# #     kill -9 $(ps -ef | grep text-classification | grep -v grep |awk '{print $2}')
+# #     rm 1.log
+# #     sleep 1s
+# #     break
+# # fi
+# # done
+
+# # now=$(date "+%s")
+# # time3=$((now-start))
+# # echo "#App[Model-inference-example] Test 3.2: text-classification-inference:WebServiceDriver time used:$time3 seconds"
 
 echo "# Test 3.recommendation-inference"
 
@@ -110,3 +109,91 @@ com.intel.analytics.bigdl.apps.recommendation.inference.SimpleScalaDriver
 now=$(date "+%s")
 time4=$((now-start))
 echo "#App[Model-inference-example] Test 3.1: recommendation-inference:SimpleScalaDriver time used:$time4 seconds"
+
+echo "# Test 3.2 recommendation-inference:SimpleDriver[Java]"
+#timer
+start=$(date "+%s")
+
+java -cp ./recommendation-inference/target/recommendation-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+-DMODEL_PATH=./analytics-zoo-models/recommendation/ncf.bigdl \
+com.intel.analytics.zoo.apps.recommendation.inference.SimpleDriver
+
+now=$(date "+%s")
+time5=$((now-start))
+echo "#App[Model-inference-example] Test 4.2: recommendation-inference:SimpleDriver time used:$time5 seconds"
+
+echo "# Test 5.model-inference-flink"
+
+cd ${BIGDL_ROOT}/apps/model-inference-examples/model-inference-flink
+mvn clean
+mvn clean package
+cd ${BIGDL_ROOT}/apps/model-inference-examples
+
+if [ -f ./flink-1.7.2/bin/start-cluster.sh ]
+then
+    echo "flink-1.7.2/bin/start-cluster.sh already exists"
+else
+    wget $FTP_URI/flink-1.7.2.zip
+    unzip flink-1.7.2.zip
+fi
+
+if [ -f tmp/data/streaming/text-model/2.log ]
+then
+    echo "tmp/data/streaming/text-model/2.log already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/data/streaming/text-model/2.log -P tmp/data/streaming/text-model/2.log
+fi
+
+./flink-1.7.2/bin/start-cluster.sh
+
+echo "# Test 5.1 model-inference-flink:Text Classification"
+#timer
+start=$(date "+%s")
+
+./flink-1.7.2/bin/flink run \
+./model-inference-flink/target/model-inference-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--inputFile tmp/data/streaming/text-model/2.log \
+--embeddingFilePath tmp/data/glove/glove/glove.6B.300d.txt \
+--modelPath models/text-classification.bigdl \
+--parallelism 1
+
+now=$(date "+%s")
+time7=$((now-start))
+echo "#App[Model-inference-example] Test 5.1: model-inference-flink:Text Classification time used:$time7 seconds"
+
+./flink-1.7.2/bin/stop-cluster.sh
+
+if [ -f mobilenet_v1_1.0_224_frozen.pb ]
+then
+    echo "analytics-zoo-models/flink_model/mobilenet_v1_1.0_224_frozen.pb already exists"
+else
+    wget ${FTP_URI}/analytics-zoo-models/flink_model/mobilenet_v1_1.0_224_frozen.pb
+fi
+
+./flink-1.7.2/bin/start-cluster.sh
+
+echo "# Test 5.2 model-inference-flink: Image Classification"
+#timer
+start=$(date "+%s")
+
+./flink-1.7.2/bin/flink run \
+-m localhost:8081 -p 1 \
+-c com.intel.analytics.bigdl.apps.model.inference.flink.ImageClassification.ImageClassificationStreaming  \
+${ANALYTICS_ZOO_ROOT}/apps/model-inference-examples/model-inference-flink/target/model-inference-flink-0.1.0-SNAPSHOT-jar-with-dependencies.jar  \
+--modelPath mobilenet_v1_1.0_224_frozen.pb   --modelType frozenModel   \
+--images ${BIGDL_ROOT}/bigdl/src/test/resources/imagenet/n04370456/ \
+--classes ${BIGDL_ROOT}/bigdl/src/main/resources/imagenet_classname.txt
+
+now=$(date "+%s")
+time8=$((now-start))
+echo "#App[Model-inference-example] Test 5.1: model-inference-flink: Image Classification time used:$time8 seconds"
+
+./flink-1.7.2/bin/stop-cluster.sh
+
+echo "#2 text-classification-training time used:$time2 seconds"
+echo "#3.1 text-classification-inference:SimpleDriver time used:$time3 seconds"
+echo "#3.2 text-classification-inference:WebServiceDriver time used:$time4 seconds"
+echo "#4.1 recommendation-inference:SimpleScalaDriver time used:$time5 seconds"
+echo "#4.2 recommendation-inference:SimpleDriver time used:$time6 seconds"
+echo "#5.1 model-inference-flink:Text Classification time used:$time7 seconds"
+echo "#5.2 model-inference-flink:Image Classification time used:$time8 seconds"
