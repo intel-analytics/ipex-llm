@@ -25,7 +25,7 @@ BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/mathlibs/src; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 
-if (( $# < 4)); then
+if (( $# < 3)); then
   echo "Usage: release.sh platform version upload"
   echo "Usage example: bash release.sh linux default true"
   echo "Usage example: bash release.sh mac 0.14.0.dev1 false"

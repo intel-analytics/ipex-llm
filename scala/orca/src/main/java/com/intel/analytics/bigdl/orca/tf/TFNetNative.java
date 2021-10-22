@@ -84,10 +84,6 @@ public class TFNetNative {
                     }
                     String resourceName = makeResourceName(libName);
                     System.out.println(resourceName);
-
-                    // String[] pathNames = resourceName.split("/");
-                    // String originName = pathNames[pathNames.length-1];
-
                     File shareLibFile = new File(libSharePath(), resourceName);
                     System.out.println(shareLibFile.getPath());
                     if (shareLibFile.exists()) {
