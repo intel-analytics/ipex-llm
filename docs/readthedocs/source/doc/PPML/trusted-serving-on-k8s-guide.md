@@ -12,10 +12,10 @@ Prior to deploying PPML Cluster Serving, please make sure the following is setup
 	```
 	$ docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:0.14.0-SNAPSHOT
 	```
-2. Pull the source code of Analytics Zoo/BigDL and enter PPML graphene k8s directory
+2. Pull the source code of BigDL and enter PPML graphene k8s directory
 	```
-	$ git clone https://github.com/intel-analytics/analytics-zoo.git
-	$ cd analytics-zoo/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes
+	$ git clone https://github.com/intel-analytics/BigDL.git
+	$ cd BigDL/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes
 	```
 3. Generate secure keys and passwords, and deploy as secrets (Refer [here](https://github.com/intel-analytics/analytics-zoo/blob/master/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes/README.md#secure-keys-and-password) for details)
 	1. Generate keys and passwords

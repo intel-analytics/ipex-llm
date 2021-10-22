@@ -1,10 +1,10 @@
 # PPML User Guide
 
 ## 1. Privacy Preserving Machine Learning
-Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. Analytics Zoo ***PPML*** combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
+Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. BigDL ***PPML*** combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
 
 ## 1.1 PPML for Big Data AI
-Analytics Zoo/BigDL provides a distributed PPML platform for protecting the *end-to-end Big Data AI pipeline* (from data ingestion, data analysis, all the way to machine learning and deep learning). In particular, it extends the single-node [Trusted Execution Environment](https://en.wikipedia.org/wiki/Trusted_execution_environment) to provide a *Trusted Cluster Environment*, so as to run unmodified Big Data analysis and ML/DL programs in a secure fashion on (private or public) cloud:
+BigDL provides a distributed PPML platform for protecting the *end-to-end Big Data AI pipeline* (from data ingestion, data analysis, all the way to machine learning and deep learning). In particular, it extends the single-node [Trusted Execution Environment](https://en.wikipedia.org/wiki/Trusted_execution_environment) to provide a *Trusted Cluster Environment*, so as to run unmodified Big Data analysis and ML/DL programs in a secure fashion on (private or public) cloud:
 
  * Compute and memory protected by SGX Enclaves
  * Network communication protected by remote attestation and TLS
@@ -23,9 +23,9 @@ With the trusted Big Data analytics and ML/DL support, users can run standard Sp
 
 ### 2.1 Prerequisite
 
-Download scripts and dockerfiles from [this link](https://github.com/intel-analytics/analytics-zoo). And do the following commands:
+Download scripts and dockerfiles from [this link](https://github.com/intel-analytics/BigDL). And do the following commands:
 ```bash
-cd analytics-zoo/ppml/
+cd BigDL/ppml/
 ```
 
 1. Install SGX Driver
@@ -101,7 +101,7 @@ cd trusted-big-data-ml/scala/docker-graphene
 
 ##### 2.2.2.1 Start PPML Container
 
-Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
+Enter `BigDL/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
 
 1. Copy `keys` and `password`
     ```bash
@@ -111,7 +111,7 @@ Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
     cp -r ../.././../scripts/password/ .
     ```
 2. Prepare the data
-   To train a model with ppml in analytics zoo and bigdl, you need to prepare the data first. The Docker image is taking lenet and mnist as example. <br>
+   To train a model with ppml in bigdl, you need to prepare the data first. The Docker image is taking lenet and mnist as example. <br>
    You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the files and put them in one folder(e.g. mnist). <br>
    There are four files. **train-images-idx3-ubyte** contains train images, **train-labels-idx1-ubyte** is train label file, **t10k-images-idx3-ubyte** has validation images    and **t10k-labels-idx1-ubyte** contains validation labels. For more detail, please refer to the download page. <br>
    After you decompress the gzip files, these files may be renamed by some decompress tools, e.g. **train-images-idx3-ubyte** is renamed to **train-images.idx3-ubyte**. Please change the name back before you run the example.  <br>
@@ -123,12 +123,12 @@ Enter `analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
     cd /ppml/trusted-big-data-ml
     ./init.sh
     ```
-    **ENCLAVE_KEY_PATH** means the absolute path to the "enclave-key.pem", according to the above commands, the path would be like "analytics-zoo/ppml/scripts/enclave-key.pem". <br>
-    **DATA_PATH** means the absolute path to the data(like mnist) that would used later in the spark program. According to the above commands, the path would be like "analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene/mnist" <br>
-    **KEYS_PATH** means the absolute path to the keys you just created and copied to. According to the above commands, the path would be like "analytics-zoo/ppml/trusted-big-data-ml/scala/docker-graphene/keys" <br>
+    **ENCLAVE_KEY_PATH** means the absolute path to the "enclave-key.pem", according to the above commands, the path would be like "BigDL/ppml/scripts/enclave-key.pem". <br>
+    **DATA_PATH** means the absolute path to the data(like mnist) that would used later in the spark program. According to the above commands, the path would be like "BigDL/ppml/trusted-big-data-ml/scala/docker-graphene/mnist" <br>
+    **KEYS_PATH** means the absolute path to the keys you just created and copied to. According to the above commands, the path would be like "BigDL/ppml/trusted-big-data-ml/scala/docker-graphene/keys" <br>
     **LOCAL_IP** means your local IP address. <br>
 
-##### 2.2.2.2 Run Your Spark Program with Analytics Zoo PPML on SGX
+##### 2.2.2.2 Run Your Spark Program with BigDL PPML on SGX
 
 To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
 
@@ -138,7 +138,7 @@ To run your pyspark program, first you need to prepare your own pyspark program 
 
 When the program finishes, check the results with the log `YOUR_PROGRAM-sgx.log`.
 
-##### 2.2.2.3 Run Trusted Spark Examples with Analytics Zoo PPML SGX
+##### 2.2.2.3 Run Trusted Spark Examples with BigDL PPML SGX
 
 ##### 2.2.2.3.1 Run Trusted Spark Pi
 
@@ -277,7 +277,7 @@ cd ppml/trusted-big-data-ml/python/docker-graphene
 
 ##### 2.3.2.1 Start PPML Container
 
-Enter `analytics-zoo/ppml/trusted-big-data-ml/python/docker-graphene` directory.
+Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` directory.
 
 1. Copy `keys` and `password` to current directory
 
@@ -297,7 +297,7 @@ Enter `analytics-zoo/ppml/trusted-big-data-ml/python/docker-graphene` directory.
    ./init.sh
    ```
 
-##### 2.3.2.2 Run Your Pyspark Program with Analytics Zoo PPML on SGX
+##### 2.3.2.2 Run Your Pyspark Program with BigDL PPML on SGX
 
 To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
 
@@ -307,7 +307,7 @@ To run your pyspark program, first you need to prepare your own pyspark program 
 
 When the program finishes, check the results with the log `YOUR_PROGRAM-sgx.log`.
 
-##### 2.3.2.3 Run Python and Pyspark Examples with Analytics Zoo PPML on SGX
+##### 2.3.2.3 Run Python and Pyspark Examples with BigDL PPML on SGX
 
 ##### 2.3.2.3.1 Run Trusted Python Helloworld
 
@@ -723,7 +723,7 @@ cd ppml/trusted-realtime-ml/scala/docker-occlum
 
 #### 3.3.1 Configure the Environment
 
-Enter `analytics-zoo/ppml/trusted-realtime-ml/scala/docker-graphene` or `analytics-zoo/ppml/trusted-realtime-ml/scala/docker-occlum` dir.
+Enter `BigDL/ppml/trusted-realtime-ml/scala/docker-graphene` or `BigDL/ppml/trusted-realtime-ml/scala/docker-occlum` dir.
 
 Modify `environments.sh`. Change MASTER, WORKER IP and file paths (e.g., `keys` and `password`).
 
