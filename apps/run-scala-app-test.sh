@@ -44,23 +44,23 @@ now=$(date "+%s")
 time1=$((now-start))
 echo "#App[Model-inference-example] Test 1: text-classification-training time used:$time1 seconds"
 
-# echo "# Test Apps -- 2.text-classification-inference"
-# cd ${BIGDL_ROOT}/apps/model-inference-examples/text-classification-inference
-# mvn clean
-# mvn clean package
+echo "# Test Apps -- 2.text-classification-inference"
+cd ${BIGDL_ROOT}/apps/model-inference-examples/text-classification-inference
+mvn clean
+mvn clean package
 
-# echo "# Test 2.1 text-classification-inference:SimpleDriver"
-# #timer
-# start=$(date "+%s")
+echo "# Test 2.1 text-classification-inference:SimpleDriver"
+#timer
+start=$(date "+%s")
 
-# java -cp target/text-classification-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
-# -DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/apps/model-inference-examples/tmp/data/glove/glove/glove.6B.300d.txt \
-# -DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl \
-# com.intel.analytics.bigdl.apps.textclassfication.inference.SimpleDriver
+java -cp target/text-classification-inference-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+-DEMBEDDING_FILE_PATH=${BIGDL_ROOT}/apps/model-inference-examples/tmp/data/glove/glove/glove.6B.300d.txt \
+-DMODEL_PATH=${BIGDL_ROOT}/apps/model-inference-examples/models/text-classification.bigdl \
+com.intel.analytics.bigdl.apps.textclassfication.inference.SimpleDriver
 
-# now=$(date "+%s")
-# time2=$((now-start))
-# echo "#App[Model-inference-example] Test 3.1: text-classification-inference:SimpleDriver time used:$time2 seconds"
+now=$(date "+%s")
+time2=$((now-start))
+echo "#App[Model-inference-example] Test 3.1: text-classification-inference:SimpleDriver time used:$time2 seconds"
 
 # # echo "# Test 2.2 text-classification-inference:WebServiceDriver"
 # # #timer
@@ -192,7 +192,7 @@ echo "#App[Model-inference-example] Test 5.1: model-inference-flink: Image Class
 
 echo "#2 text-classification-training time used:$time2 seconds"
 echo "#3.1 text-classification-inference:SimpleDriver time used:$time3 seconds"
-echo "#3.2 text-classification-inference:WebServiceDriver time used:$time4 seconds"
+#echo "#3.2 text-classification-inference:WebServiceDriver time used:$time4 seconds"
 echo "#4.1 recommendation-inference:SimpleScalaDriver time used:$time5 seconds"
 echo "#4.2 recommendation-inference:SimpleDriver time used:$time6 seconds"
 echo "#5.1 model-inference-flink:Text Classification time used:$time7 seconds"
