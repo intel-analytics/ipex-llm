@@ -27,7 +27,7 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 
 if (( $# < 2)); then
-  echo "Usage: release_default_linux_spark246.sh version upload"
+  echo "Usage: release_default_mac_spark246.sh version upload"
   echo "Usage example: bash release_default_mac_spark246.sh default true"
   echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 true"
   exit -1
