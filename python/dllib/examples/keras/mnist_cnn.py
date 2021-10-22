@@ -22,6 +22,7 @@
 # See README.md for how to run this example.
 
 from optparse import OptionParser
+import sys
 #from .keras_utils import *
 
 import keras.backend
