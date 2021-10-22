@@ -246,6 +246,10 @@ ${SPARK_HOME}/bin/spark-shell \
     --embeddingFile "analytics-zoo-data/data/glove/glove/glove.6B.300d.txt" \
     --modelSaveDirPath "models/text-classification.bigdl"
 
+now=$(date "+%s")
+time1=$((now-start))
+echo "#App[Model-inference-example] Test 1: text-classification-training time used:$time1 seconds"
+
 echo "# Test Apps -- 2.text-classification-inference"
 
 cd ${BIGDL_ROOT}/apps/model-inference-examples/text-classification-inference
