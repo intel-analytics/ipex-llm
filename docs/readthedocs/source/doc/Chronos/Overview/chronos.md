@@ -98,7 +98,7 @@ stop_orca_context()
 <span id="TSDataset"></span>
 ### **5 Data Processing and Feature Engineering**
 
-Time series data is a special data formulation with its specific operations. _Chronos_ provides [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) as a time series dataset abstract for data processing (e.g. impute, deduplicate, resample, scale/unscale, roll sampling) and auto feature engineering (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods. [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) can be initialized from a pandas dataframe and be directly used in `AutoTSEstimator`. It can also be converted to a pandas dataframe or numpy ndarray for Forecasters and Anomaly Detectors.
+Time series data is a special data formulation with its specific operations. _Chronos_ provides [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) as a time series dataset abstract for data processing (e.g. impute, deduplicate, resample, scale/unscale, roll sampling) and auto feature engineering (e.g. datetime feature, aggregation feature). Cascade call is supported for most of the methods. [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) can be initialized from a pandas dataframe and be directly used in [`AutoTSEstimator`](../../PythonAPI/Chronos/autotsestimator.html#autotsestimator). It can also be converted to a pandas dataframe or numpy ndarray for Forecasters and Anomaly Detectors.
 
 [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) is designed for general time series processing while providing many specific operations for the convenience of different tasks(e.g. forecasting, anomaly detection).
 
@@ -352,7 +352,7 @@ Detailed information please refer to [TSPipeline API doc](../../PythonAPI/Chrono
 
 _Chronos_ provides a set of standalone time series forecasters without AutoML support, including deep learning models as well as traditional statistical models.
 
-View some examples notebooks for [Network Traffic Prediction](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/) 
+View some examples notebooks for [Network Traffic Prediction](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/chronos/use-case/network_traffic) 
 
 The common process of using a Forecaster looks like below. 
 ```python
@@ -371,7 +371,7 @@ View [Quick Start](../QuickStart/chronos-tsdataset-forecaster-quickstart.md) for
 
 LSTMForecaster wraps a vanilla LSTM model, and is suitable for univariate time series forecasting.
 
-View Network Traffic Prediction [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) and [LSTMForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#lstmforecaster) for more details.
+View Network Traffic Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) and [LSTMForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#lstmforecaster) for more details.
 
 <span id="Seq2SeqForecaster"></span>
 ###### **6.3.2 Seq2SeqForecaster**
@@ -385,21 +385,21 @@ View [Seq2SeqForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#seq2se
 
 Temporal Convolutional Networks (TCN) is a neural network that use convolutional architecture rather than recurrent networks. It supports multi-step and multi-variant cases. Causal Convolutions enables large scale parallel computing which makes TCN has less inference time than RNN based model such as LSTM.
 
-View Network Traffic multivariate multistep Prediction [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb) and [TCNForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcnforecaster) for more details.
+View Network Traffic multivariate multistep Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb) and [TCNForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcnforecaster) for more details.
 
 <span id="MTNetForecaster"></span>
 ###### **6.3.4 MTNetForecaster**
 
 MTNetForecaster wraps a MTNet model. The model architecture mostly follows the [MTNet paper](https://arxiv.org/abs/1809.02105) with slight modifications, and is suitable for multivariate time series forecasting.
 
-View Network Traffic Prediction [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) and [MTNetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#mtnetforecaster) for more details.
+View Network Traffic Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) and [MTNetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#mtnetforecaster) for more details.
 
 <span id="TCMFForecaster"></span>
 ###### **6.3.5 TCMFForecaster**
 
 TCMFForecaster wraps a model architecture that follows implementation of the paper [DeepGLO paper](https://arxiv.org/abs/1905.03806) with slight modifications. It is especially suitable for extremely high dimensional (up-to millions) multivariate time series forecasting.
 
-View High-dimensional Electricity Data Forecasting [example](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/tcmf/run_electricity.py) and [TCMFForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcmfforecaster) for more details.
+View High-dimensional Electricity Data Forecasting [example](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/tcmf/run_electricity.py) and [TCMFForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcmfforecaster) for more details.
 
 <span id="ARIMAForecaster"></span>
 ###### **6.3.6 ARIMAForecaster**
@@ -413,7 +413,7 @@ View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#arimafor
 
 ProphetForecaster wraps the Prophet model ([site](https://github.com/facebook/prophet)) which is an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects and is suitable for univariate time series forecasting. It works best with time series that have strong seasonal effects and several seasons of historical data and is robust to missing data and shifts in the trend, and typically handles outliers well.
 
-View Stock Prediction [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/fsi/stock_prediction_prophet.ipynb) and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#prophetforecaster) for more details.
+View Stock Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb) and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#prophetforecaster) for more details.
 
 #### **6.4 Use Auto forecasting model**
 Auto forecasting models are designed to be used exactly the same as Forecasters. The only difference is that you can set hp search function to the hyperparameters and the `.fit()` method will search the best hyperparameter setting.
@@ -432,11 +432,11 @@ The input data can be easily get from `TSDataset`. Users can refer to detailed [
 
 Anomaly Detection detects abnormal samples in a given time series. _Chronos_ provides a set of unsupervised anomaly detectors. 
 
-View some examples notebooks for [Datacenter AIOps](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/chronos/use-case/AIOps).
+View some examples notebooks for [Datacenter AIOps](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/chronos/use-case/AIOps).
 
 #### **7.1 ThresholdDetector**
 
-ThresholdDetector detects anomaly based on threshold. It can be used to detect anomaly on a given time series ([notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)), or used together with [Forecasters](#forecasting) to detect anomaly on new coming samples ([notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)). 
+ThresholdDetector detects anomaly based on threshold. It can be used to detect anomaly on a given time series ([notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)), or used together with [Forecasters](#forecasting) to detect anomaly on new coming samples ([notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)). 
 
 View [ThresholdDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-th-detector) for more details.
 
@@ -445,13 +445,13 @@ View [ThresholdDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#
 
 AEDetector detects anomaly based on the reconstruction error of an autoencoder network. 
 
-View anomaly detection [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb) and [AEDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-ae-detector) for more details.
+View anomaly detection [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb) and [AEDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-ae-detector) for more details.
 
 #### **7.3 DBScanDetector**
 
 DBScanDetector uses DBSCAN clustering algortihm for anomaly detection. 
 
-View anomaly detection [notebook](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb) and [DBScanDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-dbscan-detector) for more details.
+View anomaly detection [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb) and [DBScanDetector API Doc](../../PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-dbscan-detector) for more details.
 
 ---
 ### **8 Generate Synthetic Data**
@@ -551,7 +551,7 @@ f.predict_with_onnx(...)  # onnxruntime only supports single node
 ```python
 # a fully distributed forecaster pipeline
 from orca.data.pandas import read_csv
-from zoo.chronos.data.experimental import XShardsTSDataset
+from bigdl.chronos.data.experimental import XShardsTSDataset
 
 shards = read_csv("hdfs://...")
 tsdata, _, test_tsdata = XShardsTSDataset.from_xshards(...)
@@ -565,19 +565,19 @@ f.predict(test_tsdata_xshards, ...)
 
 ### **10 Examples and Demos**
 - Quickstarts
-    - [Use AutoTSEstimator for Time-Series Forecasting](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html)
-    - [Use TSDataset and Forecaster for Time-Series Forecasting](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.html)
-    - [Use Anomaly Detector for Unsupervised Anomaly Detection](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-anomaly-detector.html)
+    - [Use AutoTSEstimator for Time-Series Forecasting](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html)
+    - [Use TSDataset and Forecaster for Time-Series Forecasting](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.html)
+    - [Use Anomaly Detector for Unsupervised Anomaly Detection](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-anomaly-detector.html)
 - Examples
-    - [Use AutoLSTM on nyc taxi dataset](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/auto_model/autolstm_nyc_taxi.py)
-    - [Use AutoProphet on nyc taxi dataset](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/auto_model/autoprophet_nyc_taxi.py)
-    - [High dimension time series forecasting with Chronos TCMFForecaster](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/tcmf/run_electricity.py)
-    - [Generate synthetic data with DPGANSimulator in a data-driven fashion](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/examples/simulator)
+    - [Use AutoLSTM on nyc taxi dataset](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/auto_model/autolstm_nyc_taxi.py)
+    - [Use AutoProphet on nyc taxi dataset](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/auto_model/autoprophet_nyc_taxi.py)
+    - [High dimension time series forecasting with Chronos TCMFForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/tcmf/run_electricity.py)
+    - [Generate synthetic data with DPGANSimulator in a data-driven fashion](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/chronos/example/simulator)
 - Use cases
-    - [Unsupervised Anomaly Detection](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)
-    - [Unsupervised Anomaly Detection based on Forecasts](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)
-    - [Stock Price Prediction with LSTM](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/fsi/stock_prediction.ipynb)
-    - [Stock Price Prediction with ProphetForecaster and AutoProphet](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/fsi/stock_prediction_prophet.ipynb)
-    - [Network Traffic Forecasting with AutoTSEstimator](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_autots_forecasting_experimental.ipynb)
-    - [Network Traffic Forecasting (using multivariate time series data)](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb)
-    - [Network Traffic Forecasting (using multistep time series data)](https://github.com/intel-analytics/analytics-zoo/blob/master/pyzoo/zoo/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb)
+    - [Unsupervised Anomaly Detection](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)
+    - [Unsupervised Anomaly Detection based on Forecasts](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)
+    - [Stock Price Prediction with LSTM](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction.ipynb)
+    - [Stock Price Prediction with ProphetForecaster and AutoProphet](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb)
+    - [Network Traffic Forecasting with AutoTSEstimator](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb)
+    - [Network Traffic Forecasting (using multivariate time series data)](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb)
+    - [Network Traffic Forecasting (using multistep time series data)](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb)
