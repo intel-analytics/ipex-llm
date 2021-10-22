@@ -25,7 +25,7 @@ BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/tflibs/src; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 
-if (( $# < 4)); then
+if (( $# < 3)); then
   echo "Usage: release.sh platform version upload"
   echo "Usage example: bash release.sh linux default true"
   echo "Usage example: bash release.sh mac 0.14.0.dev false"
@@ -46,8 +46,16 @@ echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
+    # Todo: append dylibs
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
+    SO_PREFIX=${BIGDL_PYTHON_DIR}/bigdl/share/tflibs/linux-x86_64
+    FRAMEWORK_SO="$(readlink -f ${SO_PREFIX}/libtensorflow_framework.so)"
+    rm ${SO_PREFIX}/libtensorflow_framework.so
+    rm ${SO_PREFIX}/libtensorflow_framework.so.1
+    mv "${FRAMEWORK_SO}" "${SO_PREFIX}/libtensorflow_framework-zoo.so"
+    patchelf --set-soname libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_framework-zoo.so
+    patchelf --replace-needed libtensorflow_framework.so.1 libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_jni.so
 else
     echo "Unsupported platform"
 fi
