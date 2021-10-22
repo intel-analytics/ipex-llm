@@ -110,7 +110,7 @@ def train(sc, data_path,
     word_to_ic = dict(word_to_ic[10: max_words])
     bword_to_ic = sc.broadcast(word_to_ic)
 
-    w2v = news20.get_glove_w2v(dim=embedding_dim)
+    w2v = news20.get_glove_w2v(source_dir=data_path, dim=embedding_dim)
     filtered_w2v = dict((w, v) for w, v in w2v.items() if w in word_to_ic)
     bfiltered_w2v = sc.broadcast(filtered_w2v)
 
