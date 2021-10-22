@@ -22,7 +22,7 @@
 # See README.md for how to run this example.
 
 from optparse import OptionParser
-from bigdl.dllib.examples.keras.keras_utils import *
+from .keras_utils import *
 
 import keras.backend
 if keras.backend.image_dim_ordering() == "th":
