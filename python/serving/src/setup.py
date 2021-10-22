@@ -38,8 +38,7 @@ def setup_package():
     metadata = dict(
         name='bigdl-serving',
         version=VERSION,
-        description='A unified Data Analytics and AI platform for distributed TensorFlow, Keras, '
-                    'PyTorch, Apache Spark/Flink and Ray',
+        description='Distributed and Automated Model Inference on Big Data Streaming Frameworks',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
