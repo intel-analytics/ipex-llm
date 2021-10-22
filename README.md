@@ -7,9 +7,9 @@
 </div>
 
 ---
-BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the original [BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects, providing the following features:
+BigDL makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the [original BigDL](https://github.com/intel-analytics/BigDL/tree/branch-0.14) and [Analytics Zoo](https://github.com/intel-analytics/analytics-zoo) projects, providing the following features:
  
-  * [DLlib](#getting-started-with-bigdl-extensions): distributed deep learning library for Apache Spark *(i.e., the original BigDL framework with Keras-style API and Spark ML pipeline support)*
+  * [DLlib](#getting-started-with-dllib): distributed deep learning library for Apache Spark *(i.e., the original BigDL framework with Keras-style API and Spark ML pipeline support)*
 
  * [Orca](#getting-started-with-orca): seamlessly scale out TensorFlow and PyTorch pipelines for distributed Big Data 
  
@@ -19,12 +19,12 @@ BigDL makes it easy for data scientists and data engineers to build end-to-end, 
  
  * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning (*experimental*)
 
-For more information, you may [read the docs](https://analytics-zoo.readthedocs.io/).
+For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
 ---
 
 ## Installing
-You can use BigDL on [Google Colab](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/colab.html) without any installation. BigDL also includes a set of [notebooks](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/notebooks.html) that you can directly open and run in Colab.
+You can use BigDL on [Google Colab](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/colab.html) without any installation. BigDL also includes a set of [notebooks](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/notebooks.html) that you can directly open and run in Colab.
 
 To install BigDL, we recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/)  environments.
 
@@ -34,15 +34,15 @@ conda activate my_env
 pip install bigdl 
 ```
 
-To install latest nightly build, use ```pip install --pre --upgrade bigdl```; see [Python](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/python.html)  and [Scala](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/scala.html) user guide for more details.
+To install latest nightly build, use ```pip install --pre --upgrade bigdl```; see [Python](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html) and [Scala](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html) user guide for more details.
 
 ## Getting Started with DLlib
-**DLlib** is a distributed deep learning library for Apache Spark; with DLlib,  users can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
+**DLlib** is a distributed deep learning library for Apache Spark; with DLlib, users can write distributed deep learning applications as standard Spark programs (using either Scala or Python APIs).
 
 First, call `initNNContext` at the beginning of the code: 
 
 ```scala
-import com.intel.analytics.zoo.common.NNContext
+import com.intel.analytics.bigdl.dllib.NNContext
 val sc = NNContext.initNNContext()
 ```
 
@@ -68,13 +68,13 @@ val pipeline = new Pipeline().setStages(Array(scaler, estimator))
 val pipelineModel = pipeline.fit(trainingDF)  
 val predictions = pipelineModel.transform(validationDF)
 ```
-See the [NNframes](https://analytics-zoo.readthedocs.io/en/latest/doc/UseCase/nnframes.html) and [Keras API](https://analytics-zoo.readthedocs.io/en/latest/doc/UseCase/keras-api.html) user guides for more details.
+See the [NNframes](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/nnframes.html) and [Keras API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html) user guides for more details.
 
 ## Getting Started with Orca
 
 Most AI projects start with a Python notebook running on a single laptop; however, one usually needs to go through a mountain of pains to scale it to handle larger data set in a distributed fashion. The  _**Orca**_ library seamlessly scales out your single node TensorFlow or PyTorch notebook across large clusters (so as to process distributed Big Data).
 
-First, initialize [Orca Context](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
+First, initialize [Orca Context](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
 ```python
 from bigdl.orca import init_orca_context
@@ -83,7 +83,7 @@ from bigdl.orca import init_orca_context
 sc = init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2) 
 ```
 
-Next, perform [data-parallel processing in Orca](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/Overview/data-parallel-processing.html) (supporting standard Spark Dataframes, TensorFlow Dataset, PyTorch DataLoader, Pandas, Pillow, etc.):
+Next, perform [data-parallel processing in Orca](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/data-parallel-processing.html) (supporting standard Spark Dataframes, TensorFlow Dataset, PyTorch DataLoader, Pandas, Pillow, etc.):
 
 ```python
 from pyspark.sql.functions import array
@@ -93,7 +93,7 @@ df = df.withColumn('user', array('user')) \
        .withColumn('item', array('item'))
 ```
 
-Finally, use [sklearn-style Estimator APIs in Orca](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html) to perform distributed _TensorFlow_, _PyTorch_ or _Keras_ training and inference:
+Finally, use [sklearn-style Estimator APIs in Orca](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-training-inference.html) to perform distributed _TensorFlow_, _PyTorch_ or _Keras_ training and inference:
 
 ```python
 from tensorflow import keras
@@ -116,7 +116,7 @@ est.fit(data=df,
         label_cols=['label'])
 ```
 
-See [TensorFlow](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-tf-quickstart.html) and [PyTorch](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-pytorch-quickstart.html) quickstart, as well as the [document website](https://analytics-zoo.readthedocs.io/), for more details.
+See [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-tf-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-pytorch-quickstart.html) quickstart, as well as the [document website](https://bigdl.readthedocs.io/), for more details.
 
 ## Getting Started with RayOnSpark
 
@@ -143,13 +143,13 @@ counters = [Counter.remote() for i in range(5)]
 print(ray.get([c.increment.remote() for c in counters]))
 ```
 
-See the RayOnSpark [user guide](https://analytics-zoo.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) and [quickstart](https://analytics-zoo.readthedocs.io/en/latest/doc/Ray/QuickStart/ray-quickstart.html) for more details.
+See the RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Ray/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Ray/QuickStart/ray-quickstart.html) for more details.
 
 ## Getting Started with Chronos
 
 Time series prediction takes observations from previous time steps as input and predicts the values at future time steps. The _**Chronos**_ library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction.
 
-To train a time series model with AutoML, first initialize [Orca Context](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
+To train a time series model with AutoML, first initialize [Orca Context](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
 ```python
 from bigdl.orca import init_orca_context
@@ -176,21 +176,21 @@ ts_pipeline = trainer.fit(train_df, validation_df)
 ts_pipeline.predict(test_df)
 ```
 
-See the Chronos [user guide](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [example](https://analytics-zoo.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autots-quickstart.html) for more details.
+See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) and [example](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for more details.
 
 ## PPML (Privacy Preserving Machine Learning)
 
 ***BigDL PPML*** provides a *Trusted Cluster Environment* for protecting the end-to-end Big Data AI pipeline. It combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), and allows users to run unmodified Big Data analysis and ML/DL programs (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) in a secure fashion on (private or public) cloud.
 
-See the [PPML user guide](https://analytics-zoo.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details. 
+See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details. 
 
 ## More information
 
-- [Document Website](https://analytics-zoo.readthedocs.io/)
+- [Document Website](https://bigdl.readthedocs.io/)
 - [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)
 - [User Group](https://groups.google.com/forum/#!forum/bigdl-user-group)
-- [Powered-By](https://analytics-zoo.readthedocs.io/en/latest/doc/Application/powered-by.html)
-- [Presentations](https://analytics-zoo.readthedocs.io/en/latest/doc/Application/presentations.html)
+- [Powered-By](https://bigdl.readthedocs.io/en/latest/doc/Application/powered-by.html)
+- [Presentations](https://bigdl.readthedocs.io/en/latest/doc/Application/presentations.html)
 
 ## Citing BigDL
 If you've found BigDL useful for your project, you may cite the [paper](https://arxiv.org/abs/1804.05839) as follows:

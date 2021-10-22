@@ -16,8 +16,8 @@
 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE[0]})
 echo "SCRIPT_DIR": $SCRIPT_DIR
-export DL_PYTHON_HOME="$(cd ${SCRIPT_DIR}/../../src; pwd)"
-export BIGDL_HOME="$(cd ${SCRIPT_DIR}/../../../..; pwd)"
+export DL_PYTHON_HOME="$(cd ${SCRIPT_DIR}/../src; pwd)"
+export BIGDL_HOME="$(cd ${SCRIPT_DIR}/../../..; pwd)"
 
 echo "BIGDL_HOME: $BIGDL_HOME"
 echo "SPARK_HOME": $SPARK_HOME

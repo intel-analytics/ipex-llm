@@ -1,4 +1,4 @@
-# RayOnSpark User Guide
+# RayOnSpark
 
 ---
 

@@ -17,7 +17,7 @@ from optparse import OptionParser
 
 import tensorflow as tf
 
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.dllib.feature.common import *
 from bigdl.dllib.feature.image.imagePreprocessing import *
 from bigdl.dllib.feature.image.imageset import *

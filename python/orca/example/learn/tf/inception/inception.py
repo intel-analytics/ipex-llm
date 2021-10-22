@@ -17,7 +17,7 @@
 import os
 import argparse
 from optparse import OptionParser
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.keras.metrics import *
 from bigdl.dllib.nnframes import *

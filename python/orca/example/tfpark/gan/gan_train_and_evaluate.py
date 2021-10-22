@@ -16,7 +16,7 @@
 from bigdl.optim.optimizer import MaxIteration
 from bigdl.orca.tfpark.gan.gan_estimator import GANEstimator
 
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset
 from bigdl.orca.tfpark import ZooOptimizer
 import numpy as np

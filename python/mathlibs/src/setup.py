@@ -16,34 +16,23 @@
 # limitations under the License.
 #
 
-
 import os
-import fnmatch
 from setuptools import setup
-import urllib.request
-import os
-import stat
-import sys
-import re
-from html.parser import HTMLParser
 
-bigdl_home = os.path.abspath(__file__ + "/../../..")
+bigdl_home = os.path.abspath(__file__ + "/../../../..")
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
 def setup_package():
-
     metadata = dict(
-        name='bigdl-tf',
+        name='bigdl-math',
         version=VERSION,
-        description='Dependent Libraries for bigdl-orca(tf)',
+        description='Math Dependency Library for bigdl-orca',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        packages=["bigdl.share.tflibs"],
         url='https://github.com/intel-analytics/BigDL',
-        package_data={"bigdl.share.tflibs": ["libtensorflow_framework.so",
-                                             "libtensorflow_jni.so"]},
-        package_dir={'': 'src'},
+        packages=["bigdl.share.tflibs"],
+        package_data={"bigdl.share.tflibs": ["libiomp5.so", "libmklml_intel.so"]}
     )
 
     setup(**metadata)

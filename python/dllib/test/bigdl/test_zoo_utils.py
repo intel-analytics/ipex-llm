@@ -22,7 +22,7 @@ from unittest import TestCase
 
 import keras.backend as K
 
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import ImageSet
 
 np.random.seed(1337)  # for reproducibility
