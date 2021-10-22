@@ -24,7 +24,7 @@ from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import DoubleType, StringType
 
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.nnframes import *
 

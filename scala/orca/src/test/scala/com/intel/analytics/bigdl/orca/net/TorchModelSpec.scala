@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.orca.utils.ZooSpecHelper
 import jep.NDArray
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
-import com.intel.analytics.bigdl.dllib.common.NNContext.initNNContext
+import com.intel.analytics.bigdl.dllib.NNContext.initNNContext
 
 @PythonInterpreterTest
 class TorchModelSpec extends ZooSpecHelper{

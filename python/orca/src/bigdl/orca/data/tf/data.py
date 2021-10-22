@@ -17,7 +17,7 @@ import tensorflow as tf
 
 from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from bigdl.dllib.utils import nest
-from bigdl.dllib.utils.nncontext import getOrCreateSparkContext
+from bigdl.dllib.nncontext import getOrCreateSparkContext
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.feature.common import FeatureSet

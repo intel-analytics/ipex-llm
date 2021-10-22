@@ -26,7 +26,7 @@ from pyspark.ml import Pipeline, PipelineModel
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.tuning import ParamGridBuilder
 from pyspark.sql.types import *
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import *
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.keras import layers as ZLayer

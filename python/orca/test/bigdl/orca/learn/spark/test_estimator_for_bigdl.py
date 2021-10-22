@@ -22,7 +22,7 @@ from bigdl.dllib.nn.layer import *
 from pyspark.sql.types import *
 from pyspark.sql.functions import col, udf
 
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import *
 from bigdl.orca.learn.bigdl import Estimator
 from bigdl.dllib.optim.optimizer import Adam, SGD, ValidationSummary

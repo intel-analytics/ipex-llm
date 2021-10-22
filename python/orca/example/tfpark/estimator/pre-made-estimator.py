@@ -21,7 +21,7 @@ import pandas as pd
 import tensorflow as tf
 from optparse import OptionParser
 from tensorflow_estimator.python.estimator.canned import prediction_keys
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset, TFEstimator
 from bigdl.orca.tfpark import ZooOptimizer
 

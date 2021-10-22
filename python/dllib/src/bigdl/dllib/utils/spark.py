@@ -18,7 +18,7 @@ import os
 import platform
 
 from pyspark import SparkContext
-from bigdl.dllib.utils.nncontext import init_nncontext, init_spark_conf
+from bigdl.dllib.nncontext import init_nncontext, init_spark_conf
 from bigdl.dllib.utils.utils import detect_python_location, pack_penv
 from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath, get_zoo_bigdl_classpath_on_driver
 

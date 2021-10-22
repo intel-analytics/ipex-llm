@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.dllib.common
 
-import com.intel.analytics.bigdl.dllib.common.NNContext.{checkScalaVersion, checkSparkVersion}
+import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion}
 
 object CheckVersion {
 
