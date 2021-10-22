@@ -42,6 +42,6 @@ upload=$3
 # Add spark3 suffix to the project name to avoid conflict with the whl for spark2.
 sed -i "s/pyspark==2.4.6/pyspark==3.1.2/g" $DLLIB_DIR/src/setup.py
 sed -i "s/name='bigdl-dllib'/name='bigdl-dllib-spark3'/g" $DLLIB_DIR/src/setup.py
-sed -i "s/dist\/bigdl_dllib/dist\/bigdl_dllib_spark3/g" ${RUN_SCRIPT_DIR}/release.sh
+sed -i "s/dist\/bigdl_dllib-/dist\/bigdl_dllib_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh
 
 bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x

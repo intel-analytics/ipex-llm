@@ -81,7 +81,7 @@ def get_bigdl_packages():
 
 def setup_package():
     metadata = dict(
-        name='bigdl-orca-spark3',
+        name='bigdl-orca',
         version=VERSION,
         description='Seamlessly scale out TensorFlow and PyTorch for Big Data (using Spark & Ray)',
         author='BigDL Authors',
@@ -90,7 +90,7 @@ def setup_package():
         url='https://github.com/intel-analytics/analytics-zoo',
         packages=get_bigdl_packages(),
         install_requires=['conda-pack==0.3.1', 'packaging', 'filelock',
-                          'bigdl-tf=='+VERSION, 'bigdl-math=='+VERSION, 'bigdl-dllib-spark3=='+VERSION],
+                          'bigdl-tf=='+VERSION, 'bigdl-math=='+VERSION, 'bigdl-dllib=='+VERSION],
         extras_require={'ray': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
                                 'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1'],
                         'automl': ['tensorflow>=1.15.0,<2.0.0', 'h5py==2.10.0',

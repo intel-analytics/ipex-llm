@@ -40,8 +40,8 @@ quick=$2
 upload=$3
 
 # Add spark3 suffix to the project name to avoid conflict with the whl for spark2.
-sed -i "s/bigdl-dllib/bigdl-dllib-spark3/g" $ORCA_DIR/src/setup.py
+sed -i "s/bigdl-dllib==/bigdl-dllib-spark3==/g" $ORCA_DIR/src/setup.py
 sed -i "s/name='bigdl-orca'/name='bigdl-orca-spark3'/g" $ORCA_DIR/src/setup.py
-sed -i "s/dist\/bigdl_orca/dist\/bigdl_orca_spark3/g" ${RUN_SCRIPT_DIR}/release.sh
+sed -i "s/dist\/bigdl_orca-/dist\/bigdl_orca_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh
 
 bash ${RUN_SCRIPT_DIR}/release.sh mac ${version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x

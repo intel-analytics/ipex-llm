@@ -25,8 +25,8 @@
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
-DLLIB_DIR="$(cd ${RUN_SCRIPT_DIR}/../../; pwd)"
-echo $DLLIB_DIR
+FRIESIAN_DIR="$(cd ${RUN_SCRIPT_DIR}/../../; pwd)"
+echo $FRIESIAN_DIR
 
 if (( $# < 3)); then
   echo "Usage: release_default_mac_spark312.sh version quick_build upload"
@@ -40,8 +40,8 @@ quick=$2
 upload=$3
 
 # Add spark3 suffix to the project name to avoid conflict with the whl for spark2.
-sed -i "s/bigdl-orca/bigdl-orca-spark3/g" $DLLIB_DIR/src/setup.py
-sed -i "s/name='bigdl-friesian'/name='bigdl-friesian-spark3'/g" $DLLIB_DIR/src/setup.py
-sed -i "s/dist\/bigdl_friesian/dist\/bigdl_friesian_spark3/g" ${RUN_SCRIPT_DIR}/release.sh
+sed -i "s/bigdl-orca==/bigdl-orca-spark3==/g" $FRIESIAN_DIR/src/setup.py
+sed -i "s/name='bigdl-friesian'/name='bigdl-friesian-spark3'/g" $FRIESIAN_DIR/src/setup.py
+sed -i "s/dist\/bigdl_friesian-/dist\/bigdl_friesian_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh
 
 bash ${RUN_SCRIPT_DIR}/release.sh mac ${version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x
