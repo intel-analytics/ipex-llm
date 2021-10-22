@@ -40,6 +40,8 @@ quick=$2
 upload=$3
 
 # Add spark3 suffix to the project name to avoid conflict with the whl for spark2.
+# Add name=, == and - in pattern matching so that if the script runs twice,
+# it won't change anything in the second run.
 sed -i "s/bigdl-dllib==/bigdl-dllib-spark3==/g" $ORCA_DIR/src/setup.py
 sed -i "s/name='bigdl-orca'/name='bigdl-orca-spark3'/g" $ORCA_DIR/src/setup.py
 sed -i "s/dist\/bigdl_orca-/dist\/bigdl_orca_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh

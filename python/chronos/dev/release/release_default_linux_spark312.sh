@@ -39,6 +39,8 @@ version=$1
 upload=$2
 
 # Add spark3 suffix to the project name to avoid conflict with the whl for spark2.
+# Add name=, == and - in pattern matching so that if the script runs twice,
+# it won't change anything in the second run.
 sed -i "s/bigdl-orca==/bigdl-orca-spark3==/g" $CHRONOS_DIR/src/setup.py
 sed -i "s/name='bigdl-chronos'/name='bigdl-chronos-spark3'/g" $CHRONOS_DIR/src/setup.py
 sed -i "s/dist\/bigdl_chronos-/dist\/bigdl_chronos_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh
