@@ -50,7 +50,7 @@ cd BigDL/ppml/
     cd ..
     ```
 
-3. Prepare keys for TLS with root permission (test only, need input security password for keys). Please also install jdk/openjdk and set the environment path of java path to get keytool.
+3. Prepare keys for TLS with root permission (test only, need input security password for keys). Please also install jdk/openjdk and set the environment path of java path to get `keytool`.
 
     ```bash
     cd scripts/
@@ -224,7 +224,7 @@ The result should look like:
 
 ##### 2.2.3.1 Configure the Environment
 
-Prerequisite: passwordless ssh login to all the nodes needs to be properly set up first.
+Prerequisite: [ssh login without password](http://www.linuxproblem.org/art_9.html) for all the nodes.
 
 ```bash
 nano environments.sh
@@ -466,7 +466,7 @@ bash work/start-scripts/start-spark-local-xgboost-regressor-sgx.sh
 Open another terminal and check the log:
 
 ```bash
-sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-zoo-xgboost-regressor-sgx.log | egrep "prediction" -A19
+sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-bigdl-xgboost-regressor-sgx.log | egrep "prediction" -A19
 ```
 
 The result should look something like:
@@ -780,7 +780,7 @@ Start Cluster Serving as follows:
 After all services are ready, you can directly push inference requests int queue with [Restful API](https://analytics-zoo.github.io/master/#ClusterServingGuide/ProgrammingGuide/#restful-api). Also, you can push image/input into queue with Python API
 
 ```python
-from zoo.serving.client import InputQueue
+from bigdl.serving.client import InputQueue
 input_api = InputQueue()
 input_api.enqueue('my-image1', user_define_key={"path": 'path/to/image1'})
 ```
