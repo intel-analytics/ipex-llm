@@ -20,7 +20,7 @@
 # from bigdl.dllib.optim.optimizer import SGD
 # from bigdl.dllib.feature.common import ChainedPreprocessing, Relations
 # from bigdl.dllib.feature.text import *
-# from bigdl.dllib.utils.nncontext import *
+# from bigdl.dllib.nncontext import *
 # from zoo.models.textclassification import TextClassifier
 # from zoo.models.textmatching import KNRM
 # from zoo.pipeline.api.keras.models import Sequential

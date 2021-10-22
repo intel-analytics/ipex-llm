@@ -22,7 +22,7 @@ from bigdl.orca.inference import InferenceModel
 from bigdl.orca.torch import zoo_pickle_module
 import torch
 import torchvision
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 
 
 class TestInferenceModelTorch(TestCase):

@@ -22,7 +22,7 @@ import tensorflow as tf
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.trigger import SeveralIteration
 from bigdl.orca.learn.tf.estimator import Estimator
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe
 
 

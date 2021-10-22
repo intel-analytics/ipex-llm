@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.dllib.estimator
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.optim.{LBFGS, Loss, SGD, Trigger}

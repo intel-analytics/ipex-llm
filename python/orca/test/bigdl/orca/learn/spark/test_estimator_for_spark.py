@@ -25,7 +25,7 @@ from bigdl.orca.learn.trigger import SeveralIteration
 from pyspark.sql.context import SQLContext
 
 import bigdl.orca.data.pandas
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca import OrcaContext
 from bigdl.orca.data.tf.data import Dataset
 from bigdl.orca.learn.tf.estimator import Estimator
