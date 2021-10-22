@@ -112,7 +112,7 @@ In [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html), we provide **2** possi
 All the preprocessing operations will be done on each independent time series(i.e on both feature dimension and id dimension), while feature scaling will be only carried out on the feature dimension.
 
 #### **5.2 Create a TSDataset**
-Currently [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) only supports initializing from a pandas dataframe through [`TSDataset.from_pandas`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_pandas). A typical valid time series dataframe `df` is shown below.
+Currently [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) supports initializing from a pandas dataframe through [`TSDataset.from_pandas`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_pandas) or from a parquet file through [`TSDataset.from_parquet`](../../PythonAPI/Chronos/tsdataset.html#bigdl.chronos.data.tsdataset.TSDataset.from_parquet). A typical valid time series dataframe `df` is shown below.
 
 You can initialize a [`TSDataset`](../../PythonAPI/Chronos/tsdataset.html) by simply:
 ```python
@@ -294,7 +294,7 @@ def training_data_creator(config):
     return Dataloader(..., batch_size=config['batch_size'])
 ```
 ##### **6.2.2 Create an AutoTSEstimator**
-`AutoTSEstimator` depends on the [Distributed Hyper-parameter Tuning](../../Orca/Overview/distribute-tuning.html) supported by Project Orca. It also provides time series only functionalities and optimization. Here is a typical initialization process.
+`AutoTSEstimator` depends on the [Distributed Hyper-parameter Tuning](../../Orca/Overview/distributed-tuning.html) supported by Project Orca. It also provides time series only functionalities and optimization. Here is a typical initialization process.
 ```python
 import bigdl.orca.automl.hp as hp
 from bigdl.chronos.autots import AutoTSEstimator
