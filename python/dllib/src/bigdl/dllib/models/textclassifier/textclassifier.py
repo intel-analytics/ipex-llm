@@ -129,9 +129,9 @@ def train(sc, data_path,
     train_rdd, val_rdd = sample_rdd.randomSplit(
         [training_split, 1-training_split])
 
-    optimizer = Optimizer(
+    optimizer = Optimizer.create(
         model=build_model(news20.CLASS_NUM),
-        training_rdd=train_rdd,
+        training_set=train_rdd,
         criterion=ClassNLLCriterion(),
         end_trigger=MaxEpoch(max_epoch),
         batch_size=batch_size,
@@ -190,10 +190,11 @@ if __name__ == "__main__":
                     conda_name=conda_env_name,
                     num_executors=2,
                     executor_cores=2,
-                    executor_memory="5g",
-                    driver_memory="2g")
+                    executor_memory="20g",
+                    driver_memory="10g")
         else:
-            sc = init_spark_on_local(cores=4)
+            conf = {"spark.driver.memory": "40g"}
+            sc = init_spark_on_local(cores=4, conf=conf)
 
         set_optimizer_version(options.optimizerVersion)
         train(sc, data_path,
