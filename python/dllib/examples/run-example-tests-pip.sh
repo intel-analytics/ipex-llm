@@ -17,7 +17,7 @@ wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/mni
 
 # Run the example
 export SPARK_DRIVER_MEMORY=2g
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/keras/mnist_cnn.py --max_epoch 2
+python ${BIGDL_ROOT}/python/dllib/examples/keras/mnist_cnn.py --max_epoch 2
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
@@ -33,7 +33,7 @@ echo "#2 start example test for keras imdb_cnn"
 #timer
 start=$(date "+%s")
 export SPARK_DRIVER_MEMORY=10g
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/keras/imdb_cnn_lstm.py
+python ${BIGDL_ROOT}/python/dllib/examples/keras/imdb_cnn_lstm.py
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
@@ -50,7 +50,7 @@ echo "#3 start example test for lenet"
 start=$(date "+%s")
 
 export SPARK_DRIVER_MEMORY=2g
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/lenet/lenet.py --maxEpoch 2
+python ${BIGDL_ROOT}/python/dllib/examples/lenet/lenet.py --maxEpoch 2
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
@@ -94,7 +94,7 @@ fi
 export SPARK_DRIVER_MEMORY=20g
 
 echo "start example test for nnframes imageInference"
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/nnframes/imageInference/ImageInferenceExample.py \
+python ${BIGDL_ROOT}/dllib/examples/nnframes/imageInference/ImageInferenceExample.py \
   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f ${HDFS_URI}/kaggle/train_100
 
@@ -106,7 +106,7 @@ if [ $exit_status -ne 0 ]; then
 fi
 
 echo "start example test for nnframes transfer learning"
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
+python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f analytics-zoo-data/data/dogs-vs-cats/samples --nb_epoch 2
 
@@ -126,7 +126,7 @@ echo "start example test for autograd"
 start=$(date "+%s")
 
 export SPARK_DRIVER_MEMORY=2g
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/autograd/custom.py
+python ${BIGDL_ROOT}/python/dllib/examples/autograd/custom.py
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
@@ -134,7 +134,7 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/examples/autograd/customloss.py
+python ${BIGDL_ROOT}/python/dllib/examples/autograd/customloss.py
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
