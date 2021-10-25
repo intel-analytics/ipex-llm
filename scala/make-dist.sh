@@ -65,10 +65,12 @@ if [ ! -d "$DIST_DIR" ]
 then
   mkdir -p $DIST_DIR/lib
   mkdir -p $DIST_DIR/conf
+  mkdir -p $DIST_DIR/bin
 else
   rm -r $DIST_DIR
   mkdir -p $DIST_DIR/lib
   mkdir -p $DIST_DIR/conf
+  mkdir -p $DIST_DIR/bin
 fi
 
 cp -r $BASEDIR/dllib/target/bigdl-dllib*-jar-with-dependencies.jar $DIST_DIR/lib
@@ -82,3 +84,4 @@ if [ -f $BASEDIR/friesian/target/bigdl-friesian*-python-api.zip ]; then
     cp -r $BASEDIR/friesian/target/bigdl-friesian*-python-api.zip $DIST_DIR/lib
 fi
 cp -r $BASEDIR/dllib/src/main/resources/spark-bigdl.conf $DIST_DIR/conf
+cp -r $BASEDIR/../scripts/* $DIST_DIR/bin

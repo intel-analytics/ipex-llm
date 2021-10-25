@@ -30,7 +30,7 @@ Please choose the suffix according to your Spark platform.
 
 SBT developers can use
 ```sbt
-libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-[spark_2.4.6|spark_3.1.1]" % "${BIGDL_DLLIB_VERSION}"
+libraryDependencies += "com.intel.analytics.bigdl" % "dllib-[spark_2.4.6|spark_3.1.1]" % "${BIGDL_DLLIB_VERSION}"
 ```
 
 ### 2.2 Run
@@ -45,14 +45,9 @@ export BIGDL_HOME=folder path where you extract the bigdl package
 
 ---
 #### 2.2.2 **Use Interactive Spark Shell**
-You can try bigdl-dllib easily using the Spark interactive shell. Run below command to start spark shell with BigDL support:
+You can try bigdl-dllib easily using the Spark interactive shell. Run below command to start spark shell with bigdl-dllib support:
 ```bash
-${SPARK_HOME}/bin/spark-shell \
-  --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-  --jars ${BIGDL_HOME}/lib/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  --conf spark.driver.extraClassPath=${BIGDL_HOME}/lib/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  --conf spark.executor.extraClassPath=${BIGDL_HOME}/lib/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  --master local[*]
+${BIGDL_HOME}/bin/spark-shell-with-bigdl-dllib.sh
 ```
 You will see a welcome message looking like below:
 ```
@@ -79,7 +74,7 @@ res0: org.apache.spark.SparkContext = org.apache.spark.SparkContext@525c0f74
 ```
 
 Once the environment is successfully initiated, you'll be able to play with dllib API's.
-For instance, to experiment with the ````dllib.nn```` APIs in dllib, you may try below code:
+For instance, to experiment with the ````dllib.keras```` APIs in dllib, you may try below code:
 ```scala
 scala> import com.intel.analytics.bigdl.dllib.keras.layers._
 scala> import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -101,12 +96,8 @@ You can run a bigdl-dllib program, e.g., the [Image Inference](https://github.co
 2. Run the following command:
 ```bash
 # Spark local mode
-${SPARK_HOME}/bin/spark-submit.sh \
-  --master local[2] \
-  --driver-class-path dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  --properties-file dist/conf/spark-bigdl.conf \
-  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
-  dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
+  ${BIGDL_HOME}/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
   -f DATA_PATH \
   -b 4 \
   --numLayers 2 --vocab 100 --hidden 6 \
@@ -116,16 +107,12 @@ ${SPARK_HOME}/bin/spark-submit.sh \
 # Spark standalone mode
 ## ${SPARK_HOME}/sbin/start-master.sh
 ## check master URL from http://localhost:8080
-${SPARK_HOME}/bin/spark-submit.sh \
+${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
   --master spark://... \
-  --driver-class-path dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  --properties-file dist/conf/spark-bigdl.conf \
-  --conf spark.driver.extraClassPath=dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  --conf spark.executor.extraClassPath=dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
   --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
   --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
-  dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+  ${BIGDL_HOME}/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
   -f DATA_PATH \
   -b 4 \
   --numLayers 2 --vocab 100 --hidden 6 \
@@ -133,17 +120,13 @@ ${SPARK_HOME}/bin/spark-submit.sh \
   --learningRateDecay 0.001 --keepProb 0.5
 
 # Spark yarn client mode
-${SPARK_HOME}/bin/spark-submit.sh \
+${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
  --master yarn \
  --deploy-mode client \
- --driver-class-path dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
- --properties-file dist/conf/spark-bigdl.conf \
- --conf spark.driver.extraClassPath=dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
- --conf spark.executor.extraClassPath=dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
  --executor-cores cores_per_executor \
  --num-executors executors_number \
  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
- dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ ${BIGDL_HOME}/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
  -f DATA_PATH \
  -b 4 \
  --numLayers 2 --vocab 100 --hidden 6 \
@@ -151,17 +134,13 @@ ${SPARK_HOME}/bin/spark-submit.sh \
  --learningRateDecay 0.001 --keepProb 0.5
 
 # Spark yarn cluster mode
-${SPARK_HOME}/bin/spark-submit.sh \
+${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
  --master yarn \
  --deploy-mode cluster \
- --driver-class-path dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
- --properties-file dist/conf/spark-bigdl.conf \
- --conf spark.driver.extraClassPath=dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
- --conf spark.executor.extraClassPath=dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
  --executor-cores cores_per_executor \
  --num-executors executors_number \
  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
- dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ ${BIGDL_HOME}/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
  -f DATA_PATH \
  -b 4 \
  --numLayers 2 --vocab 100 --hidden 6 \
@@ -192,43 +171,63 @@ If you are to run your own program, do remember to do the initialize before call
 ### 2.3 Get started
 ---
 
-This section show a single example of how to use dllib to build a deep learning application on Spark, using Keras and NNframe APIs
+This section show a single example of how to use dllib to build a deep learning application on Spark, using Keras APIs
 
 ---
-#### **Training build-in Inception**
+#### **LeNet Model on MNIST using Keras-Style API**
 
-A bigdl-dllib program starts with initialize `NNContext`;.
+This tutorial is an explanation of what is happening in the [lenet](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/keras) example
+
+A bigdl-dllib program starts with initialize as follows.
 ````scala
-import com.intel.analytics.bigdl.dllib.NNContext
-NNContext.initNNContext()
+      val conf = Engine.createSparkConf()
+        .setAppName("Train Lenet on MNIST")
+        .set("spark.task.maxFailures", "1")
+      val sc = new SparkContext(conf)
+      Engine.init
 ````
 
 After the initialization, we need to:
 
-1.load the image with nnframes api [```NNImageReader```](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/nnframes/NNImageReader.scala)
+1. Load train and validation data by _**creating the [```DataSet```](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/feature/dataset/DataSet.scala)**_ (e.g., ````SampleToGreyImg````, ````GreyImgNormalizer```` and ````GreyImgToBatch````):
 
 ````scala
-val imageDF = NNImageReader.readImages(PASCAL_FILE_PATH, sc)
-      .withColumn("label", lit(2.0f))
-````
-2.transform the image with [```imageProcessing```](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/feature/image) (e.g., ````RowToImageFeature````, ````ImageResize```` and ````ImageCenterCrop````):
+    val trainSet = (if (sc.isDefined) {
+        DataSet.array(load(trainData, trainLabel), sc.get, param.nodeNumber)
+      } else {
+        DataSet.array(load(trainData, trainLabel))
+      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
+        param.batchSize)
 
-````scala
-val transformer = RowToImageFeature() -> ImageResize(256, 256) -> ImageCenterCrop(224, 224) ->
-      ImageChannelNormalize(123, 117, 104, 1, 1, 1) -> ImageMatToTensor() -> ImageFeatureToTensor()
-````
-
-3.After that, we _**create the [```NNClassifier```](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/nnframes/NNClassifier.scala)**_ (either a distributed or local one depending on whether it runs on Spark or not) by specifying the ````DataSet````, the built-in model and the ````Criterion```` (which, given input and target, computes gradient per given loss function):
-````scala
-val estimator = NNClassifier(Inception_v1(1000), ZooClassNLLCriterion[Float](), transformer)
-.setBatchSize(1)
-.setEndWhen(Trigger.maxIteration(1))
-.setFeaturesCol("image")
+    val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
+        param.batchSize)
 ````
 
-Finally, we _**train the model by calling ````estimator.fit````**_:
+2. We then define Lenet model using Keras-style api
 ````scala
-estimator.fit(imageDF)
+    val input = Input(inputShape = Shape(28, 28, 1))
+    val reshape = Reshape(Array(1, 28, 28)).inputs(input)
+    val conv1 = Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5").inputs(reshape)
+    val pool1 = MaxPooling2D().inputs(conv1)
+    val conv2 = Convolution2D(12, 5, 5, activation = "tanh").setName("conv2_5x5").inputs(pool1)
+    val pool2 = MaxPooling2D().inputs(conv2)
+    val flatten = Flatten().inputs(pool2)
+    val fc1 = Dense(100, activation = "tanh").setName("fc1").inputs(flatten)
+    val fc2 = Dense(classNum, activation = "softmax").setName("fc2").inputs(fc1)
+    Model(input, fc2)
+ ````
+
+3. After that, we configure the learning process. Set the ````optimization method```` and the ````Criterion```` (which, given input and target, computes gradient per given loss function):
+````scala
+  model.compile(optimizer = optimMethod,
+          loss = ClassNLLCriterion[Float](logProbAsInput = false),
+          metrics = Array(new Top1Accuracy[Float](), new Top5Accuracy[Float](), new Loss[Float]))
+````
+
+Finally we _**train the model**_ by calling ````model.fit````:
+````scala
+  model.fit(trainSet, nbEpoch = param.maxEpoch, validationData = validationSet)
 ````
 
 ---
@@ -285,24 +284,6 @@ You can directly write bigdl-dlllib programs in a Python file (e.g. script.py) a
 ```bash
 python script.py
 ```
-
-#### **3.2.4 Run in cluster**
-
-call ```init_spark_on_yarn``` to do the initialization to run on yarn cluster.
-  ```python
-      sc = init_spark_on_yarn(
-          hadoop_conf=hadoop_conf_dir,
-          conda_name=detect_conda_env_name(),  # auto detect current conda env name
-          num_executors=num_executors,
-          executor_cores=num_cores_per_executor,
-          executor_memory=executor_memory,
-          driver_memory=driver_memory,
-          driver_cores=driver_cores,
-          conf={"spark.rpc.message.maxSize": "1024",
-                "spark.task.maxFailures": "1",
-                "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
-  ```
-
 ---
 ### 3.3 Get started
 ---
