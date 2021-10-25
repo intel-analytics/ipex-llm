@@ -47,7 +47,8 @@ def setup_package():
     metadata = dict(
         name='bigdl-chronos',
         version=VERSION,
-        description='Seamlessly scale out TensorFlow and PyTorch for Big Data (using Spark & Ray)',
+        description='An application framework for building large-scale time series analysis'
+                    'applications',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
