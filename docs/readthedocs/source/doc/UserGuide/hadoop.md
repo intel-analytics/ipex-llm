@@ -1,6 +1,6 @@
 # Hadoop/YARN User Guide
 
-Hadoop version: Hadoop >= 2.7 or [CDH](https://www.cloudera.com/products/open-source/apache-hadoop/key-cdh-components.html) 5.X. Hadoop 3.X or CDH 6.X have not been tested and thus currently not supported.
+Hadoop version: Apache Hadoop >= 2.7 (3.X included) or [CDH](https://www.cloudera.com/products/open-source/apache-hadoop/key-cdh-components.html) 5.X. CDH 6.X have not been tested and thus currently not supported.
 
 ---
 
@@ -42,19 +42,20 @@ You can run Analytics Zoo programs on standard Hadoop/YARN clusters without any 
 
 - **For CDH users**
 
-If your CDH cluster has already installed Spark, the CDH's spark will have conflict with the pyspark installed by pip required by analytics-zoo in next section.
+If you are using BigDL with pip and your CDH cluster has already installed Spark, the CDH's spark will have conflict with the pyspark installed by pip required by analytics-zoo in next section.
 
 Thus before running analytics-zoo applications, you should unset all the spark related environment variables. You can use `env | grep SPARK` to find all the existing spark environment variables.
 
-Also, CDH cluster's `HADOOP_CONF_DIR` should by default be set to `/etc/hadoop/conf`.
+Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` by CDH default.
 
 ---
 ### **2. YARN Client Mode**
 
-- Install Analytics Zoo in the created conda environment via pip:
+- Install BigDL in the created conda environment via pip:
 
   ```bash
-  pip install analytics-zoo
+  pip install bigdl-dllib
+  pip install bigdl-dllib
   ```
 
   View the [Python User Guide](./python.md) for more details.
