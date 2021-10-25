@@ -81,39 +81,14 @@ res0: org.apache.spark.SparkContext = org.apache.spark.SparkContext@525c0f74
 Once the environment is successfully initiated, you'll be able to play with dllib API's.
 For instance, to experiment with the ````dllib.nn```` APIs in dllib, you may try below code:
 ```scala
-scala> import com.intel.analytics.bigdl.dllib.nn._
+scala> import com.intel.analytics.bigdl.dllib.keras.layers._
 scala> import com.intel.analytics.bigdl.numeric.NumericFloat
+scala> import com.intel.analytics.bigdl.dllib.utils.Shape
 
-scala> val model = Sequential()
-       model.add(Reshape(Array(1, 28, 28)))
-         .add(SpatialConvolution(1, 6, 5, 5))
-         .add(Tanh())
-         .add(SpatialMaxPooling(2, 2, 2, 2))
-         .add(Tanh())
-         .add(SpatialConvolution(6, 12, 5, 5))
-         .add(SpatialMaxPooling(2, 2, 2, 2))
-         .add(Reshape(Array(12 * 4 * 4)))
-         .add(Linear(12 * 4 * 4, 100))
-         .add(Tanh())
-         .add(Linear(100, 10))
-         .add(LogSoftMax())
-
-res1: model.type =
-Sequential[6bd4eba4]{
-  [input -> (1) -> (2) -> (3) -> (4) -> (5) -> (6) -> (7) -> (8) -> (9) -> (10) -> (11) -> (12) -> output]
-  (1): Reshape[33b96f86](1x28x28)
-  (2): SpatialConvolution[8fa1895c](1 -> 6, 5 x 5, 1, 1, 0, 0)
-  (3): Tanh[61c5d8aa]
-  (4): SpatialMaxPooling[d1bdf524](2, 2, 2, 2, 0, 0)
-  (5): Tanh[970561b3]
-  (6): SpatialConvolution[53f5fbae](6 -> 12, 5 x 5, 1, 1, 0, 0)
-  (7): SpatialMaxPooling[d562d2c5](2, 2, 2, 2, 0, 0)
-  (8): Reshape[200b37de](192)
-  (9): Linear[47c5b1f6](192 -> 100)
-  (10): Tanh[fca82ebe]
-  (11): Linear[96c684a2](100 -> 10)
-  (12): LogSoftMax[7f1928fc]
-}
+scala> val seq = Sequential()
+       val layer = ConvLSTM2D(32, 4, returnSequences = true, borderMode = "same",
+            inputShape = Shape(8, 40, 40, 32))
+       seq.add(layer)
 ```
 
 ---
@@ -130,12 +105,13 @@ ${SPARK_HOME}/bin/spark-submit.sh \
   --master local[2] \
   --driver-class-path dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
   --properties-file dist/conf/spark-bigdl.conf \
-  --class com.intel.analytics.bigdl.dllib.examples.nnframes.imageInference.ImageInferenceExample \
+  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
   dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
-  --caffeDefPath PROTOTXT_PATH \
-  --caffeWeightsPath CAFFE_MODEL_PATH \
-  --batchSize 32 \
-  --imagePath IMAGE_PATH
+  -f DATA_PATH \
+  -b 4 \
+  --numLayers 2 --vocab 100 --hidden 6 \
+  --numSteps 3 --learningRate 0.005 -e 1 \
+  --learningRateDecay 0.001 --keepProb 0.5
 
 # Spark standalone mode
 ## ${SPARK_HOME}/sbin/start-master.sh
@@ -148,12 +124,13 @@ ${SPARK_HOME}/bin/spark-submit.sh \
   --conf spark.executor.extraClassPath=dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
   --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
-  --class com.intel.analytics.bigdl.dllib.examples.nnframes.imageInference.ImageInferenceExample \
+  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
   dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
-  --caffeDefPath PROTOTXT_PATH \
-  --caffeWeightsPath CAFFE_MODEL_PATH \
-  --batchSize 32 \
-  --imagePath IMAGE_PATH
+  -f DATA_PATH \
+  -b 4 \
+  --numLayers 2 --vocab 100 --hidden 6 \
+  --numSteps 3 --learningRate 0.005 -e 1 \
+  --learningRateDecay 0.001 --keepProb 0.5
 
 # Spark yarn client mode
 ${SPARK_HOME}/bin/spark-submit.sh \
@@ -165,12 +142,13 @@ ${SPARK_HOME}/bin/spark-submit.sh \
  --conf spark.executor.extraClassPath=dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
  --executor-cores cores_per_executor \
  --num-executors executors_number \
- --class com.intel.analytics.bigdl.dllib.examples.nnframes.imageInference.ImageInferenceExample \
- dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
- --caffeDefPath PROTOTXT_PATH \
- --caffeWeightsPath CAFFE_MODEL_PATH \
- --batchSize 32 \
- --imagePath IMAGE_PATH
+ --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
+ dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ -f DATA_PATH \
+ -b 4 \
+ --numLayers 2 --vocab 100 --hidden 6 \
+ --numSteps 3 --learningRate 0.005 -e 1 \
+ --learningRateDecay 0.001 --keepProb 0.5
 
 # Spark yarn cluster mode
 ${SPARK_HOME}/bin/spark-submit.sh \
@@ -182,23 +160,26 @@ ${SPARK_HOME}/bin/spark-submit.sh \
  --conf spark.executor.extraClassPath=dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
  --executor-cores cores_per_executor \
  --num-executors executors_number \
- --class com.intel.analytics.bigdl.dllib.examples.nnframes.imageInference.ImageInferenceExample \
- dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
- --caffeDefPath PROTOTXT_PATH \
- --caffeWeightsPath CAFFE_MODEL_PATH \
- --batchSize 32 \
- --imagePath IMAGE_PATH
+ --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
+ dist/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ -f DATA_PATH \
+ -b 4 \
+ --numLayers 2 --vocab 100 --hidden 6 \
+ --numSteps 3 --learningRate 0.005 -e 1 \
+ --learningRateDecay 0.001 --keepProb 0.5
 ```
 
   The parameters used in the above command are:
 
-  * --caffeDefPath: The path where your put the pretrained caffe prototxt.
-
-  * --caffeWeightsPath: The path where your put the pretrained caffe model.
-
+  * -f: The path where you put your PTB data.
   * -b: The mini-batch size. The mini-batch size is expected to be a multiple of *total cores* used in the job. In this example, the mini-batch size is suggested to be set to *total cores * 4*
-
-  * --imagePath: The folder where you put the image files.
+  * --learningRate: learning rate for adagrad
+  * --learningRateDecay: learning rate decay for adagrad
+  * --hidden: hiddensize for lstm
+  * --vocabSize: vocabulary size, default 10000
+  * --numLayers: numbers of lstm cell, default 2 lstm cells
+  * --numSteps: number of words per record in LM
+  * --keepProb: the probability to do dropout
 
 If you are to run your own program, do remember to do the initialize before call other bigdl-dllib API's, as shown below.
 ```scala
@@ -256,6 +237,8 @@ estimator.fit(imageDF)
 
 ### 3.1 Install
 
+#### 3.1.1 Official Release
+
 Run below command to install _bigdl-dllib_.
 
 ```bash
@@ -263,6 +246,14 @@ conda create -n my_env python=3.7
 conda activate my_env
 pip install bigdl-dllib
 ```
+
+#### 3.1.2 Nightly build
+
+You can install the latest nightly build of bigdl-dllib as follows:
+```bash
+pip install --pre --upgrade bigdl-dllib
+```
+
 
 ### 3.2 Run
 
@@ -281,7 +272,7 @@ You may test if the installation is successful using the interactive Python shel
 
 #### **3.2.2 Jupyter Notebook**
 
-You can start the Jupyter notebook as you normally do using the following command and run Analytics Zoo programs directly in a Jupyter notebook:
+You can start the Jupyter notebook as you normally do using the following command and run bigdl-dllib programs directly in a Jupyter notebook:
 
 ```bash
 jupyter notebook --notebook-dir=./ --ip=* --no-browser
@@ -295,73 +286,68 @@ You can directly write bigdl-dlllib programs in a Python file (e.g. script.py) a
 python script.py
 ```
 
+#### **3.2.4 Run in cluster**
+
+call ```init_spark_on_yarn``` to do the initialization to run on yarn cluster.
+  ```python
+      sc = init_spark_on_yarn(
+          hadoop_conf=hadoop_conf_dir,
+          conda_name=detect_conda_env_name(),  # auto detect current conda env name
+          num_executors=num_executors,
+          executor_cores=num_cores_per_executor,
+          executor_memory=executor_memory,
+          driver_memory=driver_memory,
+          driver_cores=driver_cores,
+          conf={"spark.rpc.message.maxSize": "1024",
+                "spark.task.maxFailures": "1",
+                "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+  ```
+
 ---
-### 3.3 Get started (example)
+### 3.3 Get started
 ---
 
-#### **Text Classification using BigDL Python API**
+#### **Autograd Examples using bigdl-dllb keras Python API**
 
-This tutorial describes the [textclassifier]( https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/models/textclassifier) example written using BigDL Python API, which builds a text classifier using a CNN (convolutional neural network) or LSTM or GRU model (as specified by the user). (It was first described by [this Keras tutorial](https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html))
+This tutorial describes the [Autograd](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/dllib/examples/autograd).
 
-The example first creates the `SparkContext` using the SparkConf` return by the `create_spark_conf()` method, and then initialize the engine:
+The example first do the initializton using `init_nncontext()`:
 ```python
-  sc = SparkContext(appName="text_classifier",
-                    conf=create_spark_conf())
-  init_engine()
+  sc = init_nncontext()
 ```
 
-It then loads the [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) into RDD, and transforms the input data into an RDD of `Sample`. (Each `Sample` in essence contains a tuple of two NumPy ndarray representing the feature and label).
+It then generate the input data X_, Y_
 
 ```python
-  texts = news20.get_news20()
-  data_rdd = sc.parallelize(texts, 2)
-  ...
-  sample_rdd = vector_rdd.map(
-      lambda (vectors, label): to_sample(vectors, label, embedding_dim))
-  train_rdd, val_rdd = sample_rdd.randomSplit(
-      [training_split, 1-training_split])
+    data_len = 1000
+    X_ = np.random.uniform(0, 1, (1000, 2))
+    Y_ = ((2 * X_).sum(1) + 0.4).reshape([data_len, 1])
 ```
 
-After that, the example creates the neural network model as follows:
+It then define the custom loss
+
 ```python
-def build_model(class_num):
-    model = Sequential()
-
-    if model_type.lower() == "cnn":
-        model.add(Reshape([embedding_dim, 1, sequence_len]))
-        model.add(SpatialConvolution(embedding_dim, 128, 5, 1))
-        model.add(ReLU())
-        model.add(SpatialMaxPooling(5, 1, 5, 1))
-        model.add(SpatialConvolution(128, 128, 5, 1))
-        model.add(ReLU())
-        model.add(SpatialMaxPooling(5, 1, 5, 1))
-        model.add(Reshape([128]))
-    elif model_type.lower() == "lstm":
-        model.add(Recurrent()
-                  .add(LSTM(embedding_dim, 128)))
-        model.add(Select(2, -1))
-    elif model_type.lower() == "gru":
-        model.add(Recurrent()
-                  .add(GRU(embedding_dim, 128)))
-        model.add(Select(2, -1))
-    else:
-        raise ValueError('model can only be cnn, lstm, or gru')
-
-    model.add(Linear(128, 100))
-    model.add(Linear(100, class_num))
-    model.add(LogSoftMax())
-    return model
+def mean_absolute_error(y_true, y_pred):
+    result = mean(abs(y_true - y_pred), axis=1)
+    return result
 ```
-Finally the example creates the `Optimizer` (which accepts both the model and the training Sample RDD) and trains the model by calling `Optimizer.optimize()`:
+
+After that, the example creates the model as follows and set the criterion as the custom loss:
+```python
+    a = Input(shape=(2,))
+    b = Dense(1)(a)
+    c = Lambda(function=add_one_func)(b)
+    model = Model(input=a, output=c)
+
+    model.compile(optimizer=SGD(learningrate=1e-2),
+                  loss=mean_absolute_error)
+```
+Finally the example trains the model by calling `model.fit`:
 
 ```python
-optimizer = Optimizer(
-    model=build_model(news20.CLASS_NUM),
-    training_rdd=train_rdd,
-    criterion=ClassNLLCriterion(),
-    end_trigger=MaxEpoch(max_epoch),
-    batch_size=batch_size,
-    optim_method=Adagrad())
-...
-train_model = optimizer.optimize()
+    model.fit(x=X_,
+              y=Y_,
+              batch_size=32,
+              nb_epoch=int(options.nb_epoch),
+              distributed=False)
 ```
