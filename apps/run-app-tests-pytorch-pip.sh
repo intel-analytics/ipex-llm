@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export ANALYTICS_ZOO_HOME=${ANALYTICS_ZOO_ROOT}/dist
+export ANALYTICS_ZOO_HOME=${ANALYTICS_ZOO_ROOT}
 
 clear_up () {
     echo "Clearing up environment. Uninstalling analytics-zoo"
