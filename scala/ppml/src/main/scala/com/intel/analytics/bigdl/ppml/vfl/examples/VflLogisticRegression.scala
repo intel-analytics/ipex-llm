@@ -41,25 +41,14 @@ import scala.io.Source
 object VflLogisticRegression {
   val logger = Logger.getLogger(this.getClass)
 
-
   /**
-   * Start Parameter Server and PSI
+   * Start local trainers
    */
-  def startServer(): Unit = {
-    val flServer = new FLServer()
-    flServer.build()
-    flServer.start()
-  }
-
-  /**
-   * Start local trainers, a NN model is split to 2 parts on 2 trainers
-   * To show the separate workflows, we did not wrap these two methods here
-   */
-  def startTrainer1(dataPath: String,
-                    rowKeyName: String,
-                    batchSize: Int,
-                    learningRate: Float): Unit = {
-    val localVFLTrainer = new LocalVFLTrainer(batchSize, learningRate)
+  def start(dataPath: String,
+            rowKeyName: String,
+            batchSize: Int,
+            learningRate: Float): Unit = {
+    val localVFLTrainer = new LocalVflTrainer(batchSize, learningRate)
     localVFLTrainer.getData(dataPath, rowKeyName)
     localVFLTrainer.getSplitedTrainEvalData()
     localVFLTrainer.model =
@@ -67,32 +56,19 @@ object VflLogisticRegression {
     localVFLTrainer.train()
     localVFLTrainer.evaluate()
   }
-  def startTrainer2(dataPath: String,
-                    rowKeyName: String,
-                    batchSize: Int,
-                    learningRate: Float): Unit = {
-    val localVFLTrainer = new LocalVFLTrainer(batchSize, learningRate)
-    localVFLTrainer.getData(dataPath, rowKeyName)
-    localVFLTrainer.getSplitedTrainEvalData()
-    localVFLTrainer.model =
-      Sequential[Float]().add(Linear(localVFLTrainer.featureNum, 1, withBias = false))
-    localVFLTrainer.train()
-    localVFLTrainer.evaluate()
-  }
-
 
   def main(args: Array[String]): Unit = {
     // load args
-    val datapath = args(0)
+    val dataPath = args(0)
     val worker = args(1).toInt
     val batchSize = args(2).toInt
     val learningRate = args(3).toFloat
-    val rowkeyName = args(4)
-
+    val rowKeyName = args(4)
+    start(dataPath, rowKeyName, batchSize, learningRate)
   }
 
 }
-class LocalVFLTrainer(batchSize: Int, learningRate: Float) {
+class LocalVflTrainer(batchSize: Int, learningRate: Float) {
   val flClient = new FLClient()
   var dataSet: Array[Array[Float]] = null
   var trainData: DataSet[MiniBatch[Float]] = null
