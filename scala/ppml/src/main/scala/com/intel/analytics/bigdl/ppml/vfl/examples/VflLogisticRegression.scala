@@ -34,7 +34,7 @@ import scala.collection.JavaConversions._
 import scala.io.Source
 
 /**
- * A two process example to simulate 2 nodes VFL of a Neural Network
+ * A two process example to simulate 2 nodes Vfl of a Neural Network
  * This example will start a FLServer first, to provide PSI algorithm
  * and store parameters as Parameter Server
  */
@@ -48,13 +48,13 @@ object VflLogisticRegression {
             rowKeyName: String,
             batchSize: Int,
             learningRate: Float): Unit = {
-    val localVFLTrainer = new LocalVflTrainer(batchSize, learningRate)
-    localVFLTrainer.getData(dataPath, rowKeyName)
-    localVFLTrainer.getSplitedTrainEvalData()
-    localVFLTrainer.model =
-      Sequential[Float]().add(Linear(localVFLTrainer.featureNum, 1))
-    localVFLTrainer.train()
-    localVFLTrainer.evaluate()
+    val localVflTrainer = new LocalVflTrainer(batchSize, learningRate)
+    localVflTrainer.getData(dataPath, rowKeyName)
+    localVflTrainer.getSplitedTrainEvalData()
+    localVflTrainer.model =
+      Sequential[Float]().add(Linear(localVflTrainer.featureNum, 1))
+    localVflTrainer.train()
+    localVflTrainer.evaluate()
   }
 
   def main(args: Array[String]): Unit = {
