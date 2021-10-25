@@ -19,7 +19,7 @@ import numpy as np
 from os.path import join
 from optparse import OptionParser
 
-from bigdl.dllib.nncontext import init_nncontext
+from bigdl.dllib.utils.nncontext import init_nncontext
 from bigdl.dllib.feature.image import ImageSet
 from bigdl.orca.inference import InferenceModel
 
