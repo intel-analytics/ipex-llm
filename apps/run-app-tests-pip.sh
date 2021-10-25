@@ -218,58 +218,58 @@ echo "#4 image-similarity time used:$time4 seconds"
 #time5=$((now-start))
 #echo "#5 image-augmentation time used:$time5 seconds"
 
-echo "#6 start app test for dogs-vs-cats"
-start=$(date "+%s")
+# echo "#6 start app test for dogs-vs-cats"
+# start=$(date "+%s")
 
-# Conversion to py file and data preparation
+# # Conversion to py file and data preparation
 
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/transfer-learning
+# ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/transfer-learning
 
-sed "s/setBatchSize(40)/setBatchSize(56)/g; s/file:\/\/path\/to\/data\/dogs-vs-cats\/demo/demo/g;s/path\/to\/model\/bigdl_inception-v1_imagenet_0.4.0.model/demo\/bigdl_inception-v1_imagenet_0.4.0.model/g" ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/transfer-learning.py >${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/tmp.py
+# sed "s/setBatchSize(40)/setBatchSize(56)/g; s/file:\/\/path\/to\/data\/dogs-vs-cats\/demo/demo/g;s/path\/to\/model\/bigdl_inception-v1_imagenet_0.4.0.model/demo\/bigdl_inception-v1_imagenet_0.4.0.model/g" ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/transfer-learning.py >${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/tmp.py
 
-FILENAME="${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/bigdl_inception-v1_imagenet_0.4.0.model"
-if [ -f "$FILENAME" ]
-then
-   echo "$FILENAME already exists."
-else
-   echo "Downloading model"
+# FILENAME="${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/bigdl_inception-v1_imagenet_0.4.0.model"
+# if [ -f "$FILENAME" ]
+# then
+#    echo "$FILENAME already exists."
+# else
+#    echo "Downloading model"
 
-   wget $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model -P demo
+#    wget $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model -P demo
 
-   echo "Finished downloading model"
-fi
+#    echo "Finished downloading model"
+# fi
 
-FILENAME="${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/train.zip"
-if [ -f "$FILENAME" ]
-then
-   echo "$FILENAME already exists."
-else
-   echo "Downloading dogs and cats images"
-   wget  $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip  -P ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats
-   unzip -d ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/ ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/train.zip
-   mkdir -p demo/dogs
-   mkdir -p demo/cats
-   cp ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/train/cat.7* demo/cats
-   cp ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/train/dog.7* demo/dogs
-   echo "Finished downloading images"
-fi
+# FILENAME="${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/train.zip"
+# if [ -f "$FILENAME" ]
+# then
+#    echo "$FILENAME already exists."
+# else
+#    echo "Downloading dogs and cats images"
+#    wget  $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip  -P ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats
+#    unzip -d ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/ ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/train.zip
+#    mkdir -p demo/dogs
+#    mkdir -p demo/cats
+#    cp ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/train/cat.7* demo/cats
+#    cp ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/train/dog.7* demo/dogs
+#    echo "Finished downloading images"
+# fi
 
-# Run the example
-export SPARK_DRIVER_MEMORY=2g
-python ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/tmp.py
+# # Run the example
+# export SPARK_DRIVER_MEMORY=2g
+# python ${ANALYTICS_ZOO_HOME}/apps/dogs-vs-cats/tmp.py
 
-exit_status=$?
-if [ $exit_status -ne 0 ];
-then
-    clear_up
-    echo "dogs-vs-cats failed"
-    exit $exit_status
-fi
+# exit_status=$?
+# if [ $exit_status -ne 0 ];
+# then
+#     clear_up
+#     echo "dogs-vs-cats failed"
+#     exit $exit_status
+# fi
 
-unset SPARK_DRIVER_MEMORY
-now=$(date "+%s")
-time6=$((now-start))
-echo "#6 dogs-vs-cats time used:$time6 seconds"
+# unset SPARK_DRIVER_MEMORY
+# now=$(date "+%s")
+# time6=$((now-start))
+# echo "#6 dogs-vs-cats time used:$time6 seconds"
 
 echo "#7 start app test for image-augmentation-3d"
 # timer
