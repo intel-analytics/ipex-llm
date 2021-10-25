@@ -194,29 +194,29 @@ now=$(date "+%s")
 time4=$((now-start))
 echo "#4 image-similarity time used:$time4 seconds"
 
-echo "#5 start app test for image-augmentation"
-# timer
-start=$(date "+%s")
+#echo "#5 start app test for image-augmentation"
+## timer
+#start=$(date "+%s")
 
-# Conversion to py file and data preparation
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-augmentation/image-augmentation
+## Conversion to py file and data preparation
+#${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-augmentation/image-augmentation
 
-# Run the example
-export SPARK_DRIVER_MEMORY=1g
-python ${ANALYTICS_ZOO_HOME}/apps/image-augmentation/image-augmentation.py
+## Run the example
+#export SPARK_DRIVER_MEMORY=1g
+#python ${ANALYTICS_ZOO_HOME}/apps/image-augmentation/image-augmentation.py
 
-exit_status=$?
-if [ $exit_status -ne 0 ];
-then
-    clear_up
-    echo "image-augmentation failed"
-    exit $exit_status
-fi
+#exit_status=$?
+#if [ $exit_status -ne 0 ];
+#then
+#    clear_up
+#    echo "image-augmentation failed"
+#    exit $exit_status
+#fi
 
-unset SPARK_DRIVER_MEMORY
-now=$(date "+%s")
-time5=$((now-start))
-echo "#5 image-augmentation time used:$time5 seconds"
+#unset SPARK_DRIVER_MEMORY
+#now=$(date "+%s")
+#time5=$((now-start))
+#echo "#5 image-augmentation time used:$time5 seconds"
 
 echo "#6 start app test for dogs-vs-cats"
 start=$(date "+%s")
