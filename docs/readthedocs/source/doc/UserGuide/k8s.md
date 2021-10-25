@@ -173,9 +173,9 @@ You will see the output message like below. This means the Jupyter Notebook serv
 
 Then, refer [docker guide](./docker.md) to open Jupyter Notebook service from a browser and run notebook.
 
-#### **3.4 Run Scala programs**
+#### **3.4 Run Python programs**
 
-Use spark-submit to submit your Analytics Zoo program.  e.g., run [anomalydetection](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/anomalydetection) example (running in either local mode or cluster mode) as follows:
+Use spark-submit to submit your Analytics Zoo program.  e.g., run [basicTextClassification](https://github.com/intel-analytics/analytics-zoo/tree/bigdl-2.0/python/orca/example/learn/tf/basic_text_classification) example (running in either local mode or cluster mode) as follows:
 
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
@@ -198,15 +198,23 @@ ${SPARK_HOME}/bin/spark-submit \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
   --driver-cores ${RUNTIME_DRIVER_CORES} \
   --driver-memory ${RUNTIME_DRIVER_MEMORY} \
-  --properties-file ${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf \
-  --py-files ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip \
+  --properties-file ${BIGDL_HOME}/conf/spark-analytics-zoo.conf \
+  --py-files local://${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///your/path/to/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py \
   --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
   --conf spark.sql.catalogImplementation='in-memory' \
-  --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
-  --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
-  --class com.intel.analytics.zoo.examples.anomalydetection.AnomalyDetection \
-  ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip \
-  --inputDir /path
+  --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  local:///your/path/to/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py
+```
+In cluster,just change these lines:
+```
+  --deploy-mode client \
+  --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
+  --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
+```
+  to:
+```
+  --deploy-mode cluster \
 ```
 
 Options:
@@ -217,8 +225,9 @@ Options:
 - --conf: to specify k8s service account, container image to use for the Spark application, driver volumes name and path, label of pods, spark driver and executor configuration, etc. You can refer to [spark configuration](https://spark.apache.org/docs/latest/configuration.html) and [spark on k8s configuration](https://spark.apache.org/docs/latest/running-on-kubernetes.html#configuration) for more details.
 - --properties-file: the customized conf properties.
 - --py-files: the extra python packages is needed.
-- --class: scala example class name.
-- --inputDir: input data path of the anomaly detection example. The data path is the mounted filesystem of the host. Refer to more details by [Kubernetes Volumes](https://spark.apache.org/docs/latest/running-on-kubernetes.html#using-kubernetes-volumes).
+
+
+  If the .py file needs some parameters, just put them in the end of the command.
 
 ### **4 Know issues**
 
