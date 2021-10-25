@@ -1,4 +1,4 @@
-# Time series Forecasting
+# Time series Forecasting Overview
 
 _Chronos_ provides both deep learning/machine learning models and traditional statistical models for forecasting.
 
@@ -24,7 +24,7 @@ There're three ways to do forecasting:
 \*\*\*  Auto tuning of MTNet is only supported in our deprecated AutoTS API.<br>
 
 
-#### **1 Time Series Forecasting Concepts**
+#### **1. Time Series Forecasting Concepts**
 Time series forecasting is one of the most popular tasks on time series data. **In short, forecasing aims at predicting the future by using the knowledge you can learn from the history.**
 
 ##### **1.1 Traditional Statistical(TS) Style**
@@ -43,7 +43,7 @@ Recent years, common deep learning architectures (e.g. RNN, CNN, Transformer, et
 <span id="RR-forecast-image"></span>
 ![](../Image/forecast-RR.png)
 
-#### **2 Use AutoTS Pipeline**
+#### **2. Use AutoTS Pipeline**
 For AutoTS Pipeline, we will leverage `AutoTSEstimator`, `TSPipeline` and preferably `TSDataset`. A typical usage of AutoTS pipeline basically contains 3 steps.
 1. Prepare a `TSDataset` or customized data creator.
 2. Init a `AutoTSEstimator` and call `.fit()` on the data.
@@ -136,7 +136,7 @@ Detailed information please refer to [TSPipeline API doc](../../PythonAPI/Chrono
     Incremental fitting on TSPipeline just update the model weights the standard way, which does not involve AutoML.
 ```
 
-#### **3 Use Standalone Forecaster Pipeline**
+#### **3. Use Standalone Forecaster Pipeline**
 
 _Chronos_ provides a set of standalone time series forecasters without AutoML support, including deep learning models as well as traditional statistical models.
 
@@ -203,7 +203,7 @@ ProphetForecaster wraps the Prophet model ([site](https://github.com/facebook/pr
 
 View Stock Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb) and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#prophetforecaster) for more details.
 
-#### **4 Use Auto forecasting model**
+#### **4. Use Auto forecasting model**
 Auto forecasting models are designed to be used exactly the same as Forecasters. The only difference is that you can set hp search function to the hyperparameters and the `.fit()` method will search the best hyperparameter setting.
 ```python
 # set hyperparameters in hp search function, loss, metric...
