@@ -5,8 +5,8 @@
 - We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment as follows:
 
   ```bash
-  conda create -n zoo python=3.7  # "zoo" is conda environment name, you can use any name you like.
-  conda activate zoo
+  conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
+  conda activate bigdl
   ```
 
 - You need to install JDK in the environment, and properly set the environment variable `JAVA_HOME`. __JDK8__ is highly recommended.
@@ -28,24 +28,25 @@
 
 #### **1.1 Official Release**
 
-You can install the latest release version of Analytics Zoo as follows:
+You can install the latest release version of BigDL as follows:
 ```bash
-pip install analytics-zoo
+pip install bigdl
 ```
-_**Note:** Installing Analytics Zoo will automatically install `bigdl==0.13.0`, `pyspark==2.4.6`, `conda-pack==0.3.1` and their dependencies if they haven't been detected in your conda environment._
+_**Note:** Installing BigDL will automatically install all the BigDL packages including
+`bigdl-nano`, `bigdl-orca`, `bigdl-chronos`, `bigdl-serving`, `bigdl-friesian` and their dependencies if they haven't been detected in your conda environment._
 
 #### **1.2 Nightly Build**
 
-You can install the latest nightly build of Analytics Zoo as follows:
+You can install the latest nightly build of BigDL as follows:
 
 ```bash
-pip install --pre --upgrade analytics-zoo
+pip install --pre --upgrade bigdl
 ```
 
-Alternatively, you can find the list of the nightly build versions [here](https://pypi.org/project/analytics-zoo/#history), and install a specific version as follows: 
+Alternatively, you can find the list of the nightly build versions [here](https://pypi.org/project/BigDL/#history), and install a specific version as follows:
 
 ```bash
-pip install analytics-zoo=version
+pip install bigdl=version
 ```
 
 _**Note:** If you are using a custom URL of Python Package Index, you may need to check whether the latest packages have been sync'ed with pypi. 
@@ -54,7 +55,7 @@ Or you can add the option `-i https://pypi.python.org/simple` when pip install t
 ---
 ### **2. Run**
 
-_**Note:** Installing Analytics Zoo from pip will automatically install `pyspark`. To avoid possible conflicts, you are highly recommended to  **unset the environment variable `SPARK_HOME`**  if it exists in your environment._
+_**Note:** Installing BigDL from pip will automatically install `pyspark`. To avoid possible conflicts, you are highly recommended to  **unset the environment variable `SPARK_HOME`**  if it exists in your environment._
 
 
 #### **2.1 Interactive Shell**
@@ -65,16 +66,16 @@ You may test if the installation is successful using the interactive Python shel
 * Try to run the example code below to verify the installation:
 
   ```python
-  import zoo
-  from zoo.orca import init_orca_context
+  import bigdl
+  from bigdl.orca import init_orca_context
 
-  print(zoo.__version__)  # Verify the version of analytics-zoo.
-  sc = init_orca_context()  # Initiation of analytics-zoo on the underlying cluster.
+  print(bigdl.__version__)  # Verify the version of bigdl.
+  sc = init_orca_context()  # Initiation of bigdl on the underlying cluster.
   ```
 
 #### **2.2 Jupyter Notebook**
 
-You can start the Jupyter notebook as you normally do using the following command and run Analytics Zoo programs directly in a Jupyter notebook:
+You can start the Jupyter notebook as you normally do using the following command and run BigDL programs directly in a Jupyter notebook:
 
 ```bash
 jupyter notebook --notebook-dir=./ --ip=* --no-browser
@@ -82,7 +83,7 @@ jupyter notebook --notebook-dir=./ --ip=* --no-browser
 
 #### **2.3 Python Script**
 
-You can directly write Analytics Zoo programs in a Python file (e.g. script.py) and run in the command line as a normal Python program:
+You can directly write BigDL programs in a Python file (e.g. script.py) and run in the command line as a normal Python program:
 
 ```bash
 python script.py
@@ -98,7 +99,7 @@ For more details, please refer to [Orca Context](../Orca/Overview/orca-context.m
 ---
 ### **4. Compatibility**
 
-Analytics Zoo has been tested on __Python 3.6 and 3.7__ with the following library versions:
+BigDL has been tested on __Python 3.6 and 3.7__ with the following library versions:
 
 ```bash
 pyspark==2.4.6
@@ -135,7 +136,7 @@ Theano==1.0.4
 ---
 ### **5. Known Issues**
 
-- If you meet the following error when `pip install analytics-zoo`:
+- If you meet the following error when `pip install bigdl`:
 ```
 ERROR: Could not find a version that satisfies the requirement pypandoc (from versions: none)
 ERROR: No matching distribution found for pypandoc
@@ -147,4 +148,4 @@ Traceback (most recent call last):
     raise CalledProcessError(retcode, cmd)
 subprocess.CalledProcessError: Command '['/root/anaconda3/bin/python', '-m', 'pip', '--disable-pip-version-check', 'wheel', '--no-deps', '-w', '/tmp/tmprefr87ue', '--quiet', 'pypandoc']' returned non-zero exit status 1.
 ```
-This is actually caused by `pip install pyspark` in your Python environment. You can fix it by running `pip install pypandoc` first and then `pip install analytics-zoo`.
+This is actually caused by `pip install pyspark` in your Python environment. You can fix it by running `pip install pypandoc` first and then `pip install bigdl`.
