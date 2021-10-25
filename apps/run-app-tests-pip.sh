@@ -9,9 +9,20 @@ clear_up () {
 }
 
 chmod +x ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh
+RUN_PART1=0
+RUN_PART2=0
+
+if [ $1 = 1 ]; then
+	RUN_PART1=1
+	RUN_PART2=0
+elif [ $1 = 2 ]; then
+	RUN_PART1=0
+	RUN_PART2=1
+fi
 
 set -e
 
+if [ $RUN_PART1 = 1 ]; then
 echo "#1 start app test for using_variational_autoencoder_and_deep_feature_loss_to_generate_faces"
 #timer
 start=$(date "+%s")
@@ -295,6 +306,9 @@ echo "#4 image-similarity time used:$time4 seconds"
 # time7=$((now-start))
 # echo "#7 image-augmentation-3d time used:$time7 seconds"
 
+fi
+
+if [ $RUN_PART2 = 1 ]; then
 echo "#8 start app test for using_variational_autoencoder_to_generate_faces"
 #timer
 start=$(date "+%s")
@@ -469,4 +483,4 @@ time12=$((now-start))
 rm ${ANALYTICS_ZOO_HOME}/apps/tfnet/tmp.py
 echo "#12 image_classification_inference time used:$time12 seconds"
 
-
+fi
