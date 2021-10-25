@@ -5,23 +5,6 @@ clear_up() {
 }
 
 
-echo "#3 start test for dllib textclassifier"
-#timer
-start=$(date "+%s")
-#run the example
-rm -rf /tmp/news20
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/news20 /tmp/news20
-ls /tmp/news20
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/models/textclassifier/textclassifier.py --on-yarn --max_epoch 3 --model cnn
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "dllib textclassifier failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time3=$((now - start))
-
 echo "start test for dllib rnn"
 echo "start test for dllib custom"
 echo "start test for dllib custom loss"
@@ -48,7 +31,8 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time1=$((now - start))
+time=$((now - start))
+echo "#1 Total time cost ${time} seconds"
 
 echo "#2 start test for dllib inception"
 
@@ -71,5 +55,24 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time2=$((now - start))
+time=$((now - start))
+echo "#2 Total time cost ${time} seconds"
+
+echo "#3 start test for dllib textclassifier"
+#timer
+start=$(date "+%s")
+#run the example
+rm -rf /tmp/news20
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/news20 /tmp/news20
+ls /tmp/news20
+python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/models/textclassifier/textclassifier.py --on-yarn --max_epoch 3 --model cnn
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "dllib textclassifier failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#3 Total time cost ${time} seconds"
 
