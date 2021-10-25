@@ -33,6 +33,7 @@ def add_one_func(x):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("--nb_epoch", dest="nb_epoch", default="500")
+    parser.add_option("--distri", type=bool, dest="distri", default=False)
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -56,7 +57,7 @@ if __name__ == "__main__":
               y=Y_,
               batch_size=32,
               nb_epoch=int(options.nb_epoch),
-              distributed=False)
+              distributed=True)
 
     model.save_graph_topology('./log')
 
