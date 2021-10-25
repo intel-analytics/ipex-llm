@@ -68,8 +68,7 @@ to **train-images.idx3-ubyte**. Please change the name back before you run the e
 ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \ 
   --master local[2] \
   --class com.intel.analytics.bigdl.dllib.models.lenet.LeNet5 \
-  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same
-  version
+  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
   --inputDir ./data/census \
   --batchSize 320 \
   --maxEpoch 20 \
@@ -81,8 +80,7 @@ ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
   --executor-cores 2 \
   --total-executor-cores 4 \
   --class com.intel.analytics.bigdl.dllib.models.lenet.LeNet5 \
-  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same
-  version
+  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
   --inputDir ./data/census \
   --batchSize 320 \
   --maxEpoch 20 \
@@ -95,8 +93,7 @@ ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
   --executor-cores 2 \
   --num-executors 2 \
   --class com.intel.analytics.bigdl.dllib.models.lenet.LeNet5 \
-  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same
-  version
+  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
   --inputDir ./data/census \
   --batchSize 320 \
   --maxEpoch 20 \
@@ -109,8 +106,7 @@ ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
   --executor-cores 2 \
   --num-executors 2 \
   --class com.intel.analytics.bigdl.dllib.models.lenet.LeNet5 \
-  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same
-  version
+  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
   --inputDir ./data/census \
   --batchSize 320 \
   --maxEpoch 20 \
