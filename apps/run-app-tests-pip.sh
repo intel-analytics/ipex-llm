@@ -97,6 +97,7 @@ sed "s/nb_epoch=20/nb_epoch=2/g; s/batch_size=1024/batch_size=1008/g" ${ANALYTIC
 
 # Run the example
 export SPARK_DRIVER_MEMORY=2g
+export BIGDL_HOME=${ANALYTICS_ZOO_HOME}
 python ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection/tmp_test.py
 
 exit_status=$?

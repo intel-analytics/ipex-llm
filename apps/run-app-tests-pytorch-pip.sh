@@ -4,9 +4,8 @@ export ANALYTICS_ZOO_HOME=${ANALYTICS_ZOO_ROOT}/dist
 
 clear_up () {
     echo "Clearing up environment. Uninstalling analytics-zoo"
-    pip uninstall -y analytics-zoo
-    pip uninstall -y bigdl
-    pip uninstall -y pyspark
+    pip uninstall -y bigdal-orca
+    pip uninstall -y bigdl-dllib
 }
 
 chmod +x ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh
