@@ -271,29 +271,29 @@ echo "#4 image-similarity time used:$time4 seconds"
 # time6=$((now-start))
 # echo "#6 dogs-vs-cats time used:$time6 seconds"
 
-echo "#7 start app test for image-augmentation-3d"
-# timer
-start=$(date "+%s")
+# echo "#7 start app test for image-augmentation-3d"
+# # timer
+# start=$(date "+%s")
 
-# Conversion to py file and data preparation
-${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augmentation-3d
+# # Conversion to py file and data preparation
+# ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augmentation-3d
 
-# Run the example
-export SPARK_DRIVER_MEMORY=1g
-python ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augmentation-3d.py
+# # Run the example
+# export SPARK_DRIVER_MEMORY=1g
+# python ${ANALYTICS_ZOO_HOME}/apps/image-augmentation-3d/image-augmentation-3d.py
 
-exit_status=$?
-if [ $exit_status -ne 0 ];
-then
-    clear_up
-    echo "image-augmentation-3d failed"
-    exit $exit_status
-fi
+# exit_status=$?
+# if [ $exit_status -ne 0 ];
+# then
+#     clear_up
+#     echo "image-augmentation-3d failed"
+#     exit $exit_status
+# fi
 
-unset SPARK_DRIVER_MEMORY
-now=$(date "+%s")
-time7=$((now-start))
-echo "#7 image-augmentation-3d time used:$time7 seconds"
+# unset SPARK_DRIVER_MEMORY
+# now=$(date "+%s")
+# time7=$((now-start))
+# echo "#7 image-augmentation-3d time used:$time7 seconds"
 
 echo "#8 start app test for using_variational_autoencoder_to_generate_faces"
 #timer
