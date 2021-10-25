@@ -22,31 +22,16 @@ Program would download the mnist data into ```/tmp/mnist``` automatically by def
 
 ```
 
-We would train a LeNet model in spark local mode with the following commands and you can distribute it across cluster by modifying the spark master and the executor cores.
+We would train a LeNet model in spark local mode with the following commands.
 
 ```
-    BigDL_HOME=...
-    SPARK_HOME=...
-    MASTER=local[*]
-    PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
-    BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
-    PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
-    ${SPARK_HOME}/bin/spark-submit \
-        --master ${MASTER} \
-        --driver-cores 2  \
-        --driver-memory 2g  \
-        --total-executor-cores 2  \
-        --executor-cores 2  \
-        --executor-memory 4g \
-        --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py  \
-        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
-        --jars ${BigDL_JAR_PATH} \
-        --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
-        --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-        ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py \
-        --action train \
-        --dataPath /tmp/mnist
- ```
+python lenet5.py --dataPath /tmp/mnist
+```
+and you can distribute it across cluster by following commands.
+```
+export HADOOP_CONF_DIR=... #Fill the path to your hadoop conf dir
+python lenet5.py --dataPath /tmp/mnist --on-yarn
+```
 
 * ```--action``` it can be train or test.
 
@@ -63,6 +48,10 @@ We would train a LeNet model in spark local mode with the following commands and
 * ```--checkpointPath``` option can be used to set checkpoint path for saving model, the default value is /tmp/lenet5/.
 
 * ```--optimizerVersion``` option can be used to set DistriOptimizer version, the value can be "optimizerV1" or "optimizerV2".
+
+* ```--on-yarn``` option to run on yarn cluster, environment variable `HADOOP_CONF_DIR` should be set correctly.
+
+* ```--mkl-dnn``` options to enable mkldnn.
 
 ##### In order to use MKL-DNN as the backend, you should:
 1. Define a graph model with Model or convert a sequential model to a graph model using:
@@ -90,7 +79,7 @@ We would train a LeNet model in spark local mode with the following commands and
    means the index of format nc is 4.
    
    ```
-3. Run spark-submit command with correct configurations
+3. Run add following command to spark conf
    ```
    --conf "spark.driver.extraJavaOptions=-Dbigdl.engineType=mkldnn"
    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
@@ -103,9 +92,4 @@ INFO  DistriOptimizer$:247 - [Epoch 1 0/60000][Iteration 1][Wall Clock 0.0s] Tra
 
 INFO  DistriOptimizer$:522 - Top1Accuracy is Accuracy(correct: 9572, count: 10000, accuracy: 0.9572)
 
-```
-
-Or you can train a LeNet model directly in shell after installing BigDL from pip:
-```
-python ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
 ```
