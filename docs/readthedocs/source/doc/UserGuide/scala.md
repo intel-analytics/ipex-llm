@@ -67,24 +67,22 @@ to **train-images.idx3-ubyte**. Please change the name back before you run the e
 # Spark local mode
 ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \ 
   --master local[2] \
-  --class com.intel.analytics.bigdl.dllib.models.lenet.LeNet5 \
+  --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
   ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
-  --inputDir ./data/census \
-  --batchSize 320 \
-  --maxEpoch 20 \
-  --dataset census
+  -f ./data/mnist \
+  -b 320 \
+  -e 20
 
 # Spark standalone mode
 ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
   --master spark://... \         #add your spark master address
   --executor-cores 2 \
   --total-executor-cores 4 \
-  --class com.intel.analytics.bigdl.dllib.models.lenet.LeNet5 \
+  --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
   ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
-  --inputDir ./data/census \
-  --batchSize 320 \
-  --maxEpoch 20 \
-  --dataset census
+   -f ./data/mnist \
+  -b 320 \
+  -e 20
 
 # Spark yarn client mode, please make sure the right HADOOP_CONF_DIR is set
 ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
@@ -92,12 +90,11 @@ ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
   --deploy-mode client \
   --executor-cores 2 \
   --num-executors 2 \
-  --class com.intel.analytics.bigdl.dllib.models.lenet.LeNet5 \
+  --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
   ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
-  --inputDir ./data/census \
-  --batchSize 320 \
-  --maxEpoch 20 \
-  --dataset census
+  -f ./data/mnist \
+  -b 320 \
+  -e 20
 
 # Spark yarn cluster mode, please make sure the right HADOOP_CONF_DIR is set
 ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
@@ -105,12 +102,11 @@ ${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
   --deploy-mode cluster \
   --executor-cores 2 \
   --num-executors 2 \
-  --class com.intel.analytics.bigdl.dllib.models.lenet.LeNet5 \
+  --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
   ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
-  --inputDir ./data/census \
-  --batchSize 320 \
-  --maxEpoch 20 \
-  --dataset census
+  -f ./data/mnist \
+  -b 320 \
+  -e 20
 ```
 
 --- 
