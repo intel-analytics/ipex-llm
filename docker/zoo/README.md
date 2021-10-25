@@ -1,5 +1,5 @@
 --------
-# Docker images and builders for Analytics-Zoo
+# Docker images and builders for BigDL
 
 ## Analytics-Zoo in Docker
 
