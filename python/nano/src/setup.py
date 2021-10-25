@@ -29,7 +29,10 @@ from html.parser import HTMLParser
 
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
-nano_home = os.path.abspath(__file__ + "/../src/")
+nano_home = os.path.abspath(__file__ + "/../")
+
+bigdl_home = os.path.abspath(__file__ + "/../../../..")
+VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
 
 def get_nano_packages():
@@ -112,10 +115,10 @@ def setup_package():
 
     metadata = dict(
         name='bigdl-nano',
-        version='0.14.0.dev0',
-        description='',
-        author='',
-        author_email='',
+        version=VERSION,
+        description='High-performance scalable acceleration components for intel.',
+        author='BigDL Authors',
+        author_email='bigdl-user-group@googlegroups.com',
         url='https://github.com/intel-analytics/analytics-zoo/tree/bigdl-2.0',
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
@@ -123,8 +126,7 @@ def setup_package():
         packages=get_nano_packages(),
         package_data={"bigdl.nano": [
             "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]},
-        package_dir={'': 'src'},
-        scripts=['script/bigdl-nano-init']
+        scripts=['../script/bigdl-nano-init']
     )
 
     setup(**metadata)
