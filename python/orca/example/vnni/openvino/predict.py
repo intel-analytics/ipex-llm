@@ -17,7 +17,7 @@
 from optparse import OptionParser
 
 from bigdl.orca.inference import InferenceModel
-from bigdl.dllib.nncontext import init_nncontext
+from bigdl.dllib.utils.nncontext import init_nncontext
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.nnframes import *
 
