@@ -29,7 +29,7 @@ def setup_package():
     metadata = dict(
         name='bigdl',
         version=VERSION,
-        description='Seamlessly scale out TensorFlow and PyTorch for Big Data (using Spark & Ray)',
+        description='Building Large-Scale AI Applications for Distributed Big Data',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
