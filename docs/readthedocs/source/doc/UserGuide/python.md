@@ -66,10 +66,8 @@ You may test if the installation is successful using the interactive Python shel
 * Try to run the example code below to verify the installation:
 
   ```python
-  import bigdl
   from bigdl.orca import init_orca_context
 
-  print(bigdl.__version__)  # Verify the version of bigdl.
   sc = init_orca_context()  # Initiation of bigdl on the underlying cluster.
   ```
 
