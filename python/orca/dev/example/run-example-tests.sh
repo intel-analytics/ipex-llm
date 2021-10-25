@@ -5,78 +5,78 @@ set -e
 echo "#1 start example test for openvino"
 #timer
 start=$(date "+%s")
-if [ -f analytics-zoo-models/faster_rcnn_resnet101_coco.xml ]; then
-  echo "analytics-zoo-models/faster_rcnn_resnet101_coco already exists."
+if [ -f models/faster_rcnn_resnet101_coco.xml ]; then
+  echo "models/faster_rcnn_resnet101_coco already exists."
 else
   wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.xml \
-    -P analytics-zoo-models
+    -P models
   wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.bin \
-    -P analytics-zoo-models
+    -P models
 fi
-if [ -d analytics-zoo-data/data/object-detection-coco ]; then
-  echo "analytics-zoo-data/data/object-detection-coco already exists"
+if [ -d tmp/data/object-detection-coco ]; then
+  echo "tmp/data/object-detection-coco already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
-  unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data
+  wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P tmp/data
+  unzip -q tmp/data/object-detection-coco.zip -d tmp/data
 fi
 python ${BIGDL_ROOT}/python/orca/example/openvino/predict.py \
-  --image analytics-zoo-data/data/object-detection-coco \
-  --model analytics-zoo-models/faster_rcnn_resnet101_coco.xml
+  --image tmp/data/object-detection-coco \
+  --model models/faster_rcnn_resnet101_coco.xml
 now=$(date "+%s")
 time1=$((now - start))
 
 echo "#2 start example for vnni/openvino"
 #timer
 start=$(date "+%s")
-if [ -d analytics-zoo-models/vnni ]; then
-  echo "analytics-zoo-models/resnet_v1_50.xml already exists."
+if [ -d models/vnni ]; then
+  echo "models/resnet_v1_50.xml already exists."
 else
   wget -nv $FTP_URI/analytics-zoo-models/openvino/vnni/resnet_v1_50.zip \
-    -P analytics-zoo-models
-  unzip -q analytics-zoo-models/resnet_v1_50.zip -d analytics-zoo-models/vnni
+    -P models
+  unzip -q models/resnet_v1_50.zip -d models/vnni
 fi
-if [ -d analytics-zoo-data/data/object-detection-coco ]; then
-  echo "analytics-zoo-data/data/object-detection-coco already exists"
+if [ -d tmp/data/object-detection-coco ]; then
+  echo "tmp/data/object-detection-coco already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P analytics-zoo-data/data
-  unzip -q analytics-zoo-data/data/object-detection-coco.zip -d analytics-zoo-data/data
+  wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P tmp/data
+  unzip -q tmp/data/object-detection-coco.zip -d tmp/data
 fi
 python ${BIGDL_ROOT}/python/orca/example/vnni/openvino/predict.py \
-  --model analytics-zoo-models/vnni/resnet_v1_50.xml \
-  --image analytics-zoo-data/data/object-detection-coco
+  --model models/vnni/resnet_v1_50.xml \
+  --image tmp/data/object-detection-coco
 now=$(date "+%s")
 time2=$((now - start))
 
 echo "#3 start example test for tensorflow"
 #timer
 start=$(date "+%s")
-if [ -f analytics-zoo-models/resnet_50_saved_model.zip ]; then
-  echo "analytics-zoo-models/resnet_50_saved_model.zip already exists."
+if [ -f models/resnet_50_saved_model.zip ]; then
+  echo "-models/resnet_50_saved_model.zip already exists."
 else
   wget -nv $FTP_URI/analytics-zoo-models/tensorflow/resnet_50_saved_model.zip \
-    -P analytics-zoo-models
-  unzip analytics-zoo-models/resnet_50_saved_model.zip -d analytics-zoo-models/resnet_50_saved_model
+    -P models
+  unzip models/resnet_50_saved_model.zip -d models/resnet_50_saved_model
 fi
 
 echo "start example test for TFPark freeze saved model 9"
 python ${BIGDL_ROOT}/python/orca/example/freeze_saved_model/freeze.py \
-  --saved_model_path analytics-zoo-models/resnet_50_saved_model \
-  --output_path analytics-zoo-models/resnet_50_tfnet
+  --saved_model_path models/resnet_50_saved_model \
+  --output_path models/resnet_50_tfnet
 
 now=$(date "+%s")
 time3=$((now - start))
 
 echo "#4 start example test for orca data"
-if [ -f analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv ]; then
-  echo "analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv already exists"
+if [ -f tmp/data/NAB/nyc_taxi/nyc_taxi.csv ]; then
+  echo "tmp/data/NAB/nyc_taxi/nyc_taxi.csv already exists"
 else
   wget -nv $FTP_URI/analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv \
-    -P analytics-zoo-data/data/NAB/nyc_taxi/
+    -P tmp/data/NAB/nyc_taxi/
 fi
 #timer
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
-  -f analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv
+  -f tmp/data/NAB/nyc_taxi/nyc_taxi.csv
 
 now=$(date "+%s")
 time4=$((now - start))
@@ -85,20 +85,20 @@ echo "#5 start test for orca tf imagesegmentation"
 #timer
 start=$(date "+%s")
 # prepare data
-if [ -f analytics-zoo-data/data/carvana ]; then
-  echo "analytics-zoo-data/data/carvana already exists"
+if [ -f tmp/data/carvana ]; then
+  echo "tmp/data/carvana already exists"
 else
   wget $FTP_URI/analytics-zoo-data/data/carvana/train.zip \
-    -P analytics-zoo-data/data/carvana/
+    -P tmp/data/carvana/
   wget $FTP_URI/analytics-zoo-data/data/carvana/train_masks.zip \
-    -P analytics-zoo-data/data/carvana/
+    -P tmp/data/carvana/
   wget $FTP_URI/analytics-zoo-data/data/carvana/train_masks.csv.zip \
-    -P analytics-zoo-data/data/carvana/
+    -P tmp/data/carvana/
 fi
 
 # Run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segmentation.py \
-  --file_path analytics-zoo-data/data/carvana --epochs 1 --non_interactive
+  --file_path tmp/data/carvana --epochs 1 --non_interactive
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   echo "orca tf imagesegmentation failed"
@@ -153,15 +153,15 @@ time8=$((now - start))
 echo "#9 start test for orca bigdl imageInference"
 #timer
 start=$(date "+%s")
-if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+  echo "models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
 else
   wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-    -P analytics-zoo-models
+    -P models
 fi
 
 python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
-  -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -m models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f ${HDFS_URI}/kaggle/train_100
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
