@@ -107,17 +107,17 @@ set -e
 # now=$(date "+%s")
 # time5=$((now - start))
 
-echo "#6 start test for orca tf transfer_learning"
-#timer
-start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  echo "orca tf transfer_learning failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time6=$((now - start))
+# echo "#6 start test for orca tf transfer_learning"
+# #timer
+# start=$(date "+%s")
+# python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   echo "orca tf transfer_learning failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time6=$((now - start))
 
 echo "#7 start test for orca tf basic_text_classification"
 #timer
@@ -175,7 +175,7 @@ echo "#1 openvino time used: $time2 seconds"
 echo "#2 vnni/openvino time used: $time3 seconds"
 echo "#3 tensorflow time used: $time4 seconds"
 echo "#4 orca data time used:$time5 seconds"
-#echo "#5 orca tf imagesegmentation time used:$time6 seconds"
+echo "#5 orca tf imagesegmentation time used:$time6 seconds"
 echo "#6 orca tf transfer_learning time used:$time7 seconds"
 echo "#7 orca tf basic_text_classification time used:$time8 seconds"
 echo "#8 orca bigdl attention time used:$time9 seconds"
