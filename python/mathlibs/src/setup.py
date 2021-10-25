@@ -22,7 +22,14 @@ from setuptools import setup
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
+plat_name = "linux-x86_64"
+
 def setup_package():
+    package_data_plat_ = {"linux-x86_64":["libiomp5.so", "libmklml_intel.so"],
+                          "darwin-x86_64":["libiomp5.dylib", "libmklml.dylib"]}
+
+    packages_name = "bigdl.share.tflibs." + plat_name
+
     metadata = dict(
         name='bigdl-math',
         version=VERSION,
@@ -31,8 +38,8 @@ def setup_package():
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
-        packages=["bigdl.share.tflibs.linux-x86_64"],
-        package_data={"bigdl.share.tflibs.linux-x86_64": ["libiomp5.so", "libmklml_intel.so"]}
+        packages=[packages_name],
+        package_data={packages_name: package_data_plat_[plat_name]}
     )
 
     setup(**metadata)
