@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
 import com.intel.analytics.bigdl.ppml.{FLClient, FLServer}
 import com.intel.analytics.bigdl.ppml.vfl.VflEstimator
+import com.intel.analytics.bigdl.ppml.vfl.algorithm.LogisticRegression
 import com.intel.analytics.bigdl.ppml.vfl.utils.SampleToMiniBatch
 import org.apache.log4j.Logger
 
@@ -39,56 +40,17 @@ import scala.io.Source
  * and store parameters as Parameter Server
  */
 object VflLogisticRegression {
-  val logger = Logger.getLogger(this.getClass)
-
-  /**
-   * Start local trainers
-   */
-  def start(dataPath: String,
-            rowKeyName: String,
-            batchSize: Int,
-            learningRate: Float): Unit = {
-    val localVflTrainer = new LocalVflTrainer(batchSize, learningRate)
-    localVflTrainer.getData(dataPath, rowKeyName)
-    localVflTrainer.getSplitedTrainEvalData()
-    localVflTrainer.model =
-      Sequential[Float]().add(Linear(localVflTrainer.featureNum, 1))
-    localVflTrainer.train()
-    localVflTrainer.evaluate()
-  }
-
-  def main(args: Array[String]): Unit = {
-    // load args
-    val dataPath = args(0)
-    val worker = args(1).toInt
-    val batchSize = args(2).toInt
-    val learningRate = args(3).toFloat
-    val rowKeyName = args(4)
-    start(dataPath, rowKeyName, batchSize, learningRate)
-  }
-
-}
-class LocalVflTrainer(batchSize: Int, learningRate: Float) {
-  val flClient = new FLClient()
   var dataSet: Array[Array[Float]] = null
   var trainData: DataSet[MiniBatch[Float]] = null
   var valData: DataSet[MiniBatch[Float]] = null
-  var headers: Array[String] = null
   var featureNum: Int = _
   var model: Module[Float] = null
+  var flClient: FLClient = new FLClient()
+  var batchSize: Int = 0
   val logger = Logger.getLogger(getClass)
   protected var hashedKeyPairs: Map[String, String] = null
-  val estimator = VflEstimator(model, new Adam(learningRate))
-  def train() = {
-    estimator.train(30, trainData.toLocal(), valData.toLocal())
-  }
-  def evaluate() = {
-    println(model.getParametersTable())
-    estimator.getEvaluateResults().foreach{r =>
-      println(r._1 + ":" + r._2.mkString(","))
-    }
-  }
   def getData(dataPath: String, rowKeyName: String) = {
+
     // load data from dataset and preprocess
     val sources = Source.fromFile(dataPath, "utf-8").getLines()
     val headers = sources.next().split(",").map(_.trim)
@@ -105,8 +67,10 @@ class LocalVflTrainer(batchSize: Int, learningRate: Float) {
     dataSet = intersections.map{id =>
       data(id)
     }
-  }
-  def getSplitedTrainEvalData() = {
+
+    /**
+     * Split data into train and validation set
+     */
     val samples = if (headers.last == "Outcome") {
       println("hasLabel")
       featureNum = headers.length - 2
@@ -130,6 +94,7 @@ class LocalVflTrainer(batchSize: Int, learningRate: Float) {
     val valDataSet = DataSet.array(samples) -> SampleToMiniBatch(batchSize)
     (trainDataset, valDataSet)
   }
+
 
   def uploadKeys(keys: Array[String]): Map[String, String] = {
     val salt = flClient.getSalt
@@ -167,4 +132,22 @@ class LocalVflTrainer(batchSize: Int, learningRate: Float) {
       hashedKeyPairs(k)
     }
   }
+
+  def main(args: Array[String]): Unit = {
+    // load args and get data
+    val dataPath = args(0)
+    val worker = args(1).toInt
+    batchSize = args(2).toInt
+    val learningRate = args(3).toFloat
+    val rowKeyName = args(4)
+    getData(dataPath, rowKeyName)
+
+    // create LogisticRegression object to train the model
+    val lr = new LogisticRegression(featureNum, learningRate)
+    lr.fit(trainData, valData)
+    lr.evaluate()
+  }
+
 }
+
+

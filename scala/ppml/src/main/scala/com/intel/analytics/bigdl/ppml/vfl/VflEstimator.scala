@@ -31,10 +31,10 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-class VflEstimator(model: Module[Float],
+class VflEstimator(flClient: FLClient,
+                   model: Module[Float],
                    optimMethod: OptimMethod[Float]){
   val (weight, grad) = getParametersFromModel(model)
-  val flClient = new FLClient();
 
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float] = {
