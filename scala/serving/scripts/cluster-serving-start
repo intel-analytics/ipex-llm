@@ -71,11 +71,8 @@ else
     echo "To set specific parameter, use \"\$REDIS_HOME/src/redis-cli config set key value\" later."
 fi
 
+BIGDL_SERVING_JAR_PATH=$(find . -maxdepth 1 -name 'bigdl-serving-*.jar')
 
-# if jar paths are not set, try to use them in current directory
-if [ -z "${ZOO_JAR}" ]; then
-    ZOO_JAR=zoo.jar
-fi
 
 if [ -z "${FLINK_HOME}" ]; then
   echo "FLINK_HOME variable is not set, you need to set it to start Cluster Serving with Flink backend."
@@ -86,9 +83,8 @@ if [[ $($FLINK_HOME/bin/flink list) == *"Cluster Serving"* ]]; then
   echo "Starting new Cluster Serving job. There exists Cluster Serving job, if not, please check."
 else
   echo "Starting new Cluster Serving job."
-  rm -rf /tmp/cluster-serving-jobs.yaml
 fi
 
-${FLINK_HOME}/bin/flink run -c com.intel.analytics.zoo.serving.ClusterServing zoo.jar -c $config_path
+${FLINK_HOME}/bin/flink run -c com.intel.analytics.bigdl.serving.ClusterServing $BIGDL_SERVING_JAR_PATH -c $config_path
 
 
