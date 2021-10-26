@@ -11,11 +11,11 @@ ray stop -f
 # now=$(date "+%s")
 # time1=$((now-start))
 
-echo "#2 Start multiagent example"
-start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
-now=$(date "+%s")
-time2=$((now-start))
+# echo "#2 Start multiagent example"
+# start=$(date "+%s")
+# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
+# now=$(date "+%s")
+# time2=$((now-start))
 
 echo "#3 Start async_parameter example"
 start=$(date "+%s")
