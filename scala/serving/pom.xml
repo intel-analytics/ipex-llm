@@ -261,66 +261,8 @@
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>com.intel.analytics.zoo:zoo-core-dist-mac</exclude>
-                                    <exclude>com.intel.analytics.zoo:zoo-core-tfnet-mac</exclude>
-                                    <exclude>com.intel.analytics.zoo:zoo-core-openvino-java-mac</exclude>
-                                </excludes>
-                            </artifactSet>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>http</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>http</shadedClassifierName>
-                            <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>reference.conf</resource>
-                                </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <manifestEntries>
-                                        <Main-Class>com.intel.analytics.bigdl.serving.http.FrontEndApp</Main-Class>
-                                    </manifestEntries>
-                                </transformer>
-                            </transformers>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>ml.dmlc:xgboost4j</exclude>
-                                    <exclude>black.ninia:jep</exclude>
-                                    <exclude>org.tensorflow:tensorflow-hadoop</exclude>
-                                    <exclude>com.intel.analytics.zoo:zoo-core-dist-mac</exclude>
-                                    <exclude>com.intel.analytics.zoo:zoo-core-tfnet-mac</exclude>
-                                    <exclude>com.intel.analytics.zoo:zoo-core-openvino-java-mac</exclude>
-                                    <exclude>org.apache.spark:*</exclude>
-                                    <exclude>net.sf.py4j:*</exclude>
-                                    <exclude>org.apache.hadoop:*</exclude>
-                                    <exclude>org.apache.parquet:*</exclude>
-                                    <exclude>org.apache.orc:*</exclude>
-                                    <exclude>org.apache.avro:*</exclude>
-                                    <exclude>org.apache.ivy:*</exclude>
-                                    <exclude>org.xerial.snappy:*</exclude>
-                                    <exclude>org.glassfish.hk2:*</exclude>
-                                    <exclude>org.glassfish.jersey.core:*</exclude>
-                                    <exclude>org.codehaus.jackson:*</exclude>
-                                    <exclude>org.codehaus.janino:janino</exclude>
-                                    <exclude>io.netty:netty</exclude>
-                                    <exclude>org.apache.commons:commons-math3</exclude>
-                                    <exclude>org.apache.commons:commons-compress</exclude>
-                                    <exclude>org.scala-lang:scala-reflect</exclude>
-                                    <exclude>xerces:xercesImpl</exclude>
-                                </excludes>
-                            </artifactSet>
-                        </configuration>
-                    </execution>
-
                 </executions>
             </plugin>
             <plugin>
@@ -332,7 +274,7 @@
                         <inherited>false</inherited>
                         <configuration>
                             <descriptors>
-                                <descriptor>${project.basedir}/../../python/serving/src/python-zip.xml
+                                <descriptor>${project.basedir}/../../python/orca/src/python-zip.xml
                                 </descriptor>
                             </descriptors>
                         </configuration>
@@ -340,20 +282,6 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>make-cluster-serving-all</id>
-                        <inherited>false</inherited>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>${project.basedir}/src/assembly/cluster-serving-all.xml
-                                </descriptor>
-                            </descriptors>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
