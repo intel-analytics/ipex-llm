@@ -24,7 +24,7 @@ import argparse
 import os
 import time
 
-from bigdl.python.orca.example.ray_on_spark.parameter_server import model
+from python.orca.example.ray_on_spark.parameter_server import model
 import ray
 
 from bigdl.orca import init_orca_context, stop_orca_context
