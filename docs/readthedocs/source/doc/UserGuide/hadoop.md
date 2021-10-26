@@ -4,15 +4,15 @@ Hadoop version: Apache Hadoop >= 2.7 (3.X included) or [CDH](https://www.clouder
 
 ---
 
-You can run Analytics Zoo programs on standard Hadoop/YARN clusters without any changes to the cluster (i.e., no need to pre-install Analytics Zoo or any Python libraries in the cluster).
+You can run BigDL programs on standard Hadoop/YARN clusters without any changes to the cluster (i.e., no need to pre-install BigDL or any Python libraries in the cluster).
 
 ### **1. Prepare Environment**
 
 - You need to first use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment _**on the local client machine**_. Create a conda environment and install all the needed Python libraries in the created conda environment:
 
   ```bash
-  conda create -n zoo python=3.7  # "zoo" is conda environment name, you can use any name you like.
-  conda activate zoo
+  conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
+  conda activate bigdl
 
   # Use conda or pip to install all the needed Python dependencies in the created conda environment.
   ```
@@ -42,11 +42,11 @@ You can run Analytics Zoo programs on standard Hadoop/YARN clusters without any 
 
 - **For CDH users**
 
-If you are using BigDL with pip and your CDH cluster has already installed Spark, the CDH's spark will have conflict with the pyspark installed by pip required by analytics-zoo in next section.
+If you are using BigDL with pip and your CDH cluster has already installed Spark, the CDH's spark will have conflict with the pyspark installed by pip required by bigdl in next section.
 
-Thus before running analytics-zoo applications, you should unset all the spark related environment variables. You can use `env | grep SPARK` to find all the existing spark environment variables.
+Thus before running bigdl applications, you should unset all the spark related environment variables. You can use `env | grep SPARK` to find all the existing spark environment variables.
 
-Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` by CDH default.
+Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by default.
 
 ---
 ### **2. YARN Client Mode**
@@ -61,7 +61,7 @@ Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` by CDH defaul
   View the [Python User Guide](./python.md) for more details.
   
 
-- We recommend using `init_orca_context` at the very beginning of your code to initiate and run Analytics Zoo on standard Hadoop/YARN clusters in [YARN client mode](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn):
+- We recommend using `init_orca_context` at the very beginning of your code to initiate and run BigDL on standard Hadoop/YARN clusters in [YARN client mode](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn):
 
   ```python
   from bigdl.orca import init_orca_context
@@ -118,7 +118,7 @@ Follow the steps below if you need to run BigDL in [YARN cluster mode](https://s
 - Use `spark-submit` to submit your BigDL program (e.g. script.py):
 
   ```bash
-  PYSPARK_PYTHON=./environment/bin/python ${BIGDL_HOME}/bin/spark-submit-python-with-zoo.sh \
+  PYSPARK_PYTHON=./environment/bin/python ${BIGDL_HOME}/bin/spark-submit-python-with-bigdl.sh \
       --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./environment/bin/python \
       --master yarn-cluster \
       --executor-memory 10g \
