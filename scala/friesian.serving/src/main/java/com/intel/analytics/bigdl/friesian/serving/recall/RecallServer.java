@@ -39,6 +39,7 @@ import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.spark.ml.linalg.DenseVector;
 import utils.TimerMetrics;
 import utils.TimerMetrics$;
 import utils.Utils;
@@ -96,7 +97,7 @@ public class RecallServer extends GrpcServerBase {
     private static class RecallService extends RecallGrpc.RecallImplBase {
         private InferenceModel userModel;
         private InferenceModel itemModel;
-        private com.intel.analytics.bigdl.friesian.serving.recall.RecallService indexService;
+        private final com.intel.analytics.bigdl.friesian.serving.recall.RecallService indexService;
         private boolean callFeatureService = false;
         private FeatureGrpc.FeatureBlockingStub featureServiceStub;
         MetricRegistry metrics = new MetricRegistry();
@@ -182,26 +183,37 @@ public class RecallServer extends GrpcServerBase {
             int userId = msg.getUserID();
             int k = msg.getK();
             Timer.Context predictContext = predictTimer.time();
-            Activity userFeature;
+            float[] userFeatureList;
             if (callFeatureService) {
                 IDs userIds = IDs.newBuilder().addID(userId).build();
                 Features feature = featureServiceStub.getUserFeatures(userIds);
-                Object[] activityList =
-                        Arrays.stream(FeatureUtils.featuresToObject(feature))
+                Object[] featureList =
+                        Arrays.stream(FeatureUtils.getFeatures(feature))
                                 .filter(Objects::nonNull).toArray();
-                if (activityList.length == 0) {
+                if (featureList.length == 0) {
                     throw new Exception("Can't get user feature from feature service");
                 }
-                userFeature = (Activity) activityList[0];
+                if (featureList[0] instanceof Activity) {
+                    userFeatureList = RecallUtils.activityToFloatArr((Activity) featureList[0]);
+                } else if (featureList[0] instanceof DenseVector) {
+                    userFeatureList =
+                            RecallUtils.denseVectorToFloatArr((DenseVector) featureList[0]);
+                } else {
+                    throw new Exception("Unsupported user vector type: " +
+                            featureList[0].getClass().getName());
+                }
             } else {
-                userFeature = this.userModel
-                        .doPredict(RecallUtils.constructActivity(Collections.singletonList(userId)));
+                Activity userFeature = this.userModel
+                        .doPredict(RecallUtils.constructActivity(
+                                Collections.singletonList(userId)));
+                userFeatureList = RecallUtils.activityToFloatArr(userFeature);
             }
             predictContext.stop();
             Timer.Context faissContext = faissTimer.time();
-            float[] userFeatureList = RecallUtils.activityToFloatArr(userFeature);
+
             int[] candidates =
-                    indexService.search(com.intel.analytics.bigdl.friesian.serving.recall.RecallService.vectorToFloatArray(userFeatureList), k);
+                    indexService.search(com.intel.analytics.bigdl.friesian.serving
+                            .recall.RecallService.vectorToFloatArray(userFeatureList), k);
             faissContext.stop();
             Candidates.Builder result = Candidates.newBuilder();
             // TODO: length < k

@@ -147,7 +147,7 @@ public final class FeatureGrpc {
   public static FeatureStub newStub(io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<FeatureStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<FeatureStub>() {
-        @java.lang.Override
+        @Override
         public FeatureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new FeatureStub(channel, callOptions);
         }
@@ -162,7 +162,7 @@ public final class FeatureGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<FeatureBlockingStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<FeatureBlockingStub>() {
-        @java.lang.Override
+        @Override
         public FeatureBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new FeatureBlockingStub(channel, callOptions);
         }
@@ -177,7 +177,7 @@ public final class FeatureGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<FeatureFutureStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<FeatureFutureStub>() {
-        @java.lang.Override
+        @Override
         public FeatureFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new FeatureFutureStub(channel, callOptions);
         }
@@ -220,7 +220,7 @@ public final class FeatureGrpc {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getResetMetricsMethod(), responseObserver);
     }
 
-    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+    @Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getGetUserFeaturesMethod(),
@@ -265,7 +265,7 @@ public final class FeatureGrpc {
       super(channel, callOptions);
     }
 
-    @java.lang.Override
+    @Override
     protected FeatureStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new FeatureStub(channel, callOptions);
@@ -315,7 +315,7 @@ public final class FeatureGrpc {
       super(channel, callOptions);
     }
 
-    @java.lang.Override
+    @Override
     protected FeatureBlockingStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new FeatureBlockingStub(channel, callOptions);
@@ -361,7 +361,7 @@ public final class FeatureGrpc {
       super(channel, callOptions);
     }
 
-    @java.lang.Override
+    @Override
     protected FeatureFutureStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new FeatureFutureStub(channel, callOptions);
@@ -418,8 +418,8 @@ public final class FeatureGrpc {
       this.methodId = methodId;
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_GET_USER_FEATURES:
@@ -443,8 +443,8 @@ public final class FeatureGrpc {
       }
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
@@ -458,12 +458,12 @@ public final class FeatureGrpc {
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     FeatureBaseDescriptorSupplier() {}
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
       return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.getDescriptor();
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {
       return getFileDescriptor().findServiceByName("Feature");
     }
@@ -483,7 +483,7 @@ public final class FeatureGrpc {
       this.methodName = methodName;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {
       return getServiceDescriptor().findMethodByName(methodName);
     }

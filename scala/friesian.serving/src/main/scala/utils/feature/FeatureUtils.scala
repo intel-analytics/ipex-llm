@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto._
 import EncodeUtils.objToBytes
 import org.apache.log4j.Logger
+import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Row, SparkSession}
 import utils.Utils
@@ -40,10 +41,13 @@ object FeatureUtils {
     assert(Utils.helper.initialUserDataPath != null ||
       Utils.helper.initialItemDataPath != null, "initialUserDataPath or " +
       "initialItemDataPath should be provided if loadInitialData is true")
+    val redis = RedisUtils.getInstance(Utils.helper.redisPoolMaxTotal)
     if (Utils.helper.initialUserDataPath != null) {
       assert(Utils.helper.userIDColumn != null)
       assert(Utils.helper.userFeatureColArr != null)
       logger.info("Start inserting user features...")
+      val colNames = Utils.helper.userFeatureColArr.mkString(",")
+      redis.setSchema("userid", colNames)
       val userFeatureColumns = Utils.helper.userIDColumn +: Utils.helper.userFeatureColArr
       divideFileAndLoad(spark, Utils.helper.initialUserDataPath, userFeatureColumns,
         "userid")
@@ -53,6 +57,8 @@ object FeatureUtils {
       assert(Utils.helper.itemIDColumn != null)
       assert(Utils.helper.itemFeatureColArr != null)
       logger.info("Start inserting item features...")
+      val colNames = Utils.helper.itemFeatureColArr.mkString(",")
+      redis.setSchema("itemid", colNames)
       val itemFeatureColumns = Utils.helper.itemIDColumn +: Utils.helper.itemFeatureColArr
       divideFileAndLoad(spark, Utils.helper.initialItemDataPath, itemFeatureColumns,
         "itemid")
@@ -75,7 +81,8 @@ object FeatureUtils {
       val cols = df.columns
       logger.info(s"Load ${cnt} features into redis.")
       val featureRDD = df.rdd.map(row => {
-        encodeRowWithCols(row, cols)
+//        encodeRowWithCols(row, cols)
+        encodeRow(row)
       })
       featureRDD.foreachPartition { partition =>
         if (partition.nonEmpty) {
@@ -89,18 +96,32 @@ object FeatureUtils {
   }
 
   def encodeRow(row: Row): JList[String] = {
-    val rowSeq = row.toSeq
-    val id = rowSeq.head.toString
-    val encodedValue = java.util.Base64.getEncoder.encodeToString(objToBytes(rowSeq))
+    val id = row.get(0).toString
+    val rowSeq = row.toSeq.drop(1)
+    val objToEncode = if (rowSeq.length == 1) {
+      rowSeq.head
+    } else {
+      rowSeq
+    }
+    val encodedValue = java.util.Base64.getEncoder.encodeToString(objToBytes(objToEncode))
     List(id, encodedValue).asJava
   }
 
   def encodeRowWithCols(row: Row, cols: Array[String]): JList[String] = {
     val rowSeq = row.toSeq
     val id = rowSeq.head.toString
-    val colValueMap = (cols zip rowSeq).toMap
+    val objToEncode = if (cols.length == 2 && cols.contains("prediction")) {
+      val pred = rowSeq.last
+      pred match {
+        case vector: DenseVector =>
+          vector.toArray.map(_.toFloat)
+        case _ => pred
+      }
+    } else {
+      (cols zip rowSeq).toMap
+    }
     val encodedValue = java.util.Base64.getEncoder.encodeToString(
-      objToBytes(colValueMap))
+      objToBytes(objToEncode))
     List(id, encodedValue).asJava
   }
 
@@ -117,7 +138,7 @@ object FeatureUtils {
 
   def predictFeatures(features: Features, model: InferenceModel, featureColumns: Array[String]):
   JList[String] = {
-    val featureArr = FeatureUtils.featuresToObject(features)
+    val featureArr = FeatureUtils.getFeatures(features)
     val featureArrNotNull = featureArr.filter(_ != null)
     if (featureArrNotNull.length == 0) {
       throw new Exception("Cannot find target user/item in redis.")
@@ -177,7 +198,7 @@ object FeatureUtils {
     }).toList.asJava
   }
 
-  def featuresToObject(features: Features): Array[AnyRef] = {
+  def getFeatures(features: Features): Array[AnyRef] = {
     val b64Features = features.getB64FeatureList.asScala
     b64Features.map(feature => {
       if (feature == "") {

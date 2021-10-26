@@ -10,7 +10,7 @@ servicePort: 8085
 monitorPort: 1236
 
 # 'kv' or 'inference' default: kv
-serviceType: kv, inference
+serviceType: kv
 
 # default: false, if need to load initial data to redis, set true
 loadInitialData: true
@@ -20,13 +20,13 @@ redisKeyPrefix: 2tower_
 
 # default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
 # provided. Only support parquet file
-initialUserDataPath: /home/yina/Documents/data/recsys/exp8/vec_feature_user_2000.parquet
+initialUserDataPath: /home/yina/Documents/data/recsys/wnd_813/vec_feature_user_prediction_2000.parquet
 # initialItemDataPath:
 
 # default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
 # userFeatureColumns must be provided
 userIDColumn: enaging_user_id
-userFeatureColumns: enaging_user_is_verified, user_id, user_num
+userFeatureColumns: prediction
 
 # default: null, if loadInitialData=true and initialItemDataPath != null, userIDColumn and
 # userFeatureColumns must be provided
@@ -36,7 +36,7 @@ userFeatureColumns: enaging_user_is_verified, user_id, user_num
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
 # be ignored
-userModelPath: /home/yina/Documents/model/recys2021/2tower/exp8/user-model
+# userModelPath: /home/yina/Documents/model/recys2021/2tower/exp8/user-model
 
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will

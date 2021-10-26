@@ -68,11 +68,23 @@ public class RedisUtils {
         }
         return jedis;
     }
+
     public void Hset(String keyPrefix, List<String>[] dataArray) {
         if (cluster == null) {
             piplineHmset(keyPrefix, dataArray);
         } else {
             clusterHset(keyPrefix, dataArray);
+        }
+    }
+
+    public void setSchema(String keyPrefix, String colNames) {
+        String hKey = Utils.helper().getRedisKeyPrefix() + keyPrefix;
+        if (cluster == null) {
+            Jedis jedis = getRedisClient();
+            jedis.hset(hKey, "value", colNames);
+            jedis.close();
+        } else {
+            getCluster().hset(hKey, "value", colNames);
         }
     }
 
@@ -92,6 +104,7 @@ public class RedisUtils {
         }
         logger.info(cnt + " valid records written to redis.");
     }
+
     public void piplineHmset(String keyPrefix, List<String>[] dataArray) {
         Jedis jedis = getRedisClient();
         Pipeline ppl = jedis.pipelined();

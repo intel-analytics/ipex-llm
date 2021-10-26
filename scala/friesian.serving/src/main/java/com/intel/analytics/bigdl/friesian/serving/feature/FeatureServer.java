@@ -104,6 +104,7 @@ public class FeatureServer extends GrpcServerBase {
         private RedisUtils redis;
         private final boolean redisCluster;
         private Set<ServiceType> serviceType;
+        private String[] colNames;
         private MetricRegistry metrics = new MetricRegistry();
         Timer overallTimer = metrics.timer("feature.overall");
         Timer userPredictTimer = metrics.timer("feature.user.predict");
@@ -138,7 +139,6 @@ public class FeatureServer extends GrpcServerBase {
                     throw new Exception("Either userModelPath or itemModelPath should be provided.");
                 }
             }
-
         }
 
         void parseServiceType() {
@@ -250,6 +250,16 @@ public class FeatureServer extends GrpcServerBase {
             Jedis jedis = redisCluster ? null : redis.getRedisClient();
 
             Features.Builder featureBuilder = Features.newBuilder();
+            if (colNames == null) {
+                String colNamesStr;
+                if (!redisCluster) {
+                    colNamesStr = jedis.hget(keyPrefix, "value");
+                } else {
+                    colNamesStr = redis.getCluster().hget(keyPrefix, "value");
+                }
+                colNames = colNamesStr.split(",");
+            }
+            featureBuilder.addAllColNames(Arrays.asList(colNames));
             for (int id : ids) {
                 Timer.Context redisContext = redisTimer.time();
                 String key = keyPrefix + ":" + id;
@@ -263,6 +273,7 @@ public class FeatureServer extends GrpcServerBase {
                 if (value == null) {
                     value = "";
                 }
+                featureBuilder.addID(id);
                 featureBuilder.addB64Feature(value);
             }
             if (jedis != null) {

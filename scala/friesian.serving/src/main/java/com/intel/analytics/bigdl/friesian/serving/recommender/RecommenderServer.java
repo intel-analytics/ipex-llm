@@ -30,6 +30,7 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.Rec
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.*;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
+import edu.emory.mathcs.backport.java.util.Arrays;
 import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
@@ -134,14 +135,18 @@ public class RecommenderServer extends GrpcServerBase {
                 return;
             }
             for (Integer id: ids) {
-                RecallProto.Candidates candidates;
-                try {
-                    candidates = this.searchCandidates(id, canK);
-                } catch (StatusRuntimeException e) {
-                    responseObserver.onError(Status.UNAVAILABLE.withDescription("recall " +
-                            "service unavailable: " + e.getMessage()).asRuntimeException());
-                    return;
-                }
+//                RecallProto.Candidates candidates;
+//                try {
+//                    candidates = this.searchCandidates(id, canK);
+//                } catch (StatusRuntimeException e) {
+//                    responseObserver.onError(Status.UNAVAILABLE.withDescription("recall " +
+//                            "service unavailable: " + e.getMessage()).asRuntimeException());
+//                    return;
+//                }
+
+                Integer[] c = {1, 2, 3};
+                RecallProto.Candidates candidates =
+                        RecallProto.Candidates.newBuilder().addAllCandidate(Arrays.asList(c)).build();
 
                 Features userFeature;
                 try {

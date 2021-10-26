@@ -41,12 +41,15 @@ object RecommenderUtils {
 
   def featuresToRankingInputSet(userFeatures: Features, itemFeatures: Features, batchSize: Int)
   : (Array[Int], Array[Table]) = {
-    val userFeatureArr = FeatureUtils.featuresToObject(userFeatures)
+    val userFeatureArr = FeatureUtils.getFeatures(userFeatures)
     assert(userFeatureArr.length == 1, "userFeatures length should be 1")
+    val userSchema = userFeatures.getColNamesList
     val userFeature = userFeatureArr(0).asInstanceOf[Map[String, AnyRef]]
     // TODO: not found update
-    val itemFeatureArr = FeatureUtils.featuresToObject(itemFeatures)
-      .filter(idx => idx != null)
+    val itemSchema = itemFeatures.getColNamesList
+    val itemIDs = itemFeatures.getIDList.asScala
+    val itemFeatureArr = itemIDs.zip(FeatureUtils.getFeatures(itemFeatures))
+      .filter(idx => idx._2 != null)
     logger.info("Got item feature: " + itemFeatureArr.length)
 
     val batchSizeUse = if (batchSize <= 0) {

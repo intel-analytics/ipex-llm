@@ -130,4 +130,8 @@ object RecallUtils {
     val result = dTensor.squeeze(1).toArray()
     result
   }
+
+  def denseVectorToFloatArr(data: DenseVector): Array[Float] = {
+    data.toArray.map(_.toFloat)
+  }
 }
