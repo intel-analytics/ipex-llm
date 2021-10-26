@@ -21,7 +21,7 @@ import torch.nn.functional as F
 from torchvision import datasets, transforms
 from bigdl.orca.torch import TorchModel, TorchLoss, TorchOptim
 from bigdl.dllib.estimator import *
-from bigdl.dllib.feature.optim.optimizer import SGD, Adam
+from bigdl.dllib.optim.optimizer import SGD, Adam
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.dllib.keras.metrics import Accuracy
