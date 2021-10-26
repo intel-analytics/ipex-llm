@@ -114,7 +114,7 @@ def main():
     zoo_estimator = Estimator(zoo_model, optim_methods=zoo_optim)
     train_featureset = FeatureSet.pytorch_dataloader(train_loader)
     test_featureset = FeatureSet.pytorch_dataloader(test_loader)
-    from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
+    from bigdl.dllib.optim.optimizer import MaxEpoch, EveryEpoch
     zoo_estimator.train_minibatch(train_featureset, zoo_criterion,
                                   end_trigger=MaxEpoch(args.epochs),
                                   checkpoint_trigger=EveryEpoch(),
