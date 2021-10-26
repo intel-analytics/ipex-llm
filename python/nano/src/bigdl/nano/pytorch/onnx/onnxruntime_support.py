@@ -47,10 +47,10 @@ def onnxruntime_support(override_predict_step=True):
             if not self._ortsess_up_to_date:
                 input_sample = torch.Tensor(input_data)
                 self._build_ortsess(input_sample=input_sample, **kwargs)
+                self._ortsess_up_to_date = True
             input_name = self._ortsess.get_inputs()[0].name
             ort_inputs = {input_name: input_data}
             ort_outs = self._ortsess.run(None, ort_inputs)
-            self._ortsess_up_to_date = True
         cls.inference_with_onnx = inference_with_onnx
 
         # on_fit_end
