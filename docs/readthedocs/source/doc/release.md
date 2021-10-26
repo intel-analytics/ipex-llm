@@ -6,8 +6,8 @@ cellpadding="10"
 >
     <tr>
         <td></td>
-        <td>BigDL 0.14.0</td>
-        <td>bigdl-dllib package</td>
+        <td>BigDL (All in One)</td>
+        <td>DLlib</td>
     </tr>
     <tr>
        <td>Spark 2.4.6 </td>
