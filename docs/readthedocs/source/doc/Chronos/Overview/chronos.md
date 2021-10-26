@@ -133,9 +133,9 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
     - [Use AutoLSTM on nyc taxi dataset](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/auto_model/autolstm_nyc_taxi.py)
     - [Use AutoProphet on nyc taxi dataset](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/auto_model/autoprophet_nyc_taxi.py)
     - [High dimension time series forecasting with Chronos TCMFForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/tcmf/run_electricity.py)
-    - [Use distributed training with Chronos Seq2SeqForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/examples/distributed/distributed_training_network_traffic.py)
-    - [Use ONNXRuntime to accelerate the inference of AutoTSEstimator](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/examples/onnx/onnx_autotsestimator_nyc_taxi.py)
-    - [Use ONNXRuntime to accelerate the inference of Seq2SeqForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/examples/onnx/onnx_forecaster_network_traffic.py)
+    - [Use distributed training with Chronos Seq2SeqForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/distributed/distributed_training_network_traffic.py)
+    - [Use ONNXRuntime to accelerate the inference of AutoTSEstimator](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/onnx/onnx_autotsestimator_nyc_taxi.py)
+    - [Use ONNXRuntime to accelerate the inference of Seq2SeqForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/onnx/onnx_forecaster_network_traffic.py)
     - [Generate synthetic data with DPGANSimulator in a data-driven fashion](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/chronos/example/simulator)
 - Use cases
     - [Unsupervised Anomaly Detection](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)
