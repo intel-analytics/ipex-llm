@@ -61,4 +61,7 @@ SERVING_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/serving/dev; pwd)"
 echo $SERVING_SCRIPT_DIR
 bash ${SERVING_SCRIPT_DIR}/release.sh ${version} ${upload}
 
+BIGDL_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/dev; pwd)"
+echo $BIGDL_SCRIPT_DIR
+bash ${BIGDL_SCRIPT_DIR}/release.sh linux ${version} ${upload}
 # TODO: may need to upload all whls in the very end at the same time in case any build fails?

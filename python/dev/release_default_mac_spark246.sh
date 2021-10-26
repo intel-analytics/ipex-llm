@@ -53,4 +53,7 @@ CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
 echo $CHRONOS_SCRIPT_DIR
 bash ${CHRONOS_SCRIPT_DIR}/release_default_mac_spark246.sh ${version} ${upload}
 
+BIGDL_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/dev; pwd)"
+echo $BIGDL_SCRIPT_DIR
+bash ${BIGDL_SCRIPT_DIR}/release.sh mac ${version} ${upload}
 # Serving has a universal jar for all platforms and is released in the linux script.
