@@ -33,7 +33,7 @@ def add_one_func(x):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("--nb_epoch", dest="nb_epoch", default="500")
-    #parser.add_option("--distri", type=bool, dest="distri", default=False)
+    parser.add_option("--batch_size", type=int,dest="batch_size", default=512)
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     model.fit(x=X_,
               y=Y_,
-              batch_size=128,
+              batch_size=options.batch_size,
               nb_epoch=int(options.nb_epoch),
               distributed=True)
 
