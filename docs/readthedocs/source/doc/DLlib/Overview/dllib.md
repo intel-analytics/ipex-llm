@@ -22,7 +22,7 @@ Currently, dllib releases are hosted on maven central; here's an example to add 
 ```xml
 <dependency>
     <groupId>com.intel.analytics.bigdl</groupId>
-    <artifactId>bigdl-dllib-[spark_2.4.6|spark_3.1.1]</artifactId>
+    <artifactId>bigdl-dllib-[spark_2.4.6|spark_3.1.2]</artifactId>
     <version>${BIGD_DLLIB_VERSION}</version>
 </dependency>
 ```
@@ -30,7 +30,7 @@ Please choose the suffix according to your Spark platform.
 
 SBT developers can use
 ```sbt
-libraryDependencies += "com.intel.analytics.bigdl" % "dllib-[spark_2.4.6|spark_3.1.1]" % "${BIGDL_DLLIB_VERSION}"
+libraryDependencies += "com.intel.analytics.bigdl" % "dllib-[spark_2.4.6|spark_3.1.2]" % "${BIGDL_DLLIB_VERSION}"
 ```
 
 ### 2.2 Run
@@ -47,7 +47,7 @@ export BIGDL_HOME=folder path where you extract the bigdl package
 #### 2.2.2 **Use Interactive Spark Shell**
 You can try bigdl-dllib easily using the Spark interactive shell. Run below command to start spark shell with bigdl-dllib support:
 ```bash
-${BIGDL_HOME}/bin/spark-shell-with-bigdl-dllib.sh
+${BIGDL_HOME}/bin/spark-shell-with-dllib.sh
 ```
 You will see a welcome message looking like below:
 ```
@@ -96,8 +96,10 @@ You can run a bigdl-dllib program, e.g., the [Image Inference](https://github.co
 2. Run the following command:
 ```bash
 # Spark local mode
-${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
-  ${BIGDL_HOME}/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
+  --master local[2] \
+  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
+  ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
   -f DATA_PATH \
   -b 4 \
   --numLayers 2 --vocab 100 --hidden 6 \
@@ -107,12 +109,12 @@ ${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
 # Spark standalone mode
 ## ${SPARK_HOME}/sbin/start-master.sh
 ## check master URL from http://localhost:8080
-${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
   --master spark://... \
   --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
   --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
-  ${BIGDL_HOME}/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+  ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
   -f DATA_PATH \
   -b 4 \
   --numLayers 2 --vocab 100 --hidden 6 \
@@ -120,13 +122,13 @@ ${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
   --learningRateDecay 0.001 --keepProb 0.5
 
 # Spark yarn client mode
-${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
  --master yarn \
  --deploy-mode client \
  --executor-cores cores_per_executor \
  --num-executors executors_number \
  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
- ${BIGDL_HOME}/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
  -f DATA_PATH \
  -b 4 \
  --numLayers 2 --vocab 100 --hidden 6 \
@@ -134,13 +136,13 @@ ${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
  --learningRateDecay 0.001 --keepProb 0.5
 
 # Spark yarn cluster mode
-${BIGDL_HOME}/bin/spark-submit-with-bigdl-dllib.sh \
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
  --master yarn \
  --deploy-mode cluster \
  --executor-cores cores_per_executor \
  --num-executors executors_number \
  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
- ${BIGDL_HOME}/lib/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
  -f DATA_PATH \
  -b 4 \
  --numLayers 2 --vocab 100 --hidden 6 \

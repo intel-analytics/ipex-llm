@@ -12,9 +12,10 @@ if [ -z "${SPARK_HOME}" ]; then
 fi
 
 #setup paths
-export BIGDL_JAR_NAME=`find ${BIGDL_HOME}/lib -name bigdl-dllib*jar-with-dependencies.jar`
+export BIGDL_JAR_NAME=`find ${BIGDL_HOME}/jars -name bigdl-dllib*jar-with-dependencies.jar`
 export BIGDL_JAR="$BIGDL_JAR_NAME"
 export BIGDL_CONF=${BIGDL_HOME}/conf/spark-bigdl.conf
+echo $BIGDL_JAR
 
 # Check files
 if [ ! -f ${BIGDL_CONF} ]; then
