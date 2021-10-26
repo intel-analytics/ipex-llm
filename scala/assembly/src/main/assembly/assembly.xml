@@ -48,6 +48,7 @@
       <directory>${project.parent.basedir}/serving/target</directory>
       <includes>
           <include>bigdl-serving*-jar-with-dependencies.jar</include>
+          <include>bigdl-serving*-http.jar</include>
       </includes>
     </fileSet>
     <fileSet>
