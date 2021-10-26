@@ -2,7 +2,7 @@ package com.intel.analytics.bigdl.ppml.vfl.algorithm
 
 import com.intel.analytics.bigdl.ppml.FLClient
 
-class VflModel(serverUrl: String) {
+class VflModel() {
   var flClient: FLClient = null
 
 }

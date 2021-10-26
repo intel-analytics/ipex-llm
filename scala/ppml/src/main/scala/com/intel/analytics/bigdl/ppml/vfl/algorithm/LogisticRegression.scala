@@ -7,9 +7,9 @@ import com.intel.analytics.bigdl.dllib.optim.Adam
 import com.intel.analytics.bigdl.ppml.vfl.VflEstimator
 
 class LogisticRegression(featureNum: Int,
-                         learningRate: Float = 0.005f) {
+                         learningRate: Float = 0.005f) extends VflModel() {
   val model = Sequential[Float]().add(Linear(featureNum, 1))
-  val estimator = new VflEstimator(model, new Adam(learningRate))
+  val estimator = new VflEstimator(flClient, model, new Adam(learningRate))
   def fit(trainData: DataSet[MiniBatch[Float]],
           valData: DataSet[MiniBatch[Float]],
           epoch : Int = 1) = {

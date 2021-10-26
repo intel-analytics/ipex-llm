@@ -136,9 +136,10 @@ class VflEstimator(flClient: FLClient,
 }
 
 object VflEstimator {
-  def apply(model: Module[Float],
+  def apply(flClient: FLClient,
+            model: Module[Float],
             optimMethod: OptimMethod[Float]): VflEstimator = {
-    new VflEstimator(model, optimMethod)
+    new VflEstimator(flClient, model, optimMethod)
   }
 
 }
