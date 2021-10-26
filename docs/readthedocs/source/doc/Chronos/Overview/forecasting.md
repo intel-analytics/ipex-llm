@@ -1,4 +1,4 @@
-# Time series Forecasting Overview
+# Time Series Forecasting Overview
 
 _Chronos_ provides both deep learning/machine learning models and traditional statistical models for forecasting.
 

@@ -110,3 +110,37 @@ x = tsdata.to_pandas()["target"].to_numpy()
 anomaly_detector.fit(x)
 ```
 View [TSDataset API Doc](../../PythonAPI/Chronos/tsdataset.html#) for more details. 
+
+## **7. Built-in Dataset**
+
+Built-in Dataset supports the function of data downloading, preprocessing, and returning to the `TSDataset` object of the public data set.
+
+|Dataset name|Task|Time Series Length|Feature Number|Information Page|Download Link|
+|---|---|---|---|---|---|
+|network_traffic|forecasting|8760|2|[network_traffic](http://mawi.wide.ad.jp/~agurim/about.html)|[network_traffic](http://mawi.wide.ad.jp/~agurim/dataset/)|
+|nyc_taxi|forecasting|10320|1|[nyc_taxi](https://github.com/numenta/NAB/blob/master/data/README.md)|[nyc_taxi](https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv)|
+|fsi|forecasting|1259|1|[fsi](https://github.com/CNuge/kaggle-code/tree/master/stock_data)|[fsi](https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip)|
+|AIOps|anomaly_detect|61570|1|[AIOps](https://github.com/alibaba/clusterdata)|[AIOps](http://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz)|
+
+Specify the `name`, the raw data file will be saved in the specified `path` (defaults to ~/.chronos/dataset). `redownload` can help you re-download the files you need.
+
+When `with_split` is set to True, the length of the data set will be divided according to the specified `val_ratio` and `test_ratio`, and three `TSDataset` will be returned. `with_split` defaults to False, that is, only one `TSDataset` is returned.
+About `TSDataset`, more details, please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html).
+
+```python
+# load built-in dataset
+from bigdl.chronos.data.repo_dataset import get_public_dataset
+from sklearn.preprocessing import StandardScaler
+tsdata_train, tsdata_val, \
+    tsdata_test = get_public_dataset(name='nyc_taxi',
+                                     with_split=True,
+                                     val_ratio=0.1,
+                                     test_ratio=0.1
+                                     )
+# carry out additional customized preprocessing on the dataset.
+stand = StandardScaler()
+for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
+    tsdata.gen_dt_feature(one_hot_features=['HOUR'])\
+          .impute()\
+          .scale(stand, fit=tsdata is tsdata_train)
+```

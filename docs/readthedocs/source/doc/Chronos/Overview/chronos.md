@@ -6,9 +6,9 @@ _Chronos_ is an application framework for building large-scale time series analy
 You can use _Chronos_ to do:
 
 - **Data pre/post-processing and feature generation** (using [TSDataset](./data_processing_feature_engineering.html))
-- **Time Series Forecasting** (using [Standalone Forecasters](#use-standalone-forecaster-pipeline), [Auto Models](#use-auto-forecasting-model) (with HPO) or [AutoTS](#use-autots-pipeline) (full AutoML enabled pipelines))
-- **Anomaly Detection** (using [Anomaly Detectors](#anomaly-detection))
-- **Synthetic Data Generation** (using [Simulators](#generate-synthetic-data))
+- **Time Series Forecasting** (using [Standalone Forecasters](./forecasting.html#use-standalone-forecaster-pipeline), [Auto Models](./forecasting.html#use-auto-forecasting-model) (with HPO) or [AutoTS](./forecasting.html#use-autots-pipeline) (full AutoML enabled pipelines))
+- **Anomaly Detection** (using [Anomaly Detectors](./anomaly_detection.html#anomaly-detection))
+- **Synthetic Data Generation** (using [Simulators](./simulation.html#generate-synthetic-data))
 
 ---
 ### **2. Install**
@@ -121,7 +121,7 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
 - [Time Series Forecasting Overview](./forecasting.html)
 - [Time Series Anomaly Detection Overview](./anomaly_detection.html)
 - [Generate Synthetic Sequential Data Overview](./simulation.html)
-- [Useful Functionalities Overview]((./useful_functionalities.html))
+- [Useful Functionalities Overview](./useful_functionalities.html)
 - [Chronos API Doc](../../PythonAPI/Chronos/index.html)
 
 ### **6. Examples and Demos**
@@ -133,6 +133,9 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
     - [Use AutoLSTM on nyc taxi dataset](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/auto_model/autolstm_nyc_taxi.py)
     - [Use AutoProphet on nyc taxi dataset](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/auto_model/autoprophet_nyc_taxi.py)
     - [High dimension time series forecasting with Chronos TCMFForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/tcmf/run_electricity.py)
+    - [Use distributed training with Chronos Seq2SeqForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/examples/distributed/distributed_training_network_traffic.py)
+    - [Use ONNXRuntime to accelerate the inference of AutoTSEstimator](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/examples/onnx/onnx_autotsestimator_nyc_taxi.py)
+    - [Use ONNXRuntime to accelerate the inference of Seq2SeqForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/examples/onnx/onnx_forecaster_network_traffic.py)
     - [Generate synthetic data with DPGANSimulator in a data-driven fashion](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/chronos/example/simulator)
 - Use cases
     - [Unsupervised Anomaly Detection](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)
@@ -142,3 +145,4 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
     - [Network Traffic Forecasting with AutoTSEstimator](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb)
     - [Network Traffic Forecasting (using multivariate time series data)](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb)
     - [Network Traffic Forecasting (using multistep time series data)](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb)
+    - [Network Traffic Forecasting with Customized Model](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb)
