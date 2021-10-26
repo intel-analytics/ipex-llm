@@ -4,18 +4,18 @@ set -e
 
 ray stop -f
 
-# echo "#start orca ray example tests"
-# echo "#1 Start rl_pong example"
-# start=$(date "+%s")
-# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py --iterations 10
-# now=$(date "+%s")
-# time1=$((now-start))
+echo "#start orca ray example tests"
+echo "#1 Start rl_pong example"
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py --iterations 10
+now=$(date "+%s")
+time1=$((now-start))
 
-# echo "#2 Start multiagent example"
-# start=$(date "+%s")
-# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
-# now=$(date "+%s")
-# time2=$((now-start))
+echo "#2 Start multiagent example"
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
+now=$(date "+%s")
+time2=$((now-start))
 
 echo "#3 Start async_parameter example"
 start=$(date "+%s")
