@@ -49,7 +49,7 @@ sc: org.apache.spark.SparkContext = org.apache.spark.SparkContext@487f025
 
 #### **1.3 Run BigDL examples**
 
-You can run an BigDL example, e.g., the [Wide & Deep Recommendation](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/recommendation), as a standard Spark program (running in either local mode or cluster mode) as follows:
+You can run an BigDL example, e.g., the [Lenet](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/models/lenet), as a standard Spark program (running in either local mode or cluster mode) as follows:
 
 1. You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the
 files and put them in one folder(e.g. mnist).
