@@ -11,9 +11,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -53,9 +53,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -94,9 +94,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -140,9 +140,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -185,9 +185,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -231,9 +231,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -279,9 +279,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -320,9 +320,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -366,9 +366,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -409,9 +409,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -453,9 +453,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -494,9 +494,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -539,9 +539,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -579,9 +579,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -623,9 +623,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -664,9 +664,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/tmp \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
@@ -692,4 +692,171 @@ endtime=`date +'%Y-%m-%d %H:%M:%S'`
 start_seconds=$(date --date="$starttime" +%s);
 end_seconds=$(date --date="$endtime" +%s);
 echo "################## end basic_text_classification.py  cluster "
+echo "run time is： "$((end_seconds-start_seconds))"s"
+
+echo "################## start AutoXGBoostClassifier.py  client "
+starttime=`date +'%Y-%m-%d %H:%M:%S'`
+${SPARK_HOME}/bin/spark-submit \
+  --master ${RUNTIME_SPARK_MASTER} \
+  --deploy-mode client \
+  --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
+  --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
+  --name analytics-zoo-autoestimator \
+  --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+  --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
+  --conf spark.kubernetes.driver.label.az=true \
+  --conf spark.kubernetes.executor.label.az=true \
+  --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
+  --executor-cores ${RUNTIME_EXECUTOR_CORES} \
+  --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
+  --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
+  --driver-cores ${RUNTIME_DRIVER_CORES} \
+  --driver-memory ${RUNTIME_DRIVER_MEMORY} \
+  --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+  --py-files local://${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/automl/autoxgboost/AutoXGBoostClassifier.py \
+  --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
+  --conf spark.sql.catalogImplementation='in-memory' \
+  --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/automl/autoxgboost/AutoXGBoostClassifier.py \
+  --path /bigdl2.0/data/airline_14col.data
+
+endtime=`date +'%Y-%m-%d %H:%M:%S'`
+start_seconds=$(date --date="$starttime" +%s);
+end_seconds=$(date --date="$endtime" +%s);
+echo "################## end AutoXGBoostClassifier.py  client "
+echo "run time is： "$((end_seconds-start_seconds))"s"
+
+echo "################## start AutoXGBoostClassifier.py  cluster "
+starttime=`date +'%Y-%m-%d %H:%M:%S'`
+${SPARK_HOME}/bin/spark-submit \
+  --master ${RUNTIME_SPARK_MASTER} \
+  --deploy-mode cluster \
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
+  --name analytics-zoo-autoestimator \
+  --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+  --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
+  --conf spark.kubernetes.driver.label.az=true \
+  --conf spark.kubernetes.executor.label.az=true \
+  --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
+  --executor-cores ${RUNTIME_EXECUTOR_CORES} \
+  --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
+  --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
+  --driver-cores ${RUNTIME_DRIVER_CORES} \
+  --driver-memory ${RUNTIME_DRIVER_MEMORY} \
+  --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+  --py-files local://${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/automl/autoxgboost/AutoXGBoostClassifier.py \
+  --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
+  --conf spark.sql.catalogImplementation='in-memory' \
+  --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/automl/autoxgboost/AutoXGBoostClassifier.py \
+  --path /bigdl2.0/data/airline_14col.data
+
+endtime=`date +'%Y-%m-%d %H:%M:%S'`
+start_seconds=$(date --date="$starttime" +%s);
+end_seconds=$(date --date="$endtime" +%s);
+echo "################## end AutoXGBoostClassifier.py  cluster "
+echo "run time is： "$((end_seconds-start_seconds))"s"
+
+
+echo "################## start AutoXGBoostRegressor.py  client "
+starttime=`date +'%Y-%m-%d %H:%M:%S'`
+${SPARK_HOME}/bin/spark-submit \
+  --master ${RUNTIME_SPARK_MASTER} \
+  --deploy-mode client \
+  --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
+  --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
+  --name analytics-zoo-autoestimator \
+  --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+  --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
+  --conf spark.kubernetes.driver.label.az=true \
+  --conf spark.kubernetes.executor.label.az=true \
+  --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
+  --executor-cores ${RUNTIME_EXECUTOR_CORES} \
+  --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
+  --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
+  --driver-cores ${RUNTIME_DRIVER_CORES} \
+  --driver-memory ${RUNTIME_DRIVER_MEMORY} \
+  --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+  --py-files local://${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/automl/autoxgboost/AutoXGBoostRegressor.py \
+  --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
+  --conf spark.sql.catalogImplementation='in-memory' \
+  --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/automl/autoxgboost/AutoXGBoostRegressor.py \
+  --path /bigdl2.0/data/incd.csv
+endtime=`date +'%Y-%m-%d %H:%M:%S'`
+start_seconds=$(date --date="$starttime" +%s);
+end_seconds=$(date --date="$endtime" +%s);
+echo "################## end AutoXGBoostRegressor.py  client "
+echo "run time is： "$((end_seconds-start_seconds))"s"
+
+echo "################## start AutoXGBoostRegressor.py  cluster "
+starttime=`date +'%Y-%m-%d %H:%M:%S'`
+${SPARK_HOME}/bin/spark-submit \
+  --master ${RUNTIME_SPARK_MASTER} \
+  --deploy-mode cluster \
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
+  --name analytics-zoo-autoestimator \
+  --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+  --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl2.0/data \
+  --conf spark.kubernetes.driver.label.az=true \
+  --conf spark.kubernetes.executor.label.az=true \
+  --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
+  --executor-cores ${RUNTIME_EXECUTOR_CORES} \
+  --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
+  --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
+  --driver-cores ${RUNTIME_DRIVER_CORES} \
+  --driver-memory ${RUNTIME_DRIVER_MEMORY} \
+  --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+  --py-files local://${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/automl/autoxgboost/AutoXGBoostRegressor.py \
+  --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
+  --conf spark.sql.catalogImplementation='in-memory' \
+  --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/automl/autoxgboost/AutoXGBoostRegressor.py \
+  --path /bigdl2.0/data/incd.csv
+endtime=`date +'%Y-%m-%d %H:%M:%S'`
+start_seconds=$(date --date="$starttime" +%s);
+end_seconds=$(date --date="$endtime" +%s);
+echo "################## end AutoXGBoostRegressor.py  cluster "
 echo "run time is： "$((end_seconds-start_seconds))"s"
