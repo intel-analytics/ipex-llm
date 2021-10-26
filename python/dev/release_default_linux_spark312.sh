@@ -37,10 +37,6 @@ upload=$2
 
 # Only dllib is not using quick build.
 # Since make_dist is invoked in dllib, all other packages can directly use quick build.
-NANO_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/nano/dev; pwd)"
-echo $NANO_SCRIPT_DIR
-bash ${NANO_SCRIPT_DIR}/release_default_linux.sh ${version} ${upload}
-
 DLLIB_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/dllib/dev/release; pwd)"
 echo $DLLIB_SCRIPT_DIR
 bash ${DLLIB_SCRIPT_DIR}/release_default_linux_spark312.sh ${version} false ${upload}
