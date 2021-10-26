@@ -58,6 +58,77 @@ else
   unzip models/resnet_50_saved_model.zip -d models/resnet_50_saved_model
 fi
 
+if [ -f analytics-zoo-data/data/dogs-vs-cats/train.zip ]; then
+  echo "analytics-zoo-data/data/dogs-vs-cats/train.zip already exists."
+else
+  # echo "Downloading dogs and cats images"
+  wget -nv $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip \
+    -P tmp/data/dogs-vs-cats
+  unzip -q tmp/data/dogs-vs-cats/train.zip -d tmp/data/dogs-vs-cats
+  mkdir -p tmp/data/dogs-vs-cats/samples
+  cp tmp/data/dogs-vs-cats/train/cat.71* tmp/data/dogs-vs-cats/samples
+  cp tmp/data/dogs-vs-cats/train/dog.71* tmp/data/dogs-vs-cats/samples
+
+  mkdir -p tmp/data/dogs-vs-cats/demo/cats
+  mkdir -p tmp/data/dogs-vs-cats/demo/dogs
+  cp tmp/data/dogs-vs-cats/train/cat.71* tmp/data/dogs-vs-cats/demo/cats
+  cp tmp/data/dogs-vs-cats/train/dog.71* tmp/data/dogs-vs-cats/demo/dogs
+  # echo "Finished downloading images"
+fi
+
+echo "start example test for tfpark"
+if [ ! -d tensorflow-models ]; then
+  mkdir tensorflow-models
+  mkdir -p tensorflow-models/mnist
+  mkdir -p tensorflow-models/az_lenet
+  mkdir -p tensorflow-models/lenet
+fi
+
+sed "s%/tmp%tensorflow-models%g;s%models/slim%slim%g"
+if [ -d tensorflow-models/slim ]; then
+  echo "tensorflow-models/slim already exists."
+else
+  echo "Downloading research/slim"
+
+  wget -nv $FTP_URI/analytics-zoo-tensorflow-models/models/research/slim.tar.gz -P tensorflow-models
+  tar -zxvf tensorflow-models/slim.tar.gz -C tensorflow-models
+
+  echo "Finished downloading research/slim"
+  export PYTHONPATH=$(pwd)/tensorflow-models/slim:$PYTHONPATH
+fi
+
+rm -f /tmp/mnist/*
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P /tmp/mnist
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P /tmp/mnist
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P /tmp/mnist
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/mnist
+
+echo "start example test for TFPark tf_optimizer train 1"
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/train.py 1 1000
+
+echo "start example test for TFPark tf_optimizer evaluate 2"
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/evaluate.py 1000
+
+echo "start example test for TFPark keras keras_dataset 3"
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py 5
+
+echo "start example test for TFPark keras keras_ndarray 4"
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py 5
+
+echo "start example test for TFPark estimator estimator_dataset 5"
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_dataset.py
+
+echo "start example test for TFPark estimator estimator_inception 6"
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
+--image-path tmp/data/dogs-vs-cats/demo --num-classes 2
+
+echo "start example test for TFPark gan 7"
+sed "s/MaxIteration(1000)/MaxIteration(5)/g;s/range(20)/range(2)/g" \
+  ${BIGDL_ROOT}/python/orca/example/tfpark/gan/gan_train_and_evaluate.py \
+  >${BIGDL_ROOT}/python/orca/example/tfpark/gan/gan_train_tmp.py
+
+python ${BIGDL_ROOT}/python/orca/example/tfpark/gan/gan_train_tmp.py
+
 echo "start example test for TFPark freeze saved model 9"
 python ${BIGDL_ROOT}/python/orca/example/freeze_saved_model/freeze.py \
   --saved_model_path models/resnet_50_saved_model \
