@@ -23,6 +23,13 @@
       </includes>
     </fileSet>
     <fileSet>
+      <outputDirectory>/apps</outputDirectory>
+      <directory>${project.parent.basedir}/../apps</directory>
+      <includes>
+        <include>*</include>
+      </includes>
+    </fileSet>
+    <fileSet>
       <outputDirectory>/jars</outputDirectory>
       <directory>${project.parent.basedir}/dllib/target</directory>
       <includes>
