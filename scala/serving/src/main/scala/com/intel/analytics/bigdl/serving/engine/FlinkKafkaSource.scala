@@ -39,7 +39,7 @@ class FlinkKafkaSource(params: ClusterServingHelper)
     logger = Logger.getLogger(getClass)
 
     val props = new Properties()
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, params.kafkaUrl)
     props.put(ConsumerConfig.GROUP_ID_CONFIG, "serving")
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
       "org.apache.kafka.common.serialization.StringDeserializer")
