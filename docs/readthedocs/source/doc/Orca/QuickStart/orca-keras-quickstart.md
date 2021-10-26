@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/keras_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/keras_lenet_mnist.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://github.com/intel-analytics/BigDL/blob/branch-2.0/docs/docs/colab-notebook/orca/quickstart/keras_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/docs/docs/colab-notebook/orca/quickstart/keras_lenet_mnist.ipynb)
 
 ---
 
@@ -14,9 +14,9 @@
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
 ```bash
-conda create -n zoo python=3.7 # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
-pip install analytics_zoo-${VERSION} # install either version 0.9 or latest nightly build
+conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
+conda activate py37
+pip install bigdl-orca
 pip install tensorflow==1.15.0
 pip install tensorflow-datasets==2.1.0
 pip install psutil
@@ -26,7 +26,7 @@ pip install scikit-learn
 
 ### **Step 1: Init Orca Context**
 ```python
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":  # For local machine
     init_orca_context(cluster_mode="local", cores=4, memory="10g")
@@ -60,7 +60,7 @@ model = keras.Sequential(
      ]
 )
 
-model.compile(optimizer=tf.keras.optimizers.RMSprop(),
+model.compile(optimizer=keras.optimizers.RMSprop(),
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
 ```
@@ -77,6 +77,7 @@ def preprocess(data):
     return data['image'], data['label']
 
 # get DataSet
+dataset_dir = "./mnist_data"
 mnist_train = tfds.load(name="mnist", split="train", data_dir=dataset_dir)
 mnist_test = tfds.load(name="mnist", split="test", data_dir=dataset_dir)
 
@@ -89,7 +90,7 @@ mnist_test = mnist_test.map(preprocess)
 First, create an Estimator.
 
 ```python
-from zoo.orca.learn.tf.estimator import Estimator
+from bigdl.orca.learn.tf.estimator import Estimator
 
 est = Estimator.from_keras(keras_model=model)
 ```

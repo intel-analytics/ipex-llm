@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/tf_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/tf_lenet_mnist.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://github.com/intel-analytics/BigDL/blob/branch-2.0/docs/docs/colab-notebook/orca/quickstart/tf_lenet_mnist.ipynb)
 
 ---
 
@@ -14,17 +14,17 @@ We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-g
 
 
 ```bash
-conda create -n zoo python=3.7 # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
-pip install analytics-zoo # install either version 0.9 or latest nightly build
-pip install tensorflow==1.15.0
+conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
+conda activate py37
+pip install bigdl-orca
+pip install tensorflow==1.15
 pip install tensorflow-datasets==2.0
 pip install psutil
 ```
 
 ### **Step 1: Init Orca Context**
 ```python
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":  # For local machine
     init_orca_context(cluster_mode="local", cores=4, memory="10g")
@@ -83,6 +83,7 @@ def preprocess(data):
     return data['image'], data['label']
 
 # get DataSet
+dataset_dir = "./mnist_data"
 mnist_train = tfds.load(name="mnist", split="train", data_dir=dataset_dir)
 mnist_test = tfds.load(name="mnist", split="test", data_dir=dataset_dir)
 
@@ -95,7 +96,7 @@ mnist_test = mnist_test.map(preprocess)
 First, create an Estimator.
 
 ```python
-from zoo.orca.learn.tf.estimator import Estimator
+from bigdl.orca.learn.tf.estimator import Estimator
 
 est = Estimator.from_graph(inputs=images,
                            outputs=logits,
@@ -107,7 +108,7 @@ est = Estimator.from_graph(inputs=images,
 
 Next, fit and evaluate using the Estimator.
 ```python
-est.fit(data=train_dataset,
+est.fit(data=mnist_train,
         batch_size=320,
         epochs=5,
         validation_data=mnist_test)

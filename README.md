@@ -77,7 +77,7 @@ Most AI projects start with a Python notebook running on a single laptop; howeve
 First, initialize [Orca Context](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html):
 
 ```python
-from bigdl.orca import init_orca_context
+from bigdl.orca import init_orca_context, OrcaContext
 
 # cluster_mode can be "local", "k8s" or "yarn"
 sc = init_orca_context(cluster_mode="yarn", cores=4, memory="10g", num_nodes=2) 
@@ -88,6 +88,7 @@ Next, perform [data-parallel processing in Orca](https://bigdl.readthedocs.io/en
 ```python
 from pyspark.sql.functions import array
 
+spark = OrcaContext.get_spark_session()
 df = spark.read.parquet(file_path)
 df = df.withColumn('user', array('user')) \  
        .withColumn('item', array('item'))

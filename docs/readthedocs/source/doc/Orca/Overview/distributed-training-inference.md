@@ -163,7 +163,7 @@ View the related [Python API doc]() for more details.
 
 The user may create a MXNet `Estimator` as follows:
 ```python
-from zoo.orca.learn.mxnet import Estimator, create_config
+from bigdl.orca.learn.mxnet import Estimator, create_config
 
 def get_model(config):
     net = LeNet() # a mxnet.gluon.Block
@@ -200,10 +200,10 @@ View the related [Python API doc]() for more details.
 
 The user may create a BigDL `Estimator` as follows:
 ```python
-from bigdl.nn.criterion import *
-from bigdl.nn.layer import *
-from bigdl.optim.optimizer import *
-from zoo.orca.learn.bigdl import Estimator
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.optim.optimizer import *
+from bigdl.orca.learn.bigdl import Estimator
 
 linear_model = Sequential().add(Linear(2, 2))
 mse_criterion = MSECriterion()
@@ -230,7 +230,7 @@ View the related [Python API doc]() for more details.
 
 The user may create a OpenVINO `Estimator` as follows:
 ```python
-from zoo.orca.learn.openvino import Estimator
+from bigdl.orca.learn.openvino import Estimator
 
 model_path = "The/file_path/to/the/OpenVINO_IR_xml_file"
 est = Estimator.from_openvino(model_path=model_path)
