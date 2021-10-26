@@ -17,6 +17,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -54,6 +59,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -90,6 +100,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -131,6 +146,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -171,6 +191,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -212,6 +237,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -255,6 +285,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -291,6 +326,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -336,6 +376,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
   --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
   --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -378,6 +419,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
   --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
   --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -417,6 +459,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -457,6 +504,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
   --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
   --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -501,6 +549,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
   --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
   --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -540,6 +589,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
   --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
   --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -579,6 +629,11 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driver.label.az=true \
   --conf spark.kubernetes.executor.label.az=true \
   --conf spark.kubernetes.node.selector.spark=true \
+  --conf spark.kubernetes.driverEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
+  --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
@@ -619,6 +674,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.kubernetes.driverEnv.https_proxy=${https_proxy} \
   --conf spark.kubernetes.executorEnv.http_proxy=${http_proxy} \
   --conf spark.kubernetes.executorEnv.https_proxy=${https_proxy} \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
