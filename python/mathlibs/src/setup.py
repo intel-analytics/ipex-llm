@@ -40,6 +40,9 @@ def setup_package():
     metadata = dict(
         name='bigdl-math',
         version=VERSION,
+        cmdclass={
+          'bdist_wheel': bdist_wheel
+        },
         description='Math Dependency Library for bigdl-orca',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
