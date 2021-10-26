@@ -33,7 +33,7 @@ def add_one_func(x):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("--nb_epoch", dest="nb_epoch", default="500")
-    parser.add_option("--distri", type=bool, dest="distri", default=False)
+    #parser.add_option("--distri", type=bool, dest="distri", default=False)
 
     (options, args) = parser.parse_args(sys.argv)
 
