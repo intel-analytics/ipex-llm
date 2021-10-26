@@ -7,7 +7,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-autoestimator_pytorch \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -44,7 +44,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-autoestimator_pytorch \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -80,7 +80,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-nnframes-image-inference \
+  --name bigdl2-nnframes_image_inference \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -102,8 +102,8 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   local:///opt/bigdl-0.14.0-SNAPSHOT/examples/dllib/nnframes/imageInference/ImageInferenceExample.py \
-  -m /tmp/data2/analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f /tmp/data2/dogscats \
+  -m /bigdl2.0/data/analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f /bigdl2.0/data/dogscats \
   --b 64
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
 start_seconds=$(date --date="$starttime" +%s);
@@ -121,7 +121,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-nnframes-image-inference \
+  --name bigdl2-nnframes_image_inference \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -143,8 +143,8 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   local:///opt/bigdl-0.14.0-SNAPSHOT/examples/dllib/nnframes/imageInference/ImageInferenceExample.py \
-  -m /tmp/data2/analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f /tmp/data2/dogscats \
+  -m /bigdl2.0/data/analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f /bigdl2.0/data/dogscats \
   --b 64
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
 start_seconds=$(date --date="$starttime" +%s);
@@ -161,7 +161,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-nnframes-image-transfer-learning \
+  --name bigdl2-nnframes_image_transfer_learning \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -183,8 +183,8 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   local:///opt/bigdl-0.14.0-SNAPSHOT/examples/dllib/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
-  -m /tmp/data2/analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f /tmp/data2/nnframes/samples \
+  -m /bigdl2.0/data/analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f /bigdl2.0/data/nnframes/samples \
   --b 64
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
 start_seconds=$(date --date="$starttime" +%s);
@@ -202,7 +202,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-nnframes-image-transfer-learning \
+  --name bigdl2-nnframes_image_transfer_learning \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -224,8 +224,8 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   local:///opt/bigdl-0.14.0-SNAPSHOT/examples/dllib/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
-  -m /tmp/data2/analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f /tmp/data2/nnframes/samples \
+  -m /bigdl2.0/data/analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f /bigdl2.0/data/nnframes/samples \
   --b 64
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
 start_seconds=$(date --date="$starttime" +%s);
@@ -245,7 +245,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-spark_pandas \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -281,7 +281,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-spark_pandas \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -322,7 +322,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-super_resolution \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -364,7 +364,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-super_resolution \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -407,7 +407,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-cifar10 \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -443,7 +443,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-cifar10 \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -487,7 +487,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-transfer_learning \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -526,7 +526,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-transfer_learning \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -569,7 +569,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-basic_text_classification \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -605,7 +605,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl2-basic_text_classification \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
