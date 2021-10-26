@@ -11,15 +11,14 @@ else
   echo "Failed to find config file. Initialization failed."
 fi
 
-if mv *-serving.jar zoo.jar ; then
-    echo "Cluster Serving environment set up. Initialization success."
+BIGDL_SERVING_JAR_PATH=$(find . -maxdepth 1 -name 'bigdl-serving-*.jar')
+
+
+if [ -f ${BIGDL_SERVING_JAR_PATH} ]; then
+  echo "BigDL Cluster Serving Jar found at "$BIGDL_SERVING_JAR_PATH", environment already set up. Initialization success."
 else
-  if [ -f zoo.jar ]; then
-    echo "Cluster Serving environment already set up. Initialization success."
-  else
-    echo "Failed to find *-serving jar or zoo.jar in current directory, will download it... If this is too slow, please go to Analytics Zoo repo to download it manually."
-    download-serving-jar.sh
-  fi
+  echo "Failed to find bigdl-serving jar in current directory, will download it... If this is too slow, please go to BigDL repo to download it manually."
+#  download-serving-jar.sh
 fi
 
 
