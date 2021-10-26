@@ -143,7 +143,7 @@ kubectl create -f deploy/nfs-volume-claim.yaml
 
 3.Launch a k8s client container:
 
-Please note the two different containers: **client container** is for user to submit zoo jobs from here, since it contains all the required env and libs except hadoop/k8s configs; executor container is not need to create manually, which is scheduled by k8s at runtime.
+Please note the two different containers: **client container** is for user to submit bigdl jobs from here, since it contains all the required env and libs except hadoop/k8s configs; executor container is not need to create manually, which is scheduled by k8s at runtime.
 
 ```bash
 sudo docker run -itd --net=host \
@@ -207,33 +207,28 @@ root@[hostname]:/opt/spark/work-dir#
 
 Note: The `/opt` directory contains:
 
-- download-analytics-zoo.sh is used for downloading Analytics-Zoo distributions.
-- start-notebook-spark.sh is used for starting the jupyter notebook on standard spark cluster. 
-- start-notebook-k8s.sh is used for starting the jupyter notebook on k8s cluster.
-- analytics-zoo-x.x-SNAPSHOT is `ANALYTICS_ZOO_HOME`, which is the home of Analytics Zoo distribution.
-- analytics-zoo-examples directory contains downloaded python example code.
+- download-bigdl.sh is used for downloading Analytics-Zoo distributions.
 - jdk is the jdk home.
 - spark is the spark home.
-- redis is the redis home.
 
-## Run Analytics Zoo examples on k8s
+## Run BigDL examples on k8s
 
-#### Launch an Analytics Zoo python example on k8s
+#### Launch an BigDL python example on k8s
 
-Here is a sample for submitting the python [anomalydetection](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/anomalydetection) example on cluster mode.
+Here is a sample for submitting the python [anomalydetection] example on cluster mode.
 
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo \
+  --name bigdl-app-k8s \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/zoo \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/data \
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/zoo \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/data \
   --conf spark.kubernetes.driver.label.<your-label>=true \
   --conf spark.kubernetes.executor.label.<your-label>=true \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
@@ -248,7 +243,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
   --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
   file:///opt/analytics-zoo-examples/python/anomalydetection/anomaly_detection.py \
-  --input_dir /zoo/data/nyc_taxi.csv
+  --input_dir /bigdl/data/nyc_taxi.csv
 ```
 
 Options:
@@ -265,7 +260,7 @@ Options:
 
 See more [python examples](submit-examples-on-k8s.md) running on k8s.
 
-#### Launch an Analytics Zoo scala example on k8s
+#### Launch an BigDL scala example on k8s
 
 Here is a sample for submitting the scala [anomalydetection](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/anomalydetection) example on cluster mode
 
