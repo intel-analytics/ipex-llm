@@ -46,10 +46,8 @@ echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
-    sed -i '/plat_name =/s/\"[^"][^"]*"/\"darwin-x86_64\"/g' $BIGDL_PYTHON_DIR/setup.py
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
-    sed -i '/plat_name =/s/\"[^"][^"]*"/\"linux-x86_64\"/g' $BIGDL_PYTHON_DIR/setup.py
 else
     echo "Unsupported platform"
 fi

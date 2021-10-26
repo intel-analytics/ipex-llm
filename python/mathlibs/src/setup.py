@@ -18,11 +18,18 @@
 
 import os
 from setuptools import setup
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
 plat_name = "linux-x86_64"
+
+class bdist_wheel(_bdist_wheel):
+    def run(self):
+        plat_name = self.plat_name
+        _bdist_wheel.run(self)
+
 
 def setup_package():
     package_data_plat_ = {"linux-x86_64":["libiomp5.so", "libmklml_intel.so"],
