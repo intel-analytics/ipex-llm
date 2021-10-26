@@ -32,7 +32,7 @@ def add_one_func(x):
 
 if __name__ == "__main__":
     parser = OptionParser()
-    parser.add_option("--nb_epoch", dest="nb_epoch", default="500")
+    parser.add_option("--nb_epoch", dest="nb_epoch", default="5")
     parser.add_option("--batch_size", type=int,dest="batch_size", default=512)
 
     (options, args) = parser.parse_args(sys.argv)
