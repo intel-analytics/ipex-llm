@@ -5,16 +5,16 @@ set -e
 echo "#1 start example for MNIST"
 #timer
 start=$(date "+%s")
-if [ -f analytics-zoo-data/data/MNIST ]; then
+if [ -f tmp/data/MNIST ]; then
   echo "MNIST already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
-  wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
-  wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
-  wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P analytics-zoo-data/data/MNIST/raw
+  wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P tmp/data/MNIST/raw
+  wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P tmp/data/MNIST/raw
+  wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P tmp/data/MNIST/raw
+  wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P tmp/data/MNIST/raw
 fi
 
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py --dir analytics-zoo-data/data
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py --dir tmp/data
 
 now=$(date "+%s")
 time1=$((now - start))

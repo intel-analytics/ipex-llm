@@ -525,7 +525,6 @@ echo "################## end cifar10.py  cluster "
 echo "run time is： "$((end_seconds-start_seconds))"s"
 
 
-
 echo "################## start transfer_learning.py  client "
 starttime=`date +'%Y-%m-%d %H:%M:%S'`
 ## transfer_learning.py

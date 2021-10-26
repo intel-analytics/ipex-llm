@@ -1,16 +1,5 @@
 #!/bin/bash
 
-export SPARK_HOME=$SPARK_HOME
-export MASTER=local[4]
-export FTP_URI=$FTP_URI
-export ANALYTICS_ZOO_ROOT=$ANALYTICS_ZOO_ROOT
-export ANALYTICS_ZOO_HOME=$ANALYTICS_ZOO_ROOT/dist
-export ANALYTICS_ZOO_JAR=`find ${ANALYTICS_ZOO_HOME}/lib -type f -name "analytics-zoo*jar-with-dependencies.jar"`
-export ANALYTICS_ZOO_PYZIP=`find ${ANALYTICS_ZOO_HOME}/lib -type f -name "analytics-zoo*python-api.zip"`
-export ANALYTICS_ZOO_CONF=${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf
-export PYTHONPATH=${ANALYTICS_ZOO_PYZIP}:$PYTHONPATH
-export BIGDL_JARS=`find ${ANALYTICS_ZOO_HOME}/lib -type f -name "analytics-zoo*jar-with-dependencies.jar"`
-
 set -e
 
 ray stop -f
@@ -45,13 +34,13 @@ start=$(date "+%s")
 
 # get_mnist_iterator in MXNet requires the data to be placed in the `data` folder of the running directory.
 # The running directory of integration test is ${ANALYTICS_ZOO_ROOT}.
-if [ -f ${BIGDL_ROOT}/data/mnist.zip ]
+if [ -f tmp/data/mnist.zip ]
 then
     echo "mnist.zip already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P ${BIGDL_ROOT}/data
+    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P tmp/data
 fi
-unzip -q ${BIGDL_ROOT}/data/mnist.zip -d ${BIGDL_ROOT}/data
+unzip -q tmp/data/mnist.zip -d tmp/data
 
 python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256
 now=$(date "+%s")
