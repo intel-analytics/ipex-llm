@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     model.fit(x=X_,
               y=Y_,
-              batch_size=32,
+              batch_size=128,
               nb_epoch=int(options.nb_epoch),
               distributed=True)
 
