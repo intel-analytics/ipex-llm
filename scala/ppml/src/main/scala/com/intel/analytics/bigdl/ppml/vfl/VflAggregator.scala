@@ -21,14 +21,14 @@ import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod, Val
 
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.ppml.DLAggregator
+import com.intel.analytics.bigdl.ppml.DLLibAggregator
 import org.apache.log4j.Logger
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
 
 class VflNNAggregator(classifier: Module[Float],
                       optimMethod: OptimMethod[Float],
                       criterion: Criterion[Float],
-                      validationMethods: Array[ValidationMethod[Float]]) extends DLAggregator{
+                      validationMethods: Array[ValidationMethod[Float]]) extends DLLibAggregator{
   module = Sequential[Float]().add(CAddTable[Float]())
   if (classifier != null) {
     module.add(classifier)

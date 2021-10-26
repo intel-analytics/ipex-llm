@@ -11,6 +11,9 @@ import static com.intel.analytics.bigdl.ppml.common.FLPhase.TRAIN;
 public class NNServiceImpl extends NNServiceGrpc.NNServiceImplBase {
     private Aggregator aggregator;
 
+    public NNServiceImpl(Aggregator aggregator) {
+        this.aggregator = aggregator;
+    }
     public void setAggregator(Aggregator aggregator) {
         this.aggregator = aggregator;
     }

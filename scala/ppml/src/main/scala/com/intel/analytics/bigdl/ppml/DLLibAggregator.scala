@@ -30,7 +30,7 @@ import org.apache.log4j.Logger
 import collection.JavaConverters._
 
 
-trait DLAggregator extends Aggregator {
+trait DLLibAggregator extends Aggregator {
   val logger = Logger.getLogger(this.getClass)
   var module: Sequential[Float] = null
   var target: Tensor[Float] = null

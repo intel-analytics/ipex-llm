@@ -1,4 +1,4 @@
-package com.intel.analytics.bigdl.ppml.vfl.examples
+package com.intel.analytics.bigdl.ppml.vfl.example
 
 
 

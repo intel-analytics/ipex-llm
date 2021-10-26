@@ -1,38 +1,19 @@
-/*
- * Copyright 2021 The BigDL Authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package com.intel.analytics.bigdl.ppml.vfl.example.logisticregression
 
-package com.intel.analytics.bigdl.ppml.vfl.examples
-
-
-import com.intel.analytics.bigdl.{DataSet, Module}
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.dllib.nn.{Linear, Sequential}
-import com.intel.analytics.bigdl.dllib.optim.Adam
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
-import com.intel.analytics.bigdl.ppml.{FLClient, FLServer}
-import com.intel.analytics.bigdl.ppml.vfl.VflEstimator
 import com.intel.analytics.bigdl.ppml.vfl.algorithm.LogisticRegression
+import com.intel.analytics.bigdl.ppml.vfl.example.ExampleUtils
 import com.intel.analytics.bigdl.ppml.vfl.utils.SampleToMiniBatch
+import com.intel.analytics.bigdl.{DataSet, Module}
 import org.apache.log4j.Logger
 
-import scala.collection.JavaConverters._
-import scala.collection.JavaConversions._
 import scala.io.Source
+
+import collection.JavaConverters._
+import collection.JavaConversions._
 
 /**
  * A two process example to simulate 2 nodes Vfl of a Neural Network
@@ -149,5 +130,3 @@ object VflLogisticRegression {
   }
 
 }
-
-

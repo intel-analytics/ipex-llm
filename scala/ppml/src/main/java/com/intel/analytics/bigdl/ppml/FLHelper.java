@@ -18,13 +18,18 @@ package com.intel.analytics.bigdl.ppml;
 
 public class FLHelper {
     String servicesList;
-
+    int worldSize = 1;
     // Server property
     int serverPort = 8980;
 
     // Client property
     String clientTarget = "localhost:8980";
     String taskID = "taskID";
+
+    public void setWorldSize(int worldSize) {
+        this.worldSize = worldSize;
+    }
+
 
     public void setServicesList(String servicesList) {
         this.servicesList = servicesList;
