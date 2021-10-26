@@ -35,8 +35,6 @@
 
 # default: localhost:6379
 # redisUrl:
-# default: localhost: 9092
-# kafkaUrl:
 
 # default: 8g
 # redisMaxmemory:
