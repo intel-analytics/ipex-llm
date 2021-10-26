@@ -93,7 +93,7 @@ else
   wget $FTP_URI/analytics-zoo-models/pytorch/resnet18-5c106cde.pth -P ${HOME}/.cache/torch/hub/checkpoints
 fi
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py -imagePath tmp/data/cats_and_dogs_filtered/samples
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py imagePath tmp/data/cats_and_dogs_filtered/samples
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
