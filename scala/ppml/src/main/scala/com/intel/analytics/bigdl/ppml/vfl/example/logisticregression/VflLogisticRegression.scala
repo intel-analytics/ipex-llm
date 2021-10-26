@@ -117,10 +117,9 @@ object VflLogisticRegression {
   def main(args: Array[String]): Unit = {
     // load args and get data
     val dataPath = args(0)
-    val worker = args(1).toInt
-    batchSize = args(2).toInt
-    val learningRate = args(3).toFloat
-    val rowKeyName = args(4)
+    val rowKeyName = args(1)
+    val learningRate = args(2).toFloat
+    batchSize = args(3).toInt
     getData(dataPath, rowKeyName)
 
     // create LogisticRegression object to train the model
