@@ -17,7 +17,7 @@
     </fileSet>
     <fileSet>
       <outputDirectory>/bin</outputDirectory>
-      <directory>${project.parent.basedir}/scripts</directory>
+      <directory>${project.parent.basedir}/../scripts</directory>
       <includes>
         <include>*with-dllib.sh</include>
       </includes>
