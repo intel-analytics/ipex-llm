@@ -332,7 +332,112 @@ def _read_stream(fd, fn):
             fn(buff.decode('utf-8'))
 
 
-def init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True):
+def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN", redirect_spark_log=True, **kwargs):
+    """
+    Creates or gets a SparkContext with optimized configurations for BigDL performance.
+    This method will also initialize the BigDL engine.
+
+    Note: If you use spark-shell or Jupyter notebook, as the SparkContext is created
+    before your code, you have to set the Spark configurations through command line options
+    or the properties file before calling this method. In this case, you are recommended
+    to use the launch scripts we provide:
+    https://github.com/intel-analytics/analytics-zoo/tree/master/scripts.
+
+    :param conf: An instance of SparkConf. If not specified, a new SparkConf with
+           Analytics Zoo and BigDL configurations would be created and used.
+           You can also input a string here to indicate the name of the application.
+    :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
+       "k8s-client", "standalone" and "spark-submit". Default to be "local".
+
+       For "spark-submit", you are supposed to use spark-submit to submit the application.
+       In this case, please set the Spark configurations through command line options or
+       the properties file. You need to use "spark-submit" for yarn-cluster or k8s-cluster mode.
+       To make things easier, you are recommended to use the launch scripts we provide:
+       https://github.com/intel-analytics/analytics-zoo/tree/master/scripts.
+
+       For other cluster modes, you are recommended to install and run analytics-zoo through
+       pip, which is more convenient.
+    :param spark_log_level: The log level for Spark. Default to be 'WARN'.
+    :param redirect_spark_log: Whether to redirect the Spark log to local file. Default to be True.
+
+    :return: An instance of SparkContext.
+    """
+    cluster_mode = cluster_mode.lower()
+    memory = "2g"
+    cores = 2
+    num_nodes = 1
+
+    spark_args = {}
+    spark_args["spark_log_level"] = spark_log_level
+    spark_args["redirect_spark_log"] = redirect_spark_log
+    if not isinstance(conf, six.string_types):
+        memory = conf.get("spark.executor.memory", "2g")
+        cores = conf.get("spark.executor.cores", 2)
+        num_nodes = conf.get("spark.executor.instances", 1)
+        spark_args.update(conf.getAll())
+    if cluster_mode == "spark-submit":
+        sc = init_internal_nncontext(conf, spark_log_level, redirect_spark_log)
+    elif cluster_mode == "local":
+        os.environ["SPARK_DRIVER_MEMORY"] = memory
+
+        if "python_location" in kwargs:
+            spark_args["python_location"] = kwargs["python_location"]
+        sc = init_spark_on_local(cores, **spark_args)
+    elif cluster_mode.startswith("yarn"):  # yarn or yarn-client
+        if cluster_mode == "yarn-cluster":
+            raise ValueError('For yarn-cluster mode, please set cluster_mode to "spark-submit" '
+                             'and submit the application via spark-submit instead')
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        if not hadoop_conf:
+            assert "hadoop_conf" in kwargs, \
+                "Directory path to hadoop conf not found for yarn-client mode. Please either " \
+                "specify argument hadoop_conf or set the environment variable HADOOP_CONF_DIR"
+            hadoop_conf = kwargs["hadoop_conf"]
+        from bigdl.dllib.utils.utils import detect_conda_env_name
+
+        conda_env_name = detect_conda_env_name()
+        for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
+                    "extra_python_lib", "penv_archive", "additional_archive",
+                    "hadoop_user_name", "spark_yarn_archive", "jars"]:
+            if key in kwargs:
+                spark_args[key] = kwargs[key]
+        from bigdl.dllib.nncontext import init_spark_on_yarn
+        sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
+                                conda_name=conda_env_name,
+                                num_executors=num_nodes, executor_cores=cores,
+                                executor_memory=memory, **spark_args)
+    elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
+        if cluster_mode == "k8s-cluster":
+            raise ValueError('For k8s-cluster mode, please set cluster_mode to "spark-submit" '
+                             'and submit the application via spark-submit instead')
+        assert "master" in kwargs, "Please specify master for k8s-client mode"
+        assert "container_image" in kwargs, "Please specify container_image for k8s-client mode"
+        for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
+                    "extra_python_lib", "jars", "python_location"]:
+            if key in kwargs:
+                spark_args[key] = kwargs[key]
+        from bigdl.dllib.nncontext import init_spark_on_k8s
+
+        sc = init_spark_on_k8s(master=kwargs["master"],
+                               container_image=kwargs["container_image"],
+                               num_executors=num_nodes, executor_cores=cores,
+                               executor_memory=memory, **spark_args)
+    elif cluster_mode == "standalone":
+        for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
+                    "extra_python_lib", "jars", "master", "python_location", "enable_numa_binding"]:
+            if key in kwargs:
+                spark_args[key] = kwargs[key]
+        from bigdl.dllib.nncontext import init_spark_standalone
+
+        sc = init_spark_standalone(num_executors=num_nodes, executor_cores=cores,
+                                   executor_memory=memory, **spark_args)
+    else:
+        raise ValueError("cluster_mode can only be local, yarn-client, standalone or spark-submit, "
+                         "but got: %s".format(cluster_mode))
+    return sc
+
+
+def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True):
     """
     Creates or gets a SparkContext with optimized configurations for BigDL performance.
     This method will also initialize the BigDL engine.
