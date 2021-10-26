@@ -19,6 +19,7 @@ from pytorch_lightning import LightningModule
 import onnxruntime
 from functools import wraps
 import torch
+import warnings
 
 def onnxruntime_support(override_predict_step=True):
 
@@ -37,30 +38,39 @@ def onnxruntime_support(override_predict_step=True):
                 input_sample = self.example_input_array
             self.to_onnx(filepath, input_sample, export_params=True, **kwargs)
             self._ortsess = onnxruntime.InferenceSession(filepath)
+            self._ortsess_up_to_date = True
         cls._build_ortsess = _build_ortsess
 
-        # inference_with_onnx
-        def inference_with_onnx(self, input_data, **kwargs):
+        # inference
+        def inference(self, input_data, batch_size=None, backend="onnx", **kwargs):
             '''
-            :param input_data: numpy ndarray
+            :param input_data: numpy ndarray (onnx) or tensor (non-onnx)
+            :param backend:
+            :param batch_size:
             '''
-            if not self._ortsess_up_to_date:
-                input_sample = torch.Tensor(input_data)
-                self._build_ortsess(input_sample=input_sample, **kwargs)
-                self._ortsess_up_to_date = True
-            input_name = self._ortsess.get_inputs()[0].name
-            ort_inputs = {input_name: input_data}
-            ort_outs = self._ortsess.run(None, ort_inputs)
+            if backend == "onnx":
+                if not self._ortsess_up_to_date:
+                    warnings.warn("Onnxruntime session is built lazily,"\
+                                  " this may harm your inference latency.")
+                    input_sample = torch.Tensor(input_data)
+                    self._build_ortsess(input_sample=input_sample, **kwargs)
+                input_name = self._ortsess.get_inputs()[0].name
+                ort_inputs = {input_name: input_data}
+                ort_outs = self._ortsess.run(None, ort_inputs)
+            else:
+                self.eval()
+                with torch.no_grad():
+                    return self(input_data)
         cls.inference_with_onnx = inference_with_onnx
 
-        # on_fit_end
-        def on_fit_end_additional(function):
+        # on_fit_start
+        def on_fit_start_additional(function):
             @wraps(function)
             def wrapped(*args, **kwargs):
                 args[0]._ortsess_up_to_date = False
                 return function(*args, **kwargs)
             return wrapped
-        cls.on_fit_end = on_fit_end_additional(cls.on_fit_end)
+        cls.on_fit_start = on_fit_start_additional(cls.on_fit_start)
 
         # predict_step
         if override_predict_step:
