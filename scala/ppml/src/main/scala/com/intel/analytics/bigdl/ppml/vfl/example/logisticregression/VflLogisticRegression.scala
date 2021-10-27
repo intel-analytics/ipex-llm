@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.ppml.vfl.LogisticRegression
 import com.intel.analytics.bigdl.ppml.vfl.example.ExampleUtils
 import com.intel.analytics.bigdl.{DataSet, Module}
 import org.apache.log4j.Logger
+import scopt.OptionParser
 
 import scala.io.Source
 import collection.JavaConverters._
@@ -43,7 +44,10 @@ object VflLogisticRegression {
   var flClient: FLClient = new FLClient()
   var batchSize: Int = 0
   val logger = Logger.getLogger(getClass)
+
   protected var hashedKeyPairs: Map[String, String] = null
+
+
   def getData(dataPath: String, rowKeyName: String) = {
 
     // load data from dataset and preprocess
@@ -130,12 +134,34 @@ object VflLogisticRegression {
     }
   }
 
+
   def main(args: Array[String]): Unit = {
+    case class Params(dataPath: String = null,
+                      rowKeyName: String = null,
+                      learningRate: Float = 0.005f,
+                      batchSize: Int = 4)
+    val parser = new OptionParser[Params]("Text Classification Example") {
+      opt[String]('d', "dataPath")
+        .text("data path to load")
+        .action((x, params) => params.copy(dataPath = x))
+        .required()
+      opt[String]('r', "rowKeyName")
+        .text("row key name of data")
+        .action((x, params) => params.copy(rowKeyName = x))
+        .required()
+      opt[String]('l', "learningRate")
+        .text("learning rate of training")
+        .action((x, params) => params.copy(learningRate = x.toFloat))
+      opt[String]('b', "batchSize")
+        .text("batchsize of training")
+        .action((x, params) => params.copy(batchSize = x.toInt))
+    }
+    val argv = parser.parse(args, Params()).head
     // load args and get data
-    val dataPath = args(0)
-    val rowKeyName = args(1)
-    val learningRate = args(2).toFloat
-    batchSize = args(3).toInt
+    val dataPath = argv.dataPath
+    val rowKeyName = argv.rowKeyName
+    val learningRate = argv.learningRate
+    batchSize = argv.batchSize
     getData(dataPath, rowKeyName)
 
     // create LogisticRegression object to train the model
