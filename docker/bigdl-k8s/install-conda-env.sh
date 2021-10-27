@@ -1,9 +1,10 @@
 # Install Miniconda
 wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh
 chmod +x Miniconda3-4.5.4-Linux-x86_64.sh
-./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /opt/work/conda
+./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local
 
 conda create -y -n pytf1 python=3.7 && \
+source activate pytf1 && \
 pip install --no-cache-dir --upgrade pip && \
 pip install --no-cache-dir --upgrade setuptools && \
 pip install --no-cache-dir numpy==1.18.1 scipy && \
@@ -30,9 +31,11 @@ pip install --no-cache-dir pyarrow && \
 pip install opencv-python==4.2.0.34 && \
 pip install aioredis==1.1.0 && \
 pip install tensorflow==1.15.0 && \
-pip install tensorflow-datasets==2.0
+pip install tensorflow-datasets==2.0 && \
+source deactivate && \
 
 conda create -y -n pytf2 python=3.7 && \
+source activate pytf2 && \
 pip install --no-cache-dir --upgrade pip && \
 pip install --no-cache-dir --upgrade setuptools && \
 pip install --no-cache-dir numpy==1.18.1 scipy && \
@@ -58,4 +61,5 @@ pip install --no-cache-dir xgboost && \
 pip install --no-cache-dir pyarrow && \
 pip install opencv-python==4.2.0.34 && \
 pip install aioredis==1.1.0 && \
-pip install tensorflow==2.4.0
+pip install tensorflow==2.4.0 && \
+source deactivate
