@@ -7,7 +7,7 @@
 ### **Install**
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
 ```bash
-conda create -n bigdl-orca-automl python=3.7  # "py37" is conda environment name, you can use any name you like.
+conda create -n bigdl-orca-automl python=3.7  # "bigdl-orca-automl" is conda environment name, you can use any name you like.
 conda activate bigdl-orca-automl
 pip install bigdl-orca[automl]
 ````
