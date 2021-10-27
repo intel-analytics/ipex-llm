@@ -121,7 +121,7 @@ RUN mkdir -p /opt/bigdl-examples/python && \
 # python
 ADD ./install-conda-env.sh /opt
 RUN chmod a+x /opt/install-conda-env.sh 
-RUN /opt/install-conda-env.sh && \
+RUN /opt/install-conda-env.sh 
 # chmod
 RUN chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
