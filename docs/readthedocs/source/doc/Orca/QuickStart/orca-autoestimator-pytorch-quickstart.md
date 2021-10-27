@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/autoestimator_pytorch_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/autoestimator_pytorch_lenet_mnist.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/autoestimator_pytorch_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/autoestimator_pytorch_lenet_mnist.ipynb)
 
 ---
 
@@ -10,18 +10,18 @@
 
 ### **Step 0: Prepare Environment**
 
-[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
+[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](to-be-update) for more details.
 
 ```bash
-conda create -n zoo python=3.7 # zoo is conda environment name, you can use any name you like.
-conda activate zoo
-pip install analytics-zoo[ray]
-pip install torch==1.7.1 torchvision==0.8.2
+conda create -n bigdl-orca-automl python=3.7 # zoo is conda environment name, you can use any name you like.
+conda activate bigdl-orca-automl
+pip install bigdl-orca[automl]
+pip install torch==1.8.1 torchvision==0.9.1
 ```
 
 ### **Step 1: Init Orca Context**
 ```python
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":
     init_orca_context(cores=4, memory="2g", init_ray_on_spark=True) # run in local mode
@@ -113,10 +113,10 @@ def test_loader_creator(config):
 ### **Step 4: Define Search Space**
 You should define a dictionary as your hyper-parameter search space.
 
-The keys are hyper-parameter names which should be the same with those in your creators, and you can specify how you want to sample each hyper-parameter in the values of the search space. See [automl.hp](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
+The keys are hyper-parameter names which should be the same with those in your creators, and you can specify how you want to sample each hyper-parameter in the values of the search space. See [automl.hp](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
 
 ```python
-from zoo.orca.automl import hp
+from bigdl.orca.automl import hp
 
 search_space = {
     "fc1_hidden_size": hp.choice([500, 600]),
@@ -127,15 +127,15 @@ search_space = {
 
 ### **Step 5: Automatically Fit and Search with Orca AutoEstimator**
 
-First, create an `AutoEstimator`. You can refer to [AutoEstimator API doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
+First, create an `AutoEstimator`. You can refer to [AutoEstimator API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
 
 ```python
-from zoo.orca.automl.auto_estimator import AutoEstimator
+from bigdl.orca.automl.auto_estimator import AutoEstimator
 
 auto_est = AutoEstimator.from_torch(model_creator=model_creator,
                                     optimizer=optim_creator,
                                     loss=criterion,
-                                    logs_dir="/tmp/zoo_automl_logs",
+                                    logs_dir="/tmp/orca_automl_logs",
                                     resources_per_trial={"cpu": 2},
                                     name="lenet_mnist")
 ```
