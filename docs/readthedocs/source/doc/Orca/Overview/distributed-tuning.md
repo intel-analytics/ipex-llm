@@ -10,7 +10,6 @@ To perform distributed hyper-parameter tuning, user can first create an Orca `Au
 
 Under the hood, the Orca `AutoEstimator` generates different trials and schedules them on each mode in the cluster. Each trial runs a different combination of hyper parameters, sampled from the user-desired hyper-parameter space.
 HDFS is used to save temporary results of each trial and all the results will be finally transferred to driver for further analysis. 
-HDFS is used to save temporary results of each trial and all the results will be finally transferred to driver for further analysis. 
 
 ### **2. Pytorch AutoEstimator**
 
