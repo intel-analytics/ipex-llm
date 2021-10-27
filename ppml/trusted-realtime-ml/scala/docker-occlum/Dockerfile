@@ -50,8 +50,10 @@ RUN cd /opt && \
 # Download bigdl
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
     chmod a+x ./download-bigdl.sh
-RUN ./download-bigdl.sh && \
-    rm bigdl*.zip
+
+ADD ../docker-graphene/download-bigdl-serving.sh /opt/download-bigdl-serving.sh
+RUN cd /opt && \
+    ./download-bigdl-serving.sh
 
 # models
 RUN cd /opt && \
@@ -93,6 +95,7 @@ COPY --from=redis-tls /opt/occlum/glibc /opt/occlum/glibc
 COPY --from=bigdl /opt/flink-${FLINK_VERSION} /opt/flink-${FLINK_VERSION}
 COPY --from=bigdl /opt/resnet50 /opt/resnet50
 COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION}/jars/bigdl-serving*-jar-with-dependencies.jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar
+COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION}/jars/bigdl-serving*-http.jar ${BIGDL_HOME}/bigdl-serving-http.jar
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
