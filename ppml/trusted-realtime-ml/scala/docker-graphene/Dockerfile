@@ -69,7 +69,7 @@ RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
     chmod a+x ./download-bigdl.sh && \
-    chmod a+x ./download-bigdl-serving.sh
+    chmod a+x /opt/download-bigdl-serving.sh
 RUN ./download-bigdl.sh && \
     rm bigdl*.zip && \
     cd /opt && \
