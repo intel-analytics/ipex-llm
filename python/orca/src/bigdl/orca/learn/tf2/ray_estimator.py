@@ -27,61 +27,11 @@ from bigdl.orca.learn.tf2.tf_runner import TFRunner
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe
+    process_xshards_of_pandas_dataframe, make_data_creator
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.orca.ray import RayContext
 
 logger = logging.getLogger(__name__)
-
-
-# class Estimator(object):
-#     @staticmethod
-#     def from_keras(*,
-#                    model_creator,
-#                    config=None,
-#                    verbose=False,
-#                    workers_per_node=1,
-#                    compile_args_creator=None,
-#                    backend="tf2",
-#                    cpu_binding=False,
-#                    ):
-#         """
-#         Create an Estimator for tensorflow 2.
-#         :param model_creator: (dict -> Model) This function takes in the `config`
-#                dict and returns a compiled TF model.
-#         :param config: (dict) configuration passed to 'model_creator',
-#                'data_creator'. Also contains `fit_config`, which is passed
-#                into `model.fit(data, **fit_config)` and
-#                `evaluate_config` which is passed into `model.evaluate`.
-#         :param verbose: (bool) Prints output of one model if true.
-#         :param workers_per_node: (Int) worker number on each node. default: 1.
-#         :param compile_args_creator: (dict -> dict of loss, optimizer and metrics) Only used when
-#                the backend="horovod". This function takes in the `config` dict and returns a
-#                dictionary like {"optimizer": tf.keras.optimizers.SGD(lr), "loss":
-#                "mean_squared_error", "metrics": ["mean_squared_error"]}
-#         :param backend: (string) You can choose "horovod" or "tf2" as backend. Default: `tf2`.
-#         :param cpu_binding: (bool) Whether to binds threads to specific CPUs. Default: False
-#         """
-#         return TensorFlow2Estimator(model_creator=model_creator, config=config,
-#                                     verbose=verbose, workers_per_node=workers_per_node,
-#                                     backend=backend, compile_args_creator=compile_args_creator,
-#                                     cpu_binding=cpu_binding)
-#
-#
-def make_data_creator(refs):
-    def data_creator(config, batch_size):
-        return refs
-
-    return data_creator
-
-
-def data_length(data):
-    x = data["x"]
-    if isinstance(x, np.ndarray):
-        return x.shape[0]
-    else:
-        return x[0].shape[0]
-
 
 class TensorFlow2Estimator(OrcaRayEstimator):
     def __init__(self,

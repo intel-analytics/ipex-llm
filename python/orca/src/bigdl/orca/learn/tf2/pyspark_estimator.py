@@ -23,26 +23,12 @@ from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_s
 
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
-    convert_predict_xshards_to_dataframe, update_predict_xshards, \
+    convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
 logger = logging.getLogger(__name__)
-
-def make_data_creator(refs):
-    def data_creator(config, batch_size):
-        return refs
-
-    return data_creator
-
-def data_length(data):
-    x = data["x"]
-    if isinstance(x, np.ndarray):
-        return x.shape[0]
-    else:
-        return x[0].shape[0]
-
 
 class SparkTFEstimator():
     def __init__(self,
