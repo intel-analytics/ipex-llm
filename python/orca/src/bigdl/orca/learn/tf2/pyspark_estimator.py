@@ -47,6 +47,11 @@ class SparkTFEstimator():
 
         num_node, num_core = get_node_and_core_number()
         self.num_workers = num_node * workers_per_node
+        self.total_cores = num_node * num_core
+
+        # over partition to cover tasks all over the cluster
+        self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
+                                        self.total_cores * 4).repartition(self.num_workers)
 
         if not "inter_op_parallelism"  in self.config:
             self.config["inter_op_parallelism"] = 1
@@ -60,9 +65,7 @@ class SparkTFEstimator():
                             " fit/evaluate function of the estimator instead.")
 
     def _get_cluster_info(self, sc):
-        workerRDD = sc.parallelize(list(range(self.num_workers)),
-                                   self.num_workers).repartition(self.num_workers)
-        cluster_info = workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
+        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
         return cluster_info
 
     def fit(self, data, epochs=1, batch_size=32, verbose=1,
@@ -147,13 +150,10 @@ class SparkTFEstimator():
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
 
-            workerRDD = sc.parallelize(list(range(self.num_workers)), self.num_workers). \
-                repartition(self.num_workers)
-
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).step(**param)
 
-            res = workerRDD.barrier().mapPartitions(
+            res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
         self.model_weights = res[0]
@@ -223,16 +223,11 @@ class SparkTFEstimator():
                 .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
-            # params["model_weights"] = self.model_weights
-
-            # worker_nums = self.worker_nums
-            workerRDD = sc.parallelize(list(range(self.num_workers)),
-                                       self.num_workers).repartition(self.num_workers)
 
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).validate(**param)
 
-            res = workerRDD.barrier().mapPartitions(
+            res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
         return res[0]
