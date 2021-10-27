@@ -22,6 +22,17 @@ import torch
 import warnings
 
 def onnxruntime(override_predict_step=True):
+    '''
+    `onnxruntime` is a decorator that extend a LightningModule to support onnxruntime inference
+    in an easy way.
+
+    With this decorator used, a LightningModule will be revised as following:
+    - a new method `inference(input_data, batch_size=None, backend="onnx", **kwargs)` will
+      be added for onnx inference.
+    - `predict_step` will be override if override_predict_step is set to True.
+
+    :param override_predict_step: bool, decide if `predict_step` will be override.
+    '''
 
     def onnxruntime_decorator(cls):
         # class type check
