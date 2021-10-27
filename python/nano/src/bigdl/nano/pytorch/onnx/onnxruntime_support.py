@@ -57,11 +57,12 @@ def onnxruntime_support(override_predict_step=True):
                 input_name = self._ortsess.get_inputs()[0].name
                 ort_inputs = {input_name: input_data}
                 ort_outs = self._ortsess.run(None, ort_inputs)
+                return ort_outs[0]
             else:
                 self.eval()
                 with torch.no_grad():
                     return self(input_data)
-        cls.inference_with_onnx = inference_with_onnx
+        cls.inference = inference
 
         # on_fit_start
         def on_fit_start_additional(function):
@@ -75,7 +76,7 @@ def onnxruntime_support(override_predict_step=True):
         # predict_step
         if override_predict_step:
             def predict_step(self, batch, batch_idx):
-                return self.inference_with_onnx(batch[0].numpy())
+                return self.inference(batch[0].numpy())
             cls.predict_step = predict_step
 
         return cls
