@@ -30,7 +30,6 @@ import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
 
-
 def find_free_port(tc):
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(("", 0))
@@ -250,16 +249,12 @@ class SparkRunner:
         ips = set([node.split(":")[0] for node in cluster])
         os.environ["no_proxy"] = ",".join(ips)
 
-        from tensorflow.python.distribute import distribution_strategy_context as ds_context
-        # self.strategy = ds_context.get_strategy()
-        # print("stragety: ", self.strategy)
-        # if not self.strategy:
+        # if mode == "fit":
         #     self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
-        if mode == "fit":
-            self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
-        else:
-            from tensorflow.python.distribute import distribution_strategy_context as ds_context
-            self.strategy = ds_context.get_strategy()
+        # else:
+        #     from tensorflow.python.distribute import distribution_strategy_context as ds_context
+        #     self.strategy = ds_context.get_strategy()
+        self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
         # For use in model.evaluate()
         self.local_model = None
