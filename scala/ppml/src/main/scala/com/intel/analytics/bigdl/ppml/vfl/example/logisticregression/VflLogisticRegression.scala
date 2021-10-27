@@ -16,18 +16,16 @@
 
 package com.intel.analytics.bigdl.ppml.vfl.example.logisticregression
 
-import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
 import com.intel.analytics.bigdl.ppml.vfl.LogisticRegression
 import com.intel.analytics.bigdl.ppml.vfl.example.ExampleUtils
-import com.intel.analytics.bigdl.ppml.vfl.utils.SampleToMiniBatch
 import com.intel.analytics.bigdl.{DataSet, Module}
 import org.apache.log4j.Logger
 
 import scala.io.Source
-
 import collection.JavaConverters._
 import collection.JavaConversions._
 
@@ -86,9 +84,11 @@ object VflLogisticRegression {
         Sample(features)
       })
     }
-    val trainDataset = DataSet.array(samples) -> SampleToMiniBatch(batchSize)
+    val trainDataset = DataSet.array(samples) ->
+      SampleToMiniBatch(batchSize, isBatchSizeTotal = false)
     //TODO: Find a better dataset has val dataset.
-    val valDataSet = DataSet.array(samples) -> SampleToMiniBatch(batchSize)
+    val valDataSet = DataSet.array(samples) ->
+      SampleToMiniBatch(batchSize, isBatchSizeTotal = false)
     (trainDataset, valDataSet)
   }
 
