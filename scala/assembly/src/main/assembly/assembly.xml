@@ -102,6 +102,7 @@
   </fileSets>
   <dependencySets>
     <dependencySet>
+      <outputDirectory>jars</outputDirectory>
       <includes>
         <include>com.intel.analytics.bigdl:*:jar</include>
       </includes>
@@ -116,6 +117,7 @@
       <scope>runtime</scope>
       <useProjectArtifact>false</useProjectArtifact>
       <excludes>
+        <exclude>com.intel.analytics.bigdl:*:jar</exclude>
         <exclude>org.apache.hadoop:*:jar</exclude>
         <exclude>org.apache.flink:*:jar</exclude>
         <exclude>org.apache.spark:*:jar</exclude>
