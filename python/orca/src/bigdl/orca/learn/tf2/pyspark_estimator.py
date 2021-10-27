@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Analytics Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import logging
 from pyspark.sql.dataframe import DataFrame
 import numpy as np
@@ -29,33 +30,6 @@ from bigdl.orca import OrcaContext
 
 logger = logging.getLogger(__name__)
 
-# class Estimator(object):
-#     @staticmethod
-#     def from_keras(*,
-#                    model_creator,
-#                    config=None,
-#                    verbose=False,
-#                    compile_args_creator=None
-#                    ):
-#         """
-#         Create an Estimator for tensorflow 2.
-#         :param model_creator: (dict -> Model) This function takes in the `config`
-#                dict and returns a compiled TF model.
-#         :param config: (dict) configuration passed to 'model_creator',
-#                'data_creator'. Also contains `fit_config`, which is passed
-#                into `model.fit(data, **fit_config)` and
-#                `evaluate_config` which is passed into `model.evaluate`.
-#         :param verbose: (bool) Prints output of one model if true.
-#         :param compile_args_creator: (dict -> dict of loss, optimizer and metrics) Only used when
-#                the backend="horovod". This function takes in the `config` dict and returns a
-#                dictionary like {"optimizer": tf.keras.optimizers.SGD(lr), "loss":
-#                "mean_squared_error", "metrics": ["mean_squared_error"]}
-#         """
-#         return SparkTFEstimator(model_creator=model_creator,
-#                                 config=config, verbose=verbose,
-#                                 compile_args_creator=compile_args_creator)
-#
-#
 def make_data_creator(refs):
     def data_creator(config, batch_size):
         return refs

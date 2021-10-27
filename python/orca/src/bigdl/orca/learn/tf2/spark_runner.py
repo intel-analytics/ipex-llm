@@ -1,3 +1,18 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 import json
 import logging
 import os
@@ -246,10 +261,6 @@ class SparkRunner:
             from tensorflow.python.distribute import distribution_strategy_context as ds_context
             self.strategy = ds_context.get_strategy()
 
-        # with self.strategy.scope():
-        #     model = self.model_creator(self.config)
-
-
         # For use in model.evaluate()
         self.local_model = None
         self.backend = "tf-distributed"
@@ -263,25 +274,6 @@ class SparkRunner:
         Sets up TensorFLow distributed environment, initializes the model,
         runs a training epoch and updates the model parameters
         """
-        # tc = BarrierTaskContext().get()
-        # rank = tc.partitionId()
-        # free_port = find_free_port(tc)
-        # cluster = tc.allGather(str(free_port))
-        # self.cluster = cluster
-        # self.rank = rank
-        # print(cluster)
-        #
-        # import os
-        # os.environ["TF_CONFIG"] = json.dumps({
-        # 'cluster': {
-        #     'worker': cluster
-        # },
-        # 'task': {'type': 'worker', 'index': rank}
-        # })
-        # ips = set([node.split(":")[0] for node in cluster])
-        # os.environ["no_proxy"] = ",".join(ips)
-        #
-        # strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
         with self.strategy.scope():
             model = self.model_creator(self.config)
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
