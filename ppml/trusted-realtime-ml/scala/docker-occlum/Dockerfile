@@ -48,11 +48,9 @@ RUN cd /opt && \
     rm flink-${FLINK_VERSION}-bin-scala_2.11.tgz
 
 # Download bigdl
-RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
-    chmod a+x ./download-bigdl.sh
-
-ADD ../docker-graphene/download-bigdl-serving.sh /opt/download-bigdl-serving.sh
 RUN cd /opt && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/scala/serving/scripts/download-serving-jar.sh && \
+    chmod a+x ./download-bigdl-serving.sh && \
     ./download-bigdl-serving.sh
 
 # models
