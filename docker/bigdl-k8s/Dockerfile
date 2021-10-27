@@ -53,6 +53,7 @@ ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git
 ADD ./download-bigdl.sh /opt
+ADD ./install-conda-env.sh /opt
 
 RUN chmod a+x /opt/download-bigdl.sh && \
     mkdir -p /opt/bigdl-examples/python
@@ -81,7 +82,6 @@ ENV BIGDL_HOME                          /opt/bigdl-${BIGDL_VERSION}
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
-ENV FLINK_HOME                          /opt/flink-${FLINK_VERSION}
 ENV OMP_NUM_THREADS                     4
 ENV NOTEBOOK_PORT                       12345
 ENV NOTEBOOK_TOKEN                      1234qwer
@@ -98,12 +98,9 @@ ENV RUNTIME_DRIVER_CORES                4
 ENV RUNTIME_DRIVER_MEMORY               10g
 ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
 ENV SPARK_HOME                          /opt/spark
-ENV HADOOP_CONF_DIR                     /opt/hadoop-conf
-ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:${BIGDL_HOME}/jars/bigdl-friesian-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar
+ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/*.jar
 ENV JAVA_HOME                           /opt/jdk
-ENV REDIS_HOME                          /opt/redis-5.0.5
 ENV PYTHONPATH                          ${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:/opt/models/research/slim
-ENV PATH                                ${BIGDL_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:/root/miniconda3/bin:${PATH}
 ENV TINI_VERSION                        ${TINI_VERSION}
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
@@ -121,39 +118,10 @@ RUN mkdir -p /opt/bigdl-examples/python && \
     rm /bin/sh && \
     ln -sv /bin/bash /bin/sh && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
-    chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+    chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 # python
-    apt-get install -y python3-minimal && \
-    apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
-    pip3 install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir --upgrade setuptools && \
-    pip install --no-cache-dir numpy==1.18.1 scipy && \
-    pip install --no-cache-dir pandas==1.0.3 && \
-    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
-    #Fix tornado await process
-    pip uninstall -y -q tornado && \
-    pip install --no-cache-dir tornado && \
-    python3 -m ipykernel.kernelspec && \
-    pip install --no-cache-dir tensorboard && \
-    pip install --no-cache-dir jep && \
-    pip install --no-cache-dir cloudpickle && \
-    pip install --no-cache-dir opencv-python && \
-    pip install --no-cache-dir pyyaml && \
-    pip install --no-cache-dir redis && \
-    pip install --no-cache-dir ray[tune]==1.2.0 && \
-    pip install --no-cache-dir Pillow==6.2 && \
-    pip install --no-cache-dir psutil aiohttp && \
-    pip install --no-cache-dir py4j && \
-    pip install --no-cache-dir cmake==3.16.3 && \
-    pip install --no-cache-dir torch==1.7.1 torchvision==0.8.2 && \
-    pip install --no-cache-dir horovod==0.19.2 && \
-    pip install --no-cache-dir xgboost && \
-#tf2
-    pip install --no-cache-dir pyarrow && \
-    pip install opencv-python==4.2.0.34 && \
-    pip install aioredis==1.1.0 && \
-    pip install tensorflow==2.4.0 && \
+RUN chmod a+x /opt/download-bigdl.sh && \
+    /opt/download-bigdl.sh
 # chmod
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
