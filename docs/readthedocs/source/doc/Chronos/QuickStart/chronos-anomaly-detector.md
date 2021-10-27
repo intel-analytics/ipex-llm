@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/chronos/chronos_minn_traffic_anomaly_detector.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/chronos/chronos_minn_traffic_anomaly_detector.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb)
 
 ---
 
@@ -13,9 +13,9 @@
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
 ```bash
-conda create -n zoo python=3.7 # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
-pip install analytics-zoo[automl] # install either version 0.10 or latest nightly build
+conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
+conda activate my_env
+pip install bigdl-chronos
 ```
 
 ## Step 1: Prepare dataset
@@ -27,7 +27,7 @@ For the machine_usage data, the pre-processing contains 2 parts: <br>
 2. Check missing values and handle missing data.
 
 ```python
-from zoo.chronos.data import TSDataset
+from bigdl.chronos.data import TSDataset
 
 tsdata = TSDataset.from_pandas(df, dt_col="timestamp", target_col="value")
 df = tsdata.resample("5min")\
@@ -36,10 +36,10 @@ df = tsdata.resample("5min")\
 ```
 
 ## Step 2: Use Chronos Anomaly Detector
-Chronos provides many anomaly detector for anomaly detection, here we use DBScan as an example. More anomaly detector can be found [here](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html).
+Chronos provides many anomaly detector for anomaly detection, here we use DBScan as an example. More anomaly detector can be found [here](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html).
 
 ```python
-from zoo.chronos.detector.anomaly import DBScanDetector
+from bigdl.chronos.detector.anomaly import DBScanDetector
 
 ad = DBScanDetector(eps=0.3, min_samples=6)
 ad.fit(df['value'].to_numpy())
