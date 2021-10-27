@@ -701,7 +701,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl-autoxgboost-classifier \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -742,7 +742,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl-autoxgboost-classifier \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -786,7 +786,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl-autoxgboost-regressor \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -826,7 +826,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --master ${RUNTIME_SPARK_MASTER} \
   --deploy-mode cluster \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo-autoestimator \
+  --name bigdl-autoxgboost-regressor \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
