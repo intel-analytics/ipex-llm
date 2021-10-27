@@ -15,10 +15,11 @@ You can install the latest release version of BigDL Orca as follows:
 ```bash
 pip install --pre --upgrade bigdl-orca[automl]
 ```
-Note that with extra key of [automl], `pip` will automatically install the additional dependencies for distributed hyper-parameter tuning,
-including `ray[tune]==1.2.0`, `psutil`, `aiohttp==3.7.0`, `aioredis==1.1.0`, `setproctitle`, `hiredis==1.1.0`, `async-timeout==3.0.1`, `xgboost`.
+_Note that with extra key of [automl], `pip` will automatically install the additional dependencies for distributed hyper-parameter tuning,
+including `ray[tune]==1.2.0`, `psutil`, `aiohttp==3.7.0`, `aioredis==1.1.0`, `setproctitle`, `hiredis==1.1.0`, `async-timeout==3.0.1`, `xgboost`._
 
 To use [Pytorch Estimator](#pytorch-autoestimator), you need to install Pytorch with `pip install torch==1.8.1`.
+
 To use [TensorFlow/Keras AutoEstimator](#tensorflow-keras-autoestimator), you need to install Tensorflow with `pip install tensorflow==1.15.0`.
 
 
