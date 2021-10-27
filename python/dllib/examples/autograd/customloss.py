@@ -28,7 +28,7 @@ def mean_absolute_error(y_true, y_pred):
 
 if __name__ == "__main__":
     parser = OptionParser()
-    parser.add_option("--nb_epoch", type=int, dest="nb_epoch", default="5")
+    parser.add_option("--nb_epoch", type=int, dest="nb_epoch", default=5)
     parser.add_option("--batch_size", type=int, dest="batch_size", default=512)
 
     sc = init_nncontext("customloss example")
