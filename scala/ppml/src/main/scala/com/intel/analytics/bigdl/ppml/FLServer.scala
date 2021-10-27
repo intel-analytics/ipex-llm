@@ -47,7 +47,7 @@ object FLServer {
   }
 }
 
-class FLServer private[ppml](val args: Array[String] = null) extends GrpcServerBase(args) {
+class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServerBase(_args) {
   configPath = "ppml-conf.yaml"
 
   @throws[IOException]

@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.vfl.utils.ProtoUtils._
 import com.intel.analytics.bigdl.ppml.generated.FLProto.{EvaluateResponse, Table, TableMetaData}
 import io.netty.handler.ssl.SslContext
+import org.apache.log4j.Logger
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -34,6 +35,7 @@ import scala.collection.mutable.ArrayBuffer
 class VflEstimator(flClient: FLClient,
                    model: Module[Float],
                    optimMethod: OptimMethod[Float]){
+  val logger = Logger.getLogger(getClass)
   val (weight, grad) = getParametersFromModel(model)
 
   def train(endEpoch: Int,
@@ -69,10 +71,10 @@ class VflEstimator(flClient: FLClient,
         val output = model.forward(input)
 
         // Upload to PS
-        uploadOutput(flClient, model, iteration, target)
+        uploadOutput(model, iteration, target)
         model.zeroGradParameters()
         // Download average model
-        val gradInput = downloadModel(flClient, "gradInput", iteration)
+        val gradInput = downloadTrain(flClient, "gradInput", iteration)
         // model replace
         val errors = getTensor("gradInput", gradInput)
         val loss = getTensor("loss", gradInput).value()
@@ -91,9 +93,9 @@ class VflEstimator(flClient: FLClient,
         val input = miniBatch.getInput()
         val target = miniBatch.getTarget()
         val output = model.forward(input)
-        evaluateResponse = evaluateOutput(flClient, model, epoch + 1, target, !valIterator.hasNext)
+        evaluateResponse = evaluateOutput(model, epoch + 1, target, !valIterator.hasNext)
       }
-      println(evaluateResponse.getResponse)
+      logger.info(evaluateResponse.getResponse)
       val dataMap = evaluateResponse.getData.getTableMap.asScala
       dataMap.foreach{v =>
         if (evaluateResults.contains(v._1)) {
@@ -110,27 +112,25 @@ class VflEstimator(flClient: FLClient,
   def close(): Unit = {
     flClient.shutdown()
   }
-  def uploadOutput(client: FLClient, model: Module[Float], flVersion: Int, target: Activity = null): Unit = {
+  def uploadOutput(model: Module[Float], flVersion: Int, target: Activity = null): Unit = {
     val metadata = TableMetaData.newBuilder
       .setName(s"${model.getName()}_output").setVersion(flVersion).build
 
     // TODO: support table output and table target
     val tableProto = outputTargetToTableProto(model.output, target, metadata)
-    client.nnStub.uploadTrain(tableProto)
+    flClient.uploadTrain(tableProto)
   }
 
-  def evaluateOutput(
-                      client: FLClient,
-                      model: Module[Float],
-                      flVersion: Int,
-                      target: Activity,
-                      lastBatch: Boolean): EvaluateResponse = {
+  def evaluateOutput(model: Module[Float],
+                     flVersion: Int,
+                     target: Activity,
+                     lastBatch: Boolean): EvaluateResponse = {
     val metadata = TableMetaData.newBuilder
       .setName(s"${model.getName()}_output").setVersion(flVersion).build
 
     // TODO: support table output and table target
     val tableProto = outputTargetToTableProto(model.output, target, metadata)
-    client.nnStub.evaluate(tableProto, lastBatch)
+    flClient.evaluate(tableProto, lastBatch)
   }
 
 }

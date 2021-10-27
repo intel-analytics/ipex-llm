@@ -18,17 +18,15 @@ package com.intel.analytics.bigdl.ppml.vfl
 
 import com.intel.analytics.bigdl.dllib.nn.{CAddTable, Sequential}
 import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod, ValidationResult}
-
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.{Criterion, Module}
-import com.intel.analytics.bigdl.ppml.DLLibAggregator
 import org.apache.log4j.Logger
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
 
 class VflNNAggregator(classifier: Module[Float],
                       optimMethod: OptimMethod[Float],
                       criterion: Criterion[Float],
-                      validationMethods: Array[ValidationMethod[Float]]) extends DLLibAggregator{
+                      validationMethods: Array[ValidationMethod[Float]]) extends DLlibAggregator{
   module = Sequential[Float]().add(CAddTable[Float]())
   if (classifier != null) {
     module.add(classifier)

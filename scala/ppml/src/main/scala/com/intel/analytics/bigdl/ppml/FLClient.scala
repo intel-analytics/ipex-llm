@@ -32,7 +32,7 @@ object FLClient {
   private val logger = LoggerFactory.getLogger(classOf[FLClient])
 }
 
-class FLClient(val args: Array[String]) extends GrpcClientBase(args) {
+class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   protected var taskID: String = null
   /**
    * All supported FL implementations are listed below

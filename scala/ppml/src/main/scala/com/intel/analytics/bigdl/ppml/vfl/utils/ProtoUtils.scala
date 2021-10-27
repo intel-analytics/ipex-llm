@@ -94,7 +94,7 @@ object ProtoUtils {
   }
 
 
-  def downloadModel(client: FLClient, modelName: String, flVersion: Int): FLProto.Table = {
+  def downloadTrain(client: FLClient, modelName: String, flVersion: Int): FLProto.Table = {
     var code = 0
     var maxRetry = 20000
     var downloadRes = None: Option[DownloadResponse]

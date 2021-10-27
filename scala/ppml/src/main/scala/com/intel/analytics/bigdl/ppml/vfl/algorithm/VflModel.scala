@@ -1,4 +1,4 @@
-package com.intel.analytics.bigdl.ppml.vfl.algorithm
+package com.intel.analytics.bigdl.ppml.vfl
 
 import com.intel.analytics.bigdl.ppml.FLClient
 

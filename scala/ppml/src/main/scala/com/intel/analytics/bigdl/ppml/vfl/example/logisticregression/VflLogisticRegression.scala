@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Samp
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
-import com.intel.analytics.bigdl.ppml.vfl.algorithm.LogisticRegression
+import com.intel.analytics.bigdl.ppml.vfl.LogisticRegression
 import com.intel.analytics.bigdl.ppml.vfl.example.ExampleUtils
 import com.intel.analytics.bigdl.ppml.vfl.utils.SampleToMiniBatch
 import com.intel.analytics.bigdl.{DataSet, Module}

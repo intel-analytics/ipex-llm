@@ -26,6 +26,8 @@ public abstract class AbstractGrpcBase {
     protected Options options = new Options();
     protected String configPath;
     protected CommandLine cmd;
+//
+//    public AbstractGrpcBase(String[] args) {}
 
     protected <T> T getConfigFromYaml(Class<T> valueType, String defaultConfigPath)
             throws IOException {

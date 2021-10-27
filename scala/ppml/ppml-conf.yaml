@@ -1,8 +1,7 @@
-servicesList: psi
-
-# Server property
+##### Server property
+# worldSize:
 # serverPort:
 
-# Client property
+##### Client property
 # clientTarget:
 # taskID:
