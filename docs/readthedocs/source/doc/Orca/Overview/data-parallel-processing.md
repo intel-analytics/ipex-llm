@@ -1,4 +1,4 @@
-# Distributed Data-Parallel Processing 
+# Distributed Data Processing 
 
 ---
 

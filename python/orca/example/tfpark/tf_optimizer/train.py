@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 import tensorflow as tf
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFOptimizer, TFDataset
-from bigdl.optim.optimizer import *
+from bigdl.dllib.optim.optimizer import *
 import numpy as np
 import sys
 
-from bigdl.dataset import mnist
-from bigdl.dataset.transformer import *
+from bigdl.dllib.feature.dataset import mnist
+from bigdl.dllib.feature.dataset.transformer import *
 
 sys.path.append("/tmp/models/slim")  # add the slim library
 from nets import lenet

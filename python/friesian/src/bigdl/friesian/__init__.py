@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.utils.zoo_engine import prepare_env, is_spark_below_ver
 
 prepare_env()

@@ -23,7 +23,7 @@ from bigdl.dllib.optim.optimizer import SGD
 from bigdl.dllib.utils.file_utils import callZooFunc, put_local_file_to_remote
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.feature.common import *
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 
 if sys.version >= '3':
     long = int

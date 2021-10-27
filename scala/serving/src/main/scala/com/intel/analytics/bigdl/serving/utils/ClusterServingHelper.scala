@@ -48,6 +48,7 @@ class ClusterServingHelper
 
   // specific attributes
   @BeanProperty var flinkRestUrl = "localhost:8081"
+  @BeanProperty var kafkaUrl = "localhost:9092"
   @BeanProperty var redisUrl = "localhost:6379"
   @BeanProperty var redisMaxMemory = "4g"
   @BeanProperty var redisTimeout = 5000
