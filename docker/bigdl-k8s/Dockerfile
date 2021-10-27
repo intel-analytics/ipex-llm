@@ -53,7 +53,6 @@ ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git
 ADD ./download-bigdl.sh /opt
-ADD ./install-conda-env.sh /opt
 
 RUN chmod a+x /opt/download-bigdl.sh && \
     mkdir -p /opt/bigdl-examples/python
@@ -120,10 +119,11 @@ RUN mkdir -p /opt/bigdl-examples/python && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 # python
-RUN chmod a+x /opt/download-bigdl.sh && \
-    /opt/download-bigdl.sh
+ADD ./install-conda-env.sh /opt
+RUN chmod a+x /opt/install-conda-env.sh
+RUN /opt/install-conda-env.sh
 # chmod
-    chmod +x /sbin/tini && \
+RUN chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
 
 WORKDIR /opt/spark/work-dir
