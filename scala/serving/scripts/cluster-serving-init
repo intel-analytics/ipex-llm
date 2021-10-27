@@ -14,11 +14,11 @@ fi
 BIGDL_SERVING_JAR_PATH=$(find . -maxdepth 1 -name 'bigdl-serving-*.jar')
 
 
-if [ -f ${BIGDL_SERVING_JAR_PATH} ]; then
+if [ -n "${BIGDL_SERVING_JAR_PATH}" ]; then
   echo "BigDL Cluster Serving Jar found at "$BIGDL_SERVING_JAR_PATH", environment already set up. Initialization success."
 else
-  echo "Failed to find bigdl-serving jar in current directory, will download it... If this is too slow, please go to BigDL repo to download it manually."
-#  download-serving-jar.sh
+  echo "Failed to find bigdl-serving jar in current directory, will download it... "
+  download-serving-jar.sh
 fi
 
 
