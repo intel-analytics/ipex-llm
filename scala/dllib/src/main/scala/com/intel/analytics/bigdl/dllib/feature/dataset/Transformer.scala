@@ -307,16 +307,16 @@ class SampleToBatch[T: ClassTag]
  * Convert a sequence of [[Sample]] to a sequence of [[MiniBatch]] through function toMiniBatch.
  */
 class SampleToMiniBatch[T: ClassTag] private[bigdl](
-      totalBatch: Int,
-      miniBatch: Option[MiniBatch[T]] = None,
-      featurePaddingParam: Option[PaddingParam[T]] = None,
-      labelPaddingParam: Option[PaddingParam[T]] = None,
-      partitionNum: Option[Int] = None,
-      isBatchSizeTotal: Boolean = true)
+                                                     totalBatch: Int,
+                                                     miniBatch: Option[MiniBatch[T]] = None,
+                                                     featurePaddingParam: Option[PaddingParam[T]] = None,
+                                                     labelPaddingParam: Option[PaddingParam[T]] = None,
+                                                     partitionNum: Option[Int] = None,
+                                                     parallelizing: Boolean = true)
     (implicit ev: TensorNumeric[T]) extends Transformer[Sample[T], MiniBatch[T]] {
 
   var miniBatchBuffer = miniBatch.orNull
-  private val batchSize = if (isBatchSizeTotal) {
+  private val batchSize = if (parallelizing) {
     Utils.getBatchSize(totalBatch, partitionNum)
   } else {
     totalBatch
@@ -377,10 +377,10 @@ object SampleToMiniBatch {
                           featurePaddingParam: Option[PaddingParam[T]] = None,
                           labelPaddingParam: Option[PaddingParam[T]] = None,
                           partitionNum: Option[Int] = None,
-                          isBatchSizeTotal: Boolean = true
+                          parallelizing: Boolean = true
         )(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
     new SampleToMiniBatch[T](batchSize, None, featurePaddingParam, labelPaddingParam, partitionNum,
-      isBatchSizeTotal)
+      parallelizing)
   }
 
   /**

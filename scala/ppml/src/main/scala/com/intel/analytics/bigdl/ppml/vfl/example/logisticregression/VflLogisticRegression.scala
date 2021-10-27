@@ -85,10 +85,10 @@ object VflLogisticRegression {
       })
     }
     val trainDataset = DataSet.array(samples) ->
-      SampleToMiniBatch(batchSize, isBatchSizeTotal = false)
+      SampleToMiniBatch(batchSize, parallelizing = false)
     //TODO: Find a better dataset has val dataset.
     val valDataSet = DataSet.array(samples) ->
-      SampleToMiniBatch(batchSize, isBatchSizeTotal = false)
+      SampleToMiniBatch(batchSize, parallelizing = false)
     (trainDataset, valDataSet)
   }
 
