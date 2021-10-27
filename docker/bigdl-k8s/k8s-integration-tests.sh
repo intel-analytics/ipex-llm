@@ -860,3 +860,4 @@ start_seconds=$(date --date="$starttime" +%s);
 end_seconds=$(date --date="$endtime" +%s);
 echo "################## end AutoXGBoostRegressor.py  cluster "
 echo "run time is： "$((end_seconds-start_seconds))"s"
+
