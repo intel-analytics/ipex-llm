@@ -52,6 +52,12 @@ pip install bigdl=version
 _**Note:** If you are using a custom URL of Python Package Index, you may need to check whether the latest packages have been sync'ed with pypi. 
 Or you can add the option `-i https://pypi.python.org/simple` when pip install to use pypi as the index-url._
 
+You could uninstall all the packages of BigDL as follows:
+
+```bash
+pip uninstall bigdl-dllib bigdl-tf bigdl-math bigdl-orca bigdl-chronos bigdl-friesian bigdl-nano bigdl-serving bigdl
+```
+
 ---
 ### **2. Run**
 
