@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .onnxruntime_support import onnxruntime_support
+from .onnxruntime_support import onnxruntime

@@ -23,16 +23,16 @@ import torch
 from torch.nn import functional as F
 from torch import nn
 from pytorch_lightning.core.lightning import LightningModule
-from pytorch_lightning.trainer import Trainer
+from bigdl.nano.pytorch.trainer import Trainer
 from torch.optim import Adam
 from torch.utils.data import DataLoader, TensorDataset
 
-from bigdl.nano.pytorch.onnx.onnxruntime_support import onnxruntime_support
+from bigdl.nano.pytorch.onnx import onnxruntime
 
 # adaptted from 
 # https://pytorch-lightning.readthedocs.io/en/latest/starter/introduction_guide.html
 # model definition
-@onnxruntime_support()
+@onnxruntime()
 class LitMNIST(LightningModule):
     def __init__(self):
         super().__init__()
@@ -102,5 +102,5 @@ class TestAutoTrainer(TestCase):
         random_mnist_x_numpy = random_mnist_x.numpy()
         random_mnist_y_onnx = self.model.inference(random_mnist_x_numpy, backend="onnx")
         assert self.model._ortsess_up_to_date is True
-        self.trainer.fit(model, mnist_train)
+        self.trainer.fit(self.model, self.mnist_train)
         assert self.model._ortsess_up_to_date is False

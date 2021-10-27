@@ -16,17 +16,17 @@
 
 
 from pytorch_lightning import LightningModule
-import onnxruntime
+import onnxruntime as ort
 from functools import wraps
 import torch
 import warnings
 
-def onnxruntime_support(override_predict_step=True):
+def onnxruntime(override_predict_step=True):
 
     def onnxruntime_decorator(cls):
         # class type check
         assert issubclass(cls, LightningModule),\
-            "onnxruntime_support decorator is only valid for a LightningModule."
+            "onnxruntime decorator is only valid for a LightningModule."
 
         # additional attributes
         cls._ortsess_up_to_date = False  # indicate if we need to build ortsess again
@@ -37,7 +37,7 @@ def onnxruntime_support(override_predict_step=True):
             if input_sample is None and self.example_input_array is not None:
                 input_sample = self.example_input_array
             self.to_onnx(filepath, input_sample, export_params=True, **kwargs)
-            self._ortsess = onnxruntime.InferenceSession(filepath)
+            self._ortsess = ort.InferenceSession(filepath)
             self._ortsess_up_to_date = True
         cls._build_ortsess = _build_ortsess
 
@@ -71,7 +71,12 @@ def onnxruntime_support(override_predict_step=True):
                 args[0]._ortsess_up_to_date = False
                 return function(*args, **kwargs)
             return wrapped
-        cls.on_fit_start = on_fit_start_additional(cls.on_fit_start)
+        def on_fit_start(self):
+            self._ortsess_up_to_date = False
+        if on_fit_start in dir(cls):
+            cls.on_fit_start = on_fit_start_additional(cls.on_fit_start)
+        else:
+            cls.on_fit_start = on_fit_start
 
         # predict_step
         if override_predict_step:
