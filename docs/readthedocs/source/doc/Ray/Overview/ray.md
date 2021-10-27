@@ -2,32 +2,36 @@
 
 ---
 
-[Ray](https://github.com/ray-project/ray) is an open source distributed framework for emerging AI applications. With the _**RayOnSpark**_ support in Analytics Zoo, Users can seamlessly integrate Ray applications into the big data processing pipeline on the underlying Big Data cluster (such as [Hadoop/YARN](../../UserGuide/hadoop.md) or [K8s](../../UserGuide/k8s.md)).
+[Ray](https://github.com/ray-project/ray) is an open source distributed framework for emerging AI applications. 
+With the _**RayOnSpark**_ support packaged in [BigDL Orca](../../Orca/Overview/orca.md), 
+Users can seamlessly integrate Ray applications into the big data processing pipeline on the underlying Big Data cluster 
+(such as [Hadoop/YARN](../../UserGuide/hadoop.md) or [K8s](../../UserGuide/k8s.md)).
 
-_**Note:** Analytics Zoo has been tested on Ray 1.2.0 and you are highly recommended to use this tested version._
+_**Note:** BigDL has been tested on Ray 1.2.0 and you are highly recommended to use this tested version._
 
 
 ### **1. Install**
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment. 
-When installing analytics-zoo with pip, you can specify the extras key `[ray]` to additionally install the additional dependencies essential for running Ray (i.e. `ray==1.2.0`, `psutil`, `aiohttp`, `setproctitle`):
+When installing bigdl-orca with pip, you can specify the extras key `[ray]` to install the additional dependencies 
+for running Ray (i.e. `ray==1.2.0`, `psutil`, `aiohttp==3.7.0`, `aioredis==1.1.0`, `setproctitle`, `hiredis==1.1.0`, `async-timeout==3.0.1`):
 
 ```bash
-conda create -n zoo python=3.7  # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
+conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
+conda activate py37
 
-pip install analytics-zoo[ray]
+pip install bigdl-orca[ray]
 ```
 
-View [here](./python.html#install) for more installation instructions.
+View [Python User Guide](../../UserGuide/python.html#install) and [Orca User Guide](../../Orca/Overview/orca.md) for more installation instructions.
 
 ---
 ### **2. Initialize**
 
-We recommend using `init_orca_context` to initiate and run Analytics Zoo on the underlying cluster. The Ray cluster would be launched as well by specifying `init_ray_on_spark=True`. For example, to launch Spark and Ray on standard Hadoop/YARN clusters in [YARN client mode](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn):
+We recommend using `init_orca_context` to initiate and run RayOnSpark on the underlying cluster. The Ray cluster would be launched by specifying `init_ray_on_spark=True`. For example, to launch Spark and Ray on standard Hadoop/YARN clusters in [YARN client mode](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn):
 
 ```python
-from zoo.orca import init_orca_context
+from bigdl.orca import init_orca_context
 
 sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2, init_ray_on_spark=True)
 ```
@@ -35,7 +39,7 @@ sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_no
 By default, the Ray cluster would be launched using Spark barrier execution mode, you can turn it off via the configurations of `OrcaContext`:
 
 ```python
-from zoo.orca import OrcaContext
+from bigdl.orca import OrcaContext
 
 OrcaContext.barrier_mode = False
 ```
@@ -64,10 +68,10 @@ View [Orca Context](../../Orca/Overview/orca-context.md) for more details.
   print(ray.get([c.increment.remote() for c in counters]))
   ```
 
-- You can retrieve the information of the Ray cluster via [`OrcaContext`](../Orca/Overview/orca-context.md):
+- You can retrieve the information of the Ray cluster via [`OrcaContext`](../../Orca/Overview/orca-context.md):
 
   ```python
-  from zoo.orca import OrcaContext
+  from bigdl.orca import OrcaContext
   
   ray_ctx = OrcaContext.get_ray_context()
   address_info = ray_ctx.address_info  # The dictionary information of the ray cluster, including node_ip_address, object_store_address, webui_url, etc.
@@ -77,7 +81,7 @@ View [Orca Context](../../Orca/Overview/orca-context.md) for more details.
 - You should call `stop_orca_context()` when your program finishes:
 
   ```python
-  from zoo.orca import stop_orca_context
+  from bigdl.orca import stop_orca_context
   
   stop_orca_context()
   ```
