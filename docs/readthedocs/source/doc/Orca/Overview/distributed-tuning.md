@@ -4,6 +4,25 @@
 
 **Orca `AutoEstimator` provides similar APIs as Orca `Estimator` for distributed hyper-parameter tuning.** 
 
+### **Install**
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
+```bash
+conda create -n bigdl-orca-automl python=3.7  # "bigdl-orca-automl" is conda environment name, you can use any name you like.
+conda activate bigdl-orca-automl
+pip install bigdl-orca[automl]
+````
+You can install the latest release version of BigDL Orca as follows:
+```bash
+pip install --pre --upgrade bigdl-orca[automl]
+```
+_Note that with extra key of [automl], `pip` will automatically install the additional dependencies for distributed hyper-parameter tuning,
+including `ray[tune]==1.2.0`, `psutil`, `aiohttp==3.7.0`, `aioredis==1.1.0`, `setproctitle`, `hiredis==1.1.0`, `async-timeout==3.0.1`, `scikit-learn`, `tensorboard`, `xgboost`._
+
+To use [Pytorch Estimator](#pytorch-autoestimator), you need to install Pytorch with `pip install torch==1.8.1`.
+
+To use [TensorFlow/Keras AutoEstimator](#tensorflow-keras-autoestimator), you need to install Tensorflow with `pip install tensorflow==1.15.0`.
+
+
 ### **1. AutoEstimator**
 
 To perform distributed hyper-parameter tuning, user can first create an Orca `AutoEstimator` from standard TensorFlow Keras or PyTorch model, and then call `AutoEstimator.fit`.
@@ -180,7 +199,7 @@ auto_estimator.fit(
 ```
 See [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
 
-### **4. Scheduler**
+### **5. Scheduler**
 *Scheduler* can stop/pause/tweak the hyper-parameters of running trials, making the hyper-parameter tuning process much efficient.
 
 We support all *Schedulers* in [Ray Tune](https://docs.ray.io/en/master/index.html). See [Ray Tune Schedulers](https://docs.ray.io/en/master/tune/api_docs/schedulers.html#schedulers-ref) for more details.
