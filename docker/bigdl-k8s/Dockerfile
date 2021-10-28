@@ -1,5 +1,6 @@
 ARG SPARK_VERSION=2.4.6
 ARG SPARK_HOME=/opt/spark
+#ARG CONDA_HOME=/opt
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
@@ -15,6 +16,7 @@ ARG TINI_VERSION
 ENV TINI_VERSION                        ${TINI_VERSION}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
+#ENV CONDA_HOME                          ${CONDA_HOME}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git && \
 # java
@@ -29,14 +31,7 @@ RUN apt-get update --fix-missing && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
-
-# miniconda
-    wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh
-  
-RUN chmod +x Miniconda3-4.5.4-Linux-x86_64.sh
-RUN ./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local
-  
+    cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt 
 
 RUN ln -fs /bin/bash /bin/sh
 RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
@@ -104,7 +99,6 @@ ENV RUNTIME_DRIVER_CORES                4
 ENV RUNTIME_DRIVER_MEMORY               10g
 ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
 ENV SPARK_HOME                          /opt/spark
-ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/*
 ENV JAVA_HOME                           /opt/jdk
 ENV PYTHONPATH                          ${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:/opt/models/research/slim
 ENV PATH ${BIGDL_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}

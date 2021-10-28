@@ -1,4 +1,8 @@
 # Install Miniconda
+wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh
+chmod +x Miniconda3-4.5.4-Linux-x86_64.sh
+./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local
+
 conda create -y -n pytf1 python=3.7 && \
 source activate pytf1 && \
 pip install --no-cache-dir --upgrade pip && \
