@@ -1,6 +1,6 @@
 # Trusted Big Data ML with Occlum
 
-## Spark 2.4.6 local test
+## Spark 3.1.2 local test
 
 Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
 
@@ -23,7 +23,7 @@ bash start-spark-local.sh bigdl
 ```
 The examples are run in the docker container. Attach it and see the results.
 
-## Spark 2.4.6 local Cifar-10 test
+## Spark 3.1.2 local Cifar-10 test
 
 Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
 
