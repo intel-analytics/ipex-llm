@@ -56,14 +56,11 @@ public class TFNetNative {
         if(libPathDir.exists()){ // Orca is installed in conda env.
             return libPath;
         }else{ // Orca is installed in a local directory.
-            String condaLibPath = handleCondaLibPath();
-            if(condaLibPath){
-                return condaLibPath;
-            }
+            return handleCondaLibPath();
         }
     }
 
-    private static String handleCondaLibPath() throws URISyntaxException {
+    private static String handleCondaLibPath() {
         String pyspark_python = System.getenv("PYSPARK_PYTHON"); 
         String pyLibBasePath = pyspark_python.replace("bin/python", "lib");
         System.out.println(pyLibBasePath);
@@ -83,11 +80,6 @@ public class TFNetNative {
         System.out.println(pyVerSpecName);
         String libPath = String.join("/", pyLibBasePath, pyVerSpecName, "site-packages/bigdl/share/tflibs");
         System.out.println(libPath);
-        File libPathDir = new File(libPath);
-        System.out.println(libPathDir.exists());
-        if(!libPathDir.exists()){
-            return null;
-        }
         
         return libPath;
     }
