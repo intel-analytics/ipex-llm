@@ -31,11 +31,12 @@ import socket
 from bigdl.orca.data.utils import ray_partition_get_data_label
 
 def find_free_port(tc):
+    address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(("", 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         tc.barrier()
-        return f"{s.getsockname()[0]}:{s.getsockname()[1]}"
+        return f"{address}:{s.getsockname()[1]}"
 
 def handle_datasets_train(data_creator, validation_data_creator):   
         train_dataset = data_creator()
@@ -182,15 +183,21 @@ class LocalDatasetHandler(DatasetHandler):
         return config, config["batch_size"]
 
 
+def find_ip_and_port(pre_iter):
+    tc = BarrierTaskContext().get()
+    free_port = find_free_port(tc)
+    return [free_port]
+
 
 class SparkRunner:
     def __init__(self, model_creator, compile_args_creator,
                  size,
+                 cluster_info,
                  config=None,
                  verbose=False,
                  model_weights=None,
                  backend="tf-distributed",
-                 mode="fit"
+                 mode="fit",
                 ):
         """Initializes the runner.
                 Args:
@@ -212,9 +219,10 @@ class SparkRunner:
         self.mode = mode
         self.backend = backend
         self.setup()
+        self.cluster_info = cluster_info
         if self.backend == "tf-distributed":
             if mode == "fit" or mode == "evaluate":
-                self.setup_distributed(self.mode)
+                self.setup_distributed(self.mode, self.cluster_info)
 
     def setup(self):
         import tensorflow as tf
@@ -223,20 +231,43 @@ class SparkRunner:
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
+    def _get_rank(self, cluster_info, tc):
+        # As task placement may not be identical between two different jobs,
+        # we cannot simply index cluster_info using partitionId to get current
+        # ip and port.
+        # The approach here is to first get all tasks' ip in this job and compute
+        # a local rank by counting how many tasks has the same ip but with lower id.
+        # We then use the local rank to find the right slot in cluster_info to find
+        # the right global_rank.
+        tc = BarrierTaskContext().get()
+        infos = tc.getTaskInfos()
+        idx = tc.partitionId()
+        local_ip = infos[idx].address.split(":")[0]
+        local_rank = 0
+        for i in range(0, idx):
+            if infos[i].address.startswith(local_ip):
+                local_rank += 1
+        global_rank = -1
+        local_count = 0
+        for node in cluster_info:
+            if node.startswith(local_ip):
+                local_count += 1
+            global_rank += 1
+            if local_count == local_rank + 1:
+                break
+        return global_rank
 
-    def setup_distributed(self, mode):
+
+    def setup_distributed(self, mode, cluster):
         """Sets up TensorFLow distributed environment and initializes the model.
         Args:
             urls (str): the URLs that each node uses to connect.
             world_rank (int): the index of the runner.
             world_size (int): the total number of runners.
         """
-        tc = BarrierTaskContext().get()
-        rank = tc.partitionId()
-        free_port = find_free_port(tc)
-        cluster = tc.allGather(str(free_port))
         self.cluster = cluster
-        self.rank = rank
+        tc = BarrierTaskContext().get()
+        self.rank = self._get_rank(cluster, tc)
         print("cluster is: ", cluster)
 
         import os
@@ -244,7 +275,7 @@ class SparkRunner:
             'cluster': {
                 'worker': cluster
             },
-            'task': {'type': 'worker', 'index': rank}
+            'task': {'type': 'worker', 'index': self.rank}
         })
         ips = set([node.split(":")[0] for node in cluster])
         os.environ["no_proxy"] = ",".join(ips)
