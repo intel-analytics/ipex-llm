@@ -29,7 +29,14 @@ RUN apt-get update --fix-missing && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt
+    cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
+
+# miniconda
+    wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh
+  
+RUN chmod +x Miniconda3-4.5.4-Linux-x86_64.sh
+RUN ./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local
+  
 
 RUN ln -fs /bin/bash /bin/sh
 RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
@@ -97,9 +104,10 @@ ENV RUNTIME_DRIVER_CORES                4
 ENV RUNTIME_DRIVER_MEMORY               10g
 ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
 ENV SPARK_HOME                          /opt/spark
-ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/*.jar
+ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/*
 ENV JAVA_HOME                           /opt/jdk
 ENV PYTHONPATH                          ${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:/opt/models/research/slim
+ENV PATH ${BIGDL_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}
 ENV TINI_VERSION                        ${TINI_VERSION}
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
@@ -120,10 +128,9 @@ RUN mkdir -p /opt/bigdl-examples/python && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 # python
 ADD ./install-conda-env.sh /opt
-RUN chmod a+x /opt/install-conda-env.sh 
-RUN /opt/install-conda-env.sh 
-# chmod
-RUN chmod +x /sbin/tini && \
+RUN chmod a+x /opt/install-conda-env.sh && \
+    chmod +x /sbin/tini
+RUN /opt/install-conda-env.sh && \
     cp /sbin/tini /usr/bin/tini
 
 WORKDIR /opt/spark/work-dir
