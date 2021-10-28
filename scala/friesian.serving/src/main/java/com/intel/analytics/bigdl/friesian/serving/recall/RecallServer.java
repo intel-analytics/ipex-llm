@@ -187,21 +187,11 @@ public class RecallServer extends GrpcServerBase {
             if (callFeatureService) {
                 IDs userIds = IDs.newBuilder().addID(userId).build();
                 Features feature = featureServiceStub.getUserFeatures(userIds);
-                Object[] featureList =
-                        Arrays.stream(FeatureUtils.getFeatures(feature))
-                                .filter(Objects::nonNull).toArray();
-                if (featureList.length == 0) {
+                Object[][] featureList = FeatureUtils.getFeatures(feature);
+                if (featureList[0] == null) {
                     throw new Exception("Can't get user feature from feature service");
                 }
-                if (featureList[0] instanceof Activity) {
-                    userFeatureList = RecallUtils.activityToFloatArr((Activity) featureList[0]);
-                } else if (featureList[0] instanceof DenseVector) {
-                    userFeatureList =
-                            RecallUtils.denseVectorToFloatArr((DenseVector) featureList[0]);
-                } else {
-                    throw new Exception("Unsupported user vector type: " +
-                            featureList[0].getClass().getName());
-                }
+                userFeatureList = RecallUtils.featureObjToFloatArr(featureList[0]);
             } else {
                 Activity userFeature = this.userModel
                         .doPredict(RecallUtils.constructActivity(

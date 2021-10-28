@@ -135,18 +135,18 @@ public class RecommenderServer extends GrpcServerBase {
                 return;
             }
             for (Integer id: ids) {
-//                RecallProto.Candidates candidates;
-//                try {
-//                    candidates = this.searchCandidates(id, canK);
-//                } catch (StatusRuntimeException e) {
-//                    responseObserver.onError(Status.UNAVAILABLE.withDescription("recall " +
-//                            "service unavailable: " + e.getMessage()).asRuntimeException());
-//                    return;
-//                }
+                RecallProto.Candidates candidates;
+                try {
+                    candidates = this.searchCandidates(id, canK);
+                } catch (StatusRuntimeException e) {
+                    responseObserver.onError(Status.UNAVAILABLE.withDescription("recall " +
+                            "service unavailable: " + e.getMessage()).asRuntimeException());
+                    return;
+                }
 
-                Integer[] c = {1, 2, 3};
-                RecallProto.Candidates candidates =
-                        RecallProto.Candidates.newBuilder().addAllCandidate(Arrays.asList(c)).build();
+//                Integer[] c = {184, 136, 169, 153, 110, 199, 156, 165, 194};
+//                RecallProto.Candidates candidates =
+//                        RecallProto.Candidates.newBuilder().addAllCandidate(Arrays.asList(c)).build();
 
                 Features userFeature;
                 try {

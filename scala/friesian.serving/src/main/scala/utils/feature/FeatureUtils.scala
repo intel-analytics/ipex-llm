@@ -97,13 +97,8 @@ object FeatureUtils {
 
   def encodeRow(row: Row): JList[String] = {
     val id = row.get(0).toString
-    val rowSeq = row.toSeq.drop(1)
-    val objToEncode = if (rowSeq.length == 1) {
-      rowSeq.head
-    } else {
-      rowSeq
-    }
-    val encodedValue = java.util.Base64.getEncoder.encodeToString(objToBytes(objToEncode))
+    val rowArr = row.toSeq.drop(1).toArray
+    val encodedValue = java.util.Base64.getEncoder.encodeToString(objToBytes(rowArr))
     List(id, encodedValue).asJava
   }
 
@@ -198,13 +193,13 @@ object FeatureUtils {
     }).toList.asJava
   }
 
-  def getFeatures(features: Features): Array[AnyRef] = {
+  def getFeatures(features: Features): Array[Array[Any]] = {
     val b64Features = features.getB64FeatureList.asScala
     b64Features.map(feature => {
       if (feature == "") {
         null
       } else {
-        EncodeUtils.bytesToObj(Base64.getDecoder.decode(feature))
+        EncodeUtils.bytesToObj(Base64.getDecoder.decode(feature)).asInstanceOf[Array[Any]]
       }
     }).toArray
   }

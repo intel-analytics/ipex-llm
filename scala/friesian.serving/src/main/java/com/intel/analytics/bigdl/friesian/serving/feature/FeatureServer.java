@@ -104,7 +104,7 @@ public class FeatureServer extends GrpcServerBase {
         private RedisUtils redis;
         private final boolean redisCluster;
         private Set<ServiceType> serviceType;
-        private String[] colNames;
+        private Map<String, String[]> colNamesMap;
         private MetricRegistry metrics = new MetricRegistry();
         Timer overallTimer = metrics.timer("feature.overall");
         Timer userPredictTimer = metrics.timer("feature.user.predict");
@@ -113,6 +113,7 @@ public class FeatureServer extends GrpcServerBase {
 
         FeatureService() throws Exception {
             serviceType = new HashSet<>();
+            colNamesMap = new HashMap<>();
             parseServiceType();
             if (serviceType.contains(ServiceType.KV)) {
                 redis = RedisUtils.getInstance(Utils.helper().getRedisPoolMaxTotal());
@@ -250,16 +251,16 @@ public class FeatureServer extends GrpcServerBase {
             Jedis jedis = redisCluster ? null : redis.getRedisClient();
 
             Features.Builder featureBuilder = Features.newBuilder();
-            if (colNames == null) {
+            if (!colNamesMap.containsValue(keyPrefix)) {
                 String colNamesStr;
                 if (!redisCluster) {
                     colNamesStr = jedis.hget(keyPrefix, "value");
                 } else {
                     colNamesStr = redis.getCluster().hget(keyPrefix, "value");
                 }
-                colNames = colNamesStr.split(",");
+                colNamesMap.put(keyPrefix, colNamesStr.split(","));
             }
-            featureBuilder.addAllColNames(Arrays.asList(colNames));
+            featureBuilder.addAllColNames(Arrays.asList(colNamesMap.get(keyPrefix)));
             for (int id : ids) {
                 Timer.Context redisContext = redisTimer.time();
                 String key = keyPrefix + ":" + id;

@@ -43,11 +43,14 @@ object RecommenderUtils {
   : (Array[Int], Array[Table]) = {
     val userFeatureArr = FeatureUtils.getFeatures(userFeatures)
     assert(userFeatureArr.length == 1, "userFeatures length should be 1")
-    val userSchema = userFeatures.getColNamesList
-    val userFeature = userFeatureArr(0).asInstanceOf[Map[String, AnyRef]]
+    val userSchema = userFeatures.getColNamesList.asScala
+    if (userFeatureArr(0) == null) {
+      throw new Exception("Cannot find user feature, userid: " + userFeatures.getID(0))
+    }
+    val userFeature = userFeatureArr(0)
     // TODO: not found update
-    val itemSchema = itemFeatures.getColNamesList
-    val itemIDs = itemFeatures.getIDList.asScala
+    val itemSchema = itemFeatures.getColNamesList.asScala
+    val itemIDs = itemFeatures.getIDList.asScala.toArray.map(_.intValue())
     val itemFeatureArr = itemIDs.zip(FeatureUtils.getFeatures(itemFeatures))
       .filter(idx => idx._2 != null)
     logger.info("Got item feature: " + itemFeatureArr.length)
@@ -62,18 +65,21 @@ object RecommenderUtils {
         "your initial datasets are matched.")
     }
     val inferenceColumns = Utils.helper.inferenceColArr
+    val featureSchema = itemSchema.++(userSchema)
+    val idxArr = inferenceColumns.map(col => featureSchema.indexOf(col))
+    if (idxArr.contains(-1)) {
+      throw new Exception("The feature " + inferenceColumns(idxArr.indexOf(-1)) + " doesn't exist" +
+        " in features.")
+    }
 
-    val userItemFeatureItemIdArr = itemFeatureArr.map(itemF => {
-      val itemFMap = itemF.asInstanceOf[Map[String, AnyRef]]
-      val userItemFMap = itemFMap.++(userFeature)
-      val featureList = inferenceColumns.map(colName => {
-        userItemFMap.getOrElse(colName, -1)
-      })
-      val itemId = userItemFMap.getOrElse(Utils.helper.itemIDColumn, -1).asInstanceOf[Int]
-      (itemId, featureList)
+    val modelFeatureItemIdArr = itemFeatureArr.map(item => {
+      val itemF = item._2
+      val originFeatureList = itemF.++(userFeature)
+      val featureList = idxArr.map(idx => originFeatureList(idx))
+      (item._1, featureList)
     })
-    val itemIDArr = userItemFeatureItemIdArr.map(_._1)
-    val userItemFeatureArr = userItemFeatureItemIdArr.map(_._2)
+    val itemIDArr = modelFeatureItemIdArr.map(_._1)
+    val userItemFeatureArr = modelFeatureItemIdArr.map(_._2)
     val batchedFeatureArr = userItemFeatureArr.sliding(batchSizeUse, batchSizeUse).toArray
     val batchedActivityList = batchedFeatureArr.map(featureArr => {
       val tensorArray = ArrayBuffer[Tensor[Float]]()
