@@ -1,4 +1,4 @@
-# TSDataset and Forecaster
+# TSDataset and Forecaster Quickstarts
 
 ---
 
