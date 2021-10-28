@@ -10,7 +10,7 @@
 
 ### Step 0: Prepare Environment
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../Overview/chronos.html#install) for more details.
 
 ```bash
 conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
