@@ -10,7 +10,6 @@ We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-g
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
 pip install bigdl-orca
-pip install tensorflow==1.1
 ```
 
 When installing bigdl-orca with pip, you can specify the extras key `[ray]` to additionally install the additional dependencies
