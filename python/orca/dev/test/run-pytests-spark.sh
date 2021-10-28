@@ -24,8 +24,8 @@ set -ex
 cd "`dirname $0`"
 cd ../..
 
-export PYSPARK_PYTHON=`which python`
-export PYSPARK_DRIVER_PYTHON=`which python`
+export PYSPARK_PYTHON=python
+export PYSPARK_DRIVER_PYTHON=python
 
 #python -m pytest -v --doctest-modules ../../../../orca/src/bigdl/orca/tfpark
 

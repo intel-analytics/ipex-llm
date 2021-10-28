@@ -60,6 +60,8 @@ public class TFNetNative {
         }
     }
 
+    // For example, aiming to lead pyspark_python path(e.g. "/home/arda/anaconda3/envs/py37/bin/python")
+    // to where libraries lays(e.g. "/home/arda/anaconda3/envs/py37/lib/python3.7/site-packages/bigdl/share/tflibs")
     private static String handleCondaLibPath() {
         String pyspark_python = System.getenv("PYSPARK_PYTHON"); 
         String pyLibBasePath = pyspark_python.replace("bin/python", "lib");
