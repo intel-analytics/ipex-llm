@@ -29,6 +29,7 @@ RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data
     wget -O /opt/spark/jars/spark-network-common_2.12-${SPARK_VERSION}.jar https://master.dl.sourceforge.net/project/analytics-zoo/analytics-zoo-data/spark-network-common_2.12-${SPARK_VERSION}.jar
 
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
+ADD ./hosts /opt/hosts
 
 RUN cd /opt && \
     wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-dllib-spark_3.1.2/0.14.0-SNAPSHOT/bigdl-dllib-spark_3.1.2-0.14.0-20211028.100155-28-jar-with-dependencies.jar && \
