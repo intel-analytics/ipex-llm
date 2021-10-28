@@ -12,7 +12,7 @@
 
 Chronos provides `AutoTSEstimator` as a highly integrated solution for time series forecasting task with hyperparameter autotuning, auto feature selection and auto preprocessing. Users can prepare a `TSDataset`(recommended, used in this notebook) or their own data creator as input data. By constructing a `AutoTSEstimator` and calling `fit` on the data, a `TSPipeline` contains the best model and pre/post data processing will be returned for further development of deployment.
 
-`AutoTSEstimator` is experimental and only support LSTM, TCN, and Seq2seq model for now.
+`AutoTSEstimator` only support LSTM, TCN, and Seq2seq built-in models and 3rd party models for now.
 
 ### **Step 0: Prepare Environment**
 

@@ -68,7 +68,7 @@ forecaster = TCNForecaster(past_seq_len=lookback,  # number of steps to look bac
                            future_seq_len=horizon,  # number of steps to predict
                            input_feature_num=x.shape[-1],  # number of feature to use
                            output_feature_num=y.shape[-1])  # number of feature to predict
-res = forecaster.fit((x, y), validation_data=(x_val, y_val), epochs=3)
+res = forecaster.fit(data=(x, y), epochs=3)
 ```
 
 ### Step 3: Further deployment with fitted forecaster
