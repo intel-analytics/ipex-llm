@@ -21,27 +21,17 @@ import torch
 from test._train_torch_lightning import train_torch_lightning
 from torch import nn
 
-from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.lightning_extension import to_lightning
+from bigdl.nano.pytorch.vision.models import vision
 
-config = {
-    'lr': 0.01,
-    'optim': 'Adam',
-}
 batch_size = 256
 num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 
-
-def loss_creator(config):
-    return nn.CrossEntropyLoss()
+loss = nn.CrossEntropyLoss()
 
 
-def optimizer_creator(model, config):
-    return getattr(torch.optim, config.get("optim", "Adam"))(model.parameters(), lr=config.get("lr", 0.001))
-
-
-@to_lightning(loss_creator, optimizer_creator, config)
+@to_lightning(loss, torch.optim.Adam, lr=0.01)
 def resnet18(num_classes, pretrained=True, include_top=False, freeze=True):
     backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
     output_size = backbone.get_output_size()
@@ -49,7 +39,7 @@ def resnet18(num_classes, pretrained=True, include_top=False, freeze=True):
     return torch.nn.Sequential(backbone, head)
 
 
-class TestModelsLightningSupport(TestCase):
+class TestModelsLightningExtension(TestCase):
     num_classes = 10
 
     def test_resnet18_ipex(self):

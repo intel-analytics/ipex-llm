@@ -13,29 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Callable
 import pytorch_lightning as pl
+import torch
+from torch.nn.modules.loss import _Loss
 
 
-def to_lightning(loss_creator: Callable, optimizer_creator: Callable, configs: dict):
+def to_lightning(loss: _Loss, optimizer: torch.optim, **opt_args):
     """
     A decorator on torch module creator, returns a pytorch-lightning model.
-    Args:
-        loss_creator: A function takes configs in and returns loss class.
-        optimizer_creator: A function takes torch module and configs in, returns optimizer.
-        configs: A dict with key-values for loss and optimizer creator.
 
+    Args:
+        loss: torch loss function.
+        optimizer: torch optimizer.
+        **opt_args: arguments for optimizer.
 
     Returns: Decorator function on class or function
 
     """
+
     def from_torch(creator):
         class LightningModel(pl.LightningModule):
             def __init__(self, *args, **kwargs):
                 super().__init__()
                 self.model = creator(*args, **kwargs)
-                self.loss = loss_creator(configs)
-                self.optimizer = optimizer_creator(self.model, configs)
+                self.loss = loss
+                self.optimizer = optimizer(self.model.parameters(), **opt_args)
 
             def forward(self, batch):
                 # Handle different numbers of input for various models
