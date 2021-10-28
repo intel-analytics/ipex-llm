@@ -1,6 +1,5 @@
 ARG SPARK_VERSION=2.4.6
 ARG SPARK_HOME=/opt/spark
-#ARG CONDA_HOME=/opt
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
@@ -16,7 +15,6 @@ ARG TINI_VERSION
 ENV TINI_VERSION                        ${TINI_VERSION}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
-#ENV CONDA_HOME                          ${CONDA_HOME}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git && \
 # java
