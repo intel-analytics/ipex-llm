@@ -18,10 +18,8 @@ package com.intel.analytics.bigdl.serving.operator
 
 import java.nio.file.Files
 
-import com.intel.analytics.bigdl.serving.ClusterServing
+import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper, ClusterServingInference}
 import com.intel.analytics.bigdl.serving.serialization.ArrowDeserializer
-import com.intel.analytics.bigdl.serving.engine.ClusterServingInference
-import com.intel.analytics.bigdl.serving.utils.ClusterServingHelper
 import org.apache.flink.core.fs.Path
 import org.apache.flink.table.functions.{FunctionContext, ScalarFunction}
 import org.apache.flink.util.FileUtils

@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.serving.pipeline
+package com.intel.analytics.bigdl.serving.utils
 
 import java.io.{BufferedReader, File, IOException, InputStreamReader}
 import java.util
 import java.util.concurrent.Executors
 
 import org.apache.commons.io.IOUtils
-import redis.embedded.{Redis, RedisExecProvider, RedisServerBuilder}
 import redis.embedded.exceptions.EmbeddedRedisException
+import redis.embedded.{Redis, RedisExecProvider, RedisServerBuilder}
 
 import scala.util.control.Breaks.{break, breakable}
 

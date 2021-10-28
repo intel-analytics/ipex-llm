@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.serving.engine
+package com.intel.analytics.bigdl.serving.flink
 
 import java.util.Properties
 
-import com.intel.analytics.bigdl.serving.ClusterServing
-import com.intel.analytics.bigdl.serving.utils.{ClusterServingHelper, Conventions}
+import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper}
+import com.intel.analytics.bigdl.serving.utils.Conventions
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.sink.{RichSinkFunction, SinkFunction}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}

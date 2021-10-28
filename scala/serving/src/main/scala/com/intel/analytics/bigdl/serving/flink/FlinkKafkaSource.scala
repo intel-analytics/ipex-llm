@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.serving.engine
+package com.intel.analytics.bigdl.serving.flink
 
 import java.time.Duration
 import java.util.{Collections, Properties}
 
-import com.intel.analytics.bigdl.serving.utils.ClusterServingHelper
+import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper}
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.source.{RichParallelSourceFunction, SourceFunction}
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecords, KafkaConsumer}
@@ -29,17 +29,17 @@ import org.apache.log4j.Logger
 import scala.collection.JavaConverters._
 
 
-class FlinkKafkaSource(params: ClusterServingHelper)
+class FlinkKafkaSource()
   extends RichParallelSourceFunction[List[(String, String, String)]] {
   @volatile var isRunning = true
   var logger: Logger = null
   var consumer: KafkaConsumer[String, String] = null
-
+  var helper: ClusterServingHelper = null
   override def open(parameters: Configuration): Unit = {
     logger = Logger.getLogger(getClass)
-
+    helper = ClusterServing.helper
     val props = new Properties()
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, params.kafkaUrl)
+    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, helper.kafkaUrl)
     props.put(ConsumerConfig.GROUP_ID_CONFIG, "serving")
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
       "org.apache.kafka.common.serialization.StringDeserializer")
@@ -47,14 +47,14 @@ class FlinkKafkaSource(params: ClusterServingHelper)
       "org.apache.kafka.common.serialization.StringDeserializer")
 
     consumer = new KafkaConsumer[String, String](props)
-    consumer.subscribe(Collections.singletonList(params.jobName))
+    consumer.subscribe(Collections.singletonList(helper.jobName))
   }
 
   override def run(sourceContext: SourceFunction
   .SourceContext[List[(String, String, String)]]): Unit = while (isRunning) {
     val records: ConsumerRecords[String, String] = consumer.poll(Duration.ofMillis(1))
     if (records != null) {
-      val messages = records.records(new TopicPartition(params.jobName, 0))
+      val messages = records.records(new TopicPartition(helper.jobName, 0))
       if (messages != null) {
         messages.asScala.foreach(message => {
           sourceContext.collect(
