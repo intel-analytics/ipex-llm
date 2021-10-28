@@ -29,7 +29,7 @@ if (( $# < 2)); then
   echo "Usage: release_default_linux_spark246.sh version upload"
   echo "Usage example: bash release_default_linux_spark246.sh default false true"
   echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 false false"
-  echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 false false -Ddata-store-url=http://xx"
+  echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 false false -Ddata-store-url=.."
   exit -1
 fi
 
