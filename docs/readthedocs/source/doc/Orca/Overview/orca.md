@@ -10,16 +10,27 @@ We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-g
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
 pip install bigdl-orca
-pip install tensorflow==1.15
+pip install tensorflow==1.1
 ```
 
 When installing bigdl-orca with pip, you can specify the extras key `[ray]` to additionally install the additional dependencies
-essential for running Ray (i.e. `ray==1.2.0`, `psutil`, `aiohttp==3.7.0`, `aioredis==1.1.0`, `setproctitle`, `hiredis==1.1.0`, `async-timeout==3.0.1`):
+essential for running [RayOnSpark](../../Ray/Overview/ray.md)
 ```bash
 pip install bigdl-orca[ray]
 ```
 
+You can install bigdl-orca nightly release version using
+```bash
+pip install --pre --upgrade bigdl-orca
+pip install --pre --upgrade bigdl-orca[ray]
+```
+
 ## 3. Run
+
+This section uses TensorFlow 1.15, and you should install TensorFlow before running this example:
+```bash
+pip install tensorflow==1.15
+```
 
 First, initialize [Orca Context](orca-context.md):
 
