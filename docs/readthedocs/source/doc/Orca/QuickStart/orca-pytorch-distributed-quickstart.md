@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/pytorch_distributed_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/pytorch_distributed_lenet_mnist.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/docs/docs/colab-notebook/orca/quickstart/pytorch_distributed_lenet_mnist.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/docs/docs/colab-notebook/orca/quickstart/pytorch_distributed_lenet_mnist.ipynb)
 
 ---
 
@@ -13,15 +13,15 @@
 [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
 ```bash
-conda create -n zoo python=3.7 # zoo is conda environment name, you can use any name you like.
-conda activate zoo
-pip install analytics-zoo[ray]
+conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
+conda activate py37
+pip install bigdl-orca[ray]
 pip install torch==1.7.1 torchvision==0.8.2
 ```
 
 ### **Step 1: Init Orca Context**
 ```python
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":  # For local machine
     init_orca_context(cores=4, memory="10g")
@@ -114,8 +114,8 @@ def test_loader_creator(config, batch_size):
 First, Create an Estimator
 
 ```python
-from zoo.orca.learn.pytorch import Estimator 
-from zoo.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.pytorch import Estimator 
+from bigdl.orca.learn.metrics import Accuracy
 
 est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion, metrics=[Accuracy()],
                            backend="torch_distributed")
