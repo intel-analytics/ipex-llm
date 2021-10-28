@@ -17,35 +17,35 @@ docker run -itd --name grpcwnd1 --net=host grpcwnd
 docker exec -it grpcwnd1 bash
 ```
 
-3. Add 2-tower user model, 2-tower item model, vec_feature_user.parquet, vec_feature_item.parquet
-/vec_feature_item_prediction.parquet, wnd model, wnd_item.parquet and wnd_user.parquet
+3. Add vec_feature_user_prediction.parquet, vec_feature_item_prediction.parquet, wnd model, 
+   wnd_item.parquet and wnd_user.parquet
 
 4. Start ranking service
 ```bash
 export OMP_NUM_THREADS=1
 export TF_DISABLE_MKL=1
-java -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.ranking.RankingServer -c config_ranking.yaml > logs/inf.log 2>&1 &
+java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.ranking.RankingServer -c config_ranking.yaml > logs/inf.log 2>&1 &
 ```
 
 5. Start feature service for recommender service
 ```bash
 ./redis-5.0.5/src/redis-server &
-java -Dspark.master=local[*] -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature.yaml > logs/feature.log 2>&1 &
+java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature.yaml > logs/feature.log 2>&1 &
 ```
 
 6. Start feature service for recall service
 ```bash
-java -Dspark.master=local[*] -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature_vec.yaml > logs/fea_recall.log 2>&1 &
+java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature_vec.yaml > logs/fea_recall.log 2>&1 &
 ```
 
 7. Start recall service
 ```bash
-java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml > logs/vec.log 2>&1 &
+java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml > logs/vec.log 2>&1 &
 ```
 
 8. Start recommender service
 ```bash
-java -cp com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderServer -c config_recommender.yaml > logs/rec.log 2>&1 &
+java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderServer -c config_recommender.yaml > logs/rec.log 2>&1 &
 ```
 
 9. Check if the services are running
@@ -56,7 +56,7 @@ You will see 5 processes start with 'java'
 
 10. Run client to test
 ```bash
-java -Dspark.master=local[*] -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderMultiThreadClient -target localhost:8980 -dataDir wnd_user.parquet -k 50 -clientNum 4 -testNum 2
+java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderMultiThreadClient -target localhost:8980 -dataDir wnd_user.parquet -k 50 -clientNum 4 -testNum 2
 ```
 11. Close services
 ```bash
@@ -67,7 +67,7 @@ kill xxx (pid of the service which should be closed)
 ### Config for different service
 You can pass some important information to services using `-c config.yaml`
 ```bash
-java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml
+java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml
 ```
 
 #### Ranking Service Config
