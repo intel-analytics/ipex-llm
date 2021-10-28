@@ -15,6 +15,7 @@
     <properties>
         <akka.http.version>10.1.11</akka.http.version>
         <akka.actor.version>2.5.26</akka.actor.version>
+        <spark-scope>compile</spark-scope>
     </properties>
 
     <dependencies>
@@ -239,34 +240,22 @@
                 <configuration>
                     <filters>
                         <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
                             <artifact>com.google.protobuf</artifact>
                             <excludes>
                                 <exclude>META-INF/maven/com.google.protobuf/protobuf-java/*</exclude>
                             </excludes>
                         </filter>
                     </filters>
-                    <relocations>
-                        <relocation>
-                            <pattern>com.google.protobuf</pattern>
-                            <shadedPattern>com.intel.analytics.shaded.protobuf_v_3_5_1</shadedPattern>
-                        </relocation>
-                    </relocations>
                 </configuration>
                 <executions>
-                    <execution>
-                        <id>shade</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.google.protobuf</include>
-                                </includes>
-                            </artifactSet>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>serving</id>
                         <phase>package</phase>

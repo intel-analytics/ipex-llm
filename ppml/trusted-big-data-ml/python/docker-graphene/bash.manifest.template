@@ -1,8 +1,9 @@
 loader.preload = "file:$(GRAPHENEDIR)/Runtime/libsysdb.so"
 libos.entrypoint = "file:$(EXECDIR)/bash"
 
-#loader.log_level = "debug"
-loader.log_level = "error"
+loader.log_level = "debug"
+#loader.log_level = "error"
+#loader.log_level = "all"
 
 loader.insecure_disable_aslr = 1
 loader.insecure__use_cmdline_argv = 1

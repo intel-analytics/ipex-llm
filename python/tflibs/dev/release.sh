@@ -46,7 +46,11 @@ echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
-    # Todo: append dylibs
+    SO_PREFIX=${BIGDL_PYTHON_DIR}/bigdl/share/tflibs/darwin-x86_64
+    FRAMEWORK_DYLIB="$(readlink -f ${SO_PREFIX}/libtensorflow_framework.dylib)"
+    rm ${SO_PREFIX}/libtensorflow_framework.dylib
+    rm ${SO_PREFIX}/libtensorflow_framework.1.dylib
+    mv "${FRAMEWORK_DYLIB}" "${SO_PREFIX}/libtensorflow_framework.dylib"
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
     SO_PREFIX=${BIGDL_PYTHON_DIR}/bigdl/share/tflibs/linux-x86_64

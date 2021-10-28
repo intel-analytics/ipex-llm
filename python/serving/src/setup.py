@@ -34,7 +34,7 @@ def setup_package():
                     os.path.isfile(os.path.join(SCRIPTS_TARGET, f))]
     scripts = list(map(lambda script: os.path.join(
         SCRIPTS_TARGET, script), script_names))
-
+    print(os.listdir("../.."))
     metadata = dict(
         name='bigdl-serving',
         version=VERSION,
@@ -44,7 +44,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=['bigdl.serving', 'bigdl.conf'],
-        package_dir={'bigdl.serving': '../../serving/'},
+        package_dir={'bigdl': '../../serving/src/bigdl'},
         package_data={"bigdl.conf": ['config.yaml']},
         include_package_data=False,
         scripts=scripts,

@@ -18,6 +18,8 @@ from bigdl.dllib.nncontext import *
 from bigdl.dllib.keras.autograd import *
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.keras.models import *
+from optparse import OptionParser
+import sys
 
 
 def mean_absolute_error(y_true, y_pred):
@@ -26,6 +28,11 @@ def mean_absolute_error(y_true, y_pred):
 
 
 if __name__ == "__main__":
+    parser = OptionParser()
+    parser.add_option("--nb_epoch", type=int, dest="nb_epoch", default=5)
+    parser.add_option("--batch_size", type=int, dest="batch_size", default=512)
+    (options, args) = parser.parse_args(sys.argv)
+
     sc = init_nncontext("customloss example")
     data_len = 1000
     X_ = np.random.uniform(0, 1, (1000, 2))
@@ -37,10 +44,10 @@ if __name__ == "__main__":
                   metrics=None)
     model.fit(x=X_,
               y=Y_,
-              batch_size=32,
-              nb_epoch=500,
+              batch_size=options.batch_size,
+              nb_epoch=options.nb_epoch,
               validation_data=None,
-              distributed=False)
+              distributed=True)
     w = model.get_weights()
     print(w)
     pred = model.predict_local(X_)
