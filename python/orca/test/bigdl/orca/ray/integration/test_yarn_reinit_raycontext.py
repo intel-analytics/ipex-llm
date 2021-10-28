@@ -19,7 +19,7 @@ import time
 import numpy as np
 import ray
 
-from bigdl.dllib.utils.nncontext import init_spark_on_yarn
+from bigdl.dllib.nncontext import init_spark_on_yarn
 from bigdl.orca.ray import RayContext
 
 np.random.seed(1337)  # for reproducibility

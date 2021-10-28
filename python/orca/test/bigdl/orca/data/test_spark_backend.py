@@ -23,7 +23,7 @@ import shutil
 import bigdl.orca.data
 import bigdl.orca.data.pandas
 from bigdl.orca import OrcaContext
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.orca.data.image import write_tfrecord, read_tfrecord
 
 

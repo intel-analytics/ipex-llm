@@ -27,7 +27,8 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.Nu
 import com.intel.analytics.bigdl.dllib.utils.{Engine, RandomGenerator, Shape}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.bigdl.dllib.common.{NNContext, _}
+import com.intel.analytics.bigdl.dllib.common._
+import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.common.{TensorToSample, _}
 import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.keras.layers.Merge.merge

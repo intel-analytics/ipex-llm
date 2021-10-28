@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
 import com.intel.analytics.bigdl.dllib.nnframes._
-import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.image._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._

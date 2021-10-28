@@ -21,6 +21,9 @@ from bigdl.dllib.nn.criterion import *
 from bigdl.dllib.nn.initialization_method import *
 from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.feature.transform.vision.image import *
+from bigdl.dllib.nncontext import *
+from bigdl.dllib.utils.utils import detect_conda_env_name
+import os
 from math import ceil
 
 
@@ -262,6 +265,10 @@ def config_option_parser():
     parser.add_option("--gradientMin", type=float, dest="gradientMin", default=0.0, help="min gradient clipping by")
     parser.add_option("--gradientMax", type=float, dest="gradientMax", default=0.0, help="max gradient clipping by")
     parser.add_option("--gradientL2NormThreshold", type=float, dest="gradientL2NormThreshold", default=0.0, help="gradient L2-Norm threshold")
+    parser.add_option("--executor-cores", type=int, dest="cores", default=4, help="number of executor cores")
+    parser.add_option("--num-executors", type=int, dest="executors", default=16, help="number of executors")
+    parser.add_option("--executor-memory", type=str, dest="executorMemory", default="30g", help="executor memory")
+    parser.add_option("--driver-memory", type=str, dest="driverMemory", default="30g", help="driver memory")
 
     return parser
 
@@ -276,11 +283,16 @@ if __name__ == "__main__":
         parser.error("-b --batchSize is a mandatory opt")
 
     # init
-    sparkConf = create_spark_conf().setAppName("inception v1")
-    sc = get_spark_context(sparkConf)
-    redire_spark_logs()
-    show_bigdl_info_logs()
-    init_engine()
+    hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+    assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+            "set the environment variable HADOOP_CONF_DIR"
+    conda_env_name = detect_conda_env_name()
+    sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
+                            conda_name=conda_env_name,
+                            num_executors=options.executors,
+                            executor_cores=options.cores,
+                            executor_memory=options.executorMemory,
+                            driver_memory=options.driverMemory)
 
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),

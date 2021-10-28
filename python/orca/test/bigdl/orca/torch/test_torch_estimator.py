@@ -21,7 +21,7 @@ import pytest
 
 from unittest import TestCase
 from bigdl.orca.torch import TorchModel, TorchLoss
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.dllib.estimator import *
 from bigdl.dllib.keras.optimizers import Adam
