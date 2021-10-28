@@ -15,12 +15,12 @@
  */
 
 
-package com.intel.analytics.bigdl.serving.utils
+package com.intel.analytics.bigdl.serving
 
-import java.nio.file.{Files, Path, Paths}
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
-import com.intel.analytics.bigdl.serving.ClusterServing
+import com.intel.analytics.bigdl.serving.utils.Conventions
 import redis.clients.jedis.Jedis
+
 import scala.beans.BeanProperty
 
 /**
@@ -48,6 +48,7 @@ class ClusterServingHelper
 
   // specific attributes
   @BeanProperty var flinkRestUrl = "localhost:8081"
+  @BeanProperty var queueUsed = "redis"
   @BeanProperty var kafkaUrl = "localhost:9092"
   @BeanProperty var redisUrl = "localhost:6379"
   @BeanProperty var redisMaxMemory = "4g"
