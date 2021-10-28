@@ -1,4 +1,4 @@
-# Anomaly Detector
+# Anomaly Detector Quickstart
 
 ---
 
