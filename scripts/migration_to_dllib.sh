@@ -1,3 +1,5 @@
+# This script is used to automatically migrate existing projects which usd BigDL0.x or Analytics Zoo to use Bigdl-dllib. Please run this script if you want to migrate your existing BigdL0.x or zoo projects to BigDL2.x
+
 grep -rl com.intel.analytics.bigdl.utils --include \*.scala . | xargs sed -i 's/com.intel.analytics.bigdl.utils/com.intel.analytics.bigdl.dllib.utils/g'
 grep -rl com.intel.analytics.bigdl.optim --include \*.scala . | xargs sed -i 's/com.intel.analytics.bigdl.optim/com.intel.analytics.bigdl.dllib.optim/g'
 grep -rl com.intel.analytics.bigdl.tensor --include \*.scala . | xargs sed -i 's/com.intel.analytics.bigdl.tensor/com.intel.analytics.bigdl.dllib.tensor/g'
