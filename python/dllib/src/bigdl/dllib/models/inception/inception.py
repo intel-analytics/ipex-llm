@@ -286,7 +286,7 @@ if __name__ == "__main__":
     hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
     assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
             "set the environment variable HADOOP_CONF_DIR"
-    conda_env_name = "nzoo"
+    conda_env_name = detect_conda_env_name()
     sc = init_spark_on_yarn_cluster(hadoop_conf=hadoop_conf,
                             conda_name=conda_env_name,
                             num_executors=options.executors,

@@ -174,6 +174,7 @@ class SparkRunner:
                                          extra_executor_memory_for_ray)
             conf["spark.yarn.appMasterEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
             conf["spark.yarn.appMasterEnv.OnAppMaster"] = "True"
+            conf["spark.yarn.appMasterEnv.PYTHONHOME"] = executor_python_env
             conf["spark.executorEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
             py_version = ".".join(platform.python_version().split(".")[0:2])
             preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
