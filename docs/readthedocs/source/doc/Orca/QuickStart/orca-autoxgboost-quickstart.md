@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/autoxgboost_regressor_sklearn_boston.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/autoxgboost_regressor_sklearn_boston.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/autoxgboost_regressor_sklearn_boston.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/autoxgboost_regressor_sklearn_boston.ipynb)
 
 ---
 
@@ -11,18 +11,12 @@
 Orca AutoXGBoost enables distributed automated hyper-parameter tuning for XGBoost, which includes `AutoXGBRegressor` and `AutoXGBClassifier` for sklearn`XGBRegressor` and `XGBClassifier` respectively. See more about [xgboost scikit-learn API](https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn).
 ### **Step 0: Prepare Environment**
 
-[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
+[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide]([../../UserGuide/python.md](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html#install)) for more details.
 
-```bash
-conda create -n zoo python=3.7 # zoo is conda environment name, you can use any name you like.
-conda activate zoo
-pip install analytics-zoo[ray]
-pip install torch==1.7.1 torchvision==0.8.2
-```
 
 ### **Step 1: Init Orca Context**
 ```python
-from zoo.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":
     init_orca_context(cores=6, memory="2g", init_ray_on_spark=True) # run in local mode
@@ -42,10 +36,10 @@ This is the only place where you need to specify local or distributed mode. View
 
 You should define a dictionary as your hyper-parameter search space.
 
-The keys are hyper-parameter names you want to search for `XGBRegressor`, and you can specify how you want to sample each hyper-parameter in the values of the search space. See [automl.hp](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
+The keys are hyper-parameter names you want to search for `XGBRegressor`, and you can specify how you want to sample each hyper-parameter in the values of the search space. See [automl.hp](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
 
 ```python
-from zoo.orca.automl import hp
+from bigdl.orca.automl import hp
 
 search_space = {
     "n_estimators": hp.grid_search([50, 100, 200]),
@@ -58,7 +52,7 @@ search_space = {
 First create an `AutoXGBRegressor`.
 
 ```python
-from zoo.orca.automl.xgboost import AutoXGBRegressor
+from bigdl.orca.automl.xgboost import AutoXGBRegressor
 
 auto_xgb_reg = AutoXGBRegressor(cpus_per_trial=2, 
                                 name="auto_xgb_classifier",
