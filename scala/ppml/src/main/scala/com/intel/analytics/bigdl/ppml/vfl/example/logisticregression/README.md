@@ -54,7 +54,12 @@ The port of server is provided in `ppml-conf.yaml` when server starts, default v
 
 And start the local Logistic Regression trainers at 2 training machines, with learning rate 0.01, batch size 4
 ```
-java -cp bigdl-ppml-xxx.jar com.intel.analytics.bigdl.ppml.example.logisticregression.VflLogisticRegression $dataPath $rowKeyName 0.01 4
+java -cp bigdl-ppml-xxx.jar com.intel.analytics.bigdl.ppml.example.logisticregression.VflLogisticRegression 
+    --dataPath dataset/diabetes/diabetes-1.csv 
+    --rowKeyName ID
+    --learningRate 0.005
+    --batchSize 4    
+# change dataPath to diabetes-2.csv at client-2
 ```
 
-The code in this exmaple will train the data and evaluate the training result.
+The example will train the data and evaluate the training result.
