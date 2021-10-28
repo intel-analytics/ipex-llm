@@ -5,9 +5,9 @@ In this example, onnx speed up the inferencing for ~4X.
 ## Prepare the environment
 We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster:
 ```bash
-conda create -n zoo python=3.7 # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
-pip install --pre --upgrade analytics-zoo[automl]
+conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
+conda activate my_env
+pip install --pre --upgrade bigdl-chronos[all]
 ```
 
 ## Prepare data
@@ -30,7 +30,7 @@ for tsdata in [tsdata_train, tsdata_test]:
 ```
 
 ## Fit on forecaster/AutoTSEstimator
-Create and fit on the forecaster/AutoTSEstimator. Please refer to [API doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/index.html) for detail.
+Create and fit on the forecaster/AutoTSEstimator. Please refer to [API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/index.html) for detail.
 
 ## Inference with onnx
 All methods involve inferencing supports onnx as backend. You can call `predict_with_onnx` or `evaluate_with_onnx` to use it.
@@ -66,6 +66,6 @@ forecaster.predict_with_onnx(x_test)
 * `--n_sampling` Number of times to sample from the search_space. Default to be 1.
 * `--cpus_per_trail` Number of cpus for each trial. Default to be 2.
 * `--memory` The memory you want to use on each node. Default to be 10g.
-* `--cluster_mode` The mode for the Spark cluster. local or yarn. Default to be `local`. You can refer to OrcaContext documents [here](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html) for details.
+* `--cluster_mode` The mode for the Spark cluster. local or yarn. Default to be `local`. You can refer to OrcaContext documents [here](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html) for details.
 * `--cores` "The number of cpu cores you want to use on each node. Default to be 4.
 * `--num_workers` The number of workers to be used in the cluster. You can change it depending on your own cluster setting. Default to be 2.

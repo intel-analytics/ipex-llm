@@ -1,11 +1,11 @@
 # High dimension time series forecasting with Chronos TCMFForecaster 
 
-This example demonstrates how to use Analytics Zoo Chronos TCMFForecaster to run distributed training 
+This example demonstrates how to use BigDL Chronos TCMFForecaster to run distributed training 
 and inference for high dimension time series forecasting task.
 
 
 ## Environment
-You can follow the instructions [here](https://analytics-zoo.github.io/master/#Chronos/tutorials/TCMFForecaster/#step-0-prepare-environment) to prepare environment for chronos TCMFForecaster.
+You can follow the instructions [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install) to prepare environment for chronos TCMFForecaster.
 
 ## Prepare data
 The example use the public real-world electricity datasets. You can download by running [download datasets script](https://github.com/rajatsen91/deepglo/blob/master/datasets/download-data.sh). Note that we only need electricity.npy.
@@ -23,7 +23,7 @@ python run_electricity.py --cluster_mode yarn
 ```
 
 ## Options
-* `--cluster_mode` The mode for the Spark cluster. local or yarn. Default to be `local`. You can refer to OrcaContext documents [here](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html) for details.
+* `--cluster_mode` The mode for the Spark cluster. local or yarn. Default to be `local`. You can refer to OrcaContext documents [here](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html) for details.
 * `--num_workers` The number of workers to be used in the cluster. You can change it depending on your own cluster setting. Default to be 2.
 * `--cores` "The number of cpu cores you want to use on each node. Default to be 4.
 * `--memory` The memory you want to use on each node. Default to be 10g
