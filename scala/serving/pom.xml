@@ -56,11 +56,6 @@
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
-            <artifactId>scala-actors</artifactId>
-            <version>2.11.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
             <artifactId>scalap</artifactId>
             <version>${scala.version}</version>
         </dependency>
