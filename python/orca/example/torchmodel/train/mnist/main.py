@@ -65,7 +65,7 @@ def main():
     parser.add_argument('--save-model', action='store_true', default=False,
                         help='For Saving the current Model')
     parser.add_argument('--deploy-mode', default="local",
-                        help='supported deploy mode is local, yarn-client, yarn-cluster, k8s-client')
+                        help='supported deploy mode is local, yarn-client, yarn-cluster')
 
     args = parser.parse_args()
 
