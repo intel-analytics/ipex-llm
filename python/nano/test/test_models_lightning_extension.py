@@ -22,7 +22,7 @@ from test._train_torch_lightning import train_torch_lightning
 from torch import nn
 
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.pytorch.vision.models.lightning_extension import to_lightning
+from bigdl.nano.pytorch.lightning_extension import to_lightning
 
 config = {
     'lr': 0.01,
