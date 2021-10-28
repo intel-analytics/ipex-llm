@@ -1,4 +1,4 @@
-FROM occlum/occlum:0.24.2-ubuntu18.04 AS occlum
+FROM occlum/occlum:0.24.0-ubuntu18.04 AS occlum
 
 ENV LOCAL_IP your_local_ip
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
