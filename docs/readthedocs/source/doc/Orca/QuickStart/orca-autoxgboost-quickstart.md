@@ -11,7 +11,7 @@
 Orca AutoXGBoost enables distributed automated hyper-parameter tuning for XGBoost, which includes `AutoXGBRegressor` and `AutoXGBClassifier` for sklearn`XGBRegressor` and `XGBClassifier` respectively. See more about [xgboost scikit-learn API](https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn).
 ### **Step 0: Prepare Environment**
 
-[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide]([../../UserGuide/python.md](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html#install)) for more details.
+[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html#install) for more details.
 
 
 ### **Step 1: Init Orca Context**
