@@ -70,7 +70,7 @@ ${SPARK_HOME}/bin/pyspark \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
-  --properties-file local://${BIGDL_HOME}/conf/spark-bigdl.conf \
+  --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
   --py-files local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
   --jars local://${BIGDL_HOME}/jars/* \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
