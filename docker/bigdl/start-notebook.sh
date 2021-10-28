@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright 2016 The Analytics-Zoo Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,16 +19,15 @@
 set -x
 
 #setup pathes
-ANALYTICS_ZOO_TUTORIALS_HOME=${ANALYTICS_ZOO_HOME}/apps
+BIGDL_TUTORIALS_HOME=${BIGDL_HOME}/apps
 SPARK_MAJOR_VERSION=${SPARK_VERSION%%.[0-9]}
-echo $ANALYTICS_ZOO_TUTORIALS_HOME
-echo $ANALYTICS_ZOO_VERSION
+echo $BIGDL_HOME
 echo $BIGDL_VERSION
 echo $SPARK_VERSION
 echo $SPARK_MAJOR_VERSION
 
 export PYSPARK_DRIVER_PYTHON=jupyter
-export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=$ANALYTICS_ZOO_TUTORIALS_HOME --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root"
+export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=$BIGDL_TUTORIALS_HOME --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root"
 
 echo $RUNTIME_SPARK_MASTER
 echo $RUNTIME_EXECUTOR_CORES
@@ -71,10 +70,10 @@ ${SPARK_HOME}/bin/pyspark \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
-  --properties-file ${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf \
-  --py-files ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip \
-  --jars ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
-  --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
-  --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
+  --properties-file local://${BIGDL_HOME}/conf/spark-bigdl.conf \
+  --py-files local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
+  --jars local://${BIGDL_HOME}/jars/* \
+  --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
+  --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
   --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
   --conf spark.sql.catalogImplementation='in-memory'
