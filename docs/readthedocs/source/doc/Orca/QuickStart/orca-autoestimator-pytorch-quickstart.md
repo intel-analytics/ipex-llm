@@ -10,7 +10,7 @@
 
 ### **Step 0: Prepare Environment**
 
-[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](to-be-update) for more details.
+[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html#install) for more details.
 
 ```bash
 conda create -n bigdl-orca-automl python=3.7 # zoo is conda environment name, you can use any name you like.
