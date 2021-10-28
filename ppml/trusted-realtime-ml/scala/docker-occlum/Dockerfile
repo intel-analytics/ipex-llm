@@ -33,6 +33,7 @@ ARG FLINK_VERSION=1.11.3
 ENV FLINK_VERSION ${FLINK_VERSION}
 ENV FLINK_HOME				/opt/flink-${FLINK_VERSION}
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ENV BIGDL_VERSION=${BIGDL_VERSION}
 ARG SPARK_VERSION=3.1.2
 ENV BIGDL_HOME		        /opt/bigdl-${BIGDL_VERSION}
 
@@ -49,8 +50,8 @@ RUN cd /opt && \
 
 # Download bigdl
 RUN cd /opt && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/scala/serving/scripts/download-serving-jar.sh && \
-    chmod a+x ./download-bigdl-serving.sh && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/ppml/trusted-realtime-ml/scala/docker-graphene/download-bigdl-serving.sh && \
+    chmod a+x download-bigdl-serving.sh && \
     ./download-bigdl-serving.sh
 
 # models
@@ -92,8 +93,8 @@ COPY --from=redis-tls /opt/occlum/glibc /opt/occlum/glibc
 
 COPY --from=bigdl /opt/flink-${FLINK_VERSION} /opt/flink-${FLINK_VERSION}
 COPY --from=bigdl /opt/resnet50 /opt/resnet50
-COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION}/jars/bigdl-serving*-jar-with-dependencies.jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar
-COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION}/jars/bigdl-serving*-http.jar ${BIGDL_HOME}/bigdl-serving-http.jar
+COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar
+COPY --from=bigdl /opt/bigdl-serving*-http.jar ${BIGDL_HOME}/bigdl-serving-http.jar
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
