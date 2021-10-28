@@ -15,9 +15,15 @@
 #
 
 import logging
+import os
+import threading
+import json
+import random
+
 from pyspark.sql.dataframe import DataFrame
 import numpy as np
 
+from bigdl.orca.learn.utils import session_execute, decode
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 
@@ -28,6 +34,8 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
+LOG_FILE_CHANNEL = "SPARK_LOG_CHANNEL"
+
 logger = logging.getLogger(__name__)
 
 class SparkTFEstimator():
@@ -36,7 +44,9 @@ class SparkTFEstimator():
                  config=None,
                  compile_args_creator=None,
                  verbose=False,
-                 workers_per_node=1):
+                 workers_per_node=1,
+                 log_to_driver=True,
+                 **kwargs):
         self.model_creator = model_creator
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
@@ -57,6 +67,36 @@ class SparkTFEstimator():
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
+        # start redis server
+        from bigdl.dllib.utils.utils import get_node_ip
+        self.ip = get_node_ip()
+
+        if "redis_port" in kwargs:
+            self.redis_port = kwargs["redis_port"]
+        else:
+            self.redis_port = random.randint(10000, 65535)
+        if "redis_password" in kwargs:
+            self.redis_password = kwargs["redis_password"]
+        else:
+            self.redis_password = None
+        self.is_local = sc.master.startswith("local")
+        if not self.is_local:
+            if log_to_driver:
+                # start redis
+                process_info = self._start_redis()
+
+                # print executor logs
+                import redis
+                redis_client = redis.StrictRedis(
+                    host=self.ip, port=self.port)
+                threads_stopped = threading.Event()
+                logger_thread = threading.Thread(
+                    target=self._print_logs,
+                    name="print_logs",
+                    args=(redis_client, threads_stopped))
+                logger_thread.daemon = True
+                logger_thread.start()
+
 
     def fit(self, data, epochs=1, batch_size=32, verbose=1,
             callbacks=None, validation_data=None, class_weight=None,
@@ -90,7 +130,10 @@ class SparkTFEstimator():
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            mode="fit"
+            mode="fit",
+            is_local=self.is_local,
+            redis_address=":".join([self.ip, self.redis_port]),
+            redis_password=self.redis_password
         )
 
         params = dict(
@@ -179,7 +222,10 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             model_weights=self.model_weights,
-            mode="evaluate"
+            mode="evaluate",
+            is_local=self.is_local,
+            redis_address=":".join([self.ip, self.redis_port]),
+            redis_password=self.redis_password
         )
 
         params = dict(
@@ -248,7 +294,10 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             model_weights=self.model_weights,
-            mode="predict"
+            mode="predict",
+            is_local=self.is_local,
+            redis_address=":".join([self.ip, self.redis_port]),
+            redis_password=self.redis_password
         )
 
         params = dict(
@@ -341,4 +390,58 @@ class SparkTFEstimator():
         import tensorflow as tf
         model = tf.keras.models.load_model(filepath)
         self.model_weights = model.get_weights()
+
+    def _start_redis(self):
+        import random
+        self.redis_port = random.randint(10000, 65535)
+        redis_exec = "redis-server"
+        command = [redis_exec]
+        if self.redis_password:
+            command += ["--requirepass", self.redis_password]
+        command += ["--port", str(self.redis_port), "--loglevel", "warning"]
+        process_info = session_execute(command=command)
+        return process_info
+
+    def _print_logs(self, redis_client, threads_stopped):
+        """Prints log messages from workers on all of the nodes.
+
+        Args:
+            redis_client: A client to the primary Redis shard.
+            threads_stopped (threading.Event): A threading event used to signal to
+                the thread that it should exit.
+        """
+        import redis
+        pubsub_client = redis_client.pubsub(ignore_subscribe_messages=True)
+        pubsub_client.subscribe(LOG_FILE_CHANNEL)
+        try:
+            # Keep track of the number of consecutive log messages that have been
+            # received with no break in between. If this number grows continually,
+            # then the worker is probably not able to process the log messages as
+            # rapidly as they are coming in.
+            num_consecutive_messages_received = 0
+            while True:
+                # Exit if we received a signal that we should stop.
+                if threads_stopped.is_set():
+                    return
+
+                msg = pubsub_client.get_message()
+                if msg is None:
+                    num_consecutive_messages_received = 0
+                    threads_stopped.wait(timeout=0.01)
+                    continue
+                num_consecutive_messages_received += 1
+
+                data = json.loads(decode(msg["data"]))
+                for line in data["lines"]:
+                    print("(executor {}, ip={}) {}".format(
+                            data["executor_id"],
+                            data["ip"], line))
+
+        except (OSError, redis.exceptions.ConnectionError) as e:
+            logger.error("print_logs: {}".format(e))
+        finally:
+            # Close the pubsub client to avoid leaking file descriptors.
+            pubsub_client.close()
+
+
 

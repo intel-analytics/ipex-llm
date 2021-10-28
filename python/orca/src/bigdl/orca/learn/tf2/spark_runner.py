@@ -16,6 +16,7 @@
 import json
 import logging
 import os
+import sys
 
 from re import VERBOSE
 from subprocess import call
@@ -29,6 +30,7 @@ from contextlib import closing
 import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
+from bigdl.orca.learn.utils import session_execute
 
 def find_free_port(tc):
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
@@ -190,7 +192,10 @@ class SparkRunner:
                  verbose=False,
                  model_weights=None,
                  backend="tf-distributed",
-                 mode="fit"
+                 mode="fit",
+                 is_local=True,
+                 redis_address=None,
+                 redis_password=None
                 ):
         """Initializes the runner.
                 Args:
@@ -215,6 +220,12 @@ class SparkRunner:
         if self.backend == "tf-distributed":
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed(self.mode)
+        self.is_local = is_local
+        if not self.is_local:
+            self._start_log_monitor(redis_address=redis_address,
+                                logs_dir="$SPARK_WORKER_DIR/applID/executorID",
+                                redis_password=redis_password
+                                )
 
     def setup(self):
         import tensorflow as tf
@@ -399,4 +410,39 @@ class SparkRunner:
         new_part = [predict_fn(shard) for shard in partition]
 
         return new_part
+
+    def _start_log_monitor(redis_address,
+                          logs_dir,
+                          stdout_file=None,
+                          stderr_file=None,
+                          redis_password=None,
+                          fate_share=None):
+        """Start a log monitor process.
+
+        Args:
+            redis_address (str): The address of the Redis instance.
+            logs_dir (str): The directory of logging files.
+            stdout_file: A file handle opened for writing to redirect stdout to. If
+                no redirection should happen, then this should be None.
+            stderr_file: A file handle opened for writing to redirect stderr to. If
+                no redirection should happen, then this should be None.
+            redis_password (str): The password of the redis server.
+
+        Returns:
+            ProcessInfo for the process that was started.
+        """
+        log_monitor_filepath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "log_monitor.py")
+        command = [
+            sys.executable, "-u", log_monitor_filepath,
+            "--redis-address={}".format(redis_address),
+            "--logs-dir={}".format(logs_dir)
+        ]
+        if redis_password:
+            command += ["--redis-password", redis_password]
+        process_info = session_execute(
+            command,
+            tag="log_monitor")
+        return process_info
+
 
