@@ -21,7 +21,8 @@ import torch
 from test._train_torch_lightning import train_torch_lightning
 from torch import nn
 
-from bigdl.nano.pytorch.vision.models import lightning_support, vision
+from bigdl.nano.pytorch.vision.models import vision
+from bigdl.nano.pytorch.vision.models.lightning_extension import to_lightning
 
 config = {
     'lr': 0.01,
@@ -40,7 +41,7 @@ def optimizer_creator(model, config):
     return getattr(torch.optim, config.get("optim", "Adam"))(model.parameters(), lr=config.get("lr", 0.001))
 
 
-@lightning_support.lightning_module(loss_creator, optimizer_creator, config)
+@to_lightning(loss_creator, optimizer_creator, config)
 def resnet18(num_classes, pretrained=True, include_top=False, freeze=True):
     backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
     output_size = backbone.get_output_size()

@@ -13,15 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Callable
 import pytorch_lightning as pl
 
 
-def lightning_module(loss_creator, optimizer_creator, configs):
-    def lightning_from_torch(cls):
+def to_lightning(loss_creator: Callable, optimizer_creator: Callable, configs: dict):
+    """
+    A decorator on torch module creator, returns a pytorch-lightning model.
+    Args:
+        loss_creator: A function takes configs in and returns loss class.
+        optimizer_creator: A function takes torch module and configs in, returns optimizer.
+        configs: A dict with key-values for loss and optimizer creator.
+
+
+    Returns: Decorator function on class or function
+
+    """
+    def from_torch(creator):
         class LightningModel(pl.LightningModule):
             def __init__(self, *args, **kwargs):
                 super().__init__()
-                self.model = cls(*args, **kwargs)
+                self.model = creator(*args, **kwargs)
                 self.loss = loss_creator(configs)
                 self.optimizer = optimizer_creator(self.model, configs)
 
@@ -53,4 +65,4 @@ def lightning_module(loss_creator, optimizer_creator, configs):
 
         return LightningModel
 
-    return lightning_from_torch
+    return from_torch
