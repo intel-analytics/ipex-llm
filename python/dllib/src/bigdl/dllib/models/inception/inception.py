@@ -269,6 +269,7 @@ def config_option_parser():
     parser.add_option("--num-executors", type=int, dest="executors", default=16, help="number of executors")
     parser.add_option("--executor-memory", type=str, dest="executorMemory", default="30g", help="executor memory")
     parser.add_option("--driver-memory", type=str, dest="driverMemory", default="30g", help="driver memory")
+    parser.add_option("--deploy-mode", type=str, dest="deployMode", default="yarn-client", help="yarn deploy mode, yarn-client or yarn-cluster")
 
     return parser
 
@@ -287,12 +288,20 @@ if __name__ == "__main__":
     assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
             "set the environment variable HADOOP_CONF_DIR"
     conda_env_name = detect_conda_env_name()
-    sc = init_spark_on_yarn_cluster(hadoop_conf=hadoop_conf,
-                            conda_name=conda_env_name,
-                            num_executors=options.executors,
-                            executor_cores=options.cores,
-                            executor_memory=options.executorMemory,
-                            driver_memory=options.driverMemory)
+    if options.deployMode == "yarn-client":
+        sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
+                                conda_name=conda_env_name,
+                                num_executors=options.executors,
+                                executor_cores=options.cores,
+                                executor_memory=options.executorMemory,
+                                driver_memory=options.driverMemory)
+    else: 
+        sc = init_spark_on_yarn_cluster(hadoop_conf=hadoop_conf,
+                                        conda_name=conda_env_name,
+                                        num_executors=options.executors,
+                                        executor_cores=options.cores,
+                                        executor_memory=options.executorMemory,
+                                        driver_memory=options.driverMemory)
 
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),
