@@ -70,16 +70,13 @@ public class TFNetNative {
         }
         String pyVerSpecName = null;
         for(File f:pyLibBase.listFiles()){
-            if(f.isDirectory()){
-                if(f.getName().startsWith("python3.")){
-                    pyVerSpecName = f.getName();
-                    break;
-                }
+            if(f.isDirectory() && f.getName().startsWith("python3.")){
+                pyVerSpecName = f.getName();
+                break;
             }
         }
-        System.out.println(pyVerSpecName);
         String libPath = String.join("/", pyLibBasePath, pyVerSpecName, "site-packages/bigdl/share/tflibs");
-        System.out.println(libPath);
+        System.out.println("Try to load libraries from conda path: "+libPath);
         
         return libPath;
     }
