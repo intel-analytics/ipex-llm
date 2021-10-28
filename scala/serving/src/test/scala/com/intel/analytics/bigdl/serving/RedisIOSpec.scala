@@ -19,10 +19,13 @@ package com.intel.analytics.bigdl.serving
 import java.util
 import java.util.AbstractMap.SimpleEntry
 
-import com.intel.analytics.bigdl.serving.pipeline.RedisUtils
+import com.intel.analytics.bigdl.serving.utils.RedisUtils
 import com.intel.analytics.bigdl.serving.http.Supportive
 import com.intel.analytics.bigdl.serving.utils.{RedisEmbeddedReImpl, RedisUtils}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import redis.clients.jedis.{Jedis, ScanParams, StreamEntryID}
+import redis.embedded.RedisExecProvider
+import redis.embedded.util.OS
 import scopt.OptionParser
 
 import scala.collection.JavaConverters._
