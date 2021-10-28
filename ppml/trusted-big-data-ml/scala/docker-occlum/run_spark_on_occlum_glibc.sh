@@ -2,12 +2,11 @@
 set -x
 #apt-get update
 #apt-get install -y openjdk-11-jdk
-cd /ppml/docker-occlum
+cd /opt
 
-cp /ppml/docker-occlum/spark-2.4.6-bin-hadoop2.7/jars/spark-network-common_2.11-2.4.6.jar /ppml/docker-occlum/spark-network-common_2.11-2.4.6.jar
 BLUE='\033[1;34m'
 NC='\033[0m'
-occlum_glibc=/opt/occlum/glibc/lib/
+occlum_glibc=/opt/occlum/glibc/lib
 
 init_instance() {
     # Init Occlum instance
@@ -35,13 +34,13 @@ build_spark() {
     cp $occlum_glibc/librt.so.1 image/$occlum_glibc
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc
     cp $occlum_glibc/libnss_files.so.2 image/$occlum_glibc
-    cp -rf ../spark-2.4.6-bin-hadoop2.7/* image/bin/
+    cp -rf ../spark/* image/bin/
     cp -rf ../hosts image/etc/
     cp -rf /etc/ssl image/etc/
     cp -rf /etc/passwd image/etc/
     cp -rf /etc/group image/etc/
     cp -rf /etc/java-11-openjdk image/etc/
-    cp -rf ../bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar image/bin/jars
+    cp -rf ../bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar image/bin/jars
     cp -rf ../cifar image/bin/
     /opt/occlum/start_aesm.sh
     occlum build
@@ -57,7 +56,7 @@ run_spark_test() {
                 -XX:ActiveProcessorCount=192 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
-                -cp '/bin/conf/:/bin/jars/*' -Xmx10g org.apache.spark.deploy.SparkSubmit --jars /bin/examples/jars/spark-examples_2.11-2.4.6.jar,/bin/examples/jars/scopt_2.11-3.7.0.jar --class org.apache.spark.examples.SparkPi spark-internal
+                -cp '/bin/conf/:/bin/jars/*' -Xmx10g org.apache.spark.deploy.SparkSubmit --jars /bin/examples/jars/spark-examples_2.12-3.1.2.jar,/bin/examples/jars/scopt_2.12-3.7.1.jar --class org.apache.spark.examples.SparkPi spark-internal
 }
 
 run_spark_bigdl(){
@@ -70,22 +69,22 @@ run_spark_bigdl(){
                 -XX:ActiveProcessorCount=24 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
-                -cp '/bin/conf/:/bin/jars/*'  -Xmx10g org.apache.spark.deploy.SparkSubmit --jars /bin/examples/jars/spark-examples_2.11-2.4.6.jar,/bin/examples/jars/scopt_2.11-3.7.0.jar \
+                -cp '/bin/conf/:/bin/jars/*'  -Xmx10g org.apache.spark.deploy.SparkSubmit --jars /bin/examples/jars/spark-examples_2.12-3.1.2.jar,/bin/examples/jars/scopt_2.12-3.7.1.jar \
                 --master 'local[4]' \
                 --conf spark.driver.port=10027 \
                 --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
                 --conf spark.worker.timeout=600 \
-                --conf spark.executor.extraClassPath=/bin/jars/bigdl-0.13.0-jar-with-dependencies.jar \
-                --conf spark.driver.extraClassPath=/bin/jars/bigdl-0.13.0-jar-with-dependencies.jar \
+                --conf spark.executor.extraClassPath=/bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+                --conf spark.driver.extraClassPath=/bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
                 --conf spark.starvation.timeout=250000 \
                 --conf spark.rpc.askTimeout=600 \
                 --conf spark.blockManager.port=10025 \
                 --conf spark.driver.host=127.0.0.1 \
                 --conf spark.driver.blockManager.port=10026 \
                 --conf spark.io.compression.codec=lz4 \
-                --class com.intel.analytics.bigdl.models.lenet.Train \
+                --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
                 --driver-memory 10G \
-                /bin/jars/bigdl-0.13.0-jar-with-dependencies.jar \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
                 -f /bin/data \
                 -b 4 \
                 -e 1 | tee spark.local.sgx.log
@@ -101,22 +100,22 @@ run_spark_resnet_cifar(){
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
-                -cp '/bin/conf/:/bin/jars/*'  -Xmx10g org.apache.spark.deploy.SparkSubmit --jars /bin/examples/jars/spark-examples_2.11-2.4.6.jar,/bin/examples/jars/scopt_2.11-3.7.0.jar \
+                -cp '/bin/conf/:/bin/jars/*'  -Xmx10g org.apache.spark.deploy.SparkSubmit --jars /bin/examples/jars/spark-examples_2.12-3.1.2.jar,/bin/examples/jars/scopt_2.12-3.7.1.jar \
                 --master 'local[4]' \
                 --conf spark.driver.port=10027 \
                 --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
                 --conf spark.worker.timeout=600 \
-                --conf spark.executor.extraClassPath=/bin/jars/bigdl-0.13.0-jar-with-dependencies.jar \
-                --conf spark.driver.extraClassPath=/bin/jars/bigdl-0.13.0-jar-with-dependencies.jar \
+                --conf spark.executor.extraClassPath=/bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+                --conf spark.driver.extraClassPath=/bin/jars/bigdl-${BIGDL_VERSION}-with-dependencies.jar \
                 --conf spark.starvation.timeout=250000 \
                 --conf spark.rpc.askTimeout=600 \
                 --conf spark.blockManager.port=10025 \
                 --conf spark.driver.host=127.0.0.1 \
                 --conf spark.driver.blockManager.port=10026 \
                 --conf spark.io.compression.codec=lz4 \
-                --class com.intel.analytics.bigdl.models.resnet.TrainCIFAR10 \
+                --class com.intel.analytics.bigdl.dllib.models.resnet.TrainCIFAR10 \
                 --driver-memory 10G \
-                /bin/jars/bigdl-0.13.0-jar-with-dependencies.jar \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
                 -f /bin/cifar \
                 --batchSize 400 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
                 --learningRate 0.1 | tee spark.local.sgx.log
