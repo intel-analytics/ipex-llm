@@ -20,6 +20,8 @@ import onnxruntime as ort
 from functools import wraps
 import torch
 import warnings
+import math
+import numpy as np
 
 def onnxruntime(override_predict_step=True):
     '''
@@ -55,39 +57,60 @@ def onnxruntime(override_predict_step=True):
         # inference
         def inference(self, input_data, batch_size=None, backend="onnx", **kwargs):
             '''
-            :param input_data: numpy ndarray (onnx) or tensor (non-onnx)
-            :param backend:
-            :param batch_size:
+            :param input_data: input data for prediction. If backend is set to "onnx", 
+                   the data type should be a numpy ndarray.  If backend is NOT set to "onnx",
+                   a torch tensor is needed and the pytorch forwarding method will be called.
+            :param backend: str, to set the backend library. "onnx" for onnxruntime, which
+                   provides lower latency and any other value will make `inference` call
+                   the pytorch forwarding method.
+            :param batch_size: int, inferencing batch_size. This value should not affect the
+                   final inferencing result but will affect resources cost(e.g. memory and time).
+                   Default to None, which takes all input_data in one batch.
+            :param **kwargs: any other keywords that will be passed to onnx session's building.
             '''
             if backend == "onnx":
                 if not self._ortsess_up_to_date:
-                    warnings.warn("Onnxruntime session is built lazily,"\
+                    warnings.warn("Onnxruntime session is built lazily,"
                                   " this may harm your inference latency.")
                     input_sample = torch.Tensor(input_data)
                     self._build_ortsess(input_sample=input_sample, **kwargs)
                 input_name = self._ortsess.get_inputs()[0].name
-                ort_inputs = {input_name: input_data}
-                ort_outs = self._ortsess.run(None, ort_inputs)
-                return ort_outs[0]
+                if batch_size is None:  # this branch is only to speed up the inferencing
+                    ort_inputs = {input_name: input_data}
+                    ort_outs = self._ortsess.run(None, ort_inputs)
+                    return ort_outs[0]
+                else:
+                    yhat_list = []
+                    sample_num = input_data.shape[0]  # the first dim should be sample_num
+                    batch_num = math.ceil(sample_num/batch_size)
+                    for batch_id in range(batch_num):
+                        ort_inputs = {input_name: input_data[batch_id*batch_size:\
+                            (batch_id+1)*batch_size]}
+                        ort_outs = self._ortsess.run(None, ort_inputs)
+                        yhat_list.append(ort_outs[0])
+                    yhat = np.concatenate(yhat_list, axis=0)
+                    return yhat
             else:
                 self.eval()
                 with torch.no_grad():
+                    yhat_list = []
+                    sample_num = input_data.shape[0]  # the first dim should be sample_num
+                    batch_size = batch_size if batch_size else sample_num
+                    batch_num = math.ceil(sample_num/batch_size)
+                    for batch_id in range(batch_num):
+                        yhat_list.append(self(input_data[batch_id*batch_size:\
+                            (batch_id+1)*batch_size]))
+                    yhat = np.concatenate(yhat_list, axis=0)
                     return self(input_data)
         cls.inference = inference
 
         # on_fit_start
         def on_fit_start_additional(function):
-            @wraps(function)
             def wrapped(*args, **kwargs):
                 args[0]._ortsess_up_to_date = False
                 return function(*args, **kwargs)
             return wrapped
-        def on_fit_start(self):
-            self._ortsess_up_to_date = False
-        if on_fit_start in dir(cls):
-            cls.on_fit_start = on_fit_start_additional(cls.on_fit_start)
-        else:
-            cls.on_fit_start = on_fit_start
+        cls.on_fit_start = on_fit_start_additional(cls.on_fit_start)
 
         # predict_step
         if override_predict_step:

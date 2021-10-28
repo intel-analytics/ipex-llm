@@ -91,8 +91,12 @@ class TestAutoTrainer(TestCase):
         random_mnist_x = torch.rand(1, 1, 28, 28)
         random_mnist_x_numpy = random_mnist_x.numpy()
         random_mnist_y_onnx = self.model.inference(random_mnist_x_numpy, backend="onnx")
+        random_mnist_y_onnx_batch = self.model.inference(random_mnist_x_numpy,
+                                                         batch_size=1,
+                                                         backend="onnx")
         random_mnist_y = self.model.inference(random_mnist_x, backend=None).numpy()
         np.testing.assert_almost_equal(random_mnist_y, random_mnist_y_onnx, decimal=5)
+        np.testing.assert_almost_equal(random_mnist_y, random_mnist_y_onnx_batch, decimal=5)
 
     def test_trainer_predict(self):
         self.trainer.predict(self.model, dataloaders=self.mnist_test)
