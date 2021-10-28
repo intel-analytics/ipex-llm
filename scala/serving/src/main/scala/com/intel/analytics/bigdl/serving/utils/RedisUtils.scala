@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.serving.pipeline
+package com.intel.analytics.bigdl.serving.utils
 
-import com.intel.analytics.bigdl.serving.utils.Conventions
+import org.apache.log4j.Logger
+import redis.clients.jedis.exceptions.JedisConnectionException
+import redis.clients.jedis.{Jedis, JedisPool, Pipeline, StreamEntryID}
 
 import scala.collection.JavaConverters._
-import redis.clients.jedis.exceptions.JedisConnectionException
-import redis.clients.jedis._
-import org.apache.log4j.Logger
+
 object RedisUtils {
   val logger = Logger.getLogger(getClass)
   def createRedisGroupIfNotExist(jedis: Jedis, streamName: String): Unit = {

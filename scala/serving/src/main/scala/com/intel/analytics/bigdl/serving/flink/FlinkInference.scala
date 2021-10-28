@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.serving.engine
+package com.intel.analytics.bigdl.serving.flink
 
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 
-
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
-import com.intel.analytics.bigdl.serving.ClusterServing
+import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper, ClusterServingInference}
 import com.intel.analytics.bigdl.serving.postprocessing.PostProcessing
 import com.intel.analytics.bigdl.serving.serialization.StreamSerializer
-import com.intel.analytics.bigdl.serving.utils.{ClusterServingHelper, Conventions}
+import com.intel.analytics.bigdl.serving.utils.Conventions
 import org.apache.flink.api.common.functions.RichMapFunction
 import org.apache.flink.configuration.Configuration
 import org.apache.log4j.Logger

@@ -17,9 +17,8 @@
 package com.intel.analytics.bigdl.serving.operator
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.serving.ClusterServing
-import com.intel.analytics.bigdl.serving.engine.ClusterServingInference
-import com.intel.analytics.bigdl.serving.utils.{ClusterServingHelper, Conventions}
+import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper, ClusterServingInference}
+import com.intel.analytics.bigdl.serving.utils.Conventions
 import org.apache.flink.api.common.functions.RichMapFunction
 import org.apache.flink.configuration.Configuration
 import org.apache.log4j.Logger

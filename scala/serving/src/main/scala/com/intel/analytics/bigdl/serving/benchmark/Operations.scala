@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.serving.engine
+package com.intel.analytics.bigdl.serving.benchmark
 
-import com.intel.analytics.bigdl.orca.inference.InferenceModel
-import com.intel.analytics.bigdl.serving.serialization.JsonInputDeserializer
-import com.intel.analytics.bigdl.serving.http.Supportive
-import com.intel.analytics.bigdl.serving.http.JsonUtil
-import com.intel.analytics.bigdl.serving.http.ServingTimerMetrics
-import org.apache.log4j.Logger
 import com.codahale.metrics.MetricRegistry
+import com.intel.analytics.bigdl.orca.inference.InferenceModel
+import com.intel.analytics.bigdl.serving.http.{JsonUtil, ServingTimerMetrics, Supportive}
+import com.intel.analytics.bigdl.serving.serialization.JsonInputDeserializer
 import scopt.OptionParser
 
 object TestUtils {
