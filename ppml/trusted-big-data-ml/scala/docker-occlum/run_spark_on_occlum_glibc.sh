@@ -46,7 +46,7 @@ build_spark() {
     occlum build
 }
 
-run_spark_test() {
+run_spark_pi() {
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run spark${NC}"
@@ -59,7 +59,7 @@ run_spark_test() {
                 -cp '/bin/conf/:/bin/jars/*' -Xmx10g org.apache.spark.deploy.SparkSubmit --jars /bin/examples/jars/spark-examples_2.12-3.1.2.jar,/bin/examples/jars/scopt_2.12-3.7.1.jar --class org.apache.spark.examples.SparkPi spark-internal
 }
 
-run_spark_bigdl(){
+run_spark_lenet_mnist(){
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run spark${NC}"
@@ -126,22 +126,16 @@ id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 
 arg=$1
 case "$arg" in
-    test)
-        run_spark_test
+    pi)
+        run_spark_pi
         cd ../
         ;;
-    bigdl)
-        run_spark_bigdl
+    lenet)
+        run_spark_lenet_mnist
         cd ../
         ;;
-    cifar)
+    resnet)
         run_spark_resnet_cifar
-        cd ../
-        ;;
-    spark)
-        init_instance spark
-        build_spark
-        run_spark
         cd ../
         ;;
 esac

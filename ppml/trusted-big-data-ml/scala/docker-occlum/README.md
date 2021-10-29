@@ -22,7 +22,7 @@ bash build-docker-image.sh
 To run Spark Pi example, start the docker container with:
 
 ``` bash
-bash start-spark-local.sh test
+bash start-spark-local.sh pi
 ```
 
 You can see Pi result in logs (`docker attach logs -f containerID`)
@@ -40,7 +40,7 @@ To train a model with PPML in BigDL, you need to prepare the data first. You can
 To run BigDL Lenet Mnist example, start the docker container with:
 
 ``` bash
-bash start-spark-local.sh bigdl
+bash start-spark-local.sh lenet
 ```
 
 The examples are run in the docker container. Attach it and see the results (`docker attach logs -f containerID`).
@@ -57,7 +57,7 @@ Download the Cifar-10 dataset from [here](https://www.cs.toronto.edu/~kriz/cifar
 To run BigDL ResNet CIFAR-10 example, start the docker container with:
 
 ``` bash
-bash start-spark-local.sh cifar
+bash start-spark-local.sh resnet
 ```
 
 The examples are run in the docker container. Attach it and see the results (`docker attach logs -f containerID`).
