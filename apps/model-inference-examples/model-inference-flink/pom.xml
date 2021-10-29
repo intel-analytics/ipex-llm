@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.intel.analytics.zoo</groupId>
+    <groupId>com.intel.analytics.bigdl</groupId>
     <artifactId>model-inference-flink</artifactId>
     <packaging>jar</packaging>
     <version>0.1.0-SNAPSHOT</version>
@@ -41,14 +41,24 @@
             <version>2.6</version>
         </dependency>
         <dependency>
-            <groupId>com.intel.analytics.zoo</groupId>
-            <artifactId>analytics-zoo-bigdl_0.10.0-spark_2.4.3</artifactId>
-            <version>0.10.0-SNAPSHOT</version>
+            <groupId>com.intel.analytics.bigdl</groupId>
+            <artifactId>bigdl-dllib-spark_2.4.6</artifactId>
+            <version>0.14.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.analytics.bigdl</groupId>
+            <artifactId>bigdl-orca-spark_2.4.6</artifactId>
+            <version>0.14.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.analytics.bigdl</groupId>
+            <artifactId>bigdl-serving-spark_2.4.6</artifactId>
+            <version>0.14.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.zoo</groupId>
             <artifactId>zoo-core-dist-all</artifactId>
-            <version>0.10.0-SNAPSHOT</version>
+            <version>0.14.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -71,7 +81,7 @@
             <version>1.7.2</version>
         </dependency>
         <dependency>
-            <groupId>com.intel.analytics.zoo</groupId>
+            <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>text-classification-training</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
@@ -158,7 +168,7 @@
                             </descriptorRefs>
                             <archive>
                                 <manifest>
-                                    <mainClass>com.intel.analytics.zoo.apps.model.inference.flink.TextClassification.TextClassificationStreaming</mainClass>
+                                    <mainClass>com.intel.analytics.bigdl.apps.model.inference.flink.TextClassification.TextClassificationStreaming</mainClass>
                                 </manifest>
                             </archive>
                         </configuration>

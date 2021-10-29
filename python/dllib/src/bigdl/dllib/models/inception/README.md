@@ -41,61 +41,20 @@ java -cp bigdl_source_folder/spark/dl/target/bigdl-VERSION-jar-with-dependencies
 It will generate the hadoop sequence files in the output folder.
 
 ## Train the Model
-* Spark standalone, example command
-```
-BigDL_HOME=...
-SPARK_HOME=...
-PYTHON_API_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
-BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
-PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
-
-${SPARK_HOME}/bin/spark-submit \
---master spark://... \
---executor-memory 150g \
---driver-memory 100g \
---executor-cores 4 \
---total-executor-cores 64  \
---properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
---jars ${BigDL_JAR_PATH} \
---py-files ${PYTHON_API_PATH} \
-${BigDL_HOME}/pyspark/bigdl/models/inception/inception.py \
--f hdfs://... \
---batchSize 1024 \
---learningRate 0.065 \
---weightDecay 0.0002 \
---checkpointIteration 1000 \
--i 90000 \
---checkpoint /models/inception
-```
 * Spark yarn client mode, example command
 ```
-BigDL_HOME=...
-SPARK_HOME=...
-PYTHON_API_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
-BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
-PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
-
-${SPARK_HOME}/bin/spark-submit \
---master yarn \
---deploy-mode client \
---executor-memory 150g \
---driver-memory 100g \
---executor-cores 4 \
---num-executors 16 \
---properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
---jars ${BigDL_JAR_PATH} \
---conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
---conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
---py-files ${PYTHON_API_PATH} \
-${BigDL_HOME}/pyspark/bigdl/models/inception/inception.py \
+python inception.py \
 -f hdfs://... \
 --batchSize 1024 \
 --learningRate 0.065 \
 --weightDecay 0.0002 \
 --checkpointIteration 1000 \
+--executor-memory 40g \
+--driver-memory 40g \
+--executor-cores 4 \
+--num-executors 16 \
 -i 90000 \
 --checkpoint /models/inception
-
 ```
 
 In the above commands
@@ -112,3 +71,7 @@ policy.
 * --weightDecay: weight decay.
 * -i: max iteration
 * --checkpointIteration: the checkpoint interval in iteration.
+* --executor-cores, number of executor cores
+* --num-executors, number of executors
+* --executor-memory, executor memory
+* --driver-memory, driver memory

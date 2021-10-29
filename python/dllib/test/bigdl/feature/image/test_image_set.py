@@ -17,7 +17,7 @@
 import pytest
 import cv2
 
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
 
 

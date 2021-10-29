@@ -560,7 +560,7 @@ class RayContext(object):
     def _start_cluster(self):
         ray_rdd = self.sc.range(0, self.num_ray_nodes,
                                 numSlices=self.num_ray_nodes)
-        from bigdl.dllib.utils.nncontext import ZooContext
+        from bigdl.dllib.nncontext import ZooContext
         if ZooContext.barrier_mode:
             print("Launching Ray on cluster with Spark barrier mode")
             # The first ip would be used to launch ray master.

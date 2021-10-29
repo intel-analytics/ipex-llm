@@ -17,7 +17,7 @@ from py4j.protocol import Py4JError
 
 from bigdl.orca.data.utils import *
 from bigdl.orca import OrcaContext
-from bigdl.dllib.utils.nncontext import init_nncontext, ZooContext
+from bigdl.dllib.nncontext import init_nncontext, ZooContext
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils import nest
 

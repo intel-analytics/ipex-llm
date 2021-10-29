@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.serving.utils
 import java.io.{File, FileInputStream}
 import java.util.LinkedHashMap
 
-import com.intel.analytics.bigdl.serving.ClusterServing
+import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper}
 import org.yaml.snakeyaml.Yaml
 
 object DeprecatedUtils {

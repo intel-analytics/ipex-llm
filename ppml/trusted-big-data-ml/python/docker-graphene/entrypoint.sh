@@ -109,10 +109,13 @@ case "$SPARK_K8S_CMD" in
       "$@" $R_PRIMARY $R_ARGS
     )
     ;;
-  executor)
+    executor)
     echo $SGX_ENABLED && \
     echo $SGX_MEM_SIZE && \
     echo $SGX_JVM_MEM_SIZE && \
+    echo $SPARK_EXECUTOR_MEMORY && \
+    unset PYTHONHOME && \
+    unset PYTHONPATH && \
     if [ "$SGX_ENABLED" == "false" ]; then
       /opt/jdk8/bin/java \
         -Xms$SPARK_EXECUTOR_MEMORY \
@@ -127,7 +130,7 @@ case "$SPARK_K8S_CMD" in
         --resourceProfileId $SPARK_RESOURCE_PROFILE_ID
     elif [ "$SGX_ENABLED" == "true" ]; then
       ./init.sh && \
-      graphene-sgx ./bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+      SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
         /opt/jdk8/bin/java \
           -Xms$SGX_JVM_MEM_SIZE \
           -Xmx$SGX_JVM_MEM_SIZE \
@@ -138,7 +141,7 @@ case "$SPARK_K8S_CMD" in
           --cores $SPARK_EXECUTOR_CORES \
           --app-id $SPARK_APPLICATION_ID \
           --hostname $SPARK_EXECUTOR_POD_IP \
-          --resourceProfileId $SPARK_RESOURCE_PROFILE_ID"
+          --resourceProfileId $SPARK_RESOURCE_PROFILE_ID" 1>&2
     fi
     ;;
 
@@ -149,4 +152,3 @@ esac
 
 # Execute the container CMD under tini for better hygiene
 #exec /usr/bin/tini -s -- "${CMD[@]}"
-

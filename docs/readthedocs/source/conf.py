@@ -21,7 +21,10 @@ import urllib
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
 sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath("../../../pyzoo/"))
+sys.path.insert(0, os.path.abspath("../../../python/friesian/src/"))
+sys.path.insert(0, os.path.abspath("../../../python/chronos/src/"))
+sys.path.insert(0, os.path.abspath("../../../python/dllib/src/"))
+sys.path.insert(0, os.path.abspath("../../../python/orca/src/"))
 
 
 # -- Project information -----------------------------------------------------

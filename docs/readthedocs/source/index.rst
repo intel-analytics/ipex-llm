@@ -3,9 +3,9 @@ BigDL Documentation
 
 ------
 
-`BigDL <https://github.com/intel-analytics/BigDL/>`_ makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the original `BigDL <https://github.com/intel-analytics/BigDL/tree/branch-0.14>`_ and `Analytics Zoo <https://github.com/intel-analytics/analytics-zoo>`_ projects, providing the following features:
+`BigDL <https://github.com/intel-analytics/BigDL/>`_ makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the `original BigDL <https://github.com/intel-analytics/BigDL/tree/branch-0.14>`_ and `Analytics Zoo <https://github.com/intel-analytics/analytics-zoo>`_ projects, providing the following features:
 
-* **DLlib**: distributed deep learning library for Apache Spark (including support for `Spark ML pipeline <doc/UseCase/nnframes.html>`_ and `Keras-like <doc/UseCase/keras-api.html>`_ APIs) 
+* `DLlib <doc/DLlib/Overview/dllib.html>`_: distributed deep learning library for Apache Spark
 * `Orca <doc/Orca/Overview/orca.html>`_: seamlessly scale out TensorFlow and PyTorch pipelines for distributed Big Data
 * `RayOnSpark <doc/Ray/Overview/ray.html>`_: run Ray programs directly on Big Data clusters
 * `Chronos <doc/Chronos/Overview/chronos.html>`_: scalable time series analysis using AutoML
@@ -39,26 +39,16 @@ BigDL Documentation
    doc/UserGuide/hadoop.md
    doc/UserGuide/k8s.md
    doc/UserGuide/databricks.md
-   doc/Ray/Overview/ray.md
-   doc/Chronos/Overview/chronos.md
-   doc/PPML/Overview/ppml.md
    doc/UserGuide/develop.md
    
 .. toctree::
    :maxdepth: 1
-   :caption: Common Use Case
-   
-   doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.md
-   doc/UseCase/spark-dataframe.md
-   doc/UseCase/xshards-pandas.md
-   doc/Chronos/QuickStart/chronos-autotsest-quickstart.md
-   doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.md
-   doc/Chronos/QuickStart/chronos-anomaly-detector.md
-   doc/UseCase/keras-api.md
-   doc/UseCase/nnframes.md
-   doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.md
-   doc/Orca/QuickStart/orca-autoxgboost-quickstart.md
-   
+   :caption: DLlib Overview
+
+   doc/DLlib/Overview/dllib.md
+   doc/DLlib/Overview/keras-api.md
+   doc/DLlib/Overview/nnframes.md
+
 .. toctree::
    :maxdepth: 1
    :caption: Orca Overview
@@ -68,7 +58,38 @@ BigDL Documentation
    doc/Orca/Overview/data-parallel-processing.md
    doc/Orca/Overview/distributed-training-inference.md
    doc/Orca/Overview/distributed-tuning.md
+   doc/Ray/Overview/ray.md
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Chronos Overview
+
+   doc/Chronos/Overview/chronos.md
+   doc/Chronos/Overview/data_processing_feature_engineering.md
+   doc/Chronos/Overview/forecasting.md
+   doc/Chronos/Overview/anomaly_detection.md
+   doc/Chronos/Overview/simulation.md
+   doc/Chronos/Overview/useful_functionalities.md
+   doc/Chronos/QuickStart/chronos-autotsest-quickstart.md
+   doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.md
+   doc/Chronos/QuickStart/chronos-anomaly-detector.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: PPML Overview
+
+   doc/PPML/Overview/ppml.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Common Use Case
+   
+   doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.md
+   doc/UseCase/spark-dataframe.md
+   doc/UseCase/xshards-pandas.md
+   doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.md
+   doc/Orca/QuickStart/orca-autoxgboost-quickstart.md
+   
 .. toctree::
    :maxdepth: 1
    :caption: Python API

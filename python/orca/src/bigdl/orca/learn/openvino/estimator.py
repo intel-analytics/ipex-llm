@@ -22,7 +22,7 @@ from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils import nest
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 
 from openvino.inference_engine import IECore
 import numpy as np

@@ -18,9 +18,8 @@
 package com.intel.analytics.bigdl.serving
 
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
-import com.intel.analytics.bigdl.serving.engine.{FlinkInference, FlinkRedisSink, FlinkRedisSource}
-import com.intel.analytics.bigdl.serving.pipeline.RedisUtils
-import com.intel.analytics.bigdl.serving.utils.{ClusterServingHelper, ConfigParser, Conventions}
+import com.intel.analytics.bigdl.serving.flink.{FlinkInference, FlinkKafkaSink, FlinkKafkaSource, FlinkRedisSink, FlinkRedisSource}
+import com.intel.analytics.bigdl.serving.utils.{ConfigParser, Conventions, RedisUtils}
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 import org.apache.log4j.Logger
 import redis.clients.jedis.{JedisPool, JedisPoolConfig}
@@ -60,9 +59,16 @@ object ClusterServing {
     // Uncomment this line if you need to check predict time in debug
     // Logger.getLogger("com.intel.analytics.zoo").setLevel(Level.DEBUG)
     streamingEnv.setParallelism(helper.modelParallelism)
-    streamingEnv.addSource(new FlinkRedisSource())
-      .map(new FlinkInference())
-      .addSink(new FlinkRedisSink(helper))
+    if (helper.queueUsed == "kafka") {
+      streamingEnv.addSource(new FlinkKafkaSource())
+        .map(new FlinkInference())
+        .addSink(new FlinkKafkaSink(helper))
+    } else {
+      streamingEnv.addSource(new FlinkRedisSource())
+        .map(new FlinkInference())
+        .addSink(new FlinkRedisSink(helper))
+    }
+
 
     logger.info(s"Cluster Serving Flink job graph details \n${streamingEnv.getExecutionPlan}")
     streamingEnv.executeAsync()

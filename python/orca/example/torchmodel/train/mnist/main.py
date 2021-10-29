@@ -21,8 +21,8 @@ import torch.nn.functional as F
 from torchvision import datasets, transforms
 from bigdl.orca.torch import TorchModel, TorchLoss, TorchOptim
 from bigdl.dllib.estimator import *
-from bigdl.optim.optimizer import SGD, Adam
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.optim.optimizer import SGD, Adam
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.dllib.keras.metrics import Accuracy
 from bigdl.dllib.utils.utils import detect_conda_env_name
@@ -114,7 +114,7 @@ def main():
     zoo_estimator = Estimator(zoo_model, optim_methods=zoo_optim)
     train_featureset = FeatureSet.pytorch_dataloader(train_loader)
     test_featureset = FeatureSet.pytorch_dataloader(test_loader)
-    from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
+    from bigdl.dllib.optim.optimizer import MaxEpoch, EveryEpoch
     zoo_estimator.train_minibatch(train_featureset, zoo_criterion,
                                   end_trigger=MaxEpoch(args.epochs),
                                   checkpoint_trigger=EveryEpoch(),
