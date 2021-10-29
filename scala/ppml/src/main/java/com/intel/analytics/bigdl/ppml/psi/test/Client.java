@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class Client {
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+    private static final Logger logger = LoggerFactory.getLogger(PSIExample.class);
 
     public static void main(String[] args) throws Exception {
 
