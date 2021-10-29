@@ -1,7 +1,6 @@
 #!/bin/bash
 set -x
-#apt-get update
-#apt-get install -y openjdk-11-jdk
+
 
 BLUE='\033[1;34m'
 NC='\033[0m'
@@ -42,9 +41,9 @@ build_spark() {
     cp -rf /etc/hosts image/etc/
     cp -rf /etc/hostname image/etc/
 	echo "127.0.0.1 occlum-node" >> image/etc/hosts
-    cat image/etc/hosts
-    cat image/etc/resolv.conf
-    cat image/etc/hostname
+    # cat image/etc/hosts
+    # cat image/etc/resolv.conf
+    # cat image/etc/hostname
     cp -rf /etc/group image/etc/
     occlum build
 }

@@ -34,7 +34,9 @@ build_spark() {
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc
     cp $occlum_glibc/libnss_files.so.2 image/$occlum_glibc
     cp -rf ../spark/* image/bin/
-    cp -rf ../hosts image/etc/
+    cp -rf /etc/hosts image/etc/
+    echo "127.0.0.1 occlum-node" >> image/etc/hosts
+    cp -rf /etc/hostname image/etc/
     cp -rf /etc/ssl image/etc/
     cp -rf /etc/passwd image/etc/
     cp -rf /etc/group image/etc/

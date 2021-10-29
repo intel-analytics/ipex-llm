@@ -33,7 +33,9 @@ build_flink() {
     cp -rf /opt/flink-${FLINK_VERSION}/* image/bin/
     cp -rf /opt/flink-${FLINK_VERSION}/conf image/opt/
     cp -rf /etc/java-11-openjdk image/etc/
-    cp -rf /opt/hosts image/etc/
+    cp -rf /etc/hosts image/etc/
+    echo "127.0.0.1 occlum-node" >> image/etc/hosts
+    cp -rf /etc/hostname image/etc/
     # build occlum
     occlum build
 }

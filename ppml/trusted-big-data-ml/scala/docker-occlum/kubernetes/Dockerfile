@@ -14,18 +14,19 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 ARG SPARK_VERSION=3.1.2
-ENV SPARK_VERSION	${SPARK_VERSION}
+ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ENV SPARK_VERSION=${SPARK_VERSION}
+ENV BIGDL_VERSION=${BIGDL_VERSION}
+ENV BIGDL_HOME=/opt/bigdl-${BIGDL_VERSION}
 
 # Download & prepare Spark 3.0.0
 WORKDIR /opt
 RUN wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz -P /opt/ && \
     tar -zxvf /opt/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv /opt/spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
-    rm /opt/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    cp -r /opt/spark/examples /bin/examples && \
-    cp -r /opt/spark/kubernetes/tests /opt/spark/tests
+    rm /opt/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
 
-# Remove fork with libhadoop.so and spark-network-common_2.12-3.0.0.jar
+# Remove fork with libhadoop.so and spark-network-common_2.12-*.jar
 RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so -P /lib/ && \
     rm -f /opt/spark/jars/spark-network-common_2.12-${SPARK_VERSION}.jar && \
     wget -O /opt/spark/jars/spark-network-common_2.12-${SPARK_VERSION}.jar https://master.dl.sourceforge.net/project/analytics-zoo/analytics-zoo-data/spark-network-common_2.12-${SPARK_VERSION}.jar
