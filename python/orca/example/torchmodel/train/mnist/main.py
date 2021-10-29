@@ -20,12 +20,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 from bigdl.orca.torch import TorchModel, TorchLoss, TorchOptim
+from bigdl.orca.common import *
 from bigdl.dllib.estimator import *
 from bigdl.dllib.optim.optimizer import SGD, Adam
-from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.dllib.keras.metrics import Accuracy
-from bigdl.dllib.utils.utils import detect_conda_env_name
 
 
 class Net(nn.Module):
@@ -64,6 +63,9 @@ def main():
                         help='random seed (default: 1)')
     parser.add_argument('--save-model', action='store_true', default=False,
                         help='For Saving the current Model')
+    parser.add_argument('--deploy-mode', default="local",
+                        help='supported deploy mode is local, yarn-client, yarn-cluster')
+
     args = parser.parse_args()
 
     torch.manual_seed(args.seed)
@@ -84,24 +86,11 @@ def main():
         batch_size=args.test_batch_size, shuffle=False)
 
     # init on yarn when HADOOP_CONF_DIR and ZOO_CONDA_NAME is provided.
-    if os.environ.get('HADOOP_CONF_DIR') is None:
-        sc = init_spark_on_local(cores=1, conf={"spark.driver.memory": "20g"})
+    if args.deploy_mode == "local":
+        sc = init_orca_context()
     else:
-        num_executors = 2
-        num_cores_per_executor = 4
-        hadoop_conf_dir = os.environ.get('HADOOP_CONF_DIR')
-        zoo_conda_name = detect_conda_env_name()  # auto detect current conda env name
-        sc = init_spark_on_yarn(
-            hadoop_conf=hadoop_conf_dir,
-            conda_name=zoo_conda_name,
-            num_executors=num_executors,
-            executor_cores=num_cores_per_executor,
-            executor_memory="2g",
-            driver_memory="10g",
-            driver_cores=1,
-            conf={"spark.rpc.message.maxSize": "1024",
-                  "spark.task.maxFailures":  "1",
-                  "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+        sc = init_orca_context(cluster_mode=args.deploy_mode,
+                cores=2, memory="2g", num_nodes=4)
 
     model = Net()
     model.train()
