@@ -65,7 +65,6 @@ public class TFNetNative {
     private static String handleCondaLibPath() {
         String pyspark_python = System.getenv("PYSPARK_PYTHON"); 
         String pyLibBasePath = pyspark_python.replace("bin/python", "lib");
-        System.out.println(pyLibBasePath);
         File pyLibBase = new File(pyLibBasePath);
         if(!pyLibBase.exists()){
             return null;
@@ -111,11 +110,10 @@ public class TFNetNative {
                         libName = System.mapLibraryName(LIBS[i]);
                     }
                     String resourceName = makeResourceName(libName);
-                    System.out.println(resourceName);
+                    System.out.println("Try to locate " + resourceName);
                     File shareLibFile = new File(libSharePath(), resourceName);
-                    System.out.println(shareLibFile.getPath());
                     if (shareLibFile.exists()) {
-                        System.out.println("got shared path");
+                        System.out.println("Got shared path at " + shareLibFile.getPath());
                         System.load(shareLibFile.getPath());
                     } else {
                         System.load(extractResource(getResource(resourceName), libName, tempDirectory));
