@@ -6,4 +6,4 @@ sudo docker run -it \
 	-v data:/opt/data \
 	-e LOCAL_IP=$LOCAL_IP \
 	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT \
-	bash /ppml/docker-occlum/run_spark_on_occlum_glibc.sh $1 && tail -f /dev/null
+	bash /opt/run_spark_on_occlum_glibc.sh $1 && tail -f /dev/null
