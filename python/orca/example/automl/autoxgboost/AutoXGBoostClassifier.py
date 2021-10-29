@@ -50,7 +50,7 @@ if __name__ == '__main__':
                           cores=opt.cores,
                           init_ray_on_spark=True)
     else:
-        init_orca_context(cores=opt.cores, init_ray_on_spark=True)
+        init_orca_context(cluster_mode=opt.cluster_mode,cores=opt.cores, init_ray_on_spark=True)
 
     input_cols = [
         "Year",
@@ -153,3 +153,4 @@ if __name__ == '__main__':
     accuracy = Evaluator.evaluate(metric="accuracy", y_true=y_val, y_pred=y_hat)
     print("Evaluate: accuracy is", accuracy)
     stop_orca_context()
+
