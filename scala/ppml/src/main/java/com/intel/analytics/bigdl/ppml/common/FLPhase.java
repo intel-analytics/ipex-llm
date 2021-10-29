@@ -14,30 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml;
+package com.intel.analytics.bigdl.ppml.common;
 
-public class FLHelper {
-    int worldSize = 1;
-    // Server property
-    int serverPort = 8980;
-
-    // Client property
-    String clientTarget = "localhost:8980";
-    String taskID = "taskID";
-
-    public void setWorldSize(int worldSize) {
-        this.worldSize = worldSize;
-    }
-
-    public void setServerPort(int serverPort) {
-        this.serverPort = serverPort;
-    }
-
-    public void setClientTarget(String clientTarget) {
-        this.clientTarget = clientTarget;
-    }
-
-    public void setTaskID(String taskID) {
-        this.taskID = taskID;
-    }
+public enum FLPhase {
+    TRAIN,
+    EVAL,
+    PREDICT
 }
