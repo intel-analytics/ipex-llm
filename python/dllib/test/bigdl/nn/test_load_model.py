@@ -25,7 +25,7 @@ from bigdl.dllib.keras.converter import DefinitionLoader
 
 np.random.seed(1337)  # for reproducibility
 from test.bigdl.test_utils import BigDLTestCase, TestModels
-from bigdl.dllib.examples.keras.keras_utils import *
+from bigdl.dllib.nn.keras.keras_utils import *
 import keras.backend as K
 
 

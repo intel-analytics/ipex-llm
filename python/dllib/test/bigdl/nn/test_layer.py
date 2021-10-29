@@ -25,7 +25,7 @@ from keras.layers import Dense, Input
 from keras.regularizers import l1, l2, l1l2
 from bigdl.dllib.keras.converter import *
 from test.bigdl.test_utils import BigDLTestCase
-from bigdl.dllib.examples.keras.keras_utils import *
+from bigdl.dllib.nn.keras.keras_utils import *
 
 
 class TestLayer(BigDLTestCase):
