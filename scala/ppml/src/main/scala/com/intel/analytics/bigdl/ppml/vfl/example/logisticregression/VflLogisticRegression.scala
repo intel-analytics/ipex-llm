@@ -140,7 +140,7 @@ object VflLogisticRegression {
                       rowKeyName: String = null,
                       learningRate: Float = 0.005f,
                       batchSize: Int = 4)
-    val parser = new OptionParser[Params]("Text Classification Example") {
+    val parser: OptionParser[Params] = new OptionParser[Params]("VFL Logistic Regression") {
       opt[String]('d', "dataPath")
         .text("data path to load")
         .action((x, params) => params.copy(dataPath = x))

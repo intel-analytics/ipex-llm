@@ -29,7 +29,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
 
-import com.intel.analytics.bigdl.ppml.vfl.service.LogisticRegressionServiceImpl
 
 
 /**
@@ -58,10 +57,12 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
     if (flHelper != null) port = flHelper.serverPort
     // start all services without providing service list
     serverServices.add(new PSIServiceImpl)
-    val lrImpl = new NNServiceImpl(flHelper.worldSize)
-    lrImpl.setAggregator(VflAggregator(1, Sigmoid[Float](),
-      null, BCECriterion[Float](), Array(new Top1Accuracy())))
-    serverServices.add(lrImpl)
+    val nnService = new NNServiceImpl()
+    val lrAggregator = VflAggregator(1, Sigmoid[Float](),
+      null, BCECriterion[Float](), Array(new Top1Accuracy()))
+    lrAggregator.setClientNum(flHelper.worldSize)
+    nnService.setAggregator(lrAggregator)
+    serverServices.add(nnService)
 
 
   }
