@@ -7,7 +7,7 @@ We recommend you to use Anaconda to prepare the environment, especially if you w
 ```bash
 conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
 conda activate my_env
-pip install --pre --upgrade bigdl-chronos[all]
+pip install bigdl-chronos
 ```
 
 ## Prepare data
