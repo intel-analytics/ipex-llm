@@ -33,4 +33,3 @@ RUN cd /opt && \
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
-ADD ./hosts /opt/hosts

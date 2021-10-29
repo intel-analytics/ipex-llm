@@ -16,4 +16,4 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     -e CORE_NUM=30 \
     intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:0.14.0-SNAPSHOT \
-    bash  -c "cd /opt/ && ./start-all.sh && tail -f /dev/null"
+    bash -c "cd /opt/ && ./start-all.sh && tail -f /dev/null"

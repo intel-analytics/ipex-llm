@@ -58,7 +58,7 @@ run_spark_pi() {
                 -Dos.name="Linux" \
                 -cp '/bin/conf/:/bin/jars/*' \
                 -Xmx10g org.apache.spark.deploy.SparkSubmit \
-                --jars ${SPARK_HOME}/examples/jars/spark-examples_2.12-3.1.2.jar,${SPARK_HOME}/examples/jars/scopt_2.12-3.7.1.jar \
+                --jars /bin/examples/jars/spark-examples_2.12-3.1.2.jar,/bin/examples/jars/scopt_2.12-3.7.1.jar \
                 --class org.apache.spark.examples.SparkPi spark-internal
 }
 

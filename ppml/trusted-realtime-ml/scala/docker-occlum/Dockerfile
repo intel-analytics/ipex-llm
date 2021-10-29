@@ -133,11 +133,6 @@ ADD ./hosts /opt/hosts
 ADD ./start-cluster-serving-job.sh /opt/start-cluster-serving-job.sh
 ADD ./start-http-frontend.sh /opt/start-http-frontend.sh
 ADD ./start-all.sh /opt/start-all.sh
-# PPML Start & Stop shell
-ADD ./start-local-cluster-serving.sh /opt/start-local-cluster-serving.sh
-ADD ./start-distributed-cluster-serving.sh /opt/start-distributed-cluster-serving.sh
-ADD ./stop-distributed-cluster-serving.sh /opt/stop-distributed-cluster-serving.sh
-
 
 RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-redis.sh && \
@@ -146,6 +141,4 @@ RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-flink-taskmanager.sh && \
     chmod a+x /opt/start-cluster-serving-job.sh && \
     chmod a+x /opt/start-http-frontend.sh && \
-    chmod a+x /opt/start-local-cluster-serving.sh && \
-    chmod a+x /opt/start-distributed-cluster-serving.sh && \
-    chmod a+x /opt/stop-distributed-cluster-serving.sh
+    chmod a+x /opt/start-all.sh
