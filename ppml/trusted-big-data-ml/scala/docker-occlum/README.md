@@ -33,7 +33,7 @@ Pi is roughly 3.1436957184785923
 
 ## BigDL Lenet Mnist Example
 
-To train a model with PPML in BigDL, you need to prepare the data first. You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). There are four files in total. `train-images-idx3-ubyte` contains train images; `train-labels-idx1-ubyte` is the train label file; `t10k-images-idx3-ubyte` has validation images; `t10k-labels-idx1-ubyte` contains validation labels. Unzip all the files and put them in a new directory `data`.
+To train a model with PPML in BigDL, you need to prepare the data first. You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). There are 5 files in total. `train-images-idx3-ubyte` contains train images; `train-labels-idx1-ubyte` is the train label file; `t10k-images-idx3-ubyte` has validation images; `t10k-labels-idx1-ubyte` contains validation labels. Unzip all the files and put them in a new directory `data`.
 
 By default, `data` dir will be mounted to `/opt/data`into container. You can change data path in `start-spark-local.sh`.
 
@@ -48,7 +48,7 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 ## BigDL Resnet Cifar-10 Example
 
-Download the Cifar-10 dataset from [here](https://www.cs.toronto.edu/~kriz/cifar.html). The dataset contains two sub-directories, namely, `train` and `val`. Put all the files and put them in a new directory `data`.
+Download the Cifar-10 dataset from [here](https://www.cs.toronto.edu/~kriz/cifar.html). The dataset contains 5 files, i.e, `data_batch_1.bin`, `data_batch_2.bin`, `data_batch_3.bin`, `data_batch_4.bin`, `data_batch_5.bin` and `test_batch.bin`. Put all the files in a new directory `data`.
 
 To run BigDL ResNet CIFAR-10 example, start the docker container with:
 
