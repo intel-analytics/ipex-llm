@@ -15,12 +15,14 @@
 #
 
 import os
+import sys
 import platform
 
 from pyspark import SparkContext
 from bigdl.dllib.nncontext import init_nncontext, init_spark_conf
 from bigdl.dllib.utils.utils import detect_python_location, pack_penv
 from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath, get_zoo_bigdl_classpath_on_driver
+from bigdl.dllib.utils.engine import get_bigdl_jars
 
 
 class SparkRunner:
@@ -126,6 +128,87 @@ class SparkRunner:
             if conda_name and penv_archive and pack_env:
                 os.remove(penv_archive)
         return sc
+
+    def init_spark_on_yarn_cluster(self,
+                           hadoop_conf,
+                           conda_name,
+                           num_executors,
+                           executor_cores,
+                           executor_memory="2g",
+                           driver_cores=4,
+                           driver_memory="1g",
+                           extra_executor_memory_for_ray=None,
+                           extra_python_lib=None,
+                           penv_archive=None,
+                           additional_archive=None,
+                           hadoop_user_name="root",
+                           spark_yarn_archive=None,
+                           conf=None,
+                           jars=None):
+        print("Initializing job for yarn-cluster mode")
+        executor_python_env = "python_env"
+        os.environ["HADOOP_CONF_DIR"] = hadoop_conf
+        os.environ["HADOOP_USER_NAME"] = hadoop_user_name
+
+        pack_env = False
+        assert penv_archive or conda_name, \
+            "You should either specify penv_archive or conda_name explicitly"
+        try:
+
+            if not penv_archive:
+                penv_archive = pack_penv(conda_name, executor_python_env)
+                pack_env = True
+
+            archive = "{}#{}".format(penv_archive, executor_python_env)
+            if additional_archive:
+                archive = archive + "," + additional_archive
+            submit_args = "--master yarn --deploy-mode cluster"
+            submit_args = submit_args + " --archives {}".format(archive)
+            submit_args = submit_args + gen_submit_args(
+                driver_cores, driver_memory, num_executors, executor_cores,
+                executor_memory, extra_python_lib, jars)
+            submit_args = submit_args + " --jars " + ",".join(get_bigdl_jars())
+
+            conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
+                                         executor_cores, executor_memory,
+                                         extra_executor_memory_for_ray)
+            conf["spark.yarn.appMasterEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
+            conf["spark.yarn.appMasterEnv.OnAppMaster"] = "True"
+            conf["spark.yarn.appMasterEnv.PYTHONHOME"] = executor_python_env
+            conf["spark.executorEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
+            py_version = ".".join(platform.python_version().split(".")[0:2])
+            preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
+            ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" +\
+                py_version + "/lib-dynload"
+            if "spark.executor.extraLibraryPath" in conf:
+                ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
+            conf.update({"spark.scheduler.minRegisteredResourcesRatio": "1.0",
+                         "spark.executorEnv.PYTHONHOME": executor_python_env,
+                         "spark.executor.extraLibraryPath": ld_path,
+                         "spark.executorEnv.LD_PRELOAD": preload_so})
+            if spark_yarn_archive:
+                conf["spark.yarn.archive"] = spark_yarn_archive
+            zoo_bigdl_path_on_executor = ":".join(
+                list(get_executor_conda_zoo_classpath(executor_python_env)))
+            if "spark.executor.extraClassPath" in conf:
+                conf["spark.executor.extraClassPath"] = "{}:{}".format(
+                    zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
+            else:
+                conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
+            conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
+
+            print(submit_args)
+            print(conf)
+            conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
+            sys_args = " ".join(sys.argv)
+            print(sys_args)
+            submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
+            print(submit_commnad)
+            return os.system(submit_commnad)
+        finally:
+            if conda_name and penv_archive and pack_env:
+                os.remove(penv_archive)
+            return 1
 
     def init_spark_standalone(self,
                               num_executors,

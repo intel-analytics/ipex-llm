@@ -165,7 +165,7 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
     across the cluster if necessary).
 
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "k8s-client", "standalone" and "spark-submit". Default to be "local".
+           "yarn-cluster", "k8s-client", "standalone" and "spark-submit". Default to be "local".
 
            For "spark-submit", you are supposed to use spark-submit to submit the application.
            In this case, please set the Spark configurations through command line options or
@@ -206,9 +206,6 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
         from bigdl.dllib.nncontext import init_spark_on_local
         sc = init_spark_on_local(cores, **spark_args)
     elif cluster_mode.startswith("yarn"):  # yarn or yarn-client
-        if cluster_mode == "yarn-cluster":
-            raise ValueError('For yarn-cluster mode, please set cluster_mode to "spark-submit" '
-                             'and submit the application via spark-submit instead')
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         if not hadoop_conf:
             assert "hadoop_conf" in kwargs,\
@@ -222,8 +219,14 @@ def init_orca_context(cluster_mode="local", cores=2, memory="2g", num_nodes=1,
                     "hadoop_user_name", "spark_yarn_archive", "jars"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
-        from bigdl.dllib.nncontext import init_spark_on_yarn
-        sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
+        from bigdl.dllib.nncontext import init_spark_on_yarn, init_spark_on_yarn_cluster
+        if cluster_mode == "yarn-cluster":
+            sc = init_spark_on_yarn_cluster(hadoop_conf=hadoop_conf,
+                                conda_name=conda_env_name,
+                                num_executors=num_nodes, executor_cores=cores,
+                                executor_memory=memory, **spark_args)
+        else:
+            sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
                                 conda_name=conda_env_name,
                                 num_executors=num_nodes, executor_cores=cores,
                                 executor_memory=memory, **spark_args)
