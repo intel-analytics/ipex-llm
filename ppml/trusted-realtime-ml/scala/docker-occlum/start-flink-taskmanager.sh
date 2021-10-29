@@ -37,12 +37,13 @@ run_taskmanager() {
     echo -e "${BLUE}logfile=$log${NC}"
     # start task manager in occlum
     occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
-    -XX:+UseG1GC -Xmx25g -Xms6g -XX:MaxDirectMemorySize=3g -XX:MaxMetaspaceSize=4g \
+    -XX:+UseG1GC -Xmx10g -Xms10g -XX:MaxDirectMemorySize=4g -XX:MaxMetaspaceSize=256m \
     -Dos.name=Linux \
     -XX:ActiveProcessorCount=${core_num} \
     -Dlog.file=$log \
-    -Dlog4j.configuration=file:/opt/conf/log4j.properties \
+    -Dlog4j.configurationFile=file:/opt/conf/log4j.properties \
     -Dlogback.configurationFile=file:/opt/conf/logback.xml \
+    -Djdk.lang.Process.launchMechanism=posix_spawn \
     -classpath /bin/lib/* org.apache.flink.runtime.taskexecutor.TaskManagerRunner \
     -Dorg.apache.flink.shaded.netty4.io.netty.tryReflectionSetAccessible=true \
     -Dorg.apache.flink.shaded.netty4.io.netty.eventLoopThreads=${core_num} \

@@ -2,9 +2,15 @@
 
 Please pay attention to IP and path etc.. They should be changed to your own server IP/path.
 
-## How To Build
+## Prerequisite
 
-Before running the following command, please modify the paths in `build-docker-image.sh` first. Then build docker image by running this command:
+Pull image from Dockerhub
+
+```bash
+docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:0.14.0-SNAPSHOT
+```
+
+If Dockerhub is not accessable, we can build docker image with Dockerfile. Please modify the paths in `build-docker-image.sh`, then build docker image by running this command:
 
 ```bash
 ./build-docker-image.sh
