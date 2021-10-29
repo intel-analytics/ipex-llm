@@ -53,9 +53,9 @@ public class TFNetNative {
     .toURI()).getParent();
         String libPath = new File(jarPath, "../../tflibs/").getPath();
         File libPathDir = new File(libPath);
-        if(libPathDir.exists()){ // Orca is installed in conda env.
+        if (libPathDir.exists()) { // Orca is installed in conda env.
             return libPath;
-        }else{ // Orca is installed in a local directory.
+        } else { // Orca is installed in a local directory.
             return handleCondaLibPath();
         }
     }
@@ -66,11 +66,11 @@ public class TFNetNative {
         String pyspark_python = System.getenv("PYSPARK_PYTHON"); 
         String pyLibBasePath = pyspark_python.replace("bin/python", "lib");
         File pyLibBase = new File(pyLibBasePath);
-        if(!pyLibBase.exists()){
+        if (!pyLibBase.exists()) {
             return null;
         }
         String pyVerSpecName = null;
-        for(File f:pyLibBase.listFiles()){
+        for (File f:pyLibBase.listFiles()) {
             if(f.isDirectory() && f.getName().startsWith("python3.")){
                 pyVerSpecName = f.getName();
                 break;
