@@ -20,12 +20,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
 from bigdl.orca.torch import TorchModel, TorchLoss, TorchOptim
+from bigdl.orca.common import *
 from bigdl.dllib.estimator import *
 from bigdl.dllib.optim.optimizer import SGD, Adam
-from bigdl.orca.common import *
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.dllib.keras.metrics import Accuracy
-from bigdl.dllib.utils.utils import detect_conda_env_name
 
 
 class Net(nn.Module):
