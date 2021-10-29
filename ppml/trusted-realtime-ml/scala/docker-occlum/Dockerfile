@@ -42,6 +42,11 @@ RUN apt-get update && \
         ca-certificates wget unzip apt-utils curl && \
     apt-get clean
 
+# scala
+RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
+    (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
+    rm /scala-2.11.8.tgz
+
 # Download flink
 RUN cd /opt && \
     wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
@@ -90,7 +95,7 @@ RUN mkdir -p ${BIGDL_HOME}
 COPY --from=redis-tls /opt/ssl /opt/ssl
 COPY --from=redis-tls /opt/redis /opt/redis
 COPY --from=redis-tls /opt/occlum/glibc /opt/occlum/glibc
-
+COPY --from=bigdl /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=bigdl /opt/flink-${FLINK_VERSION} /opt/flink-${FLINK_VERSION}
 COPY --from=bigdl /opt/resnet50 /opt/resnet50
 COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar
