@@ -38,7 +38,7 @@ from bigdl.orca.learn.trigger import EveryEpoch
 
 parser = argparse.ArgumentParser(description='PyTorch Cifar10 Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The cluster mode, such as local, yarn or k8s.')
+                    help='The cluster mode, such as local, yarn, spark-submit or k8s.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
                          'bigdl and torch_distributed are supported')
@@ -52,6 +52,8 @@ elif args.cluster_mode == "yarn":
         conf={"spark.rpc.message.maxSize": "1024",
               "spark.task.maxFailures": "1",
               "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+elif args.cluster_mode == "spark-submit":
+    init_orca_context(cluster_mode="spark-submit")
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -170,3 +172,4 @@ else:
                               " but got {}".format(args.backend))
 
 stop_orca_context()
+

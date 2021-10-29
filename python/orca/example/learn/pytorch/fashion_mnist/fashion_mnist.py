@@ -108,7 +108,7 @@ def optimizer_creator(model, config):
 def main():
     parser = argparse.ArgumentParser(description='PyTorch Tensorboard Example')
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The cluster mode, such as local, yarn or k8s.')
+                        help='The cluster mode, such as local, yarn, spark-submit or k8s.')
     parser.add_argument('--backend', type=str, default="bigdl",
                         help='The backend of PyTorch Estimator; '
                              'bigdl and torch_distributed are supported.')
@@ -118,6 +118,8 @@ def main():
         init_orca_context()
     elif args.cluster_mode == "yarn":
         init_orca_context(cluster_mode=args.cluster_mode, cores=4, num_nodes=2)
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode=args.cluster_mode)
 
     tensorboard_dir = "runs"
     writer = SummaryWriter(tensorboard_dir + '/fashion_mnist_experiment_1')
@@ -188,3 +190,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
