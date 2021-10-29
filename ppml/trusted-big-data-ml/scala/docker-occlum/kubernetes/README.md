@@ -1,6 +1,6 @@
 # Spark 3.1.2 on K8S with Occlum
 
-## Pre-prerequisites
+## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
 * Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-k8s:0.14.0-SNAPSHOT`
