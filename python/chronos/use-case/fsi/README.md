@@ -12,7 +12,7 @@ This use case example contains 2 notebook:
 
 ### Install
 
-You can refer to Chronos installation document [here](https://analytics-zoo.github.io/master/#Chronos/tutorials/LSTMForecasterAndMTNetForecaster/#step-0-prepare-environment).
+You can refer to Chronos installation document [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install).
 
 ### Prepare dataset
 - run `get_data.sh` to download the full dataset. It will download daily stock price of S&P500 stocks during 2013-2018 into data folder, preprocess and merge them into a single csv file `all_stocks_5yr.csv`.
