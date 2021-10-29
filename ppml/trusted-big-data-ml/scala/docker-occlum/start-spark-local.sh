@@ -1,6 +1,6 @@
 sudo docker run -it \
 	--net=host \
-	--name=occlum-spark-local \
+	--name=bigdl-ppml-trusted-big-data-ml-scala-occlum \
 	--cpuset-cpus 10-14 \
 	--device=/dev/sgx \
 	-v data:/opt/data \

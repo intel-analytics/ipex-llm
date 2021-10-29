@@ -25,7 +25,7 @@ To run Spark Pi example, start the docker container with:
 bash start-spark-local.sh pi
 ```
 
-You can see Pi result in logs (`docker attach logs -f containerID`)
+You can see Pi result in logs (`docker attach logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`)
 
 ```bash
 Pi is roughly 3.1436957184785923
@@ -43,7 +43,7 @@ To run BigDL Lenet Mnist example, start the docker container with:
 bash start-spark-local.sh lenet
 ```
 
-The examples are run in the docker container. Attach it and see the results (`docker attach logs -f containerID`).
+The examples are run in the docker container. Attach it and see the results (`docker attach logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`).
 
 ```bash
 2021-10-29 01:57:48 INFO  DistriOptimizer$:431 - [Epoch 1 40/60000][Iteration 10][Wall Clock 14.768519551s] Trained 4.0 records in 0.348563287 seconds. Throughput is 11.475678 records/second. Loss is 2.4064577. Sequentialc3a85127s hyper parameters: Current learning rate is 0.05. Current dampening is 1.7976931348623157E308.
@@ -60,7 +60,7 @@ To run BigDL ResNet CIFAR-10 example, start the docker container with:
 bash start-spark-local.sh resnet
 ```
 
-The examples are run in the docker container. Attach it and see the results (`docker attach logs -f containerID`).
+The examples are run in the docker container. Attach it and see the results (`docker attach logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`).
 
 
 ```bash
