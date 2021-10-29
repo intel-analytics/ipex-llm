@@ -3,7 +3,7 @@ ARG SPARK_VERSION=3.1.2
 ARG FLINK_VERSION=1.11.3
 
 # stage.1 Redis
-FROM occlum/occlum:0.23.7-ubuntu18.04 as redis-tls
+FROM occlum/occlum:0.24.0-ubuntu18.04 as redis-tls
 
 WORKDIR /opt
 
