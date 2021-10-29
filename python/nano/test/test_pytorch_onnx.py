@@ -23,16 +23,16 @@ import torch
 from torch.nn import functional as F
 from torch import nn
 from pytorch_lightning.core.lightning import LightningModule
-from bigdl.nano.pytorch.trainer import Trainer
 from torch.optim import Adam
 from torch.utils.data import DataLoader, TensorDataset
 
-from bigdl.nano.pytorch.onnx import onnxruntime
+import bigdl.nano as nano
+from bigdl.nano.pytorch.trainer import Trainer
 
 # adaptted from 
 # https://pytorch-lightning.readthedocs.io/en/latest/starter/introduction_guide.html
 # model definition
-@onnxruntime()
+@nano.onnxruntime()
 class LitMNIST(LightningModule):
     def __init__(self):
         super().__init__()
