@@ -27,7 +27,7 @@ from bigdl.dllib.keras.converter import WeightLoader, WeightsConverter
 import numpy as np
 from unittest import TestCase
 import keras
-from bigdl.dllib.examples.keras.keras_utils import *
+from bigdl.dllib.nn.keras.keras_utils import *
 
 
 class TestModels:
