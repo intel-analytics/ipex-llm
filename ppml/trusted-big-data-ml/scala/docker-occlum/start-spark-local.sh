@@ -3,7 +3,7 @@ sudo docker run -it \
 	--name=occlum-spark-local \
 	--cpuset-cpus 10-14 \
 	--device=/dev/sgx \
-	-v data:/ppml/docker-occlum/data \
+	-v data:/opt/data \
 	-e LOCAL_IP=$LOCAL_IP \
 	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT \
 	bash /ppml/docker-occlum/run_spark_on_occlum_glibc.sh $1 && tail -f /dev/null

@@ -6,7 +6,7 @@
 Pull image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-k8s:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT
 ```
 
 Also, you can build image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
@@ -19,7 +19,7 @@ bash build-docker-image.sh
 
 ## Spark 3.1.2 Pi example
 
-To run Spark pi example, start the docker container with:
+To run Spark Pi example, start the docker container with:
 
 ``` bash
 bash start-spark-local.sh test
@@ -44,7 +44,7 @@ To run BigDL Lenet Mnist example, start the docker container with:
 bash start-spark-local.sh bigdl
 ```
 
-The examples are run in the docker container. Attach it and see the results.
+The examples are run in the docker container. Attach it and see the results (`docker attach logs -f containerID`).
 
 ## BigDL Resnet Cifar-10 Example
 
@@ -56,4 +56,4 @@ To run BigDL ResNet CIFAR-10 example, start the docker container with:
 bash start-spark-local.sh cifar
 ```
 
-The examples are run in the docker container. Attach it and see the results.
+The examples are run in the docker container. Attach it and see the results (`docker attach logs -f containerID`).
