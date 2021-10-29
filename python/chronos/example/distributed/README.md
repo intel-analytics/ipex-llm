@@ -8,6 +8,7 @@ conda create -n my_env python=3.7 # "my_env" is conda environment name, you can 
 conda activate my_env
 pip install --pre --upgrade bigdl-chronos[all]
 ```
+For more details, please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html).
 
 ## Prepare data
 we use the publicly available `network traffic` data repository maintained by the [WIDE project](http://mawi.wide.ad.jp/mawi/) and in particular, the network traffic traces aggregated every 2 hours (i.e. AverageRate in Mbps/Gbps and Total Bytes) in year 2018 and 2019 at the transit link of WIDE to the upstream ISP ([dataset link](http://mawi.wide.ad.jp/~agurim/dataset/))

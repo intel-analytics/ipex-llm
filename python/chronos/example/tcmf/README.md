@@ -5,6 +5,12 @@ and inference for high dimension time series forecasting task.
 
 
 ## Environment
+We recommend you to use Anaconda to prepare the environment.
+```bash
+conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
+conda activate my_env
+pip install --pre --upgrade bigdl-chronos[all]
+```
 You can follow the instructions [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install) to prepare environment for chronos TCMFForecaster.
 
 ## Prepare data
