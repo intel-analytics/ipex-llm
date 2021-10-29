@@ -146,7 +146,7 @@ class View[T: ClassTag](val sizes: Array[Int])(
   }
 }
 
-object  View {
+object View {
   def apply[@specialized(Float, Double) T: ClassTag](
       sizes: Int*)(implicit ev: TensorNumeric[T]) : View[T] = {
     new View[T](sizes.toArray)
