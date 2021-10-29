@@ -5,7 +5,7 @@ sudo docker run -itd \
     -e REDIS_HOST=127.0.0.1 \
     --privileged \
     --net=host \
-    --cpuset-cpus="0-30" \
+    --cpuset-cpus="0-4" \
     --oom-kill-disable \
     --device=/dev/sgx \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
@@ -14,6 +14,6 @@ sudo docker run -itd \
     -v $SECURE_PASSWORD_PATH:/opt/password \
     --name=trusted-cluster-serving-local \
     -e LOCAL_IP=$LOCAL_IP \
-    -e CORE_NUM=30 \
+    -e CORE_NUM=4 \
     intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:0.14.0-SNAPSHOT \
-    bash -c "cd /opt/ && ./start-all.sh && tail -f /dev/null"
+    bash -c "export PATH=/opt/occlum/build/bin:$PATH && cd /opt/ && ./start-all.sh && tail -f /dev/null"
