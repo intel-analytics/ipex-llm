@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl
+package com.intel.analytics.bigdl.ppml.vfl.nn
 
 import com.intel.analytics.bigdl.dllib.nn.{CAddTable, Sequential}
-import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod, ValidationResult}
+import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod}
 import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.ppml.common.FLPhase._
+import com.intel.analytics.bigdl.ppml.vfl.DLlibAggregator
 import com.intel.analytics.bigdl.{Criterion, Module}
 import org.apache.log4j.Logger
-import com.intel.analytics.bigdl.ppml.common.FLPhase._
 
 class VflNNAggregator(classifier: Module[Float],
                       optimMethod: OptimMethod[Float],
@@ -55,7 +56,7 @@ class VflNNAggregator(classifier: Module[Float],
 
 }
 
-object VflAggregator {
+object VflNNAggregator {
   val logger = Logger.getLogger(this.getClass)
 
   def apply(clientNum: Int,

@@ -142,6 +142,7 @@ message BoostEval {
 
 message DownloadRequest {
     TableMetaData metaData = 1;
+    string algorithm = 2;
 }
 
 message DownloadResponse {
@@ -153,6 +154,7 @@ message DownloadResponse {
 message UploadRequest {
     string clientuuid = 1;
     Table data = 2;
+    string algorithm = 3;
 }
 
 message UploadResponse {

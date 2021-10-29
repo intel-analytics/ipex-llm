@@ -40,7 +40,7 @@ public class PSIStub {
     protected String taskID;
 
     public String getSalt() {
-        if (this.taskID.isEmpty()) {
+        if (this.taskID == null) {
             this.taskID = Utils.getRandomUUID();
         }
         return getSalt(this.taskID, 2, "Test");

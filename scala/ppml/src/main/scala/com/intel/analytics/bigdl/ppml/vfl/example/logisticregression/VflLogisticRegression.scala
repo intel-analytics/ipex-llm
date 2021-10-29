@@ -98,13 +98,13 @@ object VflLogisticRegression {
 
 
   def uploadKeys(keys: Array[String]): Map[String, String] = {
-    val salt = flClient.getSalt
+    val salt = flClient.psiStub.getSalt
     logger.debug("Client get Salt=" + salt)
     val hashedKeys = TestUtils.parallelToSHAHexString(keys, salt)
     val hashedKeyPairs = hashedKeys.zip(keys).toMap
     // Hash(IDs, salt) into hashed IDs
     logger.debug("HashedIDs Size = " + hashedKeys.size)
-    flClient.uploadSet(hashedKeys.toList.asJava)
+    flClient.psiStub.uploadSet(hashedKeys.toList.asJava)
     hashedKeyPairs
 
   }
@@ -114,7 +114,7 @@ object VflLogisticRegression {
     var maxWait = 20
     var intersection: java.util.List[String] = null
     while (maxWait > 0) {
-      intersection = flClient.downloadIntersection()
+      intersection = flClient.psiStub.downloadIntersection()
       if (intersection == null || intersection.length == 0) {
         logger.info("Wait 1000ms")
         Thread.sleep(1000)
