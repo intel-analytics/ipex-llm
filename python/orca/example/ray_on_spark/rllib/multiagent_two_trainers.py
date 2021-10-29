@@ -45,7 +45,7 @@ os.environ["LANG"] = "C.UTF-8"
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local or yarn.')
+                    help='The mode for the Spark cluster. local, yarn or spatk-submit.')
 parser.add_argument("--iterations", type=int, default=10,
                     help="The number of iterations to train the model")
 parser.add_argument("--slave_num", type=int, default=2,
@@ -86,8 +86,11 @@ if __name__ == "__main__":
     elif cluster_mode == "local":
         sc = init_orca_context(cores=args.driver_cores)
         ray_ctx = OrcaContext.get_ray_context()
+    elif cluster_mode == "spark-submit":
+        sc = init_orca_context(cluster_mode=cluster_mode)
+        ray_ctx = OrcaContext.get_ray_context()
     else:
-        print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
               + cluster_mode)
 
     # Simple environment with 4 independent cartpole entities
@@ -156,3 +159,4 @@ if __name__ == "__main__":
 
     ray_ctx.stop()
     stop_orca_context()
+
