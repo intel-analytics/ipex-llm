@@ -25,7 +25,7 @@ echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../..; pwd)"
 echo $BIGDL_DIR
 
-if (( $# < 2)); then
+if (( $# < 3)); then
   echo "Usage: release_default_linux_spark312.sh version upload"
   echo "Usage example: bash release_default_linux_spark312.sh default false true"
   echo "Usage example: bash release_default_linux_spark312.sh 0.14.0.dev1 false false"
