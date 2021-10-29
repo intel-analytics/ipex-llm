@@ -52,7 +52,7 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 ## BigDL Resnet Cifar-10 Example
 
-Download the Cifar-10 dataset from [here](https://www.cs.toronto.edu/~kriz/cifar.html). The dataset contains 5 files, i.e, `data_batch_1.bin`, `data_batch_2.bin`, `data_batch_3.bin`, `data_batch_4.bin`, `data_batch_5.bin` and `test_batch.bin`. Put all the files in `data` directory.
+Download the Cifar-10 dataset (CIFAR-10 binary version) from [here](https://www.cs.toronto.edu/~kriz/cifar.html). The dataset contains 5 files, i.e, `data_batch_1.bin`, `data_batch_2.bin`, `data_batch_3.bin`, `data_batch_4.bin`, `data_batch_5.bin` and `test_batch.bin`. Put all the files in `data` directory.
 
 To run BigDL ResNet CIFAR-10 example, start the docker container with:
 
