@@ -48,23 +48,22 @@ build_spark() {
 run_spark_pi() {
     init_instance spark
     build_spark
-    echo -e "${BLUE}occlum run spark${NC}"
-    echo -e "${BLUE}logfile=$log${NC}"
+    echo -e "${BLUE}occlum run spark Pi${NC}"
     occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=256m \
                 -XX:ActiveProcessorCount=192 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
-                -cp '/bin/conf/:/bin/jars/*'
+                -cp '/bin/conf/:/bin/jars/*' \
                 -Xmx10g org.apache.spark.deploy.SparkSubmit \
-                --jars ${SPARK_HOME}/examples/jars/spark-examples_2.12-3.1.2.jar,${SPARK_HOME}/examples/jars/scopt_2.12-3.7.1.jar
+                --jars ${SPARK_HOME}/examples/jars/spark-examples_2.12-3.1.2.jar,${SPARK_HOME}/examples/jars/scopt_2.12-3.7.1.jar \
                 --class org.apache.spark.examples.SparkPi spark-internal
 }
 
 run_spark_lenet_mnist(){
     init_instance spark
     build_spark
-    echo -e "${BLUE}occlum run spark${NC}"
+    echo -e "${BLUE}occlum run BigDL lenet mnist{NC}"
     echo -e "${BLUE}logfile=$log${NC}"
     occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=256m \
@@ -85,7 +84,7 @@ run_spark_lenet_mnist(){
                 --conf spark.io.compression.codec=lz4 \
                 --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
                 --driver-memory 10G \
-                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar.jar \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 -f /bin/data \
                 -b 4 \
                 -e 1 | tee spark.local.sgx.log
@@ -94,8 +93,7 @@ run_spark_lenet_mnist(){
 run_spark_resnet_cifar(){
     init_instance spark
     build_spark
-    echo -e "${BLUE}occlum run spark${NC}"
-    echo -e "${BLUE}logfile=$log${NC}"
+    echo -e "${BLUE}occlum run BigDL Resnet Cifar10${NC}"
     occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=256m \
                 -XX:ActiveProcessorCount=4 \
@@ -115,9 +113,9 @@ run_spark_resnet_cifar(){
                 --conf spark.io.compression.codec=lz4 \
                 --class com.intel.analytics.bigdl.dllib.models.resnet.TrainCIFAR10 \
                 --driver-memory 10G \
-                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar.jar \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 -f /bin/data \
-                --batchSize 400 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
+                --batchSize 400 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 60 \
                 --learningRate 0.1 | tee spark.local.sgx.log
 }
 
