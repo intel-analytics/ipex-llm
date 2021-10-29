@@ -18,10 +18,8 @@ package com.intel.analytics.bigdl.serving.models
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
-import com.intel.analytics.bigdl.serving.ClusterServing
-import com.intel.analytics.bigdl.serving.engine.ClusterServingInference
+import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper, ClusterServingInference}
 import com.intel.analytics.bigdl.serving.serialization.ArrowDeserializer
-import com.intel.analytics.bigdl.serving.utils.ClusterServingHelper
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.sys.process._

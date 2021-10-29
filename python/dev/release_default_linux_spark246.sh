@@ -35,6 +35,10 @@ fi
 version=$1
 upload=$2
 
+NANO_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/nano/dev; pwd)"
+echo $NANO_SCRIPT_DIR
+bash ${NANO_SCRIPT_DIR}/release_default_linux.sh ${version} ${upload}
+
 # Only dllib is not using quick build.
 # Since make_dist is invoked in dllib, all other packages can directly use quick build.
 DLLIB_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/dllib/dev/release; pwd)"

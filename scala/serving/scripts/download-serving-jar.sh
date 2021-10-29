@@ -15,27 +15,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-if [ -z "${ANALYTICS_ZOO_VERSION}" ]; then
-  export ANALYTICS_ZOO_VERSION=0.10.0
-  export BIGDL_VERSION=0.12.2
-  export SPARK_VERSION=2.4.3
-  echo "You did not specify ANALYTICS_ZOO_VERSION, will download "$ANALYTICS_ZOO_VERSION
+if [ -z "${BIGDL_VERSION}" ]; then
+  export BIGDL_VERSION=0.14.0-SNAPSHOT
+  export SPARK_VERSION=2.4.6
+  echo "You did not specify BIGDL_VERSION, will download the latest version: "$BIGDL_VERSION
 fi
 
-echo "ANALYTICS_ZOO_VERSION is "$ANALYTICS_ZOO_VERSION
 echo "BIGDL_VERSION is "$BIGDL_VERSION
 echo "SPARK_VERSION is "$SPARK_VERSION
 SPARK_MAJOR_VERSION=${SPARK_VERSION%%.[0-9]}
 echo $SPARK_MAJOR_VERSION
 
-if [[ $ANALYTICS_ZOO_VERSION == *"SNAPSHOT"* ]]; then
-  NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/groups/public/com/intel/analytics/zoo/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION/$ANALYTICS_ZOO_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
-  wget https://oss.sonatype.org/content/groups/public/com/intel/analytics/zoo/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION/$ANALYTICS_ZOO_VERSION/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION-$NIGHTLY_VERSION-serving.jar
-  wget https://oss.sonatype.org/content/groups/public/com/intel/analytics/zoo/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION/$ANALYTICS_ZOO_VERSION/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION-$NIGHTLY_VERSION-http.jar
+if [[ $BIGDL_VERSION == *"SNAPSHOT"* ]]; then
+  NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-serving-spark_$SPARK_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
+  wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-serving-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-serving-spark_$SPARK_VERSION-$NIGHTLY_VERSION-jar-with-dependencies.jar
+  wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-serving-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-serving-spark_$SPARK_VERSION-$NIGHTLY_VERSION-http.jar
 
 else
-  wget https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION/$ANALYTICS_ZOO_VERSION/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION-$ANALYTICS_ZOO_VERSION-serving.jar
-  wget https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION/$ANALYTICS_ZOO_VERSION/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION-$ANALYTICS_ZOO_VERSION-http.jar
-
+  wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-serving-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-serving-spark_$SPARK_VERSION-$BIGDL_VERSION-jar-with-dependencies.jar
+  wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-serving-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-serving-spark_$SPARK_VERSION-$BIGDL_VERSION-http.jar
 fi
-mv analytics-*-serving.jar zoo.jar
+echo "If download too slow or failed, please go to BigDL Serving Repo to download, link: "
+echo "nightly: https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-serving-spark_$SPARK_VERSION/$BIGDL_VERSION/"
+echo "release: https://repo1.maven.org/maven2/com/intel/analytics/bigdl/"

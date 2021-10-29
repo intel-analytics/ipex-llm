@@ -236,10 +236,7 @@ ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
 
-RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar ./tracker.py && \
-    unzip ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar log4j.properties && \
-    echo $'\nlog4j.logger.io.netty=ERROR' >> log4j.properties && \
-    zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar log4j.properties && \
+RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
     patch /usr/local/lib/python3.6/dist-packages/dill/_dill.py ./_dill.py.patch && \
     patch /usr/lib/python3.6/uuid.py ./python-uuid.patch && \
     rm $SPARK_HOME/jars/spark-core_2.12-$SPARK_VERSION.jar && \
@@ -275,6 +272,7 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar && \
+    wget -P $SPARK_HOME/jars https://github.com/xerial/sqlite-jdbc/releases/download/3.36.0.1/sqlite-jdbc-3.36.0.1.jar && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini

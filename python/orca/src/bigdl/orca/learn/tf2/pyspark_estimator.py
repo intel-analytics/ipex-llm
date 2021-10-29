@@ -28,6 +28,7 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
+from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
@@ -56,6 +57,11 @@ class SparkTFEstimator():
 
         num_node, num_core = get_node_and_core_number()
         self.num_workers = num_node * workers_per_node
+        self.total_cores = num_node * num_core
+
+        # over partition to cover tasks all over the cluster
+        self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
+                                        self.total_cores * 4).repartition(self.num_workers)
 
         if not "inter_op_parallelism"  in self.config:
             self.config["inter_op_parallelism"] = 1
@@ -67,10 +73,9 @@ class SparkTFEstimator():
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
-        # start redis server
+
         from bigdl.dllib.utils.utils import get_node_ip
         self.ip = get_node_ip()
-
         if "redis_port" in kwargs:
             self.redis_port = kwargs["redis_port"]
         else:
@@ -97,6 +102,9 @@ class SparkTFEstimator():
                 logger_thread.daemon = True
                 logger_thread.start()
 
+    def _get_cluster_info(self, sc):
+        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
+        return cluster_info
 
     def fit(self, data, epochs=1, batch_size=32, verbose=1,
             callbacks=None, validation_data=None, class_weight=None,
@@ -131,6 +139,7 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             mode="fit",
+            cluster_info=self._get_cluster_info(sc),
             is_local=self.is_local,
             redis_address=":".join([self.ip, self.redis_port]),
             redis_password=self.redis_password
@@ -163,7 +172,8 @@ class SparkTFEstimator():
                     return SparkRunner(**init_param).step(**param)
 
                 res = data.rdd.repartition(self.num_workers).barrier() \
-                    .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
+                    .mapPartitions(
+                        lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
                     data_tuple_list = list(iter)
@@ -174,21 +184,18 @@ class SparkTFEstimator():
                     return SparkRunner(**init_param).step(**param)
 
                 res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
-                    .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
+                    .mapPartitions(
+                        lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
 
-            workerRDD = sc.parallelize(list(range(self.num_workers)), self.num_workers). \
-                repartition(self.num_workers)
-
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).step(**param)
 
-            res = workerRDD.barrier().mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
-
+            res = self.workerRDD.barrier().mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)).collect()
         self.model_weights = res[0]
-
         return res
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
@@ -223,6 +230,7 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=self.model_weights,
             mode="evaluate",
+            cluster_info=self._get_cluster_info(sc),
             is_local=self.is_local,
             redis_address=":".join([self.ip, self.redis_port]),
             redis_password=self.redis_password
@@ -244,6 +252,7 @@ class SparkTFEstimator():
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              accept_str_col=True)
+
         if isinstance(data, SparkXShards):
             # set train/validation data
             def transform_func(iter, init_param, param):
@@ -255,15 +264,12 @@ class SparkTFEstimator():
                 .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
-            # params["model_weights"] = self.model_weights
-
-            # worker_nums = self.worker_nums
-            workerRDD = sc.parallelize(list(range(self.num_workers)), self.num_workers).repartition(self.num_workers)
 
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).validate(**param)
 
-            res = workerRDD.barrier().mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
+            res = self.workerRDD.barrier().mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)).collect()
 
         return res[0]
 
@@ -295,6 +301,7 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=self.model_weights,
             mode="predict",
+            cluster_info=None,
             is_local=self.is_local,
             redis_address=":".join([self.ip, self.redis_port]),
             redis_password=self.redis_password
@@ -324,7 +331,8 @@ class SparkTFEstimator():
                 return SparkRunner(**init_param).predict(**param)
 
             pred_shards = SparkXShards(xshards.rdd.repartition(self.num_workers) \
-                                       .mapPartitions(lambda iter: transform_func(iter, init_params, params)))
+                                       .mapPartitions(
+                                           lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
@@ -442,6 +450,3 @@ class SparkTFEstimator():
         finally:
             # Close the pubsub client to avoid leaking file descriptors.
             pubsub_client.close()
-
-
-

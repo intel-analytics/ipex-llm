@@ -15,6 +15,7 @@
 #
 
 import os
+import sys
 import subprocess
 
 from bigdl.dllib.utils.file_utils import get_file_list
@@ -450,5 +451,3 @@ def decode(byte_str, allow_none=False):
         return byte_str.decode("ascii")
     else:
         return byte_str
-
-

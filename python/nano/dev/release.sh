@@ -15,17 +15,69 @@
 # limitations under the License.
 #
 
+set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
-NANO_DIR="$(cd ${RUN_SCRIPT_DIR}/../; pwd)"
-echo $NANO_DIR
-cd $NANO_DIR
+BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
+echo $BIGDL_DIR
+BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/nano/src; pwd)"
+echo $BIGDL_PYTHON_DIR
 
-wheel_command="python setup.py bdist_wheel --plat-name manylinux2010_x86_64"
+if (( $# < 3)); then
+  echo "Usage: release.sh platform version upload"
+  echo "Usage example: bash release.sh linux default true"
+  echo "Usage example: bash release.sh mac 0.14.0.dev1 false"
+  exit -1
+fi
+
+platform=$1
+version=$2
+upload=$3  # Whether to upload the whl to pypi
+
+if [ "${version}" != "default" ]; then
+    echo "User specified version: ${version}"
+    echo $version > $BIGDL_DIR/python/version.txt
+fi
+
+bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
+echo "The effective version is: ${bigdl_version}"
+
+if [ "$platform" ==  "mac" ]; then
+    verbose_pname="macosx_10_11_x86_64"
+    
+    # bigdl-nano is on linux only 
+    echo "Exit, bigdl-nano does not support MacOS for now."
+    exit 1
+
+elif [ "$platform" == "linux" ]; then
+    verbose_pname="manylinux2010_x86_64"
+else
+    echo "Unsupported platform"
+fi
+
+if [ -d "${BIGDL_DIR}/python/nano/src/build" ]; then
+   rm -r ${BIGDL_DIR}/python/nano/src/build
+fi
+
+if [ -d "${BIGDL_DIR}/python/nano/src/dist" ]; then
+   rm -r ${BIGDL_DIR}/python/nano/src/dist
+fi
+
+if [ -d "${BIGDL_DIR}/python/nano/src/bigdl_nano.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/nano/src/bigdl_nano.egg-info
+fi
+
+
+cd $BIGDL_PYTHON_DIR
+
+wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
-upload_command="twine upload dist/bigdl_nano-0.14.0.dev0-py3-none-manylinux2010_x86_64.whl"
-echo "Please manually upload with this command: $upload_command"
+if [ ${upload} == true ]; then
+    upload_command="twine upload  dist/bigdl_nano-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    echo "Please manually upload with this command: $upload_command"
+    $upload_command
+fi
 
 # $upload_command

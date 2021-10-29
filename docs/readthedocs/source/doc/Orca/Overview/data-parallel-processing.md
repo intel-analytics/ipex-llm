@@ -12,7 +12,7 @@ TensorFlow Dataset:
 ```python
 import tensorflow as tf
 import tensorflow_datasets as tfds
-from zoo.orca.learn.tf.estimator import Estimator
+from bigdl.orca.learn.tf.estimator import Estimator
 
 def preprocess(data):
     data['image'] = tf.cast(data["image"], tf.float32) / 255.
@@ -30,7 +30,7 @@ Pytorch DataLoader:
 ```python
 import torch
 from torchvision import datasets, transforms
-from zoo.orca.learn.pytorch import Estimator
+from bigdl.orca.learn.pytorch import Estimator
 
 train_loader = torch.utils.data.DataLoader(
         datasets.MNIST("/tmp/mnist", train=True, download=True,
@@ -41,7 +41,7 @@ train_loader = torch.utils.data.DataLoader(
         batch_size=batch_size, shuffle=True)
 
 est = Estimator.from_torch(model=torch_model, optimizer=torch_optim, loss=torch_criterion)
-zoo_estimator.fit(data=train_loader)
+est.fit(data=train_loader)
 ```
 
 Under the hood, Orca will automatically replicate the _TensorFlow Dataset_ or _PyTorch DataLoader_ pipeline on each node in the cluster, shard the input data, and execute the data pipelines using Apache Spark and/or Ray distributedly. 
@@ -101,7 +101,7 @@ est.fit(data=df,
 
 ```python
 import numpy as np
-from zoo.orca.data import XShards
+from bigdl.orca.data import XShards
 
 train_images = np.random.random((20, 3, 224, 224))
 train_label_images = np.zeros(20)
@@ -122,7 +122,7 @@ The user may use `XShards` to efficiently process large-size Pandas Dataframes i
 
 First, the user can read CVS, JSON or Parquet files (stored on local disk, HDFS, AWS S3, etc.) to obtain an `XShards` of Pandas Dataframe, as shown below:
 ```python
-from zoo.orca.data.pandas import read_csv
+from bigdl.orca.data.pandas import read_csv
 csv_path = "/path/to/csv_file_or_folder"
 shard = read_csv(csv_path)
 ```
