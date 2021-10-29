@@ -20,7 +20,8 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Samp
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
-import com.intel.analytics.bigdl.ppml.vfl.LogisticRegression
+import com.intel.analytics.bigdl.ppml.vfl.algorithm.PSI
+import com.intel.analytics.bigdl.ppml.vfl.{LogisticRegression, VflContext}
 import com.intel.analytics.bigdl.ppml.vfl.example.ExampleUtils
 import com.intel.analytics.bigdl.{DataSet, Module}
 import org.apache.log4j.Logger
@@ -41,14 +42,13 @@ object VflLogisticRegression {
   var valData: DataSet[MiniBatch[Float]] = null
   var featureNum: Int = _
   var model: Module[Float] = null
-  var flClient: FLClient = new FLClient()
   var batchSize: Int = 0
   val logger = Logger.getLogger(getClass)
 
   protected var hashedKeyPairs: Map[String, String] = null
 
 
-  def getData(dataPath: String, rowKeyName: String) = {
+  def getData(pSI: PSI,dataPath: String, rowKeyName: String) = {
 
     // load data from dataset and preprocess
     val sources = Source.fromFile(dataPath, "utf-8").getLines()
@@ -61,8 +61,8 @@ object VflLogisticRegression {
       (lines(rowKeyIndex), (lines.take(rowKeyIndex) ++ lines.drop(rowKeyIndex + 1)).map(_.toFloat))
     }.toMap
     val ids = data.keys.toArray
-    hashedKeyPairs = uploadKeys(ids)
-    val intersections = getIntersectionKeys()
+    hashedKeyPairs = uploadKeys(pSI, ids)
+    val intersections = getIntersectionKeys(pSI)
     dataSet = intersections.map{id =>
       data(id)
     }
@@ -97,24 +97,24 @@ object VflLogisticRegression {
   }
 
 
-  def uploadKeys(keys: Array[String]): Map[String, String] = {
-    val salt = flClient.psiStub.getSalt
+  def uploadKeys(pSI: PSI, keys: Array[String]): Map[String, String] = {
+    val salt = pSI.getSalt
     logger.debug("Client get Salt=" + salt)
     val hashedKeys = TestUtils.parallelToSHAHexString(keys, salt)
     val hashedKeyPairs = hashedKeys.zip(keys).toMap
     // Hash(IDs, salt) into hashed IDs
     logger.debug("HashedIDs Size = " + hashedKeys.size)
-    flClient.psiStub.uploadSet(hashedKeys.toList.asJava)
+    pSI.uploadSet(hashedKeys.toList.asJava)
     hashedKeyPairs
 
   }
-  def getIntersectionKeys(): Array[String] = {
+  def getIntersectionKeys(pSI: PSI): Array[String] = {
     require(null != hashedKeyPairs, "no hashed key pairs found, have you upload keys?")
     // TODO: just download
     var maxWait = 20
     var intersection: java.util.List[String] = null
     while (maxWait > 0) {
-      intersection = flClient.psiStub.downloadIntersection()
+      intersection = pSI.downloadIntersection()
       if (intersection == null || intersection.length == 0) {
         logger.info("Wait 1000ms")
         Thread.sleep(1000)
@@ -162,7 +162,14 @@ object VflLogisticRegression {
     val rowKeyName = argv.rowKeyName
     val learningRate = argv.learningRate
     batchSize = argv.batchSize
-    getData(dataPath, rowKeyName)
+
+
+    /**
+     * Usage of BigDL PPML starts from here
+     */
+    VflContext.initContext()
+    val pSI = new PSI()
+    getData(pSI, dataPath, rowKeyName)
 
     // create LogisticRegression object to train the model
     val lr = new LogisticRegression(featureNum, learningRate)
