@@ -41,7 +41,7 @@ build_spark() {
     cp -rf /etc/group image/etc/
     cp -rf /etc/java-11-openjdk image/etc/
     cp -rf ../bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar image/bin/jars
-    cp -rf ../cifar image/bin/
+    cp -rf ../data image/bin/
     /opt/occlum/start_aesm.sh
     occlum build
 }
@@ -116,7 +116,7 @@ run_spark_resnet_cifar(){
                 --class com.intel.analytics.bigdl.dllib.models.resnet.TrainCIFAR10 \
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
-                -f /bin/cifar \
+                -f /bin/data \
                 --batchSize 400 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
                 --learningRate 0.1 | tee spark.local.sgx.log
 }
