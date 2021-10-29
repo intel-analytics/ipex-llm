@@ -41,9 +41,6 @@ build_spark() {
     cp -rf /etc/hosts image/etc/
     cp -rf /etc/hostname image/etc/
 	echo "127.0.0.1 occlum-node" >> image/etc/hosts
-    # cat image/etc/hosts
-    # cat image/etc/resolv.conf
-    # cat image/etc/hostname
     cp -rf /etc/group image/etc/
     occlum build
 }
