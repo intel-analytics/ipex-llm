@@ -14,30 +14,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml;
+package com.intel.analytics.bigdl.ppml.vfl.example
 
-public class FLHelper {
-    int worldSize = 1;
-    // Server property
-    int serverPort = 8980;
 
-    // Client property
-    String clientTarget = "localhost:8980";
-    String taskID = "taskID";
 
-    public void setWorldSize(int worldSize) {
-        this.worldSize = worldSize;
+object ExampleUtils {
+  def minMaxNormalize(data: Array[Array[Float]], col: Int): Array[Array[Float]] = {
+    val min = data.map(_ (col)).min
+    val max = data.map(_ (col)).max
+    data.foreach { d =>
+      d(col) = (d(col) - min) / (max - min)
     }
-
-    public void setServerPort(int serverPort) {
-        this.serverPort = serverPort;
-    }
-
-    public void setClientTarget(String clientTarget) {
-        this.clientTarget = clientTarget;
-    }
-
-    public void setTaskID(String taskID) {
-        this.taskID = taskID;
-    }
+    data
+  }
 }

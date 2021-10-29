@@ -49,7 +49,7 @@ public class NetworkCheckClient{
         //logger.info("Accessing service at: " + target);
 
         int max_wait = 2000;
-        // Example code for flClient.psiStub
+        // Example code for flClient
         int idSize = 150000;
         // Quick lookup for the plaintext of hashed ids
         HashMap<String, String> data = TestUtils.getRandomHashSetOfStringForFiveFixed(idSize);//Utils.genRandomHashSet(idSize);
@@ -73,7 +73,7 @@ public class NetworkCheckClient{
             FLClient flClient = new FLClient(arg);
             flClient.build();
             // Get salt from Server
-            salt = flClient.psiStub.getSalt();
+            salt = flClient.getSalt();
             //logger.debug("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
             hashedIdArray = TestUtils.parallelToSHAHexString(ids, salt);
@@ -81,11 +81,11 @@ public class NetworkCheckClient{
                 hashedIds.put(hashedIdArray.get(i), ids.get(i));
             }
             //logger.debug("HashedIDs Size = " + hashedIds.size());
-            flClient.psiStub.uploadSet(hashedIdArray);
+            flClient.uploadSet(hashedIdArray);
             List<String> intersection;
 
             while (max_wait > 0) {
-                intersection = flClient.psiStub.downloadIntersection();
+                intersection = flClient.downloadIntersection();
                 if (intersection == null) {
                     //logger.info("Wait 1000ms");
                     Thread.sleep(1000);
