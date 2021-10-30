@@ -1,4 +1,4 @@
-# PPML (Privacy Preserving Machine Learning)
+# Trusted Big Data Analytics and ML
 
 Artificial intelligence on big data is increasingly important to many real-world applications. Many machine learning and data analytics applications are benefiting from the private data in different domains. Most of these applications leverage the private data to offer certain valuable services to the users. But the private data could be repurposed to infer sensitive information, which would jeopardize the privacy of individuals. Privacy-Preserving Machine Learning (PPML) helps address these risks. Using techniques such as cryptography differential privacy, and hardware technologies, PPML aims to protect the privacy of sensitive user data and of the trained model as it performs ML tasks.
 
