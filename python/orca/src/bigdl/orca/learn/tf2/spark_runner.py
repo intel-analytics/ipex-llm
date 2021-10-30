@@ -346,7 +346,7 @@ class SparkRunner:
         if self.rank == 0:
             # if model_dir is not None:
             #     model.save_weights(model_dir)
-            return ([weights, stats])
+            return ([stats])
         else:
             return []
     
