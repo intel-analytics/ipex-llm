@@ -2,8 +2,8 @@
 This example demonstrates how to use BigDL to train and test a [VGG-like](http://torch.ch/blog/2015/07/30/cifar.html) network on [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) data.
 
 ## Prepare CIFAR-10 Dataset
-You can download CIFAR-10 dataset from [this webpage](https://www.cs.toronto.edu/~kriz/cifar.html) (remember to choose the binary version).
-.
+You can download CIFAR-10 dataset from [this webpage](https://www.cs.toronto.edu/~kriz/cifar.html) (remember to choose the binary version). Extract files to dataset directory, e.g., `Cifar-folder`. Users need to set this dataset directory behind the "-f" flag in command line.
+
 
 ## Get the JAR
 You can build one by refer to the
