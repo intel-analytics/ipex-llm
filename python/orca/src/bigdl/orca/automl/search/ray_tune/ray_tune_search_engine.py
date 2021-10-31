@@ -21,7 +21,6 @@ from bigdl.orca.automl.search.base import SearchEngine, TrialOutput, GoodError
 from bigdl.orca.automl.search.parameters import DEFAULT_LOGGER_NAME, DEFAULT_METRIC_NAME
 from bigdl.orca.automl.search.ray_tune.utils import convert_bayes_configs
 from bigdl.orca.automl.search.utils import get_ckpt_hdfs, put_ckpt_hdfs
-from bigdl.orca.automl.search import TensorboardLogger
 from ray.tune import Stopper
 from bigdl.orca.automl.model.abstract import ModelBuilder
 from bigdl.orca.data import ray_xshards
@@ -200,14 +199,19 @@ class RayTuneSearchEngine(SearchEngine):
         self.trials = analysis.trials
 
         # Visualization code for ray (leaderboard)
-        logger_name = self.name if self.name else DEFAULT_LOGGER_NAME
-        tf_config, tf_metric = TensorboardLogger._ray_tune_searcher_log_adapt(analysis)
+        try:
+            from bigdl.orca.automl.search import TensorboardLogger
+            logger_name = self.name if self.name else DEFAULT_LOGGER_NAME
+            tf_config, tf_metric = TensorboardLogger._ray_tune_searcher_log_adapt(analysis)
 
-        self.logger = TensorboardLogger(logs_dir=os.path.join(self.logs_dir,
-                                                              logger_name+"_leaderboard"),
-                                        name=logger_name)
-        self.logger.run(tf_config, tf_metric)
-        self.logger.close()
+            self.logger = TensorboardLogger(logs_dir=os.path.join(self.logs_dir,
+                                                                logger_name+"_leaderboard"),
+                                            name=logger_name)
+            self.logger.run(tf_config, tf_metric)
+            self.logger.close()
+        except ImportError:
+            import warnings
+            warnings.warn("torch >= 1.7.0 should be installed to enable the orca.automl logger")
 
         return analysis
 
