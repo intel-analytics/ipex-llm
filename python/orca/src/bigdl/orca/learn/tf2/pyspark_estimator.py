@@ -156,7 +156,7 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        self.model_weights = res[0]
+        self.model_weights = res[1:]
 
         return res
 
