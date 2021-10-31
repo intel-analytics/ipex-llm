@@ -19,6 +19,8 @@ from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 import numpy as np
+import pickle
+import os
 
 
 def find_latest_checkpoint(model_dir, model_type="bigdl"):
@@ -246,6 +248,7 @@ def transform_to_shard_dict(data, feature_cols, label_cols=None):
         if label_cols:
             result["y"] = df[label_cols[0]].to_numpy()
         return result
+
     data = data.transform_shard(to_shard_dict)
     return data
 
@@ -255,7 +258,7 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
     data = transform_to_shard_dict(data, feature_cols, label_cols)
     if mode == "fit":
         if validation_data:
-            assert validation_data._get_class_name() == 'pandas.core.frame.DataFrame',\
+            assert validation_data._get_class_name() == 'pandas.core.frame.DataFrame', \
                 "train data and validation data should be both XShards of Pandas DataFrame"
             validation_data = transform_to_shard_dict(validation_data, feature_cols, label_cols)
         return data, validation_data
@@ -339,3 +342,119 @@ def data_length(data):
     else:
         return x[0].shape[0]
 
+
+def save_weights_tf(model, path, overwrite=True, save_format=None):
+    import tempfile
+    import os
+    filename = os.path.basename(path)
+    tmp_dir = tempfile.mkdtemp()
+    tmp_file = os.path.join(tmp_dir, filename)
+    model.save_weights(tmp_file, overwrite=overwrite, save_format=save_format)
+    if save_format is None:
+        if (path.endswith('.h5') or path.endswith('.keras') or
+                path.endswith('.hdf5')):
+            save_format = 'h5'
+        else:
+            save_format = 'tf'
+    else:
+        user_format = save_format.lower().strip()
+        if user_format in ('tensorflow', 'tf'):
+            save_format = 'tf'
+        elif user_format in ('hdf5', 'h5', 'keras'):
+            save_format = 'h5'
+    if save_format == 'tf':
+        raise Exception("Cannot save to tensorflow format at this time")
+
+    with open(tmp_file, "rb") as f:
+        content = f.read()
+    if path.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        fs = pa.hdfs.connect()
+        with fs.open(path, 'wb') as f:
+            result = f.write(content)
+            f.close()
+            return result
+    elif path.startswith("s3"):  # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = path.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        key = "/".join(path_parts)
+        return s3_client.put_object(Bucket=bucket, Key=key, Body=content)
+    else:
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        with open(path, 'wb') as f:
+            result = f.write(content)
+            f.close()
+            return result
+
+
+def save_pkl(weights, path):
+    import os
+    import pickle
+    if path.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        fs = pa.hdfs.connect()
+        with fs.open(path, 'wb') as f:
+            pickle.dump(weights, f)
+    elif path.startswith("s3"):  # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = path.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        key = "/".join(path_parts)
+        content = pickle.dumps(weights)
+        s3_client.put_object(Bucket=bucket, Key=key, Body=content)
+    else:
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        with open(path, 'wb') as f:
+            pickle.dump(weights, f)
+
+
+def load_pkl(path):
+    """
+
+    Load arrays or pickled objects from ``.npy``, ``.npz`` or pickled files.
+    It supports local, hdfs, s3 file systems.
+
+    :param path: file path
+    :return: array, tuple, dict, etc.
+        Data stored in the file. For ``.npz`` files, the returned instance
+        of NpzFile class must be closed to avoid leaking file descriptors.
+    """
+    import numpy as np
+    if path.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        fs = pa.hdfs.connect()
+        with fs.open(path, 'rb') as f:
+            data = pickle.load(f)
+        return data
+    elif path.startswith("s3"):  # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        from io import BytesIO
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = path.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        key = "/".join(path_parts)
+        data = s3_client.get_object(Bucket=bucket, Key=key)
+        return pickle.load(BytesIO(data["Body"].read()))
+    else:  # Local path
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+        return data

@@ -29,6 +29,7 @@ from contextlib import closing
 import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
+from bigdl.orca.learn.utils import save_pkl
 
 def find_free_port(tc):
     address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
@@ -198,6 +199,7 @@ class SparkRunner:
                  model_weights=None,
                  backend="tf-distributed",
                  mode="fit",
+                 model_dir=None
                 ):
         """Initializes the runner.
                 Args:
@@ -223,6 +225,7 @@ class SparkRunner:
         if self.backend == "tf-distributed":
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed(self.mode, self.cluster_info)
+        self.model_dir = model_dir
 
     def setup(self):
         import tensorflow as tf
@@ -344,10 +347,11 @@ class SparkRunner:
         else:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
-            # if model_dir is not None:
-            #     model.save_weights(model_dir)
-            print("weights type: ", type(weights))
-            return ([stats] + weights)
+            if self.model_dir is not None:
+                save_pkl(weights, os.path.join(self.model_dir, "weights.pkl"))
+            #     # model.save_weights(model_dir)
+            # print("weights type: ", type(weights))
+            return [stats]
         else:
             return []
     

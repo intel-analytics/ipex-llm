@@ -31,7 +31,8 @@ class Estimator(object):
                    workers_per_node=1,
                    compile_args_creator=None,
                    backend="tf2",
-                   cpu_binding=False
+                   cpu_binding=False,
+                   model_dir=None
                    ):
         """
         Create an Estimator for tensorflow 2.
@@ -64,7 +65,8 @@ class Estimator(object):
             return SparkTFEstimator(model_creator=model_creator,
                                     config=config, verbose=verbose,
                                     compile_args_creator=compile_args_creator,
-                                    workers_per_node=workers_per_node)
+                                    workers_per_node=workers_per_node,
+                                    model_dir=model_dir)
         else:
             raise ValueError("Only horovod, tf2 and spark backends are supported"
                              f" for now, got backend: {backend}")

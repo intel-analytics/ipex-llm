@@ -15,6 +15,7 @@
 #
 
 import logging
+import os
 from pyspark.sql.dataframe import DataFrame
 import numpy as np
 
@@ -25,7 +26,7 @@ from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe
+    process_xshards_of_pandas_dataframe, load_pkl
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
@@ -37,7 +38,8 @@ class SparkTFEstimator():
                  config=None,
                  compile_args_creator=None,
                  verbose=False,
-                 workers_per_node=1):
+                 workers_per_node=1,
+                 model_dir=None):
         self.model_creator = model_creator
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
@@ -63,6 +65,7 @@ class SparkTFEstimator():
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
+        self.model_dir = model_dir
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
@@ -101,7 +104,8 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             mode="fit",
-            cluster_info=self._get_cluster_info(sc)
+            cluster_info=self._get_cluster_info(sc),
+            model_dir=self.model_dir
         )
 
         params = dict(
@@ -145,7 +149,7 @@ class SparkTFEstimator():
 
                 res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).repartition(self.num_workers*100).collect()
+                        lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -156,7 +160,8 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        self.model_weights = res[1:]
+        if self.model_dir:
+            self.model_weights = load_pkl(os.path.join(self.model_dir, "weights.pkl"))
 
         return res
 
