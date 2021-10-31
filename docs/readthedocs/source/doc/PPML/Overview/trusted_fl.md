@@ -12,17 +12,6 @@ Let RID1 and RID2 be randomized ID from party 1 and party 2.
    <p align="center"> <img src="../docs/image/id_align.png" height=180px; weight=650px;"><br></p>
 </div>
 
-## Horizontal FL
-
-Key features:
-
-* id & feature align (optional)
-* Parameter Server in SGX
-* Training Worker in SGX
-
-<div align="center">
-   <p align="center"> <img src="../docs/image/hfl.png" height=360px; weight=800px;"><br></p>
-</div>
 
 ## Vertical FL
 
@@ -35,6 +24,18 @@ Key features:
 
 <div align="center">
    <p align="center"> <img src="../docs/image/vfl.png" height=360px; weight=800px;"><br></p>
+</div>
+
+## Horizontal FL
+
+Key features:
+
+* id & feature align (optional)
+* Parameter Server in SGX
+* Training Worker in SGX
+
+<div align="center">
+   <p align="center"> <img src="../docs/image/hfl.png" height=360px; weight=800px;"><br></p>
 </div>
 
 ## References
