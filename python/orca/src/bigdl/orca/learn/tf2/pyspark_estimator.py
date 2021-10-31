@@ -145,7 +145,7 @@ class SparkTFEstimator():
 
                 res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).collect()
+                        lambda iter: transform_func(iter, init_params, params)).repartition(self.num_workers*100).collect()
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
