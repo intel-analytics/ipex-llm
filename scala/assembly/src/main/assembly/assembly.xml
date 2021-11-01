@@ -23,39 +23,10 @@
       </includes>
     </fileSet>
     <fileSet>
-      <outputDirectory>/jars</outputDirectory>
-      <directory>${project.parent.basedir}/dllib/target</directory>
+      <outputDirectory>/apps</outputDirectory>
+      <directory>${project.parent.basedir}/../apps</directory>
       <includes>
-          <include>bigdl-dllib*-jar-with-dependencies.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/jars</outputDirectory>
-      <directory>${project.parent.basedir}/orca/target</directory>
-      <includes>
-          <include>bigdl-orca*-jar-with-dependencies.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/jars</outputDirectory>
-      <directory>${project.parent.basedir}/friesian/target</directory>
-      <includes>
-          <include>bigdl-friesian*-jar-with-dependencies.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/jars</outputDirectory>
-      <directory>${project.parent.basedir}/friesian.serving/target</directory>
-      <includes>
-          <include>bigdl-friesian-serving*.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/jars</outputDirectory>
-      <directory>${project.parent.basedir}/serving/target</directory>
-      <includes>
-          <include>bigdl-serving*-jar-with-dependencies.jar</include>
-          <include>bigdl-serving*-http.jar</include>
+        <include>**/*</include>
       </includes>
     </fileSet>
     <fileSet>
@@ -129,4 +100,31 @@
       </includes>
     </fileSet>
   </fileSets>
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>jars</outputDirectory>
+      <includes>
+        <include>com.intel.analytics.bigdl:*:jar</include>
+      </includes>
+      <excludes>
+        <exclude>com.intel.analytics.bigdl:bigdl-assembly*:jar</exclude>
+      </excludes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>jars</outputDirectory>
+      <useTransitiveDependencies>true</useTransitiveDependencies>
+      <unpack>false</unpack>
+      <scope>runtime</scope>
+      <useProjectArtifact>false</useProjectArtifact>
+      <excludes>
+        <exclude>com.intel.analytics.bigdl:*:jar</exclude>
+        <exclude>org.apache.hadoop:*:jar</exclude>
+        <exclude>org.apache.flink:*:jar</exclude>
+        <exclude>org.apache.spark:*:jar</exclude>
+        <exclude>*:commons*:jar</exclude>
+        <exclude>*:slf4j*:jar</exclude>
+        <exclude>*:log4j*:jar</exclude>
+      </excludes>
+    </dependencySet>
+  </dependencySets>
 </assembly>

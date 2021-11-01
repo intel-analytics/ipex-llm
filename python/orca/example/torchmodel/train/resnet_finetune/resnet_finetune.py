@@ -18,7 +18,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from pyspark.sql.types import StringType, DoubleType
 from pyspark.sql.functions import col, udf
-from bigdl.optim.optimizer import *
+from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
 from bigdl.orca.torch import TorchModel, TorchLoss

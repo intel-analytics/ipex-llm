@@ -23,10 +23,9 @@ import java.util.Base64
 
 import com.intel.analytics.bigdl.dllib.feature.image.OpenCVMethod
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.serving.engine.ClusterServingInference
 import com.intel.analytics.bigdl.serving.http.{Instances, JsonUtil}
 import com.intel.analytics.bigdl.serving.postprocessing.PostProcessing
-import com.intel.analytics.bigdl.serving.utils.{ClusterServingHelper, DeprecatedUtils}
+import com.intel.analytics.bigdl.serving.utils.DeprecatedUtils
 import javax.imageio.ImageIO
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Logger

@@ -26,11 +26,10 @@ import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
 import com.intel.analytics.bigdl.orca.inference.{EncryptSupportive, InferenceSupportive}
-import com.intel.analytics.bigdl.serving.ClusterServing
+import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper}
 import com.intel.analytics.bigdl.serving.http.Instances
-import com.intel.analytics.bigdl.serving.pipeline.RedisUtils
 import com.intel.analytics.bigdl.serving.serialization.{JsonInputDeserializer, StreamSerializer}
-import com.intel.analytics.bigdl.serving.utils.{ClusterServingHelper, Conventions}
+import com.intel.analytics.bigdl.serving.utils.{Conventions, RedisUtils}
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 

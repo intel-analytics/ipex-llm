@@ -18,8 +18,7 @@ You can build one by refer to the
 
 ### Prepare Cifar-10 DataSet
 
-Users can download the Cifar-10 dataset from [here](https://www.cs.toronto.edu/~kriz/cifar.html)
-The dataset contains two sub-directories, namely, train and val. Users need to set this dataset directory behind the "-f" flag in command line.
+Users can download the Cifar-10 dataset from [here](https://www.cs.toronto.edu/~kriz/cifar.html) (remember to choose the binary version). Extract files to dataset directory, e.g., `Cifar-10`. Users need to set this dataset directory behind the "-f" flag in command line.
 
 ### Training
 * Spark local example command

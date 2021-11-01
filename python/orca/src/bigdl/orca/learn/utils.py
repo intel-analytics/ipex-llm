@@ -323,3 +323,19 @@ def maybe_dataframe_to_xshards(data, validation_data, feature_cols, label_cols, 
 
 def bigdl_metric_results_to_dict(results):
     return dict([(r.method, r.result) for r in results])
+
+
+def make_data_creator(refs):
+    def data_creator(config, batch_size):
+        return refs
+
+    return data_creator
+
+
+def data_length(data):
+    x = data["x"]
+    if isinstance(x, np.ndarray):
+        return x.shape[0]
+    else:
+        return x[0].shape[0]
+

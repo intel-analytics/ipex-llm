@@ -17,8 +17,7 @@
 package com.intel.analytics.bigdl.ppml;
 
 public class FLHelper {
-    String servicesList;
-
+    int worldSize = 1;
     // Server property
     int serverPort = 8980;
 
@@ -26,8 +25,8 @@ public class FLHelper {
     String clientTarget = "localhost:8980";
     String taskID = "taskID";
 
-    public void setServicesList(String servicesList) {
-        this.servicesList = servicesList;
+    public void setWorldSize(int worldSize) {
+        this.worldSize = worldSize;
     }
 
     public void setServerPort(int serverPort) {

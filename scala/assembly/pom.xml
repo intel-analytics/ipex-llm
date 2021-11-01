@@ -3,14 +3,67 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>bigdl-parent-spark_${spark.version}</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
+        <artifactId>bigdl-parent-spark_${spark.version}</artifactId>
         <version>0.14.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>bigdl-assembly-spark_${spark.version}</artifactId>
     <packaging>pom</packaging>
+
+    <dependencies>
+      <dependency>
+        <groupId>com.intel.analytics.bigdl</groupId>
+        <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
+        <version>0.14.0-SNAPSHOT</version>
+        <exclusions>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-core_${scala.major.version}</artifactId>
+            </exclusion>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-mllib_${scala.major.version}</artifactId>
+            </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.intel.analytics.bigdl</groupId>
+        <artifactId>bigdl-friesian-spark_${spark.version}</artifactId>
+        <version>0.14.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.intel.analytics.bigdl</groupId>
+        <artifactId>bigdl-orca-spark_${spark.version}</artifactId>
+        <version>0.14.0-SNAPSHOT</version>
+        <exclusions>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-core_${scala.major.version}</artifactId>
+            </exclusion>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-mllib_${scala.major.version}</artifactId>
+            </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.intel.analytics.bigdl</groupId>
+        <artifactId>bigdl-serving-spark_${spark.version}</artifactId>
+        <version>0.14.0-SNAPSHOT</version>
+        <exclusions>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-core_${scala.major.version}</artifactId>
+            </exclusion>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-mllib_${scala.major.version}</artifactId>
+            </exclusion>
+        </exclusions>
+      </dependency>
+    </dependencies>
 
     <build>
         <plugins>

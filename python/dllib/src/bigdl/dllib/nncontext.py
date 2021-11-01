@@ -125,6 +125,83 @@ def init_spark_on_yarn(hadoop_conf,
         conf=conf)
     return sc
 
+def init_spark_on_yarn_cluster(hadoop_conf,
+                       conda_name,
+                       num_executors,
+                       executor_cores,
+                       executor_memory="2g",
+                       driver_cores=4,
+                       driver_memory="2g",
+                       extra_executor_memory_for_ray=None,
+                       extra_python_lib=None,
+                       penv_archive=None,
+                       additional_archive=None,
+                       hadoop_user_name="root",
+                       spark_yarn_archive=None,
+                       spark_log_level="WARN",
+                       redirect_spark_log=True,
+                       jars=None,
+                       conf=None):
+    """
+    Create a SparkContext with Analytics Zoo configurations on Yarn cluster for yarn-cluster mode.
+    You only need to create a conda environment and install the python dependencies in that
+    environment beforehand on the driver machine. These dependencies would be automatically
+    packaged and distributed to the whole Yarn cluster.
+
+    :param hadoop_conf: The path to the yarn configuration folder.
+    :param conda_name: The name of the conda environment.
+    :param num_executors: The number of Spark executors.
+    :param executor_cores: The number of cores for each executor.
+    :param executor_memory: The memory for each executor. Default to be '2g'.
+    :param driver_cores: The number of cores for the Spark driver. Default to be 4.
+    :param driver_memory: The memory for the Spark driver. Default to be '1g'.
+    :param extra_executor_memory_for_ray: The extra memory for Ray services. Default to be None.
+    :param extra_python_lib: Extra python files or packages needed for distribution.
+           Default to be None.
+    :param penv_archive: Ideally, the program would auto-pack the conda environment specified by
+           'conda_name', but you can also pass the path to a packed file in "tar.gz" format here.
+           Default to be None.
+    :param additional_archive: Comma-separated list of additional archives to be uploaded and
+           unpacked on executors. Default to be None.
+    :param hadoop_user_name: The user name for running the yarn cluster. Default to be 'root'.
+    :param spark_yarn_archive: Conf value for setting spark.yarn.archive. Default to be None.
+    :param spark_log_level: The log level for Spark. Default to be 'WARN'.
+    :param redirect_spark_log: Whether to redirect the Spark log to local file. Default to be True.
+    :param jars: Comma-separated list of jars to be included on driver and executor's classpath.
+           Default to be None.
+    :param conf: You can append extra conf for Spark in key-value format.
+           i.e conf={"spark.executor.extraJavaOptions": "-XX:+PrintGCDetails"}.
+           Default to be None.
+
+    :return: An instance of SparkContext.
+    """
+    if os.environ.get("OnAppMaster", "False") == "True":
+      #from pyspark import SparkContext
+      sc = init_nncontext()
+      return sc
+    else:
+      from bigdl.dllib.utils.spark import SparkRunner
+      runner = SparkRunner(spark_log_level=spark_log_level,
+                           redirect_spark_log=redirect_spark_log)
+      return_value = runner.init_spark_on_yarn_cluster(
+          hadoop_conf=hadoop_conf,
+          conda_name=conda_name,
+          num_executors=num_executors,
+          executor_cores=executor_cores,
+          executor_memory=executor_memory,
+          driver_cores=driver_cores,
+          driver_memory=driver_memory,
+          extra_executor_memory_for_ray=extra_executor_memory_for_ray,
+          extra_python_lib=extra_python_lib,
+          penv_archive=penv_archive,
+          additional_archive=additional_archive,
+          hadoop_user_name=hadoop_user_name,
+          spark_yarn_archive=spark_yarn_archive,
+          jars=jars,
+          conf=conf)
+      sys.exit(return_value)
+
+
 
 def init_spark_standalone(num_executors,
                           executor_cores,

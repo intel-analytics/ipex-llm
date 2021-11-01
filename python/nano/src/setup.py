@@ -119,7 +119,7 @@ def setup_package():
         description='High-performance scalable acceleration components for intel.',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
-        url='https://github.com/intel-analytics/analytics-zoo/tree/bigdl-2.0',
+        url='https://github.com/intel-analytics/BigDL',
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
                         "pytorch": pytorch_requires},

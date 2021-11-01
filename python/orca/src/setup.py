@@ -93,9 +93,8 @@ def setup_package():
                           'bigdl-tf=='+VERSION, 'bigdl-math=='+VERSION, 'bigdl-dllib=='+VERSION],
         extras_require={'ray': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
                                 'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1'],
-                        'automl': ['ray[tune]==1.2.0', 'psutil', 'aiohttp==3.7.0',
-                                   'aioredis==1.1.0', 'setproctitle', 'hiredis==1.1.0',
-                                   'async-timeout==3.0.1', 'xgboost']},
+                        'automl': ['ray[tune]==1.2.0', 'scikit-learn', 'tensorboard', 'xgboost']
+                        },
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         package_data={"bigdl.share.orca": ['lib/bigdl-orca*.jar']},

@@ -4,6 +4,25 @@
 
 **Orca `AutoEstimator` provides similar APIs as Orca `Estimator` for distributed hyper-parameter tuning.** 
 
+### **Install**
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment.
+```bash
+conda create -n bigdl-orca-automl python=3.7  # "bigdl-orca-automl" is conda environment name, you can use any name you like.
+conda activate bigdl-orca-automl
+pip install bigdl-orca[automl]
+````
+You can install the latest release version of BigDL Orca as follows:
+```bash
+pip install --pre --upgrade bigdl-orca[automl]
+```
+_Note that with extra key of [automl], `pip` will automatically install the additional dependencies for distributed hyper-parameter tuning,
+including `ray[tune]==1.2.0`, `scikit-learn`, `tensorboard`, `xgboost`._
+
+To use [Pytorch Estimator](#pytorch-autoestimator), you need to install Pytorch with `pip install torch==1.8.1`.
+
+To use [TensorFlow/Keras AutoEstimator](#tensorflow-keras-autoestimator), you need to install Tensorflow with `pip install tensorflow==1.15.0`.
+
+
 ### **1. AutoEstimator**
 
 To perform distributed hyper-parameter tuning, user can first create an Orca `AutoEstimator` from standard TensorFlow Keras or PyTorch model, and then call `AutoEstimator.fit`.
@@ -68,12 +87,12 @@ Note that the `optimizer` argument in Pytorch `AutoEstimator` constructor could 
 #### **2.4 Create and Fit Pytorch AutoEstimator**
 User could create a Pytorch `AutoEstimator` as below.
 ```python
-from zoo.orca.automl.auto_estimator import AutoEstimator
+from bigdl.orca.automl.auto_estimator import AutoEstimator
 
 auto_est = AutoEstimator.from_torch(model_creator=model_creator,
                                     optimizer=optim_creator,
                                     loss=nn.NLLLoss(),
-                                    logs_dir="/tmp/zoo_automl_logs",
+                                    logs_dir="/tmp/orca_automl_logs",
                                     resources_per_trial={"cpu": 2},
                                     name="lenet_mnist")
 ```
@@ -91,7 +110,7 @@ Finally, user can get the best learned model and the best hyper-parameters for f
 best_model = auto_est.get_best_model() # a `torch.nn.Module` object
 best_config = auto_est.get_best_config() # a dictionary of hyper-parameter names and values.
 ```
-View the related [Python API doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
+View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
 
 ### **3. TensorFlow/Keras AutoEstimator**
 Users can create an `AutoEstimator` for TensorFlow Keras from a `tf.keras` model (using a *Model Creator Function*). For example:
@@ -107,7 +126,7 @@ def model_creator(config):
     return model
 
 auto_est = AutoEstimator.from_keras(model_creator=model_creator,
-                                    logs_dir="/tmp/zoo_automl_logs",
+                                    logs_dir="/tmp/orca_automl_logs",
                                     resources_per_trial={"cpu": 2},
                                     name="auto_keras")
 ```
@@ -128,20 +147,20 @@ Finally, user can get the best learned model and the best hyper-parameters for f
 best_model = auto_est.get_best_model() # a `torch.nn.Module` object
 best_config = auto_est.get_best_config() # a dictionary of hyper-parameter names and values.
 ```
-View the related [Python API doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
+View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
 
 ### **4. Search Space and Search Algorithms**
 For Hyper-parameter Optimization, user should define the search space of various hyper-parameter values for neural network training, as well as how to search through the chosen hyper-parameter space.
 
 #### **4.1 Basic Search Algorithms**
 
-For basic search algorithms like **Grid Search** and **Random Search**, we provide several sampling functions with `automl.hp`. See [API doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
+For basic search algorithms like **Grid Search** and **Random Search**, we provide several sampling functions with `automl.hp`. See [API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
 
 `AutoEstimator` requires a dictionary for the `search_space` argument in `fit`.
 In the dictionary, the keys are the hyper-parameter names, and the values specify how to sample the search spaces for the hyper-parameters.
 
 ```python
-from zoo.orca.automl import hp
+from bigdl.orca.automl import hp
 
 search_space = {
     "fc1_hidden_size": hp.grid_search([500, 600]),
@@ -163,7 +182,7 @@ pip install bayesian-optimization
 
 And pass the search algorithm name to `search_alg` in `AutoEstimator.fit`.
 ```python
-from zoo.orca.automl import hp
+from bigdl.orca.automl import hp
 
 search_space = {
     "width": hp.uniform(0, 20),
@@ -178,9 +197,9 @@ auto_estimator.fit(
     search_alg="bayesopt",
 )
 ```
-See [API Doc](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
+See [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
 
-### **4. Scheduler**
+### **5. Scheduler**
 *Scheduler* can stop/pause/tweak the hyper-parameters of running trials, making the hyper-parameter tuning process much efficient.
 
 We support all *Schedulers* in [Ray Tune](https://docs.ray.io/en/master/index.html). See [Ray Tune Schedulers](https://docs.ray.io/en/master/tune/api_docs/schedulers.html#schedulers-ref) for more details.
