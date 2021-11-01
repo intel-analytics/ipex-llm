@@ -67,7 +67,7 @@ flinktm () {
     if [ $? -eq 1 ] ; then
         echo "Cannot find Flink task manager log at path" $TMSGXLOG
     else 
-        TMSUCCESS=$(cat $TMSGXLOG | grep "Successful registration at job manager")
+        TMSUCCESS=$(cat $TMSGXLOG | grep "Successful registration at reousrce manager")
         if [ -z "$TMSUCCESS" ] ; then
             echo "Flink task manager initialization failed. See" $TMSGXLOG "for details."
             echo "To restart Flink task manager, run /ppml/trusted-realtime-ml/java/start-flink-taskmanager.sh in the docker container."
