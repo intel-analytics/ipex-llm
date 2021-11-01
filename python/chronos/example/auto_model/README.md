@@ -8,7 +8,7 @@ conda create -n my_env python=3.7 # "my_env" is conda environment name, you can 
 conda activate my_env
 pip install --pre --upgrade bigdl-chronos[all]
 ```
-Please refer to [Chronos install guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
+Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
 
 ## Prepare data
 We are using the nyc taxi provided by NAB, from 2014-07-01 to 2015-01-31 taxi fare information For more details, you can download it [here](https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv) and view the detailed information [here](https://github.com/numenta/NAB/tree/master/data).
