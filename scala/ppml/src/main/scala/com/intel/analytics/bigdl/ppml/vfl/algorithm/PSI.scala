@@ -18,10 +18,28 @@ package com.intel.analytics.bigdl.ppml.vfl.algorithm
 
 import java.util
 
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
+import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
 import com.intel.analytics.bigdl.ppml.vfl.utils.FLClientClosable
+import org.apache.log4j.Logger
 
-class PSI() extends FLClientClosable{
+import collection.JavaConverters._
+
+class PSI() extends FLClientClosable {
+  val logger = Logger.getLogger(getClass)
+  private var hashedKeyPairs: Map[String, String] = null
+  def getHashedKeyPairs() = {
+    hashedKeyPairs
+  }
+  def uploadKeys(keys: Array[String]) = {
+    val salt = getSalt
+    logger.debug("Client get Salt=" + salt)
+    val hashedKeys = TestUtils.parallelToSHAHexString(keys, salt)
+    hashedKeyPairs = hashedKeys.zip(keys).toMap
+    // Hash(IDs, salt) into hashed IDs
+    logger.debug("HashedIDs Size = " + hashedKeys.size)
+    uploadSet(hashedKeys.toList.asJava)
+
+  }
 
   def getSalt(): String = flClient.psiStub.getSalt()
   def getSalt(name: String, clientNum: Int, secureCode: String): String =
