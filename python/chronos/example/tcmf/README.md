@@ -11,7 +11,7 @@ conda create -n my_env python=3.7 # "my_env" is conda environment name, you can 
 conda activate my_env
 pip install --pre --upgrade bigdl-chronos[all]
 ```
-Please refer to [Chronos install guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
+Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
 
 ## Prepare data
 The example use the public real-world electricity datasets. You can download by running [download datasets script](https://github.com/rajatsen91/deepglo/blob/master/datasets/download-data.sh). Note that we only need electricity.npy.
