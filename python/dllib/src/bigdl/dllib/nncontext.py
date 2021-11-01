@@ -125,6 +125,7 @@ def init_spark_on_yarn(hadoop_conf,
         conf=conf)
     return sc
 
+
 def init_spark_on_yarn_cluster(hadoop_conf,
                        conda_name,
                        num_executors,
@@ -175,31 +176,26 @@ def init_spark_on_yarn_cluster(hadoop_conf,
 
     :return: An instance of SparkContext.
     """
-    if os.environ.get("OnAppMaster", "False") == "True":
-      #from pyspark import SparkContext
-      sc = init_nncontext()
-      return sc
-    else:
-      from bigdl.dllib.utils.spark import SparkRunner
-      runner = SparkRunner(spark_log_level=spark_log_level,
-                           redirect_spark_log=redirect_spark_log)
-      return_value = runner.init_spark_on_yarn_cluster(
-          hadoop_conf=hadoop_conf,
-          conda_name=conda_name,
-          num_executors=num_executors,
-          executor_cores=executor_cores,
-          executor_memory=executor_memory,
-          driver_cores=driver_cores,
-          driver_memory=driver_memory,
-          extra_executor_memory_for_ray=extra_executor_memory_for_ray,
-          extra_python_lib=extra_python_lib,
-          penv_archive=penv_archive,
-          additional_archive=additional_archive,
-          hadoop_user_name=hadoop_user_name,
-          spark_yarn_archive=spark_yarn_archive,
-          jars=jars,
-          conf=conf)
-      sys.exit(return_value)
+    from bigdl.dllib.utils.spark import SparkRunner
+    runner = SparkRunner(spark_log_level=spark_log_level,
+                         redirect_spark_log=redirect_spark_log)
+    return_value = runner.init_spark_on_yarn_cluster(
+      hadoop_conf=hadoop_conf,
+      conda_name=conda_name,
+      num_executors=num_executors,
+      executor_cores=executor_cores,
+      executor_memory=executor_memory,
+      driver_cores=driver_cores,
+      driver_memory=driver_memory,
+      extra_executor_memory_for_ray=extra_executor_memory_for_ray,
+      extra_python_lib=extra_python_lib,
+      penv_archive=penv_archive,
+      additional_archive=additional_archive,
+      hadoop_user_name=hadoop_user_name,
+      spark_yarn_archive=spark_yarn_archive,
+      jars=jars,
+      conf=conf)
+    sys.exit(return_value)
 
 
 
@@ -424,7 +420,7 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
            Analytics Zoo and BigDL configurations would be created and used.
            You can also input a string here to indicate the name of the application.
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-       "k8s-client", "standalone" and "spark-submit". Default to be "local".
+       "yarn-cluster", "k8s-client", "standalone" and "spark-submit". Default to be "local".
 
        For "spark-submit", you are supposed to use spark-submit to submit the application.
        In this case, please set the Spark configurations through command line options or
@@ -460,10 +456,7 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
         if "python_location" in kwargs:
             spark_args["python_location"] = kwargs["python_location"]
         sc = init_spark_on_local(cores, **spark_args)
-    elif cluster_mode.startswith("yarn"):  # yarn or yarn-client
-        if cluster_mode == "yarn-cluster":
-            raise ValueError('For yarn-cluster mode, please set cluster_mode to "spark-submit" '
-                             'and submit the application via spark-submit instead')
+    elif cluster_mode in ("yarn-client", "yarn-cluster"):  # yarn-cluster or yarn-client
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         if not hadoop_conf:
             assert "hadoop_conf" in kwargs, \
@@ -478,11 +471,23 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
                     "hadoop_user_name", "spark_yarn_archive", "jars"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
-        from bigdl.dllib.nncontext import init_spark_on_yarn
-        sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
-                                conda_name=conda_env_name,
-                                num_executors=num_nodes, executor_cores=cores,
-                                executor_memory=memory, **spark_args)
+        if cluster_mode == "yarn-client":
+            from bigdl.dllib.nncontext import init_spark_on_yarn
+            sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
+                                    conda_name=conda_env_name,
+                                    num_executors=num_nodes, executor_cores=cores,
+                                    executor_memory=memory, **spark_args)
+        else:
+            if os.environ.get("OnAppMaster", "False") == "True":
+                # from pyspark import SparkContext
+                sc = init_internal_nncontext()
+            else:
+                sc = init_spark_on_yarn_cluster(hadoop_conf=hadoop_conf,
+                                                conda_name=conda_env_name,
+                                                num_executors=num_nodes,
+                                                executor_cores=cores,
+                                                executor_memory=memory,
+                                                **spark_args)
     elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
         if cluster_mode == "k8s-cluster":
             raise ValueError('For k8s-cluster mode, please set cluster_mode to "spark-submit" '
