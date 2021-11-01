@@ -1,20 +1,20 @@
 # Train DIEN using the Amazon book review dataset
-This folder showcases how to preprocess and train a [DIEN](https://arxiv.org/pdf/1809.03672.pdf) model on Analytics Zoo. 
+This folder showcases how to preprocess and train a [DIEN](https://arxiv.org/pdf/1809.03672.pdf) model on BigDL. 
 Model definition is based on [ai-matrix](https://github.com/alibaba/ai-matrix/tree/master/macro_benchmark/DIEN)
 [Amazon book review](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books.json.gz) and [meta_books](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Books.json.gz) dataset to be used in this example.
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
 ```
-conda create -n zoo python=3.7  # "zoo" is the conda environment name, you can use any name you like.
-conda activate zoo
+conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
+conda activate bigdl
 pip install tensorflow==1.15.0
-pip install --pre --upgrade analytics-zoo
+pip install --pre --upgrade bigdl-friesian
 ```
 
 ## Prepare the data
-   1. Down load meta_books data from [here](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Books.json.gz). 
-   2. Down load full book_review data from [here](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books.json.gz) which contains 22,507,155 records, or you can start from the [small dataset](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books_5.json.gz) which contains 8,898,041 records.
+   1. Download meta_books data from [here](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Books.json.gz). 
+   2. Download full book_review data from [here](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books.json.gz) which contains 22,507,155 records, or you can start from the [small dataset](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books_5.json.gz) which contains 8,898,041 records.
 
 ## Preprocess data  
 * Spark local, example command:
