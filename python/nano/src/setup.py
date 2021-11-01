@@ -107,7 +107,8 @@ def setup_package():
 
     lib_urls = [
         "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
-        "https://github.com/leonardozcm/libjpeg-turbo/releases/download/2.1.1/libturbojpeg.so.0.2.0",
+        "https://github.com/leonardozcm/libjpeg-turbo/releases"
+        "/download/2.1.1/libturbojpeg.so.0.2.0",
         "https://github.com/leonardozcm/tcmalloc/releases/download/v1/libtcmalloc.so"
     ]
     for url in lib_urls:
