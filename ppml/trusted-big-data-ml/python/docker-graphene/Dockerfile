@@ -155,7 +155,7 @@ ENV SPARK_DRIVER_BLOCK_MANAGER_PORT     10026
 ENV SPARK_DRIVER_IP                     $LOCAL_IP
 ENV SPARK_BLOCK_MANAGER_PORT            10025
 ENV TINI_VERSION                        $TINI_VERSION
-ENV PYTHONPATH                          ${PYTHONPATH}:/graphene/meson_build_output/lib/python3.6/site-packages
+ENV PYTHONPATH                          ${PYTHONPATH}:/usr/lib/python36.zip:/usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages:/graphene/meson_build_output/lib/python3.6/site-packages
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
