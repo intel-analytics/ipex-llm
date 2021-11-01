@@ -73,8 +73,8 @@ fs.mount.pydisthome.path = "/usr/lib/python3/dist-packages"
 fs.mount.pydisthome.uri = "file:/usr/lib/python3/dist-packages"
 
 fs.mount.kubeconf.type = "chroot"
-fs.mount.kubeconf.path = "/root/.kube/config"
-fs.mount.kubeconf.uri = "file:/root/.kube/config"
+fs.mount.kubeconf.path = "/root/.kube/"
+fs.mount.kubeconf.uri = "file:/root/.kube/"
 
 fs.mount.keras.type = "chroot"
 fs.mount.keras.path = "/root/.keras"
