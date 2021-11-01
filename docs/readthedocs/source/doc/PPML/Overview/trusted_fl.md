@@ -1,6 +1,6 @@
 # Trusted FL (Federated Learning)
 
-SGX-based E2e Trusted FL platform
+SGX-based End-to-end Trusted FL platform
 
 ## ID & Feature align
 
@@ -8,35 +8,27 @@ Before we start Federated Learning, we need to align ID & Feature, and figure ou
 
 Let RID1 and RID2 be randomized ID from party 1 and party 2.
 
-<div align="center">
-   <p align="center"> <img src="../docs/image/id_align.png" height=180px; weight=650px;"><br></p>
-</div>
-
-
 ## Vertical FL
+
+Vertical FL training across multi-parties with different features.
 
 Key features:
 
 * FL Server in SGX
-    * id & feature align
-    * Forward & backward
+    * ID & feature align
+    * Forward & backward aggregation
 * Training node in SGX
-
-<div align="center">
-   <p align="center"> <img src="../docs/image/vfl.png" height=360px; weight=800px;"><br></p>
-</div>
 
 ## Horizontal FL
 
+Horizontal FL training across multi-parties.
+
 Key features:
 
-* id & feature align (optional)
-* Parameter Server in SGX
+* FL Server in SGX
+   * ID & feature align (optional)
+   * Weight/Gradient Aggregation in SGX
 * Training Worker in SGX
-
-<div align="center">
-   <p align="center"> <img src="../docs/image/hfl.png" height=360px; weight=800px;"><br></p>
-</div>
 
 ## References
 
