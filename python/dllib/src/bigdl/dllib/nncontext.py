@@ -456,11 +456,13 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
     if cluster_mode == "spark-submit":
         sc = init_internal_nncontext(conf, spark_log_level, redirect_spark_log)
     elif cluster_mode == "local":
-        os.environ["SPARK_DRIVER_MEMORY"] = memory
+        os.environ["SPARK_DRIVER_MEMORY"] = conf.get("spark.driver.memory", memory)
 
+        python_location = None
         if "python_location" in kwargs:
-            spark_args["python_location"] = kwargs["python_location"]
-        sc = init_spark_on_local(cores, **spark_args)
+            python_location = kwargs["python_location"]
+        sc = init_spark_on_local(2, spark_args, python_location, spark_log_level,
+                                 redirect_spark_log)
     elif cluster_mode in ("yarn-client", "yarn-cluster"):  # yarn-cluster or yarn-client
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         if not hadoop_conf:
@@ -481,14 +483,14 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
             sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
                                     conda_name=conda_env_name,
                                     num_executors=num_nodes, executor_cores=cores,
-                                    executor_memory=memory, **spark_args)
+                                    executor_memory=memory, conf=spark_args)
         else:
             sc = init_spark_on_yarn_cluster(hadoop_conf=hadoop_conf,
                                             conda_name=conda_env_name,
                                             num_executors=num_nodes,
                                             executor_cores=cores,
                                             executor_memory=memory,
-                                            **spark_args)
+                                            conf=spark_args)
     elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
         if cluster_mode == "k8s-cluster":
             raise ValueError('For k8s-cluster mode, please set cluster_mode to "spark-submit" '
@@ -515,7 +517,7 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
         sc = init_spark_standalone(num_executors=num_nodes, executor_cores=cores,
                                    executor_memory=memory, **spark_args)
     else:
-        raise ValueError("cluster_mode can only be local, yarn-client, standalone or spark-submit, "
+        raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster, standalone or spark-submit, "
                          "but got: %s".format(cluster_mode))
     return sc
 

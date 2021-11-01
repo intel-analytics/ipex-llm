@@ -288,20 +288,13 @@ if __name__ == "__main__":
     assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
             "set the environment variable HADOOP_CONF_DIR"
     conda_env_name = detect_conda_env_name()
-    if options.deployMode == "yarn-client":
-        sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
-                                conda_name=conda_env_name,
-                                num_executors=options.executors,
-                                executor_cores=options.cores,
-                                executor_memory=options.executorMemory,
-                                driver_memory=options.driverMemory)
-    else: 
-        sc = init_spark_on_yarn_cluster(hadoop_conf=hadoop_conf,
-                                        conda_name=conda_env_name,
-                                        num_executors=options.executors,
-                                        executor_cores=options.cores,
-                                        executor_memory=options.executorMemory,
-                                        driver_memory=options.driverMemory)
+
+    conf = create_spark_conf().set("spark.executor.memory", options.executorMemory)\
+        .set("spark.executor.cores", options.cores)\
+        .set("spark.executor.instances", options.executors)\
+        .set("spark.driver.memory", options.driverMemory)
+
+    sc = init_nncontext(conf, cluster_mode=options.deployMode, hadoop_conf=hadoop_conf, conda_name=conda_env_name)
 
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),
