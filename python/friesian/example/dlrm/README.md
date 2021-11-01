@@ -10,7 +10,7 @@ conda activate bigdl
 pip install --pre --upgrade bigdl-friesian
 ```
 
-__Note:__ As we test, Spark 3 will have performance benefit over the default Spark 2.4.6 and you can download the BigDL package built with Spark 3.0.0 from [here](https://sourceforge.net/projects/analytics-zoo/files/zoo-py/).
+__Note:__ As we test, Spark 3 will have performance benefit over the default Spark 2.4.6 and you can download the BigDL package built with Spark 3.0.0 from [here](https://sourceforge.net/projects/analytics-zoo/files/friesian-py/).
 
 ## Prepare the data
 You can download the full __1TB__ Click Logs dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/), which includes data of 24 days (day_0 to day_23) with 4,373,472,329 records in total.
