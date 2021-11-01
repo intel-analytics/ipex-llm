@@ -8,13 +8,13 @@ In the reference use case, we use the publicly available cluster trace data clus
 
 This use case example contains two notebooks:
 
-- **AIOps_anomaly_detect_unsupervised_forecast_based.ipynb** demonstrates how to leverage Chronos's built-in models ie. MTNet, to do time series forecasting. Then perform anomaly detection on predicted value with [ThresholdDetector](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-th-detector).
+- **AIOps_anomaly_detect_unsupervised_forecast_based.ipynb** demonstrates how to leverage Chronos's built-in models ie. MTNet, to do time series forecasting. Then perform anomaly detection on predicted value with [ThresholdDetector](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#thresholddetector).
 
-- **AIOps_anomaly_detect_unsupervised.ipynb** demonstrates how to perform anomaly detection based on Chronos's built-in [DBScanDetector](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-dbscan-detector), [AEDetector](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-ae-detector) and [ThresholdDetector](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#chronos-model-anomaly-th-detector).
+- **AIOps_anomaly_detect_unsupervised.ipynb** demonstrates how to perform anomaly detection based on Chronos's built-in [DBScanDetector](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#dbscandetector), [AEDetector](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#aedetector) and [ThresholdDetector](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#thresholddetector).
 
 ### Install
 
-You can refer to Chronos installation document [here](https://analytics-zoo.github.io/master/#Chronos/tutorials/LSTMForecasterAndMTNetForecaster/#step-0-prepare-environment).
+You can refer to Chronos installation document [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install).
 
 ### Prepare dataset
 * run `get_data.sh` to download the full dataset. It will download the resource usage of each machine from m_1932 to m_2085. 
