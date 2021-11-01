@@ -7,11 +7,8 @@ We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux)
 ```
 conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
 conda activate bigdl
+pip install tensorflow==2.6.0
 pip install --pre --upgrade bigdl-friesian
-```
-You also need to install tensorflow in this example.
-```
-conda install tensorflow==2.6.0
 ```
 ## Prepare the data
 You can download the full __1TB__ Click Logs dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/), which includes data of 24 days (day_0 to day_23) with 4,373,472,329 records in total.
