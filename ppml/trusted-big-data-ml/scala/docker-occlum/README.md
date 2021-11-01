@@ -19,6 +19,8 @@ bash build-docker-image.sh
 
 ## Spark 3.1.2 Pi example
 
+Warning: Before run any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
+
 To run Spark Pi example, start the docker container with:
 
 ``` bash
