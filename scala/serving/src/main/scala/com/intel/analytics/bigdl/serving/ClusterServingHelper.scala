@@ -89,12 +89,17 @@ class ClusterServingHelper
       chwFlag = false
     }
     // Allow concurrent number overwrite
-    if (concurrentNum > 0) {
+    val model = if (concurrentNum > 0) {
       modelParallelism = concurrentNum
+      ClusterServing.logger.info(
+        s"Cluster Serving load Inference Model with Parallelism $modelParallelism")
+      new InferenceModel(modelParallelism)
+    } else {
+      ClusterServing.logger.info(
+        s"Cluster Serving load Inference Model with auto-scaling Parallelism")
+      new InferenceModel()
     }
-    ClusterServing.logger.info(
-      s"Cluster Serving load Inference Model with Parallelism $modelParallelism")
-    val model = new InferenceModel(modelParallelism)
+
 
     // Used for Tensorflow Model, it could not have intraThreadNum > 2^8
     // in some models, thus intraThreadNum should be limited
@@ -280,7 +285,7 @@ object ClusterServingHelper {
    * @param concurrentNumber model concurrent number
    * @return
    */
-  def loadModelfromDir(modelDir: String, concurrentNumber: Int = 1): (InferenceModel, String) = {
+  def loadModelfromDir(modelDir: String, concurrentNumber: Int = 0): (InferenceModel, String) = {
     val helper = new ClusterServingHelper()
     helper.modelPath = modelDir
     helper.parseModelType(modelDir)
