@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.serving.operator
 
-class ClusterServingParams(modelConcurrent: Int = 1,
+class ClusterServingParams(modelConcurrent: Int = 0,
                            inferenceMode: String = "single",
                            coreNum: Int = 4) extends Serializable {
   val _modelConcurrent = modelConcurrent
