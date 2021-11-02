@@ -24,9 +24,11 @@ import com.intel.analytics.bigdl.serving.preprocessing.PreProcessing
 import org.apache.log4j.Logger
 
 /**
- * Inference Logic of Cluster Serving
+ *
+ * @param modelKey Whether multiple Cluster Serving jobs share a same process (JVM)
+ *                 If not sharing, modelKey should be null
  */
-class ClusterServingInference() {
+class ClusterServingInference(modelKey: String = null) {
   val logger = Logger.getLogger(getClass)
   val helper = ClusterServing.helper
   val preProcessing = new PreProcessing()
@@ -63,7 +65,9 @@ class ClusterServingInference() {
     val postProcessed = in.map(pathByte => {
       try {
         val t = typeCheck(pathByte._2)
-        val result = ClusterServing.model.doPredict(t)
+        val result = if (modelKey != null) {
+          ClusterServing.jobModelMap(modelKey).doPredict(t)
+        } else ClusterServing.model.doPredict(t)
         dimCheck(result, "remove", helper.modelType)
         val resultIndex = if (helper.inputAlreadyBatched) -1 else 1
         val value = PostProcessing(result.toTensor[Float], helper.postProcessing, resultIndex)
@@ -127,8 +131,9 @@ class ClusterServingInference() {
          * have to squeeze it back.
          */
         // dimCheck(t, "add", modelType)
-        val result =
-          ClusterServing.model.doPredict(t)
+        val result = if (modelKey != null) {
+          ClusterServing.jobModelMap(ClusterServing.helper.modelPath).doPredict(t)
+        } else ClusterServing.model.doPredict(t)
 //        dimCheck(result, "remove", helper.modelType)
         // dimCheck(t, "remove", modelType)
         val kvResult =

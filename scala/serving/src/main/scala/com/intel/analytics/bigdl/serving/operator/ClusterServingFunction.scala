@@ -52,13 +52,14 @@ class ClusterServingFunction()
           logger.info("Loading Cluster Serving model...")
           val info = ClusterServingHelper
             .loadModelfromDir(modelLocalPath, clusterServingParams._modelConcurrent)
+          ClusterServing.jobModelMap += (modelPath -> info._1)
           ClusterServing.model = info._1
           clusterServingParams._modelType = info._2
           ClusterServing.helper.modelType = clusterServingParams._modelType
         }
       }
     }
-    inference = new ClusterServingInference()
+    inference = new ClusterServingInference(modelPath)
 
   }
 
