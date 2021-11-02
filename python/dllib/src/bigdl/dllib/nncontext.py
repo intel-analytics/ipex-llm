@@ -450,8 +450,8 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
     spark_args["redirect_spark_log"] = redirect_spark_log
     if not isinstance(conf, six.string_types):
         memory = conf.get("spark.executor.memory", "2g")
-        cores = conf.get("spark.executor.cores", 2)
-        num_nodes = conf.get("spark.executor.instances", 1)
+        cores = conf.get("spark.executor.cores", "2")
+        num_nodes = conf.get("spark.executor.instances", "1")
         spark_args.update(conf.getAll())
     if cluster_mode == "spark-submit":
         sc = init_internal_nncontext(conf, spark_log_level, redirect_spark_log)

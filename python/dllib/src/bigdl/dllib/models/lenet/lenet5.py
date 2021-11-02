@@ -77,7 +77,6 @@ if __name__ == "__main__":
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
                 "set the environment variable HADOOP_CONF_DIR"
-        conda_env_name = detect_conda_env_name()
         spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
             .set("spark.executor.cores", 2) \
             .set("spark.executor.instances", 2) \
@@ -85,10 +84,9 @@ if __name__ == "__main__":
         spark_conf.setAll(conf)
 
         if options.clusterMode == "yarn-client":
-            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf, conda_name=conda_env_name)
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
         else:
-            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf,
-                                conda_name=conda_env_name)
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
     elif options.clusterMode == "local":
         spark_conf = SparkConf().set("spark.driver.memory", "10g")\
             .set("spark.driver.cores", 4)
