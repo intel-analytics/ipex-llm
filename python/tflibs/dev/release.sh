@@ -58,6 +58,8 @@ elif [ "$platform" == "linux" ]; then
     rm ${SO_PREFIX}/libtensorflow_framework.so
     rm ${SO_PREFIX}/libtensorflow_framework.so.1
     mv "${FRAMEWORK_SO}" "${SO_PREFIX}/libtensorflow_framework-zoo.so"
+    # Need root permission to execute the following commands.
+    # Add sudo to these two commands if you are not the root.
     patchelf --set-soname libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_framework-zoo.so
     patchelf --replace-needed libtensorflow_framework.so.1 libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_jni.so
 else
