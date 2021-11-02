@@ -208,7 +208,7 @@ object Engine {
     "Do you call Engine.init? See more at " +
       "https://bigdl-project.github.io/master/#APIGuide/Engine/"
 
-  private val SPARK_CONF_ERROR = "For details please check " +
+  private val SPARK_CONF_WARN = "For details please check " +
     "https://bigdl-project.github.io/master/#APIGuide/Engine/"
 
   /**
@@ -448,12 +448,12 @@ object Engine {
 
     def verify(key: String, value: String): Unit = {
       val v = sparkConf.getOption(key)
-      require(v.isDefined,
-        s"Engine.init: Can not find $key. " + SPARK_CONF_ERROR)
-      require(v.get == value,
-        s"Engine.init: $key should be $value, " +
-          s"but it is ${v.get}. " + SPARK_CONF_ERROR
-      )
+      if(!v.isDefined) {
+        logger.warn(s"Engine.init: Can not find $key. " + SPARK_CONF_WARN)
+      } else if (v.get != value) {
+        logger.warn(s"Engine.init: $key should be $value, " +
+          s"but it is ${v.get}. " + SPARK_CONF_WARN)
+      }
     }
 
     readConf.foreach(c => verify(c._1, c._2))
