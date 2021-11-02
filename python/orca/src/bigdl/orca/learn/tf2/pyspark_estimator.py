@@ -18,9 +18,11 @@ import logging
 import os
 from pyspark.sql.dataframe import DataFrame
 import numpy as np
+import tempfile
+import shutil
 
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
+from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, get_remote_file_to_local
 
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
@@ -161,7 +163,14 @@ class SparkTFEstimator():
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
         if self.model_dir:
-            self.model_weights = load_pkl(os.path.join(self.model_dir, "weights.pkl"))
+            try:
+                temp_dir = tempfile.mkdtemp()
+                get_remote_file_to_local(os.path.join(self.model_dir, "weights.pkl"),
+                                         os.path.join(temp_dir, "weights.pkl"),
+                                         over_write=True)
+                self.model_weights = load_pkl(os.path.join(temp_dir, "weights.pkl"))
+            finally:
+                shutil.rmtree(temp_dir)
 
         return res
 
