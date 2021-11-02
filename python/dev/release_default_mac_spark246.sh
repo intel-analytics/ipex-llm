@@ -26,7 +26,7 @@ BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../..; pwd)"
 echo $BIGDL_DIR
 
 if (( $# < 3)); then
-  echo "Usage: release_default_mac_spark246.sh version upload"
+  echo "Usage: release_default_mac_spark246.sh version quick_build upload mvn_parameters"
   echo "Usage example: bash release_default_mac_spark246.sh default false true"
   echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 false false"
   echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 false false -Ddata-store-url=.."
@@ -34,9 +34,11 @@ if (( $# < 3)); then
 fi
 
 version=$1
-quick=$2 #quick build or not
+quick=$2
 upload=$3
 profiles=${*:4}
+
+# TODO: nano is currently not ready for mac.
 
 # Only dllib is not using quick build.
 # Since make_dist is invoked in dllib, all other packages can directly use quick build.
