@@ -11,8 +11,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
 RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
-    git fetch origin branch-0.3 && \
-    git checkout branch-0.3
+    git fetch origin branch-0.4 && \
+    git checkout branch-0.4
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
@@ -155,7 +155,7 @@ ENV SPARK_DRIVER_BLOCK_MANAGER_PORT     10026
 ENV SPARK_DRIVER_IP                     $LOCAL_IP
 ENV SPARK_BLOCK_MANAGER_PORT            10025
 ENV TINI_VERSION                        $TINI_VERSION
-ENV PYTHONPATH                          ${PYTHONPATH}:/usr/lib/python36.zip:/usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages:/graphene/meson_build_output/lib/python3.6/site-packages
+ENV PYTHONPATH                          /usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
