@@ -28,8 +28,8 @@ from bigdl.chronos.model.prophet import ProphetBuilder
 class AutoProphet:
 
     def __init__(self,
-                 changepoint_prior_scale=hp.loguniform(0.001, 0.5),
-                 seasonality_prior_scale=hp.loguniform(0.01, 10),
+                 changepoint_prior_scale=hp.grid_search([0.005, 0.05, 0.1, 0.5]),
+                 seasonality_prior_scale=hp.grid_search([0.01, 0.1, 1.0, 10.0]),
                  holidays_prior_scale=hp.loguniform(0.01, 10),
                  seasonality_mode=hp.choice(['additive', 'multiplicative']),
                  changepoint_range=hp.uniform(0.8, 0.95),
