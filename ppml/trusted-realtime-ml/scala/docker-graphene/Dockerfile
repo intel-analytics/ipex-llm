@@ -104,6 +104,7 @@ ENV TASKMANAGER_MEMORY_TASK_HEAP_SIZE   10gb
 ENV TASKMANAGER_MEMORY_MANAGED_SIZE     8192mb
 ENV XMX_SIZE                            10g 
 ENV SGX_MODE                            sgx
+ENV REDIS_HOST                          127.0.0.1
 
 RUN mkdir -p /graphene && \
     mkdir -p /graphene/Runtime && \
