@@ -15,28 +15,28 @@
                 <exclude>test/**</exclude>
             </excludes>
             <outputDirectory>/..</outputDirectory>
-            <directory>${project.build.directory}/python/dllib/src/</directory>
+	    <directory>${project.basedir}/../python/dllib/src/</directory>
         </fileSet>
         <fileSet>
             <includes>
                 <include>**/*.py</include>
             </includes>
             <outputDirectory>/..</outputDirectory>
-            <directory>${project.build.directory}/python/orca/src</directory>
+            <directory>${project.basedir}/../python/orca/src</directory>
         </fileSet>
         <fileSet>
             <includes>
                 <include>**/*.py</include>
             </includes>
             <outputDirectory>/..</outputDirectory>
-            <directory>${project.build.directory}/python/friesian/src</directory>
+            <directory>${project.basedir}/../python/friesian/src</directory>
         </fileSet>
         <fileSet>
             <includes>
                 <include>**/*.py</include>
             </includes>
             <outputDirectory>/..</outputDirectory>
-            <directory>${project.build.directory}/python/serving/src</directory>
+            <directory>${project.basedir}/../python/serving/src</directory>
         </fileSet>
     </fileSets>
 </assembly>
