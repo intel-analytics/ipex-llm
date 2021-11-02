@@ -26,7 +26,7 @@ BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../..; pwd)"
 echo $BIGDL_DIR
 
 if (( $# < 3)); then
-  echo "Usage: release_default_linux_spark312.sh version upload"
+  echo "Usage: release_default_linux_spark312.sh version quick_build upload mvn_parameters"
   echo "Usage example: bash release_default_linux_spark312.sh default false true"
   echo "Usage example: bash release_default_linux_spark312.sh 0.14.0.dev1 false false"
   echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 false false -Ddata-store-url=.."
@@ -56,4 +56,4 @@ CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
 echo $CHRONOS_SCRIPT_DIR
 bash ${CHRONOS_SCRIPT_DIR}/release_default_linux_spark312.sh ${version} ${upload}
 
-# Serving has a universal jar for all spark versions and is released in the spark246 script.
+# Serving and nano has a universal jar for all spark versions and is released in the spark246 script.
