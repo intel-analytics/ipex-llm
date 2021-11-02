@@ -48,9 +48,9 @@ RUN wget $JDK_URL && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 # scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.8/scala-${SCALA_VERSION}.8.tgz && \
-    (cd / && gunzip < scala-${SCALA_VERSION}.8.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-${SCALA_VERSION}.8.tgz
+RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.10/scala-${SCALA_VERSION}.10.tgz && \
+    (cd / && gunzip < scala-${SCALA_VERSION}.10.tgz)|(cd /opt && tar -xvf -) && \
+    rm /scala-${SCALA_VERSION}.10.tgz
 # flink
 RUN cd /opt && \
     wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
