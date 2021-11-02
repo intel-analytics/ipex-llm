@@ -98,6 +98,10 @@ class BasePytorchForecaster(Forecaster):
 
         # fit on internal
         if self.distributed:
+            if batch_size % self.workers_per_node != 0:
+                raise RuntimeError("Please make sure that 'batch_size' "
+                                   "can be divisible by 'worker_per_node'")
+            batch_size //= self.workers_per_node
             return self.internal.fit(data=data,
                                      epochs=epochs,
                                      batch_size=batch_size)
