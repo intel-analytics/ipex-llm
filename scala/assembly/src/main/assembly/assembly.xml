@@ -58,6 +58,13 @@
       </includes>
     </fileSet>
     <fileSet>
+      <outputDirectory>/python</outputDirectory>
+      <directory>${project.parent.basedir}/target</directory>
+      <includes>
+          <include>bigdl*-python-api.zip</include>
+      </includes>
+    </fileSet>
+    <fileSet>
       <outputDirectory>/examples/dllib</outputDirectory>
       <directory>${project.parent.basedir}/../python/dllib/examples</directory>
       <includes>
