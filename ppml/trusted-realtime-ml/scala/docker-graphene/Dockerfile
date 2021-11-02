@@ -1,5 +1,5 @@
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
-ARG SPARK_VERSION=2.4.6
+ARG SPARK_VERSION=3.1.2
 
 # stage.1 graphene
 FROM ubuntu:18.04 AS graphene
@@ -33,6 +33,7 @@ RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(rea
 # stage.2 jdk & scala & flink
 FROM ubuntu:18.04 as flink
 ARG FLINK_VERSION=1.11.3
+ARG SCALA_VERSION=2.12
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ENV FLINK_VERSION ${FLINK_VERSION}
@@ -47,14 +48,14 @@ RUN wget $JDK_URL && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 # scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
-    (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-2.11.8.tgz
+RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.8/scala-${SCALA_VERSION}.8.tgz && \
+    (cd / && gunzip < scala-${SCALA_VERSION}.8.tgz)|(cd /opt && tar -xvf -) && \
+    rm /scala-${SCALA_VERSION}.8.tgz
 # flink
 RUN cd /opt && \
-    wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
-    tar -zxvf flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
-    rm flink-${FLINK_VERSION}-bin-scala_2.11.tgz
+    wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
+    tar -zxvf flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
+    rm flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
 RUN ls -al /opt
 
 # stage.3 bigdl
@@ -105,6 +106,7 @@ ENV TASKMANAGER_MEMORY_MANAGED_SIZE     8192mb
 ENV XMX_SIZE                            10g 
 ENV SGX_MODE                            sgx
 ENV REDIS_HOST                          127.0.0.1
+ENV SCALA_VERSION                       ${SCALA_VERSION}
 
 RUN mkdir -p /graphene && \
     mkdir -p /graphene/Runtime && \
@@ -135,7 +137,7 @@ COPY --from=graphene /graphene/Tools/argv_serializer /graphene/Tools
 COPY --from=graphene /graphene/meson_build_output /graphene/meson_build_output
 COPY --from=graphene /redis.tar.gz /ppml/trusted-realtime-ml/redis
 COPY --from=flink /opt/jdk  /opt/jdk8
-COPY --from=flink /opt/scala-2.11.8  /opt/scala-2.11.8
+COPY --from=flink /opt/scala-${SCALA_VERSION}.8  /opt/scala-${SCALA_VERSION}.8
 COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}
 COPY --from=bigdl /bigdl-${BIGDL_VERSION}/jars/bigdl-serving*-jar-with-dependencies.jar /ppml/trusted-realtime-ml/java/work/bigdl-serving-jar-with-dependencies.jar
 COPY --from=bigdl /opt/resnet50/ /ppml/trusted-realtime-ml/java/work/models/resnet50
