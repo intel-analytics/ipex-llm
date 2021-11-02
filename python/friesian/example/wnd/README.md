@@ -5,9 +5,10 @@ This example demonstrates how to use BigDL Friesian to preprocess the
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
 ```
-conda create -n zoo python=3.7  # "zoo" is the conda environment name, you can use any name you like.
-conda activate zoo
-pip install --pre --upgrade analytics-zoo
+conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
+conda activate bigdl
+pip install tensorflow==2.6.0
+pip install --pre --upgrade bigdl-friesian
 ```
 
 ## Prepare the data
