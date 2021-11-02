@@ -1,19 +1,19 @@
 # BigDL Nano
 
-BigDL Nano is python package to transparently accelerate PyTorch and TensorFlow applications on Intel hardware requiring only a few lines of code changes. 
+BigDL Nano is a python package to transparently accelerate PyTorch and TensorFlow applications on Intel hardware requiring only a few lines of code changes.
 
 ## TensorFlow
 
 ### Installation
 
-```
+```bash
 pip install bigdl-nano[tensorflow]
 source bigdl-nano-init
 ```
 
 ### Usage
 
-Bigdl Nano currently supports tf.keras API in TensorFlow 2.x.
+BigDL Nano currently supports `tf.keras` API in TensorFlow 2.x.
 
 Possible changes are 
 
@@ -49,7 +49,7 @@ model.evaluate(x_test, y_test)
 
 ### Installation
 
-```
+```bash
 pip install bigdl-nano[pytorch]
 source bigdl-nano-init
 ```
@@ -71,7 +71,6 @@ For example,
 
 
 ```python
-# from torchvision import datasets, transforms
 from bigdl.nano.pytorch.vision.datasets import ImageFolder
 from bigdl.nano.pytorch.vision import transforms
 from torch.utils.data import DataLoader
