@@ -19,7 +19,7 @@ import sys
 import platform
 
 from pyspark import SparkContext
-from bigdl.dllib.nncontext import init_nncontext, init_spark_conf
+from bigdl.dllib.nncontext import init_internal_nncontext, init_spark_conf
 from bigdl.dllib.utils.utils import detect_python_location, pack_penv
 from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath, get_zoo_bigdl_classpath_on_driver
 from bigdl.dllib.utils.engine import get_bigdl_jars
@@ -44,7 +44,7 @@ class SparkRunner:
         submit_args = submit_args + " pyspark-shell"
         os.environ["PYSPARK_SUBMIT_ARGS"] = submit_args
         spark_conf = init_spark_conf(conf)
-        sc = init_nncontext(conf=spark_conf, spark_log_level=self.spark_log_level,
+        sc = init_internal_nncontext(conf=spark_conf, spark_log_level=self.spark_log_level,
                             redirect_spark_log=self.redirect_spark_log)
         return sc
 
@@ -55,7 +55,7 @@ class SparkRunner:
                 python_location if python_location else detect_python_location()
         master = "local[{}]".format(cores)
         zoo_conf = init_spark_conf(conf).setMaster(master)
-        sc = init_nncontext(conf=zoo_conf, spark_log_level=self.spark_log_level,
+        sc = init_internal_nncontext(conf=zoo_conf, spark_log_level=self.spark_log_level,
                             redirect_spark_log=self.redirect_spark_log)
         print("Successfully got a SparkContext")
         return sc
