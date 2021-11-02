@@ -34,6 +34,7 @@ RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(rea
 FROM ubuntu:18.04 as flink
 ARG FLINK_VERSION=1.11.3
 ARG SCALA_VERSION=2.12
+ARG SCALA_SUB_VERSION_NUM=10
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ENV FLINK_VERSION ${FLINK_VERSION}
@@ -48,9 +49,9 @@ RUN wget $JDK_URL && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 # scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.10/scala-${SCALA_VERSION}.10.tgz && \
-    (cd / && gunzip < scala-${SCALA_VERSION}.10.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-${SCALA_VERSION}.10.tgz
+RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz && \
+    (cd / && gunzip < scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz)|(cd /opt && tar -xvf -) && \
+    rm /scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz
 # flink
 RUN cd /opt && \
     wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
