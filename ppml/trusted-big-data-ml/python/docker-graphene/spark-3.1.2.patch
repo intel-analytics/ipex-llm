@@ -1,3 +1,4 @@
+diff --git a/core/src/main/scala/org/apache/spark/api/python/PythonRunner.scala b/core/src/main/scala/org/apache/spark/api/python/PythonRunner.scala
 index 8d9f2be621..3ab622cb5f 100644
 --- a/core/src/main/scala/org/apache/spark/api/python/PythonRunner.scala
 +++ b/core/src/main/scala/org/apache/spark/api/python/PythonRunner.scala
@@ -10,7 +11,7 @@ index 8d9f2be621..3ab622cb5f 100644
 
  private[spark] object BarrierTaskContextMessageProtocol {
 diff --git a/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala b/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala
-index df236ba892..dd3fde3040 100644
+index df236ba892..03e274f4bb 100644
 --- a/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala
 +++ b/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala
 @@ -17,7 +17,7 @@
@@ -39,26 +40,26 @@ index df236ba892..dd3fde3040 100644
        serverSocket = new ServerSocket(0, 1, InetAddress.getByAddress(Array(127, 0, 0, 1)))
 
        // Create and start the worker
-@@ -163,13 +167,78 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
+@@ -163,29 +167,97 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
        workerEnv.put("PYTHON_WORKER_FACTORY_PORT", serverSocket.getLocalPort.toString)
        workerEnv.put("PYTHON_WORKER_FACTORY_SECRET", authHelper.secret)
        val worker = pb.start()
 +       */
 +
 +      simpleWorkerBuffer.synchronized {
-+        println(s"Thread ${Thread.currentThread().getId}: creating simple worker synchronized")
++        logInfo(s"Thread ${Thread.currentThread().getId}: creating simple worker synchronized")
 +        val (worker, ss) = {
 +          if (simpleWorkerBuffer.size >= maxSimpleWorker) {
 +            val p = keysIterator().next()
 +            val buffer = simpleWorkerBuffer.get(p).get
-+            println(s"scala1: waiting python's finished result.")
++            logInfo(s"scala1: waiting python's finished result.")
 +            val input = new DataInputStream(new BufferedInputStream(buffer._1.getInputStream, 1024))
 +            val r = input.readInt()
-+            println(s"scala1: python result is ${r}.")
++            logInfo(s"scala1: python result is ${r}.")
 +            require(r == SpecialLengths.FINISHED)
 +            val ss = new ServerSocket(0, 1, InetAddress.getByAddress(Array(127, 0, 0, 1)))
 +            ss.setSoTimeout(10000)
-+            println(s"scala1: new data local port ${ss.getLocalPort}--------")
++            logInfo(s"scala1: new data local port ${ss.getLocalPort}--------")
 +            val output = new DataOutputStream(
 +              new BufferedOutputStream(buffer._1.getOutputStream, 1024))
 +            output.writeInt(ss.getLocalPort)
@@ -77,7 +78,8 @@ index df236ba892..dd3fde3040 100644
 +            val workerEnv = pb.environment()
 +            workerEnv.putAll(envVars.asJava)
 +            workerEnv.put("PYTHONPATH", pythonPath)
-+            // This is equivalent to setting the -u flag; we use it because ipython doesn't support -u:
++            // This is equivalent to setting the -u flag;
++            // we use it because ipython doesn't support -u:
 +            workerEnv.put("PYTHONUNBUFFERED", "YES")
 +            workerEnv.put("PYTHON_WORKER_FACTORY_PORT", manageServerSocket.getLocalPort.toString)
 +            workerEnv.put("PYTHON_WORKER_FACTORY_SECRET", authHelper.secret)
@@ -96,7 +98,7 @@ index df236ba892..dd3fde3040 100644
 +            }
 +            val ss = new ServerSocket(0, 1, InetAddress.getByAddress(Array(127, 0, 0, 1)))
 +            ss.setSoTimeout(10000)
-+            println(s"scala2: new data local port ${ss.getLocalPort}--------")
++            logInfo(s"scala2: new data local port ${ss.getLocalPort}--------")
 +            val output = new DataOutputStream(
 +              new BufferedOutputStream(manageSocket.getOutputStream, 1024))
 +            output.writeInt(ss.getLocalPort)
@@ -108,23 +110,19 @@ index df236ba892..dd3fde3040 100644
 
        // Redirect worker stdout and stderr
 -      redirectStreamsToStderr(worker.getInputStream, worker.getErrorStream)
-+      //redirectStreamsToStderr(worker.getInputStream, worker.getErrorStream)
++      // redirectStreamsToStderr(worker.getInputStream, worker.getErrorStream)
 +        // Redirect worker stdout and stderr
 
        // Wait for it to connect to our socket, and validate the auth secret.
 -      serverSocket.setSoTimeout(10000)
-+      //serverSocket.setSoTimeout(10000)
+-
+-      try {
+-        val socket = serverSocket.accept()
+-        authHelper.authClient(socket)
+-        self.synchronized {
+-          simpleWorkers.put(socket, worker)
++      // serverSocket.setSoTimeout(10000)
 +        // Wait for it to connect to our socket, and validate the auth secret.
-
-+        /*
-       try {
-         val socket = serverSocket.accept()
-         authHelper.authClient(socket)
-@@ -185,7 +254,27 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
-       if (serverSocket != null) {
-         serverSocket.close()
-       }
-+    }*/
 +        try {
 +          val socket = serverSocket.accept()
 +          val port = socket.getLocalPort
@@ -132,23 +130,27 @@ index df236ba892..dd3fde3040 100644
 +          self.synchronized {
 +            simpleWorkers.put(socket, worker)
 +          }
-+          println(s"Thread ${Thread.currentThread().getId}: creating simple worker finished")
++          logInfo(s"Thread ${Thread.currentThread().getId}: creating simple worker finished")
 +          return socket
 +        } catch {
 +          case e: Exception =>
 +            throw new SparkException("Python worker failed to connect back.", e)
-+        }
-+      }
-+    } finally {
-+      if (serverSocket != null) {
-+        serverSocket.close()
-+      }
+         }
+-        return socket
+-      } catch {
+-        case e: Exception =>
+-          throw new SparkException("Python worker failed to connect back.", e)
+       }
+     } finally {
+       if (serverSocket != null) {
+         serverSocket.close()
+       }
      }
 +
      null
    }
 
-@@ -378,7 +467,17 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
+@@ -378,7 +450,17 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
    }
  }
 
