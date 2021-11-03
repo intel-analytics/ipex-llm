@@ -62,6 +62,27 @@ index 9da1a73bba..b09ceb6a18 100644
      |
      |Spark properties used, including those specified through
      | --conf and those from the properties file $propertiesFile:
+diff --git a/core/src/main/scala/org/apache/spark/executor/ProcfsMetricsGetter.scala b/core/src/main/scala/org/apache/spark/executor/ProcfsMetricsGetter.scala
+index 5682a21e95..df70414a70 100644
+--- a/core/src/main/scala/org/apache/spark/executor/ProcfsMetricsGetter.scala
++++ b/core/src/main/scala/org/apache/spark/executor/ProcfsMetricsGetter.scala
+@@ -85,6 +85,8 @@ private[spark] class ProcfsMetricsGetter(procfsDir: String = "/proc/") extends L
+   }
+
+   private def computePageSize(): Long = {
++    return 4096;
++    /*
+     if (testing) {
+       return 4096;
+     }
+@@ -99,6 +101,7 @@ private[spark] class ProcfsMetricsGetter(procfsDir: String = "/proc/") extends L
+         isAvailable = false
+         0
+     }
++     */
+   }
+
+   // Exposed for testing
 diff --git a/core/src/main/scala/org/apache/spark/internal/config/package.scala b/core/src/main/scala/org/apache/spark/internal/config/package.scala
 index 3daa9f5362..9758246e94 100644
 --- a/core/src/main/scala/org/apache/spark/internal/config/package.scala

@@ -248,6 +248,7 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     mv /opt/hadoop-common-3.2.0.jar $SPARK_HOME/jars/hadoop-common-3.2.0.jar && \
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.6m.so /usr/lib/libpython3.6m.so && \
+    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \
