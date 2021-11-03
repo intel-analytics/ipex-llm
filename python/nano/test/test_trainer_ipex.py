@@ -18,9 +18,14 @@
 import pytest
 import os
 from unittest import TestCase
+
+import torch
+from torch import nn
+
+from _train_torch_lightning import train_torch_lightning
+from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from test._train_torch_lightning import train_with_linear_top_layer
-
 
 batch_size = 256
 num_workers = 0
@@ -77,6 +82,25 @@ class TestModelsVision(TestCase):
         train_with_linear_top_layer(
             shufflenet, batch_size, num_workers, data_dir,
             use_orca_lite_trainer=True)
+
+    def test_trainer_compile(self):
+        class ResNet18(nn.Module):
+            def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+                super().__init__()
+                backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+                output_size = backbone.get_output_size()
+                head = nn.Linear(output_size, num_classes)
+                self.model = nn.Sequential(backbone, head)
+
+            def forward(self, x):
+                return self.model(x)
+
+        model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        pl_model = Trainer.compile(model, loss, optimizer)
+        train_torch_lightning(pl_model, batch_size, num_workers, data_dir,
+                              use_orca_lite_trainer=True)
 
 
 if __name__ == '__main__':
