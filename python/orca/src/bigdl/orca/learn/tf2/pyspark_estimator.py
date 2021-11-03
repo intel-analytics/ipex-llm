@@ -198,13 +198,15 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
+        weights = sc.broadcast(self.model_weights)
+
         init_params = dict(
             model_creator=self.model_creator,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            model_weights=self.model_weights,
+            model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc)
         )
@@ -265,6 +267,8 @@ class SparkTFEstimator():
         :return:
         """
         logger.info("Starting predict step.")
+        sc = OrcaContext.get_spark_context()
+        weights = sc.broadcast(self.model_weights)
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -272,7 +276,7 @@ class SparkTFEstimator():
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            model_weights=self.model_weights,
+            model_weights=weights,
             mode="predict",
             cluster_info=None
         )
