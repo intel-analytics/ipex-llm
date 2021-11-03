@@ -18,6 +18,10 @@
 from logging import warning
 import torch
 import pytorch_lightning as pl
+from torch import nn
+from torch.nn.modules.loss import _Loss
+
+from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.common import check_avx512
 from pytorch_lightning.plugins.environments import LightningEnvironment
@@ -104,3 +108,23 @@ class Trainer(pl.Trainer):
 
             super().__init__(accelerator=accelerator,
                              plugins=[plugin], *args, **kwargs)
+
+    @staticmethod
+    def compile(model: nn.Module, loss: _Loss = None, optimizer: torch.optim = None):
+        """
+        Compile a pytorch model into a pytorch-lightning model and return it.
+        Args:
+            model: A pytorch model instance.
+            loss: Loss for LightningModule.
+            optimizer: Optimizer for LightningModule.
+
+        Returns: A LightningModule converted from model.
+
+        """
+        if isinstance(model, pl.LightningModule):
+            if loss:
+                model.loss = loss
+            if optimizer:
+                model.optimizer = optimizer
+        else:
+            return LightningModuleFromTorch(model, loss, optimizer)
