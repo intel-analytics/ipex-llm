@@ -366,6 +366,27 @@
                         <phase>pre-site</phase>
                     </execution>
                 </executions>
+	    </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>python</id>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <finalName>bigdl-spark_${spark.version}-${version}</finalName>
+                            <descriptors>
+                                <descriptor>${project.basedir}/../python/python-zip.xml
+                                </descriptor>
+                            </descriptors>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.rat</groupId>
