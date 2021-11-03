@@ -375,8 +375,9 @@
                         <id>python</id>
                         <inherited>false</inherited>
                         <configuration>
+                            <finalName>bigdl-spark_${spark.version}-0.14.0-SNAPSHOT</finalName>
                             <descriptors>
-				<descriptor>${project.basedir}/../python/python-zip.xml
+                                <descriptor>${project.basedir}/../python/python-zip.xml
                                 </descriptor>
                             </descriptors>
                         </configuration>
