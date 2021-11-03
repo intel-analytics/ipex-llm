@@ -368,7 +368,8 @@ class SparkRunner:
         # strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
         with self.strategy.scope():
             model = self.model_creator(self.config)
-            model.set_weights(self.model_weights.value)
+            if self.model_weights:
+                model.set_weights(self.model_weights.value)
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -388,9 +389,9 @@ class SparkRunner:
         results = model.evaluate(dataset, **params)
 
         if results is None:
-            model_weights = self.model_weights.value
             local_model = self.model_creator(self.config)
-            local_model = local_model.set_weights(model_weights)
+            if self.model_weights:
+                local_model = local_model.set_weights(self.model_weights.value)
             results = local_model.evaluate(dataset, **params)
         
         if isinstance(results, list):
