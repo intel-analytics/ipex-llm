@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.friesian
 
 import java.net.URL
 
-import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.friesian.python.PythonFriesian
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD

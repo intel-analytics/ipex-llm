@@ -17,12 +17,12 @@ import sys
 
 import tensorflow as tf
 import numpy as np
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import KerasModel, TFDataset
 
 
 def get_data_rdd(dataset, sc):
-    from bigdl.dataset import mnist
+    from bigdl.dllib.feature.dataset import mnist
     (images_data, labels_data) = mnist.read_data_sets("/tmp/mnist", dataset)
     image_rdd = sc.parallelize(images_data)
     labels_rdd = sc.parallelize(labels_data)

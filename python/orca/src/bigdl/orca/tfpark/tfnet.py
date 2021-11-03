@@ -24,7 +24,7 @@ from pyspark import RDD
 
 from bigdl.dllib.nn.layer import Layer
 from bigdl.dllib.utils.file_utils import JTensor
-from bigdl.dllib.utils.nncontext import getOrCreateSparkContext
+from bigdl.dllib.nncontext import getOrCreateSparkContext
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.feature.image import ImageSet
 from bigdl.orca.tfpark.tf_dataset import TFImageDataset, TFDataset

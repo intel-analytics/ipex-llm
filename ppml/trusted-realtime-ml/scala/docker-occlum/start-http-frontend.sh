@@ -19,7 +19,7 @@ java \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-min=100 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-max=120 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-factor=1 \
-    -jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar \
+    -jar ${BIGDL_HOME}/bigdl-serving-http.jar \
     --redisHost "${redis_host}" \
     --tokensPerSecond 30 \
     --tokenBucketEnabled true \

@@ -17,7 +17,7 @@
 import pytest
 import h5py
 from math import pi
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import *
 from bigdl.dllib.feature.image3d.transformation import *
 

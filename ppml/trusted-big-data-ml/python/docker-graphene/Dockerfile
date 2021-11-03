@@ -6,30 +6,20 @@ ARG JDK_URL=your_jdk_url
 
 # stage.1 graphene
 FROM ubuntu:18.04 AS graphene
-ARG GRAPHENE_BRANCH=branch-210913
+
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        autoconf bison build-essential coreutils gawk git wget \
-        python3 python3-pip libcurl4-openssl-dev \
-        libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
 RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
-    git fetch origin $GRAPHENE_BRANCH && \
-    git checkout $GRAPHENE_BRANCH
-RUN pip3 install ninja meson && \
-    python3 -m pip install toml==0.10.2 click jinja2
+    git fetch origin branch-0.4 && \
+    git checkout branch-0.4
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
     git checkout DCAP_1.7 && \
     cp -r driver/linux/* .
 RUN cd /graphene && \
-    make && \
-    ISGX_DRIVER_PATH=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver make -s -j4 SGX=1 && \
-    meson setup build/ --prefix="/graphene/meson_build_output" \ 
-    --buildtype=release -Ddirect=enabled -Dsgx=enabled  && \
-    ninja -C build/ && \
-    ninja -C build/ install
+    ISGX_DRIVER_PATH=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver make -s -j4 SGX=1 WERROR=1 && true
 RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
 
 # stage.2 jdk & scala & spark & hadoop
@@ -41,7 +31,7 @@ ARG HTTPS_PROXY_PORT
 ARG SPARK_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
-ENV SPARK_VERSION	${SPARK_VERSION}
+ENV SPARK_VERSION       ${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk$JDK_VERSION
 ENV PATH                ${JAVA_HOME}/bin:${PATH}
 
@@ -131,9 +121,9 @@ RUN cd /opt && \
 FROM ubuntu:18.04 as bigdl
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
-ENV SPARK_VERSION		${SPARK_VERSION}
-ENV BIGDL_VERSION		${BIGDL_VERSION}
-ENV BIGDL_HOME		        /bigdl-${BIGDL_VERSION}
+ENV SPARK_VERSION               ${SPARK_VERSION}
+ENV BIGDL_VERSION               ${BIGDL_VERSION}
+ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
@@ -146,26 +136,26 @@ FROM ubuntu:18.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG TINI_VERSION
-ENV BIGDL_VERSION		        ${BIGDL_VERSION}
-ENV SPARK_VERSION			${SPARK_VERSION}
-ENV SPARK_HOME				/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
+ENV BIGDL_VERSION                       ${BIGDL_VERSION}
+ENV SPARK_VERSION                       ${SPARK_VERSION}
+ENV SPARK_HOME                          /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
 ENV BIGDL_HOME                          /ppml/trusted-big-data-ml/work/bigdl-${BIGDL_VERSION}
-ENV JAVA_HOME				/opt/jdk8
-ENV PATH				/graphene/meson_build_output/bin:${JAVA_HOME}/bin:${PATH}
-ENV LOCAL_IP				127.0.0.1
-ENV SGX_MEM_SIZE			32G
-ENV SPARK_MASTER_IP			127.0.0.1
-ENV SPARK_MASTER_PORT			7077
-ENV SPARK_MASTER_WEBUI_PORT		8080
-ENV SPARK_MASTER			spark://$SPARK_MASTER_IP:$SPARK_MASTER_PORT
-ENV SPARK_WORKER_PORT			8082
-ENV SPARK_WORKER_WEBUI_PORT		8081
-ENV SPARK_DRIVER_PORT			10027
-ENV SPARK_DRIVER_BLOCK_MANAGER_PORT	10026
-ENV SPARK_DRIVER_IP			$LOCAL_IP
-ENV SPARK_BLOCK_MANAGER_PORT		10025
+ENV JAVA_HOME                           /opt/jdk8
+ENV PATH                                /graphene/meson_build_output/bin:${JAVA_HOME}/bin:${PATH}
+ENV LOCAL_IP                            127.0.0.1
+ENV SGX_MEM_SIZE                        32G
+ENV SPARK_MASTER_IP                     127.0.0.1
+ENV SPARK_MASTER_PORT                   7077
+ENV SPARK_MASTER_WEBUI_PORT             8080
+ENV SPARK_MASTER                        spark://$SPARK_MASTER_IP:$SPARK_MASTER_PORT
+ENV SPARK_WORKER_PORT                   8082
+ENV SPARK_WORKER_WEBUI_PORT             8081
+ENV SPARK_DRIVER_PORT                   10027
+ENV SPARK_DRIVER_BLOCK_MANAGER_PORT     10026
+ENV SPARK_DRIVER_IP                     $LOCAL_IP
+ENV SPARK_BLOCK_MANAGER_PORT            10025
 ENV TINI_VERSION                        $TINI_VERSION
-ENV PYTHONPATH                          ${PYTHONPATH}:/graphene/meson_build_output/lib/python3.6/site-packages
+ENV PYTHONPATH                          /usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
@@ -186,6 +176,7 @@ RUN mkdir -p /graphene && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
+    mkdir -p /root/.kube/ && \
     mkdir -p /graphene/Pal/src/host/Linux-SGX/signer
 
 COPY --from=graphene /graphene/Scripts /graphene/Scripts
@@ -194,7 +185,7 @@ COPY --from=graphene /graphene/python /graphene/python
 COPY --from=graphene /graphene/Pal /graphene/Pal
 COPY --from=graphene /graphene/Pal/src/host/Linux-SGX/generated_offsets.py /graphene/python/
 COPY --from=graphene /graphene/Tools/argv_serializer /graphene/Tools
-COPY --from=graphene /graphene/meson_build_output /graphene/meson_build_output
+#COPY --from=graphene /graphene/meson_build_output /graphene/meson_build_output
 COPY --from=spark /opt/jdk  /opt/jdk8
 COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
@@ -246,10 +237,7 @@ ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
 
-RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar ./tracker.py && \
-    unzip ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar log4j.properties && \
-    echo $'\nlog4j.logger.io.netty=ERROR' >> log4j.properties && \
-    zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar log4j.properties && \
+RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
     patch /usr/local/lib/python3.6/dist-packages/dill/_dill.py ./_dill.py.patch && \
     patch /usr/lib/python3.6/uuid.py ./python-uuid.patch && \
     rm $SPARK_HOME/jars/spark-core_2.12-$SPARK_VERSION.jar && \
@@ -277,7 +265,7 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-regressor-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-classifier-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-data-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh 
+    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
@@ -285,6 +273,7 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar && \
+    wget -P $SPARK_HOME/jars https://github.com/xerial/sqlite-jdbc/releases/download/3.36.0.1/sqlite-jdbc-3.36.0.1.jar && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini

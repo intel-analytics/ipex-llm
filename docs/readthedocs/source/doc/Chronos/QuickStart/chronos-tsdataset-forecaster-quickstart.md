@@ -1,8 +1,8 @@
-# TSDataset and Forecaster
+# TSDataset and Forecaster Quickstarts
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/chronos/chronos_nyc_taxi_tsdataset_forecaster.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/chronos/chronos_nyc_taxi_tsdataset_forecaster.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb)
 
 ---
 
@@ -10,22 +10,22 @@
 
 ### **Step 0: Prepare Environment**
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../Overview/chronos.html#install) for more details.
 
 ```bash
-conda create -n zoo python=3.7 # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
-pip install analytics-zoo[automl] # install latest nightly build
+conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
+conda activate my_env
+pip install bigdl-chronos[all]
 ```
 
 ### Step 1: Data transformation and feature engineering using Chronos TSDataset
 
-[TSDataset](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html) is our abstract of time series dataset for data transformation and feature engineering. Here we use it to preprocess the data.
+[TSDataset](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/data_processing_feature_engineering.html) is our abstract of time series dataset for data transformation and feature engineering. Here we use it to preprocess the data.
 
 Initialize train, valid and test tsdataset from raw pandas dataframe.
 
 ```python
-from zoo.chronos.data import TSDataset
+from bigdl.chronos.data import TSDataset
 from sklearn.preprocessing import StandardScaler
 
 tsdata_train, tsdata_valid, tsdata_test = TSDataset.from_pandas(df, dt_col="timestamp", target_col="value",
@@ -54,7 +54,7 @@ for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
 
 ### Step 2: Time series forecasting using Chronos Forecaster
 
-After preprocessing the datasets. We can use [Chronos Forecaster](https://analytics-zoo.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html) to handle the forecasting tasks.
+After preprocessing the datasets. We can use [Chronos Forecaster](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#use-standalone-forecaster-pipeline) to handle the forecasting tasks.
 
 Transform TSDataset to sampled numpy ndarray and feed them to forecaster.
 
@@ -68,7 +68,7 @@ forecaster = TCNForecaster(past_seq_len=lookback,  # number of steps to look bac
                            future_seq_len=horizon,  # number of steps to predict
                            input_feature_num=x.shape[-1],  # number of feature to use
                            output_feature_num=y.shape[-1])  # number of feature to predict
-res = forecaster.fit((x, y), validation_data=(x_val, y_val), epochs=3)
+res = forecaster.fit(data=(x, y), epochs=3)
 ```
 
 ### Step 3: Further deployment with fitted forecaster

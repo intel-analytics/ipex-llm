@@ -1,4 +1,23 @@
-55,57c55,59
+41,48c41,49
+<         global process
+<         if process is None or process._pid != os.getpid():
+<             process = psutil.Process(os.getpid())
+<         if hasattr(process, "memory_info"):
+<             info = process.memory_info()
+<         else:
+<             info = process.get_memory_info()
+<         return info.rss >> 20
+---
+>         return 0
+>         #global process
+>         #if process is None or process._pid != os.getpid():
+>         #    process = psutil.Process(os.getpid())
+>         #if hasattr(process, "memory_info"):
+>         #    info = process.memory_info()
+>         #else:
+>         #    info = process.get_memory_info()
+>         #return info.rss >> 20
+55,57c56,60
 <             for line in open('/proc/self/status'):
 <                 if line.startswith('VmRSS:'):
 <                     return int(line.split()[1]) >> 10

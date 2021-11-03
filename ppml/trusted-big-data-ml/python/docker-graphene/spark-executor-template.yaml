@@ -14,6 +14,10 @@ spec:
         mountPath: /var/lib/kubelet/device-plugins
       - name: aesm-socket
         mountPath: /var/run/aesmd/aesm.socket
+      - name: data
+        mountPath: /ppml/trusted-big-data-ml/work/data
+      - name: kubeconf
+        mountPath: /root/.kube/config
     #resources:
       #requests:
         #cpu: 16
@@ -40,3 +44,9 @@ spec:
     - name: aesm-socket
       hostPath:
         path: /var/run/aesmd/aesm.socket
+    - name: data
+      hostPath:
+        path: /home/sdp/glorysdj/data
+    - name: kubeconf
+      hostPath:
+        path: /home/sdp/glorysdj/kubernetes/kuberconfig

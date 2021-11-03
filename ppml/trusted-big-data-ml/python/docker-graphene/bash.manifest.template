@@ -1,13 +1,14 @@
-loader.preload = "file:{{ graphene.libos }}"
-libos.entrypoint = "{{ execdir }}/bash"
-
+loader.preload = "file:$(GRAPHENEDIR)/Runtime/libsysdb.so"
+libos.entrypoint = "file:$(EXECDIR)/bash"
 
 loader.log_level = "debug"
 #loader.log_level = "error"
 #loader.log_level = "all"
 
+loader.insecure_disable_aslr = 1
+loader.insecure__use_cmdline_argv = 1
+
 loader.pal_internal_mem_size = "512M"
-loader.insecure__use_cmdline_argv = true
 
 sgx.file_check_policy = "allow_all_but_log"
 sgx.static_address = 1
@@ -15,29 +16,29 @@ sgx.debug = 0
 sgx.isvprodid = 1
 sgx.isvsvn = 3
 
-loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.6/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
-loader.env.PATH = "/usr/lib/python3.6/bin:/:/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/jdk8/bin"
+loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.6/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
+loader.env.PATH = "/usr/lib/python3.6/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
 loader.env.PYTHONHOME = "/usr/lib/python3.6"
-loader.env.PYTHONPATH = "/usr/lib/python36.zip:/usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages:/graphene/meson_build_output/lib/python3.6/site-packages"
-loader.env.JAVA_HOME = "{{ jdk_home }}"
-loader.env.JAVA_OPTS = "'-Djava.library.path={{ jdk_home }}/lib -Dsun.boot.library.path={{ jdk_home }}/lib'"
-loader.env.SPARK_LOCAL_IP = "{{ spark_local_ip }}"
-loader.env.SPARK_USER = "{{ spark_user }}"
+loader.env.PYTHONPATH = "/usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages"
+loader.env.JAVA_HOME = "$(JDK_HOME)"
+loader.env.JAVA_OPTS = "'-Djava.library.path=$(JDK_HOME)/lib -Dsun.boot.library.path=$(JDK_HOME)/lib'"
+loader.env.SPARK_LOCAL_IP = "$(SPARK_LOCAL_IP)"
+loader.env.SPARK_USER = "$(SPARK_USER)"
 loader.env.SPARK_SCALA_VERSION = "2.12"
-loader.env.SPARK_HOME = "{{ spark_home }}"
+loader.env.SPARK_HOME = "$(SPARK_HOME)"
 loader.env.SPARK_MASTER_OPTS = "'-Dspark.worker.timeout=60'"
 
 fs.mount.lib.type = "chroot"
 fs.mount.lib.path = "/lib"
-fs.mount.lib.uri = "file:/graphene/Runtime"
+fs.mount.lib.uri = "file:$(GRAPHENEDIR)/Runtime"
 
 fs.mount.lib2.type = "chroot"
-fs.mount.lib2.path = "/lib/x86_64-linux-gnu"
-fs.mount.lib2.uri = "file:/lib/x86_64-linux-gnu"
+fs.mount.lib2.path = "$(ARCH_LIBDIR)"
+fs.mount.lib2.uri = "file:$(ARCH_LIBDIR)"
 
 fs.mount.lib3.type = "chroot"
-fs.mount.lib3.path = "/usr/lib/x86_64-linux-gnu"
-fs.mount.lib3.uri = "file:/usr/lib/x86_64-linux-gnu"
+fs.mount.lib3.path = "/usr$(ARCH_LIBDIR)"
+fs.mount.lib3.uri = "file:/usr$(ARCH_LIBDIR)"
 
 fs.mount.usrbin.type = "chroot"
 fs.mount.usrbin.path = "/usr/bin"
@@ -71,6 +72,10 @@ fs.mount.pydisthome.type = "chroot"
 fs.mount.pydisthome.path = "/usr/lib/python3/dist-packages"
 fs.mount.pydisthome.uri = "file:/usr/lib/python3/dist-packages"
 
+fs.mount.kubeconf.type = "chroot"
+fs.mount.kubeconf.path = "/root/.kube/"
+fs.mount.kubeconf.uri = "file:/root/.kube/"
+
 fs.mount.keras.type = "chroot"
 fs.mount.keras.path = "/root/.keras"
 fs.mount.keras.uri = "file:/root/.keras"
@@ -88,53 +93,73 @@ fs.mount.gcclib.path = "/usr/lib/gcc"
 fs.mount.gcclib.uri = "file:/usr/lib/gcc"
 
 fs.mount.work.type = "chroot"
-fs.mount.work.path = "/ppml/trusted-big-data-ml/work"
-fs.mount.work.uri = "file:/ppml/trusted-big-data-ml/work"
+fs.mount.work.path = "$(WORK_DIR)"
+fs.mount.work.uri = "file:$(WORK_DIR)"
 
-sgx.nonpie_binary = true
-sgx.enclave_size = "{{ sgx_enclave_size }}"
+sgx.enclave_size = "$(G_SGX_SIZE)"
 sgx.thread_num = 1024
-sgx.allow_file_creation = 1
 
-sgx.trusted_files.execs_bin = "file:/bin/"
-sgx.trusted_files.execs_userbin = "file:/usr/bin/"
-sgx.trusted_files.execs_userlocalbin = "file:/usr/local/bin/"
-sgx.trusted_files.java = "file:/opt/jdk8/bin/java"
+sgx.allow_file_creation   = 1
+
+#bash ls cat rm cp date env chmod echo
+sgx.trusted_files.bash = "file:$(EXECDIR)/bash"
+sgx.trusted_files.ls = "file:$(EXECDIR)/ls"
+sgx.trusted_files.cat = "file:$(EXECDIR)/cat"
+sgx.trusted_files.rm = "file:$(EXECDIR)/rm"
+sgx.trusted_files.cp = "file:$(EXECDIR)/cp"
+sgx.trusted_files.date = "file:$(EXECDIR)/date"
+sgx.trusted_files.env = "file:/usr/bin/env"
+sgx.trusted_files.chmod = "file:$(EXECDIR)/chmod"
+sgx.trusted_files.echo = "file:$(EXECDIR)/echo"
+sgx.trusted_files.python = "file:/usr/bin/python"
+sgx.trusted_files.python3 = "file:/usr/bin/python3"
+sgx.trusted_files.jupyter = "file:/usr/local/bin/jupyter"
+sgx.trusted_files.pyspark = "file:/ppml/trusted-big-data-ml/work/spark-3.1.2/bin/pyspark"
+sgx.trusted_files.sparksubmit = "file:/ppml/trusted-big-data-ml/work/spark-3.1.2/bin/spark-submit"
+sgx.trusted_files.java = "file:$(JDK_HOME)/bin/java"
+sgx.trusted_files.setsid = "file:/usr/bin/setsid"
+sgx.trusted_files.sh = "file:/bin/sh"
+sgx.trusted_files.stty = "file:/bin/stty"
+sgx.trusted_files.mvn = "file:/usr/bin/mvn"
 sgx.trusted_files.scala = "file:/opt/scala-2.11.8/bin/scala"
 sgx.trusted_files.ldconfig = "file:/sbin/ldconfig"
+sgx.trusted_files.gcc = "file:/usr/bin/gcc"
 
 # Glibc libraries
-sgx.trusted_files.ld = "file:/graphene/Runtime/ld-linux-x86-64.so.2"
-sgx.trusted_files.libc = "file:/graphene/Runtime/libc.so.6"
-sgx.trusted_files.libm = "file:/graphene/Runtime/libm.so.6"
-sgx.trusted_files.libdl = "file:/graphene/Runtime/libdl.so.2"
-sgx.trusted_files.librt = "file:/graphene/Runtime/librt.so.1"
-sgx.trusted_files.libpthread = "file:/graphene/Runtime/libpthread.so.0"
+sgx.trusted_files.ld = "file:$(GRAPHENEDIR)/Runtime/ld-linux-x86-64.so.2"
+sgx.trusted_files.libc = "file:$(GRAPHENEDIR)/Runtime/libc.so.6"
+sgx.trusted_files.libm = "file:$(GRAPHENEDIR)/Runtime/libm.so.6"
+sgx.trusted_files.libdl = "file:$(GRAPHENEDIR)/Runtime/libdl.so.2"
+sgx.trusted_files.librt = "file:$(GRAPHENEDIR)/Runtime/librt.so.1"
+sgx.trusted_files.libpthread = "file:$(GRAPHENEDIR)/Runtime/libpthread.so.0"
 
 # Name Service Switch (NSS) libraries (Glibc dependencies)
-sgx.trusted_files.libnsscompat = "file:/lib/x86_64-linux-gnu/libnss_compat.so.2"
-sgx.trusted_files.libnssfiles = "file:/lib/x86_64-linux-gnu/libnss_files.so.2"
-sgx.trusted_files.libnssnis = "file:/lib/x86_64-linux-gnu/libnss_nis.so.2"
+sgx.trusted_files.libnsscompat = "file:$(ARCH_LIBDIR)/libnss_compat.so.2"
+sgx.trusted_files.libnssfiles  = "file:$(ARCH_LIBDIR)/libnss_files.so.2"
+sgx.trusted_files.libnssnis  = "file:$(ARCH_LIBDIR)/libnss_nis.so.2"
 
 # libNSL is a dependency of libnss_compat above.
-sgx.trusted_files.libnsl = "file:/lib/x86_64-linux-gnu/libnsl.so.1"
+sgx.trusted_files.libnsl = "file:$(ARCH_LIBDIR)/libnsl.so.1"
 sgx.trusted_files.libtinfo = "file:/lib/x86_64-linux-gnu/libtinfo.so.5"
 sgx.trusted_files.libselinux = "file:/lib/x86_64-linux-gnu/libselinux.so.1"
 sgx.trusted_files.libpcre = "file:/lib/x86_64-linux-gnu/libpcre.so.3"
 
-sgx.trusted_files.libz = "file:/lib/x86_64-linux-gnu/libz.so.1"
+sgx.trusted_files.libz  = "file:$(ARCH_LIBDIR)/libz.so.1"
 sgx.trusted_files.libgcc_s = "file:/lib/x86_64-linux-gnu/libgcc_s.so.1"
 sgx.trusted_files.libstdcpp = "file:/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
 
-sgx.allowed_files.etc = "file:/etc"
-sgx.allowed_files.tmp = "file:/tmp"
-sgx.allowed_files.jdk = "file:/opt/jdk8"
-sgx.allowed_files.spark = "file:/ppml/trusted-big-data-ml/work/spark-3.1.2"
-sgx.allowed_files.sparkjars = "file:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars"
-sgx.allowed_files.work = "file:/ppml/trusted-big-data-ml/work"
-sgx.allowed_files.pyhome = "file:/usr/lib/python3.6"
+sgx.allowed_files.etc       = "file:/etc"
+sgx.allowed_files.tmp       = "file:/tmp"
+sgx.allowed_files.jdk       = "file:$(JDK_HOME)"
+sgx.allowed_files.spark     = "file:$(SPARK_HOME)"
+sgx.allowed_files.sparkjars = "file:$(SPARK_HOME)/jars"
+sgx.allowed_files.work      = "file:/ppml/trusted-big-data-ml/work"
+sgx.allowed_files.pyhome    = "file:/usr/lib/python3.6"
 sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.6/dist-packages"
 sgx.allowed_files.kerasdatas = "file:/root/.keras"
-sgx.allowed_files.m2 = "file:/root/.m2"
-sgx.allowed_files.zinc = "file:/root/.zinc"
-sgx.allowed_files.gcclib = "file:/usr/lib/gcc"
+sgx.allowed_files.m2        = "file:/root/.m2"
+sgx.allowed_files.zinc      = "file:/root/.zinc"
+sgx.allowed_files.gcclib    = "file:/usr/lib/gcc"
+sgx.allowed_files.kubeconf  = "file:/root/.kube/config"
+
+sgx.nonpie_binary = 1

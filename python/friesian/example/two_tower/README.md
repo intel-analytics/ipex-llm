@@ -1,12 +1,12 @@
 # Train a two tower model using recsys data
-This example demonstrates how to use our Friesian to train a two tower model using [Twitter Recsys Challenge 2021 data](https://recsys-twitter.com/data/show-downloads#).
+This example demonstrates how to use our BigDL Friesian to train a two tower model using [Twitter Recsys Challenge 2021 data](https://recsys-twitter.com/data/show-downloads#).
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
 ```
-conda create -n zoo python=3.7  # "zoo" is the conda environment name, you can use any name you like.
-conda activate zoo
-pip install --pre --upgrade analytics-zoo
+conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
+conda activate bigdl
+pip install --pre --upgrade bigdl-friesian
 ```
 ## Preprocess data
 You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing] to preprocess the orginal data.

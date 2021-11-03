@@ -20,7 +20,7 @@ from bigdl.dllib.feature.transform.vision.image import *
 from bigdl.dllib.utils.common import *
 from pyspark.sql.types import *
 
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.nnframes import *
 
 

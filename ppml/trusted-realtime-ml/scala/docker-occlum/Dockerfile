@@ -4,7 +4,7 @@ ARG FLINK_VERSION=1.11.3
 ARG SCALA_VERSION=2.12
 
 # stage.1 Redis
-FROM occlum/occlum:0.23.7-ubuntu18.04 as redis-tls
+FROM occlum/occlum:0.24.0-ubuntu18.04 as redis-tls
 
 WORKDIR /opt
 
@@ -34,6 +34,7 @@ ARG FLINK_VERSION=1.11.3
 ENV FLINK_VERSION ${FLINK_VERSION}
 ENV FLINK_HOME				/opt/flink-${FLINK_VERSION}
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ENV BIGDL_VERSION=${BIGDL_VERSION}
 ARG SPARK_VERSION=3.1.2
 ENV BIGDL_HOME		        /opt/bigdl-${BIGDL_VERSION}
 ENV SCALA_VERSION ${SCALA_VERSION}
@@ -43,6 +44,11 @@ RUN apt-get update && \
         ca-certificates wget unzip apt-utils curl && \
     apt-get clean
 
+# scala
+RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
+    (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
+    rm /scala-2.11.8.tgz
+
 # Download flink
 RUN cd /opt && \
     wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
@@ -50,10 +56,10 @@ RUN cd /opt && \
     rm flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
 
 # Download bigdl
-RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
-    chmod a+x ./download-bigdl.sh
-RUN ./download-bigdl.sh && \
-    rm bigdl*.zip
+RUN cd /opt && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/ppml/trusted-realtime-ml/scala/docker-graphene/download-bigdl-serving.sh && \
+    chmod a+x download-bigdl-serving.sh && \
+    ./download-bigdl-serving.sh
 
 # models
 RUN cd /opt && \
@@ -91,10 +97,11 @@ RUN mkdir -p ${BIGDL_HOME}
 COPY --from=redis-tls /opt/ssl /opt/ssl
 COPY --from=redis-tls /opt/redis /opt/redis
 COPY --from=redis-tls /opt/occlum/glibc /opt/occlum/glibc
-
+COPY --from=bigdl /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=bigdl /opt/flink-${FLINK_VERSION} /opt/flink-${FLINK_VERSION}
 COPY --from=bigdl /opt/resnet50 /opt/resnet50
-COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION}/jars/bigdl-serving*-jar-with-dependencies.jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar
+COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar
+COPY --from=bigdl /opt/bigdl-serving*-http.jar ${BIGDL_HOME}/bigdl-serving-http.jar
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
@@ -129,16 +136,10 @@ ADD ./start-redis.sh /opt/start-redis.sh
 ADD ./check-status.sh /opt/check-status.sh
 ADD ./start-flink-jobmanager.sh /opt/start-flink-jobmanager.sh
 ADD ./start-flink-taskmanager.sh /opt/start-flink-taskmanager.sh
-ADD ./hosts /opt/hosts
 ADD ./start-cluster-serving-job.sh /opt/start-cluster-serving-job.sh
 ADD ./start-http-frontend.sh /opt/start-http-frontend.sh
 ADD ./start-all.sh /opt/start-all.sh
-# PPML Start & Stop shell
-ADD ./start-local-cluster-serving.sh /opt/start-local-cluster-serving.sh
-ADD ./start-distributed-cluster-serving.sh /opt/start-distributed-cluster-serving.sh
-ADD ./stop-distributed-cluster-serving.sh /opt/stop-distributed-cluster-serving.sh
 ADD ./cluster-serving-config.yaml /ppml/trusted-realtime-ml/java/config.yaml
-
 
 RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-redis.sh && \
@@ -147,6 +148,4 @@ RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-flink-taskmanager.sh && \
     chmod a+x /opt/start-cluster-serving-job.sh && \
     chmod a+x /opt/start-http-frontend.sh && \
-    chmod a+x /opt/start-local-cluster-serving.sh && \
-    chmod a+x /opt/start-distributed-cluster-serving.sh && \
-    chmod a+x /opt/stop-distributed-cluster-serving.sh
+    chmod a+x /opt/start-all.sh

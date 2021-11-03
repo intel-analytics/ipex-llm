@@ -60,7 +60,7 @@ public class BenchmarkClient {
         logger.info("TaskID is: " + taskID);
         logger.info("Accessing service at: " + target);
 
-        // Example code for flClient.psiStub
+        // Example code for flClient
         // Quick lookup for the plaintext of hashed ids
         List<String> ids = new ArrayList<String>(idSize);
         long stproduce = System.currentTimeMillis();
@@ -89,7 +89,7 @@ public class BenchmarkClient {
             flClient.build();
             
             // Get salt from Server
-            salt = flClient.psiStub.getSalt();
+            salt = flClient.getSalt();
             logger.info("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
             long shash = System.currentTimeMillis();
@@ -102,14 +102,14 @@ public class BenchmarkClient {
             logger.info("### Time of hash data: " + (ehash - shash) + " ms ###");
             logger.info("HashedIDs Size = " + hashedIdArray.size());
             long supload = System.currentTimeMillis();
-            flClient.psiStub.uploadSet(hashedIdArray);
+            flClient.uploadSet(hashedIdArray);
             long eupload = System.currentTimeMillis();
             logger.info("### Time of upload data: " + (eupload - supload) + " ms ###");
             logger.info("upload hashed id successfully");
             List<String> intersection;
             
             long sdownload = System.currentTimeMillis();
-            intersection = flClient.psiStub.downloadIntersection();
+            intersection = flClient.downloadIntersection();
             long edownload = System.currentTimeMillis();
             logger.info("### Time of download data: " + (edownload - sdownload) + " ms ###");
             logger.info("Intersection successful. Total id(s) in intersection is " + intersection.size());

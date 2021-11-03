@@ -18,22 +18,47 @@
 
 import os
 from setuptools import setup
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
+# The global variable `plat_name` is used to determine which target platform we are packing for.
+# We overwrite the cmdclass in setuptools to restore the `--plat-name` argument we specified.
+# For example, when we call:
+# 
+#    python setup.py bdist_wheel --plat-name darwin-x86_64
+# 
+# `plat_name` will be assigned as `darwin-x86_64`, which means building wheel for MacOS.
+plat_name = "linux-x86_64"
+
+class bdist_wheel(_bdist_wheel):
+    def run(self):
+        plat_name = self.plat_name
+        _bdist_wheel.run(self)
+
+
 def setup_package():
+    package_data_plat_ = {"linux-x86_64":["libtensorflow_framework-zoo.so",
+                                          "libtensorflow_jni.so"],
+                          "darwin-x86_64":["libtensorflow_framework.dylib",
+                                          "libtensorflow_jni.dylib"]}
+
+    packages_name = "bigdl.share.tflibs." + plat_name
+
     metadata = dict(
         name='bigdl-tf',
         version=VERSION,
+        cmdclass={
+          'bdist_wheel': bdist_wheel
+        },
         description='TensorFlow Dependency Library for bigdl-orca',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        packages=["bigdl.share.tflibs"],
         url='https://github.com/intel-analytics/BigDL',
-        package_data={"bigdl.share.tflibs": ["libtensorflow_framework.so",
-                                             "libtensorflow_jni.so"]}
+        packages=[packages_name],
+        package_data={packages_name: package_data_plat_[plat_name]}
     )
 
     setup(**metadata)

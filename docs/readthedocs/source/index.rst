@@ -3,7 +3,7 @@ BigDL Documentation
 
 ------
 
-`BigDL <https://github.com/intel-analytics/BigDL/>`_ makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the original `BigDL <https://github.com/intel-analytics/BigDL/tree/branch-0.14>`_ and `Analytics Zoo <https://github.com/intel-analytics/analytics-zoo>`_ projects, providing the following features:
+`BigDL <https://github.com/intel-analytics/BigDL/>`_ makes it easy for data scientists and data engineers to build end-to-end, distributed AI applications. The **BigDL 2.0** release combines the `original BigDL <https://github.com/intel-analytics/BigDL/tree/branch-0.14>`_ and `Analytics Zoo <https://github.com/intel-analytics/analytics-zoo>`_ projects, providing the following features:
 
 * `DLlib <doc/DLlib/Overview/dllib.html>`_: distributed deep learning library for Apache Spark
 * `Orca <doc/Orca/Overview/orca.html>`_: seamlessly scale out TensorFlow and PyTorch pipelines for distributed Big Data
@@ -65,6 +65,11 @@ BigDL Documentation
    :caption: Chronos Overview
 
    doc/Chronos/Overview/chronos.md
+   doc/Chronos/Overview/data_processing_feature_engineering.md
+   doc/Chronos/Overview/forecasting.md
+   doc/Chronos/Overview/anomaly_detection.md
+   doc/Chronos/Overview/simulation.md
+   doc/Chronos/Overview/useful_functionalities.md
    doc/Chronos/QuickStart/chronos-autotsest-quickstart.md
    doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.md
    doc/Chronos/QuickStart/chronos-anomaly-detector.md
@@ -74,6 +79,10 @@ BigDL Documentation
    :caption: PPML Overview
 
    doc/PPML/Overview/ppml.md
+   doc/PPML/Overview/trusted_big_bata_analytics_and_ml.md
+   doc/PPML/Overview/trusted_fl.md
+   doc/PPML/QuickStart/build_kernel_with_sgx.md
+   doc/PPML/QuickStart/trusted-serving-on-k8s-guide.md
 
 .. toctree::
    :maxdepth: 1

@@ -40,8 +40,8 @@ bash ${RUN_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} ${quick} ${u
 
 TF_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/tflibs/dev; pwd)"
 echo $TF_SCRIPT_DIR
-bash ${TF_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} ${upload}
+bash ${TF_SCRIPT_DIR}/release_default_linux.sh ${version} ${upload}
 
 MATH_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/mathlibs/dev; pwd)"
 echo $MATH_SCRIPT_DIR
-bash ${MATH_SCRIPT_DIR}/release_default_linux_spark246.sh ${version} ${upload}
+bash ${MATH_SCRIPT_DIR}/release_default_linux.sh ${version} ${upload}

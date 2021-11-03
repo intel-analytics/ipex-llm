@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.{NNClassifier, NNClassifierModel, NNEstimatorSpec}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext

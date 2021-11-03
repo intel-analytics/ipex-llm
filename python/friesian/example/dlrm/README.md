@@ -5,12 +5,12 @@ This example demonstrates how to use BigDL Friesian to preprocess the
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
 ```
-conda create -n zoo python=3.7  # "zoo" is the conda environment name, you can use any name you like.
-conda activate zoo
-pip install --pre --upgrade analytics-zoo
+conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
+conda activate bigdl
+pip install --pre --upgrade bigdl-friesian
 ```
 
-__Note:__ As we test, Spark 3 will have performance benefit over the default Spark 2.4.6 and you can download the Analytics Zoo package built with Spark 3.0.0 from [here](https://sourceforge.net/projects/analytics-zoo/files/zoo-py/).
+__Note:__ As we test, Spark 3 will have performance benefit over the default Spark 2.4.6 and you can download the BigDL package built with Spark 3.1.2 from [here](https://sourceforge.net/projects/analytics-zoo/files/friesian-py/).
 
 ## Prepare the data
 You can download the full __1TB__ Click Logs dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/), which includes data of 24 days (day_0 to day_23) with 4,373,472,329 records in total.

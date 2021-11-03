@@ -66,18 +66,23 @@ ARG SPARK_VERSION
 ENV SPARK_VERSION		${SPARK_VERSION}
 ENV BIGDL_VERSION		${BIGDL_VERSION}
 ENV BIGDL_HOME		        /bigdl-${BIGDL_VERSION}
+ADD ./download-bigdl-serving.sh /opt/download-bigdl-serving.sh
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
-    chmod a+x ./download-bigdl.sh
+    chmod a+x ./download-bigdl.sh && \
+    chmod a+x /opt/download-bigdl-serving.sh
 RUN ./download-bigdl.sh && \
-    rm bigdl*.zip
+    rm bigdl*.zip && \
+    cd /opt && \
+    ./download-bigdl-serving.sh
 RUN cd /opt && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG && \
     mkdir resnet50 && \
     cd resnet50 && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.bin/download" -O resnet_v1_50.bin && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml/download" -O resnet_v1_50.xml
+
 
 # stage.4 ppml
 FROM ubuntu:18.04
@@ -97,7 +102,7 @@ ENV FLINK_JOB_MANAGER_IP		127.0.0.1
 ENV FLINK_JOB_MANAGER_REST_PORT		8081
 ENV FLINK_JOB_MANAGER_RPC_PORT		6123
 ENV FLINK_TASK_MANAGER_IP		127.0.0.1
-ENV FLINK_TASK_MANAGER_DATA_PORT	6124
+ENV FLINK_TASK_MANAGER_DATA_PORT	6126
 ENV FLINK_BLOB_SERVER_PORT              6124
 ENV FLINK_TASK_MANAGER_RPC_PORT		6125
 ENV FLINK_TASK_MANAGER_TASKSLOTS_NUM	1
@@ -140,7 +145,8 @@ COPY --from=graphene /redis.tar.gz /ppml/trusted-realtime-ml/redis
 COPY --from=flink /opt/jdk  /opt/jdk8
 COPY --from=flink /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
 COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}
-COPY --from=bigdl /bigdl-${BIGDL_VERSION}/jars/bigdl-serving*-jar-with-dependencies.jar /ppml/trusted-realtime-ml/java/work/bigdl-serving-jar-with-dependencies.jar
+COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar /ppml/trusted-realtime-ml/java/work/bigdl-serving-jar-with-dependencies.jar
+COPY --from=bigdl /opt/bigdl-serving*-http.jar /ppml/trusted-realtime-ml/java/work/bigdl-serving-http.jar
 COPY --from=bigdl /opt/resnet50/ /ppml/trusted-realtime-ml/java/work/models/resnet50
 COPY --from=bigdl /opt/ILSVRC2012_val_00000001.JPEG /ppml/trusted-realtime-ml/java/work/data/ILSVRC2012_val_00000001.JPEG
 

@@ -18,10 +18,10 @@ import argparse
 import torch
 import torchvision
 from torchvision import datasets, transforms
-from bigdl.optim.optimizer import *
+from bigdl.dllib.optim.optimizer import *
 from bigdl.orca.torch import TorchModel, TorchLoss
 from bigdl.dllib.estimator import *
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.dllib.keras.metrics import Accuracy, Top5Accuracy
 from bigdl.dllib.utils.utils import detect_conda_env_name

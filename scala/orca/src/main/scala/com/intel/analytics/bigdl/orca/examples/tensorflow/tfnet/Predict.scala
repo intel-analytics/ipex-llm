@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.orca.examples.tensorflow.tfnet
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.image.{ImageMatToTensor, ImageResize, ImageSet, ImageSetToSample}
 import com.intel.analytics.bigdl.orca.net.TFNet
 import org.apache.log4j.{Level, Logger}

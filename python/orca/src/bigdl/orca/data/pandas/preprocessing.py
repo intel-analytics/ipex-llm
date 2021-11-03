@@ -15,7 +15,7 @@
 #
 
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca import OrcaContext
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import *
