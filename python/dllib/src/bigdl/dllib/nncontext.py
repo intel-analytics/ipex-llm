@@ -20,6 +20,7 @@
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.utils.utils import set_python_home
+from bigdl.dllib.utils.engine import get_bigdl_jars
 import warnings
 import multiprocessing
 import os
@@ -591,6 +592,13 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
                                                  fd=spark_jvm_proc.stderr,
                                                  fn=sys.stderr.write))
             stderr_reader.start()
+    # if spark context is existed already, append bigdl jars to 
+    if has_activate_sc:
+        bigdl_jars = get_bigdl_jars()
+        spark = SparkSession.builder.getOrCreate()
+        for jar in bigdl_jars:
+            spark._jsparkSession.sessionState().resourceLoader().addJar(jar)
+
     check_version()
     if redirect_spark_log:
         redire_spark_logs()
