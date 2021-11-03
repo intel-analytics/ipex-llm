@@ -60,8 +60,8 @@ elif [ "$platform" == "linux" ]; then
     mv "${FRAMEWORK_SO}" "${SO_PREFIX}/libtensorflow_framework-zoo.so"
     # Need root permission to execute the following commands.
     # Add sudo to these two commands if you are not the root.
-    sudo patchelf --set-soname libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_framework-zoo.so
-    sudo patchelf --replace-needed libtensorflow_framework.so.1 libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_jni.so
+    patchelf --set-soname libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_framework-zoo.so
+    patchelf --replace-needed libtensorflow_framework.so.1 libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_jni.so
 else
     echo "Unsupported platform"
 fi
