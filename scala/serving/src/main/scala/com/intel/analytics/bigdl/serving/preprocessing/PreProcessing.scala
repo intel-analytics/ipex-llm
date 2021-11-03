@@ -85,12 +85,15 @@ class PreProcessing()
       case e: Exception =>
         logger.error(s"Preprocessing error, msg ${e.getMessage}")
         logger.error(s"Error stack trace ${e.getStackTrace.mkString("\n")}")
-        val tmpJedis = RedisUtils.getRedisClient(ClusterServing.jedisPool)
-        val hKey = Conventions.RESULT_PREFIX + ClusterServing.helper.jobName + ":" + key
 
-        val hValue = Map[String, String]("value" -> "NaN").asJava
-        tmpJedis.hset(hKey, hValue)
-        tmpJedis.close()
+        if (ClusterServing.helper.queueUsed == "redis") {
+          val tmpJedis = RedisUtils.getRedisClient(ClusterServing.jedisPool)
+          val hKey = Conventions.RESULT_PREFIX + ClusterServing.helper.jobName + ":" + key
+          val hValue = Map[String, String]("value" -> "NaN").asJava
+          tmpJedis.hset(hKey, hValue)
+          tmpJedis.close()
+        }
+
         null
     }
   }
