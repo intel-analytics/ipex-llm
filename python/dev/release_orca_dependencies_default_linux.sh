@@ -16,32 +16,28 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release bigdl-orca together with
-# bigdl-tf and bigdl-math built on top of Spark 3.1.2 for mac.
+# This is the default script to release bigdl-tf and bigdl-math for linux.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
-BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../../..; pwd)"
+BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../..; pwd)"
 echo $BIGDL_DIR
 
-if (( $# < 3)); then
-  echo "Usage: all_release_default_mac_spark312.sh version quick_build upload"
-  echo "Usage example: bash all_release_default_mac_spark312.sh default true true"
-  echo "Usage example: bash all_release_default_mac_spark312.sh 0.14.0.dev1 false true"
+if (( $# < 2)); then
+  echo "Usage: release_orca_dependencies_default_linux.sh version upload"
+  echo "Usage example: bash release_orca_dependencies_default_linux.sh default true"
+  echo "Usage example: bash release_orca_dependencies_default_linux.sh 0.1.0.dev0 false"
   exit -1
 fi
 
 version=$1
-quick=$2
-upload=$3
-
-bash ${RUN_SCRIPT_DIR}/release_default_mac_spark312.sh ${version} ${quick} ${upload}
+upload=$2
 
 TF_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/tflibs/dev; pwd)"
 echo $TF_SCRIPT_DIR
-bash ${TF_SCRIPT_DIR}/release_default_mac.sh ${version} ${upload}
+bash ${TF_SCRIPT_DIR}/release_default_linux.sh ${version} ${upload}
 
 MATH_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/mathlibs/dev; pwd)"
 echo $MATH_SCRIPT_DIR
-bash ${MATH_SCRIPT_DIR}/release_default_mac.sh ${version} ${upload}
+bash ${MATH_SCRIPT_DIR}/release_default_linux.sh ${version} ${upload}
