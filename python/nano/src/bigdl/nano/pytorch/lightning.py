@@ -36,7 +36,7 @@ class LightningModuleFromTorch(LightningModule):
         self.loss = loss
         self.optimizer = optimizer
 
-    def copy(self, torch_model):
+    def copy(self, torch_model: nn.Module):
         for name, child in torch_model._modules.items():
             setattr(self, name, child)
         self.forward = torch_model.forward
