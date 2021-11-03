@@ -34,6 +34,12 @@ nano_home = os.path.abspath(__file__ + "/../")
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
+lib_urls = [
+    "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
+    "https://github.com/leonardozcm/libjpeg-turbo/releases/download/2.1.1/libturbojpeg.so.0.2.0",
+    "https://github.com/leonardozcm/tcmalloc/releases/download/v1/libtcmalloc.so"
+]
+
 
 def get_nano_packages():
     nano_packages = []
@@ -61,37 +67,6 @@ def download_libs(url: str):
     os.chmod(libso_file, st.st_mode | stat.S_IEXEC)
 
 
-class URLHtmlParser(HTMLParser):
-
-    def __init__(self):
-        super().__init__()
-        self.links = {}
-        self.unmatched_link = None
-
-    def handle_starttag(self, tag, attrs):
-        if tag != 'a':
-            return
-
-        for attr in attrs:
-            if 'href' in attr[0]:
-                self.unmatched_link = attr[1]
-                break
-
-    def handle_data(self, data):
-        if self.unmatched_link is not None:
-            self.links[data] = self.unmatched_link
-            self.unmatched_link = None
-
-
-def parse_find_index_page(url):
-    with urllib.request.urlopen(url, timeout=30) as f:
-        content = f.read()
-    content = content.decode('utf8')
-    parser = URLHtmlParser()
-    parser.feed(content)
-    return parser.links
-
-
 def setup_package():
 
     install_requires = ["intel-openmp"]
@@ -105,11 +80,6 @@ def setup_package():
                         "PyTurboJPEG",
                         "opencv-transforms"]
 
-    lib_urls = [
-        "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
-        "https://github.com/leonardozcm/libjpeg-turbo/releases/download/2.1.1/libturbojpeg.so.0.2.0",
-        "https://github.com/leonardozcm/tcmalloc/releases/download/v1/libtcmalloc.so"
-    ]
     for url in lib_urls:
         download_libs(url)
 
