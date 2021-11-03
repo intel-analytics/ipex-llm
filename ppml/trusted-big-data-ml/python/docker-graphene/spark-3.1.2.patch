@@ -1,3 +1,172 @@
+index 8d9f2be621..3ab622cb5f 100644
+--- a/core/src/main/scala/org/apache/spark/api/python/PythonRunner.scala
++++ b/core/src/main/scala/org/apache/spark/api/python/PythonRunner.scala
+@@ -667,6 +667,7 @@ private[spark] object SpecialLengths {
+   val END_OF_STREAM = -4
+   val NULL = -5
+   val START_ARROW_STREAM = -6
++  val FINISHED = -7
+ }
+
+ private[spark] object BarrierTaskContextMessageProtocol {
+diff --git a/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala b/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala
+index df236ba892..dd3fde3040 100644
+--- a/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala
++++ b/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala
+@@ -17,7 +17,7 @@
+
+ package org.apache.spark.api.python
+
+-import java.io.{DataInputStream, DataOutputStream, EOFException, InputStream}
++import java.io.{BufferedInputStream, BufferedOutputStream, DataInputStream, DataOutputStream, EOFException, InputStream}
+ import java.net.{InetAddress, ServerSocket, Socket, SocketException}
+ import java.util.Arrays
+ import java.util.concurrent.TimeUnit
+@@ -145,12 +145,16 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
+     }
+   }
+
++  import PythonWorkerFactory.simpleWorkerBuffer
++  import PythonWorkerFactory.maxSimpleWorker
++  import PythonWorkerFactory.keysIterator
+   /**
+    * Launch a worker by executing worker.py (by default) directly and telling it to connect to us.
+    */
+   private def createSimpleWorker(): Socket = {
+     var serverSocket: ServerSocket = null
+     try {
++      /*
+       serverSocket = new ServerSocket(0, 1, InetAddress.getByAddress(Array(127, 0, 0, 1)))
+
+       // Create and start the worker
+@@ -163,13 +167,78 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
+       workerEnv.put("PYTHON_WORKER_FACTORY_PORT", serverSocket.getLocalPort.toString)
+       workerEnv.put("PYTHON_WORKER_FACTORY_SECRET", authHelper.secret)
+       val worker = pb.start()
++       */
++
++      simpleWorkerBuffer.synchronized {
++        println(s"Thread ${Thread.currentThread().getId}: creating simple worker synchronized")
++        val (worker, ss) = {
++          if (simpleWorkerBuffer.size >= maxSimpleWorker) {
++            val p = keysIterator().next()
++            val buffer = simpleWorkerBuffer.get(p).get
++            println(s"scala1: waiting python's finished result.")
++            val input = new DataInputStream(new BufferedInputStream(buffer._1.getInputStream, 1024))
++            val r = input.readInt()
++            println(s"scala1: python result is ${r}.")
++            require(r == SpecialLengths.FINISHED)
++            val ss = new ServerSocket(0, 1, InetAddress.getByAddress(Array(127, 0, 0, 1)))
++            ss.setSoTimeout(10000)
++            println(s"scala1: new data local port ${ss.getLocalPort}--------")
++            val output = new DataOutputStream(
++              new BufferedOutputStream(buffer._1.getOutputStream, 1024))
++            output.writeInt(ss.getLocalPort)
++            output.flush()
++            (buffer._2, ss)
++          } else {
++            val manageServerSocket =
++              new ServerSocket(0, 1, InetAddress.getByAddress(Array(127, 0, 0, 1)))
++            manageServerSocket.setSoTimeout(100000)
++            try throw new Exception("ProcessBuilder is creating!!!!!")
++            catch {
++              case e: Exception =>
++                e.printStackTrace()
++            }
++            val pb = new ProcessBuilder(Arrays.asList(pythonExec, "-m", workerModule))
++            val workerEnv = pb.environment()
++            workerEnv.putAll(envVars.asJava)
++            workerEnv.put("PYTHONPATH", pythonPath)
++            // This is equivalent to setting the -u flag; we use it because ipython doesn't support -u:
++            workerEnv.put("PYTHONUNBUFFERED", "YES")
++            workerEnv.put("PYTHON_WORKER_FACTORY_PORT", manageServerSocket.getLocalPort.toString)
++            workerEnv.put("PYTHON_WORKER_FACTORY_SECRET", authHelper.secret)
++            val worker = pb.start()
++            redirectStreamsToStderr(worker.getInputStream, worker.getErrorStream)
++            var manageSocket: Socket = null
++            try {
++              manageSocket = manageServerSocket.accept()
++              val port = manageSocket.getLocalPort
++              authHelper.authClient(manageSocket)
++              PythonWorkerFactory.simpleWorkerBuffer.put(port,
++                (manageSocket, worker, manageServerSocket))
++            } catch {
++              case e: Exception =>
++                throw new SparkException("Python worker failed to connect back.", e)
++            }
++            val ss = new ServerSocket(0, 1, InetAddress.getByAddress(Array(127, 0, 0, 1)))
++            ss.setSoTimeout(10000)
++            println(s"scala2: new data local port ${ss.getLocalPort}--------")
++            val output = new DataOutputStream(
++              new BufferedOutputStream(manageSocket.getOutputStream, 1024))
++            output.writeInt(ss.getLocalPort)
++            output.flush()
++            (worker, ss)
++          }
++        }
++        serverSocket = ss
+
+       // Redirect worker stdout and stderr
+-      redirectStreamsToStderr(worker.getInputStream, worker.getErrorStream)
++      //redirectStreamsToStderr(worker.getInputStream, worker.getErrorStream)
++        // Redirect worker stdout and stderr
+
+       // Wait for it to connect to our socket, and validate the auth secret.
+-      serverSocket.setSoTimeout(10000)
++      //serverSocket.setSoTimeout(10000)
++        // Wait for it to connect to our socket, and validate the auth secret.
+
++        /*
+       try {
+         val socket = serverSocket.accept()
+         authHelper.authClient(socket)
+@@ -185,7 +254,27 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
+       if (serverSocket != null) {
+         serverSocket.close()
+       }
++    }*/
++        try {
++          val socket = serverSocket.accept()
++          val port = socket.getLocalPort
++          authHelper.authClient(socket)
++          self.synchronized {
++            simpleWorkers.put(socket, worker)
++          }
++          println(s"Thread ${Thread.currentThread().getId}: creating simple worker finished")
++          return socket
++        } catch {
++          case e: Exception =>
++            throw new SparkException("Python worker failed to connect back.", e)
++        }
++      }
++    } finally {
++      if (serverSocket != null) {
++        serverSocket.close()
++      }
+     }
++
+     null
+   }
+
+@@ -378,7 +467,17 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
+   }
+ }
+
+-private object PythonWorkerFactory {
++protected object PythonWorkerFactory {
++  val simpleWorkerBuffer = mutable.HashMap[Int, (Socket, Process, ServerSocket)]()
++  var simpleWorkerIter: Iterator[Int] = null
++  def keysIterator(): Iterator[Int] = {
++    if (simpleWorkerIter == null || !simpleWorkerIter.hasNext) {
++      simpleWorkerIter = simpleWorkerBuffer.keysIterator
++    }
++    simpleWorkerIter
++  }
++  val maxSimpleWorker = 1
++
+   val PROCESS_WAIT_TIMEOUT_MS = 10000
+   val IDLE_WORKER_TIMEOUT_NS = TimeUnit.MINUTES.toNanos(1)  // kill idle workers after 1 minute
+ }
 diff --git a/core/src/main/scala/org/apache/spark/deploy/SparkSubmit.scala b/core/src/main/scala/org/apache/spark/deploy/SparkSubmit.scala
 index fa86da9ae9..ceb5dfbe6a 100644
 --- a/core/src/main/scala/org/apache/spark/deploy/SparkSubmit.scala
@@ -193,6 +362,58 @@ index 1643aa68cd..ceeaf9f4e4 100644
 
      // Windows does not grant read permission by default to non-admin users
      // Add read permission to owner explicitly
+diff --git a/python/pyspark/serializers.py b/python/pyspark/serializers.py
+index 1b434d3931..286f773904 100644
+--- a/python/pyspark/serializers.py
++++ b/python/pyspark/serializers.py
+@@ -78,6 +78,7 @@ class SpecialLengths(object):
+     END_OF_STREAM = -4
+     NULL = -5
+     START_ARROW_STREAM = -6
++    FINISHED = -7
+
+
+ class Serializer(object):
+diff --git a/python/pyspark/worker.py b/python/pyspark/worker.py
+index 8ca4bb37e5..5b22911158 100644
+--- a/python/pyspark/worker.py
++++ b/python/pyspark/worker.py
+@@ -642,15 +642,32 @@ def main(infile, outfile):
+     # check end of stream
+     if read_int(infile) == SpecialLengths.END_OF_STREAM:
+         write_int(SpecialLengths.END_OF_STREAM, outfile)
++        print(str(os.getpid()) + "worker's task exit with 0")
+     else:
+         # write a different value to tell JVM to not reuse this worker
+         write_int(SpecialLengths.END_OF_DATA_SECTION, outfile)
+-        sys.exit(-1)
++        #sys.exit(-1)
++        print(str(os.getpid()) + "worker's task exit with -1")
++    outfile.flush()
+
+
+ if __name__ == '__main__':
+     # Read information about how to connect back to the JVM from the environment.
+     java_port = int(os.environ["PYTHON_WORKER_FACTORY_PORT"])
+     auth_secret = os.environ["PYTHON_WORKER_FACTORY_SECRET"]
+-    (sock_file, _) = local_connect_and_auth(java_port, auth_secret)
+-    main(sock_file, sock_file)
++    #(sock_file, _) = local_connect_and_auth(java_port, auth_secret)
++    #main(sock_file, sock_file)
++    print("!Python worker's pid is " + str(os.getpid()) + "!!!!!!!!!!!!!")
++    (sock_file, sock) = local_connect_and_auth(java_port, auth_secret)
++    print("Python worker connected to " + str(java_port) + "!!!!!!!!!!!!!")
++    while True:
++        try:
++            data_port = read_int(sock_file)
++            print("Python new data port is " + str(data_port) + "!!!!!!!!!!!!!")
++            (data_sock_file, data_sock) = local_connect_and_auth(data_port, auth_secret)
++            main(data_sock_file, data_sock_file)
++            data_sock.close()
++            write_int(SpecialLengths.FINISHED, sock_file)
++            sock_file.flush()
++        except Exception as e:
++            print("Python waiting for connect. \n" + str(e))
 diff --git a/resource-managers/kubernetes/core/src/main/scala/org/apache/spark/deploy/k8s/Constants.scala b/resource-managers/kubernetes/core/src/main/scala/org/apache/spark/deploy/k8s/Constants.scala
 index 543ca12594..9dfb3697f3 100644
 --- a/resource-managers/kubernetes/core/src/main/scala/org/apache/spark/deploy/k8s/Constants.scala
@@ -223,3 +444,4 @@ index a0a17cecf9..6040a421c1 100644
          ) ++ kubernetesConf.environment).map { case (k, v) =>
            new EnvVarBuilder()
              .withName(k)
+
