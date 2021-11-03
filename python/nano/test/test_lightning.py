@@ -21,7 +21,7 @@ import torch
 from test._train_torch_lightning import train_torch_lightning
 from torch import nn
 
-from bigdl.nano.pytorch.lightning_extension import to_lightning
+from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -31,18 +31,25 @@ data_dir = os.path.join(os.path.dirname(__file__), "data")
 loss = nn.CrossEntropyLoss()
 
 
-@to_lightning(loss, torch.optim.Adam, lr=0.01)
-def resnet18(num_classes, pretrained=True, include_top=False, freeze=True):
-    backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
-    output_size = backbone.get_output_size()
-    head = nn.Linear(output_size, num_classes)
-    return torch.nn.Sequential(backbone, head)
+class ResNet18(nn.Module):
+    def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+        super().__init__()
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+        output_size = backbone.get_output_size()
+        head = nn.Linear(output_size, num_classes)
+        self.model = torch.nn.Sequential(backbone, head)
+
+    def forward(self, x):
+        return self.model(x)
 
 
-class TestModelsLightningExtension(TestCase):
+class TestLightningModuleFromTorch(TestCase):
     num_classes = 10
 
     def test_resnet18_ipex(self):
-        pl_resnet18 = resnet18(10, pretrained=True, include_top=False, freeze=True)
-        train_torch_lightning(pl_resnet18, batch_size, num_workers, data_dir,
+        model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        pl_model = LightningModuleFromTorch(model, loss, optimizer)
+        train_torch_lightning(pl_model, batch_size, num_workers, data_dir,
                               use_orca_lite_trainer=True)
