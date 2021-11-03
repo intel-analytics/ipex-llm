@@ -20,7 +20,7 @@ Sampling specs to be used in search space configuration.
     :members:
     :show-inheritance:
 
-automl.metrics
+orca.automl.metrics
 ----------------------------
 
 Evaluate unscaled metrics between y true value and y predicted value.
@@ -29,7 +29,7 @@ Evaluate unscaled metrics between y true value and y predicted value.
     :members:
     :show-inheritance:
 
-AutoXGBoost
+orca.automl.auto_xgb
 ---------------------------
 
 Automatic model adjustment, model fitting and hyperparameter search.
