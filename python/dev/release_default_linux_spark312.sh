@@ -46,7 +46,7 @@ bash ${DLLIB_SCRIPT_DIR}/release_default_linux_spark312.sh ${version} ${quick} $
 
 ORCA_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/orca/dev/release; pwd)"
 echo $ORCA_SCRIPT_DIR
-bash ${ORCA_SCRIPT_DIR}/all_release_default_linux_spark312.sh ${version} true ${upload}
+bash ${ORCA_SCRIPT_DIR}/release_default_linux_spark312.sh ${version} true ${upload}
 
 FRIESIAN_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/friesian/dev/release; pwd)"
 echo $FRIESIAN_SCRIPT_DIR
