@@ -133,7 +133,24 @@ python script.py
 ```
 ---
 ### 3.3 Get started
----
+
+#### **NN Context**
+
+`NNContext` is the main entry for provisioning the dllib program on the underlying cluster (such as K8s or Hadoop cluster), or just on a single laptop.
+
+An dlllib program usually starts with the initialization of `NNContext` as follows:
+
+```python
+from bigdl.dllib.nncontext import *
+init_nncontext()
+```
+
+In `init_nncontext`, the user may specify cluster mode for the dllib program:
+
+- *Cluster mode=*: "local", "yarn-client", "yarn-cluster", "k8s-client", "standalone" and "spark-submit". Default to be "local".
+
+The dllib program simply runs `init_nncontext` on the local machine, which will automatically provision the runtime Python environment and distributed execution engine on the underlying computing environment (such as a single laptop, a large K8s or Hadoop cluster, etc.).
+
 
 #### **Autograd Examples using bigdl-dllb keras Python API**
 

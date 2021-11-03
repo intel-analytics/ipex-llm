@@ -194,5 +194,5 @@ resolvers += "ossrh repository" at "https://oss.sonatype.org/content/repositorie
 
 
 #### **2.2 Build a Scala project**
-To enable BigDL in project, you should add BigDL to your project's dependencies using maven or sbt. Here is a [simple MLP example](https://github.com/intel-analytics/zoo-tutorials/tree/master/scala/SimpleMlp) to show you how to use BigDL to build your own deep learning project using maven or sbt, and how to run the simple example in IDEA and spark-submit.
+To enable BigDL in project, you should add BigDL to your project's dependencies using maven or sbt. Here is a [simple MLP example](https://github.com/intel-analytics/BigDL/tree/branch-2.0/apps/SimpleMlp) to show you how to use BigDL to build your own deep learning project using maven or sbt, and how to run the simple example in IDEA and spark-submit.
 
