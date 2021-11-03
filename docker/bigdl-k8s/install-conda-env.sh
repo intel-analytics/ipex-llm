@@ -20,8 +20,12 @@ pip install --no-cache-dir opencv-python && \
 pip install --no-cache-dir pyyaml && \
 pip install --no-cache-dir redis && \
 pip install --no-cache-dir ray[tune]==1.2.0 && \
+pip install --no-cache-dir gym==0.17.1 && \
 pip install --no-cache-dir Pillow==6.2 && \
 pip install --no-cache-dir psutil aiohttp==3.7.0 && \
+pip install --no-cache-dir setproctitle && \
+pip install --no-cache-dir hiredis==1.1.0 && \
+pip install --no-cache-dir async-timeout==3.0.1 && \
 pip install --no-cache-dir py4j && \
 pip install --no-cache-dir cmake==3.16.3 && \
 pip install --no-cache-dir torch==1.7.1 torchvision==0.8.2 && \
@@ -51,8 +55,12 @@ pip install --no-cache-dir opencv-python && \
 pip install --no-cache-dir pyyaml && \
 pip install --no-cache-dir redis && \
 pip install --no-cache-dir ray[tune]==1.2.0 && \
+pip install --no-cache-dir gym==0.17.1 && \
 pip install --no-cache-dir Pillow==6.2 && \
 pip install --no-cache-dir psutil aiohttp==3.7.0 && \
+pip install --no-cache-dir setproctitle && \
+pip install --no-cache-dir hiredis==1.1.0 && \
+pip install --no-cache-dir async-timeout==3.0.1 && \
 pip install --no-cache-dir py4j && \
 pip install --no-cache-dir cmake==3.16.3 && \
 pip install --no-cache-dir torch==1.7.1 torchvision==0.8.2 && \
