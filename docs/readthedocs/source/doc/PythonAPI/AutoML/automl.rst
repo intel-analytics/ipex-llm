@@ -28,3 +28,12 @@ Evaluate unscaled metrics between y true value and y predicted value.
 .. automodule:: bigdl.orca.automl.metrics
     :members:
     :show-inheritance:
+
+AutoXGBoost
+---------------------------
+
+Automatic model adjustment, model fitting and hyperparameter search.
+
+.. automodule:: bigdl.orca.automl.xgboost.auto_xgb
+    :members:
+    :show-inheritance:
