@@ -3,10 +3,10 @@ from pyspark.sql import SparkSession, Catalog
 def sql_catalog_example(spark):
     
     # create catalog object
-    cata_log = Catalog(spark)
+    catalog = Catalog(spark)
     
     # createTable 
-    table_df = catalog.createTable("table", "test.txt", "text")
+    table_df = catalog.createTable("table", "/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/resources/people.txt", "text")
     table_df.show()
     print("createTable API finished")
 
@@ -16,9 +16,9 @@ def sql_catalog_example(spark):
     print("currentDatabase API finished")
 
     # createTable
-    #catalog.createTable("table3", "test.txt", "text")
-    #spark.sql("select * from table3").show()
-    #print("createTable API finished")
+    catalog.createTable("table3", "/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/resources/people.txt", "text")
+    spark.sql("select * from table3").show()
+    print("createTable API finished")
     
     # listColumns
     catalog.listColumns("table3")
