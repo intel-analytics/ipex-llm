@@ -1,6 +1,7 @@
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
 ARG FLINK_VERSION=1.11.3
+ARG SCALA_VERSION=2.12
 
 # stage.1 Redis
 FROM occlum/occlum:0.24.0-ubuntu18.04 as redis-tls
@@ -26,7 +27,7 @@ RUN git clone https://github.com/redis/redis.git && \
     git checkout 6.0.6 && \
     make -j `getconf _NPROCESSORS_ONLN` BUILD_TLS=yes && make PREFIX=/opt/redis install
 
-# stage. 2 Flink & bigdl
+# stage. 2 Flink & bigdl & Scala
 FROM ubuntu:18.04 as bigdl
 ENV JAVA_HOME				/usr/lib/jvm/java-8-openjdk-amd64
 ARG FLINK_VERSION=1.11.3
@@ -36,6 +37,7 @@ ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ENV BIGDL_VERSION=${BIGDL_VERSION}
 ARG SPARK_VERSION=3.1.2
 ENV BIGDL_HOME		        /opt/bigdl-${BIGDL_VERSION}
+ENV SCALA_VERSION ${SCALA_VERSION}
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
@@ -49,9 +51,9 @@ RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tg
 
 # Download flink
 RUN cd /opt && \
-    wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
-    tar -zxvf flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
-    rm flink-${FLINK_VERSION}-bin-scala_2.11.tgz
+    wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
+    tar -zxvf flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
+    rm flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
 
 # Download bigdl
 RUN cd /opt && \
@@ -137,6 +139,7 @@ ADD ./start-flink-taskmanager.sh /opt/start-flink-taskmanager.sh
 ADD ./start-cluster-serving-job.sh /opt/start-cluster-serving-job.sh
 ADD ./start-http-frontend.sh /opt/start-http-frontend.sh
 ADD ./start-all.sh /opt/start-all.sh
+ADD ./cluster-serving-config.yaml /ppml/trusted-realtime-ml/java/config.yaml
 
 RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-redis.sh && \
