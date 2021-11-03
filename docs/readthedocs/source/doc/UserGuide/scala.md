@@ -17,7 +17,7 @@ export BIGDL_HOME=folder path where you extract the BigDL package
 You can  try BigDL using the Spark interactive shell as follows:
 
 ```bash
-${BIGDL_HOME}/bin/spark-shell-with-bigdl.sh --master local[2]
+${BIGDL_HOME}/bin/spark-shell-with-dllib.sh
 ```
 
 You will then see a welcome message like below:
@@ -46,69 +46,100 @@ scala> val sc = NNContext.initNNContext("Run Example")
 2021-01-26 10:19:53 WARN  SparkContext:66 - Using an existing SparkContext; some configuration may not take effect.
 sc: org.apache.spark.SparkContext = org.apache.spark.SparkContext@487f025
 ```
+Once the environment is successfully initiated, you'll be able to play with dllib API's.
+For instance, to experiment with the ````dllib.keras```` APIs in dllib, you may try below code:
+```scala
+scala> import com.intel.analytics.bigdl.dllib.keras.layers._
+scala> import com.intel.analytics.bigdl.numeric.NumericFloat
+scala> import com.intel.analytics.bigdl.dllib.utils.Shape
+
+scala> val seq = Sequential()
+       val layer = ConvLSTM2D(32, 4, returnSequences = true, borderMode = "same",
+            inputShape = Shape(8, 40, 40, 32))
+       seq.add(layer)
+```
 
 #### **1.3 Run BigDL examples**
 
-You can run an BigDL example, e.g., the [Lenet](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/models/lenet), as a standard Spark program (running in either local mode or cluster mode) as follows:
+You can run a bigdl-dllib program, e.g., the [Image Inference](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/imageInference), as a standard Spark program (running on either a local machine or a distributed cluster) as follows:
 
-1. You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the
-files and put them in one folder(e.g. mnist).
-
-There're four files. **train-images-idx3-ubyte** contains train images,
-**train-labels-idx1-ubyte** is train label file, **t10k-images-idx3-ubyte** has validation images
- and **t10k-labels-idx1-ubyte** contains validation labels. For more detail, please refer to the
- download page.
-
-After you uncompress the gzip files, these files may be renamed by some uncompress tools, e.g. **train-images-idx3-ubyte** is renamed
-to **train-images.idx3-ubyte**. Please change the name back before you run the example.
+1. Download the pretrained caffe model and prepare the images
 
 2. Run the following command:
 ```bash
 # Spark local mode
-${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \ 
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
   --master local[2] \
-  --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
-  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
-  -f ./data/mnist \
-  -b 320 \
-  -e 20
+  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
+  ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+  -f DATA_PATH \
+  -b 4 \
+  --numLayers 2 --vocab 100 --hidden 6 \
+  --numSteps 3 --learningRate 0.005 -e 1 \
+  --learningRateDecay 0.001 --keepProb 0.5
 
 # Spark standalone mode
-${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
-  --master spark://... \         #add your spark master address
-  --executor-cores 2 \
-  --total-executor-cores 4 \
-  --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
-  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
-   -f ./data/mnist \
-  -b 320 \
-  -e 20
+## ${SPARK_HOME}/sbin/start-master.sh
+## check master URL from http://localhost:8080
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
+  --master spark://... \
+  --executor-cores cores_per_executor \
+  --total-executor-cores total_cores_for_the_job \
+  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
+  ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+  -f DATA_PATH \
+  -b 4 \
+  --numLayers 2 --vocab 100 --hidden 6 \
+  --numSteps 3 --learningRate 0.005 -e 1 \
+  --learningRateDecay 0.001 --keepProb 0.5
 
-# Spark yarn client mode, please make sure the right HADOOP_CONF_DIR is set
-${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
-  --master yarn \
-  --deploy-mode client \
-  --executor-cores 2 \
-  --num-executors 2 \
-  --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
-  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
-  -f ./data/mnist \
-  -b 320 \
-  -e 20
+# Spark yarn client mode
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
+ --master yarn \
+ --deploy-mode client \
+ --executor-cores cores_per_executor \
+ --num-executors executors_number \
+ --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
+ ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ -f DATA_PATH \
+ -b 4 \
+ --numLayers 2 --vocab 100 --hidden 6 \
+ --numSteps 3 --learningRate 0.005 -e 1 \
+ --learningRateDecay 0.001 --keepProb 0.5
 
-# Spark yarn cluster mode, please make sure the right HADOOP_CONF_DIR is set
-${BIGDL_HOME}/bin/spark-submit-scala-with-bigdl.sh \
-  --master yarn \
-  --deploy-mode cluster \
-  --executor-cores 2 \
-  --num-executors 2 \
-  --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
-  ${BIGDL_HOME}/jars/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not the same version
-  -f ./data/mnist \
-  -b 320 \
-  -e 20
+# Spark yarn cluster mode
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
+ --master yarn \
+ --deploy-mode cluster \
+ --executor-cores cores_per_executor \
+ --num-executors executors_number \
+ --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
+ ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ -f DATA_PATH \
+ -b 4 \
+ --numLayers 2 --vocab 100 --hidden 6 \
+ --numSteps 3 --learningRate 0.005 -e 1 \
+ --learningRateDecay 0.001 --keepProb 0.5
 ```
 
+  The parameters used in the above command are:
+
+  * -f: The path where you put your PTB data.
+  * -b: The mini-batch size. The mini-batch size is expected to be a multiple of *total cores* used in the job. In this example, the mini-batch size is suggested to be set to *total cores * 4*
+  * --learningRate: learning rate for adagrad
+  * --learningRateDecay: learning rate decay for adagrad
+  * --hidden: hiddensize for lstm
+  * --vocabSize: vocabulary size, default 10000
+  * --numLayers: numbers of lstm cell, default 2 lstm cells
+  * --numSteps: number of words per record in LM
+  * --keepProb: the probability to do dropout
+
+If you are to run your own program, do remember to do the initialize before call other bigdl-dllib API's, as shown below.
+```scala
+ // Scala code example
+ import com.intel.analytics.bigdl.dllib.NNContext
+ NNContext.initNNContext()
+```
 --- 
 
 ### **2. Build BigDL Applications**
@@ -119,12 +150,11 @@ This section will show you how to build your own deep learning project with BigD
 ##### **2.1.1 official Release** 
 Currently, BigDL releases are hosted on maven central; below is an example to add the BigDL dllib dependency to your own project:
 
-
 ```xml
 <dependency>
     <groupId>com.intel.analytics.bigdl</groupId>
     <artifactId>bigdl-dllib-spark_2.4.6</artifactId>
-    <version>2.0.0</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
@@ -133,7 +163,7 @@ You can find the other SPARK version [here](https://search.maven.org/search?q=bi
 
 SBT developers can use
 ```sbt
-libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-dllib-spark_2.4.6" % "2.0.0"
+libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-dllib-spark_2.4.6" % "0.14.0"
 ```
 
 ##### **2.1.2 Nightly Build**
