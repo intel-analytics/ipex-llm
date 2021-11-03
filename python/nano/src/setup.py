@@ -74,8 +74,8 @@ def setup_package():
     tensorflow_requires = ["intel-tensorflow"]
 
     pytorch_requires = ["torch==1.8.0",
-                        "torchvision",
-                        "pytorch_lightning",
+                        "torchvision==0.9.0",
+                        "pytorch_lightning==1.4.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms"]
