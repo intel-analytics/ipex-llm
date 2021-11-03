@@ -126,5 +126,6 @@ class Trainer(pl.Trainer):
                 model.loss = loss
             if optimizer:
                 model.optimizer = optimizer
+            return model
         else:
             return LightningModuleFromTorch(model, loss, optimizer)
