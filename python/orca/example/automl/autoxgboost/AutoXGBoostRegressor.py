@@ -49,7 +49,7 @@ if __name__ == '__main__':
                           cores=opt.cores,
                           init_ray_on_spark=True)
     else:
-        init_orca_context(cores=opt.cores, init_ray_on_spark=True)
+        init_orca_context(cluster_mode=opt.cluster_mode,cores=opt.cores, init_ray_on_spark=True)
 
     import pandas as pd
     df = pd.read_csv(opt.path, encoding='latin-1')

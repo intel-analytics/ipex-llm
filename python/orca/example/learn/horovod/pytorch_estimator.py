@@ -146,5 +146,8 @@ if __name__ == "__main__":
                           num_nodes=args.num_nodes, cores=args.cores,
                           conf={"spark.driver.host": args.k8s_driver_host,
                                 "spark.driver.port": args.k8s_driver_port})
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode="spark-submit")
     train_example(workers_per_node=args.workers_per_node)
     stop_orca_context()
+
