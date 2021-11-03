@@ -75,7 +75,7 @@ def setup_package():
 
     pytorch_requires = ["torch==1.8.0",
                         "torchvision",
-                        "pytorch_lightning",
+                        "pytorch_lightning==1.4.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms"]
