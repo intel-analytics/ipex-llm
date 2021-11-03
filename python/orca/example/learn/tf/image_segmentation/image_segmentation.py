@@ -55,7 +55,8 @@ def main(cluster_mode, max_epoch, file_path, batch_size, platform, non_interacti
         init_orca_context(cluster_mode="local", cores=4, memory="3g")
     elif cluster_mode == "yarn":
         init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g")
-
+    elif cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode="spark-submit")
     load_data(file_path)
     img_dir = os.path.join(file_path, "train")
     label_dir = os.path.join(file_path, "train_masks")
@@ -206,7 +207,7 @@ def main(cluster_mode, max_epoch, file_path, batch_size, platform, non_interacti
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The mode for the Spark cluster. local or yarn.')
+                        help='The mode for the Spark cluster. local, yarn or spark-submit.')
     parser.add_argument('--file_path', type=str, default="/tmp/carvana/",
                         help="The path to carvana train.zip, train_mask.zip and train_mask.csv.zip")
     parser.add_argument('--epochs', type=int, default=8,
@@ -221,3 +222,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     main(args.cluster_mode, args.epochs, args.file_path, args.batch_size, args.platform,
          args.non_interactive)
+

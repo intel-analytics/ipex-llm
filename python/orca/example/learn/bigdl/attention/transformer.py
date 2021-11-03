@@ -30,7 +30,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local or yarn.')
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 conf = {"spark.executor.extraJavaOptions": "-Xss512m",
@@ -50,8 +50,10 @@ elif cluster_mode == "yarn":
                            driver_memory="20g",
                            conf=conf
                            )
+elif cluster_mode == "spark-submit":
+    sc = init_orca_context(cluster_mode="spark-submit")                           
 else:
-    print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + cluster_mode)
 
 print('Loading data...')
@@ -104,3 +106,4 @@ print(result)
 
 print("finished...")
 stop_orca_context()
+
