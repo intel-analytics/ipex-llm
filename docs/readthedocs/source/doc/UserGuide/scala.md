@@ -61,9 +61,9 @@ scala> val seq = Sequential()
 
 #### **1.3 Run BigDL examples**
 
-You can run a bigdl-dllib program, e.g., the [Image Inference](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/imageInference), as a standard Spark program (running on either a local machine or a distributed cluster) as follows:
+You can run a bigdl-dllib program, e.g., the [Language Model](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/languagemodel), as a standard Spark program (running on either a local machine or a distributed cluster) as follows:
 
-1. Download the pretrained caffe model and prepare the images
+1. Prepare the dataset, please refer [Prepare PTB Data](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/languagemodel) for details
 
 2. Run the following command:
 ```bash
