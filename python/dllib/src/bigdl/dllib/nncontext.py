@@ -21,6 +21,7 @@ from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.utils.utils import set_python_home
 from bigdl.dllib.utils.engine import get_bigdl_jars
+from pyspark.sql import SparkSession
 import warnings
 import multiprocessing
 import os
