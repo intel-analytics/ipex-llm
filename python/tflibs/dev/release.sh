@@ -28,7 +28,7 @@ echo $BIGDL_PYTHON_DIR
 if (( $# < 3)); then
   echo "Usage: release.sh platform version upload"
   echo "Usage example: bash release.sh linux default true"
-  echo "Usage example: bash release.sh mac 0.14.0.dev false"
+  echo "Usage example: bash release.sh mac 0.1.0.dev0 false"
   exit -1
 fi
 
@@ -38,11 +38,11 @@ upload=$3  # Whether to upload the whl to pypi
 
 if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
-    echo $version > $BIGDL_DIR/python/version.txt
+    sed -i "s/\(__version__ =\)\(.*\)/\1 \"${version}\"/" $BIGDL_PYTHON_DIR/__init__.py
 fi
 
-bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
-echo "The effective version is: ${bigdl_version}"
+effect_version=`cat $BIGDL_PYTHON_DIR/__init__.py | grep "__version__" | awk '{print $NF}' | tr -d '"'`
+echo "The effective version is: ${effect_version}"
 
 if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
@@ -60,8 +60,8 @@ elif [ "$platform" == "linux" ]; then
     mv "${FRAMEWORK_SO}" "${SO_PREFIX}/libtensorflow_framework-zoo.so"
     # Need root permission to execute the following commands.
     # Add sudo to these two commands if you are not the root.
-    patchelf --set-soname libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_framework-zoo.so
-    patchelf --replace-needed libtensorflow_framework.so.1 libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_jni.so
+    sudo patchelf --set-soname libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_framework-zoo.so
+    sudo patchelf --replace-needed libtensorflow_framework.so.1 libtensorflow_framework-zoo.so ${SO_PREFIX}/libtensorflow_jni.so
 else
     echo "Unsupported platform"
 fi
@@ -84,7 +84,7 @@ echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl_tf-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    upload_command="twine upload dist/bigdl_tf-${effect_version}-py3-none-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi

@@ -17,11 +17,21 @@
 #
 
 import os
+import sys
 from setuptools import setup
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
-VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
+
+try:
+    with open('__init__.py', 'r') as f:
+        for line in f.readlines():
+            if '__version__' in line:
+                VERSION = line.strip().replace("\"", "").split(" ")[2]
+except IOError:
+    print("Failed to load bigdl-tf version file for packaging. \
+      You must be in BigDL's tflibs/src dir.")
+    sys.exit(-1)
 
 # The global variable `plat_name` is used to determine which target platform we are packing for.
 # We overwrite the cmdclass in setuptools to restore the `--plat-name` argument we specified.
