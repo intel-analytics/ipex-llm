@@ -34,7 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('--cluster_mode',
                         type=str,
                         default='local',
-                        choices=['local', 'yarn'],
+                        choices=['local', 'yarn', "spark-submit"],
                         help='The mode for the Spark cluster.')
     parser.add_argument('--cores', type=int, default=4,
                         help='The number of executor cores you want to use.')
