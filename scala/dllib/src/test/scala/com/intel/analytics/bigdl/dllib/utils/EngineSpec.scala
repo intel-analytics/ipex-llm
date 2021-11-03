@@ -131,7 +131,6 @@
   "readConf" should "be right" in {
     val conf = Engine.readConf
     val target = Map(
-      "spark.shuffle.reduceLocality.enabled" -> "false",
       "spark.shuffle.blockTransferService" -> "nio",
       "spark.scheduler.minRegisteredResourcesRatio" -> "1.0",
       "spark.speculation" -> "false",
@@ -149,7 +148,6 @@
     System.setProperty("bigdl.network.nio", "false")
     val conf = Engine.readConf
     val target = Map(
-      "spark.shuffle.reduceLocality.enabled" -> "false",
       "spark.scheduler.minRegisteredResourcesRatio" -> "1.0",
       "spark.speculation" -> "false",
       "spark.serializer" -> "org.apache.spark.serializer.JavaSerializer",
