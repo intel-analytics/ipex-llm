@@ -33,17 +33,13 @@ class LightningModuleFromTorch(LightningModule):
         """
         super().__init__()
         self.copy(model)
-        self._loss = loss
-        self._optimizer = optimizer
+        self.loss = loss
+        self.optimizer = optimizer
 
     def copy(self, torch_model):
         for name, child in torch_model._modules.items():
             setattr(self, name, child)
         self.forward = torch_model.forward
-
-    @property
-    def loss(self):
-        return self._loss
 
     def _forward(self, batch):
         # Handle different numbers of input for various models
@@ -69,6 +65,6 @@ class LightningModuleFromTorch(LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return self._optimizer
+        return self.optimizer
 
 
