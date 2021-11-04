@@ -15,7 +15,7 @@ __Note:__ As we test, Spark 3 will have performance benefit over the default Spa
 ## Prepare the data
 You can download the full __1TB__ Click Logs dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/), which includes data of 24 days (day_0 to day_23) with 4,373,472,329 records in total.
 
-After you download the files, convert them to parquet files with the name `day_x.parquet` (x=0-23), and put all parquet files in one folder.
+After you download the files, convert them to parquet files with the name `day_x.parquet` (x=0-23), and put all parquet files in one folder. You may use the script `csv_to_parquet.py` provided in this directory to convert the data of each day to parquet.
 - The first 23 days (day_0 to day_22) are used for DLRM training with 4,195,197,692 records in total.
 - The first half (89,137,319 records in total) of the last day (day_23) is used for test. To prepare the test dataset, you need to split the first half of day_23 into a new file (e.g. using command `head -n 89137319 day_23 > day_23_test`) and finally convert to parquet files with the name `day_23_test.parquet` under the same folder with the train parquet files.
 
