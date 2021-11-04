@@ -123,6 +123,7 @@ object Engine {
       logger.info(s"Executor number is $nExecutor and executor cores number is $executorCores")
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
+      verifyNumNodes()
     }
   }
 
@@ -460,6 +461,28 @@ object Engine {
   }
 
   /**
+   * Verity number of activate executors equals nodeNumber
+   */
+
+  val maxWaitTime = System.getProperty("bigdl.engine.maxWaitSeconds", "1000").toInt
+  def verifyNumNodes(): Unit = {
+    if (nodeNum > 1) {
+      val sc = SparkContext.getOrCreate()
+      // sc.getExecutorMemoryStatus contains driver
+      var waitTime = 0
+      while(waitTime < maxWaitTime && sc.getExecutorMemoryStatus.keys.size - 1 < nodeNum) {
+        logger.info(s"Waiting for all executors online ${sc.getExecutorMemoryStatus.keys.size - 1}/${nodeNum}")
+        Thread.sleep(2000)
+        waitTime += 2
+      }
+      val numNodes = sc.getExecutorMemoryStatus.keys.size - 1
+      require(numNodes >= nodeNum, "Executors doesn't reach the delcared number," +
+        s"expected ${nodeNum}, but got ${numNodes}. Please check your cluster's configuration.")
+
+    }
+  }
+
+  /**
    * Set executor number and cores per executor
    *
    * @param nodeNum
@@ -545,13 +568,14 @@ object Engine {
       Some(nodeNum, core)
     } else if (master.toLowerCase.startsWith("yarn")) {
       // yarn mode
-      val coreString = conf.get("spark.executor.cores", null)
+      // default executor-cores on yarn is 1, default num-executors is 2
+      val coreString = conf.get("spark.executor.cores", 1)
       require(coreString != null, "Engine.init: Can't find executor core number" +
         ", do you submit with " +
         "--executor-cores option")
       val core = coreString.toInt
       val node = dynamicAllocationExecutor(conf).getOrElse {
-        val numExecutorString = conf.get("spark.executor.instances", null)
+        val numExecutorString = conf.get("spark.executor.instances", 2)
         require(numExecutorString != null, "Engine.init: Can't find executor number" +
           ", do you submit with " +
           "--num-executors option")
