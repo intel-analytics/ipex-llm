@@ -22,7 +22,7 @@ from unittest import TestCase
 import torch
 from torch import nn
 
-from _train_torch_lightning import train_torch_lightning
+from test._train_torch_lightning import train_torch_lightning
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from test._train_torch_lightning import train_with_linear_top_layer
