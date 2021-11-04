@@ -45,7 +45,7 @@ Temporal Convolutional Networks (TCN) is a neural network that use convolutional
 TCMFForecaster
 ----------------------------------------
 
-Analytics Zoo Chronos TCMFForecaster provides an efficient way to forecast high dimensional time series.
+Chronos TCMFForecaster provides an efficient way to forecast high dimensional time series.
 
 TCMFForecaster is based on DeepGLO algorithm, which is a deep forecasting model which thinks globally and acts locally.
 You can refer to `the deepglo paper <https://arxiv.org/abs/1905.03806>`__ for more details.
@@ -68,7 +68,7 @@ MTNetForecaster
 
 MTNet is a memory-network based solution for multivariate time-series forecasting. In a specific task of multivariate time-series forecasting, we have several variables observed in time series and we want to forecast some or all of the variables' value in a future time stamp.
 
-MTNet is proposed by paper `A Memory-Network Based Solution for Multivariate Time-Series Forecasting <https://arxiv.org/abs/1809.02105>`__. MTNetForecaster is derived from tfpark.KerasMode, and can use all methods of KerasModel. Refer to `tfpark.KerasModel API Doc <https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/APIGuide/TFPark/model.md>`__ for details.
+MTNet is proposed by paper `A Memory-Network Based Solution for Multivariate Time-Series Forecasting <https://arxiv.org/abs/1809.02105>`__. MTNetForecaster is derived from tfpark.KerasMode, and can use all methods of KerasModel. Refer to `tfpark.KerasModel API Doc <https://github.com/intel-analytics/BigDL/blob/branch-2.0/docs/docs/APIGuide/TFPark/model.md>`__ for details.
 
 For the detailed algorithm description, please refer to `here <https://github.com/intel-analytics/BigDL/blob/branch-2.0/docs/docs/Chronos/Algorithm/MTNetAlgorithm.md>`__.
 
