@@ -389,5 +389,3 @@ class SparkTFEstimator():
         model = self.model_creator(self.config)
         model.set_weights(self.model_weights)
         return model
-
-
