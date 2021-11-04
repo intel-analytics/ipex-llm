@@ -24,12 +24,9 @@ class LightningModuleFromTorch(LightningModule):
         """
         Integrate pytorch modules, loss, optimizer to pytorch-lightning model.
 
-        Args:
-            model: pytorch model to be converted.
-            loss: torch loss function.
-            optimizer: torch optimizer.
-
-        Returns: LightningModule Object
+        :param model: pytorch model to be converted.
+        :param loss: torch loss function.
+        :param optimizer: torch optimizer.
         """
         super().__init__()
         self._copy(model)
