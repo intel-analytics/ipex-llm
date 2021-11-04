@@ -32,8 +32,9 @@ Evaluate unscaled metrics between y true value and y predicted value.
 orca.automl.auto_xgb
 ---------------------------
 
-Automatic hyperparameter optimization for XGBoost models.
-AutoXGBoost is inherited from AutoEstimator. You could refer to `AutoEstimator API Guide <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator>`__. for more APIs.
+Automatic hyperparameter optimization for XGBoost models. AutoXGBoost is inherited from AutoEstimator. 
+
+You could refer to `AutoEstimator API Guide <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator>`__ for more APIs.
 
 .. automodule:: bigdl.orca.automl.xgboost.auto_xgb
     :members:
