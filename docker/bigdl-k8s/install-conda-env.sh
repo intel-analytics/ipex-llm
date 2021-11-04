@@ -35,7 +35,7 @@ pip install --no-cache-dir pyarrow && \
 pip install opencv-python==4.2.0.34 && \
 pip install aioredis==1.1.0 && \
 pip install tensorflow==1.15.0 && \
-pip install tensorflow-datasets==2.0 && \
+pip install tensorflow-datasets==3.2.0 && \
 source deactivate && \
 
 conda create -y -n pytf2 python=3.7 && \
