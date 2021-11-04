@@ -38,6 +38,8 @@ ARG SCALA_SUB_VERSION_NUM=10
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ENV FLINK_VERSION ${FLINK_VERSION}
+ENV SCALA_VERSION ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget unzip
@@ -89,6 +91,7 @@ FROM ubuntu:18.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG SCALA_VERSION
+ARG SCALA_SUB_VERSION_NUM
 ARG FLINK_VERSION=1.11.3
 ENV SPARK_VERSION			${SPARK_VERSION}
 ENV BIGDL_VERSION			${BIGDL_VERSION}
@@ -114,6 +117,7 @@ ENV XMX_SIZE                            10g
 ENV SGX_MODE                            sgx
 ENV REDIS_HOST                          127.0.0.1
 ENV SCALA_VERSION                       ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
 
 RUN mkdir -p /graphene && \
     mkdir -p /graphene/Runtime && \

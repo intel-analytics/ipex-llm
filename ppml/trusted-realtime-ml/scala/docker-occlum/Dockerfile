@@ -2,6 +2,7 @@ ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
 ARG FLINK_VERSION=1.11.3
 ARG SCALA_VERSION=2.12
+ARG SCALA_SUB_VERSION_NUM=10
 
 # stage.1 Redis
 FROM occlum/occlum:0.24.0-ubuntu18.04 as redis-tls
@@ -36,8 +37,11 @@ ENV FLINK_HOME				/opt/flink-${FLINK_VERSION}
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ENV BIGDL_VERSION=${BIGDL_VERSION}
 ARG SPARK_VERSION=3.1.2
+ARG SCALA_VERSION=2.12
+ARG SCALA_SUB_VERSION_NUM=10
 ENV BIGDL_HOME		        /opt/bigdl-${BIGDL_VERSION}
 ENV SCALA_VERSION ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
@@ -45,9 +49,9 @@ RUN apt-get update && \
     apt-get clean
 
 # scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
-    (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-2.11.8.tgz
+RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz && \
+    (cd / && gunzip < scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz)|(cd /opt && tar -xvf -) && \
+    rm /scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz
 
 # Download flink
 RUN cd /opt && \
@@ -73,6 +77,8 @@ FROM ubuntu:18.04 as ppml
 
 ARG FLINK_VERSION=1.11.3
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ARG SCALA_VERSION=2.12
+ARG SCALA_SUB_VERSION_NUM=10
 
 
 ENV JAVA_HOME				/usr/lib/jvm/java-11-openjdk-amd64
@@ -91,13 +97,16 @@ ENV FLINK_TASK_MANAGER_DATA_PORT	6124
 ENV FLINK_TASK_MANAGER_RPC_PORT		6125
 ENV FLINK_TASK_MANAGER_TASKSLOTS_NUM	1
 ENV CORE_NUM                            2
+ENV SCALA_VERSION ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
 
 RUN mkdir -p ${BIGDL_HOME}
+
 
 COPY --from=redis-tls /opt/ssl /opt/ssl
 COPY --from=redis-tls /opt/redis /opt/redis
 COPY --from=redis-tls /opt/occlum/glibc /opt/occlum/glibc
-COPY --from=bigdl /opt/scala-2.11.8  /opt/scala-2.11.8
+COPY --from=bigdl /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
 COPY --from=bigdl /opt/flink-${FLINK_VERSION} /opt/flink-${FLINK_VERSION}
 COPY --from=bigdl /opt/resnet50 /opt/resnet50
 COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar
