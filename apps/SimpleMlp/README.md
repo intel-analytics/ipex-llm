@@ -1,6 +1,6 @@
 # SimpleMlp
 
-This is an example about how to use [BigDL](https://github.com/intel-analytics/BigDL) to build your own deep learning application. You can use both maven or sbt to create your project and add bigdl-dllib to your dependency, see pom.xml and build.sbt for details.
+This is an scala example about how to use [BigDL](https://github.com/intel-analytics/BigDL) to build your own deep learning application. You can use both maven or sbt to create your project and add bigdl-dllib to your dependency, see pom.xml and build.sbt for details.
 
 ## Build
 ### 1. Build with maven
