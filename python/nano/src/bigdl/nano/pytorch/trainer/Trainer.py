@@ -112,13 +112,15 @@ class Trainer(pl.Trainer):
     @staticmethod
     def compile(model: nn.Module, loss: _Loss = None, optimizer: torch.optim = None):
         """
-        Compile a pytorch model into a pytorch-lightning model and return it.
-        Args:
-            model: A pytorch model instance.
-            loss: Loss for LightningModule.
-            optimizer: Optimizer for LightningModule.
+        Construct a pytorch-lightning model. If model is already a pytorch-lightning model, return model.
+        If model is pytorch model, construct a new pytorch-lightning module with model, loss and optimizer.
 
-        Returns: A LightningModule converted from model.
+        Args:
+            model: A model instance. 
+            loss: Loss to construct pytorch-lightning model. Should be None if model is instance of pl.LightningModule.
+            optimizer: Optimizer to construct pytorch-lightning model Should be None if model is instance of pl.LightningModule.
+
+        Returns: A LightningModule object.
 
         """
         if isinstance(model, pl.LightningModule):
