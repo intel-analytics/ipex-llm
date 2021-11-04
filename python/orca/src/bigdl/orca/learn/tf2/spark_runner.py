@@ -199,7 +199,8 @@ class SparkRunner:
                  model_weights=None,
                  backend="tf-distributed",
                  mode="fit",
-                 model_dir=None
+                 model_dir=None,
+                 epoch=0
                 ):
         """Initializes the runner.
                 Args:
@@ -214,7 +215,7 @@ class SparkRunner:
         self.config = {} if config is None else config
         self.inter_op_parallelism = self.config.get("inter_op_parallelism", 1)
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
-        self.epoch = 0
+        self.epoch = epoch
         self.verbose = verbose
         self.model_weights = model_weights
         self.size = size
@@ -296,7 +297,7 @@ class SparkRunner:
 
 
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
-             callbacks=None, validation_data_creator=None, class_weight=None,
+             callbacks=None, initial_epoch=0, validation_data_creator=None, class_weight=None,
              steps_per_epoch=None, validation_steps=None, validation_freq=1):
         """
         Sets up TensorFLow distributed environment, initializes the model,
@@ -318,7 +319,7 @@ class SparkRunner:
                                  callbacks=callbacks,
                                  validation_data=test_dataset,
                                  class_weight=class_weight,
-                                 # initial_epoch=epoch,
+                                 initial_epoch=initial_epoch,
                                  steps_per_epoch=steps_per_epoch,
                                  validation_steps=validation_steps,
                                  validation_freq=validation_freq)
@@ -337,20 +338,32 @@ class SparkRunner:
             config.update(data_config)
         config["batch_size"] = batch_size
 
-        model, history = self.distributed_train_func(data_creator, config, epochs, verbose,
-             callbacks=callbacks, validation_data_creator=validation_data_creator, class_weight=class_weight,
-             steps_per_epoch=steps_per_epoch, validation_steps=validation_steps, validation_freq=validation_freq)
+        model, history = self.distributed_train_func(data_creator,
+                                                     config,
+                                                     epochs=self.epoch + epochs,
+                                                     verbose=verbose,
+                                                     callbacks=callbacks,
+                                                     steps_per_epoch=steps_per_epoch,
+                                                     class_weight=class_weight,
+                                                     initial_epoch=self.epoch,
+                                                     validation_data_creator=validation_data_creator,
+                                                     validation_steps=validation_steps,
+                                                     validation_freq=validation_freq
+                                                     )
+        self.epoch += epochs
 
-        weights = model.get_weights()
         if history is None:
             stats = {}
         else:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
             if self.model_dir is not None:
-                save_pkl(weights, os.path.join(self.model_dir, "weights.pkl"))
-            #     # model.save_weights(model_dir)
-            # print("weights type: ", type(weights))
+                model_states = {
+                    "epoch": self.epoch,
+                    "weights": model.get_weights(),
+                    "optimizer_weights": model.optimizer.get_weights()
+                }
+                save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
             return [stats]
         else:
             return []

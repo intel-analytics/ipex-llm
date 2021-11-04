@@ -28,7 +28,7 @@ from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe, load_pkl
+    process_xshards_of_pandas_dataframe
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
@@ -63,6 +63,7 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
+        self.epoch = 0
 
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
@@ -107,7 +108,8 @@ class SparkTFEstimator():
             size=self.num_workers,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
-            model_dir=self.model_dir
+            model_dir=self.model_dir,
+            epoch=self.epoch
         )
 
         params = dict(
@@ -165,10 +167,14 @@ class SparkTFEstimator():
         if self.model_dir:
             try:
                 temp_dir = tempfile.mkdtemp()
-                get_remote_file_to_local(os.path.join(self.model_dir, "weights.pkl"),
-                                         os.path.join(temp_dir, "weights.pkl"),
+                get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
+                                         os.path.join(temp_dir, "states.pkl"),
                                          over_write=True)
-                self.model_weights = load_pkl(os.path.join(temp_dir, "weights.pkl"))
+                import pickle
+                with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
+                    states = pickle.load(f)
+                    self.model_weights = states['weights']
+                    self.epoch = states["epoch"]
             finally:
                 shutil.rmtree(temp_dir)
 
@@ -372,4 +378,16 @@ class SparkTFEstimator():
         import tensorflow as tf
         model = tf.keras.models.load_model(filepath)
         self.model_weights = model.get_weights()
+
+
+    def get_model(self):
+        """
+        Returns the learned model.
+
+        :return: the learned model.
+        """
+        model = self.model_creator(self.config)
+        model.set_weights(self.model_weights)
+        return model
+
 

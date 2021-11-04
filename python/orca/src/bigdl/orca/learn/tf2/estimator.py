@@ -61,6 +61,8 @@ class Estimator(object):
         elif backend == "spark":
             if cpu_binding:
                 raise ValueError("cpu_binding should not be True when using spark backend")
+            if not model_dir:
+                raise ValueError("Please specify model directory when using spark backend")
             from bigdl.orca.learn.tf2.pyspark_estimator import SparkTFEstimator
             return SparkTFEstimator(model_creator=model_creator,
                                     config=config, verbose=verbose,
