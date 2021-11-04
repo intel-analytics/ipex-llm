@@ -28,7 +28,7 @@ echo $BIGDL_PYTHON_DIR
 if (( $# < 3)); then
   echo "Usage: release.sh platform version upload"
   echo "Usage example: bash release.sh linux default true"
-  echo "Usage example: bash release.sh mac 0.1.0.dev0 false"
+  echo "Usage example: bash release.sh mac 0.14.0.dev1 false"
   exit -1
 fi
 
@@ -38,11 +38,11 @@ upload=$3  # Whether to upload the whl to pypi
 
 if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
-    sed -i "s/\(__version__ =\)\(.*\)/\1 \"${version}\"/" $BIGDL_PYTHON_DIR/__init__.py
+    echo $version > $BIGDL_DIR/python/version.txt
 fi
 
-effect_version=`cat $BIGDL_PYTHON_DIR/__init__.py | grep "__version__" | awk '{print $NF}' | tr -d '"'`
-echo "The effective version is: ${effect_version}"
+bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
+echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
@@ -70,7 +70,7 @@ echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl_math-${effect_version}-py3-none-${verbose_pname}.whl"
+    upload_command="twine upload dist/bigdl_math-${bigdl_version}-py3-none-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi

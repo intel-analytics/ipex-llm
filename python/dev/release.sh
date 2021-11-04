@@ -16,6 +16,8 @@
 # limitations under the License.
 #
 
+# This is the script to release the single bigdl package for linux.
+
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
