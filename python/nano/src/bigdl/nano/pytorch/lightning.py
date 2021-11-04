@@ -32,11 +32,11 @@ class LightningModuleFromTorch(LightningModule):
         Returns: LightningModule Object
         """
         super().__init__()
-        self.copy(model)
+        self._copy(model)
         self.loss = loss
         self.optimizer = optimizer
 
-    def copy(self, torch_model: nn.Module):
+    def _copy(self, torch_model: nn.Module):
         for name, child in torch_model._modules.items():
             setattr(self, name, child)
         self.forward = torch_model.forward
