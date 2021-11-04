@@ -38,6 +38,7 @@ fi
 version=$1
 quick=$2
 upload=$3
+profiles=${*:4}
 
 # Add spark3 suffix to the project name to avoid conflict with the whl for spark2.
 # Add name= and - in pattern matching so that if the script runs twice,
@@ -46,4 +47,4 @@ sed -i "s/pyspark==2.4.6/pyspark==3.1.2/g" $DLLIB_DIR/src/setup.py
 sed -i "s/name='bigdl-dllib'/name='bigdl-dllib-spark3'/g" $DLLIB_DIR/src/setup.py
 sed -i "s/dist\/bigdl_dllib-/dist\/bigdl_dllib_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh
 
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x
+bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x ${profiles}
