@@ -116,12 +116,12 @@ class Trainer(pl.Trainer):
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model, return model.
         If model is pytorch model, construct a new pytorch-lightning module with model, loss and optimizer.
 
-        :param model: A model instance.
-        :param loss: Loss to construct pytorch-lightning model. Should be None if model is instance of
-        pl.LightningModule.
-        :param optimizer: Optimizer to construct pytorch-lightning model Should be None if model is instance
-        of pl.LightningModule.
-        :return: A LightningModule object.
+        :param model:       A model instance.
+        :param loss:        Loss to construct pytorch-lightning model. Should be None if model is instance of
+                            pl.LightningModule.
+        :param optimizer:   Optimizer to construct pytorch-lightning model Should be None if model is instance of
+                            pl.LightningModule.
+        :return:            A LightningModule object.
         """
         assert isinstance(model, nn.Module), "Model must be instance of nn.Module but got {}".format(model.__class__)
         if isinstance(model, pl.LightningModule):
