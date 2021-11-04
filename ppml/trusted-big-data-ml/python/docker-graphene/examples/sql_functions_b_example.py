@@ -5,7 +5,7 @@ def sql_functions_b_example(spark):
     
     # base64
     #encoding a binary column
-    df = spark.createDataFrame([(b'1',), (b'2',), (b'10',)], ["n1"])
+    df = spark.createDataFrame([('1',), ('2',), ('10',)], ["n1"])
     df.withColumn("base64_n1", base64(df.n1)).show()
     print("base64 API finished")
 

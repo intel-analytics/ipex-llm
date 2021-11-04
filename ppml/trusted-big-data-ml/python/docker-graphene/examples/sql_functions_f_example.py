@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
+from pyspark.sql.types import *
 
 def sql_functions_f_example(spark):
 
@@ -34,7 +35,6 @@ def sql_functions_f_example(spark):
     print("format_string API finished")
 
     # from_json
-    from pyspark.sql.types import *
     data = [(1, '''{"a": 1}''')]
     schema = StructType([StructField("a", IntegerType())])
     df = spark.createDataFrame(data, ("key", "value"))

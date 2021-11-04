@@ -5,7 +5,7 @@ def sql_functions_a_example(spark):
     
     # abs
     df = spark.createDataFrame([("account1", -100),("accout2", 360)], ("account", "value"))
-    df.withColumn("abs_num", abs(df.sum)).show()
+    df.withColumn("abs_num", abs(df.value)).show()
     print("abs API finished")
 
     # acos & asin & atan
