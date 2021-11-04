@@ -180,7 +180,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
            Default to be False and in this case the Ray cluster would be launched lazily when
            Ray is involved in Project Orca.
     :param kwargs: The extra keyword arguments used for creating SparkContext and
-           launching Ray if any.
+           launching Ray if any. For k8s-client mode, you should specify master and container_image.
     :return: An instance of SparkContext.
     """
     print("Initializing orca context")
