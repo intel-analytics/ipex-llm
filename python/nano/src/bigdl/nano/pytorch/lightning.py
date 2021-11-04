@@ -17,10 +17,11 @@ from pytorch_lightning import LightningModule
 from torch import nn
 import torch
 from torch.nn.modules.loss import _Loss
+from torch.optim import Optimizer
 
 
 class LightningModuleFromTorch(LightningModule):
-    def __init__(self, model: nn.Module, loss: _Loss, optimizer: torch.optim):
+    def __init__(self, model: nn.Module, loss: _Loss, optimizer: Optimizer):
         """
         Integrate pytorch modules, loss, optimizer to pytorch-lightning model.
 
@@ -36,7 +37,7 @@ class LightningModuleFromTorch(LightningModule):
     def _copy(self, torch_model: nn.Module):
         for name, child in torch_model._modules.items():
             setattr(self, name, child)
-        self.forward = torch_model.forward
+        setattr(self, "forward", torch_model.forward)
 
     def _forward(self, batch):
         # Handle different numbers of input for various models

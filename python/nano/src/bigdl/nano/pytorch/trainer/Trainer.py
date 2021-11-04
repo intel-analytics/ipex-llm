@@ -111,7 +111,7 @@ class Trainer(pl.Trainer):
                              plugins=[plugin], *args, **kwargs)
 
     @staticmethod
-    def compile(model: nn.Module, loss: _Loss = None, optimizer: torch.optim = None):
+    def compile(model: nn.Module, loss: _Loss = None, optimizer: torch.optim.Optimizer = None):
         """
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
         return model. If model is pytorch model, construct a new pytorch-lightning module
@@ -131,4 +131,6 @@ class Trainer(pl.Trainer):
                 "Loss and optimizer should be None if model is a pytorch-lightning model."
             return model
         else:
+            assert loss and optimizer, \
+                "Loss and optimizer are required to construct a LightningModule instance."
             return LightningModuleFromTorch(model, loss, optimizer)
