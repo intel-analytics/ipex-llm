@@ -63,5 +63,3 @@ class LightningModuleFromTorch(LightningModule):
 
     def configure_optimizers(self):
         return self.optimizer
-
-
