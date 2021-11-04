@@ -10,167 +10,12 @@ It includes the functionalities of the [original BigDL](https://github.com/intel
 * [Spark ML pipeline support](nnframes.md)
 
 ## 2. Scala user guide
-
-### 2.1 Install
-
-#### 2.1.1 **Download a pre-built library**
-You can download the bigdl-dllib build from the [Release Page](../release.md).
-
-#### 2.1.2 **Link with a release version**
-
-Currently, dllib releases are hosted on maven central; here's an example to add the dllib dependency to your own project:
-```xml
-<dependency>
-    <groupId>com.intel.analytics.bigdl</groupId>
-    <artifactId>bigdl-dllib-[spark_2.4.6|spark_3.1.2]</artifactId>
-    <version>${BIGD_DLLIB_VERSION}</version>
-</dependency>
-```
-Please choose the suffix according to your Spark platform.
-
-SBT developers can use
-```sbt
-libraryDependencies += "com.intel.analytics.bigdl" % "dllib-[spark_2.4.6|spark_3.1.2]" % "${BIGDL_DLLIB_VERSION}"
-```
-
-### 2.2 Run
-#### 2.2.1 **Set Environment Variables**
-Set **BIGDL_HOME** and **SPARK_HOME**:
-
-* If you download bigdl-dllib from the [Release Page](../release-download.md)
-```bash
-export SPARK_HOME=folder path where you extract the spark package
-export BIGDL_HOME=folder path where you extract the bigdl package
-```
-
----
-#### 2.2.2 **Use Interactive Spark Shell**
-You can try bigdl-dllib easily using the Spark interactive shell. Run below command to start spark shell with bigdl-dllib support:
-```bash
-${BIGDL_HOME}/bin/spark-shell-with-dllib.sh
-```
-You will see a welcome message looking like below:
-```
-Welcome to
-      ____              __
-     / __/__  ___ _____/ /__
-    _\ \/ _ \/ _ `/ __/  '_/
-   /___/ .__/\_,_/_/ /_/\_\   version 2.4.3
-      /_/
-
-Using Scala version 2.11.12 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_181)
-Spark context available as sc.
-scala>
-```
-
-To use BigDL, you should first initialize the environment as below.
-```scala
-scala> import com.intel.analytics.bigdl.dllib.NNContext
-import com.intel.analytics.bigdl.dllib.NNContext
-scala> NNContext.initNNContext()
-2021-10-25 10:12:36 WARN  SparkContext:66 - Using an existing SparkContext; some configuration may not take effect.
-2021-10-25 10:12:36 WARN  SparkContext:66 - Using an existing SparkContext; some configuration may not take effect.
-res0: org.apache.spark.SparkContext = org.apache.spark.SparkContext@525c0f74
-```
-
-Once the environment is successfully initiated, you'll be able to play with dllib API's.
-For instance, to experiment with the ````dllib.keras```` APIs in dllib, you may try below code:
-```scala
-scala> import com.intel.analytics.bigdl.dllib.keras.layers._
-scala> import com.intel.analytics.bigdl.numeric.NumericFloat
-scala> import com.intel.analytics.bigdl.dllib.utils.Shape
-
-scala> val seq = Sequential()
-       val layer = ConvLSTM2D(32, 4, returnSequences = true, borderMode = "same",
-            inputShape = Shape(8, 40, 40, 32))
-       seq.add(layer)
-```
+### 2.1 Install and Run
+Please refer [scala guide](../../UserGuide/scala.md) for details.
 
 ---
 
-#### 2.2.3 **Run as a Spark Program**
-You can run a bigdl-dllib program, e.g., the [Image Inference](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/imageInference), as a standard Spark program (running on either a local machine or a distributed cluster) as follows:
-
-1. Download the pretrained caffe model and prepare the images
-
-2. Run the following command:
-```bash
-# Spark local mode
-${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
-  --master local[2] \
-  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
-  ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
-  -f DATA_PATH \
-  -b 4 \
-  --numLayers 2 --vocab 100 --hidden 6 \
-  --numSteps 3 --learningRate 0.005 -e 1 \
-  --learningRateDecay 0.001 --keepProb 0.5
-
-# Spark standalone mode
-## ${SPARK_HOME}/sbin/start-master.sh
-## check master URL from http://localhost:8080
-${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
-  --master spark://... \
-  --executor-cores cores_per_executor \
-  --total-executor-cores total_cores_for_the_job \
-  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
-  ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
-  -f DATA_PATH \
-  -b 4 \
-  --numLayers 2 --vocab 100 --hidden 6 \
-  --numSteps 3 --learningRate 0.005 -e 1 \
-  --learningRateDecay 0.001 --keepProb 0.5
-
-# Spark yarn client mode
-${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
- --master yarn \
- --deploy-mode client \
- --executor-cores cores_per_executor \
- --num-executors executors_number \
- --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
- ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
- -f DATA_PATH \
- -b 4 \
- --numLayers 2 --vocab 100 --hidden 6 \
- --numSteps 3 --learningRate 0.005 -e 1 \
- --learningRateDecay 0.001 --keepProb 0.5
-
-# Spark yarn cluster mode
-${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
- --master yarn \
- --deploy-mode cluster \
- --executor-cores cores_per_executor \
- --num-executors executors_number \
- --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
- ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
- -f DATA_PATH \
- -b 4 \
- --numLayers 2 --vocab 100 --hidden 6 \
- --numSteps 3 --learningRate 0.005 -e 1 \
- --learningRateDecay 0.001 --keepProb 0.5
-```
-
-  The parameters used in the above command are:
-
-  * -f: The path where you put your PTB data.
-  * -b: The mini-batch size. The mini-batch size is expected to be a multiple of *total cores* used in the job. In this example, the mini-batch size is suggested to be set to *total cores * 4*
-  * --learningRate: learning rate for adagrad
-  * --learningRateDecay: learning rate decay for adagrad
-  * --hidden: hiddensize for lstm
-  * --vocabSize: vocabulary size, default 10000
-  * --numLayers: numbers of lstm cell, default 2 lstm cells
-  * --numSteps: number of words per record in LM
-  * --keepProb: the probability to do dropout
-
-If you are to run your own program, do remember to do the initialize before call other bigdl-dllib API's, as shown below.
-```scala
- // Scala code example
- import com.intel.analytics.bigdl.dllib.NNContext
- NNContext.initNNContext()
-```
----
-
-### 2.3 Get started
+### 2.2 Get started
 ---
 
 This section show a single example of how to use dllib to build a deep learning application on Spark, using Keras APIs
@@ -288,7 +133,24 @@ python script.py
 ```
 ---
 ### 3.3 Get started
----
+
+#### **NN Context**
+
+`NNContext` is the main entry for provisioning the dllib program on the underlying cluster (such as K8s or Hadoop cluster), or just on a single laptop.
+
+An dlllib program usually starts with the initialization of `NNContext` as follows:
+
+```python
+from bigdl.dllib.nncontext import *
+init_nncontext()
+```
+
+In `init_nncontext`, the user may specify cluster mode for the dllib program:
+
+- *Cluster mode=*: "local", "yarn-client", "yarn-cluster", "k8s-client", "standalone" and "spark-submit". Default to be "local".
+
+The dllib program simply runs `init_nncontext` on the local machine, which will automatically provision the runtime Python environment and distributed execution engine on the underlying computing environment (such as a single laptop, a large K8s or Hadoop cluster, etc.).
+
 
 #### **Autograd Examples using bigdl-dllb keras Python API**
 
