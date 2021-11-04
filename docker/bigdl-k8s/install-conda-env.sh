@@ -9,7 +9,7 @@ pip install --no-cache-dir --upgrade pip && \
 pip install --no-cache-dir --upgrade setuptools && \
 pip install --no-cache-dir numpy==1.18.1 scipy && \
 pip install --no-cache-dir pandas==1.0.3 && \
-pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py && \
+pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py==2.10.0 && \
 pip uninstall -y -q tornado && \
 pip install --no-cache-dir tornado && \
 python3 -m ipykernel.kernelspec && \
