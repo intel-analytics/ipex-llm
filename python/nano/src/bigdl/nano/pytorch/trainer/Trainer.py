@@ -16,16 +16,17 @@
 
 
 from logging import warning
-import torch
+from typing import Any, List, Optional
+
 import pytorch_lightning as pl
+import torch
+from pytorch_lightning.plugins.environments import LightningEnvironment
 from torch import nn
 from torch.nn.modules.loss import _Loss
 
+from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-from bigdl.nano.common import check_avx512
-from pytorch_lightning.plugins.environments import LightningEnvironment
-from typing import Any, List, Optional
 
 distributed_backends = ["spawn", "ray"]
 
@@ -123,11 +124,10 @@ class Trainer(pl.Trainer):
         Returns: A LightningModule object.
 
         """
+        assert isinstance(model, nn.Module), "Model must be instance of nn.Module but got {}".format(model.__class__)
         if isinstance(model, pl.LightningModule):
-            if loss:
-                model.loss = loss
-            if optimizer:
-                model.optimizer = optimizer
+            assert not (loss or optimizer), \
+                "Loss and optimizer should be None if model is already a pytorch-lightning model."
             return model
         else:
             return LightningModuleFromTorch(model, loss, optimizer)
