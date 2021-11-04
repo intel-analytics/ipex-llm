@@ -16,8 +16,8 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release all bigdl sub-packages built on top of
-# Spark 3.1.2 for linux.
+# This is the default script with maven parameters to release all the bigdl sub-packages
+# built on top of Spark 3.1.2 for linux.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
