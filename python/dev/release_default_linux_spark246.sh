@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release all bigdl packages built on top of
+# This is the default script with maven parameters to release all bigdl sub-packages built on top of
 # Spark 2.4.6 for linux.
 
 set -e

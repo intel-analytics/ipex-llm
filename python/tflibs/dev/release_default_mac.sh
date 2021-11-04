@@ -28,7 +28,7 @@ echo $RUN_SCRIPT_DIR
 if (( $# < 2)); then
   echo "Usage: release_default_mac.sh version upload"
   echo "Usage example: bash release_default_mac.sh default true"
-  echo "Usage example: bash release_default_mac.sh 0.1.0.dev0 true"
+  echo "Usage example: bash release_default_mac.sh 0.14.0.dev1 true"
   exit -1
 fi
 
