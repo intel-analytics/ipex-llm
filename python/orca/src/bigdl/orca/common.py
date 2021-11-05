@@ -168,9 +168,11 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
            For "spark-submit", you are supposed to use spark-submit to submit the application.
            In this case, please set the Spark configurations through command line options or
            the properties file. You need to use "spark-submit" for yarn-cluster or k8s-cluster mode.
+           For "k8s-client", you are supposed to additionally specify the arguments master 
+           and container_image.
            To make things easier, you are recommended to use the launch scripts we provide:
-           https://github.com/intel-analytics/analytics-zoo/tree/master/scripts.
-           For other cluster modes, you are recommended to install and run analytics-zoo through
+           https://github.com/intel-analytics/BigDL/tree/branch-2.0/scripts.
+           For other cluster modes, you are recommended to install and run bigdl through
            pip, which is more convenient.
     :param cores: The number of cores to be used on each node. Default to be 2.
     :param memory: The memory allocated for each node. Default to be '2g'.
@@ -181,8 +183,6 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
            Ray is involved in Project Orca.
     :param kwargs: The extra keyword arguments used for creating SparkContext and
            launching Ray if any. 
-           For k8s-client mode, you should specify master as ${SPARK_MASTER} (k8s://https://localhost:8443)
-           and set container_image to ${K8s_SPARK_IMAGE}.
     :return: An instance of SparkContext.
     """
     print("Initializing orca context")
