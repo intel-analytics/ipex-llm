@@ -284,11 +284,7 @@ class SparkRunner:
         ips = set([node.split(":")[0] for node in cluster])
         os.environ["no_proxy"] = ",".join(ips)
 
-        if mode == "fit":
-            self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
-        else:
-            from tensorflow.python.distribute import distribution_strategy_context as ds_context
-            self.strategy = ds_context.get_strategy()
+        self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
         # For use in model.evaluate()
         self.local_model = None

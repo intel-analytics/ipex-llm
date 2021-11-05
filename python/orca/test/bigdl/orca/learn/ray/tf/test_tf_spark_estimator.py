@@ -25,11 +25,11 @@ from bigdl.orca import OrcaContext
 
 import os
 
+
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../../resources")
 
 def simple_model(config):
-    import tensorflow as tf
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
                                         tf.keras.layers.Dense(1)])
     return model
