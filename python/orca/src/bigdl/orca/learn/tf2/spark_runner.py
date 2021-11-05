@@ -347,7 +347,7 @@ class SparkRunner:
                                                      validation_freq=validation_freq
                                                      )
         self.epoch += epochs
-
+        weights = model.get_weights()
         if history is None:
             stats = {}
         else:
@@ -356,7 +356,7 @@ class SparkRunner:
             if self.model_dir is not None:
                 model_states = {
                     "epoch": self.epoch,
-                    "weights": model.get_weights(),
+                    "weights": weights,
                     "optimizer_weights": model.optimizer.get_weights()
                 }
                 save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
