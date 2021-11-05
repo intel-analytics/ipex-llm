@@ -165,7 +165,8 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     across the cluster if necessary).
 
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "yarn-cluster", "k8s-client" and "standalone". Default to be None.
+           "yarn-cluster", "k8s-client" and "standalone". Default to be None and in this case 
+           there is supposed to be an existing SparkContext in your application.
            
            For "yarn-client" and "yarn-cluster", you are supposed to use conda environment 
            and set the environment variable HADOOP_CONF_DIR.
@@ -222,7 +223,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                 spark_args["python_location"] = kwargs["python_location"]
             from bigdl.dllib.nncontext import init_spark_on_local
             sc = init_spark_on_local(cores, **spark_args) 
-        elif cluster_mode.startswith("yarn"):  # yarn or yarn-client
+        elif cluster_mode.startswith("yarn"):  # yarn, yarn-client or yarn-cluster
             hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
             if not hadoop_conf:
                 assert "hadoop_conf" in kwargs,\
