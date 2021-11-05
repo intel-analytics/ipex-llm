@@ -20,15 +20,6 @@ RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-i
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.bz2 && \
-    tar jxvf protobuf-2.5.0.tar.bz2 && \
-    cd protobuf-2.5.0 && \
-    ./configure && \
-    make && \
-    make check && \
-    export LD_LIBRARY_PATH=/usr/local/lib && \
-    make install
-
 RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 
@@ -46,10 +37,10 @@ RUN cd /opt && \
 RUN cd /opt && \
     wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
-    mv spark-${SPARK_VERSION}-bin-hadoop3.2 spark-${SPARK_VERSION} && \
+    mv spark-${SPARK_VERSION}-bin-hadoop3.2 spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
-    cp spark-${SPARK_VERSION}/conf/log4j.properties.template spark-${SPARK_VERSION}/conf/log4j.properties && \
-    echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties
+    cp spark/conf/log4j.properties.template spark/conf/log4j.properties && \
+    echo $'\nlog4j.logger.io.netty=ERROR' >> spark/conf/log4j.properties
 # spark modification
 # org.apache.spark.util.Utils to disable chmod fork
 RUN cd /opt && \
@@ -71,9 +62,19 @@ RUN cd /opt/src/spark && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean install -pl core && \
     cd resource-managers/kubernetes/core && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package
+
 # hadoop
-# org.apache.hadoop.util.Shell.java to disable setsid
-RUN cd /opt/src && \
+RUN cd /opt && \
+    wget https://github.com/protocolbuffers/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.bz2 && \
+    tar jxvf protobuf-2.5.0.tar.bz2 && \
+    cd protobuf-2.5.0 && \
+    ./configure && \
+    make && \
+    make check && \
+    export LD_LIBRARY_PATH=/usr/local/lib && \
+    make install && \
+    rm -f protobuf-2.5.0.tar.bz2 && \
+    cd /opt/src && \
     wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene/hadoop-common-shell.patch && \
     git clone https://github.com/apache/hadoop.git && \
     cd hadoop && \
@@ -85,8 +86,7 @@ RUN cd /opt/src && \
         -Dhttp.proxyPort=$HTTP_PROXY_PORT \
         -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
-    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
-    ls /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-${HADOOP_VERSION}.jar
+    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package
 
 # Remove fork with libhadoop.so and spark-network-common.jar
 RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so -P /lib/ && \
