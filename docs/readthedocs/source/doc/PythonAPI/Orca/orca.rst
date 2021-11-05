@@ -43,3 +43,11 @@ orca.learn.openvino.estimator
     :undoc-members:
     :show-inheritance:
 
+
+AutoML API
+------------------------------
+
+.. toctree::
+    :maxdepth: 2
+
+    automl.rst
