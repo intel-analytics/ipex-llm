@@ -11,7 +11,7 @@ index 8d9f2be621..3ab622cb5f 100644
 
  private[spark] object BarrierTaskContextMessageProtocol {
 diff --git a/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala b/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala
-index df236ba892..03e274f4bb 100644
+index df236ba892..a4d0d1c5d8 100644
 --- a/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala
 +++ b/core/src/main/scala/org/apache/spark/api/python/PythonWorkerFactory.scala
 @@ -17,7 +17,7 @@
@@ -40,7 +40,7 @@ index df236ba892..03e274f4bb 100644
        serverSocket = new ServerSocket(0, 1, InetAddress.getByAddress(Array(127, 0, 0, 1)))
 
        // Create and start the worker
-@@ -163,29 +167,97 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
+@@ -163,29 +167,92 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
        workerEnv.put("PYTHON_WORKER_FACTORY_PORT", serverSocket.getLocalPort.toString)
        workerEnv.put("PYTHON_WORKER_FACTORY_SECRET", authHelper.secret)
        val worker = pb.start()
@@ -69,11 +69,6 @@ index df236ba892..03e274f4bb 100644
 +            val manageServerSocket =
 +              new ServerSocket(0, 1, InetAddress.getByAddress(Array(127, 0, 0, 1)))
 +            manageServerSocket.setSoTimeout(100000)
-+            try throw new Exception("ProcessBuilder is creating!!!!!")
-+            catch {
-+              case e: Exception =>
-+                e.printStackTrace()
-+            }
 +            val pb = new ProcessBuilder(Arrays.asList(pythonExec, "-m", workerModule))
 +            val workerEnv = pb.environment()
 +            workerEnv.putAll(envVars.asJava)
@@ -150,7 +145,7 @@ index df236ba892..03e274f4bb 100644
      null
    }
 
-@@ -378,7 +450,17 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
+@@ -378,7 +445,17 @@ private[spark] class PythonWorkerFactory(pythonExec: String, envVars: Map[String
    }
  }
 
@@ -364,6 +359,26 @@ index 1643aa68cd..ceeaf9f4e4 100644
 
      // Windows does not grant read permission by default to non-admin users
      // Add read permission to owner explicitly
+diff --git a/python/pyspark/rdd.py b/python/pyspark/rdd.py
+index 34faaacff5..897ade1157 100644
+--- a/python/pyspark/rdd.py
++++ b/python/pyspark/rdd.py
+@@ -163,6 +163,15 @@ def _load_from_socket(sock_info, serializer):
+     usually a generator that yields deserialized data
+     """
+     sockfile = _create_local_socket(sock_info)
++    import warnings
++    warnings.warn("INFO @rdd.py._load_from_socket: sockfile " + str(sockfile), category=None, stacklevel=1, source=None)
++    import time
++    time.sleep(60)
++    warnings.warn("INFO @rdd.py._load_from_socket: WAIT A MIN", category=None, stacklevel=1, source=None)
++    time.sleep(60)
++    warnings.warn("INFO @rdd.py._load_from_socket: WAIT A MIN", category=None, stacklevel=1, source=None)
++    time.sleep(60)
++    warnings.warn("INFO @rdd.py._load_from_socket: WAIT A MIN", category=None, stacklevel=1, source=None)
+     # The socket will be automatically closed when garbage-collected.
+     return serializer.load_stream(sockfile)
+
 diff --git a/python/pyspark/serializers.py b/python/pyspark/serializers.py
 index 1b434d3931..286f773904 100644
 --- a/python/pyspark/serializers.py
@@ -376,11 +391,54 @@ index 1b434d3931..286f773904 100644
 
 
  class Serializer(object):
+diff --git a/python/pyspark/shuffle.py b/python/pyspark/shuffle.py
+index 4ba8462271..508b320f44 100644
+--- a/python/pyspark/shuffle.py
++++ b/python/pyspark/shuffle.py
+@@ -38,23 +38,27 @@ try:
+
+     def get_used_memory():
+         """ Return the used memory in MiB """
+-        global process
+-        if process is None or process._pid != os.getpid():
+-            process = psutil.Process(os.getpid())
+-        if hasattr(process, "memory_info"):
+-            info = process.memory_info()
+-        else:
+-            info = process.get_memory_info()
+-        return info.rss >> 20
++        warnings.warn("INFO @shuffle.py.get_used_memory: ignore call psutil.Process, which is not supported on Graphene")
++        return 0
++        #global process
++        #if process is None or process._pid != os.getpid():
++        #    process = psutil.Process(os.getpid())
++        #if hasattr(process, "memory_info"):
++        #    info = process.memory_info()
++        #else:
++        #    info = process.get_memory_info()
++        #return info.rss >> 20
+
+ except ImportError:
+
+     def get_used_memory():
+         """ Return the used memory in MiB """
+         if platform.system() == 'Linux':
+-            for line in open('/proc/self/status'):
+-                if line.startswith('VmRSS:'):
+-                    return int(line.split()[1]) >> 10
++            warnings.warn("INFO @shuffle.py.get_used_memory: ignore linux check /proc/self/status, which is not supported on Graphene")
++            return 0
++            #for line in open('/proc/self/status'):
++                #if line.startswith('VmRSS:'):
++                    #return int(line.split()[1]) >> 10
+
+         else:
+             warnings.warn("Please install psutil to have better "
 diff --git a/python/pyspark/worker.py b/python/pyspark/worker.py
-index 8ca4bb37e5..5b22911158 100644
+index 8ca4bb37e5..277de30d05 100644
 --- a/python/pyspark/worker.py
 +++ b/python/pyspark/worker.py
-@@ -642,15 +642,32 @@ def main(infile, outfile):
+@@ -642,15 +642,34 @@ def main(infile, outfile):
      # check end of stream
      if read_int(infile) == SpecialLengths.END_OF_STREAM:
          write_int(SpecialLengths.END_OF_STREAM, outfile)
@@ -402,8 +460,10 @@ index 8ca4bb37e5..5b22911158 100644
 -    main(sock_file, sock_file)
 +    #(sock_file, _) = local_connect_and_auth(java_port, auth_secret)
 +    #main(sock_file, sock_file)
-+    print("!Python worker's pid is " + str(os.getpid()) + "!!!!!!!!!!!!!")
++    print("Python worker's pid is " + str(os.getpid()) + "!!!!!!!!!!!!!")
 +    (sock_file, sock) = local_connect_and_auth(java_port, auth_secret)
++    sock.settimeout(None)
++    print("sock set timeout successed!")
 +    print("Python worker connected to " + str(java_port) + "!!!!!!!!!!!!!")
 +    while True:
 +        try:
@@ -446,4 +506,3 @@ index a0a17cecf9..6040a421c1 100644
          ) ++ kubernetesConf.environment).map { case (k, v) =>
            new EnvVarBuilder()
              .withName(k)
-
