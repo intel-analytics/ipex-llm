@@ -165,14 +165,18 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     across the cluster if necessary).
 
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "yarn-cluster", "k8s-client", "standalone" and "spark-submit". Default to be "local".
+           "yarn-cluster", "k8s-client", "k8s-cluster" and "standalone". Default to be None.
            
+           For "yarn-client" and "yarn-cluster", you are supposed to use conda environment 
+           and set hadoop conf dir.
+
            For "k8s-client", you are supposed to additionally specify the arguments master 
            and container_image.
 
-           For "spark-submit", you are supposed to use spark-submit to submit the application.
+           For "k8s-cluster", you are supposed to use spark-submit to submit the application 
+           and use the default cluster_mode instead.
            In this case, please set the Spark configurations through command line options or
-           the properties file. You need to use "spark-submit" for yarn-cluster or k8s-cluster mode.
+           the properties file. 
            To make things easier, you are recommended to use the launch scripts we provide:
            https://github.com/intel-analytics/BigDL/tree/branch-2.0/scripts.
 
@@ -193,7 +197,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     print("Initializing orca context")
     import atexit
     atexit.register(stop_orca_context)
-    from pyspark import SparkContext, SparkConf
+    from pyspark import SparkContext
     import warnings
     spark_args = {}
     for key in ["conf", "spark_log_level", "redirect_spark_log"]:
@@ -203,19 +207,15 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
         cluster_mode = cluster_mode.lower()
     activate_sc = SparkContext._active_spark_context is not None
     if activate_sc:
-        if cluster_mode is not None:
+        if cluster_mode is not None and cluster_mode != "spark-submit":
             warnings.warn("Use an existing SparkContext, " +
                           "cluster_mode is determined by the existing SparkContext", Warning)
-        conf = SparkConf()
         from bigdl.dllib.nncontext import init_nncontext
-        sc = init_nncontext(conf=conf, spark_log_level="WARN", redirect_spark_log=True)
+        sc = init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True)
     else:
         cluster_mode = "local" if cluster_mode is None else cluster_mode
-        if cluster_mode == "spark-submit":
-            raise ValueError("spark-submit has been deprecated")
-        elif cluster_mode == "local":
-            if num_nodes > 1: 
-                warnings.warn("For Spark local mode, num_nodes should be 1", Warning)
+        if cluster_mode == "local":
+            assert num_nodes == 1, "For Spark local mode, num_nodes should be 1"
             os.environ["SPARK_DRIVER_MEMORY"] = memory
             if "python_location" in kwargs:
                 spark_args["python_location"] = kwargs["python_location"]
@@ -249,7 +249,8 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
         elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
             if cluster_mode == "k8s-cluster":
                 raise ValueError('For k8s-cluster mode, '
-                                'please submit the application via spark-submit instead')
+                                'please submit the application via spark-submit'  
+                                'and use the default cluster_mode instead')
             assert "master" in kwargs, "Please specify master for k8s-client mode"
             assert "container_image" in kwargs, "Please specify container_image for k8s-client mode"
             for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
@@ -270,7 +271,8 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
             sc = init_spark_standalone(num_executors=num_nodes, executor_cores=cores,
                                        executor_memory=memory, **spark_args)
         else:
-            raise ValueError("cluster_mode can only be local, yarn-client or standalone, "
+            raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster,"
+                            "k8s-client, k8s-cluster or standalone, "
                             "but got: %s".format(cluster_mode))
     ray_args = {}
     for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
