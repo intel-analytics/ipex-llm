@@ -116,8 +116,8 @@ ENV TASKMANAGER_MEMORY_MANAGED_SIZE     8192mb
 ENV XMX_SIZE                            10g 
 ENV SGX_MODE                            sgx
 ENV REDIS_HOST                          127.0.0.1
-ENV SCALA_VERSION                       2.12
-ENV SCALA_SUB_VERSION_NUM               10
+ENV SCALA_VERSION                       ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM               ${SCALA_SUB_VERSION_NUM}
 
 RUN mkdir -p /graphene && \
     mkdir -p /graphene/Runtime && \
