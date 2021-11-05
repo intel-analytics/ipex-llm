@@ -35,8 +35,10 @@ class TestMTNetKeras(ZooTestCase):
         self.model = MTNetKeras()
         self.config = {"long_num": self.long_num,
                        "time_step": self.time_step,
-                       "ar_window": np.random.randint(1, 3),
-                       "cnn_height": np.random.randint(1, 3),
+                       "ar_window": 1, # np.random.randint(1, 3),
+                       "cnn_height": 1, # np.random.randint(1, 3),
+                       "cnn_hid_size": 2,
+                       "rnn_hid_sizes": [2, 2],
                        "epochs": 1}
 
     def teardown_method(self, method):
@@ -56,12 +58,12 @@ class TestMTNetKeras(ZooTestCase):
             x = self.ft._roll_test(test_data, past_seq_len=past_seq_len)
             return x
 
-        self.long_num = 6
-        self.time_step = 2
+        self.long_num = 2
+        self.time_step = 1
         look_back = (self.long_num + 1) * self.time_step
         look_forward = 1
         self.x_train, self.y_train = gen_train_sample(data=np.random.randn(
-            64, 4), past_seq_len=look_back, future_seq_len=look_forward)
+            32, 4), past_seq_len=look_back, future_seq_len=look_forward)
         self.x_val, self.y_val = gen_train_sample(data=np.random.randn(16, 4),
                                                   past_seq_len=look_back,
                                                   future_seq_len=look_forward)
