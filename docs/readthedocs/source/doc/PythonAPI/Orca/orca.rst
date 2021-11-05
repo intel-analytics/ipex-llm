@@ -44,7 +44,7 @@ orca.learn.openvino.estimator
     :show-inheritance:
 
 
-AutoML API
+AutoML
 ------------------------------
 
 .. toctree::
