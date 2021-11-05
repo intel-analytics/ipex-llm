@@ -435,10 +435,10 @@ index 4ba8462271..508b320f44 100644
          else:
              warnings.warn("Please install psutil to have better "
 diff --git a/python/pyspark/worker.py b/python/pyspark/worker.py
-index 8ca4bb37e5..5b22911158 100644
+index 8ca4bb37e5..277de30d05 100644
 --- a/python/pyspark/worker.py
 +++ b/python/pyspark/worker.py
-@@ -642,15 +642,32 @@ def main(infile, outfile):
+@@ -642,15 +642,34 @@ def main(infile, outfile):
      # check end of stream
      if read_int(infile) == SpecialLengths.END_OF_STREAM:
          write_int(SpecialLengths.END_OF_STREAM, outfile)
@@ -460,8 +460,10 @@ index 8ca4bb37e5..5b22911158 100644
 -    main(sock_file, sock_file)
 +    #(sock_file, _) = local_connect_and_auth(java_port, auth_secret)
 +    #main(sock_file, sock_file)
-+    print("!Python worker's pid is " + str(os.getpid()) + "!!!!!!!!!!!!!")
++    print("Python worker's pid is " + str(os.getpid()) + "!!!!!!!!!!!!!")
 +    (sock_file, sock) = local_connect_and_auth(java_port, auth_secret)
++    sock.settimeout(None)
++    print("sock set timeout successed!")
 +    print("Python worker connected to " + str(java_port) + "!!!!!!!!!!!!!")
 +    while True:
 +        try:
@@ -504,4 +506,3 @@ index a0a17cecf9..6040a421c1 100644
          ) ++ kubernetesConf.environment).map { case (k, v) =>
            new EnvVarBuilder()
              .withName(k)
-
