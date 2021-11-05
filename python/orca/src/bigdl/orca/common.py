@@ -168,7 +168,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
            "yarn-cluster", "k8s-client" and "standalone". Default to be None.
            
            For "yarn-client" and "yarn-cluster", you are supposed to use conda environment 
-           and set hadoop conf dir.
+           and set the environment variable HADOOP_CONF_DIR.
 
            For "k8s-client", you are supposed to additionally specify the arguments master 
            and container_image.
