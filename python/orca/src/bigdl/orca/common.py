@@ -165,7 +165,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     across the cluster if necessary).
 
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "yarn-cluster", "k8s-client", "k8s-cluster" and "standalone". Default to be None.
+           "yarn-cluster", "k8s-client" and "standalone". Default to be None.
            
            For "yarn-client" and "yarn-cluster", you are supposed to use conda environment 
            and set hadoop conf dir.
