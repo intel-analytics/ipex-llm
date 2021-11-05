@@ -163,15 +163,19 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
     across the cluster if necessary).
+
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
            "yarn-cluster", "k8s-client", "standalone" and "spark-submit". Default to be "local".
+           
+           For "k8s-client", you are supposed to additionally specify the arguments master 
+           and container_image.
+
            For "spark-submit", you are supposed to use spark-submit to submit the application.
            In this case, please set the Spark configurations through command line options or
            the properties file. You need to use "spark-submit" for yarn-cluster or k8s-cluster mode.
-           For "k8s-client", you are supposed to additionally specify the arguments master 
-           and container_image.
            To make things easier, you are recommended to use the launch scripts we provide:
            https://github.com/intel-analytics/BigDL/tree/branch-2.0/scripts.
+
            For other cluster modes, you are recommended to install and run bigdl through
            pip, which is more convenient.
     :param cores: The number of cores to be used on each node. Default to be 2.
@@ -183,6 +187,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
            Ray is involved in Project Orca.
     :param kwargs: The extra keyword arguments used for creating SparkContext and
            launching Ray if any. 
+
     :return: An instance of SparkContext.
     """
     print("Initializing orca context")
@@ -209,16 +214,14 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
         if cluster_mode == "spark-submit":
             raise ValueError("spark-submit has been deprecated")
         elif cluster_mode == "local":
-            assert num_nodes == 1, "For Spark local mode, num_nodes should be 1"
+            if num_nodes > 1: 
+                warnings.warn("For Spark local mode, num_nodes should be 1", Warning)
             os.environ["SPARK_DRIVER_MEMORY"] = memory
             if "python_location" in kwargs:
                 spark_args["python_location"] = kwargs["python_location"]
             from bigdl.dllib.nncontext import init_spark_on_local
             sc = init_spark_on_local(cores, **spark_args) 
         elif cluster_mode.startswith("yarn"):  # yarn or yarn-client
-            if cluster_mode == "yarn-cluster":
-                raise ValueError('For yarn-cluster mode, '
-                                'please submit the application via spark-submit instead')
             hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
             if not hadoop_conf:
                 assert "hadoop_conf" in kwargs,\
