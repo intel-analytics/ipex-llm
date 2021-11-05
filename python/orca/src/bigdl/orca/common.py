@@ -215,7 +215,9 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     else:
         cluster_mode = "local" if cluster_mode is None else cluster_mode
         if cluster_mode == "local":
-            assert num_nodes == 1, "For Spark local mode, num_nodes should be 1"
+            if num_nodes > 1: 
+                warnings.warn("For Spark local mode, num_nodes should be 1, but got " 
+                + repr(num_nodes) + ", ignored", Warning)
             os.environ["SPARK_DRIVER_MEMORY"] = memory
             if "python_location" in kwargs:
                 spark_args["python_location"] = kwargs["python_location"]
@@ -272,7 +274,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                                        executor_memory=memory, **spark_args)
         else:
             raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster,"
-                            "k8s-client, k8s-cluster or standalone, "
+                            "k8s-client or standalone, "
                             "but got: %s".format(cluster_mode))
     ray_args = {}
     for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
