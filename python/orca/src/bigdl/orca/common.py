@@ -172,7 +172,6 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
 
            For "k8s-client", you are supposed to additionally specify the arguments master 
            and container_image.
-
            For "k8s-cluster", you are supposed to use spark-submit to submit the application 
            and use the default cluster_mode instead.
            In this case, please set the Spark configurations through command line options or
