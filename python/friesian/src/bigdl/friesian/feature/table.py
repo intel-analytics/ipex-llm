@@ -1285,11 +1285,11 @@ class FeatureTable(Table):
 
     def add_negative_samples(self, item_size, item_col="item", label_col="label", neg_num=1):
         """
-        Generate negative records for each record in the dataset. All the records in the original
+        Generate negative records for each record in the FeatureTable. All the records in the original
         FeatureTable will be treated as positive samples with value 1 for label_col and the negative
         samples will be randomly generated with value 0 for label_col.
 
-        :param item_size: int, the total number of items in the dataset.
+        :param item_size: int, the total number of items in the FeatureTable.
         :param item_col: str, the name of the item column. Whether the record is positive or negative
                will be based on this column. Default is 'item'.
         :param label_col: str, the name of the label column. Default is 'label'.
@@ -1323,7 +1323,7 @@ class FeatureTable(Table):
         """
         Generate a list of negative samples for each item in the history sequence.
 
-        :param item_size: int, the total number of items in the dataset.
+        :param item_size: int, the total number of items in the FeatureTable.
         :param item_history_col: str, the history column to generate negative samples.
         :param neg_num: int, the number of negative items for each history (positive) item.
 
