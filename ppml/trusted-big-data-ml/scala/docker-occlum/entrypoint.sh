@@ -54,7 +54,7 @@ case "$SPARK_K8S_CMD" in
   executor)
     /opt/init.sh
     cd /opt/occlum_spark/
-    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
         "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
         -Xms$SPARK_EXECUTOR_MEMORY \
         -Xmx$SPARK_EXECUTOR_MEMORY \
