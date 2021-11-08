@@ -9,7 +9,7 @@ conda activate bigdl
 pip install --pre --upgrade bigdl-friesian
 ```
 ## Preprocess data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the script [here](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/friesian/example/wnd/train/wnd_preprocess_recsys.py) to preprocess the original data.
+You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the script [here](../wnd/train/wnd_preprocess_recsys.py) to preprocess the original data.
 
 ## Training 2 tower model
 * Spark local, we can use some sample data to have a trial, example command:
