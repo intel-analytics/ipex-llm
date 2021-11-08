@@ -20,7 +20,6 @@ import glob
 import warnings
 import logging
 
-
 log = logging.getLogger(__name__)
 
 
@@ -112,8 +111,9 @@ def get_analytics_zoo_classpath():
     """
     if os.getenv("BIGDL_CLASSPATH"):
         for path in os.getenv("BIGDL_CLASSPATH").split(":"):
-            for pa in path.split("*"):
-                if not os.path.exists(pa):
+            # check jars dir path if path is ended with "jars/*"
+            for jars_dir in path.split("*"):
+                if not os.path.exists(jars_dir):
                     raise ValueError("Path {} specified BIGDL_CLASSPATH does not exist."
                                      .format(path))
         return os.environ["BIGDL_CLASSPATH"]
