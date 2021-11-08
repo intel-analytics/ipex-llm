@@ -674,7 +674,7 @@ class Table:
 
     def sort(self, *cols, **kwargs):
         """
-        Sort the Table by specified columns.
+        Sort the Table by specified column(s).
 
         :param cols: list of :class:`Column` or column names to sort by.
         :param ascending: boolean or list of boolean (default ``True``).
