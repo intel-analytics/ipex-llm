@@ -12,11 +12,11 @@ pip install --pre --upgrade bigdl-friesian
 ```
 
 ## Prepare the data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#), which includes close to 1 billion data points, >40 million each day over 28 days.
+You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#), which includes around 1 billion records, more than 40 million records each day over 28 days.
  Week 1 - 3 will be used for training and week 4 for evaluation and testing. Each record contains the tweet along with engagement features, user features, and tweet features.
 
 After you download and decompress the files, there is a train parquet directory and validation csv file.
-* For train data, execute this command to do some conversion:
+1. For train data, execute this command to do some conversion:
 ```bash
 python convert_train.py \
     --input_folder /path/to/the/folder/of/train_parquet_folder \
@@ -26,7 +26,7 @@ __Options:__
 * `input_folder`: The path to the folder of train parquet folder.
 * `output_folder`: The path to the folder of save the preprocessed data.
 
-* For validation data, execute this command to change csv to parquet files:
+2. For validation data, execute this command to change csv to parquet files:
 ```bash
 python valid_to_parquet.py \
     --input_folder /path/to/the/folder/of/valid_csv \
