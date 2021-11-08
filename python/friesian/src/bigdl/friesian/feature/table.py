@@ -1305,7 +1305,7 @@ class FeatureTable(Table):
         """
         Add a column of history visits of each user.
 
-        :param cols: a list of str, the columns treated as histories.
+        :param cols: str or a list of str, the column(s) to be treated as histories.
         :param user_col: str, the column treated as the user.
         :param sort_col: str, the column to sort by for each user. Default is 'time'.
         :param min_len: int, the minimal length of a history sequence. Default is 1.
@@ -1316,6 +1316,7 @@ class FeatureTable(Table):
 
         :return: A new FeatureTable with history sequences.
         """
+        cols = str_to_list(cols, "cols")
         df = add_hist_seq(self.df, cols, user_col, sort_col, min_len, max_len, num_seqs)
         return FeatureTable(df)
 
