@@ -674,12 +674,12 @@ class Table:
 
     def sort(self, *cols, **kwargs):
         """
-        Sort table by the specified col(s).
+        Sort the Table by specified columns.
 
         :param cols: list of :class:`Column` or column names to sort by.
         :param ascending: boolean or list of boolean (default ``True``).
-            Sort ascending vs. descending. Specify list for multiple sort orders.
-            If a list is specified, length of the list must equal length of the `cols`.
+               Sort ascending vs. descending. Specify list for multiple sort orders.
+               If a list is specified, length of the list must equal length of the `cols`.
         """
         if not cols:
             raise ValueError("cols should be str or a list of str, but got None.")
@@ -695,7 +695,7 @@ class Table:
         """
         Returns the contents of this :class:`pandas.DataFrame` as Table.
 
-        :param pandas_df: pandas dataframe
+        :param pandas_df: An instance of Pandas DataFrame.
         """
         spark = OrcaContext.get_spark_session()
         sparkDF = spark.createDataFrame(pandas_df)
