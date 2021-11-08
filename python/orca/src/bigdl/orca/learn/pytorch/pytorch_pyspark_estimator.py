@@ -108,6 +108,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
+        self.config = {} if config is None else config
 
         # todo remove ray_ctx to run on workers
         ray_ctx = RayContext.get()
@@ -116,30 +117,22 @@ class PyTorchPySparkEstimator(BaseEstimator):
             raise ValueError(
                 "Must provide a function for both model_creator and optimizer_creator")
 
-        self.model_creator = model_creator
-        self.optimizer_creator = optimizer_creator
-        self.loss_creator = loss_creator
-        self.scheduler_creator = scheduler_creator
-        self.training_operator_cls = training_operator_cls
-        self.scheduler_step_freq = scheduler_step_freq
-        self.use_tqdm = use_tqdm
-
         if not training_operator_cls and not loss_creator:
             raise ValueError("If a loss_creator is not provided, you must "
                              "provide a custom training operator.")
 
+        self.model_creator = model_creator
         self.initialization_hook = initialization_hook
-        self.config = {} if config is None else config
-        worker_config = self.config.copy()
-        params = dict(
+
+        self.worker_init_params = dict(
             model_creator=self.model_creator,
-            optimizer_creator=self.optimizer_creator,
-            loss_creator=self.loss_creator,
-            scheduler_creator=self.scheduler_creator,
-            training_operator_cls=self.training_operator_cls,
-            scheduler_step_freq=self.scheduler_step_freq,
-            use_tqdm=self.use_tqdm,
-            config=worker_config,
+            optimizer_creator=optimizer_creator,
+            loss_creator=loss_creator,
+            scheduler_creator=scheduler_creator,
+            training_operator_cls=training_operator_cls,
+            scheduler_step_freq=scheduler_step_freq,
+            use_tqdm=use_tqdm,
+            config=self.config.copy(),
             metrics=metrics
         )
 
@@ -147,7 +140,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         num_workers = ray_ctx.num_ray_nodes * workers_per_node
         RemoteRunner = ray.remote(num_cpus=cores_per_worker)(TorchPysparkRunner)
         self.remote_workers = [
-            RemoteRunner.remote(**params) for i in range(num_workers)
+            RemoteRunner.remote(**self.worker_init_params) for i in range(num_workers)
         ]
         ray.get([
             worker.setup.remote(cores_per_worker)
