@@ -222,7 +222,10 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
             if "python_location" in kwargs:
                 spark_args["python_location"] = kwargs["python_location"]
             from bigdl.dllib.nncontext import init_spark_on_local
-            sc = init_spark_on_local(cores, **spark_args) 
+            sc = init_spark_on_local(cores, **spark_args)
+        elif cluster_mode == "spark-submit":
+	    from bigdl.dllib.nncontext import init_nncontext
+            sc = init_nncontext(**spark_args)
         elif cluster_mode.startswith("yarn"):  # yarn, yarn-client or yarn-cluster
             hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
             if not hadoop_conf:
