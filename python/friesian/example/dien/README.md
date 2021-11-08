@@ -16,7 +16,7 @@ pip install --pre --upgrade bigdl-friesian
 1. Download meta_books data from [here](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Books.json.gz). 
 2. Download full book_review data from [here](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books.json.gz) which contains 22,507,155 records, or you can start from the [small dataset](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books_5.json.gz) which contains 8,898,041 records.
 
-## Preprocess data  
+## Preprocess the data  
 * Spark local, example command:
 ```bash
 python dien_preprocessing.py \
