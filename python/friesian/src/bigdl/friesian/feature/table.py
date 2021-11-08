@@ -167,7 +167,7 @@ class Table:
                is int, all columns of integer type will be filled. If columns=None and value is
                long, float, str or boolean, all columns will be filled.
 
-        :return: A new Table that replaced the null values with specified value
+        :return: A new Table that replaced the null values with the specified value.
         """
         if columns and not isinstance(columns, list):
             columns = [columns]
@@ -1335,7 +1335,7 @@ class FeatureTable(Table):
 
     def mask(self, mask_cols, seq_len=100):
         """
-        Add mask on specified columns.
+        Add mask on specified column(s).
 
         :param mask_cols: str or a list of str, the column(s) to be masked with 1s and 0s.
                Each column should be of list type.
@@ -1349,7 +1349,7 @@ class FeatureTable(Table):
 
     def pad(self, cols, seq_len=100, mask_cols=None):
         """
-        Add padding on specified columns.
+        Add padding on specified column(s).
 
         :param cols: str or a list of str, the column(s) to be padded with 0s. Each column
                should be of list type.
