@@ -1418,7 +1418,7 @@ class FeatureTable(Table):
 
     def add_value_features(self, columns, dict_tbl, key, value):
         """
-         Add features based on key columns and a key value Table.
+         Add features based on key columns and the key value Table.
          For each column in columns, it adds a value column using key-value pairs from dict_tbl.
 
          :param columns: str or a list of str, the key columns in the original FeatureTable.
