@@ -1,5 +1,5 @@
 # Train a two tower model using recsys data
-This example demonstrates how to use our BigDL Friesian to train a two tower model using [Twitter Recsys Challenge 2021 data](https://recsys-twitter.com/data/show-downloads#).
+This example demonstrates how to use BigDL Friesian to train a two tower model using [Twitter Recsys Challenge 2021 data](https://recsys-twitter.com/data/show-downloads#).
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
@@ -9,7 +9,7 @@ conda activate bigdl
 pip install --pre --upgrade bigdl-friesian
 ```
 ## Preprocess data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing] to preprocess the orginal data.
+You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the script [here](../wnd/train/wnd_preprocess_recsys.py) to preprocess the original data.
 
 ## Training 2 tower model
 * Spark local, we can use some sample data to have a trial, example command:
@@ -52,4 +52,4 @@ __Options:__
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `data_dir`: The input data directory as well as output of embedding reindex tables.
-* `model_dir`: The output, including model for trained models and stats to stroage reindex dicts and min_max.pkl
+* `model_dir`: The output, including model for trained models and stats to store reindex dicts and min_max.pkl.
