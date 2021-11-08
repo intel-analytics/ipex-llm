@@ -37,9 +37,6 @@ ENV PATH                ${JAVA_HOME}/bin:${PATH}
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget unzip patch zip git maven
-ADD pyspark.rdd.patch /opt/rdd.patch
-ADD pyspark.shuffle.patch /opt/shuffle.patch
-ADD spark-3.1.2.patch /opt/spark-3.1.2.patch
 ADD hadoop-common-shell.patch /opt/hadoop-common-shell.patch
 
 # java
@@ -74,10 +71,9 @@ RUN cd /opt && \
     ls /opt
 # spark modification
 RUN cd /opt && \
-    git clone https://github.com/apache/spark.git && \
+    git clone https://github.com/analytics-zoo/spark.git && \
     cd spark && \
-    git checkout tags/v3.1.2 -b branch-3.1.2 && \
-    git apply /opt/spark-3.1.2.patch && \
+    git checkout branch-3.1.2 && \
     git status && \
     export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
         -Dhttp.proxyHost=$HTTP_PROXY_HOST \
