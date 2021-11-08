@@ -24,7 +24,7 @@ java \
     -Dorg.apache.flink.shaded.netty4.io.netty.eventLoopThreads=${core_num} \
     -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
     -Dlog.file=${flink_home}/log/flink-sgx-standalonesession-1-sgx-ICX-LCC.log \
-    -Dlog4j.configuration=file:${flink_home}/conf/log4j.properties \
+    -Dlog4j.configurationFile=file:${flink_home}/conf/log4j.properties \
     -Dlogback.configurationFile=file:${flink_home}/conf/logback.xml \
     -classpath ${jars_cp} org.apache.flink.runtime.entrypoint.StandaloneSessionClusterEntrypoint \
     --configDir ${flink_home}/conf \
