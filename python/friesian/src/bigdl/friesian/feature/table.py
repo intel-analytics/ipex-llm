@@ -1306,7 +1306,7 @@ class FeatureTable(Table):
         Add a column of history visits of each user.
 
         :param cols: str or a list of str, the column(s) to be treated as histories.
-        :param user_col: str, the column treated as the user.
+        :param user_col: str, the column to be treated as the user.
         :param sort_col: str, the column to sort by for each user. Default is 'time'.
         :param min_len: int, the minimal length of a history sequence. Default is 1.
         :param max_len: int, the maximal length of a history sequence. Default is 100.
