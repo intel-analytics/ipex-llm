@@ -693,7 +693,7 @@ class Table:
     @staticmethod
     def from_pandas(pandas_df):
         """
-        Returns the contents of this :class:`pandas.DataFrame` as Table.
+        Convert a Pandas DataFrame as a Table.
 
         :param pandas_df: An instance of Pandas DataFrame.
         """
