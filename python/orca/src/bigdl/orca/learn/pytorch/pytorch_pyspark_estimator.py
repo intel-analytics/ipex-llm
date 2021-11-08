@@ -143,14 +143,14 @@ class PyTorchPySparkEstimator(BaseEstimator):
             metrics=metrics
         )
 
-        cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
-        num_nodes = ray_ctx.num_ray_nodes * workers_per_node
-        RemoteRunner = ray.remote(num_cpus=cores_per_node)(TorchPysparkRunner)
+        cores_per_worker = ray_ctx.ray_node_cpu_cores // workers_per_node
+        num_workers = ray_ctx.num_ray_nodes * workers_per_node
+        RemoteRunner = ray.remote(num_cpus=cores_per_worker)(TorchPysparkRunner)
         self.remote_workers = [
-            RemoteRunner.remote(**params) for i in range(num_nodes)
+            RemoteRunner.remote(**params) for i in range(num_workers)
         ]
         ray.get([
-            worker.setup.remote(cores_per_node)
+            worker.setup.remote(cores_per_worker)
             for i, worker in enumerate(self.remote_workers)
         ])
 
@@ -160,7 +160,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         logger.info(f"initializing pytorch process group on {address}")
 
         ray.get([
-            worker.setup_torch_distribute.remote(address, i, num_nodes)
+            worker.setup_torch_distribute.remote(address, i, num_workers)
             for i, worker in enumerate(self.remote_workers)
         ])
 
