@@ -1422,7 +1422,7 @@ class FeatureTable(Table):
          For each column in columns, it adds a value column using key-value pairs from dict_tbl.
 
          :param columns: str or a list of str, the key columns in the original FeatureTable.
-         :param dict_tbl: A Table with the key value mapping.
+         :param dict_tbl: A Table for the key value mapping.
          :param key: str, the name of the key column in dict_tbl.
          :param value: str, the name of value column in dict_tbl.
 
