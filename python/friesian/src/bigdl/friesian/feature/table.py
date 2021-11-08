@@ -1359,7 +1359,8 @@ class FeatureTable(Table):
         :return: A new FeatureTable with padded columns.
         """
         cols = str_to_list(cols, "cols")
-        mask_cols = str_to_list(mask_cols, "mask_cols")
+        if mask_cols:
+            mask_cols = str_to_list(mask_cols, "mask_cols")
         df = pad(self.df, cols, seq_len, mask_cols)
         return FeatureTable(df)
 
