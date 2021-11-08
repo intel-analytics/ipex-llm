@@ -104,7 +104,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
-            backend="torch_distributed",
             workers_per_node=1):
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
@@ -144,48 +143,27 @@ class PyTorchPySparkEstimator(BaseEstimator):
             metrics=metrics
         )
 
-        if backend == "torch_distributed":
-            cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
-            num_nodes = ray_ctx.num_ray_nodes * workers_per_node
-            RemoteRunner = ray.remote(num_cpus=cores_per_node)(TorchPysparkRunner)
-            self.remote_workers = [
-                RemoteRunner.remote(**params) for i in range(num_nodes)
-            ]
-            ray.get([
-                worker.setup.remote(cores_per_node)
-                for i, worker in enumerate(self.remote_workers)
-            ])
+        cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
+        num_nodes = ray_ctx.num_ray_nodes * workers_per_node
+        RemoteRunner = ray.remote(num_cpus=cores_per_node)(TorchPysparkRunner)
+        self.remote_workers = [
+            RemoteRunner.remote(**params) for i in range(num_nodes)
+        ]
+        ray.get([
+            worker.setup.remote(cores_per_node)
+            for i, worker in enumerate(self.remote_workers)
+        ])
 
-            head_worker = self.remote_workers[0]
-            address = ray.get(head_worker.setup_address.remote())
+        head_worker = self.remote_workers[0]
+        address = ray.get(head_worker.setup_address.remote())
 
-            logger.info(f"initializing pytorch process group on {address}")
+        logger.info(f"initializing pytorch process group on {address}")
 
-            ray.get([
-                worker.setup_torch_distribute.remote(address, i, num_nodes)
-                for i, worker in enumerate(self.remote_workers)
-            ])
+        ray.get([
+            worker.setup_torch_distribute.remote(address, i, num_nodes)
+            for i, worker in enumerate(self.remote_workers)
+        ])
 
-        elif backend == "horovod":
-            from bigdl.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
-            self.horovod_runner = HorovodRayRunner(ray_ctx,
-                                                   worker_cls=TorchPysparkRunner,
-                                                   worker_param=params,
-                                                   workers_per_node=workers_per_node)
-            self.remote_workers = self.horovod_runner.remote_workers
-            cores_per_node = self.horovod_runner.cores_per_node
-            ray.get([
-                worker.setup.remote(cores_per_node)
-                for i, worker in enumerate(self.remote_workers)
-            ])
-
-            ray.get([
-                worker.setup_horovod.remote()
-                for i, worker in enumerate(self.remote_workers)
-            ])
-        else:
-            raise Exception("Only \"torch_distributed\" and \"horovod\" are supported "
-                            "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
 
     def fit(self,

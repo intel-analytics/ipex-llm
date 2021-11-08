@@ -98,8 +98,7 @@ class Estimator(object):
                                            config=config,
                                            scheduler_step_freq=scheduler_step_freq,
                                            use_tqdm=use_tqdm,
-                                           workers_per_node=workers_per_node,
-                                           backend=backend)
+                                           workers_per_node=workers_per_node)
         else:
             raise ValueError("Only horovod, torch_distributed, bigdl and spark backends are "
                              f"supported for now, got backend: {backend}")
