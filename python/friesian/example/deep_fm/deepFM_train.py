@@ -143,32 +143,34 @@ if __name__ == '__main__':
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
 
-    train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
-    test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
+    train = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
+    test = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
 
-    test_user_ids = test_tbl.select("engaged_with_user_id").cast("engaged_with_user_id", "str").\
+    test_user_ids = test.select("engaged_with_user_id").cast("engaged_with_user_id", "str").\
         to_list("engaged_with_user_id")
-    test_labels = test_tbl.select("label").to_list("label")
+    test_labels = test.select("label").to_list("label")
 
-    full_tbl = train_tbl.concat(test_tbl, "outer")
-    reindex_tbls = full_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
-    full_tbls, min_max_dict = full_tbl.min_max_scale(num_cols)
-    train_tbl = train_tbl.reindex(embed_cols, reindex_tbls)\
-        .transform_min_max_scale(num_cols, min_max_dict)
-    test_tbl = test_tbl.reindex(embed_cols, reindex_tbls)\
-        .transform_min_max_scale(num_cols, min_max_dict)
-
-    sparse_dims = full_tbl.max(embed_cols).to_dict()
+    full = train.concat(test, "outer")
+    sparse_dims = full.max(embed_cols).to_dict()
     sparse_dims = dict(zip(sparse_dims['column'], [dim + 1 for dim in sparse_dims['max']]))
 
     fixlen_feature_columns = [SparseFeat(feat, int(sparse_dims[feat])) for feat in sparse_dims] + \
                              [DenseFeat(feat, 1, ) for feat in num_cols]
     feature_names = get_feature_names(fixlen_feature_columns)
+    reindex_tbls = full.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
+    full, min_max_dict = full.min_max_scale(num_cols)
 
-    train = train_tbl.merge_cols(feature_names, "combine")
-    test = test_tbl.merge_cols(feature_names,  "combine")
-    train = train.select(["label", "combine"]).apply("label", "label", lambda x: [float(x)], dtype="array<float>")
-    test = test.select(["label", "combine"]).apply("label", "label", lambda x: [float(x)], dtype="array<float>")
+    train = train.reindex(embed_cols, reindex_tbls)\
+        .transform_min_max_scale(num_cols, min_max_dict)\
+        .merge_cols(feature_names, "combine") \
+        .select(["label", "combine"])\
+        .apply("label", "label", lambda x: [float(x)], dtype="array<float>")
+
+    test = test.reindex(embed_cols, reindex_tbls) \
+        .transform_min_max_scale(num_cols, min_max_dict) \
+        .merge_cols(feature_names, "combine") \
+        .select(["label", "combine"]) \
+        .apply("label", "label", lambda x: [float(x)], dtype="array<float>")
 
     config = {'linear_feature_columns': fixlen_feature_columns,
               'dnn_feature_columns': fixlen_feature_columns, 'feature_names': feature_names,
