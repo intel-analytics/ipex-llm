@@ -2,14 +2,11 @@ FROM krallin/ubuntu-tini AS tini
 
 FROM ubuntu:18.04 as bigdl
 
-ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
 ARG HADOOP_VERSION=3.2.0
 ENV HADOOP_VERSION=${HADOOP_VERSION}
 ENV SPARK_VERSION=${SPARK_VERSION}
 ENV SPARK_HOME=/opt/spark
-ENV BIGDL_VERSION=${BIGDL_VERSION}
-ENV BIGDL_HOME=/opt/bigdl-${BIGDL_VERSION}
 
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
@@ -17,19 +14,17 @@ ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        openjdk-8-jdk build-essential && \
+        openjdk-8-jdk build-essential wget git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
-    (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-2.11.8.tgz
 # maven
 RUN cd /opt && \
     wget https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz && \
     tar -zxvf apache-maven-3.6.3-bin.tar.gz
+
 # spark
+# TODO change to build from source instead of download from spark binary
 RUN cd /opt && \
     wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
@@ -42,14 +37,9 @@ RUN cd /opt && \
 RUN cd /opt && \
     mkdir src && \
     cd src && \
-    git clone https://github.com/apache/spark.git && \
+    git clone https://github.com/analytics-zoo/spark.git && \
     cd spark && \
-    git checkout tags/v3.1.2 -b branch-3.1.2 && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene/spark-3.1.2.patch && \
-    git apply /opt/src/spark/spark-3.1.2.patch && \
-    git status
-
-RUN cd /opt/src/spark && \
+    git checkout branch-3.1.2 && \
     export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
         -Dhttp.proxyHost=$HTTP_PROXY_HOST \
         -Dhttp.proxyPort=$HTTP_PROXY_PORT \
@@ -107,6 +97,7 @@ ENV SPARK_VERSION=${SPARK_VERSION}
 ENV SPARK_HOME=/opt/spark
 ENV BIGDL_VERSION=${BIGDL_VERSION}
 ENV BIGDL_HOME=/opt/bigdl-${BIGDL_VERSION}
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
