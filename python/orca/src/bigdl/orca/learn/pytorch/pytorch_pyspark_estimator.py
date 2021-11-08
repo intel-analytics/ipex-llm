@@ -27,9 +27,10 @@ from bigdl.orca.learn.pytorch.torch_pyspark_runner import TorchPysparkRunner
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
-from bigdl.orca.ray import RayContext
+from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
+from bigdl.dllib.utils.common import get_node_and_core_number
 
 
 import ray
@@ -110,8 +111,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                             " fit/evaluate/predict function of the estimator instead.")
         self.config = {} if config is None else config
 
-        # todo remove ray_ctx to run on workers
-        ray_ctx = RayContext.get()
+        sc = OrcaContext.get_spark_context()
         if not (isinstance(model_creator, types.FunctionType) and
                 isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
             raise ValueError(
@@ -135,15 +135,25 @@ class PyTorchPySparkEstimator(BaseEstimator):
             config=self.config.copy(),
             metrics=metrics
         )
+        num_nodes, cores_per_node = get_node_and_core_number()
+        self.num_workers = num_nodes * workers_per_node
+        self.total_cores = num_nodes * cores_per_node
+        self.cores_per_worker = cores_per_node // workers_per_node
 
-        cores_per_worker = ray_ctx.ray_node_cpu_cores // workers_per_node
-        num_workers = ray_ctx.num_ray_nodes * workers_per_node
-        RemoteRunner = ray.remote(num_cpus=cores_per_worker)(TorchPysparkRunner)
+        # over partition to cover tasks all over the cluster
+        self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
+                                        self.total_cores * 4).repartition(self.num_workers)
+
+        self.model_weights = None
+        self.setup()
+
+    def setup(self):
+        RemoteRunner = ray.remote(num_cpus=self.cores_per_worker)(TorchPysparkRunner)
         self.remote_workers = [
-            RemoteRunner.remote(**self.worker_init_params) for i in range(num_workers)
+            RemoteRunner.remote(**self.worker_init_params) for i in range(self.num_workers)
         ]
         ray.get([
-            worker.setup.remote(cores_per_worker)
+            worker.setup.remote(self.cores_per_worker)
             for i, worker in enumerate(self.remote_workers)
         ])
 
@@ -153,11 +163,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         logger.info(f"initializing pytorch process group on {address}")
 
         ray.get([
-            worker.setup_torch_distribute.remote(address, i, num_workers)
+            worker.setup_torch_distribute.remote(address, i, self.num_workers)
             for i, worker in enumerate(self.remote_workers)
         ])
-
-        self.num_workers = len(self.remote_workers)
 
     def fit(self,
             data,
