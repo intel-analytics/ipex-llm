@@ -13,7 +13,7 @@ pip install --pre --upgrade bigdl-friesian
 
 ## Prepare the data
 You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#), which includes close to 1 billion data points, >40 million each day over 28 days.
- Week 1 - 3 will be used for training and week 4 for evaluation and testing. Each datapoint contains the tweet along with engagement features, user features, and tweet features.
+ Week 1 - 3 will be used for training and week 4 for evaluation and testing. Each record contains the tweet along with engagement features, user features, and tweet features.
 
 After you download and decompress the files, there is a train parquet directory and validation csv file.
 * For train data, execute this command to do some conversion:
@@ -102,7 +102,7 @@ __Options:__
  0-1 for the first two parts, etc. Default to be 0-63.
 * `input_folder`: The path to the folder of parquet files, either a local path or an HDFS path.
 * `output_folder`: The path to save the preprocessed data to parquet files. HDFS path is recommended.
-* `cross_sizes`: bucket size for cross column (`present_media_language`). Default to be 600.
+* `cross_sizes`: The bucket size for the cross column (`present_media_language`). Default to be 600.
 
 
 ### WND training from preprocessed train and test data.
@@ -158,8 +158,8 @@ __Options:__
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `data_dir`: The path to save the preprocessed data to parquet files. Either a local path or an HDFS path.
 * `model_dir`: The path to the folder to save trained model.
-* `batch_size`: The batch size for training. Default to 102400.
-* `epoch`: Number of epochs to train. Default to 2.
-* `learning_rate`: The initial learning rate for training. Default to 1e-4.
-* `early_stopping`: The patience epochs for stopping training. Default to 3.
-* `hidden_units`: Hidden units for deep mlp. Default to 1024, 1024
+* `batch_size`: The batch size for training. Default to be 102400.
+* `epoch`: The number of epochs to train. Default to be 2.
+* `learning_rate`: The initial learning rate for training. Default to be 1e-4.
+* `early_stopping`: The patience epochs for stopping training. Default to be 3.
+* `hidden_units`: The hidden units for deep mlp. Default to be 1024, 1024.
