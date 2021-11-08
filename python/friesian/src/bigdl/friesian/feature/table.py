@@ -493,7 +493,7 @@ class Table:
         """
         Write the Table to Parquet file.
 
-        :param path: str. The path to the Parquet file.
+        :param path: str, the path to the Parquet file.
         :param mode: str. One of "append", "overwrite", "error" or "ignore".
                append: Append contents to the existing data.
                overwrite: Overwrite the existing data.
@@ -535,7 +535,7 @@ class Table:
         """
         Write the Table to csv file.
 
-        :param path: str. The path to the csv file.
+        :param path: str, the path to the csv file.
         :param mode: str. One of "append", "overwrite", "error" or "ignore".
                append: Append the contents of this StringIndex to the existing data.
                overwrite: Overwrite the existing data.
@@ -731,7 +731,7 @@ class FeatureTable(Table):
         """
         Loads Parquet files as a FeatureTable.
 
-        :param paths: str or a list of str. The path(s) to Parquet file(s).
+        :param paths: str or a list of str, the path(s) to Parquet file(s).
 
         :return: A FeatureTable for recommendation data.
         """
@@ -742,7 +742,7 @@ class FeatureTable(Table):
         """
         Loads json files as a FeatureTable.
 
-        :param paths: str or a list of str. The path(s) to the json file(s).
+        :param paths: str or a list of str, the path(s) to the json file(s).
         :param cols: str or a list of str. The columns to select from the json file(s).
                Default is None and in this case all the columns will be considered.
 
@@ -755,7 +755,7 @@ class FeatureTable(Table):
         """
         Loads csv files as a FeatureTable.
 
-        :param paths: str or a list of str. The path(s) to the csv file(s).
+        :param paths: str or a list of str, the path(s) to the csv file(s).
         :param delimiter: str, delimiter to use for parsing the csv file(s). Default is ",".
         :param header: boolean, whether the first line of the csv file(s) will be treated
                as the header for column names. Default is False.
@@ -1973,7 +1973,7 @@ class StringIndex(Table):
         """
         Loads Parquet files as a StringIndex.
 
-        :param paths: str or a list of str. The path/paths to Parquet file(s).
+        :param paths: str or a list of str, the path(s) to Parquet file(s).
         :param col_name: str. The column name of the corresponding categorical column. If
                col_name is None, the file name will be used as col_name.
 
@@ -2034,7 +2034,7 @@ class StringIndex(Table):
         """
         Write the StringIndex to Parquet file.
 
-        :param path: str. The path to the Parquet file. Note that the col_name
+        :param path: str, the path to the Parquet file. Note that the col_name
                will be used as basename of the Parquet file.
         :param mode: str. One of "append", "overwrite", "error" or "ignore".
                append: Append the contents of this StringIndex to the existing data.
