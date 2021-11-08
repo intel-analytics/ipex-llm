@@ -1,5 +1,5 @@
 # Train DIEN using the Amazon book review dataset
-This folder showcases how to use BigDL Friesian to preprocess and train a [DIEN](https://arxiv.org/pdf/1809.03672.pdf) model on BigDL. 
+This folder showcases how to use BigDL Friesian to preprocess and train a [DIEN](https://arxiv.org/pdf/1809.03672.pdf) model. 
 Model definition is based on [ai-matrix](https://github.com/alibaba/ai-matrix/tree/master/macro_benchmark/DIEN)
 [Amazon book review](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books.json.gz) and [meta_books](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/meta_Books.json.gz) dataset to be used in this example.
 
