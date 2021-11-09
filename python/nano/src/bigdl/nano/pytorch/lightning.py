@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 from pytorch_lightning import LightningModule
-from torch import nn
+from torch import nn, Tensor
 import torch
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
+from typing import Union, Dict
 
 
 class LightningModuleFromTorch(LightningModule):
@@ -59,3 +60,10 @@ class LightningModuleFromTorch(LightningModule):
 
     def configure_optimizers(self):
         return self.optimizer
+
+    def load_state_dict(self, state_dict: Union[Dict[str, Tensor], Dict[str, Tensor]],
+                        strict: bool = True):
+        try:
+            self.model.load_state_dict(state_dict)
+        except RuntimeError:
+            super().load_state_dict(state_dict)
