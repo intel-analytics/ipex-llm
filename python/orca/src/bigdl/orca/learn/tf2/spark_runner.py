@@ -352,20 +352,27 @@ class SparkRunner:
             stats = {}
         else:
             stats = {k: v[-1] for k, v in history.history.items()}
-        if self.rank == 0:
-            if self.model_dir is not None:
-                model_states = {
+        # if self.rank == 0:
+        #     if self.model_dir is not None:
+        #         model_states = {
+        #             "epoch": self.epoch,
+        #             "weights": weights,
+        #             "optimizer_weights": model.optimizer.get_weights()
+        #         }
+        #         save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
+        #     return [stats]
+        # else:
+        #     return []
+        model_states = {
                     "epoch": self.epoch,
                     "weights": weights,
                     "optimizer_weights": model.optimizer.get_weights()
                 }
-                save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
-            return [stats]
-        else:
-            return []
+        stats.update(model_states)
+        return [stats]
     
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
-                 steps=None, callbacks=None, data_config=None):
+                 steps=None, callbacks=None, data_config=None, states=None):
         """
         Evaluates the model on the validation data set.
         """
@@ -377,8 +384,11 @@ class SparkRunner:
         # strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
         with self.strategy.scope():
             model = self.model_creator(self.config)
-            if self.model_weights:
-                model.set_weights(self.model_weights.value)
+            # if self.model_weights:
+            #     model.set_weights(self.model_weights.value)
+            if states:
+                print("set weights in evaluation")
+                model.set_weights(states['weights'])
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -411,11 +421,11 @@ class SparkRunner:
         else:
             stats = {"results": results}
         
-        if self.rank == 0:
-            return [stats]
-        else:
-            return []
-
+        # if self.rank == 0:
+        #     return [stats]
+        # else:
+        #     return []
+        return [stats]
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
         config = self.config.copy()

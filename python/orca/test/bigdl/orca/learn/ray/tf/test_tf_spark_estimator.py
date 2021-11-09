@@ -84,20 +84,28 @@ class TestTFEstimator(TestCase):
                           validation_data=df,
                           validation_steps=1)
 
+        res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                               label_cols=["label"])
+
+        # res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+        #                   feature_cols=["feature"],
+        #                   label_cols=["label"]
+        #                   )
+
         print("start saving")
-        try:
-            trainer.save_weights("/tmp/cifar10_keras.h5")
-            trainer.load_weights("/tmp/cifar10_keras.h5")
-            trainer.save("/tmp/a.model")
-            trainer.load("/tmp/a.model")
-
-
-            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                         label_cols=["label"])
-            trainer.predict(df, feature_cols=["feature"]).collect()
-        finally:
-            os.remove("/tmp/cifar10_keras.h5")
-            shutil.rmtree("/tmp/a.model")
+        # try:
+        #     trainer.save_weights("/tmp/cifar10_keras.h5")
+        #     trainer.load_weights("/tmp/cifar10_keras.h5")
+        #     trainer.save("/tmp/a.model")
+        #     trainer.load("/tmp/a.model")
+        #
+        #
+        #     # res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+        #     #              label_cols=["label"])
+        #     # trainer.predict(df, feature_cols=["feature"]).collect()
+        # finally:
+        #     os.remove("/tmp/cifar10_keras.h5")
+        #     shutil.rmtree("/tmp/a.model")
 
 
 if __name__ == "__main__":
