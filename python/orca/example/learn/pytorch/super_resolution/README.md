@@ -33,24 +33,24 @@ You can run this example on local mode (default) and yarn-client mode.
 
 - Run with Spark Local mode:
 ```bash
-python super_resolution.py --cluster_mode local
+python super_resolution.py --cluster_mode local --data_dir "/your/path"
 ```
 
 - Run with Yarn-Client mode:
 ```bash
-python super_resolution.py --cluster_mode yarn
+python super_resolution.py --cluster_mode yarn --data_dir "/your/path"
 ```
 
 You can run this example with bigdl backend (default) or torch_distributed backend. 
 
 - Run with bigdl backend:
 ```bash
-python super_resolution.py --backend bigdl
+python super_resolution.py --backend bigdl --data_dir "/your/path"
 ```
 
 - Run with torch_distributed backend:
 ```bash
-python super_resolution.py --backend torch_distributed
+python super_resolution.py --backend torch_distributed --data_dir "/your/path"
 ```
 
 **Options**
@@ -61,6 +61,7 @@ python super_resolution.py --backend torch_distributed
 * `--epochs` The number of epochs to train for. Default is 2.
 * `--cluster_mode` The mode of spark cluster. Either "local" or "yarn". Default is "local".
 * `--backend` The backend of PyTorch Estimator. Either "bigdl" or "torch_distributed". Default is "bigdl".
+* `--data_dir` The path of datesets. Required.
 
 ## Results
 
