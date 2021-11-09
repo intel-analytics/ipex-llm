@@ -74,13 +74,13 @@ Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by def
   By specifying cluster_mode to be "yarn-cluster", `init_orca_context` will submit the job to yarn with cluster mode. The difference between "yarn-client" and "yarn-cluster" is where you run your spark driver, "yarn-client"'s spark driver will run on the node you start python, while "yarn-cluster"'s spark driver will run on a random node on yarn cluster. So if you are running with "yarn-cluster", you should change the application's reading from local file to a network file system, like HDFS.  
   
 
-- You can then simply run your BigDL program in a Jupyter notebook:
+- You can then simply run your BigDL program in a Jupyter notebook, please notice _**jupyter cannot use yarn-cluster**_, as driver is not running on local node:
 
   ```bash
   jupyter notebook --notebook-dir=./ --ip=* --no-browser
   ```
 
-  or as a normal Python script (e.g. script.py):
+  or as a normal Python script (e.g. script.py), both "yarn-client" and "yarn-cluster" is supported:
 
   ```bash
   python script.py
