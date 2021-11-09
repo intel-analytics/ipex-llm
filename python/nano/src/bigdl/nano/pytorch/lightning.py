@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Union, Dict
+
 from pytorch_lightning import LightningModule
 from torch import nn, Tensor
-import torch
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
-from typing import Union, Dict
 
 
 class LightningModuleFromTorch(LightningModule):
@@ -35,26 +35,26 @@ class LightningModuleFromTorch(LightningModule):
         self.loss = loss
         self.optimizer = optimizer
 
-    def _forward(self, batch):
+    def forward(self, batch):
         # Handle different numbers of input for various models
         nargs = self.model.forward.__code__.co_argcount
-        return self.model(*(batch[:nargs-1]))
+        return self.model(*(batch[:nargs - 1]))
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self._forward(batch)
+        y_hat = self(batch)
         loss = self.loss(y_hat, y)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self._forward(batch)
+        y_hat = self(batch)
         loss = self.loss(y_hat, y)
         return loss
 
     def test_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self._forward(batch)
+        y_hat = self(batch)
         loss = self.loss(y_hat, y)
         return loss
 
