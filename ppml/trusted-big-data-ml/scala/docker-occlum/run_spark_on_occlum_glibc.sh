@@ -29,10 +29,13 @@ build_spark() {
     cp -r /usr/lib/jvm/java-11-openjdk-amd64 image/usr/lib/jvm
     cp /lib/x86_64-linux-gnu/libz.so.1 image/lib
     cp /lib/x86_64-linux-gnu/libz.so.1 image/$occlum_glibc
+    cp /lib/x86_64-linux-gnu/libtinfo.so.5 image/$occlum_glibc
+    cp /lib/x86_64-linux-gnu/libnss*.so.2 image/$occlum_glibc
+    cp /lib/x86_64-linux-gnu/libresolv.so.2 image/$occlum_glibc
     cp $occlum_glibc/libdl.so.2 image/$occlum_glibc
     cp $occlum_glibc/librt.so.1 image/$occlum_glibc
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc
-    cp $occlum_glibc/libnss_files.so.2 image/$occlum_glibc
+    
     cp -rf ../spark/* image/bin/
     cp -rf /etc/hosts image/etc/
     echo "127.0.0.1 occlum-node" >> image/etc/hosts
