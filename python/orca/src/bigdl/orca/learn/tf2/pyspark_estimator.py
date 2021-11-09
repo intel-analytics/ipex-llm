@@ -139,10 +139,9 @@ class SparkTFEstimator():
                     param["data_creator"] = make_data_creator(partition_data)
                     return SparkRunner(**init_param).step(**param)
 
-                self.states_rdd = data.rdd.repartition(self.num_workers).barrier() \
+                res = data.rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).cache()
-                self.states_rdd.count()
+                        lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
                     data_tuple_list = list(iter)
@@ -152,10 +151,9 @@ class SparkTFEstimator():
                     param["validation_data_creator"] = make_data_creator(valid_list)
                     return SparkRunner(**init_param).step(**param)
 
-                self.states_rdd = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
+                res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).cache()
-                self.states_rdd.count()
+                        lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -163,25 +161,24 @@ class SparkTFEstimator():
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).step(**param)
 
-            self.states_rdd = self.workerRDD.barrier().mapPartitions(
-                lambda iter: transform_func(iter, init_params, params)).cache()
-            self.states_rdd.count()
+            res = self.workerRDD.barrier().mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)).collect()
 
-        # if self.model_dir:
-        #     try:
-        #         temp_dir = tempfile.mkdtemp()
-        #         get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
-        #                                  os.path.join(temp_dir, "states.pkl"),
-        #                                  over_write=True)
-        #         import pickle
-        #         with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
-        #             states = pickle.load(f)
-        #             self.model_weights = states['weights']
-        #             self.epoch = states["epoch"]
-        #     finally:
-        #         shutil.rmtree(temp_dir)
+        if self.model_dir:
+            try:
+                temp_dir = tempfile.mkdtemp()
+                get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
+                                         os.path.join(temp_dir, "states.pkl"),
+                                         over_write=True)
+                import pickle
+                with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
+                    states = pickle.load(f)
+                    self.model_weights = states['weights']
+                    self.epoch = states["epoch"]
+            finally:
+                shutil.rmtree(temp_dir)
 
-        return 0
+        return res
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
@@ -207,7 +204,7 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
-        # weights = sc.broadcast(self.model_weights)
+        weights = sc.broadcast(self.model_weights)
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -215,7 +212,7 @@ class SparkTFEstimator():
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            # model_weights=weights,
+            model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc)
         )
@@ -230,9 +227,7 @@ class SparkTFEstimator():
         )
 
         # dataframe change to xshard, num_partition >= num_workers
-        if isinstance(data, DataFrame):
-            data = data.repartition(self.num_workers)
-            data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
+        data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
                                              feature_cols=feature_cols,
                                              label_cols=label_cols,
                                              mode="evaluate",
@@ -241,22 +236,12 @@ class SparkTFEstimator():
 
         if isinstance(data, SparkXShards):
             # set train/validation data
-            # def transform_func(iter, init_param, param):
-            #     partition_data = list(iter)
-            #     param["data_creator"] = make_data_creator(partition_data)
-            #     return SparkRunner(**init_param).validate(**param)
-
             def transform_func(iter, init_param, param):
-                data_state_list = list(iter)
-                data = [x[0] for x in data_state_list]
-                param["data_creator"] = make_data_creator(data)
-                states = data_state_list[0][1]
-                param['states'] = states
+                partition_data = list(iter)
+                param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).validate(**param)
 
-            # res = data.rdd.repartition(self.num_workers).barrier() \
-            #     .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
-            res = data.rdd.zip(self.states_rdd).barrier() \
+            res = data.rdd.repartition(self.num_workers).barrier() \
                 .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
