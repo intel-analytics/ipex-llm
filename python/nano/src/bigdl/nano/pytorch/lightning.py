@@ -64,6 +64,6 @@ class LightningModuleFromTorch(LightningModule):
     def load_state_dict(self, state_dict: Union[Dict[str, Tensor], Dict[str, Tensor]],
                         strict: bool = True):
         try:
-            self.model.load_state_dict(state_dict)
-        except RuntimeError:
             super().load_state_dict(state_dict)
+        except RuntimeError:
+            self.model.load_state_dict(state_dict)
