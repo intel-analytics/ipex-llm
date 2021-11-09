@@ -137,7 +137,7 @@ class AutoProphet:
         if freq is None:
             assert len(data) >= 2, "The training dataframe should contains more than 2 records."
             assert pd.api.types.is_datetime64_any_dtype(data["ds"].dtypes), \
-                "The \"ds\" col should be in datetime 64 type, or you need to set `freq` in fit."
+                "The 'ds' col should be in datetime 64 type, or you need to set `freq` in fit."
             self._freq = data["ds"].iloc[1] - data["ds"].iloc[0]
         else:
             self._freq = pd.Timedelta(freq)
