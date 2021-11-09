@@ -4,7 +4,7 @@ Forecasters
 LSTMForecaster
 ----------------------------------------
 
-:strong: `Please refer to` BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong: `for other methods other than initialization`.
+:strong: `Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong: `for other methods other than initialization`.
 
 Long short-term memory(LSTM) is a special type of recurrent neural network(RNN). We implement the basic version of LSTM - VanillaLSTM for this forecaster for time-series forecasting task. It has two LSTM layers, two dropout layer and a dense layer.
 
@@ -19,7 +19,7 @@ For the detailed algorithm description, please refer to `here <https://github.co
 Seq2SeqForecaster
 -------------------------------------------
 
-:strong: `Please refer to` BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong: `for other methods other than initialization`.
+:strong: `Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong: `for other methods other than initialization`.
 
 Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suitable for multivariant & multistep time series forecasting.
 
@@ -32,7 +32,7 @@ Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suita
 TCNForecaster
 ----------------------------------------
 
-:strong: `Please refer to` BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong: `for other methods other than initialization`.
+:strong: `Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong: `for other methods other than initialization`.
 
 Temporal Convolutional Networks (TCN) is a neural network that use convolutional architecture rather than recurrent networks. It supports multi-step and multi-variant cases. Causal Convolutions enables large scale parallel computing which makes TCN has less inference time than RNN based model such as LSTM.
 
