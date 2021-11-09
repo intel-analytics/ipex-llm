@@ -28,13 +28,43 @@ fi
 
 ray stop -f
 
-echo "Running chronos tests"
-python -m pytest -v test/bigdl/chronos \
+RUN_PART1=0
+RUN_PART2=0
+if [ $1 = 1 ]; then
+RUN_PART1=1
+RUN_PART2=0
+elif [ $1 = 2 ]; then
+RUN_PART1=0
+RUN_PART2=1
+else
+RUN_PART1=1
+RUN_PART2=1
+fi
+
+if [ $RUN_PART1 = 1 ]; then
+echo "Running chronos tests Part 1"
+python -m pytest -v test/bigdl/chronos/model\
+                    test/bigdl/chronos/forecaster \
        -k "not test_forecast_tcmf_distributed"
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
 then
     exit $exit_status_0
+fi
+fi
+
+if [ $RUN_PART2 = 1 ]; then
+echo "Running chronos tests Part 2"
+python -m pytest -v test/bigdl/chronos/autots\
+                    test/bigdl/chronos/data \
+                    test/bigdl/chronos/simulator \
+                    test/bigdl/chronos/detector \
+       -k "not test_forecast_tcmf_distributed"
+exit_status_0=$?
+if [ $exit_status_0 -ne 0 ];
+then
+    exit $exit_status_0
+fi
 fi
 
 ray stop -f
