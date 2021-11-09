@@ -18,21 +18,21 @@ import os
 from unittest import TestCase
 
 import torch
-from test._train_torch_lightning import train_torch_lightning
 from torch import nn
 
+from _train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
+num_classes = 10
 batch_size = 256
 num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 
-loss = nn.CrossEntropyLoss()
-
 
 class ResNet18(nn.Module):
-    def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+    def __init__(self, pretrained=True, include_top=False, freeze=True):
         super().__init__()
         backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
         output_size = backbone.get_output_size()
@@ -43,13 +43,27 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-class TestLightningModuleFromTorch(TestCase):
-    num_classes = 10
+model = ResNet18(pretrained=True, include_top=False, freeze=True)
+loss = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
-    def test_resnet18_ipex(self):
-        model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
-        loss = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+class TestLightningModuleFromTorch(TestCase):
+
+    def test_resnet18(self):
         pl_model = LightningModuleFromTorch(model, loss, optimizer)
-        train_torch_lightning(pl_model, batch_size, num_workers, data_dir,
-                              use_orca_lite_trainer=True)
+        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+        trainer = Trainer(max_epochs=1)
+        trainer.fit(pl_model, train_loader)
+
+    def test_load_state_dict_from_torch(self):
+        torch.save(model.state_dict(), "resnet18_test.pth")
+        pl_model = LightningModuleFromTorch(model, loss, optimizer)
+        state_dict = torch.load("resnet18_test.pth")
+        pl_model.load_state_dict(state_dict)
+
+    def test_load_state_dict_from_lightning(self):
+        pl_model = LightningModuleFromTorch(model, loss, optimizer)
+        torch.save(pl_model.state_dict(), "lightning_resnet18_test.pth")
+        state_dict = torch.load("lightning_resnet18_test.pth")
+        pl_model.load_state_dict(state_dict)
