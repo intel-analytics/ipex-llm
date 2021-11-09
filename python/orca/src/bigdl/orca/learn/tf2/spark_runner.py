@@ -29,7 +29,7 @@ from contextlib import closing
 import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.learn.utils import save_pkl
+from bigdl.orca.learn.utils import save_pkl, load_pkl
 
 def find_free_port(tc):
     address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
@@ -374,11 +374,13 @@ class SparkRunner:
             config.update(data_config)
         config["batch_size"] = batch_size
 
-        # strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
         with self.strategy.scope():
             model = self.model_creator(self.config)
             if self.model_weights:
                 model.set_weights(self.model_weights.value)
+            elif self.model_dir:
+                states = load_pkl(os.path.join(self.model_dir, "states.pkl"))
+                model.set_weights(states['weights'])
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -435,8 +437,16 @@ class SparkRunner:
             local_model = self.model_creator(self.config)
             if self.model_weights:
                 local_model.set_weights(self.model_weights.value)
+            elif self.model_dir:
+                states = load_pkl(os.path.join(self.model_dir, "states.pkl"))
+                local_model.set_weights(states['weights'])
         else:
             local_model = self.model_creator(self.config)
+            if self.model_weights:
+                local_model.set_weights(self.model_weights.value)
+            elif self.model_dir:
+                states = load_pkl(os.path.join(self.model_dir, "states.pkl"))
+                local_model.set_weights(states['weights'])
 
         def predict_fn(shard):
             y = local_model.predict(shard["x"], **params)

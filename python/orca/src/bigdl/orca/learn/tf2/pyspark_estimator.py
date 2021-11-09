@@ -164,19 +164,19 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        if self.model_dir:
-            try:
-                temp_dir = tempfile.mkdtemp()
-                get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
-                                         os.path.join(temp_dir, "states.pkl"),
-                                         over_write=True)
-                import pickle
-                with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
-                    states = pickle.load(f)
-                    self.model_weights = states['weights']
-                    self.epoch = states["epoch"]
-            finally:
-                shutil.rmtree(temp_dir)
+        # if self.model_dir:
+        #     try:
+        #         temp_dir = tempfile.mkdtemp()
+        #         get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
+        #                                  os.path.join(temp_dir, "states.pkl"),
+        #                                  over_write=True)
+        #         import pickle
+        #         with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
+        #             states = pickle.load(f)
+        #             self.model_weights = states['weights']
+        #             self.epoch = states["epoch"]
+        #     finally:
+        #         shutil.rmtree(temp_dir)
 
         return res[0]
 
@@ -204,7 +204,10 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
-        weights = sc.broadcast(self.model_weights)
+        if self.model_weights:
+            weights = sc.broadcast(self.model_weights)
+        else:
+            weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -274,7 +277,10 @@ class SparkTFEstimator():
         """
         logger.info("Starting predict step.")
         sc = OrcaContext.get_spark_context()
-        weights = sc.broadcast(self.model_weights)
+        if self.model_weights:
+            weights = sc.broadcast(self.model_weights)
+        else:
+            weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -331,8 +337,7 @@ class SparkTFEstimator():
         # allreduce communication protocol.
         # So we need to call get_state on every remote workers, otherwise
         # it might get stuck
-        model = self.model_creator(self.config)
-        model.set_weights(self.model_weights)
+        model = self.get_model()
         model.save_weights(filepath, overwrite, save_format)
 
     @enable_multi_fs_load
@@ -361,8 +366,7 @@ class SparkTFEstimator():
         # allreduce communication protocol.
         # So we need to call get_state on every remote workers, otherwise
         # it might get stuck
-        model = self.model_creator(self.config)
-        model.set_weights(self.model_weights)
+        model = self.get_model()
         model.save(filepath, overwrite=overwrite, save_format=save_format)
 
     @enable_multi_fs_load
@@ -387,5 +391,19 @@ class SparkTFEstimator():
         :return: the learned model.
         """
         model = self.model_creator(self.config)
-        model.set_weights(self.model_weights)
+        if self.model_dir:
+            try:
+                temp_dir = tempfile.mkdtemp()
+                get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
+                                         os.path.join(temp_dir, "states.pkl"),
+                                         over_write=True)
+                import pickle
+                with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
+                    states = pickle.load(f)
+                    model_weights = states['weights']
+                    epoch = states["epoch"]
+            finally:
+                shutil.rmtree(temp_dir)
+
+        model.set_weights(model_weights)
         return model

@@ -86,6 +86,7 @@ class TestTFEstimator(TestCase):
 
         res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                label_cols=["label"])
+        print("evaluate result: ")
 
         print("start saving")
         try:

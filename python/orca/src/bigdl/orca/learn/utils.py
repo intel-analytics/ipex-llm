@@ -22,6 +22,8 @@ import numpy as np
 import pickle
 import os
 import subprocess
+import tempfile
+import shutil
 
 
 def find_latest_checkpoint(model_dir, model_type="bigdl"):
@@ -422,3 +424,53 @@ def save_pkl(data, path):
             path = path[len("file://"):]
         with open(path, 'wb') as f:
             pickle.dump(data, f)
+
+
+def load_pkl(path):
+    """
+
+    Load arrays or pickled objects from pickled files.
+    It supports local, hdfs, s3 file systems.
+
+    :param path: file path
+    :return: array, tuple, dict, etc.
+
+    """
+    import numpy as np
+    if path.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        host_port = path.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        try:
+            temp_dir = tempfile.mkdtemp()
+            basename = os.path.basename(path)
+            fs.copy_file(path, os.path.join(temp_dir, basename))
+            with open(os.path.join(temp_dir, basename), 'rb') as f:
+                data = pickle.load(f)
+        finally:
+            shutil.rmtree(temp_dir)
+        return data
+    elif path.startswith("s3"):  # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        from io import BytesIO
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = path.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        key = "/".join(path_parts)
+        data = s3_client.get_object(Bucket=bucket, Key=key)
+        return pickle.load(BytesIO(data["Body"].read()))
+    else:  # Local path
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+        return data
+
+
