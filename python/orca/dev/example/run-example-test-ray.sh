@@ -49,31 +49,31 @@ set -e
 ray stop -f
 
 echo "#start orca ray example tests"
-echo "#1 Start rl_pong example"
+echo "#4 Start rl_pong example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py --iterations 10
 now=$(date "+%s")
-time1=$((now-start))
+time4=$((now-start))
 
-echo "#2 Start multiagent example"
+echo "#5 Start multiagent example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
 now=$(date "+%s")
-time2=$((now-start))
+time5=$((now-start))
 
-echo "#3 Start async_parameter example"
+echo "#6 Start async_parameter example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
 now=$(date "+%s")
-time3=$((now-start))
+time6=$((now-start))
 
-echo "#4 Start sync_parameter example"
+echo "#7 Start sync_parameter example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
 now=$(date "+%s")
-time4=$((now-start))
+time7=$((now-start))
 
-echo "#5 Start mxnet lenet example"
+echo "#8 Start mxnet lenet example"
 start=$(date "+%s")
 
 # get_mnist_iterator in MXNet requires the data to be placed in the `data` folder of the running directory.
@@ -88,9 +88,9 @@ unzip -q data/mnist.zip -d data
 
 python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256
 now=$(date "+%s")
-time5=$((now-start))
+time8=$((now-start))
 
-echo "#6 Start fashion_mnist example with Tensorboard visualization"
+echo "#9 Start fashion_mnist example with Tensorboard visualization"
 start=$(date "+%s")
 
 if [ -d ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/data ]
@@ -107,10 +107,10 @@ sed "s/epochs=5/epochs=1/g;s/batch_size=4/batch_size=256/g" \
 
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py --backend torch_distributed
 now=$(date "+%s")
-time6=$((now-start))
+time9=$((now-start))
 
 
-echo "#7 start example for orca super-resolution"
+echo "#10 start example for orca super-resolution"
 start=$(date "+%s")
 
 if [ ! -f BSDS300-images.tgz ]; then
@@ -124,10 +124,10 @@ fi
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py --backend torch_distributed
 
 now=$(date "+%s")
-time7=$((now-start))
+time10=$((now-start))
 
 
-echo "#8 start example for orca cifar10"
+echo "#11 start example for orca cifar10"
 start=$(date "+%s")
 
 if [ -d ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/data ]; then
@@ -140,18 +140,17 @@ fi
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --backend torch_distributed
 
 now=$(date "+%s")
-time8=$((now-start))
-
-
+time11=$((now-start))
 echo "Ray example tests finished"
-echo "#1 orca rl_pong time used:$time1 seconds"
-echo "#2 orca async_parameter_server time used:$time2 seconds"
-echo "#3 orca sync_parameter_server time used:$time3 seconds"
-echo "#4 orca multiagent_two_trainers time used:$time4 seconds"
-echo "#5 mxnet_lenet time used:$time5 seconds"
-echo "#6 fashion-mnist time used:$time6 seconds"
-echo "#7 orca super-resolution example time used:$time7 seconds"
-echo "#8 orca cifar10 example time used:$time8 seconds"
-echo "#9 auto-estimator-pytorch time used:$time1 seconds"
-echo "#10 auto-xgboost-classifier time used:$time2 seconds"
-echo "#11 auto-xgboost-regressor time used:$time3 seconds"
+
+echo "#1 auto-estimator-pytorch time used:$time1 seconds"
+echo "#2 auto-xgboost-classifier time used:$time2 seconds"
+echo "#3 auto-xgboost-regressor time used:$time3 seconds"
+echo "#4 orca rl_pong time used:$time4 seconds"
+echo "#5 orca async_parameter_server time used:$time5 seconds"
+echo "#6 orca sync_parameter_server time used:$time6 seconds"
+echo "#7 orca multiagent_two_trainers time used:$time7 seconds"
+echo "#8 mxnet_lenet time used:$time8 seconds"
+echo "#9 fashion-mnist time used:$time9 seconds"
+echo "#10 orca super-resolution example time used:$time10 seconds"
+echo "#11 orca cifar10 example time used:$time11 seconds"
