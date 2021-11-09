@@ -1,30 +1,30 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -e
+# set -e
 
-ray stop -f
+# ray stop -f
 
-clear_up () {
-    echo "Clearing up environment. Uninstalling BigDL"
-    pip uninstall -y bigdl-orca
-    pip uninstall -y bigdl-dllib
-    pip uninstall -y pyspark
-}
+# clear_up () {
+#     echo "Clearing up environment. Uninstalling BigDL"
+#     pip uninstall -y bigdl-orca
+#     pip uninstall -y bigdl-dllib
+#     pip uninstall -y pyspark
+# }
 
-execute_ray_test(){
-    echo "start example $1"
-    start=$(date "+%s")
-    python $2
-    exit_status=$?
-    if [ $exit_status -ne 0 ];
-    then
-        clear_up
-        echo "$1 failed"
-        exit $exit_status
-    fi
-    now=$(date "+%s")
-    return $((now-start))
-}
+# execute_ray_test(){
+#     echo "start example $1"
+#     start=$(date "+%s")
+#     python $2
+#     exit_status=$?
+#     if [ $exit_status -ne 0 ];
+#     then
+#         clear_up
+#         echo "$1 failed"
+#         exit $exit_status
+#     fi
+#     now=$(date "+%s")
+#     return $((now-start))
+# }
 
 # echo "#start orca ray example tests"
 # echo "#1 Start rl_pong example"
@@ -120,8 +120,30 @@ execute_ray_test(){
 # now=$(date "+%s")
 # time8=$((now-start))
 
+clear_up () {
+    echo "Clearing up environment. Uninstalling BigDL"
+    pip uninstall -y bigdl-orca
+    pip uninstall -y bigdl-dllib
+    pip uninstall -y pyspark
+}
+
+execute_ray_test(){
+    echo "start example $1"
+    start=$(date "+%s")
+    python $2
+    exit_status=$?
+    if [ $exit_status -ne 0 ];
+    then
+        clear_up
+        echo "$1 failed"
+        exit $exit_status
+    fi
+    now=$(date "+%s")
+    return $((now-start))
+}
+
 execute_ray_test auto-estimator-pytorch "${BIGDL_ROOT}/python/orca/example/automl/autoestimator/autoestimator_pytorch.py --trials 5 --epochs 2"
-time9=$?
+time1=$?
 
 if [ -f ${BIGDL_ROOT}/data/airline_14col.data ]
 then
@@ -131,7 +153,7 @@ else
 fi
 
 execute_ray_test auto-xgboost-classifier "${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostClassifier.py -p ${BIGDL_ROOT}/data/airline_14col.data"
-time10=$?
+time2=$?
 
 if [ -f ${BIGDL_ROOT}/data/incd.csv ]
 then
@@ -141,7 +163,7 @@ else
 fi
 
 execute_ray_test auto-xgboost-regressor "${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor.py -p ${BIGDL_ROOT}/data/incd.csv"
-time11=$?
+time3=$?
 
 
 echo "Ray example tests finished"
