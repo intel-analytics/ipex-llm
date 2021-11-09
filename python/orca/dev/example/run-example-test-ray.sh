@@ -26,47 +26,47 @@ execute_ray_test(){
     return $((now-start))
 }
 
-echo "#start orca ray example tests"
-echo "#1 Start rl_pong example"
-start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py --iterations 10
-now=$(date "+%s")
-time1=$((now-start))
+# echo "#start orca ray example tests"
+# echo "#1 Start rl_pong example"
+# start=$(date "+%s")
+# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py --iterations 10
+# now=$(date "+%s")
+# time1=$((now-start))
 
-echo "#2 Start multiagent example"
-start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
-now=$(date "+%s")
-time2=$((now-start))
+# echo "#2 Start multiagent example"
+# start=$(date "+%s")
+# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
+# now=$(date "+%s")
+# time2=$((now-start))
 
-echo "#3 Start async_parameter example"
-start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
-now=$(date "+%s")
-time3=$((now-start))
+# echo "#3 Start async_parameter example"
+# start=$(date "+%s")
+# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
+# now=$(date "+%s")
+# time3=$((now-start))
 
-echo "#4 Start sync_parameter example"
-start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
-now=$(date "+%s")
-time4=$((now-start))
+# echo "#4 Start sync_parameter example"
+# start=$(date "+%s")
+# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
+# now=$(date "+%s")
+# time4=$((now-start))
 
-echo "#5 Start mxnet lenet example"
-start=$(date "+%s")
+# echo "#5 Start mxnet lenet example"
+# start=$(date "+%s")
 
-# get_mnist_iterator in MXNet requires the data to be placed in the `data` folder of the running directory.
-# The running directory of integration test is ${ANALYTICS_ZOO_ROOT}.
-if [ -f tmp/data/mnist.zip ]
-then
-    echo "mnist.zip already exists"
-else
-    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P tmp/data
-fi
-unzip -q tmp/data/mnist.zip -d tmp/data
+# # get_mnist_iterator in MXNet requires the data to be placed in the `data` folder of the running directory.
+# # The running directory of integration test is ${ANALYTICS_ZOO_ROOT}.
+# if [ -f tmp/data/mnist.zip ]
+# then
+#     echo "mnist.zip already exists"
+# else
+#     wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P tmp/data
+# fi
+# unzip -q tmp/data/mnist.zip -d tmp/data
 
-python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256
-now=$(date "+%s")
-time5=$((now-start))
+# python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256
+# now=$(date "+%s")
+# time5=$((now-start))
 
 echo "#6 Start fashion_mnist example with Tensorboard visualization"
 start=$(date "+%s")
