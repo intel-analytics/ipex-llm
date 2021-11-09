@@ -435,6 +435,7 @@ class TestTFRayEstimator(TestCase):
         trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                          label_cols=["label"])
         trainer.predict(df, feature_cols=["feature"]).collect()
+        OrcaContext._shard_size = None
 
     def test_partition_num_less_than_workers(self):
         sc = init_nncontext()
