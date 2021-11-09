@@ -296,7 +296,7 @@ class TSDataset:
             for val in type_error_list:
                 self.df[val] = self.df[val].astype(np.float32)
         except Exception:
-            raise RuntimeError("All the columns of target_col",
+            raise RuntimeError("All the columns of target_col "
                                "and extra_feature_col should be of numeric type.")
         self.df = self.df.groupby([self.id_col]) \
             .apply(lambda df: resample_timeseries_dataframe(df=df,
@@ -528,7 +528,7 @@ class TSDataset:
 
         '''
         if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
-            raise AssertionError("The time series data should be",
+            raise AssertionError("The time series data should be "
                                  "aligned if id_sensitive is set to True.")
         feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
             else self.feature_col
@@ -676,7 +676,7 @@ class TSDataset:
                               shuffle=True)
         else:
             if self.numpy_x is None:
-                raise RuntimeError("Please call 'roll' method before transforming a TSDataset to",
+                raise RuntimeError("Please call 'roll' method before transforming a TSDataset to "
                                    "torch DataLoader without rolling (default roll=False)!")
             x, y = self.to_numpy()
             return DataLoader(TensorDataset(torch.from_numpy(x).float(),
@@ -692,7 +692,7 @@ class TSDataset:
                  is casted to float32.
         '''
         if self.numpy_x is None:
-            raise RuntimeError("Please call 'roll' method",
+            raise RuntimeError("Please call 'roll' method "
                                "before transform a TSDataset to numpy ndarray!")
         return self.numpy_x, self.numpy_y
 
@@ -739,7 +739,7 @@ class TSDataset:
             try:
                 assert not check_is_fitted(scaler)
             except Exception:
-                raise AssertionError("When calling scale for the first time,",
+                raise AssertionError("When calling scale for the first time, "
                                      "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
                 scaler.transform(self.df[self.target_col + feature_col])

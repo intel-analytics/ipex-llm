@@ -87,7 +87,7 @@ def loss_creator(config):
     if loss_name in PYTORCH_REGRESSION_LOSS_MAP:
         loss_name = PYTORCH_REGRESSION_LOSS_MAP[loss_name]
     else:
-        raise RuntimeError(f"Got '{loss_name}' for loss name,",
+        raise RuntimeError(f"Got '{loss_name}' for loss name, "
                            "where 'mse', 'mae' or 'huber_loss' is expected")
     return getattr(torch.nn, loss_name)()
 
@@ -105,7 +105,7 @@ class Seq2SeqPytorch(PytorchBaseModel):
         if len(y.shape) < 3:
             raise RuntimeError(f"Invalid data y with {len(y.shape)} dim where 3 dim is required.")
         if y.shape[-1] > x.shape[-1]:
-            raise RuntimeError("output dim should not larger than input dim,",
+            raise RuntimeError("output dim should not larger than input dim, "
                                f"while we get {y.shape[-1]} > {x.shape[-1]}.")
 
     def _forward(self, x, y):

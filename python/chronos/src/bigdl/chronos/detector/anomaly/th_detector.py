@@ -130,7 +130,7 @@ def detect_anomaly(y,
     """
     if isinstance(th, int) or isinstance(th, float):
         if yhat is None:
-            raise ValueError("Please specify a threshold range (min,max)",
+            raise ValueError("Please specify a threshold range (min,max) "
                              "if forecast values are not available")
         return detect_all(y, yhat, th, dist_measure)
     elif isinstance(th, tuple) and len(th) == 2:

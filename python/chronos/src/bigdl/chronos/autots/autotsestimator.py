@@ -273,7 +273,7 @@ class AutoTSEstimator:
         # TODO: more flexible setting
         all_features = train_data.feature_col
         if self.selected_features not in ('all', 'auto'):
-            raise ValueError("Only 'all' and 'auto' are supported for selected_features,",
+            raise ValueError("Only 'all' and 'auto' are supported for selected_features,"
                              f"but found {self.selected_features}")
         if self.selected_features == "auto":
             if len(all_features) == 0:
