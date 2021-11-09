@@ -33,7 +33,7 @@ os.environ["LANG"] = "C.UTF-8"
 parser = argparse.ArgumentParser(description="Run the synchronous parameter "
                                              "server example.")
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local or yarn.')
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
 parser.add_argument("--num_workers", default=4, type=int,
                     help="The number of workers to use.")
 parser.add_argument("--iterations", default=50, type=int,
@@ -103,8 +103,11 @@ if __name__ == "__main__":
     elif cluster_mode == "local":
         sc = init_orca_context(cores=args.driver_cores)
         ray_ctx = OrcaContext.get_ray_context()
+    elif cluster_mode == "spark-submit":
+        sc = init_orca_context(cluster_mode=cluster_mode)
+        ray_ctx = OrcaContext.get_ray_context()
     else:
-        print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
               + cluster_mode)
 
     # Create a parameter server.
@@ -136,3 +139,4 @@ if __name__ == "__main__":
         i += 1
     ray_ctx.stop()
     stop_orca_context()
+

@@ -22,7 +22,7 @@ eval ${cmd_prefix}bash -c \" /opt/jdk8/bin/java \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-min=100 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-max=120 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-factor=1 \
-    -jar /ppml/trusted-realtime-ml/java/work/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-http.jar \
+    -jar /ppml/trusted-realtime-ml/java/work/bigdl-serving-http.jar \
     --redisHost "${redis_host}" \
     --tokensPerSecond 30 \
     --tokenBucketEnabled true \

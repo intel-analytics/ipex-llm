@@ -11,8 +11,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
 RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
-    git fetch origin branch-0.3 && \
-    git checkout branch-0.3
+    git fetch origin branch-0.4 && \
+    git checkout branch-0.4
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
@@ -37,9 +37,6 @@ ENV PATH                ${JAVA_HOME}/bin:${PATH}
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget unzip patch zip git maven
-ADD pyspark.rdd.patch /opt/rdd.patch
-ADD pyspark.shuffle.patch /opt/shuffle.patch
-ADD spark-3.1.2.patch /opt/spark-3.1.2.patch
 ADD hadoop-common-shell.patch /opt/hadoop-common-shell.patch
 
 # java
@@ -65,20 +62,17 @@ RUN cd /opt && \
     rm spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
     cp spark-${SPARK_VERSION}/conf/log4j.properties.template spark-${SPARK_VERSION}/conf/log4j.properties && \
     echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties && \
-    wget -O spark-network-common_2.12-${SPARK_VERSION}.jar https://master.dl.sourceforge.net/project/analytics-zoo/analytics-zoo-data/spark-network-common_2.12-${SPARK_VERSION}.jar && \
-    mv spark-network-common_2.12-${SPARK_VERSION}.jar spark-${SPARK_VERSION}/jars && \
-    mv spark-${SPARK_VERSION}/python/lib/pyspark.zip spark-${SPARK_VERSION}/python/lib/pyspark.zip.bac && \
-    patch spark-${SPARK_VERSION}/python/pyspark/rdd.py /opt/rdd.patch && \
-    patch spark-${SPARK_VERSION}/python/pyspark/shuffle.py /opt/shuffle.patch && \
-    cd spark-${SPARK_VERSION}/python && \
-    zip -r lib/pyspark.zip pyspark
+    mv spark-${SPARK_VERSION}/python/lib/pyspark.zip /opt/pyspark.zip && \
+    mv spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar /opt/spark-core_2.12-$SPARK_VERSION.jar && \
+    mv spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    mv spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    mv spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar /opt/hadoop-common-3.2.0.jar && \
+    ls /opt
 # spark modification
-# org.apache.spark.util.Utils to disable chmod fork
 RUN cd /opt && \
-    git clone https://github.com/apache/spark.git && \
+    git clone https://github.com/analytics-zoo/spark.git && \
     cd spark && \
-    git checkout tags/v3.1.2 -b branch-3.1.2 && \
-    git apply /opt/spark-3.1.2.patch && \
+    git checkout branch-3.1.2 && \
     git status && \
     export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
         -Dhttp.proxyHost=$HTTP_PROXY_HOST \
@@ -86,10 +80,16 @@ RUN cd /opt && \
         -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean install -pl core && \
-    cd resource-managers/kubernetes/core && \
+    cd /opt/spark/resource-managers/kubernetes/core && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
-    ls /opt/spark/core/target/spark-core_2.12-$SPARK_VERSION.jar && \
-    ls /opt/spark/resource-managers/kubernetes/core/target/spark-kubernetes_2.12-3.1.2.jar
+    cd /opt/spark/common/network-common && \
+    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
+    cd /opt/spark/python && \
+    zip -r lib/pyspark.zip pyspark && \
+    mv /opt/spark/core/target/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark/resource-managers/kubernetes/core/target/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark/common/network-common/target/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark/python/lib/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
 # hadoop
 # org.apache.hadoop.util.Shell.java to disable setsid
 RUN cd /opt && \
@@ -115,7 +115,7 @@ RUN cd /opt && \
         -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
-    ls /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-3.2.0.jar
+    mv /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-3.2.0.jar /opt/spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar
 
 # stage.3 bigdl
 FROM ubuntu:18.04 as bigdl
@@ -155,7 +155,7 @@ ENV SPARK_DRIVER_BLOCK_MANAGER_PORT     10026
 ENV SPARK_DRIVER_IP                     $LOCAL_IP
 ENV SPARK_BLOCK_MANAGER_PORT            10025
 ENV TINI_VERSION                        $TINI_VERSION
-ENV PYTHONPATH                          ${PYTHONPATH}:/graphene/meson_build_output/lib/python3.6/site-packages
+ENV PYTHONPATH                          /usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 
@@ -176,6 +176,7 @@ RUN mkdir -p /graphene && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
+    mkdir -p /root/.kube/ && \
     mkdir -p /graphene/Pal/src/host/Linux-SGX/signer
 
 COPY --from=graphene /graphene/Scripts /graphene/Scripts
@@ -184,13 +185,9 @@ COPY --from=graphene /graphene/python /graphene/python
 COPY --from=graphene /graphene/Pal /graphene/Pal
 COPY --from=graphene /graphene/Pal/src/host/Linux-SGX/generated_offsets.py /graphene/python/
 COPY --from=graphene /graphene/Tools/argv_serializer /graphene/Tools
-#COPY --from=graphene /graphene/meson_build_output /graphene/meson_build_output
 COPY --from=spark /opt/jdk  /opt/jdk8
 COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
-COPY --from=spark /opt/spark/core/target/spark-core_2.12-$SPARK_VERSION.jar /opt/spark-core_2.12-$SPARK_VERSION.jar
-COPY --from=spark /opt/spark/resource-managers/kubernetes/core/target/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar
-COPY --from=spark /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-3.2.0.jar /opt/hadoop-common-3.2.0.jar
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
 RUN apt-get update --fix-missing && \
@@ -203,7 +200,7 @@ RUN apt-get update --fix-missing && \
 RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
     pip3 install --upgrade pip && \
-    pip install --upgrade setuptools && \
+    pip install setuptools==58.4.0 && \
     pip install --no-cache-dir numpy scipy && \
     pip install --no-cache-dir --no-binary pandas -I pandas && \
     pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
@@ -239,14 +236,10 @@ ADD ./python-uuid.patch ./python-uuid.patch
 RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
     patch /usr/local/lib/python3.6/dist-packages/dill/_dill.py ./_dill.py.patch && \
     patch /usr/lib/python3.6/uuid.py ./python-uuid.patch && \
-    rm $SPARK_HOME/jars/spark-core_2.12-$SPARK_VERSION.jar && \
-    rm $SPARK_HOME/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
-    rm $SPARK_HOME/jars/hadoop-common-3.2.0.jar && \
-    mv /opt/spark-core_2.12-$SPARK_VERSION.jar $SPARK_HOME/jars/spark-core_2.11-$SPARK_VERSION.jar && \
-    mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar $SPARK_HOME/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
-    mv /opt/hadoop-common-3.2.0.jar $SPARK_HOME/jars/hadoop-common-3.2.0.jar && \
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.6m.so /usr/lib/libpython3.6m.so && \
+    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py && \
+    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \

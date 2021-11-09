@@ -56,11 +56,6 @@
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
-            <artifactId>scala-actors</artifactId>
-            <version>2.11.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
             <artifactId>scalap</artifactId>
             <version>${scala.version}</version>
         </dependency>
@@ -230,7 +225,35 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <!--Please don't merge this shade plugin with spark-version's shade plugin to spark/pom.xml,
                  or shade plugin will be executed after assembly plugin. -->

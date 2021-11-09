@@ -39,7 +39,6 @@ On the cluster configuration page, click the **Advanced Options** toggle. Click 
 See below for an example of Spark config setting needed by Analytics Zoo. Here it sets 1 core and 6g memory per executor and driver. Note that "spark.cores.max" needs to be properly set below.
 
 ```
-spark.shuffle.reduceLocality.enabled false
 spark.serializer org.apache.spark.serializer.JavaSerializer
 spark.shuffle.blockTransferService nio
 spark.databricks.delta.preview.enabled true

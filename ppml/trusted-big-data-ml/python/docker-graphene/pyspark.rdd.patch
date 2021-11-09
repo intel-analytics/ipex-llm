@@ -1,5 +1,0 @@
-166a167,170
->     import warnings
->     import time
->     time.sleep(60)
->     warnings.warn("###PYTHONWARN###: " + "WAIT A MIN", category=None, stacklevel=1, source=None)

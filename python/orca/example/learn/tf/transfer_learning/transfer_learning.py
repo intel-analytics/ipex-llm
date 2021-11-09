@@ -45,7 +45,7 @@ from bigdl.orca.learn.tf.estimator import Estimator
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local or yarn.')
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
@@ -61,8 +61,10 @@ elif cluster_mode == "yarn":
     additional = "datasets/cats_and_dogs_filtered.zip#" + dataset_dir
     init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g",
                       additional_archive=additional)
+elif cluster_mode == "spark-submit":
+    init_orca_context(cluster_mode="spark-submit")                      
 else:
-    print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + cluster_mode)
 
 train_dir = os.path.join(base_dir, 'train')
@@ -164,3 +166,4 @@ print("==>unfreeze")
 result = est.evaluate(validation_dataset)
 print(result)
 stop_orca_context()
+

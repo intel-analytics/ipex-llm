@@ -33,7 +33,7 @@ class BasePredictor(object):
 
     def __init__(self,
                  name="automl",
-                 logs_dir="~/zoo_automl_logs",
+                 logs_dir="~/bigdl_automl_logs",
                  search_alg=None,
                  search_alg_params=None,
                  scheduler=None,

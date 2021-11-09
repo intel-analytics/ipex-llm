@@ -26,7 +26,7 @@
       <outputDirectory>/apps</outputDirectory>
       <directory>${project.parent.basedir}/../apps</directory>
       <includes>
-        <include>*</include>
+        <include>**/*</include>
       </includes>
     </fileSet>
     <fileSet>
@@ -55,6 +55,13 @@
       <directory>${project.parent.basedir}/serving/target</directory>
       <includes>
           <include>bigdl-serving*-python-api.zip</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>/python</outputDirectory>
+      <directory>${project.parent.basedir}/target</directory>
+      <includes>
+          <include>bigdl*-python-api.zip</include>
       </includes>
     </fileSet>
     <fileSet>
@@ -121,6 +128,9 @@
         <exclude>org.apache.hadoop:*:jar</exclude>
         <exclude>org.apache.flink:*:jar</exclude>
         <exclude>org.apache.spark:*:jar</exclude>
+        <exclude>*:commons*:jar</exclude>
+        <exclude>*:slf4j*:jar</exclude>
+        <exclude>*:log4j*:jar</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>

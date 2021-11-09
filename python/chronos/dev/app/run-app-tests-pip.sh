@@ -30,7 +30,7 @@ else
 fi
 
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting_deprecated.py
-sed -i 's/epochs=2/epochs=1/g;' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting_deprecated.py
+sed -i 's/epochs=2/epochs=1/g; s/object_store_memory=\"1/object_store_memory=\"10/' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting_deprecated.py
 cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
 
 python ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting_deprecated.py
@@ -65,7 +65,7 @@ else
 fi
 
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
-sed -i "s/epochs=4/epochs=1/g; s/epochs=10/epochs=1/g; s/epochs=50/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
+sed -i "s/epochs=50/epochs=2/g; s/epochs=20/epochs=2/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
 cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
 
 python ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
@@ -102,7 +102,7 @@ echo "Finished downloading AIOps data"
 #fi
 
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
-sed -i "s/epochs=4/epochs=2/g" ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
+sed -i "s/epochs=20/epochs=2/g" ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
 cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
 
 python ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
@@ -295,7 +295,7 @@ else
 fi
 
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
-sed -i "s/cores=10/cores=4/g; s/epochs=4/epochs=1/g; s/n_sampling=4/n_sampling=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
+sed -i "s/cores=10/cores=4/g; s/epochs=20/epochs=1/g; s/n_sampling=4/n_sampling=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
 cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
 
 python ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
@@ -318,7 +318,7 @@ time10=$(date "+%s")
 ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model
 
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.py
-sed -i 's/epochs=5/epochs=1/g' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.py
+sed -i 's/epochs=5/epochs=1/g;s/choice([32,64])/choice([32])/g;s/grid_search([32, 64])/grid_search([2, 4])/g' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.py
 
 if [ -f ~/.chronos/dataset/network_traffic/network_traffic_data.csv ]
 then

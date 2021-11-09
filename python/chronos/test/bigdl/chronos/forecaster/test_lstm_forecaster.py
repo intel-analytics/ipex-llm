@@ -59,6 +59,9 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster = LSTMForecaster(past_seq_len=24,
                                     input_feature_num=2,
                                     output_feature_num=2,
+                                    hidden_dim=[32, 16],
+                                    layer_num=2,
+                                    dropout=[0.1, 0.2],
                                     loss="mae",
                                     lr=0.01)
         train_loss = forecaster.fit(train_data, epochs=2)

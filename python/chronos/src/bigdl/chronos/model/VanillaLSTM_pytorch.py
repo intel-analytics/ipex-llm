@@ -23,9 +23,15 @@ class LSTMModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, layer_num, dropout, output_dim):
         super(LSTMModel, self).__init__()
         self.hidden_dim = hidden_dim
+        self.dropout = dropout
         self.layer_num = layer_num
-        self.lstm = nn.LSTM(input_dim, hidden_dim, layer_num, dropout=dropout, batch_first=True)
-        self.fc = nn.Linear(hidden_dim, output_dim)
+        lstm_list = []
+        for layer in range(self.layer_num):
+            lstm_list.append(nn.LSTM(input_dim, self.hidden_dim[layer],
+                                     1, dropout=self.dropout[layer], batch_first=True))
+            input_dim = self.hidden_dim[layer]
+        self.lstm = nn.ModuleList(lstm_list)
+        self.fc = nn.Linear(self.hidden_dim[-1], output_dim)
         self.init_weights()
 
     def init_weights(self):
@@ -38,20 +44,32 @@ class LSTMModel(nn.Module):
                 nn.init.orthogonal_(param)
 
     def forward(self, input_seq):
-        lstm_out, hidden = self.lstm(input_seq)
-        # reshaping the outputs to feed in fully connected layer
-        # out = lstm_out[-1].contiguous().view(-1, self.hidden_dim)
-        # out = self.linear(out, len(input_seq), -1)
+        lstm_out = input_seq
+        for layer in range(self.layer_num):
+            lstm_out, _ = self.lstm[layer](lstm_out)
         out = self.fc(lstm_out[:, -1, :])
         out = out.view(out.shape[0], 1, out.shape[1])
         return out
 
 
 def model_creator(config):
+    hidden_dim = config.get("hidden_dim", 32)
+    dropout = config.get("dropout", 0.2)
+    layer_num = config.get("layer_num", 2)
+    if isinstance(hidden_dim, list):
+        assert len(hidden_dim) == layer_num, \
+            "length of hidden_dim should be equal to layer_num"
+    if isinstance(dropout, list):
+        assert len(dropout) == layer_num, \
+            "length of dropout should be equal to layer_num"
+    if isinstance(hidden_dim, int):
+        hidden_dim = [hidden_dim]*layer_num
+    if isinstance(dropout, (float, int)):
+        dropout = [dropout]*layer_num
     return LSTMModel(input_dim=config["input_feature_num"],
-                     hidden_dim=config.get("hidden_dim", 32),
-                     layer_num=config.get("layer_num", 2),
-                     dropout=config.get("dropout", 0.2),
+                     hidden_dim=hidden_dim,
+                     layer_num=layer_num,
+                     dropout=dropout,
                      output_dim=config["output_feature_num"],)
 
 

@@ -65,6 +65,11 @@ BigDL Documentation
    :caption: Chronos Overview
 
    doc/Chronos/Overview/chronos.md
+   doc/Chronos/Overview/data_processing_feature_engineering.md
+   doc/Chronos/Overview/forecasting.md
+   doc/Chronos/Overview/anomaly_detection.md
+   doc/Chronos/Overview/simulation.md
+   doc/Chronos/Overview/useful_functionalities.md
    doc/Chronos/QuickStart/chronos-autotsest-quickstart.md
    doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.md
    doc/Chronos/QuickStart/chronos-anomaly-detector.md
@@ -74,6 +79,10 @@ BigDL Documentation
    :caption: PPML Overview
 
    doc/PPML/Overview/ppml.md
+   doc/PPML/Overview/trusted_big_bata_analytics_and_ml.md
+   doc/PPML/Overview/trusted_fl.md
+   doc/PPML/QuickStart/build_kernel_with_sgx.md
+   doc/PPML/QuickStart/trusted-serving-on-k8s-guide.md
 
 .. toctree::
    :maxdepth: 1
@@ -90,7 +99,6 @@ BigDL Documentation
    :caption: Python API
    
    doc/PythonAPI/Orca/orca.rst
-   doc/PythonAPI/AutoML/automl.rst
    doc/PythonAPI/Friesian/feature.rst
    doc/PythonAPI/Chronos/index.rst
    

@@ -6,7 +6,7 @@ def sql_dataframe_example(spark):
     
     print("INFO SQL Dataframe Example starts")
     
-    df = spark.read.parquet("work/spark-2.4.6/examples/src/main/resources/users.parquet")
+    df = spark.read.parquet("work/spark-3.1.2/examples/src/main/resources/users.parquet")
     df.show()
     
     # agg
@@ -116,18 +116,18 @@ def sql_dataframe_example(spark):
     print("exceptAll, explain, fill and first API finshed")
 
     # foreach
-    df1 = spark.createDataFrame(
-        [("a", 1), ("a", 1), ("a", 1), ("a", 2), ("b",  3), ("c", 4)], ["C1", "C2"])
-    df2 = spark.createDataFrame([("a", 1), ("b", 3)], ["C1", "C2"])
-    def f(row):
-        print(row.C1)
-    df1.foreach(f)
-    print("foreach API finished")
-    def F(table):
-        for row in table:
-            print(row.C1)
-    df1.foreachPartition(F)
-    print("foreachPartition API finshed") 
+    #df1 = spark.createDataFrame(
+    #    [("a", 1), ("a", 1), ("a", 1), ("a", 2), ("b",  3), ("c", 4)], ["C1", "C2"])
+    #df2 = spark.createDataFrame([("a", 1), ("b", 3)], ["C1", "C2"])
+    #def f(row):
+    #    print(row.C1)
+    #df1.foreach(f)
+    #print("foreach API finished")
+    #def F(table):
+    #    for row in table:
+    #        print(row.C1)
+    #df1.foreachPartition(F)
+    #print("foreachPartition API finshed") 
 
     # freqItems and groupBy
     df1 = spark.createDataFrame(
@@ -228,10 +228,10 @@ def sql_dataframe_example(spark):
     df = spark.createDataFrame([('Alice', 5), ('Alice', 5)], ["name", "age"])
     res = df.toDF('f1', 'f2').collect()
     print(res)
-    res = df.toJSON().first()
-    print(res)
-    res = list(df.toLocalIterator())
-    print(res)
+    #res = df.toJSON().first()
+    #print(res)
+    #res = list(df.toLocalIterator())
+    #print(res)
     res = df.toPandas()
     print(res)
     print("to API finshed") 

@@ -33,9 +33,13 @@ RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(rea
 # stage.2 jdk & scala & flink
 FROM ubuntu:18.04 as flink
 ARG FLINK_VERSION=1.11.3
+ARG SCALA_VERSION=2.12
+ARG SCALA_SUB_VERSION_NUM=10
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ENV FLINK_VERSION ${FLINK_VERSION}
+ENV SCALA_VERSION ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget unzip
@@ -47,14 +51,14 @@ RUN wget $JDK_URL && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 # scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
-    (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-2.11.8.tgz
+RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz && \
+    (cd / && gunzip < scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz)|(cd /opt && tar -xvf -) && \
+    rm /scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}.tgz
 # flink
 RUN cd /opt && \
-    wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
-    tar -zxvf flink-${FLINK_VERSION}-bin-scala_2.11.tgz && \
-    rm flink-${FLINK_VERSION}-bin-scala_2.11.tgz
+    wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
+    tar -zxvf flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
+    rm flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
 RUN ls -al /opt
 
 # stage.3 bigdl
@@ -86,6 +90,8 @@ RUN cd /opt && \
 FROM ubuntu:18.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
+ARG SCALA_VERSION=2.12
+ARG SCALA_SUB_VERSION_NUM=10
 ARG FLINK_VERSION=1.11.3
 ENV SPARK_VERSION			${SPARK_VERSION}
 ENV BIGDL_VERSION			${BIGDL_VERSION}
@@ -109,6 +115,9 @@ ENV TASKMANAGER_MEMORY_TASK_HEAP_SIZE   10gb
 ENV TASKMANAGER_MEMORY_MANAGED_SIZE     8192mb
 ENV XMX_SIZE                            10g 
 ENV SGX_MODE                            sgx
+ENV REDIS_HOST                          127.0.0.1
+ENV SCALA_VERSION                       ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM               ${SCALA_SUB_VERSION_NUM}
 
 RUN mkdir -p /graphene && \
     mkdir -p /graphene/Runtime && \
@@ -139,7 +148,7 @@ COPY --from=graphene /graphene/Tools/argv_serializer /graphene/Tools
 COPY --from=graphene /graphene/meson_build_output /graphene/meson_build_output
 COPY --from=graphene /redis.tar.gz /ppml/trusted-realtime-ml/redis
 COPY --from=flink /opt/jdk  /opt/jdk8
-COPY --from=flink /opt/scala-2.11.8  /opt/scala-2.11.8
+COPY --from=flink /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
 COPY --from=flink /opt/flink-${FLINK_VERSION} /ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}
 COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar /ppml/trusted-realtime-ml/java/work/bigdl-serving-jar-with-dependencies.jar
 COPY --from=bigdl /opt/bigdl-serving*-http.jar /ppml/trusted-realtime-ml/java/work/bigdl-serving-http.jar
@@ -183,6 +192,7 @@ ADD ./start-cluster-serving-job.sh /ppml/trusted-realtime-ml/java/start-cluster-
 ADD ./check-status.sh /ppml/trusted-realtime-ml/check-status.sh
 ADD ./start-all.sh /ppml/trusted-realtime-ml/start-all.sh
 ADD ./init-benchmark.sh /ppml/trusted-realtime-ml/java/work/benchmark/init-benchmark.sh
+ADD ./cluster-serving-config.yaml /ppml/trusted-realtime-ml/java/config.yaml
 
 RUN chmod a+x /ppml/trusted-realtime-ml/redis/init.sh && \
     chmod a+x /ppml/trusted-realtime-ml/redis/clean.sh && \
