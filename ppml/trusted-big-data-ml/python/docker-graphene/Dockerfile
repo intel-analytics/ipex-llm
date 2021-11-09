@@ -62,11 +62,10 @@ RUN cd /opt && \
     rm spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
     cp spark-${SPARK_VERSION}/conf/log4j.properties.template spark-${SPARK_VERSION}/conf/log4j.properties && \
     echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties && \
-    wget -O spark-network-common_2.12-${SPARK_VERSION}.jar https://master.dl.sourceforge.net/project/analytics-zoo/analytics-zoo-data/spark-network-common_2.12-${SPARK_VERSION}.jar && \
-    mv spark-network-common_2.12-${SPARK_VERSION}.jar spark-${SPARK_VERSION}/jars && \
     mv spark-${SPARK_VERSION}/python/lib/pyspark.zip /opt/pyspark.zip && \
     mv spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar /opt/spark-core_2.12-$SPARK_VERSION.jar && \
     mv spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    mv spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar /opt/hadoop-common-3.2.0.jar && \
     ls /opt
 # spark modification
@@ -81,12 +80,15 @@ RUN cd /opt && \
         -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean install -pl core && \
-    cd resource-managers/kubernetes/core && \
+    cd /opt/spark/resource-managers/kubernetes/core && \
+    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
+    cd /opt/spark/common/network-common && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
     cd /opt/spark/python && \
     zip -r lib/pyspark.zip pyspark && \
     mv /opt/spark/core/target/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark/resource-managers/kubernetes/core/target/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark/common/network-common/target/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark/python/lib/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
 # hadoop
 # org.apache.hadoop.util.Shell.java to disable setsid
@@ -237,6 +239,7 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.6m.so /usr/lib/libpython3.6m.so && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py && \
+    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \
