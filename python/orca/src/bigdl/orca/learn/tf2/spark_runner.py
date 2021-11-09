@@ -16,10 +16,7 @@
 import json
 import logging
 import os
-
-from re import VERBOSE
-from subprocess import call
-from sys import version
+import time
 
 from pyspark import BarrierTaskContext
 from pyspark.context import SparkContext
@@ -379,7 +376,10 @@ class SparkRunner:
             if self.model_weights:
                 model.set_weights(self.model_weights.value)
             elif self.model_dir:
+                start = time.time()
                 states = load_pkl(os.path.join(self.model_dir, "states.pkl"))
+                end = time.time()
+                print("loading states time: ", end-start)
                 model.set_weights(states['weights'])
 
         with self.strategy.scope():
