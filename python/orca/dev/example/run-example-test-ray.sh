@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 clear_up () {
     echo "Clearing up environment. Uninstalling BigDL"
     pip uninstall -y bigdl-orca
@@ -47,6 +45,7 @@ fi
 execute_ray_test auto-xgboost-regressor "${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor.py -p ${BIGDL_ROOT}/data/incd.csv"
 time3=$?
 
+set -e
 ray stop -f
 
 echo "#start orca ray example tests"
