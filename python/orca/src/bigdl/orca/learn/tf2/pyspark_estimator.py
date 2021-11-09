@@ -178,7 +178,7 @@ class SparkTFEstimator():
             finally:
                 shutil.rmtree(temp_dir)
 
-        return res
+        return res[0]
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
