@@ -50,7 +50,7 @@ Thus before running bigdl applications, you should unset all the spark related e
 Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by default.
 
 ---
-### **2. Init on YARN with build-in functions**
+### **2. Init on YARN with build-in function**
 
 - Install BigDL components in the created conda environment via pip, like dllib and orca:
 
