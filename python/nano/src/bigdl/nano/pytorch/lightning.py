@@ -30,19 +30,14 @@ class LightningModuleFromTorch(LightningModule):
         :param optimizer:   A torch optimizer.
         """
         super().__init__()
-        self._copy(model)
+        self.model = model
         self.loss = loss
         self.optimizer = optimizer
 
-    def _copy(self, torch_model: nn.Module):
-        for name, child in torch_model._modules.items():
-            setattr(self, name, child)
-        setattr(self, "forward", torch_model.forward)
-
     def _forward(self, batch):
         # Handle different numbers of input for various models
-        nargs = self.forward.__code__.co_argcount
-        return self.forward(*(batch[:nargs - 1]))
+        nargs = self.model.forward.__code__.co_argcount
+        return self.model(*(batch[:nargs-1]))
 
     def training_step(self, batch, batch_idx):
         x, y = batch
