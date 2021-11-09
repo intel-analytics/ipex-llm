@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from collections import OrderedDict
 from typing import Union, Dict
 
 from pytorch_lightning import LightningModule
@@ -61,7 +62,7 @@ class LightningModuleFromTorch(LightningModule):
     def configure_optimizers(self):
         return self.optimizer
 
-    def load_state_dict(self, state_dict: Union[Dict[str, Tensor], Dict[str, Tensor]],
+    def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]',
                         strict: bool = True):
         try:
             super().load_state_dict(state_dict)
