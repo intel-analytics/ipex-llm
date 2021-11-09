@@ -41,6 +41,7 @@ RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
     fi
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
+RUN git clone https://github.com/tensorflow/models/ /opt/models
 
 # stage.2 bigdl
 FROM ubuntu:18.04 as bigdl

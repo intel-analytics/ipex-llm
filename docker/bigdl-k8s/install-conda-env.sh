@@ -20,7 +20,7 @@ pip install --no-cache-dir opencv-python && \
 pip install --no-cache-dir pyyaml && \
 pip install --no-cache-dir redis && \
 pip install --no-cache-dir ray[tune]==1.2.0 && \
-pip install --no-cache-dir gym==0.17.1 && \
+pip install --no-cache-dir gym[atari]==0.17.1 && \
 pip install --no-cache-dir Pillow==6.2 && \
 pip install --no-cache-dir psutil aiohttp==3.7.0 && \
 pip install --no-cache-dir setproctitle && \
@@ -35,6 +35,7 @@ pip install --no-cache-dir pyarrow && \
 pip install opencv-python==4.2.0.34 && \
 pip install aioredis==1.1.0 && \
 pip install tensorflow==1.15.0 && \
+pip install tf_slim && \
 pip install tensorflow-datasets==3.2.0 && \
 source deactivate && \
 
@@ -55,7 +56,7 @@ pip install --no-cache-dir opencv-python && \
 pip install --no-cache-dir pyyaml && \
 pip install --no-cache-dir redis && \
 pip install --no-cache-dir ray[tune]==1.2.0 && \
-pip install --no-cache-dir gym==0.17.1 && \
+pip install --no-cache-dir gym[atari]==0.17.1 && \
 pip install --no-cache-dir Pillow==6.2 && \
 pip install --no-cache-dir psutil aiohttp==3.7.0 && \
 pip install --no-cache-dir setproctitle && \
