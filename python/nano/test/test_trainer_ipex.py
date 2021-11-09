@@ -22,7 +22,7 @@ from unittest import TestCase
 import torch
 from torch import nn
 
-from test._train_torch_lightning import train_torch_lightning
+from test._train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from test._train_torch_lightning import train_with_linear_top_layer
@@ -98,9 +98,10 @@ class TestModelsVision(TestCase):
         model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        pl_model = Trainer.compile(model, loss, optimizer)
-        train_torch_lightning(pl_model, batch_size, num_workers, data_dir,
-                              use_orca_lite_trainer=True)
+        trainer = Trainer(max_epochs=1)
+        pl_model = trainer.compile(model, loss, optimizer)
+        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+        trainer.fit(pl_model, train_loader)
 
 
 if __name__ == '__main__':
