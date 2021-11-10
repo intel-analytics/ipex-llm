@@ -57,7 +57,7 @@ parser.add_argument('--cluster_mode', type=str,
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
                          'bigdl and torch_distributed are supported.')
-parser.add_argument('--data_dir', type=str,required=True, help='The path of datesets.')                         
+parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')                         
 opt = parser.parse_args()
 
 print(opt)
