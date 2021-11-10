@@ -37,6 +37,7 @@ pip install aioredis==1.1.0 && \
 pip install tensorflow==1.15.0 && \
 pip install tf_slim && \
 pip install tensorflow-datasets==3.2.0 && \
+pip install mxnet==1.6.0 && \
 source deactivate && \
 
 conda create -y -n pytf2 python=3.7 && \
@@ -71,4 +72,25 @@ pip install --no-cache-dir pyarrow && \
 pip install opencv-python==4.2.0.34 && \
 pip install aioredis==1.1.0 && \
 pip install tensorflow==2.4.0 && \
+source deactivate
+
+conda create -y -n py37-horovod-tes python==3.7 && \
+source activate py37-horovod-test && \
+conda install -y pytorch==1.4.0 torchvision==0.5.0 cpuonly -c pytorch && \
+conda install -y cmake==3.16.0 && \
+HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2 && \
+pip install ray==1.2.0 && \
+pip install psutil==5.7.0 && \
+pip install aiohttp==3.6.2 && \
+pip install setproctitle==1.1.0 && \
+pip install pyarrow==0.17.0 && \
+pip install pandas==1.0.3 && \
+pip install scikit-learn==0.22.0 && \
+pip install convertdate==2.3.2 && \
+pip install pystan==2.19.1.1 && \
+pip install prophet==1.0.1 && \
+pip install tsfresh==0.18.0 && \
+pip install aioredis==1.1.0 && \
+pip install pytest==5.4.1 && \
+pip install protobuf==3.12.0 && \
 source deactivate
