@@ -1,6 +1,6 @@
 # connect sqlite3
 import time
-import parse
+import argparse
 from pyspark.sql import SparkSession
 
 # create parser object
