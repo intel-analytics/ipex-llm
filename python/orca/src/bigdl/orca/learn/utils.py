@@ -444,14 +444,10 @@ def load_pkl(path):
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
         fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-        try:
-            temp_dir = tempfile.mkdtemp()
-            basename = os.path.basename(path)
-            fs.copy_file(path, os.path.join(temp_dir, basename))
-            with open(os.path.join(temp_dir, basename), 'rb') as f:
-                data = pickle.load(f)
-        finally:
-            shutil.rmtree(temp_dir)
+        from io import BytesIO
+        buf = BytesIO()
+        fs.download(path, buf)
+        data = pickle.load(buf)
         return data
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
