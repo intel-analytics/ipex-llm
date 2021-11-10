@@ -85,22 +85,37 @@ class SparkTFEstimator():
         else:
             self.redis_password = None
         self.is_local = sc.master.startswith("local")
-        if not self.is_local:
-            if log_to_driver:
-                # start redis
-                process_info = self._start_redis()
+        # if not self.is_local:
+        #     if log_to_driver:
+        #         # start redis
+        #         process_info = self._start_redis()
+        #
+        #         # print executor logs
+        #         import redis
+        #         redis_client = redis.StrictRedis(
+        #             host=self.ip, port=self.port)
+        #         threads_stopped = threading.Event()
+        #         logger_thread = threading.Thread(
+        #             target=self._print_logs,
+        #             name="print_logs",
+        #             args=(redis_client, threads_stopped))
+        #         logger_thread.daemon = True
+        #         logger_thread.start()
+        if log_to_driver:
+            # start redis
+            process_info = self._start_redis()
 
-                # print executor logs
-                import redis
-                redis_client = redis.StrictRedis(
-                    host=self.ip, port=self.port)
-                threads_stopped = threading.Event()
-                logger_thread = threading.Thread(
-                    target=self._print_logs,
-                    name="print_logs",
-                    args=(redis_client, threads_stopped))
-                logger_thread.daemon = True
-                logger_thread.start()
+            # print executor logs
+            import redis
+            redis_client = redis.StrictRedis(
+                host=self.ip, port=self.redis_port)
+            threads_stopped = threading.Event()
+            logger_thread = threading.Thread(
+                target=self._print_logs,
+                name="print_logs",
+                args=(redis_client, threads_stopped))
+            logger_thread.daemon = True
+            logger_thread.start()
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
@@ -401,7 +416,7 @@ class SparkTFEstimator():
 
     def _start_redis(self):
         import random
-        self.redis_port = random.randint(10000, 65535)
+        # self.redis_port = random.randint(10000, 65535)
         redis_exec = "redis-server"
         command = [redis_exec]
         if self.redis_password:
@@ -421,6 +436,7 @@ class SparkTFEstimator():
         import redis
         pubsub_client = redis_client.pubsub(ignore_subscribe_messages=True)
         pubsub_client.subscribe(LOG_FILE_CHANNEL)
+        print("driver subscribe channel: ", LOG_FILE_CHANNEL)
         try:
             # Keep track of the number of consecutive log messages that have been
             # received with no break in between. If this number grows continually,
