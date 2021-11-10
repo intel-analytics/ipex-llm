@@ -99,10 +99,10 @@ def sql_context_api(spark):
     # strlen = sqlContext.registerFunction("stringLengthString", lambda x: len(x))
     # res = spark.sql("SELECT stringLengthString('test')").collect()
     # print(res)
-    spark.udf.registerJavaFunction("javaStringLength3", "org.apache.spark.sql.JavaStringLength", "integer")
-    res = spark.sql("SELECT javaStringLength3('test')").collect()
-    print(res)
-    print("register API finished")
+    #spark.udf.registerJavaFunction("javaStringLength3", "org.apache.spark.sql.JavaStringLength", "integer")
+    #res = spark.sql("SELECT javaStringLength3('test')").collect()
+    #print(res)
+    #print("register API finished")
 
     print("Finish running SQL context API")
 

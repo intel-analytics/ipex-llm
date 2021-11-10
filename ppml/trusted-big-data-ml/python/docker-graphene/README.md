@@ -142,11 +142,11 @@ Run the example with SGX spark local mode with the following command in the term
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
-	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/pi.py" | tee test-pi-sgx.log
-
+        -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+        -Xmx1g org.apache.spark.deploy.SparkSubmit \
+        --master 'local[4]' \
+        --conf spark.python.use.daemon=false \
+        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/pi.py" 2>&1 | tee test-pi-sgx.log
 ```
 
 Then check the output with the following command.
@@ -164,39 +164,39 @@ The result should be similar to
 Run the example with SGX spark local mode with the following command in the terminal. 
 
 ```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
-	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/wordcount.py ./work/examples/helloworld.py" | tee test-wordcount-sgx.log
-
+SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && /opt/jdk8/bin/java \
+        -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+        -Xmx1g org.apache.spark.deploy.SparkSubmit \
+        --master 'local[4]' \
+        --conf spark.python.use.daemon=false \
+        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/wordcount.py ./work/examples/helloworld.py" 2>&1 | tee test-wordcount-sgx.log
 ```
 
 Then check the output with the following command.
 
 ```bash
-cat test-wordcount-sgx.log | egrep "print"
+cat test-wordcount-sgx.log | egrep -a "import.*: [0-9]*$"
 ```
 
 The result should be similar to
 
-> print("Hello: 1
->
-> print(sys.path);: 1
+> import: 1
 
 ##### Example 3: Basic SQL
 
-Before running the example, make sure that the paths of resource in `/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
+Before running the example, make sure that the paths of resource in `/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
 
 Run the example with SGX spark local mode with the following command in the terminal. 
 
 ```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-	-cp '/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*' \
-	-Xmx1g org.apache.spark.deploy.SparkSubmit \
-	--master 'local[4]' \
-	/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/sql/basic.py" | tee test-sql-basic-sgx.log
-
+SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
+        /opt/jdk8/bin/java \
+        -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+        -Xmx1g org.apache.spark.deploy.SparkSubmit \
+        --master 'local[4]' \
+        --conf spark.python.use.daemon=false \
+        --conf spark.python.worker.reuse=false \
+        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" 2>&1 | tee test-sql-basic-sgx.log
 ```
 
 Then check the output with the following command.

@@ -28,8 +28,8 @@ from bigdl.chronos.model.prophet import ProphetBuilder
 class AutoProphet:
 
     def __init__(self,
-                 changepoint_prior_scale=hp.loguniform(0.001, 0.5),
-                 seasonality_prior_scale=hp.loguniform(0.01, 10),
+                 changepoint_prior_scale=hp.grid_search([0.005, 0.05, 0.1, 0.5]),
+                 seasonality_prior_scale=hp.grid_search([0.01, 0.1, 1.0, 10.0]),
                  holidays_prior_scale=hp.loguniform(0.01, 10),
                  seasonality_mode=hp.choice(['additive', 'multiplicative']),
                  changepoint_range=hp.uniform(0.8, 0.95),
@@ -137,7 +137,7 @@ class AutoProphet:
         if freq is None:
             assert len(data) >= 2, "The training dataframe should contains more than 2 records."
             assert pd.api.types.is_datetime64_any_dtype(data["ds"].dtypes), \
-                "The \"ds\" col should be in datetime 64 type, or you need to set `freq` in fit."
+                "The 'ds' col should be in datetime 64 type, or you need to set `freq` in fit."
             self._freq = data["ds"].iloc[1] - data["ds"].iloc[0]
         else:
             self._freq = pd.Timedelta(freq)

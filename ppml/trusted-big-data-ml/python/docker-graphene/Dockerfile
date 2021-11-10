@@ -37,9 +37,6 @@ ENV PATH                ${JAVA_HOME}/bin:${PATH}
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget unzip patch zip git maven
-ADD pyspark.rdd.patch /opt/rdd.patch
-ADD pyspark.shuffle.patch /opt/shuffle.patch
-ADD spark-3.1.2.patch /opt/spark-3.1.2.patch
 ADD hadoop-common-shell.patch /opt/hadoop-common-shell.patch
 
 # java
@@ -65,19 +62,18 @@ RUN cd /opt && \
     rm spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
     cp spark-${SPARK_VERSION}/conf/log4j.properties.template spark-${SPARK_VERSION}/conf/log4j.properties && \
     echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties && \
-    wget -O spark-network-common_2.12-${SPARK_VERSION}.jar https://master.dl.sourceforge.net/project/analytics-zoo/analytics-zoo-data/spark-network-common_2.12-${SPARK_VERSION}.jar && \
-    mv spark-network-common_2.12-${SPARK_VERSION}.jar spark-${SPARK_VERSION}/jars && \
     mv spark-${SPARK_VERSION}/python/lib/pyspark.zip /opt/pyspark.zip && \
     mv spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar /opt/spark-core_2.12-$SPARK_VERSION.jar && \
     mv spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    mv spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar /opt/hadoop-common-3.2.0.jar && \
+    mv spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar /opt/hive-exec-2.3.7-core.jar && \
     ls /opt
 # spark modification
 RUN cd /opt && \
-    git clone https://github.com/apache/spark.git && \
+    git clone https://github.com/analytics-zoo/spark.git && \
     cd spark && \
-    git checkout tags/v3.1.2 -b branch-3.1.2 && \
-    git apply /opt/spark-3.1.2.patch && \
+    git checkout branch-3.1.2 && \
     git status && \
     export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
         -Dhttp.proxyHost=$HTTP_PROXY_HOST \
@@ -85,15 +81,17 @@ RUN cd /opt && \
         -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean install -pl core && \
-    cd resource-managers/kubernetes/core && \
+    cd /opt/spark/resource-managers/kubernetes/core && \
+    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
+    cd /opt/spark/common/network-common && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
     cd /opt/spark/python && \
     zip -r lib/pyspark.zip pyspark && \
     mv /opt/spark/core/target/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark/resource-managers/kubernetes/core/target/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark/common/network-common/target/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark/python/lib/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
 # hadoop
-# org.apache.hadoop.util.Shell.java to disable setsid
 RUN cd /opt && \
     apt-get install -y build-essential && \
     wget https://github.com/protocolbuffers/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.bz2 && \
@@ -106,11 +104,10 @@ RUN cd /opt && \
     make install && \
     protoc --version && \
     cd /opt && \
-    git clone https://github.com/apache/hadoop.git && \
+    git clone https://github.com/analytics-zoo/hadoop.git && \
     cd hadoop && \
-    git checkout rel/release-3.2.0 -b branch-3.2.0 && \
+    git checkout branch-3.2.0-ppml && \
     cd hadoop-common-project/hadoop-common && \
-    patch src/main/java/org/apache/hadoop/util/Shell.java /opt/hadoop-common-shell.patch && \
     export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
         -Dhttp.proxyHost=$HTTP_PROXY_HOST \
         -Dhttp.proxyPort=$HTTP_PROXY_PORT \
@@ -118,6 +115,19 @@ RUN cd /opt && \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
     mv /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-3.2.0.jar /opt/spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar
+# hive
+RUN cd /opt && \
+    git clone https://github.com/analytics-zoo/hive.git && \
+    cd hive && \
+    git checkout branch-2.3.7-ppml && \
+    cd ql && \
+    export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
+        -Dhttp.proxyHost=$HTTP_PROXY_HOST \
+        -Dhttp.proxyPort=$HTTP_PROXY_PORT \
+        -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
+        -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
+    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
+    mv /opt/hive/ql/target/hive-exec-2.3.7-core.jar /opt/spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
 
 # stage.3 bigdl
 FROM ubuntu:18.04 as bigdl
@@ -241,6 +251,8 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
     cp /usr/lib/x86_64-linux-gnu/libpython3.6m.so /usr/lib/libpython3.6m.so && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py && \
+    sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
+    sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \

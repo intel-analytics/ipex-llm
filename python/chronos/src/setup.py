@@ -47,8 +47,7 @@ def setup_package():
     metadata = dict(
         name='bigdl-chronos',
         version=VERSION,
-        description='An application framework for building large-scale time series analysis '
-                    'applications',
+        description='Scalable time series analysis using AutoML',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',

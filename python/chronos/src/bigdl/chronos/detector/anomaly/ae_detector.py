@@ -173,7 +173,7 @@ class AEDetector(AnomalyDetector):
                 y_pred_list.append(ae_model(x_batch).detach().numpy())
             y_pred = np.concatenate(y_pred_list, axis=0)
         else:
-            raise ValueError("backend type can only be \"keras\" or \"torch\"")
+            raise ValueError("backend type can only be 'keras' or 'torch'")
         # calculate the recon err for each data point in rolled array
         self.recon_err = abs(y - y_pred)
         # calculate the (aggregated) recon err for each sub sequence
