@@ -48,7 +48,7 @@ from bigdl.orca.learn.tf.estimator import Estimator
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
-parser.add_argument('--data_dir', type=str,required=True, help='The path of datesets.')
+parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 args = parser.parse_args()
