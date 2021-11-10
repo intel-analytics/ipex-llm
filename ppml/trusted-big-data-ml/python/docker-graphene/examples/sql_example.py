@@ -12,7 +12,7 @@ def sql_dataframe_example(spark):
     # agg
     res = df.agg({"name": "max"}).collect()
     print(res)
-    print("agg API finished")
+    print("INFO agg API finished")
 
     # alias
     df_as1 = df.alias("df_as1")
@@ -20,28 +20,28 @@ def sql_dataframe_example(spark):
     joined_df = df_as1.join(df_as2, col("df_as1.name") == col("df_as2.name"), 'inner')
     res = joined_df.select("df_as1.name", "df_as2.name", "df_as2.favorite_color").collect()
     print(res)
-    print("alias API finished")
+    print("INFO alias API finished")
 
     # colRegex, collect and columns
     df = spark.createDataFrame([("a", 1.1, 1.0), ("b", 2.2, 2.0), ("c", 3.3, 3.0)], ["Col1", "Col2", "Col3"])
     df.select(df.colRegex("`(Col1)?+.+`")).show()
     print(df.collect())
     print(df.columns)
-    print("colRegex, collect and columns API finished")
+    print("INFO colRegex, collect and columns API finished")
 
     # approxQuantile
     print(df.approxQuantile("Col2", [0.1], 1.0))
-    print("approxQuantile finished")
+    print("INFO approxQuantile API finished")
     
     # cache and checkpoint
     df.cache()
     # print(df.checkpoint())
-    print("cache API finished")
+    print("INFO cache API finished")
 
     # coalesce
     res = df.coalesce(1).rdd.getNumPartitions()
     print(res)
-    print("coalesce API finished")
+    print("INFO coalesce API finished")
 
     # corr, count and cov
     res = df.corr("Col2", "Col3")
@@ -50,7 +50,7 @@ def sql_dataframe_example(spark):
     print(res)
     res = df.cov("Col2", "Col3")
     print(res)
-    print("corr, count, cov API finished")
+    print("INFO corr, count, cov API finished")
     
 
     # GlobalTempView
@@ -62,7 +62,7 @@ def sql_dataframe_example(spark):
     df2.createOrReplaceGlobalTempView("threecols")
     df3 = spark.sql("select * from global_temp.threecols")
     print(sorted(df3.collect()) == sorted(df2.collect()))
-    print("GlobalTempView API finished")
+    print("INFO GlobalTempView API finished")
 
     # TempView
     df.createTempView("threecols")
@@ -72,7 +72,7 @@ def sql_dataframe_example(spark):
     df2.createOrReplaceTempView("threecols")
     df3 = spark.sql("select * from threecols")
     print(sorted(df3.collect()) == sorted(df2.collect()))
-    print("TempView API finished")
+    print("INFO TempView API finished")
 
     # cross
     df = spark.createDataFrame([("a", 1.1, 1.0), ("b", 2.2, 2.0), ("c", 3.3, 3.0)], ["Col1", "Col2", "Col3"])
@@ -81,20 +81,20 @@ def sql_dataframe_example(spark):
     df2.crossJoin(df3.select("height")).select("age", "name", "height").show()
     res = df.crosstab("Col1", "Col2")
     print(res)
-    print("cross API finished")
+    print("INFO cross API finished")
 
     # cube
     df2.cube("name", df2.age).count().orderBy("name", "age").show()
-    print("cube API finshed")
+    print("INFO cube API finished")
 
     # descibe
     df2.describe().show()
-    print("descibe API finshed")
+    print("INFO descibe API finished")
 
     # distinct
     res = df.distinct().count()
     print(res)
-    print("distinct API finshed")
+    print("INFO distinct API finished")
 
     # drop
     df3 = spark.createDataFrame([('Alice', 5, 80), ('Alice', 5, 80), ('Alice', 10, 80)], ["name", "age", "height"])
@@ -102,7 +102,7 @@ def sql_dataframe_example(spark):
     df3.drop('age').show()
     df3.na.drop().show()
     print(df3.dtypes)
-    print("drop API finshed")
+    print("INFO drop API finished")
 
     # exceptAll, explain, fill and first
     df1 = spark.createDataFrame(
@@ -113,7 +113,7 @@ def sql_dataframe_example(spark):
     df1.na.fill(50).show()
     res = df1.first()
     print(res)
-    print("exceptAll, explain, fill and first API finshed")
+    print("INFO exceptAll, explain, fill and first API finished")
 
     # foreach
     #df1 = spark.createDataFrame(
@@ -136,12 +136,12 @@ def sql_dataframe_example(spark):
     print(res)
     res = df1.groupBy().avg().collect()
     print(res)
-    print("freqItems and groupBy API finshed")
+    print("INFO freqItems and groupBy API finished")
     
     # head
     res = df1.head(1)
     print(res)
-    print("head API finshed")
+    print("INFO head API finished")
 
     # intersect and join
     df1 = spark.createDataFrame([("a", 1), ("a", 1), ("b", 3), ("c", 4)], ["C1", "C2"])
@@ -149,7 +149,7 @@ def sql_dataframe_example(spark):
     df1.join(df2.hint("broadcast"), "C1").show()
     df1.intersect(df2).sort("C1", "C2").show()
     df1.intersectAll(df2).sort("C1", "C2").show()
-    print("intersect and join API finshed")
+    print("INFO intersect and join API finished")
 
     # isLocal and isStreaming
     res = df1.isLocal()
@@ -157,7 +157,7 @@ def sql_dataframe_example(spark):
     print(df1.isStreaming)
     res = df1.limit(2).collect()
     print(res)
-    print("isLocal and isStreaming API finshed")
+    print("INFO isLocal and isStreaming API finished")
 
     # orderBy
     df2 = spark.createDataFrame([("a", 1), ("a", 1), ("b", 3), ("c", 0)], ["C1", "C2"])
@@ -165,7 +165,7 @@ def sql_dataframe_example(spark):
     df2.persist()
     df2.unpersist()
     df2.printSchema()
-    print("orderBy API finshed")
+    print("INFO orderBy API finished")
 
     # randomSplit
     df4 = spark.createDataFrame([('Alice', 5, 80), ('Alice', 5, 80), ('Alice', 10, 80)], ["name", "age", "height"])
@@ -176,7 +176,7 @@ def sql_dataframe_example(spark):
     df2 = spark.sql("select * from people")
     print(sorted(df4.collect()) == sorted(df2.collect()))
     spark.catalog.dropTempView("people")
-    print("randomSplit API finshed")
+    print("INFO randomSplit API finished")
     
     # repartition
     df4 = spark.createDataFrame([('Alice', 5, 80), ('Alice', 5, 80), ('Alice', 10, 80)], ["name", "age", "height"])
@@ -184,13 +184,13 @@ def sql_dataframe_example(spark):
     data.show()
     data = df4.repartitionByRange("age")
     data.show()
-    print("repartition API finshed")
+    print("INFO repartition API finished")
     
     # replace
     data = df4.na.replace('Alice', None)
     data.show()
     df4.rollup("name", df4.age).count().orderBy("name", "age").show()
-    print("replace API finshed")
+    print("INFO replace API finished")
 
     # Sample and sampleBy
     df = spark.range(10)
@@ -202,7 +202,7 @@ def sql_dataframe_example(spark):
     sampled = dataset.sampleBy("key", fractions={0: 0.1, 1: 0.2}, seed=0)
     sampled.groupBy("key").count().orderBy("key").show()
     print(df.schema)
-    print("Sample and sampleBy API finshed")
+    print("INFO Sample and sampleBy API finished")
     
     # select
     df = spark.createDataFrame([('Alice', 5, 80), ('Alice', 5, 80), ('Alice', 10, 80)], ["name", "age", "height"])
@@ -213,7 +213,7 @@ def sql_dataframe_example(spark):
     df.sortWithinPartitions("age", ascending=False).show()
     res = df.storageLevel
     print(res)
-    print("select API finshed")
+    print("INFO select API finished")
 
     # substract, summary and take 
     df = spark.createDataFrame([('Alice', 5, 80), ('Alice', 5, 80), ('Alice', 10, 80)], ["name", "age", "height"])
@@ -222,7 +222,7 @@ def sql_dataframe_example(spark):
     df.summary().show()
     res = df.take(2)
     print(res)
-    print("substract, summary and take API finshed")
+    print("INFO substract, summary and take API finished")
 
     # to
     df = spark.createDataFrame([('Alice', 5), ('Alice', 5)], ["name", "age"])
@@ -234,7 +234,7 @@ def sql_dataframe_example(spark):
     #print(res)
     res = df.toPandas()
     print(res)
-    print("to API finshed") 
+    print("INFO to API finished") 
 
     # union
     df = spark.createDataFrame([('Alice', 5, 80), ('Alice', 5, 80), ('Alice', 10, 80)], ["name", "age", "height"])
@@ -245,7 +245,7 @@ def sql_dataframe_example(spark):
     df1 = spark.createDataFrame([[1, 2, 3]], ["col0", "col1", "col2"])
     df2 = spark.createDataFrame([[4, 5, 6]], ["col1", "col2", "col0"])
     df1.unionByName(df2).show()
-    print("union API finshed") 
+    print("INFO union API finished") 
 
     # with
     df = spark.createDataFrame([('Alice', 5), ('Alice', 5)], ["name", "age"]) 
@@ -255,16 +255,16 @@ def sql_dataframe_example(spark):
     print(res)
     # res = df.select('name', df.time.cast('timestamp')).withWatermark('time', '10 minutes')
     # print(res)
-    print("with API finshed")
+    print("INFO with API finished")
 
     # write
     res = df.write
     print(res)
     # res = df.writeStream
     # print(res)
-    print("write API finshed")
+    print("INFO write API finished")
 
-    print("INFO SQL Dataframe Example finishes")
+    print("INFO SQL Dataframe Example API finished")
 
 if __name__ == "__main__":
     spark = SparkSession \
