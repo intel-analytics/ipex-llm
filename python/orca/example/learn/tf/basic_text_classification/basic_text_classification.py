@@ -66,6 +66,7 @@ from bigdl.orca.learn.tf.estimator import Estimator
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
+parser.add_argument('--epochs', type=int, default=2, help='number of epochs to train for')
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 if cluster_mode == "local":
@@ -147,7 +148,7 @@ validation_dataset = tf.data.Dataset.from_tensor_slices((x_val, y_val))
 est = Estimator.from_keras(keras_model=model)
 est.fit(data=train_dataset,
         batch_size=512,
-        epochs=100,
+        epochs=args.epochs,
         validation_data=validation_dataset
         )
 results = est.evaluate(validation_dataset)
