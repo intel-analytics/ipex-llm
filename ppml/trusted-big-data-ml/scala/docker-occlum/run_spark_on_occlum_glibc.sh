@@ -91,8 +91,7 @@ run_spark_lenet_mnist(){
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 -f /bin/data \
-                -b 8 \
-                -e 1 | tee spark.local.sgx.log
+                $* | tee spark.local.sgx.log
 }
 
 run_spark_resnet_cifar(){
@@ -120,8 +119,7 @@ run_spark_resnet_cifar(){
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 -f /bin/data \
-                --batchSize 400 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 1 \
-                --learningRate 0.1 | tee spark.local.sgx.log
+                $* | tee spark.local.sgx.log
 }
 
 
