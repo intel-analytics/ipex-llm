@@ -192,8 +192,9 @@ def config_option_parser():
 if __name__ == "__main__":
     parser = config_option_parser()
     (options, args) = parser.parse_args(sys.argv)
-
-    write_tfrecord(format="imagenet", imagenet_path=options.folder, output_path=options.imagenet)
+    
+    if options.folder:
+        write_tfrecord(format="imagenet", imagenet_path=options.folder, output_path=options.imagenet)
 
     train_data = train_data_creator(
         config={"data_dir": os.path.join(options.imagenet, "train")})
