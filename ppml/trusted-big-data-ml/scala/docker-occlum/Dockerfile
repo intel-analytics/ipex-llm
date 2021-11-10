@@ -133,6 +133,11 @@ COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 # RUN echo "source /etc/profile" >> $HOME/.bashrc 
 
+RUN apt-get update && \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+        openjdk-11-jdk && \
+    apt-get clean
+
 # prepare Spark
 COPY --from=bigdl /opt/spark /opt/spark
 
