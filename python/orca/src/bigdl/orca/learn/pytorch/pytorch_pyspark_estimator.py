@@ -124,6 +124,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.model_creator = model_creator
         self.initialization_hook = initialization_hook
 
+        num_nodes, cores_per_node = get_node_and_core_number()
+        self.num_workers = num_nodes * workers_per_node
+        self.total_cores = num_nodes * cores_per_node
+        self.cores_per_worker = cores_per_node // workers_per_node
+
         self.worker_init_params = dict(
             model_creator=self.model_creator,
             optimizer_creator=optimizer_creator,
@@ -133,19 +138,20 @@ class PyTorchPySparkEstimator(BaseEstimator):
             scheduler_step_freq=scheduler_step_freq,
             use_tqdm=use_tqdm,
             config=self.config.copy(),
-            metrics=metrics
+            metrics=metrics,
+            size=self.num_workers,
+            cluster_info=self._get_cluster_info(sc)
         )
-        num_nodes, cores_per_node = get_node_and_core_number()
-        self.num_workers = num_nodes * workers_per_node
-        self.total_cores = num_nodes * cores_per_node
-        self.cores_per_worker = cores_per_node // workers_per_node
 
         # over partition to cover tasks all over the cluster
         self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
                                         self.total_cores * 4).repartition(self.num_workers)
 
         self.model_weights = None
-        self.setup()
+
+    def _get_cluster_info(self, sc):
+        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
+        return cluster_info
 
     def setup(self):
         RemoteRunner = ray.remote(num_cpus=self.cores_per_worker)(TorchPysparkRunner)

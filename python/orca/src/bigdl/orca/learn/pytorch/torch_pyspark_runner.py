@@ -46,7 +46,9 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
-from bigdl.orca.learn.pytorch.utils import find_free_port
+
+from pyspark import BarrierTaskContext
+from pyspark.context import SparkContext
 
 logger = logging.getLogger(__name__)
 
@@ -56,19 +58,40 @@ except ImportError:
     from collections import Iterable
 
 
+def find_free_port(tc):
+    address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        tc.barrier()
+        return f"{address}:{s.getsockname()[1]}"
+
+
+def find_ip_and_port(pre_iter):
+    tc = BarrierTaskContext().get()
+    free_port = find_free_port(tc)
+    return [free_port]
+
+
 class TorchPysparkRunner:
     """Manages a PyTorch model for training."""
 
     def __init__(self,
                  model_creator,
                  optimizer_creator,
+                 size,
+                 cluster_info,
+                 cores_per_worker,
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
                  training_operator_cls=None,
                  config=None,
                  use_tqdm=False,
-                 scheduler_step_freq=None):
+                 scheduler_step_freq=None,
+                 model_weights=None,
+                 backend="torch-distributed",
+                 mode="fit"):
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
@@ -89,9 +112,16 @@ class TorchPysparkRunner:
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
 
-        self.backend = "torch-local"
-        self.rank = 0
-        self.size = 0
+        self.model_weights = model_weights
+        self.size = size
+        self.mode = mode
+        self.backend = backend
+        self.cluster_info = cluster_info
+
+        self.setup(cores_per_worker)
+        if self.backend == "torch-distributed":
+            if mode == "fit" or mode == "evaluate":
+                self.setup_distributed(self.mode, self.cluster_info)
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -119,21 +149,22 @@ class TorchPysparkRunner:
         import torch
         torch.set_num_threads(cores_per_node)
 
-    def setup_horovod(self):
-        import horovod.torch as hvd
-        hvd.init()
-        self.backend = "horovod"
-        self.rank = hvd.rank()
-        self.size = hvd.size()
-        self.setup_components_horovod()
-        self.setup_operator(self.models)
-
     def setup_address(self):
         ip = ray._private.services.get_node_ip_address()
         port = find_free_port()
         return f"tcp://{ip}:{port}"
 
-    def setup_torch_distribute(self, url, world_rank, world_size):
+    def setup_distributed(self, mode, cluster_info):
+        tc = BarrierTaskContext().get()
+        self.rank = self._get_rank(cluster_info, tc)
+        print("cluster is: ", cluster)
+
+        address = f"tcp://{cluster_info[0]}"
+        self._setup_torch_distribute(url=address,
+                                     world_rank=self.rank,
+                                     world_size=self.size)
+
+    def _setup_torch_distribute(self, url, world_rank, world_size):
         import torch.distributed as dist
         from torch.nn.parallel import DistributedDataParallel
         dist.init_process_group(
@@ -150,6 +181,32 @@ class TorchPysparkRunner:
             for model in self.models
         ]
         self.setup_operator(training_models)
+
+    def _get_rank(self, cluster_info, tc):
+        # As task placement may not be identical between two different jobs,
+        # we cannot simply index cluster_info using partitionId to get current
+        # ip and port.
+        # The approach here is to first get all tasks' ip in this job and compute
+        # a local rank by counting how many tasks has the same ip but with lower id.
+        # We then use the local rank to find the right slot in cluster_info to find
+        # the right global_rank.
+        tc = BarrierTaskContext().get()
+        infos = tc.getTaskInfos()
+        idx = tc.partitionId()
+        local_ip = infos[idx].address.split(":")[0]
+        local_rank = 0
+        for i in range(0, idx):
+            if infos[i].address.startswith(local_ip):
+                local_rank += 1
+        global_rank = -1
+        local_count = 0
+        for node in cluster_info:
+            if node.startswith(local_ip):
+                local_count += 1
+            global_rank += 1
+            if local_count == local_rank + 1:
+                break
+        return global_rank
 
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
