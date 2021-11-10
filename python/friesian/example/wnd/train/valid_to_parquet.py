@@ -166,7 +166,7 @@ if __name__ == '__main__':
                                     names=RecsysSchema().toColumns(),
                                     dtype=RecsysSchema().toDtype())
     val_tbl.df.printSchema()
-    val_tbl.write_parquet(os.path.join(args.output_folder, "test_spark_parquet"))
+    val_tbl.write_parquet(args.output_folder)
 
     end = time()
     print("Convert to parquet time: ", end - start)

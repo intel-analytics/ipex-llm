@@ -77,17 +77,12 @@ conf = {"spark.network.timeout": "10000000",
 
 
 def get_size(data_dir):
-    if data_dir.split("://")[0] == data_dir:  # no prefix
-        data_dir_with_prefix = "file://" + data_dir
-    else:
-        data_dir_with_prefix = data_dir
-
     if not exists(os.path.join(data_dir, "train_parquet")) or \
             not exists(os.path.join(data_dir, "test_parquet")):
         raise Exception("Not train and test data parquet specified")
     else:
-        train_tbl = FeatureTable.read_parquet(os.path.join(data_dir_with_prefix, "train_parquet"))
-        test_tbl = FeatureTable.read_parquet(os.path.join(data_dir_with_prefix, "test_parquet"))
+        train_tbl = FeatureTable.read_parquet(os.path.join(data_dir, "train_parquet"))
+        test_tbl = FeatureTable.read_parquet(os.path.join(data_dir, "test_parquet"))
 
     # get cat sizes
     with tempfile.TemporaryDirectory() as local_path:
