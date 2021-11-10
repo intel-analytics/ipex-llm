@@ -61,7 +61,7 @@ python super_resolution.py --backend torch_distributed --data_dir "/your/path"
 * `--epochs` The number of epochs to train for. Default is 2.
 * `--cluster_mode` The mode of spark cluster. Either "local" or "yarn". Default is "local".
 * `--backend` The backend of PyTorch Estimator. Either "bigdl" or "torch_distributed". Default is "bigdl".
-* `--data_dir` The path of datesets. Required.
+* `--data_dir` The path of datesets. Default is "./dataset".
 
 ## Results
 
