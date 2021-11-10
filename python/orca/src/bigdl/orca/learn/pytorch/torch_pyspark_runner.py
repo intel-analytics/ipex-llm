@@ -41,7 +41,6 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
-import ray
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
@@ -148,11 +147,6 @@ class TorchPysparkRunner:
     def setup(self, cores_per_node):
         import torch
         torch.set_num_threads(cores_per_node)
-
-    def setup_address(self):
-        ip = ray._private.services.get_node_ip_address()
-        port = find_free_port()
-        return f"tcp://{ip}:{port}"
 
     def setup_distributed(self, mode, cluster_info):
         tc = BarrierTaskContext().get()
@@ -268,14 +262,6 @@ class TorchPysparkRunner:
                 schedulers=self.schedulers,
                 use_tqdm=self.use_tqdm)
 
-    def get_node_ip(self):
-        """Returns the IP address of the current node."""
-        return ray._private.services.get_node_ip_address()
-
-    def find_free_port(self):
-        """Finds a free port on the current node."""
-        return utils.find_free_port()
-
     def with_sampler(self, loader):
         logger.debug("Wrapping DistributedSampler on DataLoader")
         data_loader_args = {
@@ -377,30 +363,35 @@ class TorchPysparkRunner:
         loader = iter(loader)
         if num_steps:
             loader = itertools.islice(loader, num_steps)
+
+        self.load_state_dict(self.state_dict)
+
         with self.timers.record("validation"):
             validation_stats = self.training_operator.validate(loader,
                                                                info=info,
                                                                metrics=self.metrics)
         if profile:
             validation_stats.update(profile=self.timers.stats())
-        return validation_stats
+
+        if self.rank==0:
+            return validation_stats
+        else:
+            return []
 
     def predict(self, data_creator, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
         config = self.config.copy()
         self._toggle_profiling(profile=profile)
 
-        shards_ref = data_creator(config, batch_size)
-        if not isinstance(shards_ref, ray.ObjectID):
-            raise ValueError("Only xshards is supported for predict")
-
-        partition = ray.get(shards_ref)
+        partition = data_creator(config, batch_size)
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
                     "pin_memory", "drop_last", "timeout", "worker_init_fn",
                     "multiprocessing_context"]:
             if arg in config:
                 params[arg] = config[arg]
+
+        self.load_state_dict(self.state_dict)
 
         def predict_fn(shard):
             if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
