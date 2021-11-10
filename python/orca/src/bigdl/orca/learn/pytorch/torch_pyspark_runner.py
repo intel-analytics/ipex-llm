@@ -89,7 +89,7 @@ class TorchPysparkRunner:
                  config=None,
                  use_tqdm=False,
                  scheduler_step_freq=None,
-                 model_weights=None,
+                 state_dict=None,
                  backend="torch-distributed",
                  mode="fit"):
         self.model_creator = model_creator
@@ -112,7 +112,7 @@ class TorchPysparkRunner:
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
 
-        self.model_weights = model_weights
+        self.state_dict = state_dict
         self.size = size
         self.mode = mode
         self.backend = backend
@@ -324,7 +324,10 @@ class TorchPysparkRunner:
         for i in range(epochs):
             stats = self.train_epoch(loader, profile=profile, info=info)
             stats_list.append(stats)
-        return stats_list
+
+        state_dict = self.state_dict
+
+        return [state_dict, stats_list]
 
     def train_epoch(self,
                     data_loader,

@@ -25,7 +25,7 @@ from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.torch_pyspark_runner import TorchPysparkRunner
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
-    convert_predict_xshards_to_dataframe, update_predict_xshards, \
+    convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
@@ -147,31 +147,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
                                         self.total_cores * 4).repartition(self.num_workers)
 
-        self.model_weights = None
+        self.state_dict = None
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
         return cluster_info
-
-    def setup(self):
-        RemoteRunner = ray.remote(num_cpus=self.cores_per_worker)(TorchPysparkRunner)
-        self.remote_workers = [
-            RemoteRunner.remote(**self.worker_init_params) for i in range(self.num_workers)
-        ]
-        ray.get([
-            worker.setup.remote(self.cores_per_worker)
-            for i, worker in enumerate(self.remote_workers)
-        ])
-
-        head_worker = self.remote_workers[0]
-        address = ray.get(head_worker.setup_address.remote())
-
-        logger.info(f"initializing pytorch process group on {address}")
-
-        ray.get([
-            worker.setup_torch_distribute.remote(address, i, self.num_workers)
-            for i, worker in enumerate(self.remote_workers)
-        ])
 
     def fit(self,
             data,
@@ -213,8 +193,17 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
-        from bigdl.orca.data import SparkXShards
+        init_params = dict(mode="fit")
+        init_params.update(self.init_params)
 
+        params = dict(
+            epochs=epochs,
+            batch_size=batch_size,
+            profile=profile,
+            info=info,
+        )
+
+        from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
@@ -223,37 +212,47 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                              num_workers=self.num_workers)
 
         if isinstance(data, SparkXShards):
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
-            from bigdl.orca.data.utils import process_spark_xshards
-            ray_xshards = process_spark_xshards(data, self.num_workers)
+            # set train/validation
+            params["wrap_dataloader"] = False
+            if validation_data is None:
+                def transform_func(iter, init_params):
+                    partition_data = list(iter)
+                    param["data_creator"] = make_data_creator(partition_data)
+                    return TorchPysparkRunner(**init_params).train_epochs(**params)
 
-            def transform_func(worker, partition_refs):
-                data_creator = partition_refs_to_creator(partition_refs)
-                # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
-                return worker.train_epochs.remote(
-                    data_creator, epochs, batch_size, profile, info, False)
+                res = data.rdd.repartition(self.num_workers).barrier() \
+                      .mapPartitions(
+                          lambda iter: transform_func(iter, init_params, params)).collect()
 
-            worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
-                                                                    transform_func)
+            else:
+                def transform_func(iter, init_param, param):
+                    data_tuple_list = list(iter)
+                    data_list = [x[0] for x in data_tuple_list]
+                    valid_list = [x[1] for x in data_tuple_list]
+                    param["data_creator"] = make_data_creator(data_list)
+                    param["validation_data_creator"] = make_data_creator(valid_list)
+                    return TorchPysparkRunner(**init_param).step(**param)
+
+                res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
+                    .mapPartitions(
+                        lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             assert isinstance(data, types.FunctionType), \
                 "data should be either an instance of SparkXShards or a callable function, but " \
                 "got type: {}".format(type(data))
 
-            success, worker_stats = self._train_epochs(data,
-                                                       epochs=epochs,
-                                                       batch_size=batch_size,
-                                                       profile=profile,
-                                                       info=info)
+            params["data_creator"] = data
+            params["validation_data_creator"] = validation_data
 
-        epoch_stats = list(map(list, zip(*worker_stats)))
-        if reduce_results:
-            for i in range(len(epoch_stats)):
-                epoch_stats[i] = self._process_stats(epoch_stats[i])
-            return epoch_stats
-        else:
-            return epoch_stats
+            def transform_func(iter, init_param, param):
+                return TorchPysparkRunner(**init_param).step(**param)
+
+            res = self.workerRDD.barrier().mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)).collect()
+
+        self.state_dict = res[0]
+
+        return res
 
     def predict(self,
                 data,
