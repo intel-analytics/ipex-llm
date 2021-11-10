@@ -112,6 +112,8 @@ def main():
     parser.add_argument('--backend', type=str, default="bigdl",
                         help='The backend of PyTorch Estimator; '
                              'bigdl and torch_distributed are supported.')
+    parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
+    parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
@@ -146,8 +148,8 @@ def main():
 
     # training loss vs. epochs
     criterion = nn.CrossEntropyLoss()
-    batch_size = 4
-    epochs = 5
+    batch_size = args.batch_size
+    epochs = args.epochs
     if args.backend == "bigdl":
         train_loader = train_data_creator(config={}, batch_size=batch_size)
         test_loader = validation_data_creator(config={}, batch_size=batch_size)
