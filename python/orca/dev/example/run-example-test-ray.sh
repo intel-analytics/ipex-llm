@@ -7,24 +7,14 @@ clear_up () {
     pip uninstall -y pyspark
 }
 
-execute_ray_test(){
-    echo "start example $1"
-    start=$(date "+%s")
-    python $2
-    exit_status=$?
-    if [ $exit_status -ne 0 ];
-    then
-        clear_up
-        echo "$1 failed"
-        exit $exit_status
-    fi
-    now=$(date "+%s")
-    return $((now-start))
-}
+echo "#start orca ray example tests"
+echo "#1 Start autoestimator example"
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/automl/autoestimator/autoestimator_pytorch.py --trials 5 --epochs 2
+now=$(date "+%s")
+time1=$((now-start))
 
-execute_ray_test auto-estimator-pytorch "${BIGDL_ROOT}/python/orca/example/automl/autoestimator/autoestimator_pytorch.py --trials 5 --epochs 2"
-time1=$?
-
+echo "#2 Start autoxgboost example"
 if [ -f ${BIGDL_ROOT}/data/airline_14col.data ]
 then
     echo "airline_14col.data already exists"
@@ -32,9 +22,12 @@ else
     wget -nv $FTP_URI/analytics-zoo-data/airline_14col.data -P ${BIGDL_ROOT}/data/
 fi
 
-execute_ray_test auto-xgboost-classifier "${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostClassifier.py -p ${BIGDL_ROOT}/data/airline_14col.data"
-time2=$?
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostClassifier.py -p ${BIGDL_ROOT}/data/airline_14col.data
+now=$(date "+%s")
+time2=$((now-start))
 
+echo "#3 Start autoxgboost example"
 if [ -f ${BIGDL_ROOT}/data/incd.csv ]
 then
     echo "incd.csv already exists"
@@ -42,13 +35,14 @@ else
     wget -nv $FTP_URI/analytics-zoo-data/incd.csv -P ${BIGDL_ROOT}/data/
 fi
 
-execute_ray_test auto-xgboost-regressor "${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor.py -p ${BIGDL_ROOT}/data/incd.csv"
-time3=$?
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor.py -p ${BIGDL_ROOT}/data/incd.csv
+now=$(date "+%s")
+time3=$((now-start))
 
 set -e
 ray stop -f
 
-echo "#start orca ray example tests"
 echo "#4 Start rl_pong example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py --iterations 10
