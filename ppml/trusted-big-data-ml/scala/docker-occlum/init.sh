@@ -6,21 +6,19 @@ BLUE='\033[1;34m'
 NC='\033[0m'
 occlum_glibc=/opt/occlum/glibc/lib/
 
+
 init_occlum_instance() {
     # Init Occlum instance
     rm -rf occlum_spark && mkdir occlum_spark
     cd occlum_spark
     occlum init
-    new_json="$(jq '.resource_limits.user_space_size = "16000MB" |
-        .resource_limits.max_num_of_threads = 256 |
-        .process.default_heap_size = "128MB" |
-        .resource_limits.kernel_space_heap_size="256MB" |
-        .process.default_mmap_size = "15000MB" |
+    new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
 	.env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/opt/spark/jars/*","SPARK_CLASSPATH=/opt/spark/jars/*"] |
 		.env.untrusted = [ "KUBERNETES_SERVICE_PORT_HTTPS", "KUBERNETES_SERVICE_PORT", "SPARK_EXECUTOR_ID", "HOSTNAME", "SPARK_JAVA_OPT_0", "SPARK_JAVA_OPT_1", "SPARK_JAVA_OPT_2", "KUBERNETES_PORT_443_TCP", "SPARK_APPLICATION_ID", "SPARK_EXECUTOR_CORES", "SPARK_USER", "SPARK_LOCAL_DIRS", "KUBERNETES_PORT_443_TCP_PROTO", "KUBERNETES_PORT_443_TCP_ADDR", "SPARK_EXECUTOR_MEMORY", "KUBERNETES_SERVICE_HOST", "KUBERNETES_PORT", "KUBERNETES_PORT_443_TCP_PORT", "SPARK_DRIVER_URL", "SPARK_EXECUTOR_POD_IP"]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
-
+    echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
+    sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
 }
 
 build_spark() {
