@@ -30,6 +30,7 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 from bigdl.dllib.utils.common import get_node_and_core_number
+from bigdl.orca.learn.pytorch.torch_pyspark_runner import find_ip_and_port
 
 
 import ray
@@ -193,7 +194,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 when creating the Estimator.
         """
         init_params = dict(mode="fit")
-        init_params.update(self.init_params)
+        init_params.update(self.worker_init_params)
 
         params = dict(
             epochs=epochs,
@@ -212,36 +213,23 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         if isinstance(data, SparkXShards):
             # set train/validation
-            param["wrap_dataloader"] = False
-            if validation_data is None:
-                def transform_func(iter, init_param, param):
-                    partition_data = list(iter)
-                    param["data_creator"] = make_data_creator(partition_data)
-                    return TorchPysparkRunner(**init_params).train_epochs(**param)
+            params["wrap_dataloader"] = False
 
-                res = data.rdd.repartition(self.num_workers).barrier() \
-                      .mapPartitions(
-                          lambda iter: transform_func(iter, init_params, params)).collect()
+            def transform_func(iter, init_params, param):
+                partition_data = list(iter)
+                param["data_creator"] = make_data_creator(partition_data)
+                return TorchPysparkRunner(**init_params).train_epochs(**param)
 
-            else:
-                def transform_func(iter, init_param, param):
-                    data_tuple_list = list(iter)
-                    data_list = [x[0] for x in data_tuple_list]
-                    valid_list = [x[1] for x in data_tuple_list]
-                    param["data_creator"] = make_data_creator(data_list)
-                    param["validation_data_creator"] = make_data_creator(valid_list)
-                    return TorchPysparkRunner(**init_param).train_epochs(**param)
+            res = data.rdd.repartition(self.num_workers).barrier() \
+                .mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)).collect()
 
-                res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
-                    .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             assert isinstance(data, types.FunctionType), \
                 "data should be either an instance of SparkXShards or a callable function, but " \
                 "got type: {}".format(type(data))
 
             params["data_creator"] = data
-            params["validation_data_creator"] = validation_data
 
             def transform_func(iter, init_param, param):
                 return TorchPysparkRunner(**init_param).train_epochs(**param)
@@ -272,10 +260,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode="predict",
             state_dict=self.state_dict,
         )
-        init_params.update(self.init_params)
+        init_params.update(self.worker_init_params)
 
         from bigdl.orca.data import SparkXShards
-        param = dict(
+        params = dict(
             batch_size=batch_size,
             profile=profile
         )
@@ -287,11 +275,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict")
+
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
                 # res = combine_in_partition(partition_data)
                 param["data_creator"] = make_data_creator(partition_data)
-                return SparkRunner(**init_param).predict(**param)
+                return TorchPysparkRunner(**init_param).predict(**params)
 
             pred_shards = SparkXShards(xshards.rdd.repartition(self.num_workers) \
                                        .mapPartitions(
@@ -341,7 +330,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode="evaluate",
             state_dict=self.state_dict,
             )
-        init_params.update(self.init_params)
+        init_params.update(self.worker_init_params)
 
         params = dict(
             batch_size=batch_size,
@@ -360,17 +349,17 @@ class PyTorchPySparkEstimator(BaseEstimator):
         if isinstance(data, SparkXShards):
             # set train/validation data
             def transform_func(iter, init_param, param):
-                               partition_data = list(iter)
+                partition_data = list(iter)
                 param["data_creator"] = make_data_creator(partition_data)
                 return TorchPysparkRunner(**init_param).validate(**param)
 
             res = data.rdd.repartition(self.num_workers).barrier() \
                 .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-           params["data_creator"] = data
+            params["data_creator"] = data
 
             def transform_func(iter, init_param, param):
-                return SparkRunner(**init_param).validate(**param)
+                return TorchPysparkRunner(**init_param).validate(**param)
 
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()

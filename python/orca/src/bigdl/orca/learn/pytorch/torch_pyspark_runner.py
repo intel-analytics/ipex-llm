@@ -48,6 +48,8 @@ from bigdl.orca.learn.pytorch import utils
 
 from pyspark import BarrierTaskContext
 from pyspark.context import SparkContext
+from contextlib import closing
+import socket
 
 logger = logging.getLogger(__name__)
 
@@ -148,10 +150,9 @@ class TorchPysparkRunner:
         import torch
         torch.set_num_threads(cores_per_node)
 
-    def setup_distributed(self, mode, cluster_info):
-        tc = BarrierTaskContext().get()
-        self.rank = self._get_rank(cluster_info, tc)
-        print("cluster is: ", cluster)
+    def setup_distributed(self, cluster_info):
+        self.rank = self._get_rank(cluster_info)
+        print("cluster is: ", cluster_info)
 
         address = f"tcp://{cluster_info[0]}"
         self._setup_torch_distribute(url=address,
@@ -176,7 +177,7 @@ class TorchPysparkRunner:
         ]
         self.setup_operator(training_models)
 
-    def _get_rank(self, cluster_info, tc):
+    def _get_rank(self, cluster_info):
         # As task placement may not be identical between two different jobs,
         # we cannot simply index cluster_info using partitionId to get current
         # ip and port.
@@ -287,7 +288,7 @@ class TorchPysparkRunner:
             from torch.utils.data import IterableDataset
             not_iterable = not isinstance(loader.dataset, IterableDataset)
         except Exception as e:
-            not_iterable = TorchRunner
+            not_iterable = TorchPysparkRunner
         return (isinstance(loader, DataLoader)
                 and not_iterable)
 
@@ -302,7 +303,7 @@ class TorchPysparkRunner:
             loader = data_creator(config, batch_size)
 
         if wrap_dataloader is None:
-            if TorchRunner.should_wrap_dataloader(loader):
+            if TorchPysparkRunner.should_wrap_dataloader(loader):
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
@@ -356,7 +357,7 @@ class TorchPysparkRunner:
             loader = data_creator(config, batch_size)
 
         if wrap_dataloader is None:
-            if TorchRunner.should_wrap_dataloader(loader):
+            if TorchPysparkRunner.should_wrap_dataloader(loader):
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
@@ -373,7 +374,7 @@ class TorchPysparkRunner:
         if profile:
             validation_stats.update(profile=self.timers.stats())
 
-        if self.rank==0:
+        if self.rank == 0:
             return validation_stats
         else:
             return []
