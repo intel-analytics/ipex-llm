@@ -87,7 +87,7 @@ RUN rm -f ${SPRK_HOME}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     cp -f /opt/src/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-${HADOOP_VERSION}.jar ${SPRK_HOME}/jars && \
     rm -rf /opt/src
 
-FROM ubuntu:18.04 as ppml
+FROM occlum/occlum:0.24.2-ubuntu18.04 as ppml
 
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
@@ -110,25 +110,32 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
 # Install occlum
+# RUN apt-get update && \
+#     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+#         build-essential ca-certificates openjdk-11-jdk \
+#         curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
+#         libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev unzip
+# # Add 01.org & key
+# RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
+#     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+
+# RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
+#     wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
+
+# RUN apt-get update && \
+#     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+#         build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools \
+#         gnupg2 vim jq make gdb libfuse-dev libtool \
+#         libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
+#         libsgx-dcap-quote-verify-dev \
+#         occlum && \
+#     apt-get clean
+
+# RUN echo "source /etc/profile" >> $HOME/.bashrc 
+
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        build-essential ca-certificates openjdk-11-jdk \
-        curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
-        libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev unzip
-# Add 01.org & key
-RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
-    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
-
-RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
-    wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
-
-RUN apt-get update && \
-    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools \
-        gnupg2 vim jq make gdb libfuse-dev libtool \
-        libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
-        libsgx-dcap-quote-verify-dev \
-        occlum && \
+        openjdk-11-jdk && \
     apt-get clean
 
 # prepare Spark
