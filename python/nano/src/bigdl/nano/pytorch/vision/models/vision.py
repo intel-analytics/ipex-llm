@@ -34,14 +34,6 @@ def resnet18(pretrained: bool = False, include_top: bool = False, freeze: bool =
     """
 
     model = torchvision.models.resnet18(pretrained=pretrained)
-
-
-
-
-
-
-
-
     if freeze:
         set_parameter_requires_grad(model, "fc")
     if not include_top:
