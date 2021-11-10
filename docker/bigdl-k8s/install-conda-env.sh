@@ -74,23 +74,24 @@ pip install aioredis==1.1.0 && \
 pip install tensorflow==2.4.0 && \
 source deactivate
 
-conda create -y -n py37-horovod-tes python==3.7 && \
+conda create -y -n py37-horovod-test python==3.7 && \
 source activate py37-horovod-test && \
+pip install --no-cache-dir --upgrade pip && \
 conda install -y pytorch==1.4.0 torchvision==0.5.0 cpuonly -c pytorch && \
 conda install -y cmake==3.16.0 && \
 HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2 && \
-pip install ray==1.2.0 && \
-pip install psutil==5.7.0 && \
-pip install aiohttp==3.6.2 && \
-pip install setproctitle==1.1.0 && \
-pip install pyarrow==0.17.0 && \
-pip install pandas==1.0.3 && \
-pip install scikit-learn==0.22.0 && \
-pip install convertdate==2.3.2 && \
-pip install pystan==2.19.1.1 && \
-pip install prophet==1.0.1 && \
-pip install tsfresh==0.18.0 && \
-pip install aioredis==1.1.0 && \
-pip install pytest==5.4.1 && \
-pip install protobuf==3.12.0 && \
+pip install --no-cache-dir ray==1.2.0 && \
+pip install --no-cache-dir psutil==5.7.0 && \
+pip install --no-cache-dir aiohttp==3.6.2 && \
+pip install --no-cache-dir setproctitle==1.1.0 && \
+pip install --no-cache-dir pyarrow==0.17.0 && \
+pip install --no-cache-dir pandas==1.0.3 && \
+pip install --no-cache-dir scikit-learn==0.22.0 && \
+pip install --no-cache-dir convertdate==2.3.2 && \
+pip install --no-cache-dir pystan==2.19.1.1 && \
+pip install --no-cache-dir prophet==1.0.1 && \
+pip install --no-cache-dir tsfresh==0.18.0 && \
+pip install --no-cache-dir aioredis==1.1.0 && \
+pip install --no-cache-dir pytest==5.4.1 && \
+pip install --no-cache-dir protobuf==3.12.0 && \
 source deactivate
