@@ -53,7 +53,7 @@ else
 fi
 
 python ../../example/wnd/train/wnd_train_recsys.py \
-    --executor_cores 4 \
+    --executor_cores 1 \
     --executor_memory 50g \
     --data_dir ./data/input_wnd \
     --model_dir ./result \
