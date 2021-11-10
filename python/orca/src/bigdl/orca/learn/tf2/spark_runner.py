@@ -374,7 +374,6 @@ class SparkRunner:
             config.update(data_config)
         config["batch_size"] = batch_size
 
-        # strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
         with self.strategy.scope():
             model = self.model_creator(self.config)
             if self.model_weights:

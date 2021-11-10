@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import shutil
+import tempfile
 from unittest import TestCase
 
 import numpy as np
@@ -25,9 +26,9 @@ from bigdl.orca import OrcaContext
 
 import os
 
-
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../../resources")
+
 
 def simple_model(config):
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
@@ -56,7 +57,6 @@ def model_creator(config):
 
 
 class TestTFEstimator(TestCase):
-
     # todo need more test cases
     def test_dataframe(self):
         sc = OrcaContext.get_spark_context()
@@ -64,42 +64,44 @@ class TestTFEstimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
             "lr": 0.2
         }
-        trainer = Estimator.from_keras(
-            model_creator=model_creator,
-            verbose=True,
-            config=config,
-            workers_per_node=2,
-            backend="spark",
-            model_dir="/tmp/model")
 
-        res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                          feature_cols=["feature"],
-                          label_cols=["label"],
-                          validation_data=df,
-                          validation_steps=1)
-
-        res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                               label_cols=["label"])
-        print("validation result: ", res)
-
-        print("start saving")
         try:
-            trainer.save_weights("/tmp/cifar10_keras.h5")
-            trainer.load_weights("/tmp/cifar10_keras.h5")
-            trainer.save("/tmp/a.model")
-            trainer.load("/tmp/a.model")
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark",
+                model_dir=temp_dir)
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+
+            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            print("start saving")
+
+            trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            trainer.save(os.path.join(temp_dir, "a.model"))
+            trainer.load(os.path.join(temp_dir, "a.model"))
             res = trainer.predict(df, feature_cols=["feature"]).collect()
         finally:
-            os.remove("/tmp/cifar10_keras.h5")
-            shutil.rmtree("/tmp/a.model")
+            shutil.rmtree(temp_dir)
 
 
 if __name__ == "__main__":
     pytest.main([__file__])
-
