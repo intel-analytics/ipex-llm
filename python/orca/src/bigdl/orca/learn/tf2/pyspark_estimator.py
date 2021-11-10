@@ -141,7 +141,7 @@ class SparkTFEstimator():
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             is_local=self.is_local,
-            redis_address=":".join([self.ip, self.redis_port]),
+            redis_address=":".join([self.ip, str(self.redis_port)]),
             redis_password=self.redis_password
         )
 
@@ -232,7 +232,7 @@ class SparkTFEstimator():
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc),
             is_local=self.is_local,
-            redis_address=":".join([self.ip, self.redis_port]),
+            redis_address=":".join([self.ip, str(self.redis_port)]),
             redis_password=self.redis_password
         )
 
@@ -303,7 +303,7 @@ class SparkTFEstimator():
             mode="predict",
             cluster_info=None,
             is_local=self.is_local,
-            redis_address=":".join([self.ip, self.redis_port]),
+            redis_address=":".join([self.ip, str(self.redis_port)]),
             redis_password=self.redis_password
         )
 
