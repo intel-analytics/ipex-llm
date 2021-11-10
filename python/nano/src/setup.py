@@ -32,7 +32,8 @@ exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
 nano_home = os.path.abspath(__file__ + "/../")
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
-VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
+VERSION = open(os.path.join(bigdl_home, 'python/version.txt'),
+               'r').read().strip()
 
 lib_urls = [
     "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
@@ -71,7 +72,8 @@ def setup_package():
 
     install_requires = ["intel-openmp"]
 
-    tensorflow_requires = ["intel-tensorflow"]
+    tensorflow_requires = ["intel-tensorflow==2.6.0",
+                           "keras==2.6.0"]
 
     pytorch_requires = ["torch==1.8.0",
                         "torchvision==0.9.0",
