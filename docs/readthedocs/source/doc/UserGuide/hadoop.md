@@ -108,7 +108,7 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
 - Use `spark-submit` to submit your BigDL program (e.g. script.py):
 
   ```bash
-spark-submit-with-dllib \
+  spark-submit-with-dllib \
       --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./environment/bin/python \
       --master yarn-cluster \
       --executor-memory 10g \
