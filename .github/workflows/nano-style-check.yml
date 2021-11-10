@@ -3,9 +3,9 @@ name: CI Style Checking
 # Controls when the action will run. 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ branch-2.0 ]
   pull_request:
-    branches: [ $default-branch ]
+    branches: [ branch-2.0 ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
