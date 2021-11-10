@@ -50,7 +50,7 @@ Thus before running bigdl applications, you should unset all the spark related e
 Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by default.
 
 ---
-### **2. Init on YARN with build-in function**
+### **2. Run on YARN with build-in function**
 
 - Install BigDL components in the created conda environment via pip, like dllib and orca:
 
@@ -87,21 +87,9 @@ Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by def
   ```
 
 ---
-### **3. Init on YARN with spark-submit**
+### **3. Run on YARN with spark-submit**
 
 Follow the steps below if you need to run BigDL with [spark-submit](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).
-
-- Download and extract [Spark](https://spark.apache.org/downloads.html). You are recommended to use [Spark 2.4.6](https://archive.apache.org/dist/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz). Set the environment variable `SPARK_HOME`:
-
-  ```bash
-  export SPARK_HOME=the root directory where you extract the downloaded Spark package
-  ```
-
-- Download and extract [BigDL](../release.md). Make sure the BigDL package you download is built with the compatible version with your Spark. Set the environment variable `BIGDL_HOME`:
-
-  ```bash
-  export BIGDL_HOME=the root directory where you extract the downloaded BigDL package
-  ```
 
 - Pack the current conda environment to `environment.tar.gz` (you can use any name you like):
 
@@ -120,7 +108,7 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
 - Use `spark-submit` to submit your BigDL program (e.g. script.py):
 
   ```bash
-  PYSPARK_PYTHON=./environment/bin/python ${BIGDL_HOME}/bin/spark-submit-python-with-bigdl.sh \
+  PYSPARK_PYTHON=./environment/bin/python spark-submit-with-dllib \
       --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./environment/bin/python \
       --master yarn-cluster \
       --executor-memory 10g \
