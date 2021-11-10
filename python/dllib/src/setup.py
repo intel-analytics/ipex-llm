@@ -75,7 +75,7 @@ def get_bigdl_packages():
 
 def setup_package():
     SCRIPTS_TARGET = os.path.join("../../../", "scripts/")
-    script_names = ["spark-shell-with-dllib.sh", "spark-submit-with-dllib.sh"]
+    script_names = ["pyspark-with-dllib", "spark-submit-with-dllib"]
     scripts = list(map(lambda script: os.path.join(
                     SCRIPTS_TARGET, script), script_names))
     metadata = dict(
