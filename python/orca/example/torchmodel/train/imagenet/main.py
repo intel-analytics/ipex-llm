@@ -44,6 +44,8 @@ def main():
                              ' (default: resnet18)')
     parser.add_argument('--epochs', default=90, type=int, metavar='N',
                         help='number of total epochs to run')
+    parser.add_argument('--max_epochs', default=90, type=int, metavar='N',
+                        help='number of max epochs to run')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')
     parser.add_argument('-b', '--batch-size', default=256, type=int,
@@ -144,10 +146,11 @@ def main():
     estimator = Estimator(zooModel, optim_methods=zooOptimizer)
     train_featureSet = FeatureSet.pytorch_dataloader(train_loader)
     test_featureSet = FeatureSet.pytorch_dataloader(val_loader)
-    estimator.train_minibatch(train_featureSet, zooCriterion, end_trigger=MaxEpoch(90),
+    estimator.train_minibatch(train_featureSet, zooCriterion, end_trigger=MaxEpoch(args.max_epochs),
                               checkpoint_trigger=EveryEpoch(), validation_set=test_featureSet,
                               validation_method=[Accuracy(), Top5Accuracy()])
 
 
 if __name__ == '__main__':
     main()
+
