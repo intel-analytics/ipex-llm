@@ -44,7 +44,8 @@ class TestSeq2Seq(ZooTestCase):
 
         self.config = {
             'batch_size': 32,
-            'epochs': 1
+            'epochs': 1,
+            'latent_dim': 8
         }
 
         self.model_1 = LSTMSeq2Seq(check_optional_config=False,
@@ -84,7 +85,7 @@ class TestSeq2Seq(ZooTestCase):
         model_config = {
             'batch_size': 32,
             'epochs': 1,
-            'latent_dim': 128,
+            'latent_dim': 8,
             'dropout': 0.2
         }
         model.fit_eval((x_train, y_train), **model_config)
@@ -178,7 +179,7 @@ class TestSeq2Seq(ZooTestCase):
         assert_array_almost_equal(predict_before, predict_after, decimal=2), \
             "Prediction values are not the same after restore: " \
             "predict before is {}, and predict after is {}".format(predict_before, predict_after)
-        new_config = {'epochs': 1}
+        new_config = {'epochs': 1, 'latent_dim': 8}
         new_model.fit_eval((x_train, y_train), **new_config)
         os.remove(ckpt)
 
@@ -201,7 +202,7 @@ class TestSeq2Seq(ZooTestCase):
         assert_array_almost_equal(predict_before, predict_after, decimal=2), \
             "Prediction values are not the same after restore: " \
             "predict before is {}, and predict after is {}".format(predict_before, predict_after)
-        new_config = {'epochs': 1}
+        new_config = {'epochs': 1, 'latent_dim': 8}
         new_model.fit_eval((x_train, y_train), **new_config)
         os.remove(ckpt)
 

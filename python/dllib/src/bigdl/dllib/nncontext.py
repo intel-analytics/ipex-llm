@@ -458,7 +458,10 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
     if cluster_mode == "spark-submit":
         sc = init_internal_nncontext(conf, spark_log_level, redirect_spark_log)
     elif cluster_mode == "local":
-        os.environ["SPARK_DRIVER_MEMORY"] = conf.get("spark.driver.memory", memory)
+        if conf:
+            os.environ["SPARK_DRIVER_MEMORY"] = conf.get("spark.driver.memory")
+        else:
+            os.environ["SPARK_DRIVER_MEMORY"] = memory
 
         python_location = None
         if "python_location" in kwargs:

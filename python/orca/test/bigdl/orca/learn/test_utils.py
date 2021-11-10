@@ -211,6 +211,7 @@ class TestUtil(TestCase):
         shards = _dataframe_to_xshards(df, feature_cols=["feature"], label_cols=["label"])
         num_shards = shards.rdd.count()
         assert num_shards == df.rdd.count()
+        OrcaContext._shard_size = None
 
 
 if __name__ == "__main__":

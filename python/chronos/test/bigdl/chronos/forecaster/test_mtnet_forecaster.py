@@ -48,8 +48,8 @@ class TestChronosModelMTNetForecaster(TestCase):
             x = self.ft._roll_test(test_data, past_seq_len=past_seq_len)
             return x
 
-        self.long_num = 6
-        self.time_step = 2
+        self.long_num = 4
+        self.time_step = 1
         look_back = (self.long_num + 1) * self.time_step
         look_forward = 1
         self.x_train, self.y_train = gen_train_sample(data=np.random.randn(

@@ -74,4 +74,4 @@ __Options:__
 * `frequency_limit`: Categories with frequency below this value will be omitted from encoding. We recommend using 15 when you preprocess the full 1TB dataset. Default to be 15.
 * `input_folder`: The path to the folder of parquet files, either a local path or an HDFS path.
 * `output_folder`: The path to save the preprocessed data to parquet files. HDFS path is recommended.
-* `cross_sizes`: bucket sizes for cross columns (`c14-c15` and `c16-c17`) separated by comma. Default to be 10000,10000. Please pay attention that there must not be a blank space between the two numbers.
+* `cross_sizes`: The bucket sizes for cross columns (`c14-c15` and `c16-c17`) separated by comma. Default to be 10000,10000. Please pay attention that there must not be a blank space between the two numbers.

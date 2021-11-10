@@ -38,8 +38,8 @@ def resample_timeseries_dataframe(df,
     '''
     assert dt_col in df.columns, f"dt_col {dt_col} can not be found in df."
     assert pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col"
-    assert merge_mode in ["max", "min", "mean", "sum"],\
-        f"merge_mode should be one of [\"max\", \"min\", \"mean\", \"sum\"]," \
+    assert merge_mode in ['max', 'min', 'mean', 'sum'],\
+        "merge_mode should be one of ['max', 'min', 'mean', 'sum']," \
         f" but found {merge_mode}."
 
     res_df = df.copy()
