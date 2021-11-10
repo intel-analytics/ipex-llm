@@ -33,24 +33,24 @@ You can run this example on local mode (default) and yarn-client mode.
 
 - Run with Spark Local mode:
 ```bash
-python super_resolution.py --cluster_mode local --data_dir "/your/path"
+python super_resolution.py --cluster_mode local
 ```
 
 - Run with Yarn-Client mode:
 ```bash
-python super_resolution.py --cluster_mode yarn --data_dir "/your/path"
+python super_resolution.py --cluster_mode yarn
 ```
 
 You can run this example with bigdl backend (default) or torch_distributed backend. 
 
 - Run with bigdl backend:
 ```bash
-python super_resolution.py --backend bigdl --data_dir "/your/path"
+python super_resolution.py --backend bigdl
 ```
 
 - Run with torch_distributed backend:
 ```bash
-python super_resolution.py --backend torch_distributed --data_dir "/your/path"
+python super_resolution.py --backend torch_distributed
 ```
 
 **Options**
