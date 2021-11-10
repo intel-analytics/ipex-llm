@@ -1,4 +1,4 @@
-name: CI Style Checking
+name: Nano code style checking
 
 # Controls when the action will run. 
 on:
