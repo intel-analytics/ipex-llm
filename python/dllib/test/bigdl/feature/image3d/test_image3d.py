@@ -17,7 +17,7 @@
 import pytest
 import h5py
 from math import pi
-from bigdl.dllib.utils.nncontext import *
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import *
 from bigdl.dllib.feature.image3d.transformation import *
 
@@ -30,7 +30,6 @@ class Test_Image3D():
         """
         self.sc = init_nncontext(create_spark_conf().setMaster("local[4]")
                                  .setAppName("test image set")
-                                 .set("spark.shuffle.reduceLocality.enabled", "false")
                                  .set("spark.shuffle.blockTransferService", "nio")
                                  .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
                                  .set("spark.speculation", "false")

@@ -15,6 +15,7 @@
     <properties>
         <akka.http.version>10.1.11</akka.http.version>
         <akka.actor.version>2.5.26</akka.actor.version>
+        <spark-scope>compile</spark-scope>
     </properties>
 
     <dependencies>
@@ -52,11 +53,6 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
             <version>${scala.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-actors</artifactId>
-            <version>2.11.8</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -188,6 +184,21 @@
             <artifactId>metrics-core</artifactId>
             <version>4.1.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams</artifactId>
+            <version>2.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>2.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams-scala_2.11</artifactId>
+            <version>2.4.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -214,7 +225,35 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <!--Please don't merge this shade plugin with spark-version's shade plugin to spark/pom.xml,
                  or shade plugin will be executed after assembly plugin. -->
@@ -224,34 +263,22 @@
                 <configuration>
                     <filters>
                         <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
                             <artifact>com.google.protobuf</artifact>
                             <excludes>
                                 <exclude>META-INF/maven/com.google.protobuf/protobuf-java/*</exclude>
                             </excludes>
                         </filter>
                     </filters>
-                    <relocations>
-                        <relocation>
-                            <pattern>com.google.protobuf</pattern>
-                            <shadedPattern>com.intel.analytics.shaded.protobuf_v_3_5_1</shadedPattern>
-                        </relocation>
-                    </relocations>
                 </configuration>
                 <executions>
-                    <execution>
-                        <id>shade</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>com.google.protobuf</include>
-                                </includes>
-                            </artifactSet>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>serving</id>
                         <phase>package</phase>
@@ -261,8 +288,66 @@
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>com.intel.analytics.zoo:zoo-core-dist-mac</exclude>
+                                    <exclude>com.intel.analytics.zoo:zoo-core-tfnet-mac</exclude>
+                                    <exclude>com.intel.analytics.zoo:zoo-core-openvino-java-mac</exclude>
+                                </excludes>
+                            </artifactSet>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>http</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>http</shadedClassifierName>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>reference.conf</resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>com.intel.analytics.bigdl.serving.http.FrontEndApp</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>ml.dmlc:xgboost4j</exclude>
+                                    <exclude>black.ninia:jep</exclude>
+                                    <exclude>org.tensorflow:tensorflow-hadoop</exclude>
+                                    <exclude>com.intel.analytics.zoo:zoo-core-dist-mac</exclude>
+                                    <exclude>com.intel.analytics.zoo:zoo-core-tfnet-mac</exclude>
+                                    <exclude>com.intel.analytics.zoo:zoo-core-openvino-java-mac</exclude>
+                                    <exclude>org.apache.spark:*</exclude>
+                                    <exclude>net.sf.py4j:*</exclude>
+                                    <exclude>org.apache.hadoop:*</exclude>
+                                    <exclude>org.apache.parquet:*</exclude>
+                                    <exclude>org.apache.orc:*</exclude>
+                                    <exclude>org.apache.avro:*</exclude>
+                                    <exclude>org.apache.ivy:*</exclude>
+                                    <exclude>org.xerial.snappy:*</exclude>
+                                    <exclude>org.glassfish.hk2:*</exclude>
+                                    <exclude>org.glassfish.jersey.core:*</exclude>
+                                    <exclude>org.codehaus.jackson:*</exclude>
+                                    <exclude>org.codehaus.janino:janino</exclude>
+                                    <exclude>io.netty:netty</exclude>
+                                    <exclude>org.apache.commons:commons-math3</exclude>
+                                    <exclude>org.apache.commons:commons-compress</exclude>
+                                    <exclude>org.scala-lang:scala-reflect</exclude>
+                                    <exclude>xerces:xercesImpl</exclude>
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
             <plugin>
@@ -274,7 +359,7 @@
                         <inherited>false</inherited>
                         <configuration>
                             <descriptors>
-                                <descriptor>${project.basedir}/../../python/orca/src/python-zip.xml
+                                <descriptor>${project.basedir}/../../python/serving/src/python-zip.xml
                                 </descriptor>
                             </descriptors>
                         </configuration>
@@ -282,6 +367,20 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>make-cluster-serving-all</id>
+                        <inherited>false</inherited>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/cluster-serving-all.xml
+                                </descriptor>
+                            </descriptors>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

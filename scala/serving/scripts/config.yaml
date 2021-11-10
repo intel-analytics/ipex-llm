@@ -33,8 +33,13 @@
 # default: localhost:8081
 # flinkRestUrl:
 
+# default: redis, support: redis, kafka
+# queueUsed:
+
 # default: localhost:6379
 # redisUrl:
+# default: localhost:9092
+# kafkaUrl:
 
 # default: 8g
 # redisMaxmemory:

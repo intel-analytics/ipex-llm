@@ -180,7 +180,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train an RL agent")
 
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The mode for the Spark cluster. local or yarn.')
+                        help='The mode for the Spark cluster. local, yarn or spark-submit.')
     parser.add_argument("--batch_size", default=10, type=int,
                         help="The number of roll-outs to do per batch.")
     parser.add_argument("--iterations", default=-1, type=int,
@@ -224,8 +224,11 @@ if __name__ == "__main__":
     elif cluster_mode == "local":
         sc = init_orca_context(cores=args.driver_cores)
         ray_ctx = OrcaContext.get_ray_context()
+    elif cluster_mode == "spark-submit":
+        sc = init_orca_context(cluster_mode=cluster_mode)
+        ray_ctx = OrcaContext.get_ray_context()        
     else:
-        print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
               + cluster_mode)
 
     batch_size = args.batch_size
@@ -279,3 +282,4 @@ if __name__ == "__main__":
 
     ray_ctx.stop()
     stop_orca_context()
+

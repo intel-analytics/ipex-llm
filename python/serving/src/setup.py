@@ -34,18 +34,17 @@ def setup_package():
                     os.path.isfile(os.path.join(SCRIPTS_TARGET, f))]
     scripts = list(map(lambda script: os.path.join(
         SCRIPTS_TARGET, script), script_names))
-
+    print(os.listdir("../.."))
     metadata = dict(
         name='bigdl-serving',
         version=VERSION,
-        description='A unified Data Analytics and AI platform for distributed TensorFlow, Keras, '
-                    'PyTorch, Apache Spark/Flink and Ray',
+        description='Distributed and Automated Model Inference on Big Data Streaming Frameworks',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=['bigdl.serving', 'bigdl.conf'],
-        package_dir={'bigdl.serving': '../../serving/'},
+        package_dir={'bigdl': '../../serving/src/bigdl'},
         package_data={"bigdl.conf": ['config.yaml']},
         include_package_data=False,
         scripts=scripts,

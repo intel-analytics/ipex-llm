@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.keras.{Input, KerasLayer, Model}
 import com.intel.analytics.bigdl.dllib.nn.{Graph, Linear}
 import com.intel.analytics.bigdl.dllib.utils.{Engine, Shape}
-import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers.Dense
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.{AbstractModuleRef, EngineRef, GraphRef, KerasLayerRef}

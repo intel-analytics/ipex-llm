@@ -16,13 +16,13 @@
 
 import tensorflow as tf
 import numpy as np
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset, TFEstimator
 from bigdl.orca.tfpark import ZooOptimizer
 
 
 def get_data(dataset):
-    from bigdl.dataset import mnist
+    from bigdl.dllib.feature.dataset import mnist
     (images_data, labels_data) = mnist.read_data_sets("/tmp/mnist", dataset)
     images_data = (images_data - mnist.TRAIN_MEAN) / mnist.TRAIN_STD
     return (images_data, labels_data.astype(np.int32))

@@ -29,7 +29,7 @@ class AutoTSTrainer:
                  horizon=1,
                  dt_col="datetime",
                  target_col="value",
-                 logs_dir="~/zoo_automl_logs",
+                 logs_dir="~/bigdl_automl_logs",
                  extra_features_col=None,
                  search_alg=None,
                  search_alg_params=None,
@@ -84,14 +84,14 @@ class AutoTSTrainer:
             hdfs URI for now.
         :return a TSPipeline
         """
-        zoo_pipeline = self.internal.fit(train_df,
-                                         validation_df,
-                                         metric,
-                                         recipe,
-                                         mc=uncertainty,
-                                         upload_dir=upload_dir)
+        bigdl_pipeline = self.internal.fit(train_df,
+                                           validation_df,
+                                           metric,
+                                           recipe,
+                                           mc=uncertainty,
+                                           upload_dir=upload_dir)
         ppl = TSPipeline()
-        ppl.internal = zoo_pipeline
+        ppl.internal = bigdl_pipeline
         return ppl
 
 

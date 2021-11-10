@@ -27,7 +27,6 @@ bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
-bigdllib_version = '.'.join(VERSION.split('.')[:-1])
 
 building_error_msg = """
 If you are packing python API from BigDL source, you must build BigDL first
@@ -91,15 +90,11 @@ def setup_package():
         url='https://github.com/intel-analytics/analytics-zoo',
         packages=get_bigdl_packages(),
         install_requires=['conda-pack==0.3.1', 'packaging', 'filelock',
-                          'bigdl-tf=='+VERSION, 'bigdl-math=='+VERSION, 'bigdl-dllib=='+VERSION],
+                          'bigdl-tf==0.14.0.dev0', 'bigdl-math==0.14.0.dev0', 'bigdl-dllib=='+VERSION],
         extras_require={'ray': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
                                 'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1'],
-                        'automl': ['tensorflow>=1.15.0,<2.0.0', 'h5py==2.10.0',
-                                   'ray[tune]==1.2.0', 'psutil', 'aiohttp==3.7.0',
-                                   'aioredis==1.1.0', 'setproctitle', 'hiredis==1.1.0',
-                                   'pandas==1.0.3', 'scikit-learn>=0.20.0,<=0.22.0', 'requests',
-                                   'scipy==1.5', 'protobuf==3.12.0', 'torch==1.8.1',
-                                   'tsfresh==0.17.0']},
+                        'automl': ['ray[tune]==1.2.0', 'scikit-learn', 'tensorboard', 'xgboost']
+                        },
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         package_data={"bigdl.share.orca": ['lib/bigdl-orca*.jar']},

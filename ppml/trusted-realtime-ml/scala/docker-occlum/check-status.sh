@@ -3,7 +3,7 @@
 
 REDISLOG="/opt/redis/redis-sgx.log"
 JMSGXLOG="/opt/flink-jobmanager-sgx.log"
-STANDALONELOG="/opt/${FLINK_VERSION}/log/flink-sgx-standalonesession-*.log"
+STANDALONELOG="/opt/flink-${FLINK_VERSION}/log/flink-sgx-standalonesession-*.log"
 TMSGXLOG="/opt/flink/flink---0.log"
 FRONTENDLOG="/opt/http-frontend-sgx.log"
 SERVINGLOG="/opt/cluster-serving-job-sgx.log"

@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.data import XShards
 
 import bigdl.orca.data.pandas
@@ -435,6 +435,7 @@ class TestTFRayEstimator(TestCase):
         trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                          label_cols=["label"])
         trainer.predict(df, feature_cols=["feature"]).collect()
+        OrcaContext._shard_size = None
 
     def test_partition_num_less_than_workers(self):
         sc = init_nncontext()

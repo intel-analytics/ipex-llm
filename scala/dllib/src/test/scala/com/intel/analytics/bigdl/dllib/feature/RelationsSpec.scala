@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.feature
 
-import com.intel.analytics.bigdl.dllib.common.NNContext
+import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.common.{Relation, RelationPair, Relations}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}

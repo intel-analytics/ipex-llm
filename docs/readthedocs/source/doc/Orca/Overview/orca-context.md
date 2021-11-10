@@ -10,7 +10,7 @@
 An Orca program usually starts with the initialization of `OrcaContext` as follows:
 
 ```python
-from zoo.orca import init_orca_context
+from bigdl.orca import init_orca_context
 
 init_orca_context(...)
 ```
@@ -47,7 +47,7 @@ Under the hood, `OrcaContext` will automatically provision Apache Spark and/or R
 Users can easily retrieve `SparkContext` and `RayContext`, the main entry point for Spark and Ray respectively, via `OrcaContext`:
 
 ```python
-from zoo.orca import OrcaContext
+from bigdl.orca import OrcaContext
 
 sc = OrcaContext.get_spark_context()
 ray_ctx = OrcaContext.get_ray_context()
@@ -75,7 +75,7 @@ Users can make extra configurations when using the functionalities of Project Or
 After the Orca program finishes, the user can call `stop_orca_context` to release resources and shut down the underlying Spark and/or Ray execution engine.
 
 ```python
-from zoo.orca import stop_orca_context
+from bigdl.orca import stop_orca_context
 
 stop_orca_context()
 ```

@@ -22,7 +22,7 @@ from unittest import TestCase
 import numpy as np
 from bigdl.dllib.feature.dataset.base import maybe_download
 
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.openvino import Estimator
 

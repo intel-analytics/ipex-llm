@@ -197,6 +197,9 @@ if __name__ == "__main__":
                               "spark.driver.host": args.k8s_driver_host,
                               "spark.driver.port": args.k8s_driver_port
                           })
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode="spark-submit")
 
     train_example(args)
     stop_orca_context()
+

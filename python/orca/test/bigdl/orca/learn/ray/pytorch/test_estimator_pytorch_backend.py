@@ -26,7 +26,7 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.learn.metrics import Accuracy
 
-from bigdl.dllib.utils.nncontext import init_nncontext
+from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
@@ -164,7 +164,7 @@ class TestPyTorchEstimator(TestCase):
 
         # Verify syncing weights, i.e. the two workers have the same weights after training
         import ray
-        remote_workers = estimator.estimator.remote_workers
+        remote_workers = estimator.remote_workers
         state_dicts = ray.get([worker.state_dict.remote() for worker in remote_workers])
         weights = [state["models"] for state in state_dicts]
         worker1_weights = weights[0][0]
@@ -175,7 +175,7 @@ class TestPyTorchEstimator(TestCase):
         estimator.shutdown()
 
     def test_spark_xshards(self):
-        from bigdl.dllib.utils.nncontext import init_nncontext
+        from bigdl.dllib.nncontext import init_nncontext
         from bigdl.orca.data import SparkXShards
         estimator = get_estimator(workers_per_node=1)
         sc = init_nncontext()
@@ -233,7 +233,7 @@ class TestPyTorchEstimator(TestCase):
                      ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2)
-        assert df.rdd.getNumPartitions() < estimator.estimator.num_workers
+        assert df.rdd.getNumPartitions() < estimator.num_workers
 
         estimator.fit(df, batch_size=4, epochs=2,
                       feature_cols=["feature"],

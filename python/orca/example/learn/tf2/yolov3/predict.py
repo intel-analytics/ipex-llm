@@ -96,6 +96,7 @@ def main():
 
     t1 = time.time()
     boxes, scores, classes, nums = yolo(img)
+    boxes=tf.clip_by_value(boxes, clip_value_min=0.0, clip_value_max=1.0)
     t2 = time.time()
     print('time: {}'.format(t2 - t1))
 
