@@ -86,6 +86,7 @@ class TestTFEstimator(TestCase):
 
         res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                label_cols=["label"])
+        print("validation result: ", res)
 
         print("start saving")
         try:
@@ -93,8 +94,6 @@ class TestTFEstimator(TestCase):
             trainer.load_weights("/tmp/cifar10_keras.h5")
             trainer.save("/tmp/a.model")
             trainer.load("/tmp/a.model")
-            # res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
-            #                        label_cols=["label"])
             res = trainer.predict(df, feature_cols=["feature"]).collect()
         finally:
             os.remove("/tmp/cifar10_keras.h5")

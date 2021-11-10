@@ -204,7 +204,10 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
-        weights = sc.broadcast(self.model_weights)
+        if self.model_weights:
+            weights = sc.broadcast(self.model_weights)
+        else:
+            weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -274,7 +277,10 @@ class SparkTFEstimator():
         """
         logger.info("Starting predict step.")
         sc = OrcaContext.get_spark_context()
-        weights = sc.broadcast(self.model_weights)
+        if self.model_weights:
+            weights = sc.broadcast(self.model_weights)
+        else:
+            weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -368,12 +374,9 @@ class SparkTFEstimator():
     @enable_multi_fs_load
     def load(self, filepath):
         """
-        Save tensorflow keras model in this estimator.
+        Load tensorflow keras model in this estimator.
 
         :param filepath: keras model weights save path.
-        :param by_name: Boolean, whether to load weights by name or by topological
-               order. Only topological loading is supported for weight files in
-               TensorFlow format.
         """
         import tensorflow as tf
         model = tf.keras.models.load_model(filepath)
