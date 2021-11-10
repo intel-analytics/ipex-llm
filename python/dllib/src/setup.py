@@ -74,6 +74,10 @@ def get_bigdl_packages():
     return bigdl_packages
 
 def setup_package():
+    SCRIPTS_TARGET = os.path.join("../../../", "scripts/")
+    script_names = ["spark-shell-with-dllib.sh", "spark-submit-with-dllib.sh"]
+    scripts = list(map(lambda script: os.path.join(
+                    SCRIPTS_TARGET, script), script_names))
     metadata = dict(
         name='bigdl-dllib',
         version=VERSION,
@@ -83,6 +87,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
+        scripts=scripts,
         install_requires=['numpy>=1.7', 'pyspark==2.4.6', 'six>=1.10.0'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
