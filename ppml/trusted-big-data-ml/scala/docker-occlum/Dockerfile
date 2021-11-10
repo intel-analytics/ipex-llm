@@ -87,7 +87,7 @@ RUN rm -f ${SPRK_HOME}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     cp -f /opt/src/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-${HADOOP_VERSION}.jar ${SPRK_HOME}/jars && \
     rm -rf /opt/src
 
-FROM occlum/occlum:0.24.2-ubuntu18.04 as ppml
+FROM occlum/occlum:0.25.0-ubuntu18.04 as ppml
 
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
