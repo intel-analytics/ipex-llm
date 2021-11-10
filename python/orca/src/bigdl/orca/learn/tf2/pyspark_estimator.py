@@ -217,7 +217,8 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=weights,
             mode="evaluate",
-            cluster_info=self._get_cluster_info(sc)
+            cluster_info=self._get_cluster_info(sc),
+            model_dir=self.model_dir
         )
 
         params = dict(
@@ -290,7 +291,8 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=weights,
             mode="predict",
-            cluster_info=None
+            cluster_info=None,
+            model_dir=self.model_dir
         )
 
         params = dict(

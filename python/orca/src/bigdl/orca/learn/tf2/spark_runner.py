@@ -373,14 +373,16 @@ class SparkRunner:
 
         with self.strategy.scope():
             model = self.model_creator(self.config)
-            if self.model_weights:
-                model.set_weights(self.model_weights.value)
-            elif self.model_dir:
-                start = time.time()
-                states = load_pkl(os.path.join(self.model_dir, "states.pkl"))
-                end = time.time()
-                print("loading states time: ", end-start)
-                model.set_weights(states['weights'])
+
+        if self.model_weights is not None:
+            print("set weights from broadcast")
+            model.set_weights(self.model_weights.value)
+        elif self.model_dir:
+            start = time.time()
+            states = load_pkl(os.path.join(self.model_dir, "states.pkl"))
+            end = time.time()
+            print("loading states time: ", end-start)
+            model.set_weights(states['weights'])
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -398,6 +400,8 @@ class SparkRunner:
             callbacks=callbacks,
         )
         results = model.evaluate(dataset, **params)
+
+        print("result is: ", results)
 
         if results is None:
             local_model = self.model_creator(self.config)
