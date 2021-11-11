@@ -53,8 +53,8 @@ case "$SPARK_K8S_CMD" in
     ;;
   executor)
     echo $SGX_MEM_SIZE
-    /opt/init.sh
-    cd /opt/occlum_spark/
+    /opt/runn_spark_on_occlum_glibc.sh init
+    cd /opt/occlum_instance_spark
     occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
         "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
         -Xms$SPARK_EXECUTOR_MEMORY \
