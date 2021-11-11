@@ -148,7 +148,7 @@ def get_estimator(workers_per_node=1, model_fn=get_model):
                                      metrics=Accuracy(),
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
-                                     backend="pyspark")
+                                     backend="spark")
     return estimator
 
 
@@ -260,22 +260,23 @@ class TestPyTorchEstimator(TestCase):
 
         assert np.array_equal(result, expected_result)
 
-    def test_pandas_dataframe(self):
+    # currently do not support pandas dataframe
+    # def test_pandas_dataframe(self):
 
-        OrcaContext.pandas_read_backend = "pandas"
-        file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
-        data_shard = read_csv(file_path, usecols=[0, 1, 2], dtype={0: np.float32, 1: np.float32,
-                                                                   2: np.float32})
+    #     OrcaContext.pandas_read_backend = "pandas"
+    #     file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+    #     data_shard = read_csv(file_path, usecols=[0, 1, 2], dtype={0: np.float32, 1: np.float32,
+    #                                                                2: np.float32})
 
-        estimator = get_estimator(model_fn=lambda config: SimpleModel())
-        estimator.fit(data_shard, batch_size=2, epochs=2,
-                      feature_cols=["user", "item"],
-                      label_cols=["label"])
+    #     estimator = get_estimator(model_fn=lambda config: SimpleModel())
+    #     estimator.fit(data_shard, batch_size=2, epochs=2,
+    #                   feature_cols=["user", "item"],
+    #                   label_cols=["label"])
 
-        estimator.evaluate(data_shard, batch_size=2, feature_cols=["user", "item"],
-                           label_cols=["label"])
-        result = estimator.predict(data_shard, batch_size=2, feature_cols=["user", "item"])
-        result.collect()
+    #     estimator.evaluate(data_shard, batch_size=2, feature_cols=["user", "item"],
+    #                        label_cols=["label"])
+    #     result = estimator.predict(data_shard, batch_size=2, feature_cols=["user", "item"])
+    #     result.collect()
 
     def test_multiple_inputs_model(self):
 

@@ -121,8 +121,7 @@ class TorchPysparkRunner:
 
         self.setup(cores_per_worker)
         if self.backend == "torch-distributed":
-            if mode == "fit" or mode == "evaluate":
-                self.setup_distributed(self.mode, self.cluster_info)
+            self.setup_distributed(self.mode, self.cluster_info)
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -150,31 +149,41 @@ class TorchPysparkRunner:
         import torch
         torch.set_num_threads(cores_per_node)
 
-    def setup_distributed(self, cluster_info):
-        self.rank = self._get_rank(cluster_info)
-        print("cluster is: ", cluster_info)
+    def setup_distributed(self, mode, cluster_info):
 
-        address = f"tcp://{cluster_info[0]}"
+        if mode == "fit":
+            self.rank = self._get_rank(cluster_info)
+            print("cluster is: ", cluster_info)
+
+            address = f"tcp://{cluster_info[0]}"
+        else:
+            self.rank = 0
+            address = None
         self._setup_torch_distribute(url=address,
                                      world_rank=self.rank,
-                                     world_size=self.size)
+                                     world_size=self.size,
+                                     mode=mode)
 
-    def _setup_torch_distribute(self, url, world_rank, world_size):
+    def _setup_torch_distribute(self, url, world_rank, world_size, mode):
         import torch.distributed as dist
         from torch.nn.parallel import DistributedDataParallel
-        dist.init_process_group(
-            backend="gloo",
-            init_method=url,
-            rank=world_rank,
-            world_size=world_size)
+        if mode == "fit":
+            dist.init_process_group(
+                backend="gloo",
+                init_method=url,
+                rank=world_rank,
+                world_size=world_size)
         self.backend = "torch-distributed"
         self.rank = world_rank
         self.size = world_size
         self.setup_components()
-        training_models = [
-            DistributedDataParallel(model)
-            for model in self.models
-        ]
+        if mode == "fit":
+            training_models = [
+                DistributedDataParallel(model)
+                for model in self.models
+            ]
+        else:
+            training_models = self.models
         self.setup_operator(training_models)
 
     def _get_rank(self, cluster_info):
@@ -312,9 +321,12 @@ class TorchPysparkRunner:
             stats = self.train_epoch(loader, profile=profile, info=info)
             stats_list.append(stats)
 
-        state_dict = self.state_dict
+        state_dict = self.get_state_dict()
 
-        return [state_dict, stats_list]
+        if self.rank == 0:
+            return [(state_dict, stats_list)]
+        else:
+            return []
 
     def train_epoch(self,
                     data_loader,
@@ -375,7 +387,7 @@ class TorchPysparkRunner:
             validation_stats.update(profile=self.timers.stats())
 
         if self.rank == 0:
-            return validation_stats
+            return [validation_stats]
         else:
             return []
 
@@ -418,7 +430,7 @@ class TorchPysparkRunner:
             self.timers.disable()
         self.training_operator._set_timers(self.timers)
 
-    def state_dict(self):
+    def get_state_dict(self):
         """Returns the state of the runner."""
         state = {
             "epoch": self.epochs,
@@ -450,7 +462,7 @@ class TorchPysparkRunner:
 
     def state_stream(self):
         """Returns a bytes object for the state dict."""
-        state_dict = self.state_dict()
+        state_dict = self.get_state_dict()
         _buffer = io.BytesIO()
         torch.save(state_dict, _buffer)
         return _buffer.getvalue()

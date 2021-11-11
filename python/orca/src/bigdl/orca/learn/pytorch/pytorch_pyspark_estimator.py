@@ -26,6 +26,7 @@ from bigdl.orca.learn.pytorch.torch_pyspark_runner import TorchPysparkRunner
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
+from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
@@ -35,6 +36,38 @@ from bigdl.orca.learn.pytorch.torch_pyspark_runner import find_ip_and_port
 
 logger = logging.getLogger(__name__)
 
+def partition_to_creator(partition):
+
+    def data_creator(config, batch_size):
+        from bigdl.orca.data.utils import ray_partition_get_data_label, index_data, get_size
+        from torch.utils.data import Dataset, DataLoader
+
+        class NDArrayDataset(Dataset):
+            def __init__(self, x, y):
+                self.x = x  # features
+                self.y = y  # labels
+
+            def __len__(self):
+                return get_size(self.y)
+
+            def __getitem__(self, i):
+                return index_data(self.x, i), index_data(self.y, i)
+
+        params = {"batch_size": batch_size, "shuffle": True}
+        for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
+                    "pin_memory", "drop_last", "timeout", "worker_init_fn",
+                    "multiprocessing_context"]:
+            if arg in config:
+                params[arg] = config[arg]
+        data, label = ray_partition_get_data_label(partition,
+                                                   allow_tuple=False,
+                                                   allow_list=False)
+        print("Data size on worker: ", len(label))
+        dataset = NDArrayDataset(data, label)
+        data_loader = DataLoader(dataset, **params)
+        return data_loader
+
+    return data_creator
 
 class PyTorchPySparkEstimator(BaseEstimator):
     def __init__(
@@ -74,6 +107,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.total_cores = num_nodes * cores_per_node
         self.cores_per_worker = cores_per_node // workers_per_node
 
+        # over partition to cover tasks all over the cluster
+        self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
+                                        self.total_cores * 4).repartition(self.num_workers)
+
         self.worker_init_params = dict(
             model_creator=self.model_creator,
             optimizer_creator=optimizer_creator,
@@ -85,14 +122,13 @@ class PyTorchPySparkEstimator(BaseEstimator):
             config=self.config.copy(),
             metrics=metrics,
             size=self.num_workers,
+            cores_per_worker=self.cores_per_worker,
             cluster_info=self._get_cluster_info(sc)
         )
 
-        # over partition to cover tasks all over the cluster
-        self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
-                                        self.total_cores * 4).repartition(self.num_workers)
+        self.driver_runner = TorchPysparkRunner(**self.worker_init_params, mode='predict')
 
-        self.state_dict = None
+        self.state_dict = self.driver_runner.get_state_dict()
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
@@ -138,7 +174,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
-        init_params = dict(mode="fit")
+        init_params = dict(mode="fit", state_dict=self.state_dict)
         init_params.update(self.worker_init_params)
 
         params = dict(
@@ -148,7 +184,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             info=info,
         )
 
-        from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
                                              feature_cols=feature_cols,
@@ -162,7 +197,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
             def transform_func(iter, init_params, param):
                 partition_data = list(iter)
-                param["data_creator"] = make_data_creator(partition_data)
+                param["data_creator"] = partition_to_creator(partition_data)
                 return TorchPysparkRunner(**init_params).train_epochs(**param)
 
             res = data.rdd.repartition(self.num_workers).barrier() \
@@ -182,9 +217,20 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        self.state_dict = res[0]
+        self.state_dict = res[0][0]
 
-        return res
+        return res[0][1]
+
+    def _predict_spark_xshards(self, xshards, init_params, params):
+        def transform_func(iter, init_param, param):
+            partition_data = list(iter)
+            # res = combine_in_partition(partition_data)
+            param["data_creator"] = make_data_creator(partition_data)
+            return TorchPysparkRunner(**init_param).predict(**params)
+
+        pred_shards = SparkXShards(xshards.rdd.mapPartitions(
+                                        lambda iter: transform_func(iter, init_params, params)))
+        return pred_shards
 
     def predict(self,
                 data,
@@ -214,23 +260,18 @@ class PyTorchPySparkEstimator(BaseEstimator):
         )
         from pyspark.sql import DataFrame
         if isinstance(data, DataFrame):
-            data = data.repartition(self.num_workers)
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict")
 
-            def transform_func(iter, init_param, param):
-                partition_data = list(iter)
-                # res = combine_in_partition(partition_data)
-                param["data_creator"] = make_data_creator(partition_data)
-                return TorchPysparkRunner(**init_param).predict(**params)
-
-            pred_shards = SparkXShards(xshards.rdd.repartition(self.num_workers) \
-                                       .mapPartitions(
-                                           lambda iter: transform_func(iter, init_params, params)))
+            pred_shards = self._predict_spark_xshards(xshards, init_params, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
+
+        elif isinstance(data, SparkXShards):
+            pred_shards = self._predict_spark_xshards(data, init_params, params)
+            result = update_predict_xshards(data, pred_shards)
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
 
@@ -295,7 +336,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             # set train/validation data
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
-                param["data_creator"] = make_data_creator(partition_data)
+                param["data_creator"] = partition_to_creator(partition_data)
                 return TorchPysparkRunner(**init_param).validate(**param)
 
             res = data.rdd.repartition(self.num_workers).barrier() \
@@ -358,3 +399,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             else:
                 stats[stat_key] = worker_stats[0][stat_key]
         return stats
+
+    def shutdown(self):
+        pass
