@@ -23,11 +23,11 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
     >>> from bigdl.chronos.data.repo_dataset import get_public_dataset
     >>> tsdata_network_traffic = get_public_dataset(name="network_traffic")
 
-    :param name: str, public dataset name, e.g. "network traffic".
+    :param name: str, public dataset name, e.g. "network_traffic".
     :param path: str, download path, the value defatults to "~/.chronos/dataset/".
     :param redownload: bool, if redownload the raw dataset file(s).
-    :param **kwargs: dict, extra arguments passed to initialize the tsdataset,
-                     including with_split, val_ratio and test_ratio.
+    :param kwargs: extra arguments passed to initialize the tsdataset,
+           including with_split, val_ratio and test_ratio.
     """
     assert isinstance(name, str) and isinstance(path, str),\
         "Name and path must be string."
