@@ -41,48 +41,6 @@ class TestModelsVision(TestCase):
             resnet18, batch_size, num_workers, data_dir,
             use_orca_lite_trainer=True)
 
-    def test_resnet34_ipex(self):
-        resnet34 = vision.resnet34(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            resnet34, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_resnet50_ipex(self):
-        resnet50 = vision.resnet50(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            resnet50, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_mobilenet_v3_large_ipex(self):
-        mobilenet = vision.mobilenet_v3_large(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            mobilenet, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_mobilenet_v3_small_ipex(self):
-        mobilenet = vision.mobilenet_v3_small(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            mobilenet, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_mobilenet_v2_ipex(self):
-        mobilenet = vision.mobilenet_v2(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            mobilenet, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_shufflenet_ipex(self):
-        shufflenet = vision.shufflenet_v2_x1_0(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            shufflenet, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
     def test_trainer_compile(self):
         class ResNet18(nn.Module):
             def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):

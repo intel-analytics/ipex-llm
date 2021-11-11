@@ -52,8 +52,9 @@ case "$SPARK_K8S_CMD" in
     exec /sbin/tini -s -- "${CMD[@]}"
     ;;
   executor)
-    /opt/init.sh
-    cd /opt/occlum_spark/
+    echo $SGX_MEM_SIZE
+    /opt/run_spark_on_occlum_glibc.sh init
+    cd /opt/occlum_spark
     occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
         "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
         -Xms$SPARK_EXECUTOR_MEMORY \

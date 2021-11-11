@@ -87,7 +87,7 @@ RUN rm -f ${SPRK_HOME}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     cp -f /opt/src/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-${HADOOP_VERSION}.jar ${SPRK_HOME}/jars && \
     rm -rf /opt/src
 
-FROM occlum/occlum:0.24.2-ubuntu18.04 as ppml
+FROM occlum/occlum:0.25.0-ubuntu18.04 as ppml
 
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
@@ -98,6 +98,7 @@ ENV SPARK_HOME=/opt/spark
 ENV BIGDL_VERSION=${BIGDL_VERSION}
 ENV BIGDL_HOME=/opt/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV SGX_MEM_SIZE=16GB
 
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
@@ -109,7 +110,7 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
-# Install occlum
+# Install occlum from package
 # RUN apt-get update && \
 #     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
 #         build-essential ca-certificates openjdk-11-jdk \
@@ -153,11 +154,8 @@ ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
 
 
 COPY ./entrypoint.sh /opt/
-COPY ./init.sh /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
-    chmod a+x /opt/init.sh
-
-WORKDIR /opt/
+    chmod a+x /opt/run_spark_on_occlum_glibc.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
