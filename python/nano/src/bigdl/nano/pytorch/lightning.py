@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from collections import OrderedDict
-from typing import Union, Dict
 
 from pytorch_lightning import LightningModule
 from torch import nn, Tensor
