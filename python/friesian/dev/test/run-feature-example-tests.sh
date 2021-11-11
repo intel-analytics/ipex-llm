@@ -132,7 +132,7 @@ fi
 python ../../example/wnd/train/wnd_preprocess_recsys.py \
     --executor_cores 6 \
     --executor_memory 50g \
-    --train_files 0-0 \
+    --train_files 1-1 \
     --input_train_folder ./data/input_wnd/spark_parquet \
     --input_test_folder ./data/input_wnd/test_spark_parquet \
     --output_folder ./result
