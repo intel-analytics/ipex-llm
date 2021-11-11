@@ -35,6 +35,29 @@ orca.learn.pytorch.estimator
     :undoc-members:
     :show-inheritance:
 
+
+orca.learn.pytorch.pytorch_ray_estimator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Orca Pytorch Estimator with backend of "horovod" or "torch-distributed"
+
+.. automodule:: bigdl.orca.learn.pytorch.pytorch_ray_estimator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+orca.learn.pytorch.pytorch_spark_estimator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Orca Pytorch Estimator with backend of "bigdl"
+
+.. automodule:: bigdl.orca.learn.pytorch.pytorch_spark_estimator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 orca.learn.openvino.estimator
 ------------------------------
 
