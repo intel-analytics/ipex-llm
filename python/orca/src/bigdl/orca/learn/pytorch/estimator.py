@@ -59,8 +59,8 @@ class Estimator(object):
         :param model_dir: parameter for `bigdl` backend. The path to save model. During the
                training, if checkpoint_trigger is defined and triggered, the model will be saved to
                model_dir.
-        :param backend: You can choose "horovod",  "torch_distributed" or "bigdl" as backend.
-               Default: `bigdl`.
+        :param backend: You can choose "horovod",  "torch_distributed", "bigdl" or "spark" as
+               backend. Default: `bigdl`.
         :return: an Estimator object.
         """
         if backend in {"horovod", "torch_distributed"}:
@@ -86,6 +86,19 @@ class Estimator(object):
                                          metrics=metrics,
                                          model_dir=model_dir,
                                          bigdl_type="float")
+        elif backend == "spark":
+            from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
+            return PyTorchPySparkEstimator(model_creator=model,
+                                           optimizer_creator=optimizer,
+                                           loss_creator=loss,
+                                           metrics=metrics,
+                                           scheduler_creator=scheduler_creator,
+                                           training_operator_cls=training_operator_cls,
+                                           initialization_hook=initialization_hook,
+                                           config=config,
+                                           scheduler_step_freq=scheduler_step_freq,
+                                           use_tqdm=use_tqdm,
+                                           workers_per_node=workers_per_node)
         else:
-            raise ValueError("Only horovod, torch_distributed and bigdl backends are supported"
-                             f" for now, got backend: {backend}")
+            raise ValueError("Only horovod, torch_distributed, bigdl and spark backends are "
+                             f"supported for now, got backend: {backend}")
