@@ -24,13 +24,13 @@ from time import time
 import tempfile
 import pickle
 
-import tensorflow as tf
-
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.orca.data.file import exists, makedirs
 from bigdl.friesian.feature import FeatureTable
 from bigdl.dllib.utils.file_utils import get_remote_file_to_local
+from bigdl.orca.learn.tf2.estimator import Estimator
+
+import tensorflow as tf
 
 wide_cols = ['engaged_with_user_is_verified', 'enaging_user_is_verified']
 wide_dims = [1, 1]
@@ -77,17 +77,12 @@ conf = {"spark.network.timeout": "10000000",
 
 
 def get_size(data_dir):
-    if data_dir.split("://")[0] == data_dir:  # no prefix
-        data_dir_with_prefix = "file://" + data_dir
-    else:
-        data_dir_with_prefix = data_dir
-
     if not exists(os.path.join(data_dir, "train_parquet")) or \
             not exists(os.path.join(data_dir, "test_parquet")):
         raise Exception("Not train and test data parquet specified")
     else:
-        train_tbl = FeatureTable.read_parquet(os.path.join(data_dir_with_prefix, "train_parquet"))
-        test_tbl = FeatureTable.read_parquet(os.path.join(data_dir_with_prefix, "test_parquet"))
+        train_tbl = FeatureTable.read_parquet(os.path.join(data_dir, "train_parquet"))
+        test_tbl = FeatureTable.read_parquet(os.path.join(data_dir, "test_parquet"))
 
     # get cat sizes
     with tempfile.TemporaryDirectory() as local_path:
