@@ -33,20 +33,21 @@ pip install --no-cache-dir torch==1.7.1 torchvision==0.8.2 && \
 pip install --no-cache-dir horovod==0.19.2 && \
 pip install --no-cache-dir xgboost && \
 pip install --no-cache-dir pyarrow && \
-pip install opencv-python==4.2.0.34 && \
-pip install aioredis==1.1.0 && \
-pip install tensorflow==1.15.0 && \
-pip install tf_slim && \
-pip install tensorflow-datasets==3.2.0 && \
-pip install mxnet==1.6.0 && \
+pip install --no-cache-dir opencv-python==4.2.0.34 && \
+pip install --no-cache-dir aioredis==1.1.0 && \
+pip install --no-cache-dir tensorflow==1.15.0 && \
+pip install --no-cache-dir tf_slim && \
+pip install --no-cache-dir tensorflow-datasets==3.2.0 && \
+pip install --no-cache-dir mxnet==1.6.0 && \
 source deactivate && \
 
-conda create -y -n pytf2 python=3.7 && \
+conda create -y -n pytf2 python=3.7.6 && \
 source activate pytf2 && \
-pip install --no-cache-dir --upgrade pip && \
+#pip install --no-cache-dir --upgrade pip && \
 conda install -y cmake==3.16.0 -c conda-forge && \
 conda install cxx-compiler==1.0 -c conda-forge && \
-pip install tensorflow==2.4.0 && \
+pip install --no-cache-dir tensorflow==2.4.0 && \
+pip install --no-cache-dir mxnet==1.6.0 && \
 HOROVOD_WITH_TENSORFLOW=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2 && \
 pip install --no-cache-dir --upgrade setuptools && \
 pip install --no-cache-dir numpy==1.18.1 scipy && \
