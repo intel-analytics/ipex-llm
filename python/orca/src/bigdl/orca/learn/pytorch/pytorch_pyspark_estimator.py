@@ -33,62 +33,7 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.pytorch.torch_pyspark_runner import find_ip_and_port
 
 
-import ray
-from ray.exceptions import RayActorError
-
 logger = logging.getLogger(__name__)
-
-
-def check_for_failure(remote_values):
-    """Checks remote values for any that returned and failed.
-    :param remote_values: List of object IDs representing functions
-            that may fail in the middle of execution. For example, running
-            a SGD training loop in multiple parallel actor calls.
-    :return Bool for success in executing given remote tasks.
-    """
-    unfinished = remote_values
-    try:
-        while len(unfinished) > 0:
-            finished, unfinished = ray.wait(unfinished)
-            finished = ray.get(finished)
-        return True
-    except RayActorError as exc:
-        logger.exception(str(exc))
-    return False
-
-
-def partition_refs_to_creator(partition_refs):
-
-    def data_creator(config, batch_size):
-        from bigdl.orca.data.utils import ray_partitions_get_data_label, index_data, get_size
-        from torch.utils.data import Dataset, DataLoader
-
-        class NDArrayDataset(Dataset):
-            def __init__(self, x, y):
-                self.x = x  # features
-                self.y = y  # labels
-
-            def __len__(self):
-                return get_size(self.y)
-
-            def __getitem__(self, i):
-                return index_data(self.x, i), index_data(self.y, i)
-
-        params = {"batch_size": batch_size, "shuffle": True}
-        for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
-                    "pin_memory", "drop_last", "timeout", "worker_init_fn",
-                    "multiprocessing_context"]:
-            if arg in config:
-                params[arg] = config[arg]
-        data, label = ray_partitions_get_data_label(ray.get(partition_refs),
-                                                    allow_tuple=False,
-                                                    allow_list=False)
-        print("Data size on worker: ", len(label))
-        dataset = NDArrayDataset(data, label)
-        data_loader = DataLoader(dataset, **params)
-        return data_loader
-
-    return data_creator
 
 
 class PyTorchPySparkEstimator(BaseEstimator):
