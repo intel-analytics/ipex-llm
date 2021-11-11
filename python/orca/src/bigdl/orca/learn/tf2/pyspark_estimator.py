@@ -15,11 +15,14 @@
 #
 
 import logging
+import os
 from pyspark.sql.dataframe import DataFrame
 import numpy as np
+import tempfile
+import shutil
 
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
+from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, get_remote_file_to_local
 
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
@@ -37,7 +40,8 @@ class SparkTFEstimator():
                  config=None,
                  compile_args_creator=None,
                  verbose=False,
-                 workers_per_node=1):
+                 workers_per_node=1,
+                 model_dir=None):
         self.model_creator = model_creator
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
@@ -59,10 +63,12 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
+        self.epoch = 0
 
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
+        self.model_dir = model_dir
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
@@ -101,7 +107,9 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             mode="fit",
-            cluster_info=self._get_cluster_info(sc)
+            cluster_info=self._get_cluster_info(sc),
+            model_dir=self.model_dir,
+            epoch=self.epoch
         )
 
         params = dict(
@@ -156,9 +164,21 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        self.model_weights = res[0]
+        if self.model_dir:
+            try:
+                temp_dir = tempfile.mkdtemp()
+                get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
+                                         os.path.join(temp_dir, "states.pkl"),
+                                         over_write=True)
+                import pickle
+                with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
+                    states = pickle.load(f)
+                    self.model_weights = states['weights']
+                    self.epoch = states["epoch"]
+            finally:
+                shutil.rmtree(temp_dir)
 
-        return res
+        return res[0]
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
@@ -184,13 +204,18 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
+        if self.model_weights:
+            weights = sc.broadcast(self.model_weights)
+        else:
+            weights = None
+
         init_params = dict(
             model_creator=self.model_creator,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            model_weights=self.model_weights,
+            model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc)
         )
@@ -251,6 +276,11 @@ class SparkTFEstimator():
         :return:
         """
         logger.info("Starting predict step.")
+        sc = OrcaContext.get_spark_context()
+        if self.model_weights:
+            weights = sc.broadcast(self.model_weights)
+        else:
+            weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -258,7 +288,7 @@ class SparkTFEstimator():
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            model_weights=self.model_weights,
+            model_weights=weights,
             mode="predict",
             cluster_info=None
         )
@@ -344,14 +374,21 @@ class SparkTFEstimator():
     @enable_multi_fs_load
     def load(self, filepath):
         """
-        Save tensorflow keras model in this estimator.
+        Load tensorflow keras model in this estimator.
 
         :param filepath: keras model weights save path.
-        :param by_name: Boolean, whether to load weights by name or by topological
-               order. Only topological loading is supported for weight files in
-               TensorFlow format.
         """
         import tensorflow as tf
         model = tf.keras.models.load_model(filepath)
         self.model_weights = model.get_weights()
 
+
+    def get_model(self):
+        """
+        Returns the learned model.
+
+        :return: the learned model.
+        """
+        model = self.model_creator(self.config)
+        model.set_weights(self.model_weights)
+        return model
