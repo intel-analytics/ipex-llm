@@ -43,7 +43,7 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-model = ResNet18(pretrained=True, include_top=False, freeze=True)
+model = ResNet18(pretrained=False, include_top=False, freeze=True)
 loss = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
