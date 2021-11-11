@@ -41,14 +41,12 @@ pip install --no-cache-dir tensorflow-datasets==3.2.0 && \
 pip install --no-cache-dir mxnet==1.6.0 && \
 source deactivate && \
 
-conda create -y -n pytf2 python=3.7.6 && \
-source activate pytf2 && \
-#pip install --no-cache-dir --upgrade pip && \
-conda install -y cmake==3.16.0 -c conda-forge && \
-conda install cxx-compiler==1.0 -c conda-forge && \
-pip install --no-cache-dir tensorflow==2.4.0 && \
-pip install --no-cache-dir mxnet==1.6.0 && \
-HOROVOD_WITH_TENSORFLOW=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2 && \
+conda create -y -n py37-horovod-tf python=3.7 && \
+conda install -y -n py37-horovod-tf cxx-compiler==1.0 -c conda-forge && \
+/bin/bash -c "source activate py37-horovod-tf && \
+pip install tensorflow==2.3.0 && \
+HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; \
+pip install --no-cache-dir horovod==0.19.2 && \
 pip install --no-cache-dir --upgrade setuptools && \
 pip install --no-cache-dir numpy==1.18.1 scipy && \
 pip install --no-cache-dir pandas==1.0.3 && \
@@ -57,7 +55,6 @@ pip uninstall -y -q tornado && \
 pip install --no-cache-dir tornado && \
 python3 -m ipykernel.kernelspec && \
 pip install --no-cache-dir tensorboard && \
-pip install --no-cache-dir jep && \
 pip install --no-cache-dir cloudpickle && \
 pip install --no-cache-dir opencv-python && \
 pip install --no-cache-dir pyyaml && \
@@ -75,5 +72,4 @@ pip install --no-cache-dir torch==1.7.1 torchvision==0.8.2 && \
 pip install --no-cache-dir xgboost && \
 pip install --no-cache-dir pyarrow && \
 pip install opencv-python==4.2.0.34 && \
-pip install aioredis==1.1.0 && \
-source deactivate
+pip install aioredis==1.1.0 && source deactivate"
