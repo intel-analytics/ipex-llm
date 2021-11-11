@@ -198,7 +198,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
             def transform_func(iter, init_params, param):
                 partition_data = list(iter)
                 param["data_creator"] = partition_to_creator(partition_data)
-                return TorchPysparkRunner(**init_params).train_epochs(**param)
+                runner = TorchPysparkRunner(**init_params)
+                result = runner.train_epochs(**param)
+                runner.shutdown()
+                return result
 
             res = data.rdd.repartition(self.num_workers).barrier() \
                 .mapPartitions(

@@ -41,6 +41,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
+import torch.distributed as dist
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
@@ -165,7 +166,6 @@ class TorchPysparkRunner:
                                      mode=mode)
 
     def _setup_torch_distribute(self, url, world_rank, world_size, mode):
-        import torch.distributed as dist
         from torch.nn.parallel import DistributedDataParallel
         if mode == "fit":
             dist.init_process_group(
@@ -481,6 +481,7 @@ class TorchPysparkRunner:
 
     def shutdown(self):
         """Attempts to shut down the worker."""
+        dist.destroy_process_group()
         del self.training_operator
         del self.validation_loader
         del self.train_loader
