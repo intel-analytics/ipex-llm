@@ -32,11 +32,11 @@ BASE_URL = \
      [f'http://mawi.wide.ad.jp/~agurim/dataset/{val[:-4]}/{val}'
       for val in DATASET_NAME['network_traffic']],
      'AIOps':
-     'http://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz',
+     ['http://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz'],
      'fsi':
-     'https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip',
+     ['https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip'],
      'nyc_taxi':
-     'https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv'}
+     ['https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv']}
 
 
 class PublicDataset:
@@ -44,9 +44,9 @@ class PublicDataset:
     def __init__(self, name, path, redownload, **kwargs):
         self.name = name
         self.redownload = redownload
-        self.with_split = kwargs.get('with_split', False)
-        self.val_ratio = 0 if not self.with_split else kwargs.get('val_ratio', 0)
-        self.test_ratio = 0 if not self.with_split else kwargs.get('test_ratio', 0)
+        self.with_split = kwargs.get('with_split', True)
+        self.val_ratio = kwargs.get('val_ratio', 0.1)
+        self.test_ratio = kwargs.get('test_ratio', 0.1)
 
         self.url = BASE_URL[self.name]
         self.dir_path = os.path.join(os.path.expanduser(path), self.name)
@@ -61,24 +61,15 @@ class PublicDataset:
         if not os.path.exists(self.dir_path):
             os.makedirs(self.dir_path)
 
-        # delete existing files.
-        if self.redownload:
-            try:
-                exists_file = os.listdir(self.dir_path)
-                _ = [os.remove(os.path.join(self.dir_path, x))
-                     for x in exists_file if x in DATASET_NAME[self.name]]
-                os.remove(os.path.join(self.dir_path, self.name + '_data.csv'))
-            except Exception:
-                raise OSError('File download is not completed, you should set redownload=False.')
-
         # check local file exists.
-        if not os.path.exists(self.final_file_path) \
-                and not set(DATASET_NAME[self.name]).issubset(set(os.listdir(self.dir_path))):
-            if isinstance(BASE_URL[self.name], list):
+        if self.redownload:
+            for val in self.url:
+                download(val, self.dir_path, chunk_size)
+        else:
+            if not os.path.exists(self.final_file_path) and \
+                    not set(DATASET_NAME[self.name]).issubset(set(os.listdir(self.dir_path))):
                 for val in self.url:
                     download(val, self.dir_path, chunk_size)
-            else:
-                download(self.url, self.dir_path, chunk_size)
         return self
 
     def preprocess_network_traffic(self):
@@ -126,7 +117,7 @@ class PublicDataset:
                 tar = tarfile.open(file_path, 'r:gz')
                 tar.extractall(os.path.expanduser(self.dir_path))
         except Exception:
-            raise FileExistsError('file extractall failure,set redownload=True.')
+            raise FileExistsError('file extractall failure, set redownload=True.')
 
         aio_raw_df = pd.read_csv(os.path.join(self.dir_path,
                                               download_csv_name),
