@@ -36,7 +36,7 @@ class TestModelsVision(TestCase):
 
     def test_resnet18_ipex(self):
         resnet18 = vision.resnet18(
-            pretrained=True, include_top=False, freeze=True)
+            pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
             resnet18, batch_size, num_workers, data_dir,
             use_orca_lite_trainer=True)
@@ -53,7 +53,7 @@ class TestModelsVision(TestCase):
             def forward(self, x):
                 return self.model(x)
 
-        model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
