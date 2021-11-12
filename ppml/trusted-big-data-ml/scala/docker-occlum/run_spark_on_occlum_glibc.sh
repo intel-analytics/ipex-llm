@@ -8,6 +8,7 @@ occlum_glibc=/opt/occlum/glibc/lib
 init_instance() {
     # Init Occlum instance
     cd /opt
+    if [ -d occlum_spark ]
     rm -rf occlum_spark && mkdir occlum_spark
     cd occlum_spark
     occlum init
@@ -37,6 +38,8 @@ build_spark() {
     cp $occlum_glibc/libdl.so.2 image/$occlum_glibc
     cp $occlum_glibc/librt.so.1 image/$occlum_glibc
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc
+    # Copy libhadoop
+    cp /lib/libhadoop.so image/$occlum_glibc
     # Prepare Spark
     mkdir -p image/opt/spark
     cp -rf $SPARK_HOME/* image/opt/spark/
