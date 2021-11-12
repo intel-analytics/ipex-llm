@@ -121,8 +121,10 @@ def _parse_args():
                         help='The driver memory.')
     parser.add_argument('--train_files', type=str, default="000-269",
                         help="range for preprocessing train files, such as 000-269, 000-001.")
-    parser.add_argument('--input_folder', type=str, required=True,
-                        help="Path to the folder of parquet files.")
+    parser.add_argument('--input_train_folder', type=str, required=True,
+                        help="Path to the folder of train parquet files.")
+    parser.add_argument('--input_test_folder', type=str, required=True,
+                        help="Path to the folder of test parquet files.")
     parser.add_argument('--output_folder', type=str, default=".",
                         help="The path to save the preprocessed data to parquet files. ")
     parser.add_argument('--cross_sizes', type=str,
@@ -199,13 +201,12 @@ if __name__ == '__main__':
                           conf=conf)
 
     start = time()
-    train_paths = [os.path.join(args.input_folder, 'spark_parquet/part-%05d.parquet' % i)
+    train_paths = [os.path.join(args.input_train_folder, 'part-%05d.parquet' % i)
                    for i in args.train_files]
-    test_paths = os.path.join(args.input_folder, 'test_spark_parquet')
     train_tbl = FeatureTable.read_parquet(train_paths)
     train_tbl.df.printSchema()
 
-    test_tbl = FeatureTable.read_parquet(test_paths)
+    test_tbl = FeatureTable.read_parquet(args.input_test_folder)
 
     train_tbl = preprocess(train_tbl)
     test_tbl = preprocess(test_tbl)

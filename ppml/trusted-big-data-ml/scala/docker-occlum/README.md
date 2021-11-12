@@ -53,10 +53,10 @@ To train a model with PPML in BigDL, you need to prepare the data first. You can
 To run BigDL Lenet Mnist example, start the docker container with:
 
 ``` bash
-bash start-spark-local.sh lenet
+bash start-spark-local.sh lenet -b 4 -e 1
 ```
 
-The examples are run in the docker container. Attach it and see the results (`docker attach logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`).
+The examples are run in the docker container. Attach it and see the results (`docker attach logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`). `-b 4 -e 1` means batch size 4 and epoch 1.
 
 ```bash
 2021-10-29 01:57:48 INFO  DistriOptimizer$:431 - [Epoch 1 40/60000][Iteration 10][Wall Clock 14.768519551s] Trained 4.0 records in 0.348563287 seconds. Throughput is 11.475678 records/second. Loss is 2.4064577. Sequentialc3a85127s hyper parameters: Current learning rate is 0.05. Current dampening is 1.7976931348623157E308.
@@ -70,10 +70,10 @@ Download the Cifar-10 dataset (CIFAR-10 binary version) from [here](https://www.
 To run BigDL ResNet CIFAR-10 example, start the docker container with:
 
 ``` bash
-bash start-spark-local.sh resnet
+bash start-spark-local.sh resnet --batchSize 400 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 1 --learningRate 0.1 
 ```
 
-The examples are run in the docker container. Attach it and see the results (`docker attach logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`).
+The examples are run in the docker container. Attach it and see the results (`docker attach logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`). `--batchSize 400 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 1 --learningRate 0.1` are resent training related parameters.
 
 
 ```bash

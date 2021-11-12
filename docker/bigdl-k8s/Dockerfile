@@ -41,6 +41,7 @@ RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
     fi
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
+RUN git clone https://github.com/tensorflow/models/ /opt/models
 
 # stage.2 bigdl
 FROM ubuntu:18.04 as bigdl
@@ -98,6 +99,7 @@ ENV RUNTIME_DRIVER_MEMORY               10g
 ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
 ENV SPARK_HOME                          /opt/spark
 ENV JAVA_HOME                           /opt/jdk
+ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/*
 ENV PYTHONPATH                          ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:/opt/models/research/slim
 ENV PATH ${BIGDL_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}
 ENV TINI_VERSION                        ${TINI_VERSION}

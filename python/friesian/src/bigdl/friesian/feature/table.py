@@ -166,7 +166,7 @@ class Table:
                is int, all columns of integer type will be filled. If columns=None and value is
                long, float, str or boolean, all columns will be filled.
 
-        :return: A new Table that replaced the null values with specified value
+        :return: A new Table that replaced the null values with the specified value.
         """
         if columns and not isinstance(columns, list):
             columns = [columns]
@@ -509,7 +509,7 @@ class Table:
         """
         Write the Table to Parquet file.
 
-        :param path: str. The path to the Parquet file.
+        :param path: str, the path to the Parquet file.
         :param mode: str. One of "append", "overwrite", "error" or "ignore".
                append: Append contents to the existing data.
                overwrite: Overwrite the existing data.
@@ -551,7 +551,7 @@ class Table:
         """
         Write the Table to csv file.
 
-        :param path: str. The path to the csv file.
+        :param path: str, the path to the csv file.
         :param mode: str. One of "append", "overwrite", "error" or "ignore".
                append: Append the contents of this StringIndex to the existing data.
                overwrite: Overwrite the existing data.
@@ -690,11 +690,12 @@ class Table:
 
     def sort(self, *cols, **kwargs):
         """
-        Sort table by the specified col(s).
+        Sort the Table by specified column(s).
+
         :param cols: list of :class:`Column` or column names to sort by.
         :param ascending: boolean or list of boolean (default ``True``).
-            Sort ascending vs. descending. Specify list for multiple sort orders.
-            If a list is specified, length of the list must equal length of the `cols`.
+               Sort ascending vs. descending. Specify list for multiple sort orders.
+               If a list is specified, length of the list must equal length of the `cols`.
         """
         if not cols:
             raise ValueError("cols should be str or a list of str, but got None.")
@@ -707,9 +708,9 @@ class Table:
 
     def cache(self):
         """
-        Persist this table in memory
+        Persist this Table in memory.
 
-        :return: this Table
+        :return: This Table.
         """
         self.df.cache()
         return self
@@ -717,9 +718,9 @@ class Table:
     def uncache(self):
         """
 
-        Make this table as non-persistent, and remove all blocks for it from memory
+        Make this table as non-persistent and remove all its blocks from memory.
 
-        :return: this Table
+        :return: This Table.
         """
         if self.df.is_cached:
             try:
@@ -735,7 +736,7 @@ class FeatureTable(Table):
         """
         Loads Parquet files as a FeatureTable.
 
-        :param paths: str or a list of str. The path(s) to Parquet file(s).
+        :param paths: str or a list of str, the path(s) to Parquet file(s).
 
         :return: A FeatureTable for recommendation data.
         """
@@ -743,6 +744,15 @@ class FeatureTable(Table):
 
     @classmethod
     def read_json(cls, paths, cols=None):
+        """
+        Loads json files as a FeatureTable.
+
+        :param paths: str or a list of str, the path(s) to the json file(s).
+        :param cols: str or a list of str. The columns to select from the json file(s).
+               Default is None and in this case all the columns will be considered.
+
+        :return: A FeatureTable for recommendation data.
+        """
         return cls(Table._read_json(paths, cols))
 
     @classmethod
@@ -750,7 +760,7 @@ class FeatureTable(Table):
         """
         Loads csv files as a FeatureTable.
 
-        :param paths: str or a list of str. The path(s) to csv file(s).
+        :param paths: str or a list of str, the path(s) to the csv file(s).
         :param delimiter: str, delimiter to use for parsing the csv file(s). Default is ",".
         :param header: boolean, whether the first line of the csv file(s) will be treated
                as the header for column names. Default is False.
@@ -1290,12 +1300,15 @@ class FeatureTable(Table):
 
     def add_negative_samples(self, item_size, item_col="item", label_col="label", neg_num=1):
         """
-        Generate negative item visits for each positive item visit
+        Generate negative records for each record in the FeatureTable. All the records in the original
+        FeatureTable will be treated as positive samples with value 1 for label_col and the negative
+        samples will be randomly generated with value 0 for label_col.
 
-        :param item_size: int, max of item.
-        :param item_col: str, name of item column
-        :param label_col: str, name of label column
-        :param neg_num: int, for each positive record, add neg_num of negative samples
+        :param item_size: int, the total number of items in the FeatureTable.
+        :param item_col: str, the name of the item column. Whether the record is positive or negative
+               will be based on this column. Default is 'item'.
+        :param label_col: str, the name of the label column. Default is 'label'.
+        :param neg_num: int, the number of negative records for each positive record. Default is 1.
 
         :return: A new FeatureTable with negative samples.
         """
@@ -1305,57 +1318,64 @@ class FeatureTable(Table):
     def add_hist_seq(self, cols, user_col, sort_col='time',
                      min_len=1, max_len=100, num_seqs=2147483647):
         """
-        Add a column of history visits into table.
+        Add a column of history visits of each user.
 
-        :param cols: a list of str, columns need to be aggregated
-        :param user_col: str, user column.
-        :param sort_col: str, sort by sort_col
-        :param min_len: int, minimal length of a history seq
-        :param max_len: int, maximal length of a history seq
-        :param num_seqs: int, default is 2147483647, max 4bite integer,
-         it means to to keep all seqs; it only keeps last one if num_seqs=1.
+        :param cols: str or a list of str, the column(s) to be treated as histories.
+        :param user_col: str, the column to be treated as the user.
+        :param sort_col: str, the column to sort by for each user. Default is 'time'.
+        :param min_len: int, the minimal length of a history sequence. Default is 1.
+        :param max_len: int, the maximal length of a history sequence. Default is 100.
+        :param num_seqs: int, default is 2147483647 (maximum value of 4-byte integer),
+               which means to to keep all the histories.
+               You can set num_seqs=1 to only keep the last history.
 
-        :return: FeatureTable
+        :return: A new FeatureTable with history sequences.
         """
+        cols = str_to_list(cols, "cols")
         df = add_hist_seq(self.df, cols, user_col, sort_col, min_len, max_len, num_seqs)
         return FeatureTable(df)
 
     def add_neg_hist_seq(self, item_size, item_history_col, neg_num):
         """
-        Generate a list negative samples for each item in item_history_col
+        Generate a list of negative samples for each item in the history sequence.
 
-        :param item_size: int, max of item.
-        :param item2cat: FeatureTable with a dataframe of item to category mapping
-        :param item_history_col: str, this column should be a list of visits in history
-        :param neg_num: int, for each positive record, add neg_num of negative samples
+        :param item_size: int, the total number of items in the FeatureTable.
+        :param item_history_col: str, the history column to generate negative samples.
+        :param neg_num: int, the number of negative items for each history (positive) item.
 
-        :return: FeatureTable
+        :return: A new FeatureTable with negative history sequences.
         """
         df = add_neg_hist_seq(self.df, item_size, item_history_col, neg_num)
         return FeatureTable(df)
 
     def mask(self, mask_cols, seq_len=100):
         """
-        Mask mask_cols columns
+        Add mask on specified column(s).
 
-        :param mask_cols: a list of str, columns need to be masked with 1s and 0s.
-        :param seq_len: int, length of masked column
+        :param mask_cols: str or a list of str, the column(s) to be masked with 1s and 0s.
+               Each column should be of list type.
+        :param seq_len: int, the length of the masked column. Default is 100.
 
-        :return: FeatureTable
+        :return: A new FeatureTable with masked columns.
         """
+        mask_cols = str_to_list(mask_cols, "mask_cols")
         df = mask(self.df, mask_cols, seq_len)
         return FeatureTable(df)
 
     def pad(self, cols, seq_len=100, mask_cols=None):
         """
-        Pad and mask columns of the FeatureTable.
+        Add padding on specified column(s).
 
-        :param cols: a list of str, columns need to be padded with 0s.
-        :param seq_len: int, the length of masked column. Default is 100.
-        :param mask_cols: a list of str, columns need to be masked with 1s and 0s.
+        :param cols: str or a list of str, the column(s) to be padded with 0s. Each column
+               should be of list type.
+        :param seq_len: int, the length to be padded to for cols. Default is 100.
+        :param mask_cols: str or a list of str, the column(s) to be masked with 1s and 0s.
 
         :return: A new FeatureTable with padded columns.
         """
+        cols = str_to_list(cols, "cols")
+        if mask_cols:
+            mask_cols = str_to_list(mask_cols, "mask_cols")
         df = pad(self.df, cols, seq_len, mask_cols)
         return FeatureTable(df)
 
@@ -1413,15 +1433,15 @@ class FeatureTable(Table):
 
     def add_value_features(self, columns, dict_tbl, key, value):
         """
-         Add features based on key_cols and another key value table,
-         for each col in columns, it adds a value_col using key-value pairs from dict_tbl
+         Add features based on key columns and the key value Table.
+         For each column in columns, it adds a value column using key-value pairs from dict_tbl.
 
-         :param columns: str or a list of str
-         :param dict_tbl: key value mapping table
-         :param key: str, name of key column in tbl
-         :param value: str, name of value column in tbl
+         :param columns: str or a list of str, the key columns in the original FeatureTable.
+         :param dict_tbl: A Table for the key value mapping.
+         :param key: str, the name of the key column in dict_tbl.
+         :param value: str, the name of value column in dict_tbl.
 
-         :return: FeatureTable
+         :return: A new FeatureTable with value columns.
          """
         if isinstance(columns, str):
             columns = [columns]
@@ -1970,7 +1990,7 @@ class StringIndex(Table):
         """
         Loads Parquet files as a StringIndex.
 
-        :param paths: str or a list of str. The path/paths to Parquet file(s).
+        :param paths: str or a list of str, the path(s) to Parquet file(s).
         :param col_name: str. The column name of the corresponding categorical column. If
                col_name is None, the file name will be used as col_name.
 
@@ -2031,7 +2051,7 @@ class StringIndex(Table):
         """
         Write the StringIndex to Parquet file.
 
-        :param path: str. The path to the Parquet file. Note that the col_name
+        :param path: str, the path to the Parquet file. Note that the col_name
                will be used as basename of the Parquet file.
         :param mode: str. One of "append", "overwrite", "error" or "ignore".
                append: Append the contents of this StringIndex to the existing data.

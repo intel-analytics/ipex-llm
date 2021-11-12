@@ -19,14 +19,33 @@
 import os
 from shutil import copytree, rmtree
 from setuptools import setup
+import fnmatch
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
+exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
+
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
+
 SCRIPTS_TARGET = os.path.join(bigdl_home, "scala/serving/scripts/")
-TMP_PATH = "bigdl/conf"
+TMP_PATH = "bigdl/share/serving"
 if os.path.exists(TMP_PATH):
     rmtree(TMP_PATH)
 copytree(SCRIPTS_TARGET, TMP_PATH)
+
+
+def get_bigdl_packages():
+    bigdl_python_home = os.path.abspath(__file__ + "/..")
+    bigdl_packages = ['bigdl.share.serving']
+    source_dir = os.path.join(bigdl_python_home, "bigdl")
+    for dirpath, dirs, files in os.walk(source_dir):
+        package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
+        if any(fnmatch.fnmatchcase(package, pat=pattern)
+                for pattern in exclude_patterns):
+            print("excluding", package)
+        else:
+            bigdl_packages.append(package)
+            print("including", package)
+    return bigdl_packages
 
 
 def setup_package():
@@ -43,9 +62,9 @@ def setup_package():
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
-        packages=['bigdl.serving', 'bigdl.conf'],
-        package_dir={'bigdl': '../../serving/src/bigdl'},
-        package_data={"bigdl.conf": ['config.yaml']},
+        packages=get_bigdl_packages(),
+        # package_dir={'bigdl': '../../serving/src/bigdl'},
+        # package_data={"bigdl.conf": ['config.yaml']},
         include_package_data=False,
         scripts=scripts,
         install_requires=['redis', 'pyyaml', 'httpx', 'pyarrow', 'opencv-python'],

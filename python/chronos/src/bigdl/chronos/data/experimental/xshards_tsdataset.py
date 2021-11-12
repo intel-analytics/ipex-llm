@@ -181,6 +181,6 @@ class XShardsTSDataset:
                  is casted to float32.
         '''
         if self.numpy_shards is None:
-            raise RuntimeError("Please call \"roll\" method\
-                    before transform a XshardsTSDataset to numpy ndarray!")
+            raise RuntimeError("Please call 'roll' method "
+                               "before transform a XshardsTSDataset to numpy ndarray!")
         return self.numpy_shards.transform_shard(transform_to_dict)
