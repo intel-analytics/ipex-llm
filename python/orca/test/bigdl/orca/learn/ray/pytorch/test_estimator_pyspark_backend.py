@@ -153,16 +153,7 @@ def get_estimator(workers_per_node=1, model_fn=get_model):
 
 
 class TestPyTorchEstimator(TestCase):
-    def test_data_creator(self):
-        estimator = get_estimator(workers_per_node=2)
-        train_stats = estimator.fit(train_data_loader, epochs=2, batch_size=128)
-        print(train_stats)
-        val_stats = estimator.evaluate(val_data_loader, batch_size=64)
-        print(val_stats)
-        assert 0 < val_stats["Accuracy"] < 1
-        assert estimator.get_model()
-
-    def test_convergence(self):
+    def test_data_creator_convergence(self):
         estimator = get_estimator(workers_per_node=2)
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(start_val_stats)
@@ -170,6 +161,8 @@ class TestPyTorchEstimator(TestCase):
         print(train_stats)
         end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(end_val_stats)
+        assert 0 < end_val_stats["Accuracy"] < 1
+        assert estimator.get_model()
         # sanity check that training worked
         dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
         dacc = (end_val_stats["Accuracy"] -
@@ -261,22 +254,7 @@ class TestPyTorchEstimator(TestCase):
         expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
         assert result.selectExpr(expr).first()["error"] == 0
 
-    def test_xshards_predict(self):
-
-        sc = init_nncontext()
-        rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
-        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
-        shards = SparkXShards(shards)
-
-        estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet())
-        result_shards = estimator.predict(shards, batch_size=4)
-        result = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
-        expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
-
-        assert np.array_equal(result, expected_result)
-
-    def test_xshards_save_load(self):
+    def test_xshards_predict_save_load(self):
 
         sc = init_nncontext()
         rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
@@ -287,6 +265,8 @@ class TestPyTorchEstimator(TestCase):
                                   model_fn=lambda config: IdentityNet())
         result_shards = estimator.predict(shards, batch_size=4)
         result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
+        expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
+        assert np.array_equal(result_before, expected_result)
 
         path = "/tmp/model.pth"
         try:
