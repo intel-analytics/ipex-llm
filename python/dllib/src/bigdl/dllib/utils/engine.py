@@ -120,6 +120,10 @@ def get_bigdl_jars():
     jar_paths = glob.glob(os.path.join(jar_dir, "share/*/lib/*.jar"))
     return jar_paths
 
+def get_bigdl_conf():
+    jar_dir = os.path.abspath(__file__ + "/../../../")
+    conf_paths = glob.glob(os.path.join(jar_dir, "share/*/conf/*.conf"))
+    return conf_paths[0]
 
 def is_spark_below_2_2():
     """
