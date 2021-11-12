@@ -446,6 +446,7 @@ def load_pkl(path):
         from io import BytesIO
         buf = BytesIO()
         fs.download(path, buf)
+        buf.seek(0)
         data = pickle.load(buf)
         return data
     elif path.startswith("s3"):  # s3://bucket/file_path
