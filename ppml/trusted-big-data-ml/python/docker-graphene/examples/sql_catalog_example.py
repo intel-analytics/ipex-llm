@@ -88,7 +88,6 @@ def sql_catalog_example(spark):
 
     print("Finish running Catalog API")
 
-
 if __name__ == "__main__":
 
     spark = SparkSession \
