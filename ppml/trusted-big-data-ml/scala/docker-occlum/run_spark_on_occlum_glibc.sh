@@ -8,8 +8,8 @@ occlum_glibc=/opt/occlum/glibc/lib
 init_instance() {
     # Init Occlum instance
     cd /opt
-    if [ -d occlum_spark ]
-    rm -rf occlum_spark && mkdir occlum_spark
+    # check if occlum_spark exists
+    [[ -d occlum_spark ]] || mkdir occlum_spark
     cd occlum_spark
     occlum init
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
@@ -39,7 +39,7 @@ build_spark() {
     cp $occlum_glibc/librt.so.1 image/$occlum_glibc
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc
     # Copy libhadoop
-    cp /lib/libhadoop.so image/$occlum_glibc
+    cp /opt/libhadoop.so image/$occlum_glibc
     # Prepare Spark
     mkdir -p image/opt/spark
     cp -rf $SPARK_HOME/* image/opt/spark/
@@ -56,7 +56,7 @@ build_spark() {
     mkdir -p image/bin/jars
     cp -f $BIGDL_HOME/jars/* image/bin/jars
     # Copy Data dir
-    cp -rf /opt/data image/bin/
+    cp -rf /opt/data image/opt/
     occlum build
 }
 
