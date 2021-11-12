@@ -68,12 +68,16 @@ time2=$((now - start))
 echo "#3 start example test for wnd preprocessing"
 #timer
 start=$(date "+%s")
-if [ -d data/day_1.parquet ]; then
-  echo "data/day_1.parquet already exists"
+if [ -f data/dac_sample.txt ]; then
+  echo "data/dac_sample.txt already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/day1.tar.gz -P data
-  tar -xvzf data/day1.tar.gz -C data
+  wget -nv $FTP_URI/analytics-zoo-data/dac_sample.tar.gz -P data
+  tar -xvzf data/dac_sample.tar.gz -C data
 fi
+python ../../example/wnd/csv_to_parquet.py \
+        --input ./data/dac_sample.txt \
+        --output ./data/day_0.parquet
+cp -r ./data/day_0.parquet ./data/day_1.parquet
 python ../../example/wnd/wnd_preprocessing.py \
     --executor_cores 6 \
     --executor_memory 50g \
