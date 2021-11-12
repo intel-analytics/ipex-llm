@@ -84,29 +84,23 @@ def main():
                         help='size of driver memory.')
     parser.add_argument('--driver_cores', default=1, type=int,
                         help='num of driver cores to use.')
+    parser.add_argument("--num_executors", type=int, default=16,\
+                        help="number of executors")
+    parser.add_option("--deploy_mode", type=str, default="yarn-client", 
+                        help="yarn deploy mode, yarn-client or yarn-cluster")
     args = parser.parse_args()
-    if os.environ.get('HADOOP_CONF_DIR') is None:
-        sc = init_spark_on_local(cores=args.cores, conf={"spark.driver.memory": "20g"})
-    else:
-        hadoop_conf_dir = os.environ.get('HADOOP_CONF_DIR')
-        num_executors = args.nodes
-        executor_memory = args.executor_memory
-        driver_memory = args.driver_memory
-        driver_cores = args.driver_cores
-        num_cores_per_executor = args.cores
-        os.environ['ZOO_MKL_NUMTHREADS'] = str(num_cores_per_executor)
-        os.environ['OMP_NUM_THREADS'] = str(num_cores_per_executor)
-        sc = init_spark_on_yarn(
-            hadoop_conf=hadoop_conf_dir,
-            conda_name=detect_conda_env_name(),  # auto detect current conda env name
-            num_executors=num_executors,
-            executor_cores=num_cores_per_executor,
-            executor_memory=executor_memory,
-            driver_memory=driver_memory,
-            driver_cores=driver_cores,
-            conf={"spark.rpc.message.maxSize": "1024",
-                  "spark.task.maxFailures": "1",
-                  "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+    
+    # init
+    hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+    assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+            "set the environment variable HADOOP_CONF_DIR"
+
+    conf = create_spark_conf().set("spark.executor.memory", args.executor_memory)\
+        .set("spark.executor.cores", args.cores)\
+        .set("spark.executor.instances", args.num_executors)\
+        .set("spark.driver.memory", args.driver_memory)
+
+    sc = init_orca_context(conf, cluster_mode=args.deploy_mode, hadoop_conf=hadoop_conf)
 
     # Data loading code
     traindir = os.path.join(args.data, 'train')
