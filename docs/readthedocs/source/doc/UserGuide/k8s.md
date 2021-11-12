@@ -2,12 +2,12 @@
 
 ---
 
-### **1. Pull `hyper-zoo` Docker Image**
+### **1. Pull `bigdl-k8s` Docker Image**
 
-You may pull the prebuilt  Analytics Zoo `hyper-zoo` Image from [Docker Hub](https://hub.docker.com/r/intelanalytics/hyper-zoo/tags) as follows:
+You may pull the prebuilt  BigDL `bigdl-k8s` Image from [Docker Hub](https://hub.docker.com/r/intelanalytics/bigdl-k8s/tags) as follows:
 
 ```bash
-sudo docker pull intelanalytics/hyper-zoo:latest
+sudo docker pull intelanalytics/bigdl-k8s:latest
 ```
 
 **Speed up pulling image by adding mirrors**
@@ -34,7 +34,7 @@ sudo systemctl restart docker
 
 ### **2. Launch a Client Container**
 
-You can submit Analytics Zoo application from a client container that provides the required environment.
+You can submit BigDL application from a client container that provides the required environment.
 
 ```bash
 sudo docker run -itd --net=host \
@@ -57,7 +57,7 @@ sudo docker run -itd --net=host \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
     -e RUNTIME_K8S_SERVICE_ACCOUNT=account \
-    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/hyper-zoo:latest \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-k8s:latest \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=myvolumeclaim \
     -e RUNTIME_DRIVER_HOST=x.x.x.x \
     -e RUNTIME_DRIVER_PORT=54321 \
@@ -67,7 +67,7 @@ sudo docker run -itd --net=host \
     -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
     -e RUNTIME_DRIVER_CORES=4 \
     -e RUNTIME_DRIVER_MEMORY=10g \
-    intelanalytics/hyper-zoo:latest bash 
+    intelanalytics/bigdl-k8s:latest bash 
 ```
 
 - NOTEBOOK_PORT value 12345 is a user specified port number.
@@ -96,16 +96,17 @@ root@[hostname]:/opt/spark/work-dir#
 
 The `/opt` directory contains:
 
-- download-analytics-zoo.sh is used for downloading Analytics-Zoo distributions.
+- download-bigdl.sh is used for downloading BigDL distributions.
 - start-notebook-spark.sh is used for starting the jupyter notebook on standard spark cluster. 
 - start-notebook-k8s.sh is used for starting the jupyter notebook on k8s cluster.
-- analytics-zoo-x.x-SNAPSHOT is `ANALYTICS_ZOO_HOME`, which is the home of Analytics Zoo distribution.
-- analytics-zoo-examples directory contains downloaded python example code.
+- bigdl-x.x-SNAPSHOT is `BIGDL_HOME`, which is the home of BigDL distribution.
+- bigdl-examples directory contains downloaded python example code.
+- install-conda-env.sh is displayed that conda env and python dependencies are installed.
 - jdk is the jdk home.
 - spark is the spark home.
 - redis is the redis home.
 
-### **3. Run Analytics Zoo Examples on k8s**
+### **3. Run BigDL Examples on k8s**
 
 _**Note**: Please make sure `kubectl` has appropriate permission to create, list and delete pod._
 
@@ -113,44 +114,55 @@ _**Note**: Please refer to section 4 for some know issues._
 
 #### **3.1 K8s client mode**
 
-We recommend using `init_orca_context` at the very beginning of your code (e.g. in script.py) to initiate and run Analytics Zoo on standard K8s clusters in [client mode](http://spark.apache.org/docs/latest/running-on-kubernetes.html#client-mode).
+We recommend using `init_orca_context` at the very beginning of your code (e.g. in script.py) to initiate and run BigDL on standard K8s clusters in [client mode](http://spark.apache.org/docs/latest/running-on-kubernetes.html#client-mode).
 
 ```python
-from zoo.orca import init_orca_context
+from bigdl.orca import init_orca_context
 
 init_orca_context(cluster_mode="k8s", master="k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>",
-                  container_image="intelanalytics/hyper-zoo:latest",
+                  container_image="intelanalytics/bigdl-k8s:latest",
                   num_nodes=2, cores=2,
                   conf={"spark.driver.host": "x.x.x.x",
-                  "spark.driver.port": "x"})
+                        "spark.driver.port": "x",
+                        "spark.pyspark.driver.python": "./environment/bin/python",
+                        "spark.pyspark.python": "./environment/bin/python",
+                       })
 ```
 
 Execute `python script.py` to run your program on k8s cluster directly.
 
 #### **3.2 K8s cluster mode**
 
-For k8s [cluster mode](https://spark.apache.org/docs/2.4.5/running-on-kubernetes.html#cluster-mode), you can call `init_orca_context` and specify cluster_mode to be "spark-submit" in your python script (e.g. in script.py):
+For k8s [cluster mode](https://spark.apache.org/docs/3.1.2/running-on-kubernetes.html#cluster-mode), you can call `init_orca_context` and specify cluster_mode to be "spark-submit" in your python script (e.g. in script.py):
 
 ```python
-from zoo.orca import init_orca_context
+from bigdl.orca import init_orca_context
 
 init_orca_context(cluster_mode="spark-submit")
 ```
 
-Use spark-submit to submit your Analytics Zoo program:
+Use spark-submit to submit your BigDL program:
 
 ```bash
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+${SPARK_HOME}/bin/spark-submit \
   --master k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
   --deploy-mode cluster \
-  --name analytics-zoo \
-  --conf spark.kubernetes.container.image="intelanalytics/hyper-zoo:latest" \
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName=account \
+  --name bigdl \
+  --conf spark.kubernetes.container.image="intelanalytics/bigdl-k8s:latest" \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
+  --conf spark.pyspark.driver.python=./environment/bin/python \
+  --conf spark.pyspark.python=./environment/bin/python \
   --conf spark.executor.instances=1 \
   --executor-memory 10g \
   --driver-memory 10g \
   --executor-cores 8 \
   --num-executors 2 \
-  file:///path/script.py
+  --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+  --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///path/script.py
+  --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
+  --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
+  local:///path/script.py
 ```
 
 #### **3.3 Run Jupyter Notebooks**
@@ -175,7 +187,7 @@ Then, refer [docker guide](./docker.md) to open Jupyter Notebook service from a 
 
 #### **3.4 Run Scala programs**
 
-Use spark-submit to submit your Analytics Zoo program.  e.g., run [anomalydetection](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/anomalydetection) example (running in either local mode or cluster mode) as follows:
+Use spark-submit to submit your BigDL program.  e.g., run [anomalydetection](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/anomalydetection) example (running in either local mode or cluster mode) as follows:
 
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
@@ -224,19 +236,36 @@ Options:
 
 This section shows some common topics for both client mode and cluster mode.
 
-#### **4.1 How to retain executor logs for debugging?**
+#### **4.1 How to specify python environment**
+
+The k8s image provides two conda python environments, "pytf1" and "pytf2" are mainly distinguished with tensorflow version. "pytf1" is installed in "/usr/local/envs/pytf1/bin/python". "pytf2" is installed in "/usr/local/envs/pytf2/bin/python".
+Specify on both the driver and executor in client mode:
+```python
+init_orca_context(..., conf={"spark.pyspark.driver.python": "/usr/local/envs/pytf1/bin/python",
+                             "spark.pyspark.python": "/usr/local/envs/pytf1/bin/python",
+                            })
+```
+Specify on both the driver and executor in cluster mode:
+```bash
+${SPARK_HOME}/bin/spark-submit \
+  --... ...\
+  --conf spark.pyspark.driver.python=/usr/local/envs/pytf1/bin/python \
+  --conf spark.pyspark.python=/usr/local/envs/pytf1/bin/python \
+  file:///path/script.py
+```
+#### **4.2 How to retain executor logs for debugging?**
 
 The k8s would delete the pod once the executor failed in client mode and cluster mode.  If you want to get the content of executor log, you could set "temp-dir" to a mounted network file system (NFS) storage to change the log dir to replace the former one. In this case, you may meet `JSONDecodeError` because multiple executors would write logs to the same physical folder and cause conflicts. The solutions are in the next section.
 
 ```python
-init_orca_context(..., extra_params = {"temp-dir": "/zoo/"})
+init_orca_context(..., extra_params = {"temp-dir": "/bigdl/"})
 ```
 
-#### **4.2 How to deal with "JSONDecodeError" ?**
+#### **4.3 How to deal with "JSONDecodeError" ?**
 
 If you set `temp-dir` to a mounted nfs storage and use multiple executors , you may meet `JSONDecodeError` since multiple executors would write to the same physical folder and cause conflicts. Do not mount `temp-dir` to shared storage is one option to avoid conflicts. But if you debug ray on k8s, you need to output logs to a shared storage. In this case, you could set num-nodes to 1. After testing, you can remove `temp-dir` setting and run multiple executors.
 
-#### **4.3 How to use NFS?**
+#### **4.4 How to use NFS?**
 
 If you want to save some files out of pod's lifecycle, such as logging callbacks or tensorboard callbacks, you need to set the output dir to a mounted persistent volume dir. Let NFS be a simple example.
 
@@ -246,23 +275,23 @@ Use NFS in client mode:
 init_orca_context(cluster_mode="k8s", ...,
                   conf={...,
                   "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName":"nfsvolumeclaim",
-                  "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/zoo" 
+                  "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl" 
                   })
 ```
 
 Use NFS in cluster mode:
 
 ```bash
-${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
+${SPARK_HOME}/bin/spark-submit \
   --... ...\
   --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName="nfsvolumeclaim" \
-  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path="/zoo" \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path="/bigdl" \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName="nfsvolumeclaim" \
-  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path="/zoo" \
+  --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path="/bigdl" \
   file:///path/script.py
 ```
 
-#### **4.4 How to deal with  "RayActorError" ?**
+#### **4.5 How to deal with  "RayActorError" ?**
 
 "RayActorError" may caused by running out of the ray memory. If you meet this error, try to increase the memory for ray.
 
@@ -270,11 +299,11 @@ ${ANALYTICS_ZOO_HOME}/bin/spark-submit-python-with-zoo.sh \
 init_orca_context(..., exra_executor_memory_for_ray=100g)
 ```
 
-####  **4.5 How to set proper "steps_per_epoch" and "validation steps" ?**
+####  **4.6 How to set proper "steps_per_epoch" and "validation steps" ?**
 
 The `steps_per_epoch` and `validation_steps` should equal to numbers of dataset divided by batch size if you want to train all dataset. The `steps_per_epoch` and `validation_steps` do not relate to the `num_nodes` when total dataset and batch size are fixed. For example, you set `num_nodes` to 1, and set `steps_per_epoch` to 6. If you change the `num_nodes` to 3, the `steps_per_epoch` should still be 6.
 
-#### **4.6 Others**
+#### **4.7 Others**
 
 `spark.kubernetes.container.image.pullPolicy` needs to be specified as `always` if you need to update your spark executor image for k8s.
 
