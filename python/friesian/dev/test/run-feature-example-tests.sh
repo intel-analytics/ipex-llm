@@ -77,7 +77,7 @@ fi
 python ../../example/wnd/csv_to_parquet.py \
         --input ./data/dac_sample.txt \
         --output ./data/day_0.parquet
-scp -r ./data/day_0.parquet ./data/day_1.parquet
+cp -r ./data/day_0.parquet ./data/day_1.parquet
 python ../../example/wnd/wnd_preprocessing.py \
     --executor_cores 6 \
     --executor_memory 50g \
