@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import os
 from argparse import ArgumentParser
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
