@@ -75,7 +75,7 @@ RUN cd /opt && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package
 
 # Remove fork with libhadoop.so and spark-network-common.jar
-RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so -P /lib/ && \
+RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so -P /opt/ && \
     rm -f /opt/spark/jars/spark-network-common_2.12-${SPARK_VERSION}.jar && \
     wget -O /opt/spark/jars/spark-network-common_2.12-${SPARK_VERSION}.jar https://master.dl.sourceforge.net/project/analytics-zoo/analytics-zoo-data/spark-network-common_2.12-${SPARK_VERSION}.jar
 
@@ -141,6 +141,7 @@ RUN apt-get update && \
 
 # prepare Spark
 COPY --from=bigdl /opt/spark /opt/spark
+COPY --from=bigdl /opt/libhadoop.so /opt/libhadoop.so
 
 # Prepare BigDL
 RUN cd /opt && \
