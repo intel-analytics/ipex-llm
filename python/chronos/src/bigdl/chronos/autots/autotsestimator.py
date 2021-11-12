@@ -92,8 +92,9 @@ class AutoTSEstimator:
         :param past_seq_len: Int or or hp sampling function. The number of historical steps (i.e.
                lookback) used for forecasting. For hp sampling, see bigdl.orca.automl.hp for more
                details. The values defaults to 2.
-        :param future_seq_len: Int. The number of future steps to forecast. The value defaults
-               to 1.
+        :param future_seq_len: Int or List. The number of future steps to forecast. The value
+               defaults to 1, if `future_seq_len` is a list, we will sample discretely according
+               to the input list. 1 means the timestampe just after the observed data.
         :param input_feature_num: Int. The number of features in the input. The value is ignored if
                you use chronos.data.TSDataset as input data type.
         :param output_target_num: Int. The number of targets in the output. The value is ignored if
@@ -122,6 +123,11 @@ class AutoTSEstimator:
 
         if isinstance(search_space, str):
             search_space = AutoModelFactory.get_default_search_space(model, search_space)
+
+        self._future_seq_len = future_seq_len  # for support future_seq_len list input.
+        assert not hasattr(future_seq_len, 'sample') and not isinstance(future_seq_len, dict),\
+            f"future_seq_len only support int or List, but found {type(future_seq_len)}"
+        future_seq_len = future_seq_len if isinstance(future_seq_len, int) else len(future_seq_len)
 
         if isinstance(model, types.FunctionType) and backend == "torch":
             # pytorch 3rd party model
@@ -293,7 +299,9 @@ class AutoTSEstimator:
             train_d = ray.get(train_data_id)
 
             x, y = train_d.roll(lookback=config.get('past_seq_len'),
-                                horizon=config.get('future_seq_len'),
+                                horizon=self._future_seq_len
+                                if isinstance(self._future_seq_len, list)
+                                else config.get('future_seq_len'),
                                 feature_col=config['selected_features']) \
                           .to_numpy()
 
@@ -306,7 +314,9 @@ class AutoTSEstimator:
             val_d = ray.get(valid_data_id)
 
             x, y = val_d.roll(lookback=config.get('past_seq_len'),
-                              horizon=config.get('future_seq_len'),
+                              horizon=self._future_seq_len
+                              if isinstance(self._future_seq_len, list)
+                              else config.get('future_seq_len'),
                               feature_col=config['selected_features']) \
                         .to_numpy()
 
