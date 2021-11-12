@@ -276,6 +276,31 @@ class TestPyTorchEstimator(TestCase):
 
         assert np.array_equal(result, expected_result)
 
+    def test_xshards_save_load(self):
+
+        sc = init_nncontext()
+        rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = SparkXShards(shards)
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: IdentityNet())
+        result_shards = estimator.predict(shards, batch_size=4)
+        result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
+
+        path = "/tmp/model.pth"
+        try:
+            estimator.save(path)
+            estimator.load(path)
+            result_shards = estimator.predict(shards, batch_size=4)
+            result_after = np.concatenate([shard["prediction"]
+                                           for shard in result_shards.collect()])
+
+        finally:
+            os.remove(path)
+
+        assert np.array_equal(result_before, result_after)
+
     # currently do not support pandas dataframe
     # def test_pandas_dataframe(self):
 
