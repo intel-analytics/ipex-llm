@@ -18,13 +18,12 @@ from bigdl.dataset import movielens
 from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
-from pyspark.sql.context import SQLContext
 from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
 import tensorflow as tf
 import math
-import numpy as np
 import pandas as pd
 import argparse
+
 
 def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=True, mf_embed=20):
     num_layer = len(layers)
@@ -45,7 +44,7 @@ def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=Tru
                       name='layer%d' % idx)
         mlp_lalent = layer(mlp_lalent)
 
-    if (include_mf):
+    if include_mf:
         mf_embed_user = Embedding(input_dim=num_users,
                                   output_dim=mf_embed,
                                   input_length=1)(user_input)
@@ -63,6 +62,7 @@ def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=Tru
 
     model = tf.keras.Model([user_input, item_input], prediction)
     return model
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Two Tower Training/Inference')
@@ -85,9 +85,6 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
-    parser.add_argument('--data_dir', type=str, help='data directory')
-    parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
-
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
@@ -108,27 +105,13 @@ if __name__ == '__main__':
         sc = init_orca_context("spark-submit")
 
     movielens_data = movielens.get_id_ratings("/tmp/movielens/")
-    full = FeatureTable.from_pandas(pd.DataFrame(movielens_data, columns=["user",  "item", "label"]))
+    pddf = pd.DataFrame(movielens_data, columns=["user", "item", "label"])
+    num_users, num_items = pddf["user"].max() + 1, pddf["item"].max() + 1
 
-    sqlcontext = SQLContext(sc)
-    df = sc.textFile(
-        "/tmp/movielens/ml-1m/ratings.dat").map(
-        lambda l: l.split("::")[0:3]).map(
-        lambda l: (int(l[0]), int(l[1]), int(l[2]) - 1)).toDF(["user", "item", "label"])
-    train, test = df.randomSplit([0.8, 0.2], seed=1)
+    full = FeatureTable.from_pandas(pddf)\
+        .apply("label", "label", lambda x: x - 1, 'int')
+    train, test = full.random_split([0.8, 0.2], seed=1)
 
-    user_input = movielens_data[:, 0]
-    item_input = movielens_data[:, 1]
-    labels = movielens_data[:, 2]
-    user_input = np.array(list(map(lambda x: int(x.reshape([1])), user_input)))
-    item_input = np.array(list(map(lambda x: int(x.reshape([1])), item_input)))
-    def tozerobased(l):
-        return l - 1
-
-    labels = np.array(list(map(tozerobased, labels)))
-
-    num_users = max(user_input) + 1
-    num_items = max(item_input) + 1
     config = {"lr": 1e-3, "inter_op_parallelism": 4, "intra_op_parallelism": args.executor_cores}
 
     def model_creator(config):
@@ -140,19 +123,21 @@ if __name__ == '__main__':
                       metrics=['sparse_categorical_crossentropy', 'accuracy'])
         return model
 
-    steps_per_epoch = math.ceil(train.count() / args.batch_size)
-    val_steps = math.ceil(test.count() / args.batch_size)
+    steps_per_epoch = math.ceil(train.size() / args.batch_size)
+    val_steps = math.ceil(test.size() / args.batch_size)
 
     estimator = Estimator.from_keras(model_creator=model_creator,
                                      verbose=False,
                                      config=config)
-    estimator.fit(train,
+    estimator.fit(train.df,
                   batch_size=args.batch_size,
                   epochs=args.epochs,
                   feature_cols=['user', 'item'],
                   label_cols=['label'],
                   steps_per_epoch=steps_per_epoch,
-                  validation_data=test,
+                  validation_data=test.df,
                   validation_steps=val_steps)
+
+    tf.saved_model.save(estimator.get_model(), args.model_dir)
 
     stop_orca_context()

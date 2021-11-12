@@ -14,25 +14,24 @@
 # limitations under the License.
 #
 
-import os
 import hashlib
-import numpy as np
+import os
+import random
+import sys
 from functools import reduce
-from py4j.protocol import Py4JError
 
+import numpy as np
 import pyspark.sql.functions as F
-from pyspark.sql.column import Column
-from pyspark.sql import Row, Window
-from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
-    DoubleType, ArrayType, DataType, StructType, StringType, StructField
-from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadcast, \
-    lit, rank, monotonically_increasing_id, row_number, desc
-
+from bigdl.friesian.feature.utils import *
+from bigdl.orca import OrcaContext
+from py4j.protocol import Py4JError
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler, VectorAssembler, Bucketizer
-
-from bigdl.orca import OrcaContext
-from bigdl.friesian.feature.utils import *
+from pyspark.sql import Row, Window
+from pyspark.sql.column import Column
+from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadcast, \
+    lit, rank, monotonically_increasing_id, row_number, desc
+from pyspark.sql.types import ArrayType, DataType, StructType, StringType, StructField
 
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
@@ -217,6 +216,23 @@ class Table:
         :return: A new Table with filtered rows.
         """
         return self._clone(self.df.filter(condition))
+
+    def random_split(self, weights, seed=None):
+        """
+        Randomly splits with the provided weights.
+
+        :param weights: list of doubles as weights with which to split the table.
+            Weights will be normalized if they don't sum up to 1.0.
+        :param seed: The seed for sampling.
+
+        :return A list of Tables
+        """
+        for w in weights:
+            if w < 0.0:
+                raise ValueError("Weights must be positive. Found weight value: %s" % w)
+        seed = seed if seed is not None else random.randint(0, sys.maxsize)
+        df_array = self.df.randomSplit(weights, seed)
+        return [self._clone(df) for df in df_array]
 
     def clip(self, columns, min=None, max=None):
         """
@@ -689,16 +705,6 @@ class Table:
     def to_pandas(self):
         return self.df.toPandas()
 
-    @staticmethod
-    def from_pandas(pandas_df):
-        """
-        Returns the contents of this :class:`pandas.DataFrame` as Table
-        :param pandas_df: pandas dataframe
-        """
-        spark = OrcaContext.get_spark_session()
-        sparkDF = spark.createDataFrame(pandas_df)
-        return Table(sparkDF)
-
     def cache(self):
         """
         Persist this table in memory
@@ -763,6 +769,16 @@ class FeatureTable(Table):
         :return: A FeatureTable for recommendation data.
         """
         return cls(Table._read_csv(paths, delimiter, header, names, dtype))
+
+    @staticmethod
+    def from_pandas(pandas_df):
+        """
+        Returns the contents of this :class:`pandas.DataFrame` as Table
+        :param pandas_df: pandas dataframe
+        """
+        spark = OrcaContext.get_spark_session()
+        sparkDF = spark.createDataFrame(pandas_df)
+        return FeatureTable(sparkDF)
 
     def encode_string(self, columns, indices, broadcast=True,
                       do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False
