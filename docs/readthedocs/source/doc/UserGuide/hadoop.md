@@ -7,7 +7,7 @@ Hadoop version: Apache Hadoop >= 2.7 (3.X included) or [CDH](https://www.clouder
 For _**scala user**_, please see [scala user guide](./scala.md) for how to run BigDL on hadoop/yarn cluster.  
 For _**python user**_, you can run BigDL programs on standard Hadoop/YARN clusters without any changes to the cluster(i.e., no need to pre-install BigDL or any Python libraries in the cluster).
 
-### **1. Prepare python Environment**
+### **1. Prepare Python Environment**
 
 - You need to first use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment _**on the local client machine**_. Create a conda environment and install all the needed Python libraries in the created conda environment:
 
