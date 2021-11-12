@@ -3,6 +3,8 @@ ARG SPARK_VERSION=3.1.2
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
+ARG GITHUB_USERNAME=your_github_username
+ARG GITHUB_TOKEN=your_github_token
 
 # stage.1 graphene
 FROM ubuntu:18.04 AS graphene
@@ -31,6 +33,8 @@ ARG HTTPS_PROXY_PORT
 ARG SPARK_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
+ARG GITHUB_USERNAME
+ARG GITHUB_TOKEN
 ENV SPARK_VERSION       ${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk$JDK_VERSION
 ENV PATH                ${JAVA_HOME}/bin:${PATH}
@@ -71,7 +75,7 @@ RUN cd /opt && \
     ls /opt
 # spark modification
 RUN cd /opt && \
-    git clone https://github.com/analytics-zoo/spark.git && \
+    git clone https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/analytics-zoo/spark.git && \
     cd spark && \
     git checkout branch-3.1.2 && \
     git status && \
