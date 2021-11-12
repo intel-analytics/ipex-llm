@@ -24,7 +24,6 @@ import argparse
 import os
 import time
 
-#from python.orca.example.ray_on_spark.parameter_server import model
 import ray
 import model
 
