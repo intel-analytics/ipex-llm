@@ -52,6 +52,7 @@ Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by def
 ---
 ### **2. Run on YARN with build-in function**
 
+_**This is the most recommended way to run spark on yarn. **_
 - Install BigDL components in the created conda environment via pip, like dllib and orca:
 
   ```bash
@@ -89,7 +90,8 @@ Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by def
 ---
 ### **3. Run on YARN with spark-submit**
 
-Follow the steps below if you need to run BigDL with [spark-submit](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).
+Follow the steps below if you need to run BigDL with [spark-submit](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).  
+We highly recommended user to use run on YARN with build-in function above, as we has put all the spark-submit setting into our python codes, you can easy change your job between local and yarn.
 
 - Pack the current conda environment to `environment.tar.gz` (you can use any name you like):
 
@@ -107,9 +109,11 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
 
 - Use `spark-submit` to submit your BigDL program (e.g. script.py):
 
+yarn-cluster mode:
   ```bash
   spark-submit-with-dllib \
-      --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./environment/bin/python \
+      --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
+      --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
       --master yarn-cluster \
       --executor-memory 10g \
       --driver-memory 10g \
@@ -120,3 +124,18 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
   ```
 
   You can adjust the configurations according to your cluster settings.
+
+yarn-client mode:
+  ```bash
+  spark-submit-with-dllib \
+      --conf spark.driverEnv.PYSPARK_PYTHON=environment/bin/python \
+      --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
+      --master yarn-client \
+      --executor-memory 10g \
+      --driver-memory 10g \
+      --executor-cores 8 \
+      --num-executors 2 \
+      --archives environment.tar.gz#environment \
+      script.py
+  ```
+ Notice: `yarn-client`'s driver is running on local, while `yarn-cluster`'s driver is running on a yarn container, so the environment setting of driver's `PYSPARK_PYTHON` is different. `yarn-client` mode is `spark.driverEnv.PYSPARK_PYTHON`, and `yarn-cluster` mode is `spark.yarn.appMasterEnv.PYSPARK_PYTHON`.
