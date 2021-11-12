@@ -23,7 +23,7 @@ import numpy
 from bigdl.dllib.feature.dataset import base
 from bigdl.dllib.feature.dataset.transformer import *
 
-SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
+SOURCE_URL = 'https://ossci-datasets.s3.amazonaws.com/mnist/'
 
 TRAIN_MEAN = 0.13066047740239506 * 255
 TRAIN_STD = 0.3081078 * 255
