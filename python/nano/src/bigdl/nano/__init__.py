@@ -38,5 +38,3 @@ def check_nano_envs():
 
 
 check_nano_envs()
-
-from .pytorch.onnx import onnxruntime
