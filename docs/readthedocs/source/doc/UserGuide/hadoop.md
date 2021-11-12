@@ -109,7 +109,7 @@ We highly recommended user to use run on YARN with build-in function above, as w
 
 - Use `spark-submit` to submit your BigDL program (e.g. script.py):
 
-yarn-cluster mode:
+  yarn-cluster mode:
   ```bash
   spark-submit-with-dllib \
       --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
@@ -125,7 +125,7 @@ yarn-cluster mode:
 
   You can adjust the configurations according to your cluster settings.
 
-yarn-client mode:
+  yarn-client mode:
   ```bash
   spark-submit-with-dllib \
       --conf spark.driverEnv.PYSPARK_PYTHON=environment/bin/python \
@@ -138,4 +138,4 @@ yarn-client mode:
       --archives environment.tar.gz#environment \
       script.py
   ```
- Notice: `yarn-client`'s driver is running on local, while `yarn-cluster`'s driver is running on a yarn container, so the environment setting of driver's `PYSPARK_PYTHON` is different. `yarn-client` mode is `spark.driverEnv.PYSPARK_PYTHON`, and `yarn-cluster` mode is `spark.yarn.appMasterEnv.PYSPARK_PYTHON`.
+  Notice: `yarn-client`'s driver is running on local, while `yarn-cluster`'s driver is running on a yarn container, so the environment setting of driver's `PYSPARK_PYTHON` is different. `yarn-client` mode is `spark.driverEnv.PYSPARK_PYTHON`, and `yarn-cluster` mode is `spark.yarn.appMasterEnv.PYSPARK_PYTHON`.
