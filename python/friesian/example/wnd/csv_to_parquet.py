@@ -27,18 +27,17 @@ CAT_COLS = list(range(14, 40))
 
 if __name__ == '__main__':
    parser = ArgumentParser()
-   parser.add_argument('--input_file', type=str, required=True, help="Path to the txt file to be processed.")
-   parser.add_argument('--output', type=str, default=".", help="The path of the folder to save the parquet data.")
+   parser.add_argument('--input', type=str, required=True, help="The path to the csv file to be processed.")
+   parser.add_argument('--output', type=str, default=".", help="The path to the folder to save the parquet data.")
    args = parser.parse_args()
    spark = SparkSession.builder.getOrCreate()
-   input_file_path = args.input_file
-   output_folder_path = args.output
+   input = args.input
+   output = args.output
 
    label_fields = [StructField('_c%d' % LABEL_COL, IntegerType())]
    int_fields = [StructField('_c%d' % i, IntegerType()) for i in INT_COLS]
    str_fields = [StructField('_c%d' % i, StringType()) for i in CAT_COLS]
    schema = StructType(label_fields + int_fields + str_fields)
 
-   df = spark.read.schema(schema).option('sep', '\t').csv(input_file_path)
-   output_file_path = os.path.join(output_folder_path)
-   df.write.parquet(output_file_path, mode="overwrite")
+   df = spark.read.schema(schema).option('sep', '\t').csv(input)
+   df.write.parquet(output, mode="overwrite")
