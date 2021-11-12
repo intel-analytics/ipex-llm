@@ -162,6 +162,22 @@ class TestPyTorchEstimator(TestCase):
         assert 0 < val_stats["Accuracy"] < 1
         assert estimator.get_model()
 
+    def test_convergence(self):
+        estimator = get_estimator(workers_per_node=2)
+        start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(start_val_stats)
+        train_stats = estimator.fit(train_data_loader, epochs=2, batch_size=128)
+        print(train_stats)
+        end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(end_val_stats)
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] -
+                start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
+
     def test_spark_xshards(self):
         from bigdl.dllib.nncontext import init_nncontext
         from bigdl.orca.data import SparkXShards
