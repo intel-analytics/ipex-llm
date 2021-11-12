@@ -52,7 +52,7 @@ Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by def
 ---
 ### **2. Run on YARN with build-in function**
 
-_**This is the most recommended way to run spark on yarn. **_
+_**This is the most recommended way to run bigdl on yarn,**_ as we has put conda pack and all the spark-submit setting into our codes, you can easy change your job between local and yarn.
 - Install BigDL components in the created conda environment via pip, like dllib and orca:
 
   ```bash
@@ -91,7 +91,6 @@ _**This is the most recommended way to run spark on yarn. **_
 ### **3. Run on YARN with spark-submit**
 
 Follow the steps below if you need to run BigDL with [spark-submit](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).  
-We highly recommended user to use run on YARN with build-in function above, as we has put conda pack and all the spark-submit setting into our python codes, you can easy change your job between local and yarn.
 
 - Pack the current conda environment to `environment.tar.gz` (you can use any name you like):
 
