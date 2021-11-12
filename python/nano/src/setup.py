@@ -26,6 +26,7 @@ import stat
 import sys
 import re
 from html.parser import HTMLParser
+import platform
 
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
@@ -81,8 +82,10 @@ def setup_package():
                         "PyTurboJPEG",
                         "opencv-transforms"]
 
-    for url in lib_urls:
-        download_libs(url)
+    
+    if platform.system() != 'Windows':
+        for url in lib_urls:
+            download_libs(url)
 
     metadata = dict(
         name='bigdl-nano',
@@ -95,10 +98,17 @@ def setup_package():
         extras_require={"tensorflow": tensorflow_requires,
                         "pytorch": pytorch_requires},
         packages=get_nano_packages(),
+        
         package_data={"bigdl.nano": [
             "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]},
         scripts=['../script/bigdl-nano-init']
     )
+
+    if platform.system() == 'Windows':
+            metadata["package_data"]={"bigdl.nano":[]}
+    else:
+        metadata["package_data"]={"bigdl.nano": [
+            "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]},
 
     setup(**metadata)
 
