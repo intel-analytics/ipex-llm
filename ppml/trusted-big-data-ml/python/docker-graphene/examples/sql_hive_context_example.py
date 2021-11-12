@@ -72,7 +72,8 @@ def sql_hive_context_example(spark):
     # refreshTable
     # Exception: An error occurred while calling o26.refreshTable:
     # Method refreshTable([class java.lang.String]) does not exist
-
+    
+    print("Finish running HiveContext API")
 
     
 

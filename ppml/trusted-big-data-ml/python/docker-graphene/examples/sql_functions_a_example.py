@@ -134,7 +134,8 @@ def sql_functions_a_example(spark):
     df = spark.createDataFrame([(1,), (10,), (8,), (7,), (5,), (4,)], ["n1"])
     df.select(avg(df.n1).alias("avg")).show()
     print("avg API finished")
-
+    
+    print("Finish running function_a API")
 
 if __name__ == "__main__":
     

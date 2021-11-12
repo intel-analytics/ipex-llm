@@ -125,7 +125,8 @@ def sql_functions_c_example(spark):
     df = spark.createDataFrame([('Alice', 20), ('Bob', 22)], ['name', 'age'])
     df.select(current_timestamp().alias('timestamp')).show()
     print("current_timestamp API finished")
-
+    
+    print("Finish running function_c API")
 
 if __name__ == "__main__":
 
