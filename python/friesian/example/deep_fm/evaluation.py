@@ -16,12 +16,13 @@
 
 from collections import defaultdict
 import logging
-LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-logger = logging.getLogger(__file__)
 import numpy as np
 from numba import njit
 from scipy.stats import rankdata
+
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+logger = logging.getLogger(__file__)
 
 
 @njit
@@ -35,6 +36,7 @@ def fast_auc(actual, predicted):
     # https://www.kaggle.com/c/riiid-test-answer-prediction/discussion/208031
     pred_ranks = rankdata(predicted)
     return _auc(actual, pred_ranks)
+
 
 def uAUC(labels, preds, user_id_list):
     """Calculate user AUC"""

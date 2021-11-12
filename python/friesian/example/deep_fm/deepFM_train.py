@@ -72,7 +72,7 @@ class DeepFM(BaseModel):
 
     def forward(self, X):
         sparse_embedding_list, dense_value_list = self\
-            .input_from_feature_columns(X, self.dnn_feature_columns,self.embedding_dict)
+            .input_from_feature_columns(X, self.dnn_feature_columns, self.embedding_dict)
         logit = self.linear_model(X)
 
         if self.use_fm and len(sparse_embedding_list) > 0:
@@ -112,8 +112,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
-    parser.add_argument('--data_dir', type=str, help='data directory',
-                        default="/Users/guoqiong/intelWork/data/tweet/input_2tower")
+    parser.add_argument('--data_dir', type=str, help='data directory')
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
 
     args = parser.parse_args()
