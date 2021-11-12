@@ -543,7 +543,7 @@ def main():
     parser.add_argument("--batch_size", dest="batch_size", type=int, default=16,
                         help="Required. epochs.")
     parser.add_argument("--cluster_mode", dest="cluster_mode", default="local",
-                        help="Required. Run on local/yarn/k8s mode.")
+                        help="Required. Run on local/yarn/k8s/spark-submit mode.")
     parser.add_argument("--class_num", dest="class_num", type=int, default=20,
                         help="Required. class num.")
     parser.add_argument("--worker_num", type=int, default=1,
@@ -600,7 +600,8 @@ def main():
                           num_nodes=options.worker_num, memory=options.memory,
                           init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
                           object_store_memory=options.object_store_memory)
-
+    elif options.cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode="spark-submit")
     # convert yolov3 weights
     yolo = YoloV3(classes=80)
     load_darknet_weights(yolo, options.weights)
@@ -694,3 +695,4 @@ if __name__ == '__main__':
         main()
     except SystemExit:
         pass
+

@@ -31,7 +31,6 @@ class TestPublicDataset(ZooTestCase):
     def test_init_get_dataset(self):
         name = 'nyc_taxi'
         path = '~/.chronos/dataset/'
-        public_data = PublicDataset(name, path, redownload=False, with_split=False)
 
         # illegle input.
         with pytest.raises(AssertionError):
@@ -43,7 +42,7 @@ class TestPublicDataset(ZooTestCase):
         if os.environ.get('FTP_URI', None):
             file_url = f"{os.getenv('FTP_URI')}/analytics-zoo-data/apps/nyc-taxi/nyc_taxi.csv"
 
-            public_data = PublicDataset(name, path, redownload=False)
+            public_data = PublicDataset(name, path, redownload=False, with_split=False)
             public_data.df = pd.read_csv(file_url, parse_dates=['timestamp'])
 
             tsdata = public_data.get_tsdata(target_col='value', dt_col='timestamp')
@@ -57,7 +56,7 @@ class TestPublicDataset(ZooTestCase):
         if os.environ.get('FTP_URI', None):
             file_url = f"{os.getenv('FTP_URI')}/analytics-zoo-data/network-traffic/data/data.csv"
 
-            public_data = PublicDataset(name, path, redownload=False)
+            public_data = PublicDataset(name, path, redownload=False, with_split=False)
             public_data.df = pd.read_csv(file_url)
             public_data.df.StartTime = pd.to_datetime(public_data.df.StartTime)
             public_data.df.AvgRate = public_data.df.AvgRate.apply(lambda x: float(x[:-4])

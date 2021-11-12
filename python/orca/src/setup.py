@@ -90,7 +90,7 @@ def setup_package():
         url='https://github.com/intel-analytics/analytics-zoo',
         packages=get_bigdl_packages(),
         install_requires=['conda-pack==0.3.1', 'packaging', 'filelock',
-                          'bigdl-tf=='+VERSION, 'bigdl-math=='+VERSION, 'bigdl-dllib=='+VERSION],
+                          'bigdl-tf==0.14.0.dev0', 'bigdl-math==0.14.0.dev0', 'bigdl-dllib=='+VERSION],
         extras_require={'ray': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
                                 'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1'],
                         'automl': ['ray[tune]==1.2.0', 'scikit-learn', 'tensorboard', 'xgboost']

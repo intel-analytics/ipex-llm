@@ -34,6 +34,8 @@
 # https://github.com/tensorflow/docs/blob/master/site/en/r1/tutorials/images/transfer_learning.ipynb
 
 import os
+from os.path import exists
+from os import makedirs
 import argparse
 
 import tensorflow as tf
@@ -45,14 +47,19 @@ from bigdl.orca.learn.tf.estimator import Estimator
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local or yarn.')
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
+parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
+parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
+parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
-dataset_dir = "datasets"
+dataset_dir = args.data_dir
+if not exists(dataset_dir):
+    makedirs(dataset_dir)
 zip_file = tf.keras.utils.get_file(
     origin="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
-    fname="cats_and_dogs_filtered.zip", extract=True, cache_dir="./")
+    fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
 base_dir, _ = os.path.splitext(zip_file)
 
 if cluster_mode == "local":
@@ -61,8 +68,10 @@ elif cluster_mode == "yarn":
     additional = "datasets/cats_and_dogs_filtered.zip#" + dataset_dir
     init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g",
                       additional_archive=additional)
+elif cluster_mode == "spark-submit":
+    init_orca_context(cluster_mode="spark-submit")                      
 else:
-    print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + cluster_mode)
 
 train_dir = os.path.join(base_dir, 'train')
@@ -85,7 +94,7 @@ validation_dogs_dir = os.path.join(validation_dir, 'dogs')
 print('Total validation dog images:', len(os.listdir(validation_dogs_dir)))
 
 image_size = 160  # All images will be resized to 160x160
-batch_size = 32
+batch_size = args.batch_size
 
 
 # Rescale all images by 1./255 and apply image augmentation
@@ -121,7 +130,7 @@ model.compile(optimizer=tf.keras.optimizers.RMSprop(lr=0.0001),
 model.summary()
 len(model.trainable_variables)
 
-epochs = 3
+epochs = args.epochs
 est = Estimator.from_keras(keras_model=model)
 est.fit(train_dataset,
         batch_size=batch_size,
@@ -164,3 +173,4 @@ print("==>unfreeze")
 result = est.evaluate(validation_dataset)
 print(result)
 stop_orca_context()
+

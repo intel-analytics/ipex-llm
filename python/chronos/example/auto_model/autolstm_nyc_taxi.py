@@ -27,13 +27,7 @@ from bigdl.orca.automl.metrics import Evaluator
 
 def get_tsdata():
     name = 'nyc_taxi'
-    path = '~/.chronos/dataset/'
-    tsdata_train, tsdata_valid, \
-        tsdata_test = get_public_dataset(name, path,
-                                         redownload=False,
-                                         with_split=True,
-                                         val_ratio=0.1,
-                                         test_ratio=0.1)
+    tsdata_train, tsdata_valid, tsdata_test = get_public_dataset(name)
     stand_scaler = StandardScaler()
     for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
         tsdata.impute(mode="linear")\

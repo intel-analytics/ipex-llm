@@ -46,20 +46,23 @@ class FlinkInference()
 //    val b = StreamSerializer.objToBytes(x)
 //    val o = StreamSerializer.bytesToObj(b).asInstanceOf[Activity]
 //    println(s"directly deser -> ${o.getClass}")
+    var localModelDir: String = null
     try {
       if (ClusterServing.model == null) {
         ClusterServing.synchronized {
           if (ClusterServing.model == null) {
-            val localModelDir = getRuntimeContext.getDistributedCache
+            localModelDir = getRuntimeContext.getDistributedCache
               .getFile(Conventions.SERVING_MODEL_TMP_DIR).getPath
 
             logger.info(s"Model loaded at executor at path ${localModelDir}")
             helper.modelPath = localModelDir
+
             ClusterServing.model = ClusterServing.helper.loadInferenceModel()
+            ClusterServing.jobModelMap += (localModelDir -> ClusterServing.model)
           }
         }
       }
-      inference = new ClusterServingInference()
+      inference = new ClusterServingInference(localModelDir)
     }
 
     catch {

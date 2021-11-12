@@ -18,9 +18,14 @@
 import pytest
 import os
 from unittest import TestCase
+
+import torch
+from torch import nn
+
+from test._train_torch_lightning import create_data_loader, data_transform
+from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from test._train_torch_lightning import train_with_linear_top_layer
-
 
 batch_size = 256
 num_workers = 0
@@ -31,52 +36,30 @@ class TestModelsVision(TestCase):
 
     def test_resnet18_ipex(self):
         resnet18 = vision.resnet18(
-            pretrained=True, include_top=False, freeze=True)
+            pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
             resnet18, batch_size, num_workers, data_dir,
             use_orca_lite_trainer=True)
 
-    def test_resnet34_ipex(self):
-        resnet34 = vision.resnet34(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            resnet34, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
+    def test_trainer_compile(self):
+        class ResNet18(nn.Module):
+            def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+                super().__init__()
+                backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+                output_size = backbone.get_output_size()
+                head = nn.Linear(output_size, num_classes)
+                self.model = nn.Sequential(backbone, head)
 
-    def test_resnet50_ipex(self):
-        resnet50 = vision.resnet50(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            resnet50, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
+            def forward(self, x):
+                return self.model(x)
 
-    def test_mobilenet_v3_large_ipex(self):
-        mobilenet = vision.mobilenet_v3_large(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            mobilenet, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_mobilenet_v3_small_ipex(self):
-        mobilenet = vision.mobilenet_v3_small(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            mobilenet, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_mobilenet_v2_ipex(self):
-        mobilenet = vision.mobilenet_v2(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            mobilenet, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_shufflenet_ipex(self):
-        shufflenet = vision.shufflenet_v2_x1_0(
-            pretrained=True, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            shufflenet, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+        pl_model = trainer.compile(model, loss, optimizer)
+        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+        trainer.fit(pl_model, train_loader)
 
 
 if __name__ == '__main__':

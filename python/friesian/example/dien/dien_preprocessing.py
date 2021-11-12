@@ -125,4 +125,4 @@ if __name__ == "__main__":
 
     end = time.time()
     stop_orca_context()
-    print(f"perf preprocessing time: {(end - begin):.2f}s")
+    print(f"DIEN preprocessing time: {(end - begin):.2f}s")

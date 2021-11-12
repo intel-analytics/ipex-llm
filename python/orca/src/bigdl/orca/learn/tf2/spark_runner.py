@@ -28,6 +28,8 @@ import socket
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.learn.utils import save_pkl, load_pkl
 
+logger = logging.getLogger(__name__)
+
 def find_free_port(tc):
     address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
@@ -269,7 +271,7 @@ class SparkRunner:
         self.cluster = cluster
         tc = BarrierTaskContext().get()
         self.rank = self._get_rank(cluster, tc)
-        print("cluster is: ", cluster)
+        logger.info("cluster is: %s", cluster)
 
         import os
         os.environ["TF_CONFIG"] = json.dumps({

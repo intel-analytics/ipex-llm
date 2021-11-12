@@ -13,6 +13,8 @@ blob_server_port=$FLINK_BLOB_SERVER_PORT
 blob_server_port=$FLINK_BLOB_SERVER_PORT
 xmx_size=$XMX_SIZE
 sgx_mode=$SGX_MODE
+jars=(${flink_home}/lib/*.jar)
+jars_cp=$( IFS=$':'; echo "${jars[*]}" )
 
 if [[ $sgx_mode == "sgx" || $sgx_mode == "SGX" ]];then cmd_prefix="graphene-sgx ./"; fi
 
@@ -29,7 +31,7 @@ eval ${cmd_prefix}bash -c \" /opt/jdk8/bin/java \
     -Dlog.file=${flink_home}/log/flink-standalonesession-1-${sgx_mode}.log \
     -Dlog4j.configurationFile=file:${flink_home}/conf/log4j.properties \
     -Dlogback.configurationFile=file:${flink_home}/conf/logback.xml \
-    -classpath ${flink_home}/lib/flink-csv-${flink_version}.jar:${flink_home}/lib/flink-dist_2.11-${flink_version}.jar:${flink_home}/lib/flink-json-${flink_version}.jar:${flink_home}/lib/flink-shaded-zookeeper-3.4.14.jar:${flink_home}/lib/flink-table_2.11-${flink_version}.jar:${flink_home}/lib/flink-table-blink_2.11-${flink_version}.jar:${flink_home}/lib/log4j-1.2-api-2.12.1.jar:${flink_home}/lib/log4j-api-2.12.1.jar:${flink_home}/lib/log4j-core-2.12.1.jar:${flink_home}/lib/log4j-slf4j-impl-2.12.1.jar::: org.apache.flink.runtime.entrypoint.StandaloneSessionClusterEntrypoint \
+    -classpath ${flink_home}/lib/flink-csv-${flink_version}.jar:${flink_home}/lib/flink-dist_2.11-${flink_version}.jar:${flink_home}/lib/flink-json-${flink_version}.jar:${flink_home}/lib/flink-shaded-zookeeper-3.4.14.jar:${flink_home}/lib/flink-table_2.11-${flink_version}.jar:${flink_home}/lib/flink-table-blink_2.11-${flink_version}.jar:${flink_home}/lib/log4j-1.2-api-2.12.1.jar:${flink_home}/lib/log4j-api-2.12.1.jar:${flink_home}/lib/log4j-core-2.12.1.jar:${flink_home}/lib/log4j-slf4j-impl-2.12.1.jar:${jars_cp} org.apache.flink.runtime.entrypoint.StandaloneSessionClusterEntrypoint \
     --configDir ${flink_home}/conf \
     -D rest.bind-address=0.0.0.0 \
     -D rest.bind-port=${job_manager_rest_port} \

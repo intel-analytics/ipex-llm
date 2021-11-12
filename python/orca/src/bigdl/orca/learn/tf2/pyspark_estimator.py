@@ -374,12 +374,9 @@ class SparkTFEstimator():
     @enable_multi_fs_load
     def load(self, filepath):
         """
-        Save tensorflow keras model in this estimator.
+        Load tensorflow keras model in this estimator.
 
         :param filepath: keras model weights save path.
-        :param by_name: Boolean, whether to load weights by name or by topological
-               order. Only topological loading is supported for weight files in
-               TensorFlow format.
         """
         import tensorflow as tf
         model = tf.keras.models.load_model(filepath)

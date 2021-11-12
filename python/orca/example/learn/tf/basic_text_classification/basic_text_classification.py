@@ -65,15 +65,18 @@ from bigdl.orca.learn.tf.estimator import Estimator
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local or yarn.')
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
+parser.add_argument('--epochs', type=int, default=2, help='number of epochs to train for')
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
 elif cluster_mode == "yarn":
     init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g")
+elif cluster_mode == "spark-submit":
+    init_orca_context(cluster_mode="spark-submit")
 else:
-    print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + cluster_mode)
 
 print(tf.__version__)
@@ -145,9 +148,10 @@ validation_dataset = tf.data.Dataset.from_tensor_slices((x_val, y_val))
 est = Estimator.from_keras(keras_model=model)
 est.fit(data=train_dataset,
         batch_size=512,
-        epochs=100,
+        epochs=args.epochs,
         validation_data=validation_dataset
         )
 results = est.evaluate(validation_dataset)
 print(results)
 stop_orca_context()
+

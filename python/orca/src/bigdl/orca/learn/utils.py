@@ -25,7 +25,6 @@ import subprocess
 import tempfile
 import shutil
 
-
 def find_latest_checkpoint(model_dir, model_type="bigdl"):
     import os
     import re
@@ -468,5 +467,3 @@ def load_pkl(path):
         with open(path, 'rb') as f:
             data = pickle.load(f)
         return data
-
-

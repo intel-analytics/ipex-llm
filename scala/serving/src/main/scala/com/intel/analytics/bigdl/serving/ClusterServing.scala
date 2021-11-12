@@ -34,6 +34,7 @@ object ClusterServing {
   var helper: ClusterServingHelper = _
   var streamingEnv: StreamExecutionEnvironment = _
   var model: InferenceModel = _
+  var jobModelMap: Map[String, InferenceModel] = Map[String, InferenceModel]()
   var jedisPool: JedisPool = _
   val jedisPoolConfig = new JedisPoolConfig()
   jedisPoolConfig.setMaxTotal(256)

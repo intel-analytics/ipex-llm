@@ -57,6 +57,7 @@ parser.add_argument('--cluster_mode', type=str,
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
                          'bigdl and torch_distributed are supported.')
+parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')                         
 opt = parser.parse_args()
 
 print(opt)
@@ -67,8 +68,10 @@ elif opt.cluster_mode == "yarn":
     additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
     init_orca_context(cluster_mode="yarn-client", cores=4, num_nodes=2,
                       additional_archive=additional)
+elif opt.cluster_mode == "spark-submit":
+    init_orca_context(cluster_mode="spark-submit")                      
 else:
-    print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + opt.cluster_mode)
 
 
@@ -79,7 +82,7 @@ def download_report(count, block_size, total_size):
     print('downloaded %d, %.2f%% completed' % (downloaded, percent))
 
 
-def download_bsd300(dest="./dataset"):
+def download_bsd300(dest=opt.data_dir):
     output_image_dir = join(dest, "BSDS300/images")
 
     if not exists(output_image_dir):
@@ -224,7 +227,7 @@ def optim_creator(model, config):
 
 
 criterion = nn.MSELoss()
-model_dir = "models"
+model_dir = opt.data_dir+"/models"
 
 if opt.backend == "bigdl":
     model = model_creator(
