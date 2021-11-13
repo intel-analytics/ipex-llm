@@ -30,7 +30,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_1_pyspark_sql_api_DataFrame=$(echo $?)
 fi
 
-if [ $status_2_pyspark_sql_api_SQLContext -ne 0]; then
+if [ $status_2_pyspark_sql_api_SQLContext -ne 0 ]; then
 echo "pysaprk sql api example.2 --- SQLContext"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -44,7 +44,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_2_pyspark_sql_api_SQLContext=$(echo $?)
 fi
 
-if [ $status_3_pyspark_sql_api_UDFRegistration -ne 0]; then
+if [ $status_3_pyspark_sql_api_UDFRegistration -ne 0 ]; then
 echo "pysaprk sql api example.3 --- UDFRegistration"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/spark-sql_2.12-3.1.2.jar' \
@@ -57,7 +57,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_3_pyspark_sql_api_UDFRegistration=$(echo $?)
 fi
 
-if [ $status_4_pyspark_sql_api_GroupedData -ne 0]; then
+if [ $status_4_pyspark_sql_api_GroupedData -ne 0 ]; then
 echo "pysaprk sql api example.4 --- GroupedData"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -70,7 +70,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_4_pyspark_sql_api_GroupedData=$(echo $?)
 fi
 
-if [ $status_5_pyspark_sql_api_Column -ne 0]; then
+if [ $status_5_pyspark_sql_api_Column -ne 0 ]; then
 echo "pysaprk sql api example.5 --- Column"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -83,7 +83,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_5_pyspark_sql_api_Column=$(echo $?)
 fi
 
-if [ $status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions -ne 0]; then
+if [ $status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions -ne 0 ]; then
 echo "pysaprk sql api example.6 --- Row_and_DataFrameNaFunctions"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -96,7 +96,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions=$(echo $?)
 fi
 
-if [ $status_7_pyspark_sql_api_Window -ne 0]; then
+if [ $status_7_pyspark_sql_api_Window -ne 0 ]; then
 echo "pysaprk sql api example.7 --- Window"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -109,7 +109,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_7_pyspark_sql_api_Window=$(echo $?)
 fi
 
-if [ $status_8_pyspark_sql_api_DataframeReader -ne 0]; then
+if [ $status_8_pyspark_sql_api_DataframeReader -ne 0 ]; then
 echo "pysaprk sql api example.8 --- DataframeReader"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -122,7 +122,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_8_pyspark_sql_api_DataframeReader=$(echo $?)
 fi
 
-if [ $status_9_pyspark_sql_api_DataframeWriter -ne 0]; then
+if [ $status_9_pyspark_sql_api_DataframeWriter -ne 0 ]; then
 echo "pysaprk sql api example.9 --- DataframeWriter"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -135,7 +135,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_9_pyspark_sql_api_DataframeWriter=$(echo $?)
 fi
 
-if [ $status_10_pyspark_sql_api_HiveContext -ne 0]; then
+if [ $status_10_pyspark_sql_api_HiveContext -ne 0 ]; then
 echo "pysaprk sql api example.10 --- HiveContext"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -148,7 +148,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_10_pyspark_sql_api_HiveContext=$(echo $?)
 fi
 
-if [ $status_11_pyspark_sql_api_Catalog -ne 0]; then
+if [ $status_11_pyspark_sql_api_Catalog -ne 0 ]; then
 echo "pysaprk sql api example.11 --- Catalog"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -161,7 +161,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_11_pyspark_sql_api_Catalog=$(echo $?)
 fi
 
-if [ $status_12_pyspark_sql_types_module -ne 0]; then
+if [ $status_12_pyspark_sql_types_module -ne 0 ]; then
 echo "pysaprk sql api example.12 --- types module"
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
@@ -174,7 +174,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
 status_12_pyspark_sql_types_module=$(echo $?)
 fi
 
-if [ $status_13_pyspark_sql_functions_module -ne 0]; then
+if [ $status_13_pyspark_sql_functions_module -ne 0 ]; then
 echo "pysaprk sql api example.13 --- pyspark api functions"
   for f_num in {a..g}
   do
@@ -189,7 +189,7 @@ echo "pysaprk sql api example.13 --- pyspark api functions"
   done
 fi
 
-echo "#### pyspark api example.1 Excepted result(DataFrame): "
+echo "#### pyspark api example.1 Excepted result(DataFrame): INFO SQL Dataframe Example API finished"
 echo "---- pyspark api example.1 Actual result: "
 cat test-sql-dataframe-sgx.log | egrep -a 'INFO SQL Dataframe Example API finished'
 
@@ -199,43 +199,43 @@ cat  test-sql-context-sgx.log | egrep -a 'Finish running SQL context API'
 
 echo "#### pyspark api example.3 Excepted result(UDFRegistration): Finish running SQL UDFRegistration API"
 echo "---- pyspark api example.3 Actual result: "
-cat test-sql-UDFRegistration.log | egrep 'Finish running SQL UDFRegistration API'
+cat test-sql-UDFRegistration.log | egrep -a 'Finish running SQL UDFRegistration API'
 
 echo "#### pyspark api example.4 Excepted result(GroupedData): Finish running SQL GroupedData API"
 echo "---- pyspark api example.4 Actual result: "
-cat test-sql-groupeddata-sgx.log | egrep 'Finish running SQL GroupedData API'
+cat test-sql-groupeddata-sgx.log | egrep -a 'Finish running SQL GroupedData API'
 
 echo "#### pyspark api example.5 Excepted result(Column): Finish running SQL Column API"
 echo "---- pyspark api example.5 Actual result: "
-cat test-sql-column-sgx.log | egrep 'Finish running SQL Column API'
+cat test-sql-column-sgx.log | egrep -a 'Finish running SQL Column API'
 
 echo "#### pyspark api example.6 Excepted result(Row_and_DataFrameNaFunctions): Finish running SQL Row_and_DataFrameNaFunctions API"
 echo "---- pyspark api example.6 Actual result: "
-cat test-sql-row-sgx.log  | egrep 'Finish running SQL Row_and_DataFrameNaFunctions API'
+cat test-sql-row-sgx.log  | egrep -a 'Finish running SQL Row_and_DataFrameNaFunctions API'
 
 echo "#### pyspark api example.7 Excepted result(Window): Finish running Window and WindowSpec API"
 echo "---- pyspark api example.7 Actual result: "
-cat test-window-sgx.log | egrep 'Finish running Window and WindowSpec API'
+cat test-window-sgx.log | egrep -a 'Finish running Window and WindowSpec API'
 
 echo "#### pyspark api example.8 Excepted result(DataframeReader): Finish running dataframe reader API"
 echo "---- pyspark api example.8 Actual result: "
-cat test-dataframe-reader-sgx.log | egrep 'Finish running dataframe reader API'
+cat test-dataframe-reader-sgx.log | egrep -a 'Finish running dataframe reader API'
 
 echo "#### pyspark api example.9 Excepted result(DataframeWriter): Finish running dataframe writer API"
 echo "---- pyspark api example.9 Actual result: "
-cat test-dataframe-writer-sgx.log | egrep 'Finish running dataframe writer API'
+cat test-dataframe-writer-sgx.log | egrep -a 'Finish running dataframe writer API'
 
 echo "#### pyspark api example.10 Excepted result(HiveContext): Finish running HiveContext API"
 echo "---- pyspark api example.10 Actual result: "
-cat sql_hive_context_example-sgx.log | egrep 'Finish running HiveContext API'
+cat sql_hive_context_example-sgx.log | egrep -a 'Finish running HiveContext API'
 
 echo "#### pyspark api example.11 Excepted result(Catalog): Finish running Catalog API"
 echo "---- pyspark api example.11 Actual result: "
-cat sql_catalog_example-sgx.log | egrep 'Finish running Catalog API'
+cat sql_catalog_example-sgx.log | egrep -a 'Finish running Catalog API'
 
 echo "#### pyspark api example.12 Excepted result(types module): Finish running types module API"
 echo "---- pyspark api example.12 Actual result: "
-cat sql_types_example-sgx.log | egrep 'Finish running types module API'
+cat sql_types_example-sgx.log | egrep -a 'Finish running types module API'
 
 for f_num in {a..g}
 do
