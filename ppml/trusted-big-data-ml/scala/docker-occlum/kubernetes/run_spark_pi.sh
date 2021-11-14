@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sed -i 's/container-name/spark-pi/g' ./executor.yaml
+
 ${SPARK_HOME}/bin/spark-submit \
     --master k8s://https://${kubernetes_master_url}:6443 \
     --deploy-mode cluster \
@@ -12,4 +14,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.kubernetes.driver.podTemplateFile=./executor.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=./executor.yaml \
-    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
+    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.2.jari
+
+sed -i 's/spark-pi/container-name/g' ./executor.yaml
+
