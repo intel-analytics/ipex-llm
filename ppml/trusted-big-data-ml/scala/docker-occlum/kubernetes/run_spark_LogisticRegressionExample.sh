@@ -1,6 +1,7 @@
 #!/bin/bash
 
 sed -i 's/container-name/spark-LogisticRegression/g' ./executor.yaml
+
 ${SPARK_HOME}/bin/spark-submit \
     --master k8s://https://${kubernetes_master_url}:6443 \
     --deploy-mode cluster \
