@@ -23,10 +23,23 @@ import math
 import numpy as np
 
 
+ONNXRT_BINDED_COMPONENTS = ['_ortsess_up_to_date',
+                            '_ortsess',
+                            '_build_ortsess',
+                            'update_ortsess',
+                            'predict_step',
+                            'inference']
+
+
 def bind_onnxrt_methods(pl_model: LightningModule):
     # class type check
     assert isinstance(pl_model, LightningModule),\
         "onnxruntime support is only valid for a LightningModule."
+    
+    # check conflicts
+    for component in ONNXRT_BINDED_COMPONENTS:
+        if component in dir(pl_model):
+            warnings.warn(f"{component} method/property will be replaced.")
 
     # additional attributes
     pl_model._ortsess_up_to_date = False  # indicate if we need to build ortsess again
@@ -55,16 +68,18 @@ def bind_onnxrt_methods(pl_model: LightningModule):
         assert input_sample is not None,\
             'You should set either input_sample or self.example_input_array'
 
+        default_onnx_export_args = {'export_params': True,
+                                    'opset_version': 10,
+                                    'do_constant_folding': True,
+                                    'input_names': ['input'],
+                                    'output_names': ['output'],
+                                    'dynamic_axes': {'input': {0: 'batch_size'},
+                                                     'output': {0: 'batch_size'}}}
+        default_onnx_export_args.update(kwargs)
+
         self.to_onnx(file_path,
                      input_sample,
-                     export_params=True,
-                     opset_version=10,
-                     do_constant_folding=True,
-                     input_names=['input'],
-                     output_names=['output'],
-                     dynamic_axes={'input': {0: 'batch_size'},
-                                   'output': {0: 'batch_size'}},
-                     **kwargs)
+                     **default_onnx_export_args)
 
         self._ortsess = ort.InferenceSession(file_path, sess_options=sess_options)
         self._ortsess_up_to_date = True
