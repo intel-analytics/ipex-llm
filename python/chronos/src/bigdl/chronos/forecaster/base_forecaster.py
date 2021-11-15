@@ -27,7 +27,7 @@ ORCA_METRICS = {"mse": MSE, "mae": MAE}
 
 class BasePytorchForecaster(Forecaster):
     '''
-    Forecaster base model for lstm, mtnet, seq2seq and tcn forecasters.
+    Forecaster base model for lstm, seq2seq and tcn forecasters.
     '''
     def __init__(self, **kwargs):
         if self.distributed:
