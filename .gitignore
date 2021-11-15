@@ -47,3 +47,5 @@ __pycache__
 target
 build
 dist
+
+.vscode
