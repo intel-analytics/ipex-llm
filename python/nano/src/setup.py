@@ -99,14 +99,10 @@ def setup_package():
                         "pytorch": pytorch_requires},
         packages=get_nano_packages(),
         
-        package_data={"bigdl.nano": [
-            "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]},
         scripts=['../script/bigdl-nano-init']
     )
 
-    if platform.system() == 'Windows':
-            metadata["package_data"]={"bigdl.nano":[]}
-    else:
+    if platform.system() != 'Windows':
         metadata["package_data"]={"bigdl.nano": [
             "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]},
 
