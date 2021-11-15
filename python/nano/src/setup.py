@@ -102,9 +102,11 @@ def setup_package():
         scripts=['../script/bigdl-nano-init']
     )
 
-    if platform.system() != 'Windows':
+    if platform.system() == 'Windows':
+        metadata["package_data"]={"bigdl.nano":[]}
+    else:
         metadata["package_data"]={"bigdl.nano": [
-            "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]},
+            "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]}
 
     setup(**metadata)
 
