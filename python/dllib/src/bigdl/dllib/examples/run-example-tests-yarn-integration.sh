@@ -80,7 +80,7 @@ echo "#4 start test for orca bigdl transformer"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py --cluster_mode yarn_client
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py --cluster_mode yarn_cluster
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up

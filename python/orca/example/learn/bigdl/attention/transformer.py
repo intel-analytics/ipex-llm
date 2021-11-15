@@ -34,7 +34,7 @@ args = parser.parse_args()
 cluster_mode = args.cluster_mode
 conf = {"spark.executor.extraJavaOptions": "-Xss512m",
         "spark.driver.extraJavaOptions": "-Xss512m"}
-max_features = 20000
+max_features = 2000
 max_len = 200
 
 if cluster_mode == "local":
