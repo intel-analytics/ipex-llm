@@ -40,7 +40,7 @@ public class BenchmarkClient {
         if (args.length == 0) {
             logger.info("No argument passed, using default parameters.");
             taskID = "taskID";
-            target = "localhost:50051";
+            target = "localhost:8980";
             idSize = 10000;
             startNum = 0;
         } else if (args.length < argNum || args.length > argNum + 1) {
@@ -83,13 +83,12 @@ public class BenchmarkClient {
 		.usePlaintext()
                 .build();
         try {
-            String[] arg = {"-c", BenchmarkClient.class.getClassLoader()
-                    .getResource("psi/psi-conf.yaml").getPath()};
-            FLClient flClient = new FLClient(arg);
+
+            FLClient flClient = new FLClient();
             flClient.build();
             
             // Get salt from Server
-            salt = flClient.getSalt();
+            salt = flClient.psiStub().getSalt();
             logger.info("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
             long shash = System.currentTimeMillis();
@@ -102,14 +101,14 @@ public class BenchmarkClient {
             logger.info("### Time of hash data: " + (ehash - shash) + " ms ###");
             logger.info("HashedIDs Size = " + hashedIdArray.size());
             long supload = System.currentTimeMillis();
-            flClient.uploadSet(hashedIdArray);
+            flClient.psiStub().uploadSet(hashedIdArray);
             long eupload = System.currentTimeMillis();
             logger.info("### Time of upload data: " + (eupload - supload) + " ms ###");
             logger.info("upload hashed id successfully");
             List<String> intersection;
             
             long sdownload = System.currentTimeMillis();
-            intersection = flClient.downloadIntersection();
+            intersection = flClient.psiStub().downloadIntersection();
             long edownload = System.currentTimeMillis();
             logger.info("### Time of download data: " + (edownload - sdownload) + " ms ###");
             logger.info("Intersection successful. Total id(s) in intersection is " + intersection.size());

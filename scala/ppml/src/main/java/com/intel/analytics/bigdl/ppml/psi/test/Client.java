@@ -44,13 +44,12 @@ public class Client {
         // Create a communication channel to the server,  known as a Channel. Channels are thread-safe
         // and reusable. It is common to create channels at the beginning of your application and reuse
         // them until the application shuts down.
-        String[] arg = {"-c", BenchmarkClient.class.getClassLoader()
-                .getResource("psi/psi-conf.yaml").getPath()};
-        FLClient flClient = new FLClient(arg);
+
+        FLClient flClient = new FLClient();
         try {
             flClient.build();
             // Get salt from Server
-            salt = flClient.getSalt();
+            salt = flClient.psiStub().getSalt();
             logger.debug("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
             hashedIdArray = TestUtils.parallelToSHAHexString(ids, salt);
@@ -58,11 +57,11 @@ public class Client {
                 hashedIds.put(hashedIdArray.get(i), ids.get(i));
             }
             logger.debug("HashedIDs Size = " + hashedIds.size());
-            flClient.uploadSet(hashedIdArray);
+            flClient.psiStub().uploadSet(hashedIdArray);
             List<String> intersection;
 
             while (max_wait > 0) {
-                intersection = flClient.downloadIntersection();
+                intersection = flClient.psiStub().downloadIntersection();
                 if (intersection == null) {
                     logger.info("Wait 1000ms");
                     Thread.sleep(1000);
