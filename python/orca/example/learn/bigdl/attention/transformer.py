@@ -26,7 +26,6 @@ from bigdl.orca.data import XShards
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.bigdl.estimator import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
-import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
