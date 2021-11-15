@@ -5,8 +5,8 @@ metadata:
   namespace: default
 spec:
   containers:
-  - name: spark-pi
-    image: intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-k8s:0.14.0-SNAPSHOT
+  - name: spark-example
+    image: intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT
     imagePullPolicy: Never
     volumeMounts:
     - name: sgx-enclave
@@ -22,3 +22,4 @@ spec:
   - name: sgx-provision
     hostPath:
       path: /dev/sgx_provision
+
