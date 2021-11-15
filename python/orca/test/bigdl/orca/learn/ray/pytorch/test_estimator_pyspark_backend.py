@@ -134,6 +134,7 @@ def val_data_loader(config, batch_size):
 
 
 def get_model(config):
+    torch.manual_seed(0)
     return Net()
 
 
@@ -157,7 +158,7 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2)
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(start_val_stats)
-        train_stats = estimator.fit(train_data_loader, epochs=2, batch_size=128)
+        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128)
         print(train_stats)
         end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(end_val_stats)
