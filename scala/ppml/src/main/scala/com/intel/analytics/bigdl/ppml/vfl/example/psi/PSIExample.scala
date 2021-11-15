@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import java.util
 
 import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
-import com.intel.analytics.bigdl.ppml.vfl.algorithm.PSI
+import com.intel.analytics.bigdl.ppml.vfl.PSI
 
 
 object PSIExample {

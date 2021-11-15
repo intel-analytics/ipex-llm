@@ -37,7 +37,7 @@ public class GrpcClientBase extends AbstractGrpcBase {
     protected final String clientUUID;
     protected ManagedChannel channel;
 
-    public GrpcClientBase(String[] args) {
+    public GrpcClientBase(String[] args) throws IOException {
         clientUUID = UUID.randomUUID().toString();
         this.args = args;
         this.channel = null;

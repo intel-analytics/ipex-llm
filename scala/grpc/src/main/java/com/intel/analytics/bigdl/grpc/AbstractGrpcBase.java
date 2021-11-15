@@ -30,7 +30,7 @@ public abstract class AbstractGrpcBase {
 //    public AbstractGrpcBase(String[] args) {}
 
     protected <T> T getConfigFromYaml(Class<T> valueType, String defaultConfigPath)
-            throws IOException {
+            throws IOException, IllegalAccessException, InstantiationException {
         Logger logger = Logger.getLogger(getClass().getName());
         options.addOption(new Option(
                 "c", "config", true, "config path"));
@@ -54,13 +54,13 @@ public abstract class AbstractGrpcBase {
             try {
                 return ConfigParser.loadConfigFromPath(configPath, valueType);
             } catch (IOException e) {
-                return null;
+                return valueType.newInstance();
             }
 
         }
         else {
             logger.info("Config is not provided, using default");
-            return null;
+            return valueType.newInstance();
         }
     }
 

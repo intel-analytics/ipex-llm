@@ -54,7 +54,7 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   @throws[IOException]
   override def parseConfig(): Unit = {
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
-    if (flHelper != null) port = flHelper.serverPort
+    port = flHelper.serverPort
     // start all services without providing service list
     serverServices.add(new PSIServiceImpl)
     val nnService = new NNServiceImpl()

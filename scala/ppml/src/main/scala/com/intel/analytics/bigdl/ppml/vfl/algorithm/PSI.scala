@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.algorithm
+package com.intel.analytics.bigdl.ppml.vfl
 
 import java.util
 
@@ -30,7 +30,7 @@ class PSI() extends FLClientClosable {
   def getHashedKeyPairs() = {
     hashedKeyPairs
   }
-  def uploadKeys(keys: Array[String]) = {
+  private def uploadKeys(keys: Array[String]) = {
     val salt = getSalt
     logger.debug("Client get Salt=" + salt)
     val hashedKeys = TestUtils.parallelToSHAHexString(keys, salt)
