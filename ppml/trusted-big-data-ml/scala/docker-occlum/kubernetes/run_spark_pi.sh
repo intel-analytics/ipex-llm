@@ -13,4 +13,3 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.driver.podTemplateFile=./executor.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=./executor.yaml \
     local:/opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar
-
