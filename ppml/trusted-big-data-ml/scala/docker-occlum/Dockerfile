@@ -8,6 +8,8 @@ ENV HADOOP_VERSION=${HADOOP_VERSION}
 ENV SPARK_VERSION=${SPARK_VERSION}
 ENV SPARK_HOME=/opt/spark
 
+ARG SPARK_JAR_REPO_URL
+
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
@@ -31,23 +33,25 @@ RUN cd /opt && \
     mv spark-${SPARK_VERSION}-bin-hadoop3.2 spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
     cp spark/conf/log4j.properties.template spark/conf/log4j.properties && \
-    echo $'\nlog4j.logger.io.netty=ERROR' >> spark/conf/log4j.properties
+    echo $'\nlog4j.logger.io.netty=ERROR' >> spark/conf/log4j.properties \
+    rm spark/python/lib/pyspark.zip && \
+    rm spark/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    rm spark/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    rm spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    rm spark/jars/hadoop-common-3.2.0.jar && \
+    rm spark/jars/hive-exec-2.3.7-core.jar
+
 # spark modification
-# org.apache.spark.util.Utils to disable chmod fork
 RUN cd /opt && \
-    mkdir src && \
-    cd src && \
-    git clone https://github.com/analytics-zoo/spark.git && \
-    cd spark && \
-    git checkout branch-3.1.2 && \
-    export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
-        -Dhttp.proxyHost=$HTTP_PROXY_HOST \
-        -Dhttp.proxyPort=$HTTP_PROXY_PORT \
-        -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
-        -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
-    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean install -pl core && \
-    cd resource-managers/kubernetes/core && \
-    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package
+    wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/pyspark.zip && \
+    mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    mv /opt/pyspark.zip /opt/spark/python/lib/pyspark.zip
+
 
 # hadoop
 RUN cd /opt && \
@@ -74,16 +78,22 @@ RUN cd /opt && \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package
 
+# hive
+RUN cd /opt/src && \
+    git clone https://github.com/analytics-zoo/hive.git && \
+    cd hive && \
+    git checkout branch-2.3.7-ppml && \
+    cd ql && \
+    export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
+        -Dhttp.proxyHost=$HTTP_PROXY_HOST \
+        -Dhttp.proxyPort=$HTTP_PROXY_PORT \
+        -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
+        -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
+    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
+    mv /opt/src/hive/ql/target/hive-exec-2.3.7-core.jar /opt/spark/jars/hive-exec-2.3.7-core.jar
+
 # Remove fork with libhadoop.so and spark-network-common.jar
 RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so -P /opt/ && \
-    rm -f /opt/spark/jars/spark-network-common_2.12-${SPARK_VERSION}.jar && \
-    wget -O /opt/spark/jars/spark-network-common_2.12-${SPARK_VERSION}.jar https://master.dl.sourceforge.net/project/analytics-zoo/analytics-zoo-data/spark-network-common_2.12-${SPARK_VERSION}.jar
-
-RUN rm -f ${SPRK_HOME}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
-    rm -f ${SPRK_HOME}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
-    rm -f ${SPRK_HOME}/jars/hadoop-common-${HADOOP_VERSION}.jar && \
-    cp -f /opt/src/spark/resource-managers/kubernetes/core/target/spark-kubernetes_2.12-$SPARK_VERSION.jar ${SPRK_HOME}/jars && \
-    cp -f /opt/src/spark/core/target/spark-core_2.12-$SPARK_VERSION.jar ${SPRK_HOME}/jars && \
     cp -f /opt/src/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-${HADOOP_VERSION}.jar ${SPRK_HOME}/jars && \
     rm -rf /opt/src
 
