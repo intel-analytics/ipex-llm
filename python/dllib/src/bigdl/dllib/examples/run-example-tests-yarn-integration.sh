@@ -95,6 +95,12 @@ echo "start test for dllib nnframes image inference"
 echo "#5 start test for orca bigdl imageInference"
 #timer
 start=$(date "+%s")
+if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+  echo "models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+    -P models
+fi
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
   -m models/bigdl_inception-v1_imagenet_0.4.0.model \
