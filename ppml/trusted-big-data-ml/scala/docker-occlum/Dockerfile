@@ -52,9 +52,10 @@ RUN cd /opt && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/pyspark.zip /opt/spark/python/lib/pyspark.zip
 
+RUN mkdir -p /opt/src
 
 # hadoop
-RUN cd /opt && \
+RUN cd /opt/src && \
     wget https://github.com/protocolbuffers/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.bz2 && \
     tar jxvf protobuf-2.5.0.tar.bz2 && \
     cd protobuf-2.5.0 && \
@@ -94,7 +95,7 @@ RUN cd /opt/src && \
 
 # Remove fork with libhadoop.so and spark-network-common.jar
 RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so -P /opt/ && \
-    cp -f /opt/src/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-${HADOOP_VERSION}.jar ${SPRK_HOME}/jars && \
+    cp -f /opt/src/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-${HADOOP_VERSION}.jar ${SPARK_HOME}/jars && \
     rm -rf /opt/src
 
 FROM occlum/occlum:0.25.0-ubuntu18.04 as ppml
