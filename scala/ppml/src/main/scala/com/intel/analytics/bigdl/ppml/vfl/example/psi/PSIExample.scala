@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.ppml.vfl.example.psi
 import org.slf4j.LoggerFactory
 import java.util
 
+import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
 import com.intel.analytics.bigdl.ppml.vfl.algorithm.PSI
 
 
