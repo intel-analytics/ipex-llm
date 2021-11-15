@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 import argparse
 import numpy as np
 from tensorflow.python.keras.datasets import imdb
@@ -27,6 +26,7 @@ from bigdl.orca.data import XShards
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.bigdl.estimator import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
@@ -44,12 +44,19 @@ if cluster_mode == "local":
                            driver_memory="20g",
                            conf=conf
                            )
-elif cluster_mode == "yarn":
-    sc = init_orca_context(cluster_mode="yarn-client", num_nodes=8, cores=8,
+elif cluster_mode.startswith("yarn"):
+    if cluster_mode == "yarn_client":
+        sc = init_orca_context(cluster_mode="yarn-client", num_nodes=8, cores=8,
                            memory="100g",
                            driver_memory="20g",
                            conf=conf
-                           )
+                            )
+    else:
+        sc = init_orca_context(cluster_mode="yarn-cluster", num_nodes=8, cores=8,
+                            memory="100g",
+                            driver_memory="20g",
+                            conf=conf
+                            )
 elif cluster_mode == "spark-submit":
     sc = init_orca_context(cluster_mode="spark-submit")                           
 else:
