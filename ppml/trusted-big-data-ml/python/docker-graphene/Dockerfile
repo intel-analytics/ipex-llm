@@ -64,13 +64,12 @@ RUN cd /opt && \
     rm spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
     cp spark-${SPARK_VERSION}/conf/log4j.properties.template spark-${SPARK_VERSION}/conf/log4j.properties && \
     echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties && \
-    mv spark-${SPARK_VERSION}/python/lib/pyspark.zip /opt/pyspark.zip && \
-    mv spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar /opt/spark-core_2.12-$SPARK_VERSION.jar && \
-    mv spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
-    mv spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-network-common_2.12-$SPARK_VERSION.jar && \
-    mv spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar /opt/hadoop-common-3.2.0.jar && \
-    mv spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar /opt/hive-exec-2.3.7-core.jar && \
-    ls /opt
+    rm spark-${SPARK_VERSION}/python/lib/pyspark.zip && \
+    rm spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    rm spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    rm spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    rm spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar && \
+    rm spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
 # spark modification
 RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
@@ -232,8 +231,10 @@ ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
 ADD ./check-status.sh /ppml/trusted-big-data-ml/check-status.sh
 ADD ./tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
+ADD ./test-suits /ppml/trusted-big-data-ml/work/test-suits
 ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
+
 
 RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
     patch /usr/local/lib/python3.6/dist-packages/dill/_dill.py ./_dill.py.patch && \
@@ -260,7 +261,11 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-regressor-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-classifier-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-data-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh
+    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-e2e-example.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-simple-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-sql-api-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-sql-examples.sh
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
