@@ -185,7 +185,7 @@ echo "pysaprk sql api example.13 --- pyspark api functions"
         --master 'local[4]' \
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false \
-        /ppml/trusted-big-data-ml/work/examples/sql_functions_${f_num}_example" 2>&1 | tee sql_functions_${f_num}_example.log
+        /ppml/trusted-big-data-ml/work/examples/sql_functions_${f_num}_example.py" 2>&1 | tee sql_functions_${f_num}_example.log
   done
 fi
 
