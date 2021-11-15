@@ -76,3 +76,19 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#3 Total time cost ${time} seconds"
 
+echo "#4 start test for orca bigdl transformer"
+#timer
+start=$(date "+%s")
+#run the example
+sed "s/max_features = 20000/max_features = 200/g;s/max_len = 200/max_len = 20/g;s/hidden_size=128/hidden_size=8/g;s/memory=\"100g\"/memory=\"20g\"/g;s/driver_memory=\"20g\"/driver_memory=\"3g\"/g" \
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/tmp.py --cluster_mode yarn_client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca transformer failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#4 Total time cost ${time} seconds"
+
