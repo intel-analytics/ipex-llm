@@ -399,30 +399,30 @@ def pids_from_gpid(gpid):
     return result
 
 
-def session_execute(command, env=None, tag=None, fail_fast=False, timeout=120):
+def session_execute_no_wait(command, env=None, tag=None, fail_fast=False, timeout=120):
     pro = subprocess.Popen(
         command,
         shell=True,
         env=env,
         cwd=None,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=None,
+        stderr=None,
         preexec_fn=os.setsid)
     pgid = os.getpgid(pro.pid)
-    out, err = pro.communicate(timeout=timeout)
-    out = out.decode("utf-8")
-    err = err.decode("utf-8")
-    print(out)
-    print(err)
-    errorcode = pro.returncode
-    if errorcode != 0:
-        if fail_fast:
-            raise Exception(err)
-        print(err)
-    else:
-        print(out)
-    return ProcessInfo(out=out,
-                       err=err,
+    # out, err = pro.communicate(timeout=timeout)
+    # out = out.decode("utf-8")
+    # err = err.decode("utf-8")
+    # print(out)
+    # print(err)
+    # errorcode = pro.returncode
+    # if errorcode != 0:
+    #     if fail_fast:
+    #         raise Exception(err)
+    #     print(err)
+    # else:
+    #     print(out)
+    return ProcessInfo(out="",
+                       err="",
                        errorcode=pro.returncode,
                        pgid=pgid,
                        pids=pids_from_gpid(pgid),

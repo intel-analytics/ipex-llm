@@ -30,7 +30,7 @@ from contextlib import closing
 import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.learn.utils import session_execute
+from bigdl.orca.learn.utils import session_execute_no_wait
 
 def find_free_port(tc):
     address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
@@ -464,7 +464,7 @@ class SparkRunner:
         ]
         if redis_password:
             command += ["--redis-password", redis_password]
-        process_info = session_execute(
+        process_info = session_execute_no_wait(
             command,
             tag="log_monitor")
         return process_info

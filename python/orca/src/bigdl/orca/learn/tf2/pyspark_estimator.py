@@ -23,7 +23,7 @@ import random
 from pyspark.sql.dataframe import DataFrame
 import numpy as np
 
-from bigdl.orca.learn.utils import session_execute, decode
+from bigdl.orca.learn.utils import session_execute_no_wait, decode
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 
@@ -417,12 +417,13 @@ class SparkTFEstimator():
     def _start_redis(self):
         import random
         # self.redis_port = random.randint(10000, 65535)
-        redis_exec = "redis-server"
+        # redis_exec = "redis-server"
+        redis_exec = "/Users/wangjiao/opt/anaconda3/envs/tf2_spark3/bin/redis-server"
         command = [redis_exec]
         if self.redis_password:
             command += ["--requirepass", self.redis_password]
         command += ["--port", str(self.redis_port), "--loglevel", "warning"]
-        process_info = session_execute(command=command)
+        process_info = session_execute_no_wait(command=command)
         return process_info
 
     def _print_logs(self, redis_client, threads_stopped):
