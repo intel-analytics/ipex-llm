@@ -20,6 +20,8 @@ bash build-docker-image.sh
 
 ## Run Spark executor in Occlum:
 
+### Run Spark.pi example
+
 1. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`. Or set `SPARK_HOME` in `run_spark_pi.sh`.
 2. Modify `${kubernetes_master_url}` to your k8s master url in the `run_spark_pi.sh `
 3. Modify `executor.yaml` for your need
@@ -27,3 +29,14 @@ bash build-docker-image.sh
 ```bash
 ./run_spark_pi.sh
 ```
+
+### Run Spark.LogisticRegression example
+
+1. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`. Or set `SPARK_HOME` in `run_spark_lr.sh`.
+2. Modify `${kubernetes_master_url}` to your k8s master url in the `run_spark_lr.sh `
+3. Modify `executor.yaml` for your need
+
+```bash
+./run_spark_lr.sh
+```
+
