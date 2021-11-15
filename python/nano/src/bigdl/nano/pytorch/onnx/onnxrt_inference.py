@@ -35,7 +35,7 @@ def bind_onnxrt_methods(pl_model: LightningModule):
     # class type check
     assert isinstance(pl_model, LightningModule),\
         "onnxruntime support is only valid for a LightningModule."
-    
+
     # check conflicts
     for component in ONNXRT_BINDED_COMPONENTS:
         if component in dir(pl_model):
@@ -59,12 +59,12 @@ def bind_onnxrt_methods(pl_model: LightningModule):
         :param sess_options: ortsess options in ort.SessionOptions type
         :param **kwargs: will be passed to torch.onnx.export function.
         '''
-        
+
         if input_sample is None and self.example_input_array is not None:
             input_sample = self.example_input_array  # use internal example_input_array
         else:
             self.example_input_array = input_sample  # set example_input_array for future usage
-        
+
         assert input_sample is not None,\
             'You should set either input_sample or self.example_input_array'
 
@@ -138,7 +138,7 @@ def bind_onnxrt_methods(pl_model: LightningModule):
         This method will implicitly build onnxruntime session if it has never been built
         or out-of-date.
 
-        :param input_data: input data for prediction. If backend is set to "onnx", 
+        :param input_data: input data for prediction. If backend is set to "onnx",
                the data type should be a numpy ndarray, where the first dim should be batch size.
                If backend is NOT set to "onnx", a torch tensor is needed and the pytorch
                forwarding method will be called.
@@ -171,10 +171,10 @@ def bind_onnxrt_methods(pl_model: LightningModule):
             else:
                 yhat_list = []
                 sample_num = input_data.shape[0]  # the first dim should be sample_num
-                batch_num = math.ceil(sample_num/batch_size)
+                batch_num = math.ceil(sample_num / batch_size)
                 for batch_id in range(batch_num):
-                    ort_inputs = {input_name: input_data[batch_id*batch_size:\
-                        (batch_id+1)*batch_size]}
+                    ort_inputs = {input_name: input_data[batch_id * batch_size:
+                                                         (batch_id + 1) * batch_size]}
                     ort_outs = self._ortsess.run(None, ort_inputs)
                     yhat_list.append(ort_outs[0])
                 # this operation may cause performance degradation
@@ -187,10 +187,10 @@ def bind_onnxrt_methods(pl_model: LightningModule):
                 yhat_list = []
                 sample_num = input_data.shape[0]  # the first dim should be sample_num
                 batch_size = batch_size if batch_size else sample_num
-                batch_num = math.ceil(sample_num/batch_size)
+                batch_num = math.ceil(sample_num / batch_size)
                 for batch_id in range(batch_num):
-                    yhat_list.append(self(input_data[batch_id*batch_size:\
-                        (batch_id+1)*batch_size]))
+                    yhat_list.append(self(input_data[batch_id * batch_size:
+                                                     (batch_id + 1) * batch_size]))
                 yhat = torch.cat(yhat_list, axis=0)
                 return yhat
 

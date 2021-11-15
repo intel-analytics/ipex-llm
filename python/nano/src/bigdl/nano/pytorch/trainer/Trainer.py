@@ -132,7 +132,7 @@ class Trainer(pl.Trainer):
         """
         assert isinstance(model, nn.Module), \
             "Model must be instance of nn.Module but got {}".format(model.__class__)
-        
+
         pl_model = None
         if isinstance(model, pl.LightningModule):
             assert not (loss or optimizer), \
