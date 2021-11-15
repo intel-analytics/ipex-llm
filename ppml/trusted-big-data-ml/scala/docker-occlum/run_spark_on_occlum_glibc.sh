@@ -21,11 +21,16 @@ init_instance() {
         .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
-    sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
+    if [[ -z $SGX_MEM_SIZE ]]; then
+        sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
+    else
+        sed -i "s/SGX_MEM_SIZE/16GB/g" Occlum.json
+    fi
 }
 
 build_spark() {
     # Copy JVM and class file into Occlum instance and build
+    cd /opt/occlum_spark
     mkdir -p image/usr/lib/jvm
     cp -r /usr/lib/jvm/java-11-openjdk-amd64 image/usr/lib/jvm
     cp -rf /etc/java-11-openjdk image/etc/
@@ -100,7 +105,7 @@ run_spark_lenet_mnist(){
                 --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
-                -f /bin/data \
+                -f /opt/data \
                 $* | tee spark.local.sgx.log
 }
 
@@ -128,7 +133,7 @@ run_spark_resnet_cifar(){
                 --class com.intel.analytics.bigdl.dllib.models.resnet.TrainCIFAR10 \
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
-                -f /bin/data \
+                -f /opt/data \
                 $* | tee spark.local.sgx.log
 }
 
