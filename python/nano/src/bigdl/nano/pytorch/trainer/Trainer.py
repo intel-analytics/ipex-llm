@@ -17,6 +17,7 @@
 
 from logging import warning
 from typing import Any, List, Optional
+import warnings
 
 import pytorch_lightning as pl
 import torch
@@ -27,7 +28,7 @@ from torch.nn.modules.loss import _Loss
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-from bigdl.nano.pytorch.onnx.onnxrt_inference import bind_onnxrt_methods
+
 
 distributed_backends = ["spawn", "ray"]
 
@@ -144,6 +145,11 @@ class Trainer(pl.Trainer):
             pl_model = LightningModuleFromTorch(model, loss, optimizer)
 
         if onnx:
-            return bind_onnxrt_methods(pl_model)
+            try:
+                from bigdl.nano.pytorch.onnx.onnxrt_inference import bind_onnxrt_methods
+                return bind_onnxrt_methods(pl_model)
+            except ImportError:
+                warnings.warn("You should install onnx and onnxruntime to set `onnx=True`")
+                return pl_model
         else:
             return pl_model
