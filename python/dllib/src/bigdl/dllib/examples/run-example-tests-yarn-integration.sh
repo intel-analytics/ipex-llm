@@ -76,18 +76,36 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#3 Total time cost ${time} seconds"
 
-echo "#4 start test for orca bigdl transformer"
+# echo "#4 start test for orca bigdl transformer"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py --cluster_mode yarn_cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca transformer failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#4 Total time cost ${time} seconds"
+
+
+echo "#5 start test for orca bigdl imageInference"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py --cluster_mode yarn_cluster
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
+  -m models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f ${HDFS_URI}/kaggle/train_100 \
+  --cluster_mode yarn_client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
-  echo "orca transformer failed"
+  echo "orca imageInference failed"
   exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#4 Total time cost ${time} seconds"
-
