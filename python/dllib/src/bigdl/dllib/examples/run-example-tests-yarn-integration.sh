@@ -105,7 +105,7 @@ fi
 python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
   -m models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f ${HDFS_URI}/kaggle/train_100 \
-  --cluster_mode yarn-client
+  --cluster_mode yarn-cluster
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
