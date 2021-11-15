@@ -3,8 +3,7 @@ ARG SPARK_VERSION=3.1.2
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
-ARG GITHUB_USERNAME=your_github_username
-ARG GITHUB_TOKEN=your_github_token
+ARG SPARK_JAR_REPO_URL=your_spark_jar_repo_url
 
 # stage.1 graphene
 FROM ubuntu:18.04 AS graphene
@@ -33,8 +32,7 @@ ARG HTTPS_PROXY_PORT
 ARG SPARK_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
-ARG GITHUB_USERNAME
-ARG GITHUB_TOKEN
+ARG SPARK_JAR_REPO_URL
 ENV SPARK_VERSION       ${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk$JDK_VERSION
 ENV PATH                ${JAVA_HOME}/bin:${PATH}
@@ -75,26 +73,14 @@ RUN cd /opt && \
     ls /opt
 # spark modification
 RUN cd /opt && \
-    git clone https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/analytics-zoo/spark.git && \
-    cd spark && \
-    git checkout branch-3.1.2 && \
-    git status && \
-    export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
-        -Dhttp.proxyHost=$HTTP_PROXY_HOST \
-        -Dhttp.proxyPort=$HTTP_PROXY_PORT \
-        -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
-        -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
-    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean install -pl core && \
-    cd /opt/spark/resource-managers/kubernetes/core && \
-    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
-    cd /opt/spark/common/network-common && \
-    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
-    cd /opt/spark/python && \
-    zip -r lib/pyspark.zip pyspark && \
-    mv /opt/spark/core/target/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
-    mv /opt/spark/resource-managers/kubernetes/core/target/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
-    mv /opt/spark/common/network-common/target/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
-    mv /opt/spark/python/lib/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
+    wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/pyspark.zip && \
+    mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
 # hadoop
 RUN cd /opt && \
     apt-get install -y build-essential && \
