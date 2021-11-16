@@ -78,17 +78,15 @@ class LogMonitor:
             false otherwise.
     """
 
-    def __init__(self, logs_dir, redis_address, redis_password=None):
+    def __init__(self, logs_dir, sharing_log_file):
         """Initialize the log monitor object."""
         from bigdl.dllib.utils.utils import get_node_ip
-        self.ip = get_node_ip()
         self.logs_dir = logs_dir
-        self.redis_client = create_redis_client(
-            redis_address, password=redis_password)
         self.log_filenames = set()
         self.open_file_infos = []
         self.closed_file_infos = []
         self.can_open_more_files = True
+        self.sharing_log_dir = sharing_log_file
 
     def close_all_files(self):
         """Close all open files (so that we can open more)."""
