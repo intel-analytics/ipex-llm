@@ -1,12 +1,12 @@
 # PyTorch Fashion-MNIST example with Tensorboard visualization
-We demonstrate how to easily show the graphical results of running synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in Analytics Zoo. We use a simple convolutional nueral network model to train on fashion-MNIST dataset. See [here](https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide two distributed PyTorch training backends for this example, namely "bigdl" and "torch_distributed". You can run with either backend as you wish.
+We demonstrate how to easily show the graphical results of running synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in Analytics Zoo. We use a simple convolutional nueral network model to train on fashion-MNIST dataset. See [here](https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide three distributed PyTorch training backends for this example, namely "bigdl", "torch_distributed" and "spark". You can run with either backend as you wish.
 
 ## Prepare the environment
 
 We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster:
 
 ```
-conda create -n zoo python=3.7  # "zoo" is conda environment name, you can use any name you like.
+conda create -n zoo python=3.7  # "zoo" is conda environmenst name, you can use any name you like.
 conda activate zoo
 pip install torch
 pip install torchvision
@@ -20,6 +20,9 @@ pip install six cloudpickle
 
 # For torch_distributed backend:
 pip install analytics-zoo[ray]  # 0.10.0.dev3 or above
+
+# For spark backend
+pip install bigdl-orca
 ```
 
 ## Run on local after pip install
@@ -30,7 +33,7 @@ The default backend is `bigdl`.
 python fashion_mnist.py
 ```
 
-You can also run with `torch_distributed` backend via:
+You can run with `torch_distributed` backend via:
 
 ```
 python fashion_mnist.py --backend torch_distributed
@@ -44,6 +47,12 @@ tensorboard --logdir=runs
 
 Then open `https://localhost:6006`.
 
+You can run with `spark` backend via:
+
+```
+python fashion_mnist.py --backend spark
+```
+
 ## Run on yarn cluster for yarn-client mode after pip install
 
 ```
@@ -53,7 +62,7 @@ python fashion_mnist.py --cluster_mode yarn
 
 Then open `https://localhost:6006` on the local client machine to see the result figures.
 
-The default backend is `bigdl`. You can also run with `torch_distributed` by specifying the backend.
+The default backend is `bigdl`. You can also run with `torch_distributed` or `spark` by specifying the backend.
 
 ## Results
 
@@ -71,7 +80,7 @@ Final test results will be printed at the end:
 2021-03-24 14:39:43 INFO  DistriOptimizer$:1759 - Top1Accuracy is Accuracy(correct: 8851, count: 10000, accuracy: 0.8851)
 ```
 
-**For "torch_distributed" backend**
+**For "torch_distributed" and "spark" backend**
 
 You can find the results of training and validation as follows:
 
