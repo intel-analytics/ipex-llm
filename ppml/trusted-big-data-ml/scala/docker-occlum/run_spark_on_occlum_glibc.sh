@@ -14,9 +14,9 @@ init_instance() {
     occlum init
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .resource_limits.max_num_of_threads = 256 |
-        .process.default_heap_size = "128MB" |
-        .resource_limits.kernel_space_heap_size="256MB" |
-        .process.default_mmap_size = "15000MB" |
+        .process.default_heap_size = "512MB" |
+        .resource_limits.kernel_space_heap_size="1024MB" |
+        .process.default_mmap_size = "18000MB" |
         .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
         .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
@@ -24,7 +24,7 @@ init_instance() {
     if [[ -z $SGX_MEM_SIZE ]]; then
         sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
     else
-        sed -i "s/SGX_MEM_SIZE/16GB/g" Occlum.json
+        sed -i "s/SGX_MEM_SIZE/20GB/g" Occlum.json
     fi
 }
 
