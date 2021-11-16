@@ -251,12 +251,12 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py \
   --iterations 5 \
   --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca ros rllib failed"
-  exit $exit_status
-fi
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros rllib failed"
+#   exit $exit_status
+# fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#11 Total time cost ${time} seconds"
@@ -268,12 +268,12 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py \
   --iterations 5 \
   --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca ros rl_pong failed"
-  exit $exit_status
-fi
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros rl_pong failed"
+#   exit $exit_status
+# fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#12 Total time cost ${time} seconds"
@@ -285,12 +285,12 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py \
   --iterations 5 \
   --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca ros async failed"
-  exit $exit_status
-fi
+#exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros async failed"
+#   exit $exit_status
+# fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#9 Total time cost ${time} seconds"
@@ -319,12 +319,6 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
   --iterations 5 \
   --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca ros sync failed"
-  exit $exit_status
-fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#10 Total time cost ${time} seconds"
