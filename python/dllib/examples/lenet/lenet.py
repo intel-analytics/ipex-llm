@@ -17,7 +17,7 @@
 from optparse import OptionParser
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.keras.layers import *
-from bigdl.dllib.keras.models import Sequential
+from bigdl.dllib.keras.Sequential import *
 from bigdl.dllib.feature.dataset import mnist
 
 
@@ -43,9 +43,11 @@ if __name__ == "__main__":
 
     sc = init_nncontext("lenet example")
     (X_train, Y_train), (X_test, Y_test) = mnist.load_data(options.dataPath)
+    Y_train = Y_train - 1
+    Y_test = Y_test - 1
 
     model = build_model(10)
-    model.compile(loss='categorical_crossentropy',
+    model.compile(loss='sparse_categorical_crossentropy',
                   optimizer='adadelta',
                   metrics=['accuracy'])
     model.fit(X_train, Y_train, batch_size=options.batchSize, nb_epoch=options.maxEpoch,
