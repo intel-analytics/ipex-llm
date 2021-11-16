@@ -133,7 +133,7 @@ if __name__ == "__main__":
         init_orca_context(cluster_mode="local", cores=args.cores,
                           num_nodes=args.num_nodes, memory=args.memory)
     elif args.cluster_mode.startswith("yarn"):
-        if args.cluster_mode == "yarn_client":
+        if args.cluster_mode == "yarn-client":
             init_orca_context(cluster_mode="yarn-client", cores=args.cores,
                             num_nodes=args.num_nodes, memory=args.memory)
         else:
