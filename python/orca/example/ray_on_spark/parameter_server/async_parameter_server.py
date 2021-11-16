@@ -97,7 +97,7 @@ def worker_task(ps, worker_index, batch_size=50):
 if __name__ == "__main__":
     args = parser.parse_args()
     cluster_mode = args.cluster_mode
-    if cluster_mode == "yarn":
+    if cluster_mode.startswith("yarn"):
         sc = init_orca_context(cluster_mode=cluster_mode,
                                cores=args.executor_cores,
                                memory=args.executor_memory,

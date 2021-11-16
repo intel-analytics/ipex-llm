@@ -147,7 +147,6 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#7 Total time cost ${time} seconds"
 
-
 # echo "#7 start test for orca mxnet"
 # #timer
 # start=$(date "+%s")
@@ -172,35 +171,103 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#7 Total time cost ${time} seconds"
 
+# echo "#8 start test for orca openvino"
+# #timer
+# start=$(date "+%s")
+# if [ -f models/faster_rcnn_resnet101_coco.xml ]; then
+#   echo "models/faster_rcnn_resnet101_coco already exists."
+# else
+#   wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.xml \
+#     -P models
+#   wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.bin \
+#     -P models
+# fi
+# if [ -d tmp/data/object-detection-coco ]; then
+#   echo "tmp/data/object-detection-coco already exists"
+# else
+#   wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P tmp/data
+#   unzip -q tmp/data/object-detection-coco.zip -d tmp/data
+# fi
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/openvino/predict.py \
+#   --image tmp/data/object-detection-coco \
+#   --model models/faster_rcnn_resnet101_coco.xml \
+#   --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca openvino failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#8 Total time cost ${time} seconds"
 
-echo "#8 start test for orca openvino"
+
+echo "#9 start test for orca ros async"
 #timer
 start=$(date "+%s")
-if [ -f models/faster_rcnn_resnet101_coco.xml ]; then
-  echo "models/faster_rcnn_resnet101_coco already exists."
-else
-  wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.xml \
-    -P models
-  wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.bin \
-    -P models
-fi
-if [ -d tmp/data/object-detection-coco ]; then
-  echo "tmp/data/object-detection-coco already exists"
-else
-  wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P tmp/data
-  unzip -q tmp/data/object-detection-coco.zip -d tmp/data
-fi
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/openvino/predict.py \
-  --image tmp/data/object-detection-coco \
-  --model models/faster_rcnn_resnet101_coco.xml \
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py \
+  --iterations 5 \
   --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
-  echo "orca openvino failed"
+  echo "orca ros async failed"
   exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#8 Total time cost ${time} seconds"
+echo "#9 Total time cost ${time} seconds"
+
+echo "#10 start test for orca ros sync"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
+  --iterations 5 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros sync failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#10 Total time cost ${time} seconds"
+
+echo "#11 start test for orca rllib"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py \
+  --iterations 5 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros rllib failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#11 Total time cost ${time} seconds"
+
+echo "#12 start test for orca rl_pong"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py \
+  --iterations 5 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros rl_pong failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#12 Total time cost ${time} seconds"

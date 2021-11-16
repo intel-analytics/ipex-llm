@@ -72,16 +72,27 @@ parser.add_argument("--object_store_memory", type=str, default="4g",
 if __name__ == "__main__":
     args = parser.parse_args()
     cluster_mode = args.cluster_mode
-    if cluster_mode == "yarn":
-        sc = init_orca_context(cluster_mode="yarn",
-                               cores=args.executor_cores,
-                               memory=args.executor_memory,
-                               init_ray_on_spark=True,
-                               driver_memory=args.driver_memory,
-                               driver_cores=args.driver_cores,
-                               num_executors=args.slave_num,
-                               extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
-                               object_store_memory=args.object_store_memory)
+    if cluster_mode.startswith("yarn"):
+        if cluster_mode == "yarn-client":
+            sc = init_orca_context(cluster_mode="yarn-client",
+                                cores=args.executor_cores,
+                                memory=args.executor_memory,
+                                init_ray_on_spark=True,
+                                driver_memory=args.driver_memory,
+                                driver_cores=args.driver_cores,
+                                num_executors=args.slave_num,
+                                extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
+                                object_store_memory=args.object_store_memory)
+        else:
+            sc = init_orca_context(cluster_mode="yarn-cluster",
+                                cores=args.executor_cores,
+                                memory=args.executor_memory,
+                                init_ray_on_spark=True,
+                                driver_memory=args.driver_memory,
+                                driver_cores=args.driver_cores,
+                                num_executors=args.slave_num,
+                                extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
+                                object_store_memory=args.object_store_memory)
         ray_ctx = OrcaContext.get_ray_context()
     elif cluster_mode == "local":
         sc = init_orca_context(cores=args.driver_cores)
