@@ -125,7 +125,7 @@ class AutoTSEstimator:
             search_space = AutoModelFactory.get_default_search_space(model, search_space)
 
         self._future_seq_len = future_seq_len  # for support future_seq_len list input.
-        assert not isinstance(future_seq_len, int) or not isinstance(future_seq_len, list),\
+        assert isinstance(future_seq_len, int) or isinstance(future_seq_len, list),\
             f"future_seq_len only support int or List, but found {type(future_seq_len)}"
         future_seq_len = future_seq_len if isinstance(future_seq_len, int) else len(future_seq_len)
 
