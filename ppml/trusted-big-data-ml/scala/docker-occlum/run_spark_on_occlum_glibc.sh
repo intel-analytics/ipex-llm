@@ -44,7 +44,7 @@ build_spark() {
     cp $occlum_glibc/librt.so.1 image/$occlum_glibc
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc
     # Copy libhadoop
-    cp /opt/libhadoop.so image/$occlum_glibc
+    cp /opt/libhadoop.so image/lib
     # Prepare Spark
     mkdir -p image/opt/spark
     cp -rf $SPARK_HOME/* image/opt/spark/
