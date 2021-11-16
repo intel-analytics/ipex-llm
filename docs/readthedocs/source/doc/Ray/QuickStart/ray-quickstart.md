@@ -13,9 +13,9 @@
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
 ```bash
-conda create -n zoo python=3.7 # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
-pip install analytics-zoo[ray]
+conda create -n bigdl python=3.7 # "bigdl" is conda environment name, you can use any name you like.
+conda activate bigdl
+pip install bigdl-orca[ray]
 ```
 
 ### **Step 1: Initialize**
@@ -23,7 +23,7 @@ pip install analytics-zoo[ray]
 We recommend using `init_orca_context` to initiate and run Analytics Zoo on the underlying cluster. The Ray cluster would be launched automatically by specifying `init_ray_on_spark=True`.
 
 ```python
-from zoo.orca import init_orca_context
+from bigdl.orca import init_orca_context
 
 if cluster_mode == "local":  # For local machine
     sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", init_ray_on_spark=True)
@@ -38,7 +38,7 @@ This is the only place where you need to specify local or distributed mode.
 By default, the Ray cluster would be launched using Spark barrier execution mode, you can turn it off via the configurations of `OrcaContext`:
 
 ```python
-from zoo.orca import OrcaContext
+from bigdl.orca import OrcaContext
 
 OrcaContext.barrier_mode = False
 ```
@@ -50,7 +50,7 @@ View [Orca Context](./../../Orca/Overview/orca-context.md) for more details.
 You can retrieve the information of the Ray cluster via `OrcaContext`:
 
 ```python
-from zoo.orca import OrcaContext
+from bigdl.orca import OrcaContext
 
 ray_ctx = OrcaContext.get_ray_context()
 address_info = ray_ctx.address_info  # The dictionary information of the ray cluster, including node_ip_address, object_store_address, webui_url, etc.
@@ -125,7 +125,7 @@ print(ray.get(ps.get_parameters.remote()))
 **Note:** You should call `stop_orca_context()` when your program finishes:
 
 ```python
-from zoo.orca import stop_orca_context
+from bigdl.orca import stop_orca_context
 
 stop_orca_context()
 ```
