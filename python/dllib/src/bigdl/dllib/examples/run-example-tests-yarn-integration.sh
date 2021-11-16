@@ -92,24 +92,55 @@ echo "start test for dllib nnframes image inference"
 # echo "#4 Total time cost ${time} seconds"
 
 
-echo "#5 start test for orca bigdl imageInference"
+# echo "#5 start test for orca bigdl imageInference"
+# #timer
+# start=$(date "+%s")
+# if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+#   echo "models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+# else
+#   wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+#     -P models
+# fi
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
+#   -m models/bigdl_inception-v1_imagenet_0.4.0.model \
+#   -f ${HDFS_URI}/kaggle/train_100 \
+#   --cluster_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca imageInference failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#4 Total time cost ${time} seconds"
+
+echo "#6 start test for orca pytorch_estimator imageInference"
 #timer
 start=$(date "+%s")
-if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-  echo "models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-else
-  wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-    -P models
-fi
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
-  -m models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f ${HDFS_URI}/kaggle/train_100 \
-  --cluster_mode yarn-cluster
+python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
-  echo "orca imageInference failed"
+  echo "orca pytorch_estimator failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#4 Total time cost ${time} seconds"
+
+echo "#7 start test for orca simple_pytorch imageInference"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py \ 
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca simple_pytorch failed"
   exit $exit_status
 fi
 now=$(date "+%s")
