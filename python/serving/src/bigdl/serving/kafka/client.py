@@ -70,7 +70,7 @@ class OutputQueue:
                  auto_offset_reset='earliest', **kwargs):
         host = host if host else "localhost"
         port = port if port else "9092"
-        self.topic_name = kwargs.get("topic_name") if kwargs.get("topic_name") else "cluster-serving_serving_stream"
+        self.topic_name = kwargs.get("topic_name") if kwargs.get("topic_name") else RESULT_PREFIX+ "serving_stream"
         
         for key in ["host", "port", "topic_name"]:
             if key in kwargs:
