@@ -173,34 +173,34 @@ echo "#6 Total time cost ${time} seconds"
 # echo "#7 Total time cost ${time} seconds"
 
 
-# echo "#8 start test for orca openvino"
-# #timer
-# start=$(date "+%s")
-# if [ -f models/faster_rcnn_resnet101_coco.xml ]; then
-#   echo "models/faster_rcnn_resnet101_coco already exists."
-# else
-#   wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.xml \
-#     -P models
-#   wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.bin \
-#     -P models
-# fi
-# if [ -d tmp/data/object-detection-coco ]; then
-#   echo "tmp/data/object-detection-coco already exists"
-# else
-#   wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P tmp/data
-#   unzip -q tmp/data/object-detection-coco.zip -d tmp/data
-# fi
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/openvino/predict.py \
-#   --image tmp/data/object-detection-coco \
-#   --model models/faster_rcnn_resnet101_coco.xml \
-#   --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca openvino failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#8 Total time cost ${time} seconds"
+echo "#8 start test for orca openvino"
+#timer
+start=$(date "+%s")
+if [ -f models/faster_rcnn_resnet101_coco.xml ]; then
+  echo "models/faster_rcnn_resnet101_coco already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.xml \
+    -P models
+  wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.bin \
+    -P models
+fi
+if [ -d tmp/data/object-detection-coco ]; then
+  echo "tmp/data/object-detection-coco already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P tmp/data
+  unzip -q tmp/data/object-detection-coco.zip -d tmp/data
+fi
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/openvino/predict.py \
+  --image tmp/data/object-detection-coco \
+  --model models/faster_rcnn_resnet101_coco.xml \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca openvino failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#8 Total time cost ${time} seconds"

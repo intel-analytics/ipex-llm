@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     if args.cluster_mode == "local":
         init_orca_context(cores=args.core_num, memory=args.memory)
-    elif args.cluster_mode.starswith("yarn"):
+    elif args.cluster_mode.startswith("yarn"):
         init_orca_context(cluster_mode=args.cluster_mode, cores=args.core_num,
                           num_nodes=args.executor_num, memory=args.memory)
     elif args.cluster_mode == "spark-submit":
