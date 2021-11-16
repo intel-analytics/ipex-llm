@@ -12,10 +12,8 @@ else {
     $env:KMP_AFFINITY="granularity=fine,compact"
 }
 $env:KMP_BLOCKTIME=1
-$env:MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1"
 $env:TF_ENABLE_ONEDNN_OPTS=1
 Write-Host "==================Environment Variables================="
-Write-Host "MALLOC_CONF=${env:MALLOC_CONF}"
 Write-Host "OMP_NUM_THREADS=${env:OMP_NUM_THREADS}"
 Write-Host "KMP_AFFINITY=${env:KMP_AFFINITY}"
 Write-Host "KMP_BLOCKTIME=${env:KMP_BLOCKTIME}"
