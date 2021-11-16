@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.dllib.models.lenet
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.dllib.nn.keras
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.DnnGraph
 
@@ -57,9 +56,10 @@ object LeNet5 {
     Graph(input, output)
   }
 
-  def kerasLayer(classNum: Int): keras.Sequential[Float] = {
-    import com.intel.analytics.bigdl.dllib.nn.keras._
+  def kerasLayer(classNum: Int): dllib.keras.models.Sequential[Float] = {
+    import com.intel.analytics.bigdl.dllib.keras.layers._
     import com.intel.analytics.bigdl.dllib.utils.Shape
+    import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}
 
     val model = Sequential()
     model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
@@ -70,11 +70,13 @@ object LeNet5 {
     model.add(Flatten())
     model.add(Dense(100, activation = "tanh").setName("fc1"))
     model.add(Dense(classNum, activation = "softmax").setName("fc2"))
+    model
   }
 
-  def kerasGraph(classNum: Int): keras.Model[Float] = {
-    import com.intel.analytics.bigdl.dllib.nn.keras._
+  def kerasGraph(classNum: Int): dllib.keras.models.Model[Float] = {
+    import com.intel.analytics.bigdl.dllib.keras.layers._
     import com.intel.analytics.bigdl.dllib.utils.Shape
+    import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}
 
     val input = Input(inputShape = Shape(28, 28, 1))
     val reshape = Reshape(Array(1, 28, 28)).inputs(input)
