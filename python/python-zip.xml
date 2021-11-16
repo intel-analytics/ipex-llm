@@ -36,6 +36,13 @@
                 <include>**/*.py</include>
             </includes>
             <outputDirectory>/..</outputDirectory>
+            <directory>${project.basedir}/../python/chronos/src</directory>
+        </fileSet>
+        <fileSet>
+            <includes>
+                <include>**/*.py</include>
+            </includes>
+            <outputDirectory>/..</outputDirectory>
             <directory>${project.basedir}/../python/serving/src</directory>
         </fileSet>
     </fileSets>
