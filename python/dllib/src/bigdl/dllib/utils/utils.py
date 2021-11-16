@@ -19,6 +19,7 @@ from bigdl.dllib.utils.file_utils import Sample
 import numpy as np
 from pyspark.ml.linalg import DenseVector, SparseVector, VectorUDT
 import sys
+import os
 
 if sys.version >= '3':
     long = int
@@ -72,6 +73,9 @@ def detect_python_location():
 
 
 def detect_conda_env_name():
+    # if call on yarn app master, return empty string
+    if os.environ.get("OnAppMaster", "False") == "True":
+        return ""
     # This only works for anaconda3
     import subprocess
     pro = subprocess.Popen(
@@ -102,7 +106,6 @@ def detect_conda_env_name():
 # This is adopted from conda-pack.
 def pack_conda_main(conda_name, tmp_path):
     import subprocess
-    import os
     pack_env = os.environ.copy()
     if "PYTHONHOME" in pack_env:
         pack_env.pop("PYTHONHOME")
@@ -151,7 +154,6 @@ def get_zoo_bigdl_classpath_on_driver():
 
 
 def set_python_home():
-    import os
     if "PYTHONHOME" not in os.environ:
         os.environ['PYTHONHOME'] = "/".join(detect_python_location().split("/")[:-2])
 

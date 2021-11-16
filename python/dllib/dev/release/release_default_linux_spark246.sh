@@ -36,5 +36,6 @@ fi
 version=$1
 quick=$2
 upload=$3
+profiles=${*:4}
 
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=2.4.6 -P spark_2.x
+bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=2.4.6 -P spark_2.x ${profiles}

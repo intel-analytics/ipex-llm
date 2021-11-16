@@ -17,6 +17,16 @@
         <groupId>com.intel.analytics.bigdl</groupId>
         <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
         <version>0.14.0-SNAPSHOT</version>
+        <exclusions>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-core_${scala.major.version}</artifactId>
+            </exclusion>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-mllib_${scala.major.version}</artifactId>
+            </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.intel.analytics.bigdl</groupId>
@@ -27,11 +37,31 @@
         <groupId>com.intel.analytics.bigdl</groupId>
         <artifactId>bigdl-orca-spark_${spark.version}</artifactId>
         <version>0.14.0-SNAPSHOT</version>
+        <exclusions>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-core_${scala.major.version}</artifactId>
+            </exclusion>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-mllib_${scala.major.version}</artifactId>
+            </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.intel.analytics.bigdl</groupId>
         <artifactId>bigdl-serving-spark_${spark.version}</artifactId>
         <version>0.14.0-SNAPSHOT</version>
+        <exclusions>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-core_${scala.major.version}</artifactId>
+            </exclusion>
+            <exclusion>
+                 <groupId>org.apache.spark</groupId>
+                 <artifactId>spark-mllib_${scala.major.version}</artifactId>
+            </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
 

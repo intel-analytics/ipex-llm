@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -ex
 
 # Check whether there is a passwd entry for the container UID

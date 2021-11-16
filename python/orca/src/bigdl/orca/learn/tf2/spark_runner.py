@@ -31,6 +31,7 @@ import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.learn.utils import session_execute_no_wait
+from bigdl.orca.learn.utils import save_pkl
 
 def find_free_port(tc):
     address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
@@ -199,9 +200,9 @@ class SparkRunner:
                  model_weights=None,
                  backend="tf-distributed",
                  mode="fit",
-                 is_local=True,
-                 redis_address=None,
-                 redis_password=None
+                 model_dir=None,
+                 epoch=0,
+                 is_local=True
                 ):
         """Initializes the runner.
                 Args:
@@ -216,7 +217,7 @@ class SparkRunner:
         self.config = {} if config is None else config
         self.inter_op_parallelism = self.config.get("inter_op_parallelism", 1)
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
-        self.epoch = 0
+        self.epoch = epoch
         self.verbose = verbose
         self.model_weights = model_weights
         self.size = size
@@ -233,6 +234,7 @@ class SparkRunner:
                                 logs_dir="$SPARK_WORKER_DIR/applID/executorID",
                                 redis_password=redis_password
                                 )
+        self.model_dir = model_dir
 
     def setup(self):
         import tensorflow as tf
@@ -286,18 +288,14 @@ class SparkRunner:
         ips = set([node.split(":")[0] for node in cluster])
         os.environ["no_proxy"] = ",".join(ips)
 
-        if mode == "fit":
-            self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
-        else:
-            from tensorflow.python.distribute import distribution_strategy_context as ds_context
-            self.strategy = ds_context.get_strategy()
+        self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
         # For use in model.evaluate()
         self.local_model = None
         self.backend = "tf-distributed"
 
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
-             callbacks=None, validation_data_creator=None, class_weight=None,
+             callbacks=None, initial_epoch=0, validation_data_creator=None, class_weight=None,
              steps_per_epoch=None, validation_steps=None, validation_freq=1):
         """
         Sets up TensorFLow distributed environment, initializes the model,
@@ -319,7 +317,7 @@ class SparkRunner:
                                  callbacks=callbacks,
                                  validation_data=test_dataset,
                                  class_weight=class_weight,
-                                 # initial_epoch=epoch,
+                                 initial_epoch=initial_epoch,
                                  steps_per_epoch=steps_per_epoch,
                                  validation_steps=validation_steps,
                                  validation_freq=validation_freq)
@@ -338,19 +336,33 @@ class SparkRunner:
             config.update(data_config)
         config["batch_size"] = batch_size
 
-        model, history = self.distributed_train_func(data_creator, config, epochs, verbose,
-             callbacks=callbacks, validation_data_creator=validation_data_creator, class_weight=class_weight,
-             steps_per_epoch=steps_per_epoch, validation_steps=validation_steps, validation_freq=validation_freq)
-
+        model, history = self.distributed_train_func(data_creator,
+                                                     config,
+                                                     epochs=self.epoch + epochs,
+                                                     verbose=verbose,
+                                                     callbacks=callbacks,
+                                                     steps_per_epoch=steps_per_epoch,
+                                                     class_weight=class_weight,
+                                                     initial_epoch=self.epoch,
+                                                     validation_data_creator=validation_data_creator,
+                                                     validation_steps=validation_steps,
+                                                     validation_freq=validation_freq
+                                                     )
+        self.epoch += epochs
         weights = model.get_weights()
         if history is None:
             stats = {}
         else:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
-            # if model_dir is not None:
-            #     model.save_weights(model_dir)
-            return ([weights, stats])
+            if self.model_dir is not None:
+                model_states = {
+                    "epoch": self.epoch,
+                    "weights": weights,
+                    "optimizer_weights": model.optimizer.get_weights()
+                }
+                save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
+            return [stats]
         else:
             return []
     
@@ -364,10 +376,10 @@ class SparkRunner:
             config.update(data_config)
         config["batch_size"] = batch_size
 
-        # strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
         with self.strategy.scope():
             model = self.model_creator(self.config)
-            model.set_weights(self.model_weights)
+            if self.model_weights:
+                model.set_weights(self.model_weights.value)
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -387,9 +399,9 @@ class SparkRunner:
         results = model.evaluate(dataset, **params)
 
         if results is None:
-            model_weights = self.model_weights
             local_model = self.model_creator(self.config)
-            local_model = local_model.set_weights(model_weights)
+            if self.model_weights:
+                local_model = local_model.set_weights(self.model_weights.value)
             results = local_model.evaluate(dataset, **params)
         
         if isinstance(results, list):
@@ -423,7 +435,7 @@ class SparkRunner:
         if self.backend == "tf-distributed":
             local_model = self.model_creator(self.config)
             if self.model_weights:
-                local_model.set_weights(self.model_weights)
+                local_model.set_weights(self.model_weights.value)
         else:
             local_model = self.model_creator(self.config)
 
