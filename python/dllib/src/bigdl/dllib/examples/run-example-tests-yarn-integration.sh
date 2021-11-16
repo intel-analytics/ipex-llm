@@ -116,33 +116,91 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#4 Total time cost ${time} seconds"
 
-echo "#6 start test for orca pytorch_estimator imageInference"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca pytorch_estimator failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#4 Total time cost ${time} seconds"
+# echo "#6 start test for orca pytorch_estimator imageInference"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca pytorch_estimator failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#6 Total time cost ${time} seconds"
 
-echo "#7 start test for orca simple_pytorch imageInference"
+# echo "#7 start test for orca simple_pytorch imageInference"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py \ 
+#   --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca simple_pytorch failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#7 Total time cost ${time} seconds"
+
+
+echo "#7 start test for orca mxnet"
 #timer
 start=$(date "+%s")
+if [ -f data/mnist.zip ]
+then
+    echo "mnist.zip already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P data
+fi
+unzip -q data/mnist.zip -d data
+
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py \ 
+python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256 \ 
   --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
-  echo "orca simple_pytorch failed"
+  echo "orca mxnet failed"
   exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#4 Total time cost ${time} seconds"
+echo "#7 Total time cost ${time} seconds"
+
+
+echo "#8 start test for orca openvino"
+#timer
+start=$(date "+%s")
+if [ -f models/faster_rcnn_resnet101_coco.xml ]; then
+  echo "models/faster_rcnn_resnet101_coco already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.xml \
+    -P models
+  wget -nv $FTP_URI/analytics-zoo-models/openvino/2018_R5/faster_rcnn_resnet101_coco.bin \
+    -P models
+fi
+if [ -d tmp/data/object-detection-coco ]; then
+  echo "tmp/data/object-detection-coco already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/data/object-detection-coco.zip -P tmp/data
+  unzip -q tmp/data/object-detection-coco.zip -d tmp/data
+fi
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/openvino/predict.py \
+  --image tmp/data/object-detection-coco \
+  --model models/faster_rcnn_resnet101_coco.xml \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca openvino failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#8 Total time cost ${time} seconds"
