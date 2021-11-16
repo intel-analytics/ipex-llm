@@ -174,6 +174,7 @@ RUN mkdir -p /graphene && \
     mkdir -p /ppml/trusted-big-data-ml/work/models && \
     mkdir -p /ppml/trusted-big-data-ml/work/apps && \
     mkdir -p /ppml/trusted-big-data-ml/work/examples/bigdl && \
+    mkdir -p /ppml/trusted-big-data-ml/examples/src/main && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
@@ -189,6 +190,7 @@ COPY --from=graphene /graphene/Tools/argv_serializer /graphene/Tools
 COPY --from=spark /opt/jdk  /opt/jdk8
 COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
+COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
 RUN apt-get update --fix-missing && \
