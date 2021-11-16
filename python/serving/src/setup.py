@@ -67,7 +67,7 @@ def setup_package():
         # package_data={"bigdl.conf": ['config.yaml']},
         include_package_data=False,
         scripts=scripts,
-        install_requires=['redis', 'pyyaml', 'httpx', 'pyarrow', 'opencv-python'],
+        install_requires=['redis', 'pyyaml', 'httpx', 'pyarrow', 'opencv-python', 'kafka-python'],
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
