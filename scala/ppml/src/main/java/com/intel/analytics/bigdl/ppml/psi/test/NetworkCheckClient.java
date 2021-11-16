@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.psi.test;
 
 import com.intel.analytics.bigdl.ppml.FLClient;
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
@@ -52,7 +53,7 @@ public class NetworkCheckClient{
         // Example code for flClient
         int idSize = 150000;
         // Quick lookup for the plaintext of hashed ids
-        HashMap<String, String> data = TestUtils.getRandomHashSetOfStringForFiveFixed(idSize);//Utils.genRandomHashSet(idSize);
+        HashMap<String, String> data = HashingUtils.getRandomHashSetOfStringForFiveFixed(idSize);//Utils.genRandomHashSet(idSize);
         HashMap<String, String> hashedIds = new HashMap<>();
         List<String> hashedIdArray;
         String salt;
@@ -75,7 +76,7 @@ public class NetworkCheckClient{
             salt = flClient.psiStub().getSalt();
             //logger.debug("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
-            hashedIdArray = TestUtils.parallelToSHAHexString(ids, salt);
+            hashedIdArray = HashingUtils.parallelToSHAHexString(ids, salt);
             for (int i = 0; i < ids.size(); i++) {
                 hashedIds.put(hashedIdArray.get(i), ids.get(i));
             }

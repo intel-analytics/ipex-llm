@@ -19,8 +19,8 @@ package com.intel.analytics.bigdl.ppml.vfl.example.psi
 import org.slf4j.LoggerFactory
 import java.util
 
-import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
-import com.intel.analytics.bigdl.ppml.vfl.PSI
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils
+import com.intel.analytics.bigdl.ppml.vfl.{PSI, VflContext}
 
 
 object PSIExample {
@@ -32,40 +32,23 @@ object PSIExample {
     // Example code for flClient
     val idSize = 11
     // Quick lookup for the plaintext of hashed ids
-    val data = TestUtils.genRandomHashSet(idSize)
+    val data = HashingUtils.genRandomHashSet(idSize)
     val hashedIds = new util.HashMap[String, String]
     val ids = new util.ArrayList[String](data.keySet)
     // Create a communication channel to the server,  known as a Channel. Channels are thread-safe
     // and reusable. It is common to create channels at the beginning of your application and reuse
     // them until the application shuts down.
+    VflContext.initContext()
     val pSI = new PSI()
     try {
       // Get salt from Server
       val salt = pSI.getSalt()
 
-      logger.debug("Client get Slat=" + salt)
-      // Hash(IDs, salt) into hashed IDs
-      val hashedIdArray = TestUtils.parallelToSHAHexString(ids, salt)
-      for (i <- 0 until ids.size) {
-        hashedIds.put(hashedIdArray.get(i), ids.get(i))
-      }
-      logger.debug("HashedIDs Size = " + hashedIds.size)
-      pSI.uploadSet(hashedIdArray)
-      var intersection = null
-      while ( {
-        max_wait > 0
-      }) {
-        val intersection = pSI.downloadIntersection
-        if (intersection == null) {
-          logger.info("Wait 1000ms")
-          Thread.sleep(1000)
-        }
-        else {
-          logger.info("Intersection successful. Intersection's size is " + intersection.size + ".")
-
-        }
-        max_wait -= 1
-      }
+      logger.info("Client get Slat=" + salt)
+      pSI.uploadSet(ids)
+      logger.info("Client uploaded set" + ids.toString)
+      val intersection = pSI.downloadIntersection()
+      logger.info("Client get intersection=" + intersection.toString)
     } catch {
       case e: Exception =>
         e.printStackTrace()

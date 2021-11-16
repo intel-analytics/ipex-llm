@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.psi.test;
 
 import com.intel.analytics.bigdl.ppml.FLClient;
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
@@ -92,7 +93,7 @@ public class BenchmarkClient {
             logger.info("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
             long shash = System.currentTimeMillis();
-            hashedIdArray = TestUtils.parallelToSHAHexString(ids, salt);
+            hashedIdArray = HashingUtils.parallelToSHAHexString(ids, salt);
             for (int i = 0; i < ids.size(); i++) {
                 logger.debug(hashedIdArray.get(i));
                 hashedIds.put(hashedIdArray.get(i), ids.get(i));

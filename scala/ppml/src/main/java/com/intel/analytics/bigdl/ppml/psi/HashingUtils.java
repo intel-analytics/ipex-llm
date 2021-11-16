@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.psi.test;
+package com.intel.analytics.bigdl.ppml.psi;
 
 
 import org.slf4j.Logger;
@@ -28,8 +28,8 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class TestUtils {
-    private static final Logger logger = LoggerFactory.getLogger(TestUtils.class);
+public class HashingUtils {
+    private static final Logger logger = LoggerFactory.getLogger(HashingUtils.class);
     /***
      * Gen random HashMap<String, String> for test
      * @param size HashMap size, int

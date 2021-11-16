@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.vfl
 
 import java.util
 
-import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.vfl.utils.FLClientClosable
 import org.apache.log4j.Logger
 
@@ -26,6 +26,7 @@ import scala.collection.JavaConverters._
 
 class PSI() extends FLClientClosable {
   val logger = Logger.getLogger(getClass)
+  var salt: String = null
   private var hashedKeyPairs: Map[String, String] = null
   def getHashedKeyPairs() = {
     hashedKeyPairs
@@ -33,7 +34,7 @@ class PSI() extends FLClientClosable {
   private def uploadKeys(keys: Array[String]) = {
     val salt = getSalt
     logger.debug("Client get Salt=" + salt)
-    val hashedKeys = TestUtils.parallelToSHAHexString(keys, salt)
+    val hashedKeys = HashingUtils.parallelToSHAHexString(keys, salt)
     hashedKeyPairs = hashedKeys.zip(keys).toMap
     // Hash(IDs, salt) into hashed IDs
     logger.debug("HashedIDs Size = " + hashedKeys.size)
@@ -41,15 +42,38 @@ class PSI() extends FLClientClosable {
 
   }
 
-  def getSalt(): String = flClient.psiStub.getSalt()
-  def getSalt(name: String, clientNum: Int, secureCode: String): String =
-    flClient.psiStub.getSalt(name, clientNum, secureCode)
+  def getSalt(): String = {
+    salt = flClient.psiStub.getSalt()
+    salt
+  }
+  def getSalt(name: String, clientNum: Int, secureCode: String): String = {
+    salt = flClient.psiStub.getSalt(name, clientNum, secureCode)
+    salt
+  }
 
-  def uploadSet(hashedIdArray: util.List[String]): Unit = {
+  def uploadSet(ids: util.List[String]): Unit = {
+    val hashedIdArray = HashingUtils.parallelToSHAHexString(ids, salt)
     flClient.psiStub.uploadSet(hashedIdArray)
   }
 
-  def downloadIntersection(): util.List[String] = flClient.psiStub.downloadIntersection
+  def downloadIntersection(max_try: Int = 20, retry: Long = 1000): util.List[String] = {
+    var try_remain = max_try
+    while ( {
+      try_remain > 0
+    }) {
+      val intersection = flClient.psiStub.downloadIntersection
+      if (intersection == null) {
+        logger.info(s"Got empty intersection, retry in $retry ms")
+        Thread.sleep(retry)
+      }
+      else {
+        logger.info("Intersection successful. Intersection's size is " + intersection.size + ".")
+
+      }
+      try_remain -= 1
+    }
+    flClient.psiStub.downloadIntersection
+  }
 
 
 }

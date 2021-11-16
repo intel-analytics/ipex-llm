@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.vfl.example.logisticregression
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLClient
-import com.intel.analytics.bigdl.ppml.psi.test.TestUtils
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.vfl.LogisticRegression
 import com.intel.analytics.bigdl.ppml.vfl.example.ExampleUtils
 import com.intel.analytics.bigdl.{DataSet, Module}
@@ -100,7 +100,7 @@ object VflLogisticRegression {
   def uploadKeys(keys: Array[String]): Map[String, String] = {
     val salt = flClient.getSalt
     logger.debug("Client get Salt=" + salt)
-    val hashedKeys = TestUtils.parallelToSHAHexString(keys, salt)
+    val hashedKeys = HashingUtils.parallelToSHAHexString(keys, salt)
     val hashedKeyPairs = hashedKeys.zip(keys).toMap
     // Hash(IDs, salt) into hashed IDs
     logger.debug("HashedIDs Size = " + hashedKeys.size)

@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.psi.test;
 
 import com.intel.analytics.bigdl.ppml.FLClient;
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,7 @@ public class Client {
         // Example code for flClient
         int idSize = 11;
         // Quick lookup for the plaintext of hashed ids
-        HashMap<String, String> data = TestUtils.genRandomHashSet(idSize);
+        HashMap<String, String> data = HashingUtils.genRandomHashSet(idSize);
         HashMap<String, String> hashedIds = new HashMap<>();
         List<String> hashedIdArray;
         String salt;
@@ -52,7 +53,7 @@ public class Client {
             salt = flClient.psiStub().getSalt();
             logger.debug("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
-            hashedIdArray = TestUtils.parallelToSHAHexString(ids, salt);
+            hashedIdArray = HashingUtils.parallelToSHAHexString(ids, salt);
             for (int i = 0; i < ids.size(); i++) {
                 hashedIds.put(hashedIdArray.get(i), ids.get(i));
             }
