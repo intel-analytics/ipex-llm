@@ -149,7 +149,10 @@ def _roll_timeseries_ndarray(data, window):
         window_idx = np.array(window) - 1
 
     roll_data = np.concatenate([_shift(data, i) for i in range(0, -window_size, -1)], axis=1)
-    roll_data = roll_data[:data.shape[0]-window_size+1, window_idx, :]
+    if data.shape[0] >= window_size:
+        roll_data = roll_data[:data.shape[0]-window_size+1, window_idx, :]
+    else:
+        roll_data = roll_data[:0, window_idx, :]  # no sample will be sampled
     mask = ~np.any(np.isnan(roll_data), axis=(1, 2))
 
     return roll_data, mask

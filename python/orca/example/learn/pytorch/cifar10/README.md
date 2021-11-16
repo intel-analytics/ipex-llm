@@ -1,5 +1,5 @@
 # PyTorch Cifar10 example
-We demonstrate how to easily run synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in Analytics Zoo. We use a simple convolutional nueral network model to train on Cifar10 dataset, which is a dataset for image classification. See [here](https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide two distributed PyTorch training backends for this example, namely "bigdl" and "torch_distributed". You can run with either backend as you wish.
+We demonstrate how to easily run synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in Analytics Zoo. We use a simple convolutional nueral network model to train on Cifar10 dataset, which is a dataset for image classification. See [here](https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide three distributed PyTorch training backends for this example, namely "bigdl", "torch_distributed" and "spark". You can run with either backend as you wish.
 
 ## Prepare the environment
 
@@ -19,6 +19,9 @@ pip install six cloudpickle
 
 # For torch_distributed backend:
 pip install analytics-zoo[ray]  # 0.10.0.dev3 or above
+
+# For spark backend
+pip install bigdl-orca
 ```
 
 ## Run on local after pip install
@@ -29,10 +32,16 @@ The default backend is `bigdl`.
 python cifar10.py
 ```
 
-You can also run with `torch_distributed` backend via:
+You can run with `torch_distributed` backend via:
 
 ```
 python cifar10.py --backend torch_distributed
+```
+
+You can run with `spark` backend via:
+
+```
+python cifar10.py --backend spark
 ```
 
 ## Run on yarn cluster for yarn-client mode after pip install
@@ -42,7 +51,7 @@ export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 python cifar10.py --cluster_mode yarn-client
 ```
 
-The default backend is `bigdl`. You can also run with `torch_distributed` by specifying the backend.
+The default backend is `bigdl`. You can also run with `torch_distributed` or `spark` by specifying the backend.
 
 ## Results
 
@@ -58,7 +67,7 @@ Final test results will be printed at the end:
 Accuracy of the network on the 10000 test images: 0.541100025177002 
 ```
 
-**For "torch_distributed" backend**
+**For "torch_distributed" and "spark" backend**
 
 Final test results will be printed at the end:
 ```

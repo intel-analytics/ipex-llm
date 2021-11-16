@@ -49,13 +49,13 @@
 
 ######## Secure Configuration
 # default: false
-# secureEnabled:
+# redisSecureEnabled:
 
 # default:
-# secureTrustStorePath:
+# redisSecureTrustStorePath:
 
 # default:
-# secureStructStorePassword:
+# redisSecureTrustStorePassword:
 
 # default: false
 # modelEncrypted:

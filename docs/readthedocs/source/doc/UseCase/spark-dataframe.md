@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/ncf_dataframe.ipynb) &nbsp;![](../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/ncf_dataframe.ipynb)
+![](../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/ncf_dataframe.ipynb) &nbsp;![](../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/ncf_dataframe.ipynb)
 
 ---
 
@@ -15,7 +15,7 @@ The dataset used in this guide is [movielens-1M](https://grouplens.org/datasets/
 First, read the input data into Spark Dataframes.
 
 ```python
-from zoo.orca import OrcaContext
+from bigdl.orca import OrcaContext
 
 spark = OrcaContext.get_spark_session()
 # read csv with specifying column names
@@ -82,7 +82,7 @@ def model_creator(config):
 Finally, run distributed model training/inference on the Spark Dataframes directly.
 
 ```python
-from zoo.orca.learn.tf2 import Estimator
+from bigdl.orca.learn.tf2 import Estimator
 
 # create an Estimator
 est = Estimator.from_keras(model_creator=model_creator) # the model accept two inputs and one label

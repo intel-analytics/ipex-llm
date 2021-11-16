@@ -25,6 +25,8 @@ def sql_functions_g_example(spark):
     df.cube("name").agg(grouping_id(), sum("age")).orderBy("name").show()
     print("grouping_id API finished")
 
+    print("Finish running function_g API")
+
 if __name__ == "__main__":
 
     spark = SparkSession \
