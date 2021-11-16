@@ -94,7 +94,7 @@ class AutoTSEstimator:
                details. The values defaults to 2.
         :param future_seq_len: Int or List. The number of future steps to forecast. The value
                defaults to 1, if `future_seq_len` is a list, we will sample discretely according
-               to the input list. 1 means the timestampe just after the observed data.
+               to the input list. 1 means the timestamp just after the observed data.
         :param input_feature_num: Int. The number of features in the input. The value is ignored if
                you use chronos.data.TSDataset as input data type.
         :param output_target_num: Int. The number of targets in the output. The value is ignored if

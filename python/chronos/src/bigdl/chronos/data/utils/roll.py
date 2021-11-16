@@ -35,7 +35,7 @@ def roll_timeseries_dataframe(df,
            if `horizon` is an int, we will sample `horizon` step
            continuously after the forecasting point.
            if `horizon` is an list, we will sample discretely according
-           to the input list. 1 means the timestampe just after the observed data.
+           to the input list. 1 means the timestamp just after the observed data.
     :param feature_col: list, indicate the feature col name.
     :param target_col: list, indicate the target col name.
     :return: x, y
