@@ -191,7 +191,7 @@ else
   unzip -q tmp/data/object-detection-coco.zip -d tmp/data
 fi
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/openvino/predict.py \
+python ${BIGDL_ROOT}/python/orca/example/learn/openvino/predict.py \
   --image tmp/data/object-detection-coco \
   --model models/faster_rcnn_resnet101_coco.xml \
   --cluster_mode yarn-client
