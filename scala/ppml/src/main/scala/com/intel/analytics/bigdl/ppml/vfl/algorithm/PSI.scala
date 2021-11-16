@@ -21,6 +21,7 @@ import java.util
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.vfl.utils.FLClientClosable
 import org.apache.log4j.Logger
+import scala.util.control.Breaks._
 
 import scala.collection.JavaConverters._
 
@@ -57,23 +58,21 @@ class PSI() extends FLClientClosable {
   }
 
   def downloadIntersection(max_try: Int = 20, retry: Long = 1000): util.List[String] = {
-    var try_remain = max_try
-    while ( {
-      try_remain > 0
-    }) {
-      val intersection = flClient.psiStub.downloadIntersection
-      if (intersection == null) {
-        logger.info(s"Got empty intersection, retry in $retry ms")
-        Thread.sleep(retry)
+    var intersection: util.List[String] = null
+    breakable {
+      for (i <- 0 until max_try) {
+        intersection = flClient.psiStub.downloadIntersection
+        if (intersection == null) {
+          logger.info(s"Got empty intersection, retry in $retry ms")
+          Thread.sleep(retry)
+        }
+        else {
+          logger.info("Intersection successful. Intersection's size is " + intersection.size + ".")
+          break
+        }
       }
-      else {
-        logger.info("Intersection successful. Intersection's size is " + intersection.size + ".")
-
-      }
-      try_remain -= 1
     }
-    flClient.psiStub.downloadIntersection
+    intersection
   }
-
 
 }

@@ -25,8 +25,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     val pSI = new PSI()
     val set = List("key1", "key2")
     val salt = pSI.getSalt()
-    val hashedKey = HashingUtils.parallelToSHAHexString(set.asJava, salt)
-    pSI.uploadSet(hashedKey)
+    pSI.uploadSet(set.asJava)
 
     require(salt != null, "Get salt failed.")
   }
@@ -41,12 +40,9 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     val set2 = List("key2", "key3")
     val salt1 = pSI1.getSalt()
     val salt2 = pSI2.getSalt()
-    val hashedKey1 = HashingUtils.parallelToSHAHexString(set1.asJava, salt1)
-    val hashedKey2 = HashingUtils.parallelToSHAHexString(set2.asJava, salt2)
-    pSI1.uploadSet(hashedKey1)
-    pSI2.uploadSet(hashedKey2)
+    pSI1.uploadSet(set1.asJava)
+    pSI2.uploadSet(set2.asJava)
     val intersection = pSI1.downloadIntersection()
     require(intersection.size() == 1, "Intersection number is wrong.")
-    require(intersection.get(0) == hashedKey1.get(1), "Intersection result is wrong.")
   }
 }
