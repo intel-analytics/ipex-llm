@@ -86,6 +86,7 @@ def sql_catalog_example(spark):
     
     spark.stop()
 
+    print("Finish running Catalog API")
 
 if __name__ == "__main__":
 

@@ -44,13 +44,13 @@
 
 ######## Secure Configuration
 # default: false
-# secureEnabled:
+# redisSecureEnabled:
 
 # default:
-  secureTrustStorePath: /ppml/trusted-realtime-ml/redis/work/keys/keystore.jks
+  redisSecureTrustStorePath: /ppml/trusted-realtime-ml/redis/work/keys/keystore.jks
 
 # default:
-# secureStructStorePassword:
+# redisSecureTrustStorePassword:
 
 # default: false
 # modelEncrypted:

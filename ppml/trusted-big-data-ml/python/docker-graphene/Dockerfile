@@ -3,6 +3,7 @@ ARG SPARK_VERSION=3.1.2
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
+ARG SPARK_JAR_REPO_URL=your_spark_jar_repo_url
 
 # stage.1 graphene
 FROM ubuntu:18.04 AS graphene
@@ -31,6 +32,7 @@ ARG HTTPS_PROXY_PORT
 ARG SPARK_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
+ARG SPARK_JAR_REPO_URL
 ENV SPARK_VERSION       ${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk$JDK_VERSION
 ENV PATH                ${JAVA_HOME}/bin:${PATH}
@@ -62,35 +64,22 @@ RUN cd /opt && \
     rm spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
     cp spark-${SPARK_VERSION}/conf/log4j.properties.template spark-${SPARK_VERSION}/conf/log4j.properties && \
     echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties && \
-    mv spark-${SPARK_VERSION}/python/lib/pyspark.zip /opt/pyspark.zip && \
-    mv spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar /opt/spark-core_2.12-$SPARK_VERSION.jar && \
-    mv spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
-    mv spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-network-common_2.12-$SPARK_VERSION.jar && \
-    mv spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar /opt/hadoop-common-3.2.0.jar && \
-    mv spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar /opt/hive-exec-2.3.7-core.jar && \
-    ls /opt
+    rm spark-${SPARK_VERSION}/python/lib/pyspark.zip && \
+    rm spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    rm spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    rm spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    rm spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar && \
+    rm spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
 # spark modification
 RUN cd /opt && \
-    git clone https://github.com/analytics-zoo/spark.git && \
-    cd spark && \
-    git checkout branch-3.1.2 && \
-    git status && \
-    export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
-        -Dhttp.proxyHost=$HTTP_PROXY_HOST \
-        -Dhttp.proxyPort=$HTTP_PROXY_PORT \
-        -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
-        -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
-    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean install -pl core && \
-    cd /opt/spark/resource-managers/kubernetes/core && \
-    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
-    cd /opt/spark/common/network-common && \
-    /opt/apache-maven-3.6.3/bin/mvn -T 16 -DskipTests=true clean package && \
-    cd /opt/spark/python && \
-    zip -r lib/pyspark.zip pyspark && \
-    mv /opt/spark/core/target/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
-    mv /opt/spark/resource-managers/kubernetes/core/target/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
-    mv /opt/spark/common/network-common/target/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
-    mv /opt/spark/python/lib/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
+    wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/pyspark.zip && \
+    mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
 # hadoop
 RUN cd /opt && \
     apt-get install -y build-essential && \
@@ -185,6 +174,7 @@ RUN mkdir -p /graphene && \
     mkdir -p /ppml/trusted-big-data-ml/work/models && \
     mkdir -p /ppml/trusted-big-data-ml/work/apps && \
     mkdir -p /ppml/trusted-big-data-ml/work/examples/bigdl && \
+    mkdir -p /ppml/trusted-big-data-ml/examples/src/main && \
     mkdir -p /root/.keras/datasets && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
@@ -200,6 +190,7 @@ COPY --from=graphene /graphene/Tools/argv_serializer /graphene/Tools
 COPY --from=spark /opt/jdk  /opt/jdk8
 COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
+COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
 RUN apt-get update --fix-missing && \
@@ -242,8 +233,10 @@ ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
 ADD ./check-status.sh /ppml/trusted-big-data-ml/check-status.sh
 ADD ./tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
+ADD ./test-suits /ppml/trusted-big-data-ml/work/test-suits
 ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
+
 
 RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
     patch /usr/local/lib/python3.6/dist-packages/dill/_dill.py ./_dill.py.patch && \
@@ -270,7 +263,11 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-regressor-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-classifier-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-data-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh
+    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-e2e-example.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-simple-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-sql-api-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-sql-examples.sh
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml

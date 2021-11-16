@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import io
 import types
 import logging
 import numbers
@@ -35,6 +34,7 @@ from bigdl.orca.learn.pytorch.torch_pyspark_runner import find_ip_and_port
 
 
 logger = logging.getLogger(__name__)
+
 
 def partition_to_creator(partition):
 
@@ -68,6 +68,7 @@ def partition_to_creator(partition):
         return data_loader
 
     return data_creator
+
 
 class PyTorchPySparkEstimator(BaseEstimator):
     def __init__(

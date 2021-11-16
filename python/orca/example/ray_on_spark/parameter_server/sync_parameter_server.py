@@ -22,7 +22,6 @@ from __future__ import print_function
 import argparse
 import os
 
-#from python.orca.example.ray_on_spark.parameter_server import model
 import numpy as np
 import ray
 import model

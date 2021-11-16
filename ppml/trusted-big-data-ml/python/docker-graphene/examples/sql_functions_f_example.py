@@ -52,6 +52,8 @@ def sql_functions_f_example(spark):
     df.select(from_utc_timestamp(df.ts, "PST").alias('local_time')).show()
     df.select(from_utc_timestamp(df.ts, df.tz).alias('local_time')).show()
     print("from_utc_timestamp API finished")
+    
+    print("Finish running function_f API")
 
 if __name__ == "__main__":
 

@@ -1,16 +1,25 @@
 # connect sqlite3
 import time
+import argparse
+from pyspark.sql import SparkSession
+
+# create parser object
+parser = argparse.ArgumentParser(description='Process e2e programming')
+parser.add_argument('--db_path', type=str, help='Please make sure e2e database path passed in.')
+args = parser.parse_args()
+
+db_path = args.db_path
+
 inited = time.time()*1000
 print("PERF inited", inited)
 
-from pyspark.sql import SparkSession
 spark = SparkSession.builder.getOrCreate()
 
 spark_inited = time.time()*1000
 print("PERF spark_inited", spark_inited)
 
-alice = spark.read.jdbc('jdbc:sqlite:/ppml/trusted-big-data-ml/work/data/sqlite_example/test_100w.db', 'alice', column="a1169", lowerBound=0, upperBound=1000, numPartitions=128)
-bob = spark.read.jdbc('jdbc:sqlite:/ppml/trusted-big-data-ml/work/data/sqlite_example/test_100w.db', 'bob')
+alice = spark.read.jdbc('jdbc:sqlite:{}'.format(db_path), 'alice', column="a1169", lowerBound=0, upperBound=1000, numPartitions=128)
+bob = spark.read.jdbc('jdbc:sqlite:{}'.format(db_path), 'bob')
 db_read = time.time()*1000
 print("PERF db_read", db_read)
 

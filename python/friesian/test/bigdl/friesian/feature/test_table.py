@@ -384,6 +384,14 @@ class TestTable(TestCase):
             (feature_tbl.col("col_1") == 1) & (feature_tbl.col_2 == 1))
         assert filtered_tbl2.size() == 1, "Only 1 out of 5 rows has value 1 for col_1 and col_2"
 
+    def test_random_split(self):
+        file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
+        feature_tbl = FeatureTable.read_parquet(file_path)
+        table1, table2 = feature_tbl.random_split([0.8, 0.2], seed=1)
+        cnt1, cnt2 = table1.size(), table2.size()
+        cnt = feature_tbl.size()
+        assert cnt == cnt1 + cnt2, "size of full table should equal to sum of size of splited ones"
+
     def test_rename(self):
         file_path = os.path.join(self.resource_path, "parquet/data1.parquet")
         feature_tbl = FeatureTable.read_parquet(file_path)
