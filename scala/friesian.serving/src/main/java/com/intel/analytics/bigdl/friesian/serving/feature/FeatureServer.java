@@ -31,7 +31,6 @@ import io.grpc.ServerInterceptors;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
-import javafx.util.Pair;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import org.apache.log4j.Level;
