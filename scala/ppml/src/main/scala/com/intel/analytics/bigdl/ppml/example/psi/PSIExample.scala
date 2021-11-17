@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.ppml.example.psi
 import org.slf4j.LoggerFactory
 import java.util
 
-import com.intel.analytics.bigdl.ppml.psi.{HashingUtils, PSI}
+import com.intel.analytics.bigdl.ppml.algorithms.PSI
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.vfl.VflContext
 
 

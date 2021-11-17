@@ -1,7 +1,8 @@
 package com.intel.analytics.bigdl.ppml.vfl
 
 import com.intel.analytics.bigdl.ppml.FLServer
-import com.intel.analytics.bigdl.ppml.psi.{HashingUtils, PSI}
+import com.intel.analytics.bigdl.ppml.algorithms.PSI
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 
 import scala.collection.JavaConverters._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.psi
+package com.intel.analytics.bigdl.ppml.algorithms
 
 import java.util
 
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.vfl.utils.FLClientClosable
 import org.apache.log4j.Logger
 
