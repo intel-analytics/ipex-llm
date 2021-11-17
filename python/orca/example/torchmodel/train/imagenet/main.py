@@ -86,7 +86,7 @@ def main():
                         help='num of driver cores to use.')
     parser.add_argument("--num_executors", type=int, default=16,\
                         help="number of executors")
-    parser.add_option("--deploy_mode", type=str, default="yarn-client", 
+    parser.add_argument("--deploy_mode", type=str, default="yarn-client", 
                         help="yarn deploy mode, yarn-client or yarn-cluster")
     args = parser.parse_args()
     
@@ -95,12 +95,11 @@ def main():
     assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
             "set the environment variable HADOOP_CONF_DIR"
 
-    conf = create_spark_conf().set("spark.executor.memory", args.executor_memory)\
-        .set("spark.executor.cores", args.cores)\
-        .set("spark.executor.instances", args.num_executors)\
-        .set("spark.driver.memory", args.driver_memory)
-
-    sc = init_orca_context(conf, cluster_mode=args.deploy_mode, hadoop_conf=hadoop_conf)
+    sc = init_orca_context(cluster_mode=args.deploy_mode, hadoop_conf=hadoop_conf,
+        conf={"spark.executor.memory": args.executor_memory,
+                "spark.executor.cores": args.cores,
+                "spark.executor.instances": args.num_executors
+    })
 
     # Data loading code
     traindir = os.path.join(args.data, 'train')

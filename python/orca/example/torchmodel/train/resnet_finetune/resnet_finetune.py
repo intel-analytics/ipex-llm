@@ -64,13 +64,12 @@ if __name__ == '__main__':
     assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
             "set the environment variable HADOOP_CONF_DIR"
 
-    conf = create_spark_conf().set("spark.executor.memory", options.executorMemory)\
-        .set("spark.executor.cores", options.cores)\
-        .set("spark.executor.instances", options.executors)\
-        .set("spark.driver.memory", options.driverMemory)
-
-    sc = init_orca_context(conf, cluster_mode=options.deployMode, hadoop_conf=hadoop_conf)
-
+    sc = init_orca_context(cluster_mode=options.deployMode, hadoop_conf=hadoop_conf,
+        conf={"spark.executor.memory": options.executorMemory,
+                "spark.executor.cores": options.cores,
+                "spark.executor.instances": options.executors,
+                "spark.driver.memory": options.driverMemory
+        })
     model = CatDogModel()
     zoo_model = TorchModel.from_pytorch(model)
 

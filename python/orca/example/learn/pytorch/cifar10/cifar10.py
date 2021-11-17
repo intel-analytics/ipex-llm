@@ -48,14 +48,15 @@ args = parser.parse_args()
 
 if args.cluster_mode == "local":
     init_orca_context(memory="4g")
-elif args.cluster_mode == "yarn-client":
-    init_orca_context(
-        cluster_mode="yarn-client", num_nodes=2, driver_memory="4g",
-        conf={"spark.rpc.message.maxSize": "1024",
-              "spark.task.maxFailures": "1",
-              "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
-elif args.cluster_mode == "yarn-cluster":
-    init_orca_context(cluster_mode="yarn-cluster")
+elif args.cluster_mode.startswith("yarn"):
+    if args.cluster_mode == "yarn-client":
+        init_orca_context(
+            cluster_mode="yarn-client", num_nodes=2, driver_memory="4g",
+            conf={"spark.rpc.message.maxSize": "1024",
+                "spark.task.maxFailures": "1",
+                "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+    elif args.cluster_mode == "yarn-cluster":
+        init_orca_context(cluster_mode="yarn-cluster")
 elif args.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 

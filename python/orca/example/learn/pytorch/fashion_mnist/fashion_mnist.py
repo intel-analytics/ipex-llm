@@ -118,10 +118,11 @@ def main():
 
     if args.cluster_mode == "local":
         init_orca_context()
-    elif args.cluster_mode == "yarn-client":
-        init_orca_context(cluster_mode=args.cluster_mode, cores=4, num_nodes=2)
-    elif args.cluster_mode == "yarn-cluster":
-        init_orca_context(cluster_mode=args.cluster_mode, cores=4, num_nodes=2)
+    elif args.cluster_mode.startswith("yarn"):
+        if args.cluster_mode == "yarn-client":
+            init_orca_context(cluster_mode=args.cluster_mode, cores=4, num_nodes=2)
+        elif args.cluster_mode == "yarn-cluster":
+            init_orca_context(cluster_mode=args.cluster_mode, cores=4, num_nodes=2)
     elif args.cluster_mode == "spark-submit":
         init_orca_context(cluster_mode=args.cluster_mode)
 
