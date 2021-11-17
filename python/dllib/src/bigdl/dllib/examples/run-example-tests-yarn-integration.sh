@@ -19,8 +19,13 @@ echo "#1 start test for data spark_pandas"
 #timer
 start=$(date "+%s")
 #run the example
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/nyc_taxi.csv /tmp/nyc_taxi.csv
+ls /tmp/nyc_taxi.csv
+echo ${HADOOP_HOME}
+echo ${HDFS_URI}
 python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
-  --deploy-mode 'yarn-client'
+  --deploy-mode 'yarn-client' \
+  -f /tmp/nyc_taxi.csv
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
