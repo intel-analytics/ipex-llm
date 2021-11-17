@@ -61,7 +61,6 @@ public class PsiIntersection {
                 List<String> result = findIntersection(current, collections.get(maxCollection - 1));
                 Utils.shuffle(result, shuffleSeed);
                 intersection = result;
-                this.notifyAll();
             }
         }
     }
@@ -131,9 +130,6 @@ public class PsiIntersection {
 
     public List<String> getIntersection() throws InterruptedException{
         synchronized (this) {
-            while (intersection == null) {
-                this.wait();
-            }
             return intersection;
         }
     }

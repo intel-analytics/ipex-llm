@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.algorithms
 
 import java.util
+import java.util.concurrent.TimeoutException
 
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.vfl.utils.FLClientClosable
@@ -43,14 +44,14 @@ class PSI() extends FLClientClosable {
     flClient.psiStub.uploadSet(hashedIdArray)
   }
 
-  def downloadIntersection(max_try: Int = 20, retry: Long = 1000): util.List[String] = {
+  def downloadIntersection(max_try: Int = 5, retry: Long = 3000): util.List[String] = {
     var intersection: util.List[String] = null
     breakable {
       for (i <- 0 until max_try) {
         intersection = flClient.psiStub.downloadIntersection
         if (intersection == null) {
           if (i == max_try - 1) {
-            throw new Error("Max retry reached, could not get intersection, exited.")
+            throw new TimeoutException("Max retry reached, could not get intersection, exited.")
           }
           logger.info(s"Got empty intersection, retry in $retry ms")
           Thread.sleep(retry)

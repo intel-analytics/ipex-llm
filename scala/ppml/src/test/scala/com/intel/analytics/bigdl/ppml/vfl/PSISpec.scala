@@ -7,6 +7,8 @@ import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import scala.collection.JavaConverters._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.concurrent.TimeoutException
+
 class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
   "PSI get salt" should "work" in {
     val flServer = new FLServer()
@@ -44,5 +46,22 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     pSI2.uploadSet(set2.asJava, salt2)
     val intersection = pSI1.downloadIntersection()
     require(intersection.size() == 1, "Intersection number is wrong.")
+  }
+  "PSI download null intersection" should "work" in {
+    val flServer = new FLServer()
+    flServer.build()
+    flServer.start()
+    VflContext.initContext()
+    val pSI1 = new PSI()
+    val set1 = List("key1", "key2")
+    val salt1 = pSI1.getSalt()
+    pSI1.uploadSet(set1.asJava, salt1)
+    try {
+      val intersection = pSI1.downloadIntersection()
+    } catch {
+      case _: TimeoutException => println("Test pass")
+      case _ => throw new Error("Test fail")
+    }
+
   }
 }
