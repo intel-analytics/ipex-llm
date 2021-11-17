@@ -367,7 +367,7 @@ echo "#17 start test for orca tfpark estimator_inception"
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
-  --image-path tmp/data/dogs-vs-cats/demo \
+  --image-path /tmp/data/dogs-vs-cats/demo \
   --num-classes 2 \
   --cluster_mode yarn-client
 exit_status=$?
