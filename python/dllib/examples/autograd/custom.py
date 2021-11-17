@@ -38,6 +38,7 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args(sys.argv)
 
+    conf = {}
     if options.clusterMode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
