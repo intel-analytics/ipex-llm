@@ -27,32 +27,19 @@ import scala.collection.JavaConverters._
 
 class PSI() extends FLClientClosable {
   val logger = Logger.getLogger(getClass)
-  var salt: String = null
   private var hashedKeyPairs: Map[String, String] = null
   def getHashedKeyPairs() = {
     hashedKeyPairs
   }
-  private def uploadKeys(keys: Array[String]) = {
-    val salt = getSalt
-    logger.debug("Client get Salt=" + salt)
-    val hashedKeys = HashingUtils.parallelToSHAHexString(keys, salt)
-    hashedKeyPairs = hashedKeys.zip(keys).toMap
-    // Hash(IDs, salt) into hashed IDs
-    logger.debug("HashedIDs Size = " + hashedKeys.size)
-    uploadSet(hashedKeys.toList.asJava)
-
-  }
 
   def getSalt(): String = {
-    salt = flClient.psiStub.getSalt()
-    salt
+    flClient.psiStub.getSalt()
   }
   def getSalt(name: String, clientNum: Int, secureCode: String): String = {
-    salt = flClient.psiStub.getSalt(name, clientNum, secureCode)
-    salt
+    flClient.psiStub.getSalt(name, clientNum, secureCode)
   }
 
-  def uploadSet(ids: util.List[String]): Unit = {
+  def uploadSet(ids: util.List[String], salt: String): Unit = {
     val hashedIdArray = HashingUtils.parallelToSHAHexString(ids, salt)
     flClient.psiStub.uploadSet(hashedIdArray)
   }
@@ -63,6 +50,9 @@ class PSI() extends FLClientClosable {
       for (i <- 0 until max_try) {
         intersection = flClient.psiStub.downloadIntersection
         if (intersection == null) {
+          if (i == max_try - 1) {
+            throw new Error("Max retry reached, could not get intersection, exited.")
+          }
           logger.info(s"Got empty intersection, retry in $retry ms")
           Thread.sleep(retry)
         }
