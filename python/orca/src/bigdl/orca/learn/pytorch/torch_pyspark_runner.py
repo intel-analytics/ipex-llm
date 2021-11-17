@@ -82,8 +82,8 @@ class TorchPysparkRunner:
                  model_creator,
                  optimizer_creator,
                  size,
-                 cluster_info,
                  cores_per_worker,
+                 cluster_info=None,
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
@@ -321,12 +321,7 @@ class TorchPysparkRunner:
             stats = self.train_epoch(loader, profile=profile, info=info)
             stats_list.append(stats)
 
-        state_dict = self.get_state_dict()
-
-        if self.rank == 0:
-            return [(state_dict, stats_list)]
-        else:
-            return []
+        return stats_list
 
     def train_epoch(self,
                     data_loader,
