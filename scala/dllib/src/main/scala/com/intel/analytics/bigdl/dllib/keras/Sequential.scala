@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.keras
+package com.intel.analytics.bigdl.dllib.keras.Sequential
 
 import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
@@ -197,7 +197,7 @@ class Sequential[T: ClassTag] private ()
 
 object Sequential extends KerasLayerSerializable {
   ModuleSerializer.registerModule(
-    "com.intel.analytics.bigdl.dllib.keras.models.Sequential",
+    "com.intel.analytics.bigdl.dllib.keras.Sequential.Sequential",
     Sequential)
 
   def apply[@specialized(Float, Double) T: ClassTag]()

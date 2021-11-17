@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.keras.autograd.Variable
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import com.intel.analytics.bigdl.dllib.keras.models.Model
-import com.intel.analytics.bigdl.dllib.keras.Sequential
+import com.intel.analytics.bigdl.dllib.keras.Sequential._
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 class TransformerLayerSpec extends ZooSpecHelper {

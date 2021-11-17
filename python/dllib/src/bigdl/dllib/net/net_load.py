@@ -61,10 +61,10 @@ class JavaToPython:
             raise Exception("Not supported type: {}".format(jclass_name))
 
     def _load_ppackage_by_jpackage(self, jpackage_name):
-        if "com.intel.analytics.bigdl.dllib.keras.models":
-            return importlib.import_module('bigdl.dllib.keras.model.model')
-        if "com.intel.analytics.bigdl.dllib.keras.Sequential":
-            return importlib.import_module('bigdl.dllib.keras.Sequential.Sequential')
+        if jpackage_name=="com.intel.analytics.bigdl.dllib.keras.models":
+            return importlib.import_module('bigdl.dllib.keras.model')
+        if jpackage_name=="com.intel.analytics.bigdl.dllib.keras.Sequential":
+            return importlib.import_module('bigdl.dllib.keras.Sequential')
         raise Exception("Not supported package: {}".format(jpackage_name))
 
 

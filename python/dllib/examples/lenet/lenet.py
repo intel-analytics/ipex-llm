@@ -42,6 +42,7 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args(sys.argv)
 
     sc = init_nncontext("lenet example")
+
     (X_train, Y_train), (X_test, Y_test) = mnist.load_data(options.dataPath)
     Y_train = Y_train - 1
     Y_test = Y_test - 1
