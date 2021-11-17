@@ -131,7 +131,7 @@ public class PsiIntersection {
 
     public List<String> getIntersection() throws InterruptedException{
         synchronized (this) {
-            if(null == intersection) {
+            while (intersection == null) {
                 this.wait();
             }
             return intersection;
