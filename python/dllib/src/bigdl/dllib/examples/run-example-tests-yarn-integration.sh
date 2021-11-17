@@ -19,10 +19,7 @@ echo "#1 start test for data spark_pandas"
 #timer
 start=$(date "+%s")
 #run the example
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/nyc_taxi.csv /tmp/nyc_taxi.csv
-ls /tmp/nyc_taxi.csv
-echo ${HADOOP_HOME}
-echo ${HDFS_URI}
+wget -P /tmp https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv
 python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
   --deploy-mode 'yarn-client' \
   -f /tmp/nyc_taxi.csv
@@ -57,25 +54,25 @@ echo "#1 Total time cost ${time} seconds"
 # echo "#2 Total time cost ${time} seconds"
 
 
-echo "#3 start test for pytorch fashion_mnist"
-#timer
-start=$(date "+%s")
-#run the example
-rm -rf ./data
-rm -rf ./runs
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py \
-  --cluster_mode 'yarn-client' \
-  --epochs 1 \
-  --batch_size 256
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "####################pytorch fashion_mnist failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#3 Total time cost ${time} seconds"
+# echo "#3 start test for pytorch fashion_mnist"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# rm -rf ./data
+# rm -rf ./runs
+# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py \
+#   --cluster_mode 'yarn-client' \
+#   --epochs 1 \
+#   --batch_size 256
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "####################pytorch fashion_mnist failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#3 Total time cost ${time} seconds"
 
 
 echo "#4 start test for pytorch super_resolution"
