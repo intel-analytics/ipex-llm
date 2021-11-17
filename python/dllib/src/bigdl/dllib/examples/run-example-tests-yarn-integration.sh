@@ -16,8 +16,6 @@ echo "start test for dllib nnframes image transfer learning"
 echo "start test for dllib nnframes image inference"
 
 # echo "#1 start test for dllib lenet5"
-
-
 # #timer
 # start=$(date "+%s")
 # #run the example
@@ -286,13 +284,13 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py \
   --max_epoch 5 \
-  --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca ros rl_pong failed"
-  exit $exit_status
-fi
+  --cluster_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros rl_pong failed"
+#   exit $exit_status
+# fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#13 Total time cost ${time} seconds"
@@ -303,13 +301,13 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py \
   --max_epoch 5 \
-  --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca ros rl_pong failed"
-  exit $exit_status
-fi
+  --cluster_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros rl_pong failed"
+#   exit $exit_status
+# fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#14 Total time cost ${time} seconds"
