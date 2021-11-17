@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 from optparse import OptionParser
+import sys
+import os
 
 import tensorflow as tf
 
@@ -27,7 +29,21 @@ from bigdl.orca.tfpark import ZooOptimizer
 
 def main(option):
     batch_size = 16 if not option.batch_size else int(option.batch_size)
-    sc = init_nncontext()
+    cluster_mode = options.cluster_mode
+    if cluster_mode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "2g")
+        if cluster_mode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    else:
+        sc = init_nncontext()
 
     def input_fn(mode, params):
 
@@ -88,6 +104,8 @@ if __name__ == '__main__':
     parser.add_option("--image-path", dest="image_path")
     parser.add_option("--num-classes", dest="num_classes")
     parser.add_option("--batch_size", dest="batch_size")
+    parser.add_option('--cluster_mode', type=str, default="local",
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
     (options, args) = parser.parse_args(sys.argv)
     main(options)

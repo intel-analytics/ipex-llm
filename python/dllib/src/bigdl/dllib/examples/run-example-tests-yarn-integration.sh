@@ -278,36 +278,140 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#12 Total time cost ${time} seconds"
 
-echo "#13 start test for orca tfpark keras_dataset"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py \
-  --max_epoch 5 \
-  --cluster_mode yarn-cluster
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca ros rl_pong failed"
-#   exit $exit_status
-# fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#13 Total time cost ${time} seconds"
+# echo "#13 start test for orca tfpark keras_dataset"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py \
+#   --max_epoch 5 \
+#   --cluster_mode yarn-cluster
+# # exit_status=$?
+# # if [ $exit_status -ne 0 ]; then
+# #   clear_up
+# #   echo "orca ros rl_pong failed"
+# #   exit $exit_status
+# # fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#13 Total time cost ${time} seconds"
 
-echo "#14 start test for orca tfpark keras_dataset"
+# echo "#14 start test for orca tfpark keras_dataset"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py \
+#   --max_epoch 5 \
+#   --cluster_mode yarn-cluster
+# # exit_status=$?
+# # if [ $exit_status -ne 0 ]; then
+# #   clear_up
+# #   echo "orca ros rl_pong failed"
+# #   exit $exit_status
+# # fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#14 Total time cost ${time} seconds"
+
+echo "#15 start test for orca tfpark gan"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py \
-  --max_epoch 5 \
-  --cluster_mode yarn-cluster
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca ros rl_pong failed"
-#   exit $exit_status
-# fi
+python ${BIGDL_ROOT}/python/orca/example/tfpark/gan/gan_train_and_evaluate.py \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark gan failed"
+  exit $exit_status
+fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#14 Total time cost ${time} seconds"
+echo "#15 Total time cost ${time} seconds"
+
+echo "#16 start test for orca tfpark estimator_dataset"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_dataset.py \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark estimator_dataset"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#16 Total time cost ${time} seconds"
+
+if [ -f analytics-zoo-data/data/dogs-vs-cats/train.zip ]; then
+  echo "analytics-zoo-data/data/dogs-vs-cats/train.zip already exists."
+else
+  # echo "Downloading dogs and cats images"
+  wget -nv $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip \
+    -P tmp/data/dogs-vs-cats
+  unzip -q tmp/data/dogs-vs-cats/train.zip -d tmp/data/dogs-vs-cats
+  mkdir -p tmp/data/dogs-vs-cats/samples
+  cp tmp/data/dogs-vs-cats/train/cat.71* tmp/data/dogs-vs-cats/samples
+  cp tmp/data/dogs-vs-cats/train/dog.71* tmp/data/dogs-vs-cats/samples
+
+  mkdir -p tmp/data/dogs-vs-cats/demo/cats
+  mkdir -p tmp/data/dogs-vs-cats/demo/dogs
+  cp tmp/data/dogs-vs-cats/train/cat.71* tmp/data/dogs-vs-cats/demo/cats
+  cp tmp/data/dogs-vs-cats/train/dog.71* tmp/data/dogs-vs-cats/demo/dogs
+  # echo "Finished downloading images"
+fi
+
+echo "#17 start test for orca tfpark estimator_inception"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
+  --image-path tmp/data/dogs-vs-cats/demo \
+  --num-classes 2 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark estimator_inception failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#17 Total time cost ${time} seconds"
+
+echo "#18 start test for orca tfpark optimizer train"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/train.py \
+  --max_epoch 1 \
+  --data_num 1000 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark optimizer train failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#18 Total time cost ${time} seconds"
+
+echo "#19 start test for orca tfpark optimizer evaluate"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/evaluate.py \
+  --max_epoch 1 \
+  --data_num 1000 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark optimizer evaluate failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#19 Total time cost ${time} seconds"

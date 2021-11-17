@@ -19,6 +19,7 @@ from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset, TFPredictor
 import numpy as np
 import sys
+import os
 
 from bigdl.dllib.feature.dataset import mnist
 
@@ -31,7 +32,21 @@ slim = tf.contrib.slim
 def main(options, data_num):
 
     data_path = '/tmp/mnist' if not options.data_path else options.data_path
-    sc = init_nncontext()
+    cluster_mode = options.cluster_mode
+    if cluster_mode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "2g")
+        if cluster_mode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    else:
+        sc = init_nncontext()
 
     # get data, pre-process and create TFDataset
     (images_data, labels_data) = mnist.read_data_sets(data_path, "test")
@@ -72,6 +87,8 @@ if __name__ == '__main__':
 
     parser = OptionParser()
     parser.add_option("--data_path", dest="data_path")
+    parser.add_option('--cluster_mode', type=str, default="local",
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
     (options, args) = parser.parse_args(sys.argv)
 
     main(options, data_num)
