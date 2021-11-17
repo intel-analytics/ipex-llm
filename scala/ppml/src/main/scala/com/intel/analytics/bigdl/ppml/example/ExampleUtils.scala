@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.example
+package com.intel.analytics.bigdl.ppml.example
 
 
 

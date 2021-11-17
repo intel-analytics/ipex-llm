@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.example.psi
+package com.intel.analytics.bigdl.ppml.example.psi
 
 import org.slf4j.LoggerFactory
 import java.util
 
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils
-import com.intel.analytics.bigdl.ppml.vfl.{PSI, VflContext}
+import com.intel.analytics.bigdl.ppml.psi.{HashingUtils, PSI}
+import com.intel.analytics.bigdl.ppml.vfl.VflContext
 
 
 object PSIExample {
@@ -45,7 +45,7 @@ object PSIExample {
       val salt = pSI.getSalt()
 
       logger.info("Client get Slat=" + salt)
-      pSI.uploadSet(ids)
+      pSI.uploadSet(ids, salt)
       logger.info("Client uploaded set" + ids.toString)
       val intersection = pSI.downloadIntersection()
       logger.info("Client get intersection=" + intersection.toString)

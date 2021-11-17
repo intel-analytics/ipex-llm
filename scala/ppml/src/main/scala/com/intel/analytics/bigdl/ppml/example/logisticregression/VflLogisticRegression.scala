@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.example.logisticregression
+package com.intel.analytics.bigdl.ppml.example.logisticregression
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.vfl.LogisticRegression
-import com.intel.analytics.bigdl.ppml.vfl.example.ExampleUtils
+import com.intel.analytics.bigdl.ppml.example.ExampleUtils
 import com.intel.analytics.bigdl.{DataSet, Module}
 import org.apache.log4j.Logger
 import scopt.OptionParser

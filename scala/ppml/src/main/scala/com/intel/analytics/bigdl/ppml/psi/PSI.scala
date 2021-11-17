@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl
+package com.intel.analytics.bigdl.ppml.psi
 
 import java.util
 
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.vfl.utils.FLClientClosable
 import org.apache.log4j.Logger
-import scala.util.control.Breaks._
 
-import scala.collection.JavaConverters._
+import scala.util.control.Breaks._
 
 class PSI() extends FLClientClosable {
   val logger = Logger.getLogger(getClass)

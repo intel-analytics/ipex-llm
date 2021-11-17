@@ -1,8 +1,7 @@
 package com.intel.analytics.bigdl.ppml.vfl
 
 import com.intel.analytics.bigdl.ppml.FLServer
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils
-import com.intel.analytics.bigdl.ppml.vfl.PSI
+import com.intel.analytics.bigdl.ppml.psi.{HashingUtils, PSI}
 
 import scala.collection.JavaConverters._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -25,7 +24,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     val pSI = new PSI()
     val set = List("key1", "key2")
     val salt = pSI.getSalt()
-    pSI.uploadSet(set.asJava)
+    pSI.uploadSet(set.asJava, salt)
 
     require(salt != null, "Get salt failed.")
   }
@@ -40,8 +39,8 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     val set2 = List("key2", "key3")
     val salt1 = pSI1.getSalt()
     val salt2 = pSI2.getSalt()
-    pSI1.uploadSet(set1.asJava)
-    pSI2.uploadSet(set2.asJava)
+    pSI1.uploadSet(set1.asJava, salt1)
+    pSI2.uploadSet(set2.asJava, salt2)
     val intersection = pSI1.downloadIntersection()
     require(intersection.size() == 1, "Intersection number is wrong.")
   }
