@@ -25,6 +25,7 @@ from bigdl.dllib.feature.image.imagePreprocessing import *
 from bigdl.dllib.feature.image.imageset import *
 from bigdl.orca.tfpark import TFDataset, TFEstimator
 from bigdl.orca.tfpark import ZooOptimizer
+from bigdl.dllib.utils.common import *
 
 
 def main(option):

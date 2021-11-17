@@ -19,6 +19,7 @@ import numpy as np
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset, TFEstimator
 from bigdl.orca.tfpark import ZooOptimizer
+from bigdl.dllib.utils.common import *
 
 import os
 import argparse

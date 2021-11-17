@@ -17,6 +17,7 @@ import tensorflow as tf
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFOptimizer, TFDataset
 from bigdl.dllib.optim.optimizer import *
+from bigdl.dllib.utils.common import *
 import numpy as np
 
 from bigdl.dllib.feature.dataset import mnist

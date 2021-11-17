@@ -19,6 +19,7 @@ from bigdl.orca.tfpark.gan.gan_estimator import GANEstimator
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset
 from bigdl.orca.tfpark import ZooOptimizer
+from bigdl.dllib.utils.common import *
 import numpy as np
 import matplotlib.pyplot as plt
 
