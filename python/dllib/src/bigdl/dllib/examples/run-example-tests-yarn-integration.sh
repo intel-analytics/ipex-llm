@@ -24,11 +24,11 @@ ls /tmp/nyc_taxi.csv
 echo ${HADOOP_HOME}
 echo ${HDFS_URI}
 python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
-  --deploy-mode 'yarn-client' \
+  --deploy_mode 'yarn-client' \
   -f /tmp/nyc_taxi.csv
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "data spark_pandas failed"
   # exit $exit_status
 fi
@@ -48,7 +48,7 @@ python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py \
   --batch_size 256
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "pytorch cifar10 failed"
   exit $exit_status
 fi
@@ -69,7 +69,7 @@ echo "#2 Total time cost ${time} seconds"
 #   --batch_size 256
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
-#   clear_up
+#   #clear_up
 #   echo "pytorch fashion_mnist failed"
 #   exit $exit_status
 # fi
@@ -88,7 +88,7 @@ echo "#2 Total time cost ${time} seconds"
 #   --data_dir '/tmp/super_resolution_data'
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
-#   clear_up
+#   #clear_up
 #   echo "pytorch super_resolution failed"
 #   exit $exit_status
 # fi
@@ -111,7 +111,7 @@ echo "#2 Total time cost ${time} seconds"
 #   --deploy_mode 'yarn-client'
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
-#   clear_up
+#   #clear_up
 #   echo "torchmodel imagenet failed"
 #   exit $exit_status
 # fi
@@ -132,7 +132,7 @@ python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py \
   --deploy-mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "torchmodel mnist failed"
   exit $exit_status
 fi
@@ -153,7 +153,7 @@ python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet
   --deploy-mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "torchmodel resnet_finetune failed"
   exit $exit_status
 fi
