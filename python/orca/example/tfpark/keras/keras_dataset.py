@@ -14,16 +14,25 @@
 # limitations under the License.
 #
 import sys
+import argparse
+import os
 
 import tensorflow as tf
 import numpy as np
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import KerasModel, TFDataset
+from bigdl.dllib.utils.common import *
 
+parser = argparse.ArgumentParser(description="Run the tfpark keras "
+                                             "dataset example.")
+parser.add_argument('--max_epoch', type=int, default=5,
+                    help='Set max_epoch for training, it should be integer.')
+parser.add_argument('--cluster_mode', type=str, default="local",
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
 def get_data_rdd(dataset, sc):
     from bigdl.dllib.feature.dataset import mnist
-    (images_data, labels_data) = mnist.read_data_sets("/tmp/mnist", dataset)
+    (images_data, labels_data) = mnist.read_data_sets("tmp/mnist", dataset)
     image_rdd = sc.parallelize(images_data)
     labels_rdd = sc.parallelize(labels_data)
     rdd = image_rdd.zip(labels_rdd) \
@@ -31,9 +40,23 @@ def get_data_rdd(dataset, sc):
                                 np.array(rec_tuple[1])))
     return rdd
 
-
 def main(max_epoch):
-    sc = init_nncontext()
+    args = parser.parse_args()
+    cluster_mode = args.cluster_mode
+    if cluster_mode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "2g")
+        if cluster_mode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    else:
+        sc = init_nncontext()
 
     training_rdd = get_data_rdd("train", sc)
     testing_rdd = get_data_rdd("test", sc)
@@ -79,8 +102,7 @@ def main(max_epoch):
 
 if __name__ == '__main__':
 
-    max_epoch = 5
+    args = parser.parse_args()
+    max_epoch = args.max_epoch
 
-    if len(sys.argv) > 1:
-        max_epoch = int(sys.argv[1])
     main(max_epoch)

@@ -76,46 +76,46 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#3 Total time cost ${time} seconds"
 
-echo "#4 start test for orca bigdl transformer"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
-  --cluster_mode yarn_cluster
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca transformer failed"
-#   exit $exit_status
-# fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#4 Total time cost ${time} seconds"
+# echo "#4 start test for orca bigdl transformer"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
+#   --cluster_mode yarn_cluster
+# # exit_status=$?
+# # if [ $exit_status -ne 0 ]; then
+# #   clear_up
+# #   echo "orca transformer failed"
+# #   exit $exit_status
+# # fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#4 Total time cost ${time} seconds"
 
 
-echo "#5 start test for orca bigdl imageInference"
-#timer
-start=$(date "+%s")
-if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-  echo "models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-else
-  wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-    -P models
-fi
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
-  -m models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f ${HDFS_URI}/kaggle/train_100 \
-  --cluster_mode yarn-cluster
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca imageInference failed"
-#   exit $exit_status
+# echo "#5 start test for orca bigdl imageInference"
+# #timer
+# start=$(date "+%s")
+# if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+#   echo "models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+# else
+#   wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+#     -P models
 # fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#4 Total time cost ${time} seconds"
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
+#   -m models/bigdl_inception-v1_imagenet_0.4.0.model \
+#   -f ${HDFS_URI}/kaggle/train_100 \
+#   --cluster_mode yarn-cluster
+# # exit_status=$?
+# # if [ $exit_status -ne 0 ]; then
+# #   clear_up
+# #   echo "orca imageInference failed"
+# #   exit $exit_status
+# # fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#4 Total time cost ${time} seconds"
 
 # echo "#6 start test for orca pytorch_estimator imageInference"
 # #timer
@@ -278,3 +278,37 @@ echo "#4 Total time cost ${time} seconds"
 # now=$(date "+%s")
 # time=$((now - start))
 # echo "#12 Total time cost ${time} seconds"
+
+echo "#13 start test for orca tfpark keras_dataset"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset \
+  --max_epoch 5 \
+  --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros rl_pong failed"
+#   exit $exit_status
+# fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#13 Total time cost ${time} seconds"
+
+echo "#14 start test for orca tfpark keras_dataset"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray \
+  --max_epoch 5 \
+  --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros rl_pong failed"
+#   exit $exit_status
+# fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#14 Total time cost ${time} seconds"
