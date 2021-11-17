@@ -37,7 +37,7 @@ def sql_row_func_api(spark):
     df.na.replace('Alice', None).show()
     print("replace API finished")
     
-    print("Finish running SQL Column API")
+    print("Finish running SQL Row_and_DataFrameNaFunctions API")
 
 
 

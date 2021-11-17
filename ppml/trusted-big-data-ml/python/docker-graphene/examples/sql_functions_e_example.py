@@ -40,7 +40,8 @@ def sql_functions_e_example(spark):
     df.select(expr("length(name)")).show()
     df.select(length("name")).show()
     print("expr API finished")
-
+    
+    print("Finish running function_e API")
 
 if __name__ == "__main__":
 

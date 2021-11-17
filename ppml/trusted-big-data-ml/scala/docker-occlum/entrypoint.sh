@@ -57,10 +57,15 @@ case "$SPARK_K8S_CMD" in
     cd /opt/occlum_spark
     occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
         "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
+        -XX:-UseCompressedOops \
+        -XX:MaxMetaspaceSize=256m \
+        -XX:ActiveProcessorCount=4 \
+        -Divy.home=/tmp/.ivy \
         -Xms$SPARK_EXECUTOR_MEMORY \
         -Xmx$SPARK_EXECUTOR_MEMORY \
         -Dos.name=Linux \
-        -Dio.netty.availableProcessors=64 \
+        -Dio.netty.availableProcessors=32 \
+        -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
         org.apache.spark.executor.CoarseGrainedExecutorBackend \
         --driver-url $SPARK_DRIVER_URL \

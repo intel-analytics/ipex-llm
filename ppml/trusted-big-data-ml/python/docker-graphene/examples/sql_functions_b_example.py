@@ -34,6 +34,7 @@ def sql_functions_b_example(spark):
     spark.createDataFrame([(2.5,)], ['a']).select(bround('a', 0).alias('r')).collect()
     print("bround API finished")
 
+    print("Finish running function_b API")
 
 if __name__ == "__main__":
 

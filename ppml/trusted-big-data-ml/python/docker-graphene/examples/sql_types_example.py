@@ -362,6 +362,7 @@ def sql_types_example(spark):
     
     print("st.add success!")
 
+    print("Finish running types module API")
 
 if __name__ == "__main__":
     spark = SparkSession \

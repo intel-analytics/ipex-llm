@@ -80,6 +80,7 @@ def sql_functions_d_example(spark):
     df.sort(df.n1.desc_nulls_last()).show()
     print("desc_nulls_last API finished")
     
+    print("Finish running function_d API")
 
 if __name__ == "__main__":
 
