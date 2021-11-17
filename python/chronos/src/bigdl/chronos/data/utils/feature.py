@@ -18,8 +18,6 @@ import pandas as pd
 import numpy as np
 from packaging import version
 
-import tsfresh
-from tsfresh import extract_features
 
 
 def _is_awake(hour):
@@ -147,6 +145,7 @@ def generate_global_features(input_df,
 
     :return : a new input_df that contains all generated feature.
     '''
+    from tsfresh import extract_features
     if kind_to_fc_parameters is not None:
         global_feature = extract_features(input_df,
                                           column_id=column_id,
