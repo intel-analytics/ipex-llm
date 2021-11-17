@@ -19,7 +19,7 @@ echo "#1 start test for data spark_pandas"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/orca/data/spark_pandas.py \
+python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
   --deploy-mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
@@ -37,7 +37,7 @@ echo "#2 start test for pytorch cifar10"
 start=$(date "+%s")
 #run the example
 rm -rf ./data
-python ${BIGDL_ROOT}/python/example/orca/learn/pytorch/cifar10/cifar10.py \
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py \
   --cluster_mode 'yarn-client' \
   --epochs 1 \
   --batch_size 256
@@ -58,7 +58,7 @@ start=$(date "+%s")
 #run the example
 rm -rf ./data
 rm -rf ./runs
-python ${BIGDL_ROOT}/python/example/orca/learn/pytorch/fashion_mnist/fashion_mnist.py \
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py \
   --cluster_mode 'yarn-client' \
   --epochs 1 \
   --batch_size 256
@@ -78,7 +78,7 @@ echo "#4 start test for pytorch super_resolution"
 start=$(date "+%s")
 #run the example
 rm -rf /tmp/super_resolution_data
-python ${BIGDL_ROOT}/python/example/orca/learn/pytorch/super_resolution/super_resolution.py \
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py \
   --cluster_mode 'yarn-client'\
   --data_dir '/tmp/super_resolution_data'
 exit_status=$?
@@ -99,7 +99,7 @@ start=$(date "+%s")
 rm -rf /tmp/imagenet
 ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet /tmp/imagenet
 ls /tmp/imagenet
-python ${BIGDL_ROOT}/python/example/orca/torchmodel/train/imagenet/main.py \
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py \
   /tmp/imagenet \
   --max_epochs 1 \
   --batch-size 256 \
@@ -120,7 +120,7 @@ echo "#6 start test for torchmodel mnist"
 start=$(date "+%s")
 #run the example
 rm -rf /tmp/torchmodel_mnist
-python ${BIGDL_ROOT}/python/example/orca/torchmodel/train/mnist/main.py \
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py \
   --dir /tmp/torchmodel_mnist \
   --epochs 1 \
   --batch-size 256 \
@@ -143,7 +143,7 @@ start=$(date "+%s")
 rm -rf /tmp/dogscats
 ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/dogscats /tmp/dogscats
 ls /tmp/dogscats
-python ${BIGDL_ROOT}/python/example/orca/torchmodel/train/resnet_finetune/resnet_finetune.py \
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py \
   /tmp/dogscats \
   --deploy-mode 'yarn-client'
 exit_status=$?
@@ -155,3 +155,4 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
+
