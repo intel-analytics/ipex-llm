@@ -146,7 +146,7 @@ def add_gen_flag(data_feature, data_gen_flag, data_feature_outputs,
                  sample_len):
     for output in data_feature_outputs:
         if output.is_gen_flag:
-            raise Exception("is_gen_flag should be False for all"
+            raise Exception("is_gen_flag should be False for all "
                             "feature_outputs")
 
     if (data_feature.shape[2] !=

@@ -111,7 +111,9 @@ def main():
                         help='The cluster mode, such as local, yarn, spark-submit or k8s.')
     parser.add_argument('--backend', type=str, default="bigdl",
                         help='The backend of PyTorch Estimator; '
-                             'bigdl and torch_distributed are supported.')
+                             'bigdl, torch_distributed and spark are supported.')
+    parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
+    parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
@@ -146,8 +148,8 @@ def main():
 
     # training loss vs. epochs
     criterion = nn.CrossEntropyLoss()
-    batch_size = 4
-    epochs = 5
+    batch_size = args.batch_size
+    epochs = args.epochs
     if args.backend == "bigdl":
         train_loader = train_data_creator(config={}, batch_size=batch_size)
         test_loader = validation_data_creator(config={}, batch_size=batch_size)
@@ -167,12 +169,12 @@ def main():
 
         res = orca_estimator.evaluate(data=test_loader)
         print("Accuracy of the network on the test images: %s" % res)
-    elif args.backend == "torch_distributed":
+    elif args.backend in ["torch_distributed", "spark"]:
         orca_estimator = Estimator.from_torch(model=model_creator,
                                               optimizer=optimizer_creator,
                                               loss=criterion,
                                               metrics=[Accuracy()],
-                                              backend="torch_distributed")
+                                              backend=args.backend)
         stats = orca_estimator.fit(train_data_creator, epochs=epochs, batch_size=batch_size)
 
         for stat in stats:

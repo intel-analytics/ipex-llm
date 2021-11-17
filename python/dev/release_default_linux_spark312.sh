@@ -16,8 +16,8 @@
 # limitations under the License.
 #
 
-# This is the default script with maven parameters to release all bigdl packages built on top of
-# Spark 3.1.2 for linux.
+# This is the default script with maven parameters to release all the bigdl sub-packages
+# built on top of Spark 3.1.2 for linux.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
@@ -29,7 +29,7 @@ if (( $# < 3)); then
   echo "Usage: release_default_linux_spark312.sh version quick_build upload mvn_parameters"
   echo "Usage example: bash release_default_linux_spark312.sh default false true"
   echo "Usage example: bash release_default_linux_spark312.sh 0.14.0.dev1 false false"
-  echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 false false -Ddata-store-url=.."
+  echo "Usage example: bash release_default_linux_spark312.sh 0.14.0.dev1 false false -Ddata-store-url=.."
   exit -1
 fi
 

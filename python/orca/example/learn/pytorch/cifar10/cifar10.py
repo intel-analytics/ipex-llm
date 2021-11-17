@@ -41,7 +41,9 @@ parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn, spark-submit or k8s.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
-                         'bigdl and torch_distributed are supported')
+                         'bigdl, torch_distributed and spark are supported')
+parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
+parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 args = parser.parse_args()
 
 if args.cluster_mode == "local":
@@ -120,7 +122,7 @@ def optim_creator(model, config):
 
 
 criterion = nn.CrossEntropyLoss()
-batch_size = 4
+batch_size = args.batch_size
 root_dir = "./data"
 
 train_loader = train_loader_creator(config={"root": root_dir}, batch_size=batch_size)
@@ -148,21 +150,21 @@ if args.backend == "bigdl":
                                           metrics=[Accuracy()],
                                           backend="bigdl")
 
-    orca_estimator.fit(data=train_loader, epochs=2, validation_data=test_loader,
+    orca_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
                        checkpoint_trigger=EveryEpoch())
 
     res = orca_estimator.evaluate(data=test_loader)
     print("Accuracy of the network on the test images: %s" % res)
-elif args.backend == "torch_distributed":
+elif args.backend in ["torch_distributed", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=criterion,
                                           metrics=[Accuracy()],
-                                          backend="torch_distributed",
+                                          backend=args.backend,
                                           config={"lr": 0.001,
                                                   "root": root_dir})
 
-    orca_estimator.fit(data=train_loader_creator, epochs=2, batch_size=batch_size)
+    orca_estimator.fit(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size)
 
     res = orca_estimator.evaluate(data=test_loader_creator)
     for r in res:

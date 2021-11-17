@@ -38,6 +38,8 @@ ARG SCALA_SUB_VERSION_NUM=10
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ENV FLINK_VERSION ${FLINK_VERSION}
+ENV SCALA_VERSION ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget unzip
@@ -77,6 +79,8 @@ RUN ./download-bigdl.sh && \
     cd /opt && \
     ./download-bigdl-serving.sh
 RUN cd /opt && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/scala/serving/scripts/perf-benchmark/e2e_throughput.py && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/scala/serving/scripts/perf-benchmark/requirement.yml && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG && \
     mkdir resnet50 && \
     cd resnet50 && \
@@ -88,6 +92,8 @@ RUN cd /opt && \
 FROM ubuntu:18.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
+ARG SCALA_VERSION=2.12
+ARG SCALA_SUB_VERSION_NUM=10
 ARG FLINK_VERSION=1.11.3
 ENV SPARK_VERSION			${SPARK_VERSION}
 ENV BIGDL_VERSION			${BIGDL_VERSION}
@@ -113,6 +119,7 @@ ENV XMX_SIZE                            10g
 ENV SGX_MODE                            sgx
 ENV REDIS_HOST                          127.0.0.1
 ENV SCALA_VERSION                       ${SCALA_VERSION}
+ENV SCALA_SUB_VERSION_NUM               ${SCALA_SUB_VERSION_NUM}
 
 RUN mkdir -p /graphene && \
     mkdir -p /graphene/Runtime && \
@@ -149,6 +156,8 @@ COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar /ppml/trusted-re
 COPY --from=bigdl /opt/bigdl-serving*-http.jar /ppml/trusted-realtime-ml/java/work/bigdl-serving-http.jar
 COPY --from=bigdl /opt/resnet50/ /ppml/trusted-realtime-ml/java/work/models/resnet50
 COPY --from=bigdl /opt/ILSVRC2012_val_00000001.JPEG /ppml/trusted-realtime-ml/java/work/data/ILSVRC2012_val_00000001.JPEG
+COPY --from=bigdl /opt/e2e_throughput.py /ppml/trusted-realtime-ml/java/work/benchmark/e2e_throughput.py
+COPY --from=bigdl /opt/requirement.yml /ppml/trusted-realtime-ml/java/work/benchmark/requirement.yml
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree && \

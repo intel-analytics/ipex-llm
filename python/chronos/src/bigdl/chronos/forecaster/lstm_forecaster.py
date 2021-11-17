@@ -57,12 +57,12 @@ class LSTMForecaster(BasePytorchForecaster):
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
-        :param hidden_dim: Specify the hidden dim of each lstm layer. The value
-               defaults to 32.
+        :param hidden_dim: int or list, Specify the hidden dim of each lstm layer.
+               The value defaults to 32.
         :param layer_num: Specify the number of lstm layer to be used. The value
                defaults to 1.
-        :param dropout: Specify the dropout close possibility (i.e. the close
-               possibility to a neuron). This value defaults to 0.1.
+        :param dropout: int or list, Specify the dropout close possibility
+               (i.e. the close possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
         :param loss: Specify the loss function used for training. This value

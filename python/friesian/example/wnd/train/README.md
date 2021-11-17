@@ -12,25 +12,25 @@ pip install --pre --upgrade bigdl-friesian
 ```
 
 ## Prepare the data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#), which includes close to 1 billion data points, >40 million each day over 28 days.
- Week 1 - 3 will be used for training and week 4 for evaluation and testing. Each datapoint contains the tweet along with engagement features, user features, and tweet features.
+You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#), which includes around 1 billion records, more than 40 million records each day over 28 days.
+ Week 1 - 3 will be used for training and week 4 for evaluation and testing. Each record contains the tweet along with engagement features, user features, and tweet features.
 
 After you download and decompress the files, there is a train parquet directory and validation csv file.
-* For train data, execute this command to do some conversion:
+1. For train data, execute this command to do some conversion:
 ```bash
 python convert_train.py \
     --input_folder /path/to/the/folder/of/train_parquet_folder \
-    --output_foler /path/to/the/folder/to/save/preprocessed
+    --output_folder /path/to/the/folder/to/save/preprocessed
 ```
 __Options:__
 * `input_folder`: The path to the folder of train parquet folder.
 * `output_folder`: The path to the folder of save the preprocessed data.
 
-* For validation data, execute this command to change csv to parquet files:
+2. For validation data, execute this command to change csv to parquet files:
 ```bash
 python valid_to_parquet.py \
-    --input_folder /path/to/the/folder/of/valid_csv \
-    --output_foler /path/to/the/folder/to/save/preprocessed
+    --input_file /path/to/the/folder/of/valid_csv \
+    --output_folder /path/to/the/folder/to/save/preprocessed
 ```
 __Options:__
 * `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn or standalone. Default to be local.
@@ -40,7 +40,7 @@ __Options:__
 * `num_nodes`: The number of nodes to use in the cluster. Default to be 8.
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
-* `input_folder`: The path to the folder of validation csv file.
+* `input_file`: The path to the validation csv file.
 * `output_folder`: The path to the folder of save the preprocessed data.
 
 ## Running command
@@ -56,7 +56,8 @@ python wnd_preprocessing_recsys.py \
     --executor_cores 36 \
     --executor_memory 50g \
     --train_files 0-1 \
-    --input_folder /path/to/the/folder/of/parquet_files \
+    --input_train_folder /path/to/the/folder/of/train/parquet_files \
+    --input_test_folder /path/to/the/folder/of/train/parquet_files /
     --output_foler /path/to/the/folder/to/save/preprocessed/parquet_files \
     --cross_sizes 600
 ```
@@ -70,7 +71,8 @@ python wnd_preprocessing_recsys.py \
     --executor_memory 150g \
     --num_executor 8 \
     --train_files 0-269 \
-    --input_folder /path/to/the/folder/of/parquet_files \
+    --input_train_folder /path/to/the/folder/of/train/parquet_files \
+    --input_test_folder /path/to/the/folder/of/train/parquet_files /
     --output_foler /path/to/the/folder/to/save/preprocessed/parquet_files \
     --cross_sizes 600
 ```
@@ -83,7 +85,8 @@ python wnd_preprocessing_recsys.py \
     --executor_memory 150g \
     --num_nodes 8 \
     --train_files 0-269 \
-    --input_folder /path/to/the/folder/of/parquet_files \
+    --input_train_folder /path/to/the/folder/of/train/parquet_files \
+    --input_test_folder /path/to/the/folder/of/train/parquet_files /
     --output_foler /path/to/the/folder/to/save/preprocessed/parquet_files \
     --cross_sizes 600
 ```
@@ -98,11 +101,10 @@ __Options:__
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `train_files`: The part range for train data preprocessing, such as 0-269 for the full training dataset,
  0-1 for the first two parts, etc. Default to be 0-269.
-* `test_files`: The part range for test data preprocessing, such as 0-63 for the full testing dataset,
- 0-1 for the first two parts, etc. Default to be 0-63.
-* `input_folder`: The path to the folder of parquet files, either a local path or an HDFS path.
+* `input_train_folder`: The path to the folder of train parquet files, either a local path or an HDFS path.
+* `input_test_folder`: The path to the folder of test parquet files, either a local path or an HDFS path.
 * `output_folder`: The path to save the preprocessed data to parquet files. HDFS path is recommended.
-* `cross_sizes`: bucket size for cross column (`present_media_language`). Default to be 600.
+* `cross_sizes`: The bucket size for the cross column (`present_media_language`). Default to be 600.
 
 
 ### WND training from preprocessed train and test data.
@@ -158,8 +160,8 @@ __Options:__
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `data_dir`: The path to save the preprocessed data to parquet files. Either a local path or an HDFS path.
 * `model_dir`: The path to the folder to save trained model.
-* `batch_size`: The batch size for training. Default to 102400.
-* `epoch`: Number of epochs to train. Default to 2.
-* `learning_rate`: The initial learning rate for training. Default to 1e-4.
-* `early_stopping`: The patience epochs for stopping training. Default to 3.
-* `hidden_units`: Hidden units for deep mlp. Default to 1024, 1024
+* `batch_size`: The batch size for training. Default to be 102400.
+* `epoch`: The number of epochs to train. Default to be 2.
+* `learning_rate`: The initial learning rate for training. Default to be 1e-4.
+* `early_stopping`: The patience epochs for stopping training. Default to be 3.
+* `hidden_units`: The hidden units for deep mlp. Default to be 1024, 1024.
