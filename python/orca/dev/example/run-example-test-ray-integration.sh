@@ -7,7 +7,6 @@ clear_up () {
     pip uninstall -y pyspark
 }
 
-set -e
 
 echo "#start orca ray example tests"
 echo "#1 Start autoestimator example"
@@ -41,6 +40,8 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor.py -p ${BIGDL_ROOT}/data/incd.csv --cluster_mode yarn
 now=$(date "+%s")
 time3=$((now-start))
+
+set -e
 
 ray stop -f
 
