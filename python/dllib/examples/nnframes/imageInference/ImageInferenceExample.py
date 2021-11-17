@@ -48,6 +48,7 @@ if __name__ == "__main__":
                       help="training data path.")
     parser.add_option("--b", "--batch_size", type=int, dest="batch_size", default="56",
                       help="The number of samples per gradient update. Default is 56.")
+    parser.add_option("--cluster-mode", dest="clusterMode", default="local")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -59,7 +60,24 @@ if __name__ == "__main__":
         parser.print_help()
         parser.error('image_path is required')
 
-    sc = init_nncontext("image_inference")
+    if options.clusterMode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                            "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "2g")
+        spark_conf.setAll(conf)
+
+        if options.clusterMode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    elif options.clusterMode == "local":
+        spark_conf = SparkConf().set("spark.driver.memory", "10g") \
+            .set("spark.driver.cores", 4)
+        sc = init_nncontext(spark_conf, cluster_mode="local")
 
     image_path = options.image_path
     model_path = options.model_path

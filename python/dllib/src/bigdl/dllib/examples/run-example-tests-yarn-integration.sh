@@ -76,3 +76,66 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#3 Total time cost ${time} seconds"
 
+
+#echo "#4 start test for dllib autograd custom"
+##timer
+#start=$(date "+%s")
+##run the example
+#python ${BIGDL_ROOT}/python/dllib/examples/autograd/custom.py --cluster-mode "yarn-client"
+#if [ $exit_status -ne 0 ]; then
+#  clear_up
+#  echo "dllib autograd custom failed"
+#  exit $exit_status
+#fi
+#now=$(date "+%s")
+#time=$((now - start))
+#echo "#4 Total time cost ${time} seconds"
+
+
+echo "#5 start test for dllib autograd customloss"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/dllib/examples/autograd/customloss.py --cluster-mode "yarn-client"
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "dllib autograd customloss failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#5 Total time cost ${time} seconds"
+
+
+echo "#6 start test for dllib nnframes_imageInference"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageInference/ImageInferenceExample.py \
+  -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f ${HDFS_URI}/kaggle/train_100 --cluster-mode "yarn-client"
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "dllib nnframes_imageInference failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#6 Total time cost ${time} seconds"
+
+
+echo "#7 start test for dllib nnframes_imageTransfer learning"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
+  -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f analytics-zoo-data/data/dogs-vs-cats/samples --nb_epoch 2 --cluster-mode "yarn-client"
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "dllib nnframes_imageTransfer learning failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#7 Total time cost ${time} seconds"
