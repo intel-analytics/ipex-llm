@@ -50,7 +50,7 @@ java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analyt
 
 9. Check if the services are running
 ```bash
-ps aux|grep rec
+ps aux|grep friesian
 ```
 You will see 5 processes start with 'java'
 
@@ -439,6 +439,13 @@ Then, call initialization command on one machine, if you choose M=1 above, use `
 redis-cli --cluster create 172.168.3.115:6379 172.168.3.115:6380 172.168.3.116:6379 172.168.3.116:6380 172.168.3.117:6379 172.168.3.117:6380 --cluster-replicas 1
 ```
 and the Redis cluster would be ready.
+
 #### Scale Service with Envoy
 Each of the services could be scaled out. It is recommended to use the same resource, e.g. single machine with same CPU and memory, to test which service is bottleneck. From empirical observations, vector search and inference usually be.
 
+##### How to run envoy:
+1. [download](https://www.envoyproxy.io/docs/envoy/latest/start/install) and deploy envoy(below use docker as example):
+    * download: `docker pull envoyproxy/envoy-dev:21df5e8676a0f705709f0b3ed90fc2dbbd63cfc5`
+2. run command: `docker run --rm -it  -p 9082:9082 -p 9090:9090 envoyproxy/envoy-dev:79ade4aebd02cf15bd934d6d58e90aa03ef6909e --config-yaml "$(cat path/to/service-specific-envoy.yaml)" --parent-shutdown-time-s 1000000`
+3. validate: run `netstat -tnlp` to see if the envoy process is listening to the corresponding port in the envoy config file.
+4. For details on envoy and sample procedure, read [envoy](envoy.md).

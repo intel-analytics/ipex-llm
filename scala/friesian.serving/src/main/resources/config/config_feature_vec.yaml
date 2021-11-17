@@ -10,13 +10,16 @@ servicePort: 8085
 monitorPort: 1236
 
 # 'kv' or 'inference' default: kv
-serviceType: kv
+serviceType: kv, inference
 
 # default: false, if need to load initial data to redis, set true
-loadInitialData: true
+loadInitialData: false
 
 # default: "", prefix for redis key
 redisKeyPrefix: 2tower_
+
+# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
+redisClusterItemSlotType: 1
 
 # default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
 # provided. Only support parquet file
@@ -36,7 +39,7 @@ userFeatureColumns: prediction
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
 # be ignored
-# userModelPath: /home/yina/Documents/model/recys2021/2tower/exp8/user-model
+userModelPath: /home/yina/Documents/model/recys2021/2tower/exp8/user-model
 
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will

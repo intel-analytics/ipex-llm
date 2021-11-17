@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils.feature
+package com.intel.analytics.bigdl.friesian.serving.utils.feature
 
 import java.util.{Base64, List => JList}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -28,7 +28,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Row, SparkSession}
-import utils.Utils
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -47,10 +47,10 @@ object FeatureUtils {
       assert(Utils.helper.userFeatureColArr != null)
       logger.info("Start inserting user features...")
       val colNames = Utils.helper.userFeatureColArr.mkString(",")
-      redis.setSchema("userid", colNames)
+      redis.setSchema("user", colNames)
       val userFeatureColumns = Utils.helper.userIDColumn +: Utils.helper.userFeatureColArr
       divideFileAndLoad(spark, Utils.helper.initialUserDataPath, userFeatureColumns,
-        "userid")
+        "user")
     }
 
     if (Utils.helper.initialItemDataPath != null) {
@@ -58,10 +58,10 @@ object FeatureUtils {
       assert(Utils.helper.itemFeatureColArr != null)
       logger.info("Start inserting item features...")
       val colNames = Utils.helper.itemFeatureColArr.mkString(",")
-      redis.setSchema("itemid", colNames)
+      redis.setSchema("item", colNames)
       val itemFeatureColumns = Utils.helper.itemIDColumn +: Utils.helper.itemFeatureColArr
       divideFileAndLoad(spark, Utils.helper.initialItemDataPath, itemFeatureColumns,
-        "itemid")
+        "item")
     }
     logger.info(s"Insert finished")
   }
@@ -87,7 +87,7 @@ object FeatureUtils {
       featureRDD.foreachPartition { partition =>
         if (partition.nonEmpty) {
           val redis = RedisUtils.getInstance(Utils.helper.redisPoolMaxTotal)
-          redis.Hset(keyPrefix, partition.toArray)
+          redis.Mset(keyPrefix, partition.toArray)
         }
       }
     }
@@ -195,12 +195,23 @@ object FeatureUtils {
 
   def getFeatures(features: Features): Array[Array[Any]] = {
     val b64Features = features.getB64FeatureList.asScala
-    b64Features.map(feature => {
-      if (feature == "") {
-        null
-      } else {
-        EncodeUtils.bytesToObj(Base64.getDecoder.decode(feature)).asInstanceOf[Array[Any]]
-      }
-    }).toArray
+    val b64FeaturesBatch = b64Features.sliding(200, 200)
+    b64FeaturesBatch.toParArray.map(featureIter => {
+      featureIter.map(feature => {
+        if (feature == "") {
+          null
+        } else {
+          EncodeUtils.bytesToObj(Base64.getDecoder.decode(feature)).asInstanceOf[Array[Any]]
+        }
+      }).toArray
+    }).toArray.flatten
+
+//    b64Features.map(feature => {
+//      if (feature == "") {
+//        null
+//      } else {
+//        EncodeUtils.bytesToObj(Base64.getDecoder.decode(feature)).asInstanceOf[Array[Any]]
+//      }
+//    }).toArray
   }
 }

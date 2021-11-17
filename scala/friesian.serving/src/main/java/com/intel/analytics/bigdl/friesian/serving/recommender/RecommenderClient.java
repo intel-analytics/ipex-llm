@@ -26,7 +26,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -124,5 +124,6 @@ public class RecommenderClient {
         client.resetMetrics();
         client.getClientMetrics();
         channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+//        RecommenderUtils.test();
     }
 }

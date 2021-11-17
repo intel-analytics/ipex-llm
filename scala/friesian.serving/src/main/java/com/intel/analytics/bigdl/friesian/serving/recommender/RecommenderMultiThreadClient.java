@@ -23,7 +23,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;

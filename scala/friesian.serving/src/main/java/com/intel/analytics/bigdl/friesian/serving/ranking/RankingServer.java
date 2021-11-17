@@ -20,7 +20,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity;
-import com.intel.analytics.bigdl.dllib.tensor.Tensor;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.*;
 import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils;
@@ -34,10 +33,10 @@ import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import utils.TimerMetrics;
-import utils.TimerMetrics$;
-import utils.Utils;
-import utils.gRPCHelper;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -96,11 +95,11 @@ public class RankingServer extends GrpcServerBase {
 
     private static class RankingService extends RankingGrpc.RankingImplBase {
         private final InferenceModel model;
-        private int cnt = 0;
-        private long time = 0;
-        private int pre = 1000;
         private MetricRegistry metrics = new MetricRegistry();
         Timer overallTimer = metrics.timer("ranking.overall");
+        Timer decodeTimer = metrics.timer("ranking.decode");
+        Timer inferenceTimer = metrics.timer("ranking.inference");
+        Timer encodeTimer = metrics.timer("ranking.encode");
 
         RankingService() {
             gRPCHelper helper = Utils.helper();
@@ -117,22 +116,19 @@ public class RankingServer extends GrpcServerBase {
 
         private Prediction predict(Content msg) {
             Timer.Context overallContext = overallTimer.time();
-            long start = System.nanoTime();
             String encodedStr = msg.getEncodedStr();
+            Timer.Context decodeContext = decodeTimer.time();
             byte[] bytes1 = Base64.getDecoder().decode(encodedStr);
             Activity input = (Activity) EncodeUtils.bytesToObj(bytes1);
+            decodeContext.stop();
+            Timer.Context inferenceContext = inferenceTimer.time();
             Activity predictResult = model.doPredict(input);
-            String res = Utils.tensorToNdArrayString((Tensor<Object>)predictResult);
-            long end = System.nanoTime();
-            if (pre <= 0) {
-                time += (end - start);
-                cnt += 1;
-                if (cnt % 100 == 0) {
-                    System.out.println("avg predict time: " + time/cnt);
-                }
-            } else {
-                pre --;
-            }
+            inferenceContext.stop();
+            Timer.Context encodeContext = encodeTimer.time();
+            String res = Base64.getEncoder().encodeToString(EncodeUtils.objToBytes(predictResult));
+
+//            String res = Utils.tensorToNdArrayString((Tensor<Object>)predictResult);
+            encodeContext.stop();
             overallContext.stop();
             return Prediction.newBuilder().setPredictStr(res).build();
         }
@@ -159,6 +155,9 @@ public class RankingServer extends GrpcServerBase {
         public void resetMetrics(Empty request, StreamObserver<Empty> responseObserver) {
             metrics = new MetricRegistry();
             overallTimer = metrics.timer("ranking.overall");
+            decodeTimer = metrics.timer("ranking.decode");
+            inferenceTimer = metrics.timer("ranking.inference");
+            encodeTimer = metrics.timer("ranking.encode");
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();
         }

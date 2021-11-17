@@ -15,4 +15,4 @@ modelPath: /home/yina/Documents/model/recys2021/wnd_813/recsys_wnd
 savedModelInputs: serving_default_input_1:0, serving_default_input_2:0, serving_default_input_3:0, serving_default_input_4:0, serving_default_input_5:0, serving_default_input_6:0, serving_default_input_7:0, serving_default_input_8:0, serving_default_input_9:0, serving_default_input_10:0, serving_default_input_11:0, serving_default_input_12:0, serving_default_input_13:0
 
 # default: 1, number of models used in inference service
-modelParallelism: 4
+modelParallelism: 8

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils.recall
+package com.intel.analytics.bigdl.friesian.serving.utils.recall
 
 import java.util.{List => JList}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
@@ -26,7 +26,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
-import utils.Utils
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable

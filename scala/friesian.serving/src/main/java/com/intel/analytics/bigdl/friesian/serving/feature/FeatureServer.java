@@ -31,17 +31,18 @@ import io.grpc.ServerInterceptors;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
+import javafx.util.Pair;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.sql.SparkSession;
 import redis.clients.jedis.Jedis;
-import utils.TimerMetrics;
-import utils.TimerMetrics$;
-import utils.Utils;
-import utils.feature.FeatureUtils;
-import utils.gRPCHelper;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils;
+import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -109,7 +110,8 @@ public class FeatureServer extends GrpcServerBase {
         Timer overallTimer = metrics.timer("feature.overall");
         Timer userPredictTimer = metrics.timer("feature.user.predict");
         Timer itemPredictTimer = metrics.timer("feature.item.predict");
-        Timer redisTimer = metrics.timer("feature.redis");
+        Timer userRedisTimer = metrics.timer("feature.user.redis");
+        Timer itemRedisTimer = metrics.timer("feature.item.redis");
 
         FeatureService() throws Exception {
             serviceType = new HashSet<>();
@@ -246,41 +248,112 @@ public class FeatureServer extends GrpcServerBase {
         private Features getFeaturesFromRedis(IDs msg, SearchType searchType) {
             String keyPrefix =
                     Utils.helper().getRedisKeyPrefix() +
-                            (searchType == SearchType.USER ? "userid": "itemid");
+                            (searchType == SearchType.USER ? "user": "item");
             List<Integer> ids = msg.getIDList();
             Jedis jedis = redisCluster ? null : redis.getRedisClient();
 
-            Features.Builder featureBuilder = Features.newBuilder();
+            Features.Builder featureBuilder;
+            Timer.Context redisContext;
+            if (searchType == SearchType.USER) {
+                redisContext = userRedisTimer.time();
+                if (!redisCluster) {
+                    featureBuilder = redisLocalGet(keyPrefix, ids, jedis);
+                } else {
+                    featureBuilder = redisClusterSeparateGet(keyPrefix, ids);
+                }
+            } else {
+                redisContext = itemRedisTimer.time();
+                if (!redisCluster) {
+                    featureBuilder = redisLocalGet(keyPrefix, ids, jedis);
+                } else {
+                    if (Utils.helper().itemSlotType() == 0) {
+                        featureBuilder = redisClusterSeparateGet(keyPrefix, ids);
+                    } else {
+                        featureBuilder = redisClusterMGet(keyPrefix, ids);
+                    }
+                }
+            }
+            redisContext.stop();
+            if (jedis != null) {
+                jedis.close();
+            }
+
             if (!colNamesMap.containsValue(keyPrefix)) {
                 String colNamesStr;
                 if (!redisCluster) {
-                    colNamesStr = jedis.hget(keyPrefix, "value");
+                    colNamesStr = jedis.get(keyPrefix);
                 } else {
-                    colNamesStr = redis.getCluster().hget(keyPrefix, "value");
+                    colNamesStr = redis.getCluster().get(keyPrefix);
                 }
                 colNamesMap.put(keyPrefix, colNamesStr.split(","));
             }
             featureBuilder.addAllColNames(Arrays.asList(colNamesMap.get(keyPrefix)));
-            for (int id : ids) {
-                Timer.Context redisContext = redisTimer.time();
-                String key = keyPrefix + ":" + id;
-                String value;
-                if (!redisCluster) {
-                    value = jedis.hget(key, "value");
-                } else {
-                    value = redis.getCluster().hget(key, "value");
-                }
-                redisContext.stop();
-                if (value == null) {
-                    value = "";
-                }
-                featureBuilder.addID(id);
-                featureBuilder.addB64Feature(value);
-            }
-            if (jedis != null) {
-                jedis.close();
-            }
             return featureBuilder.build();
+        }
+
+        private Features.Builder redisLocalGet(String keyPrefix, List<Integer> ids, Jedis jedis) {
+            Features.Builder featureBuilder = Features.newBuilder();
+            String[] keys = new String[ids.size()];
+            for (int i = 0; i < ids.size(); i ++) {
+                keys[i] = keyPrefix + ":" + ids.get(i);
+            }
+            List<String> values = jedis.mget(keys);
+            values.replaceAll(s -> s == null ? "": s);
+            featureBuilder.addAllID(ids);
+            featureBuilder.addAllB64Feature(values);
+            return featureBuilder;
+        }
+
+        private Features.Builder redisClusterSeparateGet(String keyPrefix, List<Integer> ids) {
+            Features.Builder featureBuilder = Features.newBuilder();
+            ArrayList<String> values = new ArrayList<>(ids.size());
+            for (int id: ids){
+                values.add(redis.getCluster().get( keyPrefix + ":" + id));
+            }
+            values.replaceAll(s -> s == null ? "": s);
+            featureBuilder.addAllID(ids);
+            featureBuilder.addAllB64Feature(values);
+            return featureBuilder;
+        }
+
+        private Features.Builder redisClusterMGet(String keyPrefix, List<Integer> ids) {
+            Features.Builder featureBuilder = Features.newBuilder();
+            List<String> values;
+            if (Utils.helper().itemSlotType() == 1) {
+                keyPrefix = "{" + keyPrefix + "}";
+                String[] keys = new String[ids.size()];
+                for (int i = 0; i < ids.size(); i ++) {
+                    keys[i] = keyPrefix + ":" + ids.get(i);
+                }
+                values = redis.getCluster().mget(keys);
+                featureBuilder.addAllID(ids);
+            } else {
+                List<Integer> resultIds = new ArrayList<>(ids.size());
+                values = new ArrayList<>(ids.size());
+                keyPrefix = "{" + Utils.helper().getRedisKeyPrefix() + keyPrefix;
+                HashMap<Integer, ArrayList<Integer>> idMap = new HashMap<>(10);
+                for (int id: ids) {
+                    int lastDigit = id % 10;
+                    if (!idMap.containsKey(lastDigit)) {
+                        idMap.put(lastDigit, new ArrayList<>());
+                    }
+                    idMap.get(lastDigit).add(id);
+                }
+                for (int lastI: idMap.keySet()) {
+                    String hashTag = keyPrefix + lastI + "}:";
+                    ArrayList<Integer> slotIds = idMap.get(lastI);
+                    String[] keys = new String[slotIds.size()];
+                    for (int i = 0; i < slotIds.size(); i ++) {
+                        keys[i] = hashTag + slotIds.get(i);
+                    }
+                    resultIds.addAll(slotIds);
+                    values.addAll(redis.getCluster().mget(keys));
+                }
+                featureBuilder.addAllID(resultIds);
+            }
+            values.replaceAll(s -> s == null ? "": s);
+            featureBuilder.addAllB64Feature(values);
+            return featureBuilder;
         }
 
         private Features getFeaturesFromInferenceModel(IDs msg, SearchType searchType) throws Exception {
@@ -326,7 +399,8 @@ public class FeatureServer extends GrpcServerBase {
             overallTimer = metrics.timer("feature.overall");
             userPredictTimer = metrics.timer("feature.user.predict");
             itemPredictTimer = metrics.timer("feature.item.predict");
-            redisTimer = metrics.timer("feature.redis");
+            userRedisTimer = metrics.timer("feature.user.redis");
+            itemRedisTimer = metrics.timer("feature.item.redis");
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();
         }
