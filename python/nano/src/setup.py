@@ -27,7 +27,7 @@ import sys
 import re
 from html.parser import HTMLParser
 import platform
-
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
 nano_home = os.path.abspath(__file__ + "/../")
@@ -67,6 +67,20 @@ def download_libs(url: str):
     st = os.stat(libso_file)
     os.chmod(libso_file, st.st_mode | stat.S_IEXEC)
 
+# The global variable `plat_name` is used to determine which target platform we are packing for.
+# We overwrite the cmdclass in setuptools to restore the `--plat-name` argument we specified.
+# For example, when we call:
+# 
+#    python setup.py bdist_wheel --plat-name darwin-x86_64
+# 
+# `plat_name` will be assigned as `darwin-x86_64`, which means building wheel for MacOS.
+plat_name = "linux-x86_64"
+
+class bdist_wheel(_bdist_wheel):
+    def run(self):
+        plat_name = self.plat_name
+        _bdist_wheel.run(self)
+
 
 def setup_package():
 
@@ -82,8 +96,13 @@ def setup_package():
                         "PyTurboJPEG",
                         "opencv-transforms"]
 
-    
-    if platform.system() != 'Windows':
+    package_data_plat_ = {"manylinux2010_x86_64":["libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"],
+                          "win-amd64":[]}
+
+    script_plat = {"manylinux2010_x86_64": "../script/bigdl-nano-init",
+                    "win-amd64": "../script/bigdl-nano-init.ps1"}
+
+    if plat_name == 'manylinux2010_x86_64':
         for url in lib_urls:
             download_libs(url)
 
@@ -97,18 +116,16 @@ def setup_package():
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
                         "pytorch": pytorch_requires},
+        cmdclass={
+          'bdist_wheel': bdist_wheel
+        },
+        package_data={"bigdl.nano": package_data_plat_[plat_name]},
+        scripts=script_plat[plat_name],
+
         packages=get_nano_packages(),
         
         
     )
-
-    if platform.system() == 'Windows':
-        metadata["package_data"]={"bigdl.nano":[]}
-        metadata["scripts"]=["../script/bigdl-nano-init.ps1"]
-    else:
-        metadata["package_data"]={"bigdl.nano": [
-            "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]}
-        metadata["scripts"]=['../script/bigdl-nano-init']
 
     setup(**metadata)
 
