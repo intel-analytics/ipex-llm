@@ -15,26 +15,26 @@ echo "start test for dllib keras mnist cnn"
 echo "start test for dllib nnframes image transfer learning"
 echo "start test for dllib nnframes image inference"
 
-echo "#1 start test for data spark_pandas"
-#timer
-start=$(date "+%s")
-#run the example
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/nyc_taxi.csv /tmp/nyc_taxi.csv
-ls /tmp/nyc_taxi.csv
-echo ${HADOOP_HOME}
-echo ${HDFS_URI}
-python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
-  --deploy-mode 'yarn-client' \
-  -f /tmp/nyc_taxi.csv
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "data spark_pandas failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#1 Total time cost ${time} seconds"
+# echo "#1 start test for data spark_pandas"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/nyc_taxi.csv /tmp/nyc_taxi.csv
+# ls /tmp/nyc_taxi.csv
+# echo ${HADOOP_HOME}
+# echo ${HDFS_URI}
+# python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
+#   --deploy-mode 'yarn-client' \
+#   -f /tmp/nyc_taxi.csv
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "data spark_pandas failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#1 Total time cost ${time} seconds"
 
 
 echo "#2 start test for pytorch cifar10"
