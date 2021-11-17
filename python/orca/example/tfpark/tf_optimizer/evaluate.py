@@ -30,6 +30,13 @@ from nets import lenet
 
 slim = tf.contrib.slim
 
+parser = OptionParser()
+parser.add_argument('--data_num', type=int, default=10000,
+                help='Set data_num for training, it should be integer.') 
+parser.add_option("--data_path", dest="data_path")
+parser.add_option('--cluster_mode', type=str, default="local",
+                help='The mode for the Spark cluster. local, yarn or spark-submit.')
+(options, args) = parser.parse_args(sys.argv)
 
 def main(options, data_num):
 
@@ -82,15 +89,7 @@ def main(options, data_num):
 
 if __name__ == '__main__':
 
-    data_num = 10000
-
-    if len(sys.argv) > 1:
-        data_num = int(sys.argv[1])
-
-    parser = OptionParser()
-    parser.add_option("--data_path", dest="data_path")
-    parser.add_option('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
-    (options, args) = parser.parse_args(sys.argv)
-
+    args = parser.parse_args()
+    data_num = args.data_num
+    
     main(options, data_num)
