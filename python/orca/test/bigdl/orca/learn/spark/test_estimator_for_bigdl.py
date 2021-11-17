@@ -27,7 +27,7 @@ from bigdl.dllib.feature.common import *
 from bigdl.orca.learn.bigdl import Estimator
 from bigdl.dllib.optim.optimizer import Adam, SGD, ValidationSummary
 from bigdl.dllib.keras import layers as ZLayer
-from bigdl.dllib.keras.models import Model as ZModel
+from bigdl.dllib.keras.model import Model as ZModel
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.metrics import Accuracy, MAE
 from bigdl.orca.learn.trigger import EveryEpoch, SeveralIteration

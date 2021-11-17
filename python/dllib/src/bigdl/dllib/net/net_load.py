@@ -62,7 +62,7 @@ class JavaToPython:
 
     def _load_ppackage_by_jpackage(self, jpackage_name):
         if "com.intel.analytics.bigdl.dllib.keras.models":
-            return importlib.import_module('bigdl.dllib.keras.models')
+            return importlib.import_module('bigdl.dllib.keras.model')
         raise Exception("Not supported package: {}".format(jpackage_name))
 
 
