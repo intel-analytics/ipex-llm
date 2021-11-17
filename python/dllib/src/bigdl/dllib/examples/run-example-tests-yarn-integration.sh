@@ -17,6 +17,7 @@ echo "start test for dllib nnframes image inference"
 
 # echo "#1 start test for dllib lenet5"
 
+
 # #timer
 # start=$(date "+%s")
 # #run the example
