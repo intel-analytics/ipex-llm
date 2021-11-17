@@ -43,6 +43,7 @@ if __name__ == "__main__":
                       help="The number of epochs to train the model. Default is 20.")
     parser.add_option("--r", "--learning_rate", type=float, dest="learning_rate", default="0.002",
                       help="The learning rate for the model. Default is 0.002.")
+    parser.add_option("--cluster-mode", dest="clusterMode", default="local")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -54,7 +55,25 @@ if __name__ == "__main__":
         parser.print_help()
         parser.error('image_path is required')
 
-    sc = init_nncontext("ImageTransferLearningExample ")
+    conf = {}
+    if options.clusterMode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                            "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "2g")
+        spark_conf.setAll(conf)
+
+        if options.clusterMode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    elif options.clusterMode == "local":
+        spark_conf = SparkConf().set("spark.driver.memory", "10g") \
+            .set("spark.driver.cores", 4)
+        sc = init_nncontext(spark_conf, cluster_mode="local")
 
     imageDF = NNImageReader.readImages(options.image_path, sc, resizeH=300, resizeW=300,
                                        image_codec=1)
