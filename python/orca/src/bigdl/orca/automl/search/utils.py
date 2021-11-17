@@ -28,8 +28,8 @@ def process(command, fail_fast=False, timeout=120):
         stderr=subprocess.PIPE,
         preexec_fn=os.setsid)
     out, err = pro.communicate(timeout=timeout)
-    out = out.decode("utf-8")
-    err = err.decode("utf-8")
+    out = out.decode("utf-8") if isinstance(out, bytes) else out
+    err = err.decode("utf-8") if isinstance(err, bytes) else err
     print(out)
     print(err)
     errorcode = pro.returncode
@@ -39,6 +39,7 @@ def process(command, fail_fast=False, timeout=120):
         print(err)
     else:
         print(out)
+    return out, err
 
 
 def get_remote_list(dir_in):
