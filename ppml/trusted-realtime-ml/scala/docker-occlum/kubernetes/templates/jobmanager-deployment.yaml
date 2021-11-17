@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-jobmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-zoo-ppml-trusted-realtime-ml-occlum
+      component: jobmanager
+  template:
+    metadata:
+      labels:
+        app: analytics-zoo-ppml-trusted-realtime-ml-occlum
+        component: jobmanager
+    spec:
+      tolerations:
+      - key: sgx.intel.com/epc
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: jobmanager
+        image:  {{ .Values.image }}
+        command: ["/bin/bash","-c"]
+        args: 
+          - cd /ppml/trusted-realtime-ml/java; 
+            test "$SGX_MODE" = sgx && bash init.sh > ../init-java.log; 
+            bash start-flink-jobmanager.sh | tee ../jobmanager.log; 
+            tail -f /dev/null
+#        args: ["tail -f /dev/null"]
+        env:
+          - name: SGX_MEM_SIZE
+            value: "16G" 
+          - name: FLINK_JOB_MANAGER_IP
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: flink.jobmanager.ip
+                #          - name: XMX_SIZE
+                #            valueFrom:
+                #              configMapKeyRef:
+                #                name: flink-config
+                #                key: xmx.size
+          - name: SGX_MODE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: sgx.mode 
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 10
+            sgx.intel.com/epc: 133258905600
+          limits:
+            cpu: 12
+            sgx.intel.com/epc: 133258905600
+        ports:
+        - containerPort: 6123
+          name: rpc
+        - containerPort: 6124
+          name: blob-server
+        - containerPort: 8081
+          name: webui
+#        livenessProbe:
+#          tcpSocket:
+#            port: 6123
+#          initialDelaySeconds: 30
+#          periodSeconds: 60
+#        securityContext:
+#          runAsUser: 9999  # refers to user _flink_ from official flink image, change if necessary
+        volumeMounts:
+        - name: enclave-keys
+          mountPath: /occlum/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+        - name: java-secure-keys
+          mountPath: /ppml/trusted-realtime-ml/java/work/keys
+        - name: java-secure-password
+          mountPath: /ppml/trusted-realtime-ml/java/work/password
+        - name: device-plugin
+          mountPath: /var/lib/kubelet/device-plugins
+        - name: dev-gsgx
+          mountPath: /dev/gsgx
+        - name: aesm-socket
+          mountPath: /var/run/aesmd/aesm.socket
+      volumes:
+      - name: enclave-keys
+        hostPath:
+          path: {{ .Values.enclaveKeysPath }}
+      - name: java-secure-keys
+        secret:
+          secretName: ssl-keys
+      - name: java-secure-password
+        secret:
+          secretName: ssl-password
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: dev-gsgx
+        hostPath:
+          path: /dev/gsgx
+      - name: aesm-socket
+        hostPath:
+          path: /var/run/aesmd/aesm.socket

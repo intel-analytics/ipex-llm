@@ -47,7 +47,7 @@
 # redisSecureEnabled:
 
 # default:
-  redisSecureTrustStorePath: /opt/keys/keystore.jks
+  redisSecureTrustStorePath: /opt/redis/work/keys/keystore.jks
 
 # default:
 # redisSecureTrustStorePassword:
