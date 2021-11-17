@@ -283,15 +283,15 @@ echo "#13 start test for orca tfpark keras_dataset"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset \
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py \
   --max_epoch 5 \
   --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca ros rl_pong failed"
-#   exit $exit_status
-# fi
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros rl_pong failed"
+  exit $exit_status
+fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#13 Total time cost ${time} seconds"
@@ -300,15 +300,15 @@ echo "#14 start test for orca tfpark keras_dataset"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray \
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py \
   --max_epoch 5 \
   --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca ros rl_pong failed"
-#   exit $exit_status
-# fi
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros rl_pong failed"
+  exit $exit_status
+fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#14 Total time cost ${time} seconds"
