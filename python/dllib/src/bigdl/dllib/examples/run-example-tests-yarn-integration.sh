@@ -158,7 +158,7 @@ wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P data
 wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P data
 
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py --cluster_mode yarn-client
+python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py #--cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
