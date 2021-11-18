@@ -15,12 +15,11 @@ echo "start test for dllib keras mnist cnn"
 echo "start test for dllib nnframes image transfer learning"
 echo "start test for dllib nnframes image inference"
 
-echo "#1 start test for data spark_pandas"
+echo "#11 start test for data spark_pandas"
 #timer
 start=$(date "+%s")
 #run the example
-wget -P /tmp https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv
-python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py --deploy-mode 'yarn-client'  -f /tmp/nyc_taxi.csv
+python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py --deploy-mode 'yarn-client'  -f ${HDFS_URI}/nyc_taxi.csv
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -29,7 +28,7 @@ if [ $exit_status -ne 0 ]; then
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#1 Total time cost ${time} seconds"
+echo "#11 Total time cost ${time} seconds"
 
 
 # echo "#2 start test for pytorch cifar10"
@@ -73,7 +72,7 @@ echo "#1 Total time cost ${time} seconds"
 # echo "#3 Total time cost ${time} seconds"
 
 
-echo "#4 start test for pytorch super_resolution"
+echo "#14 start test for pytorch super_resolution"
 #timer
 start=$(date "+%s")
 #run the example
@@ -87,17 +86,17 @@ if [ $exit_status -ne 0 ]; then
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#4 Total time cost ${time} seconds"
+echo "#14 Total time cost ${time} seconds"
 
 
-echo "#5 start test for torchmodel imagenet"
+echo "#15 start test for torchmodel imagenet"
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf /tmp/imagenet
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/bigdl2.0/data/imagenet /tmp/imagenet
-ls /tmp/imagenet
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet  --max_epochs 1  --batch-size 256  --deploy_mode 'yarn-client'
+# rm -rf /tmp/imagenet
+# ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/bigdl2.0/data/imagenet /tmp/imagenet
+# ls /tmp/imagenet
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  ${HDFS_URI}/imagenet  --max_epochs 1  --batch-size 256  --deploy_mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -106,10 +105,10 @@ if [ $exit_status -ne 0 ]; then
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#5 Total time cost ${time} seconds"
+echo "#15 Total time cost ${time} seconds"
 
 
-echo "#6 start test for torchmodel mnist"
+echo "#16 start test for torchmodel mnist"
 #timer
 start=$(date "+%s")
 #run the example
@@ -123,17 +122,14 @@ if [ $exit_status -ne 0 ]; then
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#6 Total time cost ${time} seconds"
+echo "#16 Total time cost ${time} seconds"
 
 
-echo "#7 start test for torchmodel resnet_finetune"
+echo "#17 start test for torchmodel resnet_finetune"
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf /tmp/dogscats
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/bigdl2.0/data/dogscats /tmp/dogscats
-ls /tmp/dogscats
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py /tmp/dogscats --deploy-mode 'yarn-client'
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py -f ${HDFS_URI}/dogs_cats/samples --deploy-mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -142,5 +138,5 @@ if [ $exit_status -ne 0 ]; then
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#7 Total time cost ${time} seconds"
+echo "#17 Total time cost ${time} seconds"
 
