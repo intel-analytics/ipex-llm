@@ -26,23 +26,23 @@ import os
 from bigdl.dllib.feature.dataset import mnist
 
 sys.path.append("/tmp/models/slim")  # add the slim library
-from nets import lenet
+#from nets import lenet
 
 slim = tf.contrib.slim
 
 parser = argparse.ArgumentParser(description="Run the tfpark keras "
                                              "dataset example.")
 parser.add_argument('--data_num', type=int, default=10000,
-                help='Set data_num for training, it should be integer.') 
-parser.add_argument("--data_path", dest="data_path")
+                help='Set data_num for evaluation, it should be integer.') 
+parser.add_argument("--data_path", type=str, default=None,
+                help='Assert the data_path for evaluation' )
 parser.add_argument('--cluster_mode', type=str, default="local",
                 help='The mode for the Spark cluster. local, yarn or spark-submit.')
-(options, args) = parser.parse_args(sys.argv)
 
-def main(options, data_num):
+def main(data_num):
 
-    data_path = '/tmp/mnist' if not options.data_path else options.data_path
-    cluster_mode = options.cluster_mode
+    data_path = '/tmp/mnist' if not args.data_path else args.data_path
+    cluster_mode = args.cluster_mode
     if cluster_mode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
@@ -93,4 +93,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     data_num = args.data_num
     
-    main(options, data_num)
+    main(data_num)
