@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from __future__ import print_function
 import os
 from os.path import exists
 from os import makedirs
-from __future__ import print_function
 import argparse
 import torch
 import torch.nn as nn
