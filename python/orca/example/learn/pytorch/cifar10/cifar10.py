@@ -19,6 +19,9 @@
 #
 
 from __future__ import print_function
+import os
+from os.path import exists
+from os import makedirs
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
@@ -126,7 +129,9 @@ def optim_creator(model, config):
 
 criterion = nn.CrossEntropyLoss()
 batch_size = args.batch_size
-root_dir = "./data"
+root_dir = "/tmp/cifar10_data"
+if not exists(root_dir):
+    makedirs(root_dir)
 
 train_loader = train_loader_creator(config={"root": root_dir}, batch_size=batch_size)
 test_loader = test_loader_creator(config={"root": root_dir}, batch_size=batch_size)
