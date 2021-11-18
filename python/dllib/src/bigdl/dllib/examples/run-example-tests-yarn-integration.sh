@@ -151,13 +151,13 @@ echo "#7 start test for orca mxnet"
 #timer
 start=$(date "+%s")
 
-if [ -f data/mnist.zip ]
+if [ -f ${BIGDL_ROOT}/data/mnist.zip ]
 then
     echo "mnist.zip already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P data
+    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P ${BIGDL_ROOT}/data
 fi
-unzip -q data/mnist.zip -d data
+unzip -q ${BIGDL_ROOT}/data/mnist.zip -d ${BIGDL_ROOT}/data
 
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py --cluster_mode yarn-client
@@ -358,23 +358,23 @@ if [ -f analytics-zoo-data/data/dogs-vs-cats/train.zip ]; then
 else
   # echo "Downloading dogs and cats images"
   wget -nv $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip \
-    -P /tmp/data/dogs-vs-cats
-  unzip -q /tmp/data/dogs-vs-cats/train.zip -d /tmp/data/dogs-vs-cats
-  mkdir -p /tmp/data/dogs-vs-cats/samples
-  cp /tmp/data/dogs-vs-cats/train/cat.71* /tmp/data/dogs-vs-cats/samples
-  cp /tmp/data/dogs-vs-cats/train/dog.71* /tmp/data/dogs-vs-cats/samples
+    -P tmp/data/dogs-vs-cats
+  unzip -q tmp/data/dogs-vs-cats/train.zip -d tmp/data/dogs-vs-cats
+  mkdir -p tmp/data/dogs-vs-cats/samples
+  cp tmp/data/dogs-vs-cats/train/cat.71* tmp/data/dogs-vs-cats/samples
+  cp tmp/data/dogs-vs-cats/train/dog.71* tmp/data/dogs-vs-cats/samples
 
-  mkdir -p /tmp/data/dogs-vs-cats/demo/cats
-  mkdir -p /tmp/data/dogs-vs-cats/demo/dogs
-  cp /tmp/data/dogs-vs-cats/train/cat.71* /tmp/data/dogs-vs-cats/demo/cats
-  cp /tmp/data/dogs-vs-cats/train/dog.71* /tmp/data/dogs-vs-cats/demo/dogs
+  mkdir -p tmp/data/dogs-vs-cats/demo/cats
+  mkdir -p tmp/data/dogs-vs-cats/demo/dogs
+  cp tmp/data/dogs-vs-cats/train/cat.71* tmp/data/dogs-vs-cats/demo/cats
+  cp tmp/data/dogs-vs-cats/train/dog.71* tmp/data/dogs-vs-cats/demo/dogs
   # echo "Finished downloading images"
 fi
 #timer
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
-  --image-path /tmp/data/dogs-vs-cats/demo \
+  --image-path ${BIGDL_ROOT}/tmp/data/dogs-vs-cats/demo \
   --num-classes 2 \
   --cluster_mode yarn-client
 exit_status=$?
