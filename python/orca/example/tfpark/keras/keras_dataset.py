@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import sys
 import argparse
 import os
 
@@ -32,7 +31,7 @@ parser.add_argument('--cluster_mode', type=str, default="local",
 
 def get_data_rdd(dataset, sc):
     from bigdl.dllib.feature.dataset import mnist
-    (images_data, labels_data) = mnist.read_data_sets("tmp/mnist", dataset)
+    (images_data, labels_data) = mnist.read_data_sets("hdfs://172.168.2.151:9000/mnist", dataset)
     image_rdd = sc.parallelize(images_data)
     labels_rdd = sc.parallelize(labels_data)
     rdd = image_rdd.zip(labels_rdd) \
