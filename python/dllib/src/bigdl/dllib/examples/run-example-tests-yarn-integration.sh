@@ -252,7 +252,7 @@ echo "#17 start test for torchmodel resnet_finetune"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py -f ${HDFS_URI}/dogs_cats/samples --deploy-mode 'yarn-client'
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ${HDFS_URI}/dogs_cats/samples --deploy-mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
