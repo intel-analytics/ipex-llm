@@ -403,7 +403,6 @@ echo "#19 start test for orca tfpark optimizer evaluate"
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/evaluate.py \
-  --max_epoch 1 \
   --data_num 1000 \
   --cluster_mode yarn-client
 exit_status=$?
