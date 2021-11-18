@@ -312,21 +312,21 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#14 Total time cost ${time} seconds"
 
-# echo "#15 start test for orca tfpark gan"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/tfpark/gan/gan_train_and_evaluate.py \
-#   --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca tfpark gan failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#15 Total time cost ${time} seconds"
+echo "#15 start test for orca tfpark gan"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/gan/gan_train_and_evaluate.py \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark gan failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#15 Total time cost ${time} seconds"
 
 echo "#16 start test for orca tfpark estimator_dataset"
 #timer
