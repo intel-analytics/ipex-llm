@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
+from os.path import exists
+from os import makedirs
 from __future__ import print_function
 import argparse
 import torch
@@ -69,7 +72,8 @@ def main():
     args = parser.parse_args()
 
     torch.manual_seed(args.seed)
-
+    if not exists(args.dir):
+        makedirs(args.dir)
     train_loader = torch.utils.data.DataLoader(
         datasets.MNIST(args.dir, train=True, download=True,
                        transform=transforms.Compose([
@@ -113,3 +117,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

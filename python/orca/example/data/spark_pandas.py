@@ -13,14 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import sys
 from optparse import OptionParser
-
 import bigdl.orca.data.pandas
 from bigdl.orca import init_orca_context, stop_orca_context
-
-
 def process_feature(df, awake_begin=6, awake_end=23):
     import pandas as pd
     df['datetime'] = pd.to_datetime(df['timestamp'])
@@ -28,27 +24,27 @@ def process_feature(df, awake_begin=6, awake_end=23):
     df['awake'] = (((df['hours'] >= awake_begin) & (df['hours'] <= awake_end))
                    | (df['hours'] == 0)).astype(int)
     return df
-
-
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-f", type=str, dest="file_path",
                       help="The file path to be read")
 
+    parser.add_option("--deploy-mode", type=str, dest="deployMode", default="local", help="deploy mode, local, spark-submit, yarn-client or yarn-cluster")
     (options, args) = parser.parse_args(sys.argv)
 
     sc = init_orca_context(cores="*", memory="4g")
 
+    # sc = init_orca_context(cluster_mode=options.deployMode,cores="*", memory="4g")
+    print("##########")
+    print(options.deployMode)
+    sc = init_orca_context(cluster_mode=options.deployMode)
     # read data
     file_path = options.file_path
     data_shard = bigdl.orca.data.pandas.read_csv(file_path)
     data = data_shard.collect()
-
     # repartition
     data_shard = data_shard.repartition(2)
-
     # apply function on each element
     trans_data_shard = data_shard.transform_shard(process_feature)
     data2 = trans_data_shard.collect()
-
     stop_orca_context()
