@@ -203,7 +203,7 @@ class SerializerSpec extends BigDLSpecHelper {
     "com.intel.analytics.bigdl.dllib.keras.autograd.LambdaLayer",
     "com.intel.analytics.bigdl.dllib.keras.autograd.InternalConstant",
     "com.intel.analytics.bigdl.dllib.keras.models.Model",
-    "com.intel.analytics.bigdl.dllib.keras.Sequential",
+    "com.intel.analytics.bigdl.dllib.keras.Sequential.Sequential",
     "com.intel.analytics.bigdl.dllib.net.GraphNet",
     "com.intel.analytics.bigdl.dllib.nn.keras.Sequential",
     "com.intel.analytics.bigdl.dllib.nn.keras.LocallyConnected2D",
