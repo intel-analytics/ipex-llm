@@ -79,7 +79,9 @@ def setup_package():
                         "pytorch_lightning==1.4.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
-                        "opencv-transforms"]
+                        "opencv-transforms",
+                        "onnx",
+                        "onnxruntime"]
 
     for url in lib_urls:
         download_libs(url)
