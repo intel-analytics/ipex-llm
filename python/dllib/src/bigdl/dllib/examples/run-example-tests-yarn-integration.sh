@@ -137,8 +137,6 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
 
-
-
 echo "#11 start test for data spark_pandas"
 timer
 start=$(date "+%s")
