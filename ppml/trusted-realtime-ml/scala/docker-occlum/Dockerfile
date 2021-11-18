@@ -159,4 +159,5 @@ RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-cluster-serving-job.sh && \
     chmod a+x /opt/start-http-frontend.sh && \
     chmod a+x /opt/start-all.sh && \
-    chmod a+x /opt/init-cluster-serving.sh
+    chmod a+x /opt/init-cluster-serving.sh && \
+    chmod a+x /opt/config.yaml
