@@ -150,14 +150,15 @@ if __name__ == '__main__':
     test_labels = test.select("label").to_list("label")
 
     full = train.concat(test, "outer")
-    sparse_dims = full.max(embed_cols).to_dict()
-    sparse_dims = dict(zip(sparse_dims['column'], [dim + 1 for dim in sparse_dims['max']]))
-
-    fixlen_feature_columns = [SparseFeat(feat, int(sparse_dims[feat])) for feat in sparse_dims] + \
-                             [DenseFeat(feat, 1, ) for feat in num_cols]
-    feature_names = get_feature_names(fixlen_feature_columns)
     reindex_tbls = full.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     full, min_max_dict = full.min_max_scale(num_cols)
+
+    embed_in_dims = {}
+    for i, c, in enumerate(embed_cols):
+        embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0]) + 1
+    fixlen_feature_columns = [SparseFeat(feat, int(embed_in_dims[feat])) for feat in embed_in_dims] + \
+                             [DenseFeat(feat, 1, ) for feat in num_cols]
+    feature_names = get_feature_names(fixlen_feature_columns)
 
     train = train.reindex(embed_cols, reindex_tbls)\
         .transform_min_max_scale(num_cols, min_max_dict)\
