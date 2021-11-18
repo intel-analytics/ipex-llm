@@ -114,4 +114,4 @@ if __name__ == '__main__':
     predictionDF.sample(False, 0.1).show()
 
     # expecting: accuracy around 95%
-    print("Validation accuracy = {}, correct {},  total {}".format(accuracy, correct, overall)
+    print("Validation accuracy = {}, correct {},  total {}".format(accuracy, correct, overall))
