@@ -136,3 +136,18 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
+
+echo "#11 start test for data spark_pandas"
+timer
+start=$(date "+%s")
+run the example
+python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py --deploy-mode 'yarn-client'  -f ${HDFS_URI}/nyc_taxi.csv
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "####################data spark_pandas failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#11 Total time cost ${time} seconds"
