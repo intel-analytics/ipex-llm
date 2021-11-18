@@ -159,8 +159,7 @@ fi
 unzip -q data/mnist.zip -d data
 
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py \
-  --cluster_mode yarn-client \
+python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
@@ -329,7 +328,7 @@ time=$((now - start))
 echo "#15 Total time cost ${time} seconds"
 
 echo "#16 start test for orca tfpark estimator_dataset"
-#timer
+#timer 
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_dataset.py \
