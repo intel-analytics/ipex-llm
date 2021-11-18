@@ -58,7 +58,7 @@ class TestModelsVision(TestCase):
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
-        pl_model = trainer.compile(model, loss, optimizer)
+        pl_model = Trainer.compile(model, loss, optimizer)
         train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
         trainer.fit(pl_model, train_loader)
     
@@ -67,28 +67,26 @@ class TestModelsVision(TestCase):
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
-        
-        pl_model = trainer.compile(model, loss, optimizer, onnx=True)
-        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+
+        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        train_loader = create_data_loader(data_dir, batch_size,\
+            num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
         assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
 
-        test_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
-        for x, y in test_loader:
+        for x, y in train_loader:
             onnx_res = pl_model.inference(x.numpy())  # onnxruntime
             pytorch_res = pl_model.inference(x, backend=None).numpy()  # native pytorch
             assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date while inferencing
             np.testing.assert_almost_equal(onnx_res, pytorch_res, decimal=5)  # same result
-        
+
         trainer.fit(pl_model, train_loader)
         assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
 
         pl_model.update_ortsess()  # update the ortsess with default settings
         assert pl_model._ortsess_up_to_date is True # ortsess is up-to-date after updating
 
-        test_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
-        for x, y in test_loader:
-            trainer.predict(pl_model, test_loader)
+        trainer.predict(pl_model, train_loader)
 
 
 if __name__ == '__main__':
