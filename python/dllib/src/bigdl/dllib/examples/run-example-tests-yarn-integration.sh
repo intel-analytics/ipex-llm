@@ -151,11 +151,13 @@ echo "#7 start test for orca mxnet"
 #timer
 start=$(date "+%s")
 
-rm -f data/*
-wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P data
-wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P data
-wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P data
-wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P data
+if [ -f data/mnist.zip ]
+then
+    echo "mnist.zip already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P data
+fi
+unzip -q data/mnist.zip -d data
 
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py #--cluster_mode yarn-client
