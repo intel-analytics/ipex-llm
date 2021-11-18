@@ -6,12 +6,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: analytics-zoo-ppml-trusted-realtime-ml-graphene
+      app: bigdl-ppml-trusted-realtime-ml-graphene
   replicas: 1
   template:
     metadata:
       labels:
-        app: analytics-zoo-ppml-trusted-realtime-ml-graphene
+        app: bigdl-ppml-trusted-realtime-ml-graphene
         component: master
     spec:
       tolerations:
