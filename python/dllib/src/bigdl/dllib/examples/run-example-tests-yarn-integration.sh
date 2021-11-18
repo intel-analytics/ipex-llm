@@ -174,25 +174,25 @@ clear_up() {
 # echo "#12 Total time cost ${time} seconds"
 
 
-echo "#13 start test for pytorch fashion_mnist"
-#timer
-start=$(date "+%s")
-#run the example
-rm -rf ./data
-rm -rf ./runs
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py \
-  --cluster_mode 'yarn-client' \
-  --epochs 1 \
-  --batch_size 256
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "####################pytorch fashion_mnist failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#13 Total time cost ${time} seconds"
+# echo "#13 start test for pytorch fashion_mnist"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# rm -rf ./data
+# rm -rf ./runs
+# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py \
+#   --cluster_mode 'yarn-client' \
+#   --epochs 1 \
+#   --batch_size 256
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "####################pytorch fashion_mnist failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#13 Total time cost ${time} seconds"
 
 
 echo "#14 start test for pytorch super_resolution"
@@ -216,12 +216,9 @@ echo "#15 start test for torchmodel imagenet"
 #timer
 start=$(date "+%s")
 #run the example
-# rm -rf /tmp/imagenet
-# ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/bigdl2.0/data/imagenet /tmp/imagenet
-# ls /tmp/imagenet
-ls ${HDFS_URI}/
 rm -rf /tmp/imagenet
 wget $FTP_URI/imagenet   -P /tmp/imagenet
+echo "##############imagenet files"
 ls /tmp/imagenet
 python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet  --max_epochs 1  --batch-size 256  --deploy_mode 'yarn-client'
 exit_status=$?
@@ -235,21 +232,21 @@ time=$((now - start))
 echo "#15 Total time cost ${time} seconds"
 
 
-echo "#16 start test for torchmodel mnist"
-#timer
-start=$(date "+%s")
-#run the example
-rm -rf /tmp/torchmodel_mnist
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --dir /tmp/torchmodel_mnist  --epochs 1  --batch-size 256  --deploy-mode 'yarn-client'
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "####################torchmodel mnist failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#16 Total time cost ${time} seconds"
+# echo "#16 start test for torchmodel mnist"##
+# #timer
+# start=$(date "+%s")
+# #run the example
+# rm -rf /tmp/torchmodel_mnist
+# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --dir /tmp/torchmodel_mnist  --epochs 1  --batch-size 256  --deploy-mode 'yarn-client'
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "####################torchmodel mnist failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#16 Total time cost ${time} seconds"
 
 
 echo "#17 start test for torchmodel resnet_finetune"
@@ -258,7 +255,8 @@ start=$(date "+%s")
 #run the example
 rm -rf /tmp/dogs_cats/samples
 wget $FTP_URI/dogs_cats/samples   -P /tmp/dogs_cats/samples
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ${HDFS_URI}/dogs_cats/samples --deploy-mode 'yarn-client'
+ls /tmp/dogs_cats/samples
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py /tmp/dogs_cats/samples
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
