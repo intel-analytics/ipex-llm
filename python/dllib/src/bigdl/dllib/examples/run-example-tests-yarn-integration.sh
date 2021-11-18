@@ -138,10 +138,11 @@ clear_up() {
 # echo "#7 Total time cost ${time} seconds"
 
 echo "#11 start test for data spark_pandas"
-timer
+#timer
 start=$(date "+%s")
-run the example
-python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py --deploy-mode 'yarn-client'  -f ${HDFS_URI}/nyc_taxi.csv
+#run the example
+wget -P /tmp https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv
+python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py --deploy-mode 'yarn-client'  -f /tmp/nyc_taxi.csv
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -218,7 +219,7 @@ start=$(date "+%s")
 # rm -rf /tmp/imagenet
 # ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/bigdl2.0/data/imagenet /tmp/imagenet
 # ls /tmp/imagenet
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  ${HDFS_URI}/imagenet  --max_epochs 1  --batch-size 256  --deploy_mode 'yarn-client'
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  ${HDFS_URI}/imagenet-mini  --max_epochs 1  --batch-size 256  --deploy_mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
