@@ -2,7 +2,7 @@
 set -x
 
 core_num=$CORE_NUM
-secure_password=`openssl rsautl -inkey /opt/redis/work/password/key.txt -decrypt </opt/redis/work/password/output.bin`
+secure_password=`openssl rsautl -inkey /opt/password/key.txt -decrypt </opt/password/output.bin`
 redis_host=$REDIS_HOST
 
 sed -i "/modelPath:/c \ \ modelPath: /opt/resnet50" config.yaml
