@@ -20,9 +20,7 @@ echo "#1 start test for data spark_pandas"
 start=$(date "+%s")
 #run the example
 wget -P /tmp https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv
-python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
-  --deploy-mode 'yarn-client' \
-  -f /tmp/nyc_taxi.csv
+python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py --deploy-mode 'yarn-client'  -f /tmp/nyc_taxi.csv
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -80,9 +78,7 @@ echo "#4 start test for pytorch super_resolution"
 start=$(date "+%s")
 #run the example
 rm -rf /tmp/super_resolution_data
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py \
-  --cluster_mode 'yarn-client'\
-  --data_dir '/tmp/super_resolution_data'
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir '/tmp/super_resolution_data'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -99,13 +95,9 @@ echo "#5 start test for torchmodel imagenet"
 start=$(date "+%s")
 #run the example
 rm -rf /tmp/imagenet
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet /tmp/imagenet
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/bigdl2.0/data/imagenet /tmp/imagenet
 ls /tmp/imagenet
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py \
-  /tmp/imagenet \
-  --max_epochs 1 \
-  --batch-size 256 \
-  --deploy_mode 'yarn-client'
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet  --max_epochs 1  --batch-size 256  --deploy_mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -122,11 +114,7 @@ echo "#6 start test for torchmodel mnist"
 start=$(date "+%s")
 #run the example
 rm -rf /tmp/torchmodel_mnist
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py \
-  --dir /tmp/torchmodel_mnist \
-  --epochs 1 \
-  --batch-size 256 \
-  --deploy-mode 'yarn-client'
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --dir /tmp/torchmodel_mnist  --epochs 1  --batch-size 256  --deploy-mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -143,11 +131,9 @@ echo "#7 start test for torchmodel resnet_finetune"
 start=$(date "+%s")
 #run the example
 rm -rf /tmp/dogscats
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/dogscats /tmp/dogscats
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/bigdl2.0/data/dogscats /tmp/dogscats
 ls /tmp/dogscats
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py \
-  /tmp/dogscats \
-  --deploy-mode 'yarn-client'
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py /tmp/dogscats --deploy-mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
