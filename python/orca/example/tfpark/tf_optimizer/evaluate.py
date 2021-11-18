@@ -26,7 +26,7 @@ import os
 from bigdl.dllib.feature.dataset import mnist
 
 sys.path.append("/tmp/models/slim")  # add the slim library
-#from nets import lenet
+from nets import lenet
 
 slim = tf.contrib.slim
 
@@ -34,7 +34,7 @@ parser = argparse.ArgumentParser(description="Run the tfpark keras "
                                              "dataset example.")
 parser.add_argument('--data_num', type=int, default=10000,
                 help='Set data_num for evaluation, it should be integer.') 
-parser.add_argument("--data_path", type=str, default=None,
+parser.add_argument("--data_path", type=str, default='/tmp/mnist',
                 help='Assert the data_path for evaluation' )
 parser.add_argument('--cluster_mode', type=str, default="local",
                 help='The mode for the Spark cluster. local, yarn or spark-submit.')
