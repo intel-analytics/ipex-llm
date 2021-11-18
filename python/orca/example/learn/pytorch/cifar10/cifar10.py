@@ -53,11 +53,7 @@ if args.cluster_mode == "local":
     init_orca_context(memory="4g")
 elif args.cluster_mode.startswith("yarn"):
     if args.cluster_mode == "yarn-client":
-        init_orca_context(
-            cluster_mode="yarn-client", num_nodes=2, driver_memory="4g",
-            conf={"spark.rpc.message.maxSize": "1024",
-                "spark.task.maxFailures": "1",
-                "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+        init_orca_context(cluster_mode="yarn-client")
     elif args.cluster_mode == "yarn-cluster":
         init_orca_context(cluster_mode="yarn-cluster")
 elif args.cluster_mode == "spark-submit":
@@ -69,7 +65,9 @@ transform = transforms.Compose(
 
 
 def train_loader_creator(config, batch_size):
-    trainset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=True,
+    # trainset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=True,
+    #                                         download=True, transform=transform)
+    trainset = torchvision.datasets.CIFAR10(root="/tmp/cifar10_data", train=True,
                                             download=True, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
                                               shuffle=True, num_workers=2)
@@ -77,7 +75,9 @@ def train_loader_creator(config, batch_size):
 
 
 def test_loader_creator(config, batch_size):
-    testset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=False,
+    # testset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=False,
+    #                                        download=True, transform=transform)
+    testset = torchvision.datasets.CIFAR10(root="/tmp/cifar10_data", train=False,
                                            download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=2)
