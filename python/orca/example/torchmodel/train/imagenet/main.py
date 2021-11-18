@@ -19,6 +19,7 @@ import torch
 import torchvision
 from torchvision import datasets, transforms
 from bigdl.dllib.optim.optimizer import *
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.torch import TorchModel, TorchLoss
 from bigdl.dllib.estimator import *
 from bigdl.dllib.nncontext import *

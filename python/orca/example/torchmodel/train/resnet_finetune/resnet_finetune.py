@@ -22,6 +22,7 @@ from pyspark.sql.functions import col, udf
 from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.torch import TorchModel, TorchLoss
 from bigdl.dllib.nnframes import *
 from bigdl.dllib.keras.metrics import Accuracy

@@ -35,8 +35,6 @@ if __name__ == "__main__":
     sc = init_orca_context(cores="*", memory="4g")
 
     # sc = init_orca_context(cluster_mode=options.deployMode,cores="*", memory="4g")
-    print("##########")
-    print(options.deployMode)
     sc = init_orca_context(cluster_mode=options.deployMode)
     # read data
     file_path = options.file_path

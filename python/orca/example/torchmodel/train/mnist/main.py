@@ -23,6 +23,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.torch import TorchModel, TorchLoss, TorchOptim
 from bigdl.orca.common import *
 from bigdl.dllib.estimator import *
