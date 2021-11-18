@@ -4,7 +4,7 @@ The instructions in this section are modified from the [Intel SGX Device Plugin 
 
 ## Prerequisites
 Prerequisites for building and running these device plugins include:
-- Appropriate hardware
+- Appropriate hardware. ([3rd Gen Intel Xeon Scalable Processors][GIXSP])
 - A fully configured Kubernetes cluster
 - A working Go environment, of at least version v1.16
 
@@ -23,4 +23,5 @@ kubectl describe node <node name> | grep sgx.intel.com
 ```
 
 [intelSGX]: https://intel.github.io/intel-device-plugins-for-kubernetes/cmd/sgx_plugin/README.html
+[GIXSP]: https://www.intel.com/content/www/us/en/products/docs/processors/xeon/3rd-gen-xeon-scalable-processors-brief.html
 [pluginCode]: https://github.com/intel/intel-device-plugins-for-kubernetes
