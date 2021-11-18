@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 clear_up () {
     echo "Clearing up environment. Uninstalling BigDL"
