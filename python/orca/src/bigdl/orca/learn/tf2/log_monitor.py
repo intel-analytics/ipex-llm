@@ -7,13 +7,16 @@ import os
 import shutil
 import time
 import traceback
+import subprocess
 
 import redis
 
 from bigdl.orca.learn.utils import format_error_message
+
 logger = logging.getLogger(__name__)
 
 LOG_FILE_CHANNEL = "SPARK_LOG_CHANNEL"
+
 
 def create_redis_client(redis_address, password=None):
     """Create a Redis client.
@@ -44,6 +47,22 @@ class LogFileInfo:
         self.file_position = file_position
         self.file_handle = file_handle
         self.worker_pid = None
+
+
+def open_file(self, data, path):
+    if path.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect()
+        fd = fs.open(path, 'ab')
+        return fd
+    else:
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        fd = open(path, 'ab')
+        return fd
 
 
 class LogMonitor:
@@ -78,15 +97,17 @@ class LogMonitor:
             false otherwise.
     """
 
-    def __init__(self, logs_dir, sharing_log_file):
+    def __init__(self, logs_dir, sharing_log_dir):
         """Initialize the log monitor object."""
         from bigdl.dllib.utils.utils import get_node_ip
+        self.ip = get_node_ip()
         self.logs_dir = logs_dir
         self.log_filenames = set()
         self.open_file_infos = []
         self.closed_file_infos = []
         self.can_open_more_files = True
-        self.sharing_log_dir = sharing_log_file
+        self.sharing_log_dir = sharing_log_dir
+        self.fd = open_file()
 
     def close_all_files(self):
         """Close all open files (so that we can open more)."""
@@ -209,25 +230,21 @@ class LogMonitor:
                         break
                     if next_line[-1] == "\n":
                         next_line = next_line[:-1]
-                    lines_to_publish.append(next_line)
+                    new_line = "[executor_id = %s, ip = %s]".format(file_info.worker_id, self.ip) \
+                               + next_line + "\n"
+                    lines_to_publish.append(new_line)
                 except Exception:
                     logger.error("Error: Reading file: {}, position: {} "
                                  "failed.".format(
-                                     file_info.full_path,
-                                     file_info.file_info.file_handle.tell()))
+                        file_info.full_path,
+                        file_info.file_info.file_handle.tell()))
                     raise
 
             # Record the current position in the file.
             file_info.file_position = file_info.file_handle.tell()
 
             if len(lines_to_publish) > 0:
-                self.redis_client.publish(
-                    LOG_FILE_CHANNEL,
-                    json.dumps({
-                        "ip": self.ip,
-                        "executor_id": file_info.worker_id,
-                        "lines": lines_to_publish
-                    }))
+                self.fd.write(lines_to_publish.encode("utf-8"))
                 anything_published = True
 
         return anything_published
@@ -250,40 +267,33 @@ class LogMonitor:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description=("Parse Redis server for the "
-                     "log monitor to connect "
+        description=("log monitor to connect "
                      "to."))
     parser.add_argument(
-        "--redis-address",
-        required=True,
-        type=str,
-        help="The address to use for Redis.")
-    parser.add_argument(
-        "--redis-password",
-        required=False,
-        type=str,
-        default=None,
-        help="the password to use for Redis")
-    parser.add_argument(
-        "--logs-dir",
+        "--logs_dir",
         required=True,
         type=str,
         help="Specify the path of the temporary directory used by Ray "
-        "processes.")
+             "processes.")
+    parser.add_argument(
+        "--executor_id",
+        required=True,
+        type=int,
+        help="Specify the executor id")
+    parser.add_argument(
+        "--target_file",
+        required=True,
+        type=str,
+        help="Specify the sharing path of the file to be written.")
+
     args = parser.parse_args()
     log_monitor = LogMonitor(
-        args.logs_dir, args.redis_address, redis_password=args.redis_password)
+        args.logs_dir, args.executor_id, args.target_file)
 
     try:
         log_monitor.run()
     except Exception as e:
-        # Something went wrong, so push an error to all drivers.
-        redis_client = create_redis_client(
-            args.redis_address, password=args.redis_password)
         traceback_str = format_error_message(traceback.format_exc())
-        message = ("The log monitor on node {} failed with the following "
-                   "error:\n{}".format(os.uname()[1], traceback_str))
-        redis_client.publish(
-            LOG_FILE_CHANNEL,
-            message)
-        raise e
+        message = ("The log monitor on executor {} failed with the following "
+                   "error:\n{}".format(log_monitor.executor_id, traceback_str))
+        raise Exception(message)

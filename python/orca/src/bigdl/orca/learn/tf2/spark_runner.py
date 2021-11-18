@@ -224,16 +224,17 @@ class SparkRunner:
         self.mode = mode
         self.backend = backend
         self.setup()
-        self.cluster_info = cluster_info
+        self.cluster = cluster_info
+        self.rank, self.local_rank = self._get_rank(self.cluster)
         if self.backend == "tf-distributed":
             if mode == "fit" or mode == "evaluate":
-                self.setup_distributed(self.mode, self.cluster_info)
+                self.setup_distributed()
         self.is_local = is_local
         if not self.is_local:
-            self._start_log_monitor(redis_address=redis_address,
-                                logs_dir="$SPARK_WORKER_DIR/applID/executorID",
-                                redis_password=redis_password
-                                )
+            if self.local_rank == 0:
+                self._start_log_monitor(
+                    logs_dir="$SPARK_WORKER_DIR/applID/executorID",
+                    sharing_dir="hdfs:///tmp")
         self.model_dir = model_dir
 
     def setup(self):
@@ -243,7 +244,7 @@ class SparkRunner:
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
-    def _get_rank(self, cluster_info, tc):
+    def _get_rank(self, cluster_info):
         # As task placement may not be identical between two different jobs,
         # we cannot simply index cluster_info using partitionId to get current
         # ip and port.
@@ -267,25 +268,22 @@ class SparkRunner:
             global_rank += 1
             if local_count == local_rank + 1:
                 break
-        return global_rank
+        return global_rank, local_rank
 
 
-    def setup_distributed(self, mode, cluster):
+    def setup_distributed(self):
         """Sets up TensorFLow distributed environment and initializes the model.
         """
-        self.cluster = cluster
-        tc = BarrierTaskContext().get()
-        self.rank = self._get_rank(cluster, tc)
-        print("cluster is: ", cluster)
+        print("cluster is: ", self.cluster)
 
         import os
         os.environ["TF_CONFIG"] = json.dumps({
             'cluster': {
-                'worker': cluster
+                'worker': self.cluster
             },
             'task': {'type': 'worker', 'index': self.rank}
         })
-        ips = set([node.split(":")[0] for node in cluster])
+        ips = set([node.split(":")[0] for node in self.cluster])
         os.environ["no_proxy"] = ",".join(ips)
 
         self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
@@ -447,12 +445,9 @@ class SparkRunner:
 
         return new_part
 
-    def _start_log_monitor(redis_address,
-                          logs_dir,
-                          stdout_file=None,
-                          stderr_file=None,
-                          redis_password=None,
-                          fate_share=None):
+    def _start_log_monitor(
+            logs_dir,
+            target_dir):
         """Start a log monitor process.
 
         Args:
@@ -471,11 +466,9 @@ class SparkRunner:
             os.path.dirname(os.path.abspath(__file__)), "log_monitor.py")
         command = [
             sys.executable, "-u", log_monitor_filepath,
-            "--redis-address={}".format(redis_address),
-            "--logs-dir={}".format(logs_dir)
+            "--logs_dir={}".format(logs_dir),
+            "--target_dir={}".format(target_dir)
         ]
-        if redis_password:
-            command += ["--redis-password", redis_password]
         process_info = session_execute_no_wait(
             command,
             tag="log_monitor")

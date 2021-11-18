@@ -108,12 +108,12 @@ class SparkTFEstimator():
         #         logger_thread.start()
         if log_to_driver:
             # start redis
-            process_info = self._start_redis()
+            # process_info = self._start_redis()
 
             # print executor logs
-            import redis
-            redis_client = redis.StrictRedis(
-                host=self.ip, port=self.redis_port)
+            # import redis
+            # redis_client = redis.StrictRedis(
+            #     host=self.ip, port=self.redis_port)
             threads_stopped = threading.Event()
             logger_thread = threading.Thread(
                 target=self._print_logs,
