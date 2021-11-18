@@ -141,6 +141,7 @@ echo "#11 start test for data spark_pandas"
 #timer
 start=$(date "+%s")
 #run the example
+rm nyc_taxi.*
 wget -P /tmp https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv
 python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py --deploy-mode 'yarn-client'  -f /tmp/nyc_taxi.csv
 exit_status=$?
