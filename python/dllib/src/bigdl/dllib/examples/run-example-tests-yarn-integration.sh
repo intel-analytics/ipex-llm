@@ -147,21 +147,20 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#7 Total time cost ${time} seconds"
 
-# echo "#7 start test for orca mxnet"
-# #timer
-# start=$(date "+%s")
-# if [ -f data/mnist.zip ]
-# then
-#     echo "mnist.zip already exists"
-# else
-#     wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P data
-# fi
-# unzip -q data/mnist.zip -d data
+echo "#7 start test for orca mxnet"
+#timer
+start=$(date "+%s")
+if [ -f data/mnist.zip ]
+then
+    echo "mnist.zip already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P data
+fi
+unzip -q data/mnist.zip -d data
 
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py \
   --cluster_mode yarn-client \
-  -e 1 -b 256 \ 
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
