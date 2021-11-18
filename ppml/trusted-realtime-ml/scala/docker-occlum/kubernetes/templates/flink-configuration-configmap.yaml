@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: flink-config
   labels:
-    app: analytics-zoo-ppml-trusted-realtime-ml-occlum
+    app: bigdl-ppml-trusted-realtime-ml-occlum
 data:
   flink.jobmanager.ip: flink-jobmanager
   taskmanager.memory.managed.size: 8192mb

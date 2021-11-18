@@ -148,10 +148,8 @@ ADD ./start-flink-taskmanager.sh /opt/start-flink-taskmanager.sh
 ADD ./start-cluster-serving-job.sh /opt/start-cluster-serving-job.sh
 ADD ./start-http-frontend.sh /opt/start-http-frontend.sh
 ADD ./start-all.sh /opt/start-all.sh
-ADD ./cluster-serving-config.yaml /ppml/trusted-realtime-ml/java/config.yaml
-ADD ./init.sh /opt/redis/init.sh
-ADD ./init.sh /ppml/trusted-realtime-ml/java/init.sh
-ADD ./init-cluster-serving.sh /ppml/trusted-realtime-ml/java/init-cluster-serving.sh
+ADD ./cluster-serving-config.yaml /opt/config.yaml
+ADD ./init-cluster-serving.sh /opt/init-cluster-serving.sh
 
 RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-redis.sh && \
@@ -161,6 +159,4 @@ RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-cluster-serving-job.sh && \
     chmod a+x /opt/start-http-frontend.sh && \
     chmod a+x /opt/start-all.sh && \
-    chmod a+x /opt/redis/init.sh && \
-    chmod a+x /ppml/trusted-realtime-ml/java/init.sh && \
-    chmod a+x /ppml/trusted-realtime-ml/java/init-cluster-serving.sh
+    chmod a+x /opt/init-cluster-serving.sh

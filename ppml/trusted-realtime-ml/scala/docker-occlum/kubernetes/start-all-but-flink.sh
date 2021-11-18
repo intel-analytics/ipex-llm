@@ -1,17 +1,6 @@
 #!/bin/bash
 set -x
 
-cd /opt/redis
-export SGX_MEM_SIZE=16G
-test "$SGX_MODE" = sgx && ./init.sh
-echo "redis initiated"
-
-
-cd /ppml/trusted-realtime-ml/java
-export SGX_MEM_SIZE=32G
-test "$SGX_MODE" = sgx && ./init.sh
-echo "java initiated"
-
 
 export REDIS_HOST=redis-service
 ./init-cluster-serving.sh

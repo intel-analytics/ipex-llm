@@ -6,12 +6,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: analytics-zoo-ppml-trusted-realtime-ml-occlum
+      app: bigdl-ppml-trusted-realtime-ml-occlum
   replicas: 1
   template:
     metadata:
       labels:
-        app: analytics-zoo-ppml-trusted-realtime-ml-occlum
+        app: bigdl-ppml-trusted-realtime-ml-occlum
         component: master
     spec:
       tolerations:
@@ -50,8 +50,6 @@ spec:
         volumeMounts:
           - name: device-plugin
             mountPath: /var/lib/kubelet/device-plugins
-          - name: dev-gsgx
-            mountPath: /dev/gsgx
           - name: entry
             mountPath: /ppml/trusted-realtime-ml/start-all-but-flink.sh
           - name: aesm-socket
@@ -59,20 +57,17 @@ spec:
           - name: enclave-keys
             mountPath: /occlum/Pal/src/host/Linux-SGX/signer/enclave-key.pem
           - name: redis-secure-keys
-            mountPath: /opt/redis/work/keys
+            mountPath: /opt/keys
           - name: redis-secure-password
-            mountPath: /opt/redis/work/password
+            mountPath: /opt/password
           - name: java-secure-keys
-            mountPath: /ppml/trusted-realtime-ml/java/work/keys
+            mountPath: /opt/keys
           - name: java-secure-password
-            mountPath: /ppml/trusted-realtime-ml/java/work/password
+            mountPath: /opt/password
       volumes:
       - name: device-plugin
         hostPath:
           path: /var/lib/kubelet/device-plugins
-      - name: dev-gsgx
-        hostPath:
-          path: /dev/gsgx
       - name: aesm-socket
         hostPath:
           path: /var/run/aesmd/aesm.socket
