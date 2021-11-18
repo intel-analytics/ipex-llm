@@ -27,10 +27,6 @@ import scala.util.control.Breaks._
 
 class PSI() extends FLClientClosable {
   val logger = Logger.getLogger(getClass)
-  private var hashedKeyPairs: Map[String, String] = null
-  def getHashedKeyPairs() = {
-    hashedKeyPairs
-  }
 
   def getSalt(): String = {
     flClient.psiStub.getSalt()

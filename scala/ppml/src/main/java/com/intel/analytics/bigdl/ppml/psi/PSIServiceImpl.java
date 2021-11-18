@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.ppml.psi;
 import com.intel.analytics.bigdl.ppml.generated.FLProto.*;
 import com.intel.analytics.bigdl.ppml.generated.PSIServiceGrpc;
 import io.grpc.stub.StreamObserver;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
