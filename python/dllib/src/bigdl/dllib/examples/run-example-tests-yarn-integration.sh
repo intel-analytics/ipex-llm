@@ -159,8 +159,9 @@ echo "start test for dllib nnframes image inference"
 # unzip -q data/mnist.zip -d data
 
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256 \ 
-  --cluster_mode yarn-client
+python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py \
+  --cluster_mode yarn-client \
+  -e 1 -b 256 \ 
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
