@@ -11,7 +11,7 @@ import com.intel.analytics.bigdl.dllib.common.NNContext
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
 import com.intel.analytics.bigdl.dllib.keras.layers._
 import com.intel.analytics.bigdl.dllib.keras.metrics.Accuracy
-import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.Sequential._
 import com.intel.analytics.bigdl.dllib.keras.objectives.SparseCategoricalCrossEntropy
 import com.intel.analytics.bigdl.dllib.estimator.Estimator
 import org.apache.spark.SparkConf

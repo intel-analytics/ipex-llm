@@ -62,7 +62,7 @@ object Train {
 
       model.compile(optimizer = optimMethod,
         loss = ClassNLLCriterion[Float](logProbAsInput = false),
-        metrics = Array(new Top1Accuracy[Float](), new Top5Accuracy[Float](), new Loss[Float]))
+        metrics = List(new Top1Accuracy[Float](), new Top5Accuracy[Float](), new Loss[Float]))
       model.fit(trainSet, nbEpoch = param.maxEpoch, validationData = validationSet)
 
       sc.stop()
