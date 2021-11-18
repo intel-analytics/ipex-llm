@@ -26,7 +26,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --conf spark.sql.broadcastTimeout=3000 \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_example.py" 2>&1 | tee test-sql-dataframe-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_example.py" 2>&1 > test-sql-dataframe-sgx.log
 status_1_pyspark_sql_api_DataFrame=$(echo $?)
 fi
 
@@ -40,7 +40,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
     --conf spark.sql.broadcastTimeout=3000 \
-    /ppml/trusted-big-data-ml/work/examples/sql_context_example.py" 2>&1 | tee test-sql-context-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_context_example.py" 2>&1 > test-sql-context-sgx.log
 status_2_pyspark_sql_api_SQLContext=$(echo $?)
 fi
 
@@ -53,7 +53,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_UDFRegistration_example.py" 2>&1 | tee test-sql-UDFRegistration.log
+    /ppml/trusted-big-data-ml/work/examples/sql_UDFRegistration_example.py" 2>&1 > test-sql-UDFRegistration.log
 status_3_pyspark_sql_api_UDFRegistration=$(echo $?)
 fi
 
@@ -66,7 +66,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_groupeddata_example.py" 2>&1 | tee test-sql-groupeddata-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_groupeddata_example.py" 2>&1 > test-sql-groupeddata-sgx.log
 status_4_pyspark_sql_api_GroupedData=$(echo $?)
 fi
 
@@ -79,7 +79,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_column_example.py" 2>&1 | tee test-sql-column-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_column_example.py" 2>&1 > test-sql-column-sgx.log
 status_5_pyspark_sql_api_Column=$(echo $?)
 fi
 
@@ -92,7 +92,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_row_func_example.py" 2>&1 | tee test-sql-row-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_row_func_example.py" 2>&1 > test-sql-row-sgx.log
 status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions=$(echo $?)
 fi
 
@@ -105,7 +105,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_window_example.py" 2>&1 | tee test-window-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_window_example.py" 2>&1 > test-window-sgx.log
 status_7_pyspark_sql_api_Window=$(echo $?)
 fi
 
@@ -118,7 +118,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_dataframe_reader_example.py" 2>&1 | tee test-dataframe-reader-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_dataframe_reader_example.py" 2>&1 > test-dataframe-reader-sgx.log
 status_8_pyspark_sql_api_DataframeReader=$(echo $?)
 fi
 
@@ -131,7 +131,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_dataframe_writer_example.py" 2>&1 | tee test-dataframe-writer-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_dataframe_writer_example.py" 2>&1 > test-dataframe-writer-sgx.log
 status_9_pyspark_sql_api_DataframeWriter=$(echo $?)
 fi
 
@@ -144,7 +144,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_hive_context_example.py" 2>&1 | tee sql_hive_context_example-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_hive_context_example.py" 2>&1 > sql_hive_context_example-sgx.log
 status_10_pyspark_sql_api_HiveContext=$(echo $?)
 fi
 
@@ -157,7 +157,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_catalog_example.py" 2>&1 | tee sql_catalog_example-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_catalog_example.py" 2>&1 > sql_catalog_example-sgx.log
 status_11_pyspark_sql_api_Catalog=$(echo $?)
 fi
 
@@ -170,7 +170,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
     --master 'local[4]' \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_types_example.py" 2>&1 | tee sql_types_example-sgx.log
+    /ppml/trusted-big-data-ml/work/examples/sql_types_example.py" 2>&1 > sql_types_example-sgx.log
 status_12_pyspark_sql_types_module=$(echo $?)
 fi
 
@@ -185,7 +185,7 @@ echo "pysaprk sql api example.13 --- pyspark api functions"
         --master 'local[4]' \
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false \
-        /ppml/trusted-big-data-ml/work/examples/sql_functions_${f_num}_example.py" 2>&1 | tee sql_functions_${f_num}_example.log
+        /ppml/trusted-big-data-ml/work/examples/sql_functions_${f_num}_example.py" 2>&1 > sql_functions_${f_num}_example.log
   done
 fi
 
@@ -209,9 +209,9 @@ echo "#### pyspark api example.5 Excepted result(Column): Finish running SQL Col
 echo "---- pyspark api example.5 Actual result: "
 cat test-sql-column-sgx.log | egrep -a 'Finish running SQL Column API'
 
-echo "#### pyspark api example.6 Excepted result(Row_and_DataFrameNaFunctions): Finish running SQL Row_and_DataFrameNaFunctions API"
+echo "#### pyspark api example.6 Excepted result(Row_and_DataFrameNaFunctions): Finish running ..."
 echo "---- pyspark api example.6 Actual result: "
-cat test-sql-row-sgx.log  | egrep -a 'Finish running SQL Row_and_DataFrameNaFunctions API'
+cat test-sql-row-sgx.log  | egrep -a 'Finish running ...'
 
 echo "#### pyspark api example.7 Excepted result(Window): Finish running Window and WindowSpec API"
 echo "---- pyspark api example.7 Actual result: "

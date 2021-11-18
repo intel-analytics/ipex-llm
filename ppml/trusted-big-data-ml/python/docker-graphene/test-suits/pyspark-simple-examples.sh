@@ -9,7 +9,8 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master 'local[4]' \
    --conf spark.python.use.daemon=false \
-   /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/pi.py" 2>&1 | tee test-pi-sgx.log && \
+   --conf spark.python.worker.reuse=false \
+   /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/pi.py" 2>&1 > test-pi-sgx.log && \
    cat test-pi-sgx.log | egrep 'roughly'
 status_3_local_spark_pi=$(echo $?)
 fi
@@ -22,8 +23,9 @@ SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && /opt/jdk8/b
    -Xmx1g org.apache.spark.deploy.SparkSubmit \
    --master 'local[4]' \
    --conf spark.python.use.daemon=false \
+   --conf spark.python.worker.reuse=false \
    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/wordcount.py \
-   /ppml/trusted-big-data-ml/work/examples/helloworld.py" 2>&1 | tee test-wordcount-sgx.log && \
+   /ppml/trusted-big-data-ml/work/examples/helloworld.py" 2>&1 > test-wordcount-sgx.log && \
    cat test-wordcount-sgx.log | egrep 'print'
 status_4_local_spark_wordcount=$(echo $?)
 fi
