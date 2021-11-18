@@ -7,6 +7,9 @@ clear_up () {
     pip uninstall -y pyspark
 }
 
+export HADOOP_HOME=/opt/work/hadoop-2.9.0
+export HADOOP_CONF_DIR=/opt/work/hadoop-2.9.0/etc/hadoop
+
 set -e
 
 echo "#start orca ray example tests"
