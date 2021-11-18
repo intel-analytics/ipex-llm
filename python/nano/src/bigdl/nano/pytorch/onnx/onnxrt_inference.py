@@ -69,8 +69,8 @@ def bind_onnxrt_methods(pl_model: LightningModule):
             'You should set either input_sample or self.example_input_array'
 
         default_onnx_export_args = {'export_params': True,
-                                    # 'opset_version': 10,
-                                    # 'do_constant_folding': True,
+                                    'opset_version': 10,
+                                    'do_constant_folding': True,
                                     'input_names': ['input'],
                                     'output_names': ['output'],
                                     'dynamic_axes': {'input': {0: 'batch_size'},
