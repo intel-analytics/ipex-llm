@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from optparse import OptionParser
+import argparse
 import tensorflow as tf
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset, TFPredictor
@@ -30,11 +30,12 @@ from nets import lenet
 
 slim = tf.contrib.slim
 
-parser = OptionParser()
-parser.add_option('--data_num', type=int, default=10000,
+parser = argparse.ArgumentParser(description="Run the tfpark keras "
+                                             "dataset example.")
+parser.add_argument('--data_num', type=int, default=10000,
                 help='Set data_num for training, it should be integer.') 
-parser.add_option("--data_path", dest="data_path")
-parser.add_option('--cluster_mode', type=str, default="local",
+parser.add_argument("--data_path", dest="data_path")
+parser.add_argument('--cluster_mode', type=str, default="local",
                 help='The mode for the Spark cluster. local, yarn or spark-submit.')
 (options, args) = parser.parse_args(sys.argv)
 
