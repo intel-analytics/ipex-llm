@@ -150,13 +150,12 @@ echo "start test for dllib nnframes image inference"
 echo "#7 start test for orca mxnet"
 #timer
 start=$(date "+%s")
-if [ -f data/mnist.zip ]
-then
-    echo "mnist.zip already exists"
-else
-    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P data
-fi
-unzip -q data/mnist.zip -d data
+
+rm -f data/*
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P data
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P data
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P data
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P data
 
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py --cluster_mode yarn-client
@@ -277,6 +276,13 @@ echo "#7 Total time cost ${time} seconds"
 # time=$((now - start))
 # echo "#12 Total time cost ${time} seconds"
 
+echo "prepare dataset for tfpark keras"
+rm -f /tmp/mnist/*
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz -P /tmp/mnist
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz -P /tmp/mnist
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P /tmp/mnist
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/mnist
+
 echo "#13 start test for orca tfpark keras_dataset"
 #timer
 start=$(date "+%s")
@@ -343,41 +349,41 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#16 Total time cost ${time} seconds"
 
-# echo "#17 start test for orca tfpark estimator_inception"
-# #prepare data
-# if [ -f analytics-zoo-data/data/dogs-vs-cats/train.zip ]; then
-#   echo "analytics-zoo-data/data/dogs-vs-cats/train.zip already exists."
-# else
-#   # echo "Downloading dogs and cats images"
-#   wget -nv $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip \
-#     -P /tmp/data/dogs-vs-cats
-#   unzip -q /tmp/data/dogs-vs-cats/train.zip -d /tmp/data/dogs-vs-cats
-#   mkdir -p /tmp/data/dogs-vs-cats/samples
-#   cp /tmp/data/dogs-vs-cats/train/cat.71* /tmp/data/dogs-vs-cats/samples
-#   cp /tmp/data/dogs-vs-cats/train/dog.71* /tmp/data/dogs-vs-cats/samples
+echo "#17 start test for orca tfpark estimator_inception"
+#prepare data
+if [ -f analytics-zoo-data/data/dogs-vs-cats/train.zip ]; then
+  echo "analytics-zoo-data/data/dogs-vs-cats/train.zip already exists."
+else
+  # echo "Downloading dogs and cats images"
+  wget -nv $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip \
+    -P /tmp/data/dogs-vs-cats
+  unzip -q /tmp/data/dogs-vs-cats/train.zip -d /tmp/data/dogs-vs-cats
+  mkdir -p /tmp/data/dogs-vs-cats/samples
+  cp /tmp/data/dogs-vs-cats/train/cat.71* /tmp/data/dogs-vs-cats/samples
+  cp /tmp/data/dogs-vs-cats/train/dog.71* /tmp/data/dogs-vs-cats/samples
 
-#   mkdir -p /tmp/data/dogs-vs-cats/demo/cats
-#   mkdir -p /tmp/data/dogs-vs-cats/demo/dogs
-#   cp /tmp/data/dogs-vs-cats/train/cat.71* /tmp/data/dogs-vs-cats/demo/cats
-#   cp /tmp/data/dogs-vs-cats/train/dog.71* /tmp/data/dogs-vs-cats/demo/dogs
-#   # echo "Finished downloading images"
-# fi
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
-#   --image-path /tmp/data/dogs-vs-cats/demo \
-#   --num-classes 2 \
-#   --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca tfpark estimator_inception failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#17 Total time cost ${time} seconds"
+  mkdir -p /tmp/data/dogs-vs-cats/demo/cats
+  mkdir -p /tmp/data/dogs-vs-cats/demo/dogs
+  cp /tmp/data/dogs-vs-cats/train/cat.71* /tmp/data/dogs-vs-cats/demo/cats
+  cp /tmp/data/dogs-vs-cats/train/dog.71* /tmp/data/dogs-vs-cats/demo/dogs
+  # echo "Finished downloading images"
+fi
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
+  --image-path /tmp/data/dogs-vs-cats/demo \
+  --num-classes 2 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark estimator_inception failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#17 Total time cost ${time} seconds"
 
 echo "#18 start test for orca tfpark optimizer train"
 #timer
