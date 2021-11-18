@@ -21,7 +21,7 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export 
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
     /ppml/trusted-big-data-ml/work/data/sqlite_example/customer_profile.py \
-    --db_path $DB_PATH" 2>&1 | tee customer_profile-sgx.log
+    --db_path $DB_PATH" 2>&1 > customer_profile-sgx.log
 status_8_local_spark_customer_profile=$(echo $?)
 fi
 
