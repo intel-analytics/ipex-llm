@@ -147,29 +147,29 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#7 Total time cost ${time} seconds"
 
-# echo "#7 start test for orca mxnet"
-# #timer
-# start=$(date "+%s")
-# if [ -f data/mnist.zip ]
-# then
-#     echo "mnist.zip already exists"
-# else
-#     wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P data
-# fi
-# unzip -q data/mnist.zip -d data
+echo "#7 start test for orca mxnet"
+#timer
+start=$(date "+%s")
+if [ -f data/mnist.zip ]
+then
+    echo "mnist.zip already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P data
+fi
+unzip -q data/mnist.zip -d data
 
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256 \ 
-#   --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca mxnet failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#7 Total time cost ${time} seconds"
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256 \ 
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca mxnet failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#7 Total time cost ${time} seconds"
 
 # echo "#8 start test for orca openvino"
 # #timer
@@ -312,21 +312,21 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#14 Total time cost ${time} seconds"
 
-echo "#15 start test for orca tfpark gan"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/tfpark/gan/gan_train_and_evaluate.py \
-  --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca tfpark gan failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#15 Total time cost ${time} seconds"
+# echo "#15 start test for orca tfpark gan"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/tfpark/gan/gan_train_and_evaluate.py \
+#   --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca tfpark gan failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#15 Total time cost ${time} seconds"
 
 # echo "#16 start test for orca tfpark estimator_dataset"
 # #timer
