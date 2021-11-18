@@ -56,21 +56,6 @@ class ModelSerialTest extends ModuleSerializationTest {
   }
 }
 
-class SequentialSerialTest extends ModuleSerializationTest {
-  override def test(): Unit = {
-    val model = Sequential[Float]()
-    model.add(Dense[Float](8, inputShape = Shape(10)))
-    val tmpFile = ZooSpecHelper.createTmpFile()
-    model.saveModule(tmpFile.getAbsolutePath, overWrite = true)
-    val reloadModel = Net.load[Float](tmpFile.getAbsolutePath)
-    val inputData = Tensor[Float](2, 10).rand()
-    ZooSpecHelper.compareOutputAndGradInput(
-      model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      reloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      inputData)
-  }
-}
-
 class TopologySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Sequential to Model" should "work" in {
