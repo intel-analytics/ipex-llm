@@ -31,7 +31,7 @@ from nets import lenet
 slim = tf.contrib.slim
 
 parser = OptionParser()
-parser.add_argument('--data_num', type=int, default=10000,
+parser.add_option('--data_num', type=int, default=10000,
                 help='Set data_num for training, it should be integer.') 
 parser.add_option("--data_path", dest="data_path")
 parser.add_option('--cluster_mode', type=str, default="local",

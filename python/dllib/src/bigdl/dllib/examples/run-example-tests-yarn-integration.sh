@@ -380,23 +380,23 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#17 Total time cost ${time} seconds"
 
-echo "#18 start test for orca tfpark optimizer train"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/train.py \
-  --max_epoch 1 \
-  --data_num 1000 \
-  --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca tfpark optimizer train failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#18 Total time cost ${time} seconds"
+# echo "#18 start test for orca tfpark optimizer train"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/train.py \
+#   --max_epoch 1 \
+#   --data_num 1000 \
+#   --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca tfpark optimizer train failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#18 Total time cost ${time} seconds"
 
 echo "#19 start test for orca tfpark optimizer evaluate"
 #timer
