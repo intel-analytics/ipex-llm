@@ -52,16 +52,14 @@ class RayTuneSearchEngine(SearchEngine):
         self.logs_dir = os.path.abspath(os.path.expanduser(logs_dir))
 
     @staticmethod
-    def get_default_remote_dir(logs_dir, name):
+    def get_default_remote_dir(name):
         from bigdl.orca.ray import RayContext
         from bigdl.orca.automl.search.utils import process
         ray_ctx = RayContext.get()
         if ray_ctx.is_local:
             return None
         else:
-            default_remote_dir = f"hdfs://{logs_dir}/{name}" \
-                                 if logs_dir.startswith('/tmp') \
-                                 else f"hdfs:///tmp/{logs_dir}/{name}"
+            default_remote_dir = f"hdfs:///tmp/{name}"
             process(command=f"hadoop fs -mkdir -p {default_remote_dir}")
             return default_remote_dir
 

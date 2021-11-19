@@ -28,8 +28,8 @@ def process(command, fail_fast=False, timeout=120):
         stderr=subprocess.PIPE,
         preexec_fn=os.setsid)
     out, err = pro.communicate(timeout=timeout)
-    out = out.decode('utf-8')
-    err = err.decode('utf-8')
+    out = out.decode("utf-8")
+    err = err.decode("utf-8")
     print(out)
     print(err)
     errorcode = pro.returncode

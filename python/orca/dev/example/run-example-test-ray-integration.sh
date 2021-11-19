@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 clear_up () {
     echo "Clearing up environment. Uninstalling BigDL"
@@ -6,9 +6,6 @@ clear_up () {
     pip uninstall -y bigdl-dllib
     pip uninstall -y pyspark
 }
-
-export HADOOP_HOME=/opt/work/hadoop-2.9.0
-export HADOOP_CONF_DIR=/opt/work/hadoop-2.9.0/etc/hadoop
 
 set -e
 
