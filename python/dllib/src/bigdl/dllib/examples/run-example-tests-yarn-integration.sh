@@ -146,7 +146,7 @@ echo "#8 start test for basic_text_classification"
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/basic_text_classification/basic_text_classification.py \
-  --cluster-mode yarn-client
+  --cluster-mode "yarn-client"
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
