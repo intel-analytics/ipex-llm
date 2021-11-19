@@ -92,29 +92,29 @@ echo "start test for dllib nnframes image inference"
 # echo "#4 Total time cost ${time} seconds"
 
 
-echo "#5 start test for orca bigdl imageInference"
-#timer
-start=$(date "+%s")
-if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-else
-  wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-    -P models
-fi
-#run the example
-#python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
-python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageInference/ImageInferenceExample.py
-  -m models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f ${HDFS_URI}/kaggle/train_100 --cluster_mode yarn-cluster
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca imageInference failed"
-#   exit $exit_status
+# echo "#5 start test for orca bigdl imageInference"
+# #timer
+# start=$(date "+%s")
+# if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+#   echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+# else
+#   wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+#     -P models
 # fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#5 Total time cost ${time} seconds"
+# #run the example
+# #python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
+# python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageInference/ImageInferenceExample.py
+#   -m models/bigdl_inception-v1_imagenet_0.4.0.model \
+#   -f ${HDFS_URI}/kaggle/train_100 --cluster_mode yarn-cluster
+# # exit_status=$?
+# # if [ $exit_status -ne 0 ]; then
+# #   clear_up
+# #   echo "orca imageInference failed"
+# #   exit $exit_status
+# # fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#5 Total time cost ${time} seconds"
 
 # echo "#6 start test for orca pytorch_estimator"
 # #timer
@@ -284,22 +284,23 @@ echo "#5 Total time cost ${time} seconds"
 # wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P /tmp/mnist
 # wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/mnist
 
-# echo "#13 start test for orca tfpark keras_dataset"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py \
-#   --max_epoch 5 \
-#   --cluster_mode yarn-cluster
-# # exit_status=$?
-# # if [ $exit_status -ne 0 ]; then
-# #   clear_up
-# #   echo "orca ros rl_pong failed"
-# #   exit $exit_status
-# # fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#13 Total time cost ${time} seconds"
+echo "#13 start test for orca tfpark keras_dataset"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py \
+  --data_path ${HDFS_URI}/mnist
+  --max_epoch 5 \
+  --cluster_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros rl_pong failed"
+#   exit $exit_status
+# fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#13 Total time cost ${time} seconds"
 
 # echo "#14 start test for orca tfpark keras_dataset"
 # #timer

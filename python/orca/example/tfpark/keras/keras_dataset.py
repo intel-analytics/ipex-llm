@@ -24,14 +24,17 @@ from bigdl.dllib.utils.common import *
 
 parser = argparse.ArgumentParser(description="Run the tfpark keras "
                                              "dataset example.")
+parser.add_argument('--data_path', type=str, default='/tmp/mnist',
+                    help='training data path.')                                             
 parser.add_argument('--max_epoch', type=int, default=5,
                     help='Set max_epoch for training, it should be integer.')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
 def get_data_rdd(dataset, sc):
+    data_path = args.data_path
     from bigdl.dllib.feature.dataset import mnist
-    (images_data, labels_data) = mnist.read_data_sets("/mnist", dataset)
+    (images_data, labels_data) = mnist.read_data_sets(data_path, dataset)
     image_rdd = sc.parallelize(images_data)
     labels_rdd = sc.parallelize(labels_data)
     rdd = image_rdd.zip(labels_rdd) \
