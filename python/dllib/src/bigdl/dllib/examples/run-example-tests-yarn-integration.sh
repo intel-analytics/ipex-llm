@@ -137,52 +137,52 @@ clear_up() {
 # time=$((now - start))
 # echo "#7 Total time cost ${time} seconds"
 
-echo "##11 start test for data spark_pandas"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py --deploy-mode 'yarn-client'  -f ${HDFS_URI}/nyc_taxi.csv
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "####################data spark_pandas failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#11 Total time cost ${time} seconds"
+# echo "##11 start test for data spark_pandas"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py --deploy-mode 'yarn-client'  -f ${HDFS_URI}/nyc_taxi.csv
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "####################data spark_pandas failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#11 Total time cost ${time} seconds"
 
 
-echo "#12 start test for pytorch cifar10"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-client' 
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "####################pytorch cifar10 failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#12 Total time cost ${time} seconds"
+# echo "#12 start test for pytorch cifar10"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-client' --epochs 1  --batch_size 256
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "####################pytorch cifar10 failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#12 Total time cost ${time} seconds"
 
 
-echo "#13 start test for pytorch fashion_mnist"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-client' 
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "####################pytorch fashion_mnist failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#13 Total time cost ${time} seconds"
+# echo "#13 start test for pytorch fashion_mnist"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-client'   --epochs 1  --batch_size 256
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "####################pytorch fashion_mnist failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#13 Total time cost ${time} seconds"
 
 
 echo "#14 start test for pytorch super_resolution"
@@ -206,7 +206,7 @@ echo "#15 start test for torchmodel imagenet"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /home/imagenet_jpeg
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /home/imagenet_jpeg --max_epochs 1  --batch-size 256 
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -222,7 +222,7 @@ echo "#16 start test for torchmodel mnist"##
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client'
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --epochs 1  --batch-size 256
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
