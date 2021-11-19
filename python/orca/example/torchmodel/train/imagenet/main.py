@@ -17,6 +17,7 @@ from __future__ import print_function
 import argparse
 import torch
 import torchvision
+import os
 from torchvision import datasets, transforms
 from bigdl.dllib.optim.optimizer import *
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -105,6 +106,8 @@ def main():
     # Data loading code
     traindir = os.path.join(args.data, 'train')
     valdir = os.path.join(args.data, 'val')
+    list = os.listdir(rootdir)
+    print(list)
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
