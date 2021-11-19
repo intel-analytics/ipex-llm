@@ -94,16 +94,17 @@ echo "start test for dllib nnframes image inference"
 
 echo "#5 start test for orca bigdl imageInference"
 #timer
-# start=$(date "+%s")
-# if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-#   echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-# else
-#   wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-#     -P analytics-zoo-models
-# fi
+start=$(date "+%s")
+if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+    -P models
+fi
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
-  -m ${HDFS_URI}/models/bigdl_inception-v1_imagenet_0.4.0.model \
+#python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
+python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageInference/ImageInferenceExample.py
+  -m models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f ${HDFS_URI}/kaggle/train_100 \
   --cluster_mode yarn-cluster
 # exit_status=$?
