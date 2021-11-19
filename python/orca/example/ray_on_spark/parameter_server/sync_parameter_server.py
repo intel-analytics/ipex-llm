@@ -22,9 +22,10 @@ from __future__ import print_function
 import argparse
 import os
 
+from python.orca.example.ray_on_spark.parameter_server import model
 import numpy as np
 import ray
-import model
+#import model
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca import OrcaContext
