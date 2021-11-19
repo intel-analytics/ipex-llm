@@ -148,7 +148,8 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py 
   --worker_num 8 --cores 17 \
   --data_dir /bigdl2.0/data/imagenet_to_tfrecord --use_bf16 \
   --enable_numa_binding \
-  --cluster-mode "yarn-client"
+  --cluster-mode yarn-client
+exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
   echo "orca tf2 resnet-50-imagenet failed"
