@@ -75,21 +75,21 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#3 Total time cost ${time} seconds"
 
-# echo "#4 start test for orca bigdl transformer"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
-#   --cluster_mode yarn_cluster
-# # exit_status=$?
-# # if [ $exit_status -ne 0 ]; then
-# #   clear_up
-# #   echo "orca transformer failed"
-# #   exit $exit_status
-# # fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#4 Total time cost ${time} seconds"
+echo "#4 start test for orca bigdl transformer"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
+  --cluster_mode yarn_cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca transformer failed"
+#   exit $exit_status
+# fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#4 Total time cost ${time} seconds"
 
 
 # echo "#5 start test for orca bigdl imageInference"
@@ -202,45 +202,45 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#8 Total time cost ${time} seconds"
 
-echo "#prepare dataset for ray_on_spark"
-wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz
-wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz
-wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz
-wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz
-zip MNIST_data.zip train-images-idx3-ubyte.gz train-labels-idx1-ubyte.gz t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
+# echo "#prepare dataset for ray_on_spark"
+# wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz
+# wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz
+# wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz
+# wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz
+# zip MNIST_data.zip train-images-idx3-ubyte.gz train-labels-idx1-ubyte.gz t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
 
-echo "#9 start test for orca ros async"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py #--iterations 10 --num_workers 2 --cluster_mode yarn
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca ros async failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#9 Total time cost ${time} seconds"
+# echo "#9 start test for orca ros async"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py #--iterations 10 --num_workers 2 --cluster_mode yarn
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros async failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#9 Total time cost ${time} seconds"
 
-echo "#10 start test for orca ros sync"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
-  --cluster_mode yarn-client \
-  --num_workers 2 \
-  --iterations 5
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca ros sync failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#10 Total time cost ${time} seconds"
+# echo "#10 start test for orca ros sync"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
+#   --cluster_mode yarn-client \
+#   --num_workers 2 \
+#   --iterations 5
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca ros sync failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#10 Total time cost ${time} seconds"
 
 # echo "#11 start test for orca rllib"
 # #timer
