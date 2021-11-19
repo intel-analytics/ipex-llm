@@ -144,10 +144,11 @@ echo "#11 start test for orca transfer learning"
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py \
-  --data_dir /bigdl2.0/data/datasets --cluster-mode "yarn-client"
+  --data_dir /bigdl2.0/data/datasets --cluster-mode yarn-client
+exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
-  echo "dllib nnframes_imageTransfer learning failed"
+  echo "orca transfer learning failed"
   exit $exit_status
 fi
 now=$(date "+%s")
