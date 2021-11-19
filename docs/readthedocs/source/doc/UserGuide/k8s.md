@@ -123,9 +123,7 @@ init_orca_context(cluster_mode="k8s", master="k8s://https://<k8s-apiserver-host>
                   container_image="intelanalytics/bigdl-k8s:latest",
                   num_nodes=2, cores=2,
                   conf={"spark.driver.host": "x.x.x.x",
-                        "spark.driver.port": "x",
-                        "spark.pyspark.driver.python": "./environment/bin/python",
-                        "spark.pyspark.python": "./environment/bin/python",
+                        "spark.driver.port": "x"
                        })
 ```
 
@@ -196,7 +194,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
   --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
   --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-  --name analytics-zoo \
+  --name bigdl \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
   --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -210,14 +208,13 @@ ${SPARK_HOME}/bin/spark-submit \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
   --driver-cores ${RUNTIME_DRIVER_CORES} \
   --driver-memory ${RUNTIME_DRIVER_MEMORY} \
-  --properties-file ${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf \
-  --py-files ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip \
+  --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
   --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
   --conf spark.sql.catalogImplementation='in-memory' \
-  --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
-  --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
-  --class com.intel.analytics.zoo.examples.anomalydetection.AnomalyDetection \
-  ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip \
+  --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/*  \
+  --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/*  \
+  --class com.intel.analytics.bigdl.dllib.examples.nnframes.imageInference.ImageTransferLearning \
+  ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
   --inputDir /path
 ```
 
@@ -230,7 +227,7 @@ Options:
 - --properties-file: the customized conf properties.
 - --py-files: the extra python packages is needed.
 - --class: scala example class name.
-- --inputDir: input data path of the anomaly detection example. The data path is the mounted filesystem of the host. Refer to more details by [Kubernetes Volumes](https://spark.apache.org/docs/latest/running-on-kubernetes.html#using-kubernetes-volumes).
+- --inputDir: input data path of the nnframe example. The data path is the mounted filesystem of the host. Refer to more details by [Kubernetes Volumes](https://spark.apache.org/docs/latest/running-on-kubernetes.html#using-kubernetes-volumes).
 
 ### **4 Know issues**
 
