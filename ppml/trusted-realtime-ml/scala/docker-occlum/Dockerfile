@@ -153,7 +153,6 @@ ADD ./start-flink-taskmanager.sh /opt/start-flink-taskmanager.sh
 ADD ./start-cluster-serving-job.sh /opt/start-cluster-serving-job.sh
 ADD ./start-http-frontend.sh /opt/start-http-frontend.sh
 ADD ./start-all.sh /opt/start-all.sh
-ADD ./cluster-serving-config.yaml /opt/config.yaml
 ADD ./init-cluster-serving.sh /opt/init-cluster-serving.sh
 ADD ./init-benchmark.sh /opt/init-benchmark.sh
 
