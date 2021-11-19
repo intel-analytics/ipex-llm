@@ -595,8 +595,14 @@ def main():
                                 "nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
                                 "spark.kubernetes.driver.volumes.persistentVolumeClaim."
                                 "nfsvolumeclaim.mount.path": options.nfs_mount_path})
-    elif options.cluster_mode == "yarn":
-        init_orca_context(cluster_mode="yarn-client", cores=options.cores,
+    elif options.cluster_mode.startswith("yarn"):
+        if options.cluster_mode == "yarn-client":
+            init_orca_context(cluster_mode="yarn-client", cores=options.cores,
+                          num_nodes=options.worker_num, memory=options.memory,
+                          init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
+                          object_store_memory=options.object_store_memory)
+        else:
+            init_orca_context(cluster_mode="yarn-cluster", cores=options.cores,
                           num_nodes=options.worker_num, memory=options.memory,
                           init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
                           object_store_memory=options.object_store_memory)
