@@ -125,8 +125,7 @@ init_orca_context(cluster_mode="k8s", master="k8s://https://<k8s-apiserver-host>
                   container_image="intelanalytics/bigdl-k8s:latest",
                   num_nodes=2, cores=2,
                   conf={"spark.driver.host": "x.x.x.x",
-                        "spark.driver.port": "x"
-                       })
+                        "spark.driver.port": "x"})
 ```
 
 Execute `python script.py` to run your program on k8s cluster directly.
@@ -237,7 +236,8 @@ This section shows some common topics for both client mode and cluster mode.
 
 #### **4.1 How to specify python environment**
 
-The k8s image provides conda python environment. Image "intelanalytics/bigdl-k8s:latest" installs python environment in "/usr/local/envs/pytf1/bin/python". Image "intelanalytics/bigdl-k8s:latest-pytf2" installs python environment in "/usr/local/envs/pytf2/bin/python".
+The k8s image provides conda python environment. Image "intelanalytics/bigdl-k8s:latest" installs python environment in "/usr/local/envs/pytf1/bin/python". Image "intelanalytics/bigdl-k8s:latest-tf2" installs python environment in "/usr/local/envs/pytf2/bin/python".
+
 In client mode, set python env and run application:
 ```python
 source activate pytf1
