@@ -289,7 +289,7 @@ echo "#13 start test for orca tfpark keras_dataset"
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py \
-  --data_path ${HDFS_URI}/mnist
+  --data_path ${HDFS_URI}/mnist \
   --max_epoch 5 \
   --cluster_mode yarn-cluster
 # exit_status=$?
