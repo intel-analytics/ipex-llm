@@ -202,12 +202,12 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#8 Total time cost ${time} seconds"
 
-# echo "#prepare dataset for ray_on_spark"
-# wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz
-# wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz
-# wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz
-# wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz
-# zip MNIST_data.zip train-images-idx3-ubyte.gz train-labels-idx1-ubyte.gz t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
+echo "#prepare dataset for ray_on_spark"
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz
+zip MNIST_data.zip train-images-idx3-ubyte.gz train-labels-idx1-ubyte.gz t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
 
 # echo "#9 start test for orca ros async"
 # #timer
@@ -232,6 +232,7 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
   --iterations 5 \
+  -- num_workers 2 \
   --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
