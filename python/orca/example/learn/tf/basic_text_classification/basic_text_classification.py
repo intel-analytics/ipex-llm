@@ -71,14 +71,17 @@ args = parser.parse_args()
 cluster_mode = args.cluster_mode
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
-elif cluster_mode == "yarn":
-    init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g")
+elif cluster_mode.startswith("yarn"):
+        if cluster_mode == "yarn-client":
+            init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g")
+        else:
+            init_orca_context(cluster_mode="yarn-cluster", num_nodes=2, cores=2, driver_memory="3g")
 elif cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 else:
     print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + cluster_mode)
-
+    
 print(tf.__version__)
 
 imdb = keras.datasets.imdb
