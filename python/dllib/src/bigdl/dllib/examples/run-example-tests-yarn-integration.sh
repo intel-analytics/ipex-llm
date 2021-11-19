@@ -116,27 +116,26 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#4 Total time cost ${time} seconds"
 
-echo "#6 start test for orca pytorch_estimator imageInference"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca pytorch_estimator failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#6 Total time cost ${time} seconds"
+# echo "#6 start test for orca pytorch_estimator"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca pytorch_estimator failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#6 Total time cost ${time} seconds"
 
-echo "#7 start test for orca simple_pytorch imageInference"
+echo "#7 start test for orca simple_pytorch"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py \ 
-  --cluster_mode yarn-client
+python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
