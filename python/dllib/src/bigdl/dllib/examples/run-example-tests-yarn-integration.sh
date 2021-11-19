@@ -195,41 +195,41 @@ clear_up() {
 # echo "#13 Total time cost ${time} seconds"
 
 
-# echo "#14 start test for pytorch super_resolution"
+echo "#14 start test for pytorch super_resolution"
+#timer
+start=$(date "+%s")
+#run the example
+# ls /tmp/super_resolution_data
+# rm -rf /tmp/super_resolution_data
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir /home/super_resolution_data
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  #clear_up
+  echo "####################pytorch super_resolution failed"
+  #exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#14 Total time cost ${time} seconds"
+
+
+# echo "#15 start test for torchmodel imagenet"
 # #timer
 # start=$(date "+%s")
 # #run the example
-# # ls /tmp/super_resolution_data
-# # rm -rf /tmp/super_resolution_data
-# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir /home/super_resolution_data
+# # ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet_jpeg/ /tmp/imagenet_jpeg/
+# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py ${HDFS_URI}/imagenet_jpeg \
+#     --max_epochs 1 \
+#     --deploy_mode yarn-client
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
 #   clear_up
-#   echo "####################pytorch super_resolution failed"
+#   echo "####################torchmodel imagenet failed"
 #   exit $exit_status
 # fi
 # now=$(date "+%s")
 # time=$((now - start))
-# echo "#14 Total time cost ${time} seconds"
-
-
-echo "#15 start test for torchmodel imagenet"
-#timer
-start=$(date "+%s")
-#run the example
-# ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet_jpeg/ /tmp/imagenet_jpeg/
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py ${HDFS_URI}/imagenet_jpeg \
-    --max_epochs 1 \
-    --deploy_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "####################torchmodel imagenet failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#15 Total time cost ${time} seconds"
+# echo "#15 Total time cost ${time} seconds"
 
 
 # echo "#16 start test for torchmodel mnist"##
