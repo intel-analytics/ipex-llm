@@ -57,9 +57,9 @@ spec:
           - name: enclave-keys
             mountPath: /occlum/Pal/src/host/Linux-SGX/signer/enclave-key.pem
           - name: redis-secure-keys
-            mountPath: /opt/keys
+            mountPath: /opt/redis/work/keys
           - name: redis-secure-password
-            mountPath: /opt/password
+            mountPath: /opt/redis/work/password
           - name: java-secure-keys
             mountPath: /opt/keys
           - name: java-secure-password
