@@ -64,9 +64,14 @@ base_dir, _ = os.path.splitext(zip_file)
 
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
-elif cluster_mode == "yarn":
+elif cluster_mode.startswith("yarn"):
+  if cluster_mode == "yarn-client":
     additional = "datasets/cats_and_dogs_filtered.zip#" + dataset_dir
     init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g",
+                      additional_archive=additional)
+  else:
+    additional = "datasets/cats_and_dogs_filtered.zip#" + dataset_dir
+    init_orca_context(cluster_mode="yarn-cluster", num_nodes=2, cores=2, driver_memory="3g",
                       additional_archive=additional)
 elif cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")                      
