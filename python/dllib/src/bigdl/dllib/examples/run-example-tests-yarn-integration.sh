@@ -138,6 +138,7 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
+
 ！
 
 echo "end after"
