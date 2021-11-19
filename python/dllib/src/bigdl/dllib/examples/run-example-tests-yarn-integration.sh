@@ -5,7 +5,8 @@ clear_up() {
 }
 
 echo "start before"
-:<<!
+: '
+
 echo "#1 start test for dllib lenet5"
 
 #timer
@@ -139,7 +140,7 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
 
-！
+'
 
 echo "end after"
 
