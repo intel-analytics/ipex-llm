@@ -146,7 +146,7 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
   --imagenet /bigdl2.0/data/imagenettfrecord \
-  -b 128--cluster-mode yarn-client
+  -b 128 --cluster-mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
