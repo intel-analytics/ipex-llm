@@ -215,7 +215,7 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py \
   --iterations 5 \
-  --cluster_mode yarn-cluster
+  --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
@@ -226,23 +226,23 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#9 Total time cost ${time} seconds"
 
-# echo "#10 start test for orca ros sync"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
-#   --cluster_mode yarn-client \
-#   --num_workers 2 \
-#   --iterations 5
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca ros sync failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#10 Total time cost ${time} seconds"
+echo "#10 start test for orca ros sync"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
+  --cluster_mode yarn-client \
+  --num_workers 2 \
+  --iterations 5
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros sync failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#10 Total time cost ${time} seconds"
 
 # echo "#11 start test for orca rllib"
 # #timer
