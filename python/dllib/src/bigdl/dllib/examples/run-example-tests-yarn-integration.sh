@@ -231,9 +231,9 @@ echo "#10 start test for orca ros sync"
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
-  --iterations 5 \
-  -- num_workers 2 \
-  --cluster_mode yarn-client
+  --cluster_mode yarn-client \
+  --num_workers 2 \
+  --iterations 5
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
