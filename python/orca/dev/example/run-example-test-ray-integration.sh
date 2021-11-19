@@ -7,10 +7,12 @@ clear_up () {
     pip uninstall -y pyspark
 }
 
+set -e
+
 echo "#start orca ray example tests"
 echo "#1 Start autoestimator example"
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/automl/autoestimator/autoestimator_pytorch.py --trials 5 --epochs 2 --cluster-mode yarn
+python ${BIGDL_ROOT}/python/orca/example/automl/autoestimator/autoestimator_pytorch.py --trials 5 --epochs 2 --cluster_mode yarn
 now=$(date "+%s")
 time1=$((now-start))
 
@@ -23,7 +25,7 @@ else
 fi
 
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostClassifier.py -p ${BIGDL_ROOT}/data/airline_14col.data --cluster-mode yarn
+python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostClassifier.py -p ${BIGDL_ROOT}/data/airline_14col.data --cluster_mode yarn
 now=$(date "+%s")
 time2=$((now-start))
 
@@ -36,11 +38,10 @@ else
 fi
 
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor.py -p ${BIGDL_ROOT}/data/incd.csv --cluster-mode yarn
+python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor.py -p ${BIGDL_ROOT}/data/incd.csv --cluster_mode yarn
 now=$(date "+%s")
 time3=$((now-start))
 
-set -e
 ray stop -f
 
 #echo "#4 Start rl_pong example"
