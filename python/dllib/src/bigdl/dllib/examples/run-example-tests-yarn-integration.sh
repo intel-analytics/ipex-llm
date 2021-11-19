@@ -219,7 +219,7 @@ echo "#15 start test for torchmodel imagenet"
 start=$(date "+%s")
 #run the example
 # ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet_jpeg/ /tmp/imagenet_jpeg/
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py ${HDFS_URI}/imagenet_jpeg \
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py /home/imagenet_jpeg \
     --max_epochs 1 \
     --deploy_mode yarn-client
 exit_status=$?
