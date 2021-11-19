@@ -157,7 +157,6 @@ echo "#12 start test for pytorch cifar10"
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf ./*
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-client' 
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
@@ -174,8 +173,6 @@ echo "#13 start test for pytorch fashion_mnist"
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf ./data
-rm -rf ./runs
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-client' 
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
@@ -192,7 +189,6 @@ echo "#14 start test for pytorch super_resolution"
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf ./dataset
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' 
 #--data_dir '/tmp/super_resolution_data'
 exit_status=$?
@@ -226,7 +222,6 @@ echo "#16 start test for torchmodel mnist"##
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf /tmp/torchmodel_mnist
 python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
@@ -243,8 +238,6 @@ echo "#17 start test for torchmodel resnet_finetune"
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf /tmp/dogs_cats/samples
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/dogs_cats/ /tmp/dogs_cats/
 python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ${HDFS_URI}/dogs_cats/samples
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
