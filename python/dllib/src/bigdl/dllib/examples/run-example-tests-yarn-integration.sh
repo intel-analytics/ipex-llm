@@ -75,21 +75,21 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#3 Total time cost ${time} seconds"
 
-echo "#4 start test for orca bigdl transformer"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
-  --cluster_mode yarn_cluster
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca transformer failed"
-#   exit $exit_status
-# fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#4 Total time cost ${time} seconds"
+# echo "#4 start test for orca bigdl transformer"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
+#   --cluster_mode yarn_cluster
+# # exit_status=$?
+# # if [ $exit_status -ne 0 ]; then
+# #   clear_up
+# #   echo "orca transformer failed"
+# #   exit $exit_status
+# # fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#4 Total time cost ${time} seconds"
 
 
 # echo "#5 start test for orca bigdl imageInference"
@@ -351,23 +351,23 @@ echo "#4 Total time cost ${time} seconds"
 # time=$((now - start))
 # echo "#16 Total time cost ${time} seconds"
 
-# echo "#17 start test for orca tfpark estimator_inception"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
-#   --image-path ${HDFS_URI}/dogs_cats \
-#   --num-classes 2 \
-#   --cluster_mode yarn-cluster
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca tfpark estimator_inception failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#17 Total time cost ${time} seconds"
+echo "#17 start test for orca tfpark estimator_inception"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
+  --image-path ${HDFS_URI}/dogs_cats \
+  --num-classes 2 \
+  --cluster_mode yarn-cluster
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark estimator_inception failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#17 Total time cost ${time} seconds"
 
 # echo "#18 start test for orca tfpark optimizer train"
 # #timer
