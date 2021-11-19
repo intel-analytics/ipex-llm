@@ -48,7 +48,7 @@ class RayTuneSearchEngine(SearchEngine):
         self.resources_per_trial = resources_per_trial
         self.trials = None
         self.name = name
-        self.remote_dir = remote_dir or RayTuneSearchEngine.get_default_remote_dir(logs_dir, name)
+        self.remote_dir = remote_dir or RayTuneSearchEngine.get_default_remote_dir(name)
         self.logs_dir = os.path.abspath(os.path.expanduser(logs_dir))
 
     @staticmethod
