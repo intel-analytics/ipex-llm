@@ -136,15 +136,11 @@ RUN chmod a+x /opt/install-python-env1.sh && \
     chmod a+x /opt/install-python-env2.sh && \
     chmod +x /sbin/tini
 RUN if [ $PYTHON_ENV = "tf1" ]; then \
-        /opt/install-python-env1.sh && \
+        rm /opt/install-python-env2.sh && \
+        /opt/install-python-env1.sh; \
     elif [ $PYTHON_ENV = "tf2" ]; then \
-        conda create -y -n pytf2 python=3.7 && \
-        conda install -y -n pytf2 cxx-compiler==1.0 -c conda-forge && \
-        /bin/bash -c "source activate pytf2 && \
-        pip install tensorflow==2.4.0 && \
-        HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; \
-        pip install --no-cache-dir horovod==0.19.2 && source deactivate" && \
-        /opt/install-python-env2.sh
+        rm /opt/install-python-env1.sh && \
+        /opt/install-python-env2.sh; \
     fi
 RUN cp /sbin/tini /usr/bin/tini
 

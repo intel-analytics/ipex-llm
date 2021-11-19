@@ -1,3 +1,4 @@
+conda create -y -n pytf2 python=3.7 && \
 source activate pytf2 && \
 pip install --no-cache-dir --upgrade pip && \
 pip install --no-cache-dir --upgrade setuptools && \
@@ -23,9 +24,10 @@ pip install --no-cache-dir async-timeout==3.0.1 && \
 pip install --no-cache-dir py4j && \
 pip install --no-cache-dir cmake==3.16.3 && \
 pip install --no-cache-dir torch==1.7.1 torchvision==0.8.2 && \
+pip install --no-cache-dir horovod==0.19.2 && \
 pip install --no-cache-dir xgboost && \
 pip install --no-cache-dir pyarrow && \
 pip install --no-cache-dir opencv-python==4.2.0.34 && \
 pip install --no-cache-dir aioredis==1.1.0 && \
-pip install --no-cache-dir prophet==1.0.1 && \
+pip install --no-cache-dir tensorflow==2.4.0 && \
 source deactivate
