@@ -114,37 +114,37 @@ echo "start test for dllib nnframes image inference"
 # # fi
 # now=$(date "+%s")
 # time=$((now - start))
-# echo "#4 Total time cost ${time} seconds"
+# echo "#5 Total time cost ${time} seconds"
 
-echo "#6 start test for orca pytorch_estimator"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca pytorch_estimator failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#6 Total time cost ${time} seconds"
+# echo "#6 start test for orca pytorch_estimator"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca pytorch_estimator failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#6 Total time cost ${time} seconds"
 
-echo "#7 start test for orca simple_pytorch"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca simple_pytorch failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#7 Total time cost ${time} seconds"
+# echo "#7 start test for orca simple_pytorch"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca simple_pytorch failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#7 Total time cost ${time} seconds"
 
 # echo "#7 start test for orca mxnet"
 # #timer
@@ -350,8 +350,8 @@ echo "#7 Total time cost ${time} seconds"
 # time=$((now - start))
 # echo "#16 Total time cost ${time} seconds"
 
-# echo "#17 start test for orca tfpark estimator_inception"
-# #prepare data
+echo "#17 start test for orca tfpark estimator_inception"
+#prepare data
 # if [ -f analytics-zoo-data/data/dogs-vs-cats/train.zip ]; then
 #   echo "analytics-zoo-data/data/dogs-vs-cats/train.zip already exists."
 # else
@@ -369,22 +369,22 @@ echo "#7 Total time cost ${time} seconds"
 #   cp tmp/data/dogs-vs-cats/train/dog.71* tmp/data/dogs-vs-cats/demo/dogs
 #   # echo "Finished downloading images"
 # fi
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
-#   --image-path tmp/data/dogs-vs-cats/demo \
-#   --num-classes 2 \
-#   --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca tfpark estimator_inception failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#17 Total time cost ${time} seconds"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
+  --image-path ${HDFS_URI}/dogs-vs-cats/demo \
+  --num-classes 2 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark estimator_inception failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#17 Total time cost ${time} seconds"
 
 # echo "#18 start test for orca tfpark optimizer train"
 # #timer
