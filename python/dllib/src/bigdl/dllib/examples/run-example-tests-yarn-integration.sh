@@ -4,7 +4,7 @@ clear_up() {
   pip uninstall -y bigdl-dllib
 }
 
-'''
+:<<!
 echo "#1 start test for dllib lenet5"
 
 #timer
@@ -137,8 +137,7 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
-
-'''
+！
 
 echo "#12 start test for orca tf2 resnet-50-imagenet"
 #timer
