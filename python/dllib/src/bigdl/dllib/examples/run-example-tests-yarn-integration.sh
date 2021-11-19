@@ -375,7 +375,7 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
   --image-path ${HDFS_URI}/dogs_cats \
   --num-classes 2 \
-  --cluster_mode yarn-client
+  --cluster_mode yarn-cluster
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
