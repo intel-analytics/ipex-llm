@@ -10,6 +10,8 @@ You may pull the prebuilt  BigDL `bigdl-k8s` Image from [Docker Hub](https://hub
 sudo docker pull intelanalytics/bigdl-k8s:latest
 ```
 
+Note, If you would like to run Tensorflow 2.x application, pull image "bigdl-k8s:latest-tf2" with `sudo docker pull intelanalytics/bigdl-k8s:latest-tf2`. The two images are distinguished with tensorflow version installed in python environment.
+
 **Speed up pulling image by adding mirrors**
 
 To speed up pulling the image from DockerHub, you may add the registry-mirrors key and value by editing `daemon.json` (located in `/etc/docker/` folder on Linux):
@@ -174,7 +176,7 @@ In the `/opt` directory, run this command line to start the Jupyter Notebook ser
 
 You will see the output message like below. This means the Jupyter Notebook service has started successfully within the container.
 ```
-[I 23:51:08.456 NotebookApp] Serving notebooks from local directory: /opt/analytics-zoo-0.11.0-SNAPSHOT/apps
+[I 23:51:08.456 NotebookApp] Serving notebooks from local directory: /opt/bigdl-0.14.0-SNAPSHOT/apps
 [I 23:51:08.456 NotebookApp] Jupyter Notebook 6.2.0 is running at:
 [I 23:51:08.456 NotebookApp] http://xxxx:12345/?token=...
 [I 23:51:08.457 NotebookApp]  or http://127.0.0.1:12345/?token=...
@@ -185,7 +187,7 @@ Then, refer [docker guide](./docker.md) to open Jupyter Notebook service from a 
 
 #### **3.4 Run Scala programs**
 
-Use spark-submit to submit your BigDL program.  e.g., run [anomalydetection](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/anomalydetection) example (running in either local mode or cluster mode) as follows:
+Use spark-submit to submit your BigDL program.  e.g., run [nnframes imageInference](../../../../../../scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/imageInference) example (running in either local mode or cluster mode) as follows:
 
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
@@ -235,14 +237,13 @@ This section shows some common topics for both client mode and cluster mode.
 
 #### **4.1 How to specify python environment**
 
-The k8s image provides two conda python environments, "pytf1" and "pytf2" are mainly distinguished with tensorflow version. "pytf1" is installed in "/usr/local/envs/pytf1/bin/python". "pytf2" is installed in "/usr/local/envs/pytf2/bin/python".
-Specify on both the driver and executor in client mode:
+The k8s image provides conda python environment. Image "intelanalytics/bigdl-k8s:latest" installs python environment in "/usr/local/envs/pytf1/bin/python". Image "intelanalytics/bigdl-k8s:latest-pytf2" installs python environment in "/usr/local/envs/pytf2/bin/python".
+In client mode, set python env and run application:
 ```python
-init_orca_context(..., conf={"spark.pyspark.driver.python": "/usr/local/envs/pytf1/bin/python",
-                             "spark.pyspark.python": "/usr/local/envs/pytf1/bin/python",
-                            })
+source activate pytf1
+python script.py
 ```
-Specify on both the driver and executor in cluster mode:
+In cluster mode, specify on both the driver and executor:
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
   --... ...\
