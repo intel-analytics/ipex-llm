@@ -92,29 +92,29 @@ echo "start test for dllib nnframes image inference"
 # echo "#4 Total time cost ${time} seconds"
 
 
-# echo "#5 start test for orca bigdl imageInference"
-# #timer
-# start=$(date "+%s")
-# if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-#   echo "models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-# else
-#   wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-#     -P models
+echo "#5 start test for orca bigdl imageInference"
+#timer
+start=$(date "+%s")
+if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+  echo "models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+    -P models
+fi
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
+  -m models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f ${HDFS_URI}/kaggle/train_100 \
+  --cluster_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca imageInference failed"
+#   exit $exit_status
 # fi
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
-#   -m models/bigdl_inception-v1_imagenet_0.4.0.model \
-#   -f ${HDFS_URI}/kaggle/train_100 \
-#   --cluster_mode yarn-cluster
-# # exit_status=$?
-# # if [ $exit_status -ne 0 ]; then
-# #   clear_up
-# #   echo "orca imageInference failed"
-# #   exit $exit_status
-# # fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#5 Total time cost ${time} seconds"
+now=$(date "+%s")
+time=$((now - start))
+echo "#5 Total time cost ${time} seconds"
 
 # echo "#6 start test for orca pytorch_estimator"
 # #timer
@@ -350,41 +350,23 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#16 Total time cost ${time} seconds"
 
-echo "#17 start test for orca tfpark estimator_inception"
-#prepare data
-# if [ -f analytics-zoo-data/data/dogs-vs-cats/train.zip ]; then
-#   echo "analytics-zoo-data/data/dogs-vs-cats/train.zip already exists."
-# else
-#   # echo "Downloading dogs and cats images"
-#   wget -nv $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip \
-#     -P tmp/data/dogs-vs-cats
-#   unzip -q tmp/data/dogs-vs-cats/train.zip -d tmp/data/dogs-vs-cats
-#   mkdir -p tmp/data/dogs-vs-cats/samples
-#   cp tmp/data/dogs-vs-cats/train/cat.71* tmp/data/dogs-vs-cats/samples
-#   cp tmp/data/dogs-vs-cats/train/dog.71* tmp/data/dogs-vs-cats/samples
-
-#   mkdir -p tmp/data/dogs-vs-cats/demo/cats
-#   mkdir -p tmp/data/dogs-vs-cats/demo/dogs
-#   cp tmp/data/dogs-vs-cats/train/cat.71* tmp/data/dogs-vs-cats/demo/cats
-#   cp tmp/data/dogs-vs-cats/train/dog.71* tmp/data/dogs-vs-cats/demo/dogs
-#   # echo "Finished downloading images"
+# echo "#17 start test for orca tfpark estimator_inception"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
+#   --image-path ${HDFS_URI}/dogs_cats \
+#   --num-classes 2 \
+#   --cluster_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca tfpark estimator_inception failed"
+#   exit $exit_status
 # fi
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
-  --image-path ${HDFS_URI}/dogs_cats \
-  --num-classes 2 \
-  --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca tfpark estimator_inception failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#17 Total time cost ${time} seconds"
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#17 Total time cost ${time} seconds"
 
 # echo "#18 start test for orca tfpark optimizer train"
 # #timer
