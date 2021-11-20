@@ -95,7 +95,9 @@ class TestTFEstimator(TestCase):
 
             print("start saving")
 
-            trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            model = trainer.get_model()
+
+            model.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.save(os.path.join(temp_dir, "a.model"))
             trainer.load(os.path.join(temp_dir, "a.model"))

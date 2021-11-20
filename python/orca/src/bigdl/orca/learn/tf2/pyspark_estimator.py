@@ -20,6 +20,8 @@ from pyspark.sql.dataframe import DataFrame
 import numpy as np
 import tempfile
 import shutil
+import pickle
+
 
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, get_remote_file_to_local
@@ -33,6 +35,7 @@ from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
 logger = logging.getLogger(__name__)
+
 
 class SparkTFEstimator():
     def __init__(self,
@@ -57,7 +60,7 @@ class SparkTFEstimator():
         self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
                                         self.total_cores * 4).repartition(self.num_workers)
 
-        if not "inter_op_parallelism"  in self.config:
+        if not "inter_op_parallelism" in self.config:
             self.config["inter_op_parallelism"] = 1
         if not "intra_op_parallelism" in self.config:
             self.config["intra_op_parallelism"] = num_core // workers_per_node
@@ -69,6 +72,8 @@ class SparkTFEstimator():
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
         self.model_dir = model_dir
+
+        self.application_id = sc.applicationId
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
@@ -100,16 +105,23 @@ class SparkTFEstimator():
         import numpy as np
         sc = OrcaContext.get_spark_context()
 
+        if self.model_weights:
+            weights = sc.broadcast(self.model_weights)
+        else:
+            weights = None
+
         init_params = dict(
             model_creator=self.model_creator,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
+            model_weights=weights,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
-            epoch=self.epoch
+            epoch=self.epoch,
+            application_id=self.application_id
         )
 
         params = dict(
@@ -141,7 +153,7 @@ class SparkTFEstimator():
 
                 res = data.rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).collect()
+                    lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
                     data_tuple_list = list(iter)
@@ -153,7 +165,7 @@ class SparkTFEstimator():
 
                 res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).collect()
+                    lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -163,20 +175,6 @@ class SparkTFEstimator():
 
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
-
-        # if self.model_dir:
-        #     try:
-        #         temp_dir = tempfile.mkdtemp()
-        #         get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
-        #                                  os.path.join(temp_dir, "states.pkl"),
-        #                                  over_write=True)
-        #         import pickle
-        #         with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
-        #             states = pickle.load(f)
-        #             self.model_weights = states['weights']
-        #             self.epoch = states["epoch"]
-        #     finally:
-        #         shutil.rmtree(temp_dir)
 
         return res[0]
 
@@ -218,7 +216,8 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc),
-            model_dir=self.model_dir
+            model_dir=self.model_dir,
+            application_id=self.application_id
         )
 
         params = dict(
@@ -292,7 +291,8 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="predict",
             cluster_info=None,
-            model_dir=self.model_dir
+            model_dir=self.model_dir,
+            application_id=self.application_id
         )
 
         params = dict(
@@ -319,8 +319,8 @@ class SparkTFEstimator():
                 return SparkRunner(**init_param).predict(**param)
 
             pred_shards = SparkXShards(xshards.rdd.repartition(self.num_workers) \
-                                       .mapPartitions(
-                                           lambda iter: transform_func(iter, init_params, params)))
+                .mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
@@ -357,31 +357,25 @@ class SparkTFEstimator():
         self.model_weights = model.get_weights()
 
     @enable_multi_fs_save
-    def save(self, filepath, overwrite=True, save_format=None):
+    def save(self, checkpoint, overwrite=False):
         """
         Saves the model at the provided path.
         :param checkpoint: (str) Path to the target checkpoint file.
         """
-
-        # Some model might need to aggregate variables during checkpointing
-        # which requires both the chief and workers to participate in the
-        # allreduce communication protocol.
-        # So we need to call get_state on every remote workers, otherwise
-        # it might get stuck
-        model = self.get_model()
-        model.save(filepath, overwrite=overwrite, save_format=save_format)
+        get_remote_file_to_local(os.path.join(self.model_dir, self.application_id + "_states.pkl"),
+                                 checkpoint, over_write=overwrite)
 
     @enable_multi_fs_load
-    def load(self, filepath):
+    def load(self, checkpoint):
         """
-        Load tensorflow keras model in this estimator.
+        Loads the model from the provided checkpoint.
 
-        :param filepath: keras model weights save path.
         """
-        import tensorflow as tf
-        model = tf.keras.models.load_model(filepath)
-        self.model_weights = model.get_weights()
+        with open(checkpoint, 'rb') as f:
+            states = pickle.load(f)
 
+        self.model_weights = states["weights"]
+        self.epoch = states["epoch"]
 
     def get_model(self):
         """
@@ -390,19 +384,22 @@ class SparkTFEstimator():
         :return: the learned model.
         """
         model = self.model_creator(self.config)
+        states = self._get_state()
+        if states:
+            model.set_weights(states["weights"])
+        return model
+
+    def _get_state(self):
         if self.model_dir:
             try:
                 temp_dir = tempfile.mkdtemp()
-                get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
+                get_remote_file_to_local(os.path.join(self.model_dir, self.application_id + "_states.pkl"),
                                          os.path.join(temp_dir, "states.pkl"),
                                          over_write=True)
-                import pickle
+
                 with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
                     states = pickle.load(f)
-                    model_weights = states['weights']
-                    epoch = states["epoch"]
+                    return states
             finally:
                 shutil.rmtree(temp_dir)
-
-        model.set_weights(model_weights)
-        return model
+        return None

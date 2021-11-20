@@ -199,7 +199,8 @@ class SparkRunner:
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
-                 epoch=0
+                 epoch=0,
+                 application_id=None
                 ):
         """Initializes the runner.
                 Args:
@@ -226,6 +227,7 @@ class SparkRunner:
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed(self.mode, self.cluster_info)
         self.model_dir = model_dir
+        self.application_id = application_id
 
     def setup(self):
         import tensorflow as tf
@@ -358,7 +360,7 @@ class SparkRunner:
                     "weights": weights,
                     "optimizer_weights": model.optimizer.get_weights()
                 }
-                save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
+                save_pkl(model_states, os.path.join(self.model_dir, self.application_id + "_states.pkl"))
             return [stats]
         else:
             return []
@@ -381,7 +383,7 @@ class SparkRunner:
             model.set_weights(self.model_weights.value)
         elif self.model_dir:
             start = time.time()
-            states = load_pkl(os.path.join(self.model_dir, "states.pkl"))
+            states = load_pkl(os.path.join(self.model_dir, self.application_id + "_states.pkl"))
             end = time.time()
             print("loading states time: ", end-start)
             model.set_weights(states['weights'])
@@ -444,14 +446,14 @@ class SparkRunner:
             if self.model_weights:
                 local_model.set_weights(self.model_weights.value)
             elif self.model_dir:
-                states = load_pkl(os.path.join(self.model_dir, "states.pkl"))
+                states = load_pkl(os.path.join(self.model_dir, self.application_id + "_states.pkl"))
                 local_model.set_weights(states['weights'])
         else:
             local_model = self.model_creator(self.config)
             if self.model_weights:
                 local_model.set_weights(self.model_weights.value)
             elif self.model_dir:
-                states = load_pkl(os.path.join(self.model_dir, "states.pkl"))
+                states = load_pkl(os.path.join(self.model_dir, self.application_id + "_states.pkl"))
                 local_model.set_weights(states['weights'])
 
         def predict_fn(shard):
