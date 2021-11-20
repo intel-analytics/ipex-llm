@@ -65,10 +65,17 @@ print(opt)
 if opt.cluster_mode == "local":
     init_orca_context()
 elif opt.cluster_mode.startswith("yarn"):
+    # if opt.cluster_mode == "yarn-client":
+    #     additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
+    #     init_orca_context(cluster_mode="yarn-client", cores=4, num_nodes=2,
+    #                   additional_archive=additional)
+    # elif opt.cluster_mode == "yarn-cluster":
+    #     additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
+    #     init_orca_context(cluster_mode="yarn-cluster", cores=4, num_nodes=2,
+    #                   additional_archive=additional)
     if opt.cluster_mode == "yarn-client":
-        additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
-        init_orca_context(cluster_mode="yarn-client", cores=4, num_nodes=2,
-                      additional_archive=additional)
+        # additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
+        init_orca_context(cluster_mode="yarn-client")
     elif opt.cluster_mode == "yarn-cluster":
         additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
         init_orca_context(cluster_mode="yarn-cluster", cores=4, num_nodes=2,
