@@ -189,8 +189,8 @@ echo "#14 start test for pytorch super_resolution"
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf /tmp/dataset
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir /tmp
+rm -rf /tmp/resolution_data
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir /tmp/resolution_data
 #--data_dir '/tmp/super_resolution_data'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
@@ -224,8 +224,8 @@ echo "#16 start test for torchmodel mnist"##
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf /tmp/MNIST
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /tmp
+rm -rf /tmp/torchmodel_mnist
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /tmp/torchmodel_mnist
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -237,18 +237,18 @@ time=$((now - start))
 echo "#16 Total time cost ${time} seconds"
 
 
-echo "#17 start test for torchmodel resnet_finetune"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ${HDFS_URI}/dogs_cats/samples
-# python  python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ./dogs_cats/samples
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "####################torchmodel resnet_finetune failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#17 Total time cost ${time} seconds"
+# echo "#17 start test for torchmodel resnet_finetune"
+# #timer  309
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ${HDFS_URI}/dogs_cats/samples
+# # python  python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ./dogs_cats/samples
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "####################torchmodel resnet_finetune failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#17 Total time cost ${time} seconds"
