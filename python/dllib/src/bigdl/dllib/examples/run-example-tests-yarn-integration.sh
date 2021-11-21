@@ -417,7 +417,7 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f ${HDFS_URI}/kaggle/train_100 --cluster_mode "yarn-cluster"
+  -f ${HDFS_URI}/kaggle/train_100 --cluster_mode "yarn-client"
 if [ $exit_status -ne 0 ]; then
   clear_up
   echo "dllib nnframes_imageInference failed"
