@@ -131,20 +131,20 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#6 Total time cost ${time} seconds"
 
-# echo "#7 start test for orca simple_pytorch"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca simple_pytorch failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#7 Total time cost ${time} seconds"
+echo "#7 start test for orca simple_pytorch"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca simple_pytorch failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#7 Total time cost ${time} seconds"
 
 # echo "#7 start test for orca mxnet"
 # #timer
@@ -402,27 +402,3 @@ echo "start test for dllib nnframes image inference"
 # now=$(date "+%s")
 # time=$((now - start))
 # echo "#19 Total time cost ${time} seconds"
-
-echo "#6 start test for orca nnframes_imageInference"
-
-if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-else
-  wget $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-    -P analytics-zoo-models
-fi
-
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
-  -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
-  -f ${HDFS_URI}/kaggle/train_100 --cluster_mode "yarn-cluster"
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "dllib nnframes_imageInference failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#6 Total time cost ${time} seconds"
