@@ -403,7 +403,7 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#19 Total time cost ${time} seconds"
 
-echo "#6 start test for dllib nnframes_imageInference"
+echo "#6 start test for orca nnframes_imageInference"
 
 if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
   echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
