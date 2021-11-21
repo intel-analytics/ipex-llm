@@ -22,7 +22,7 @@ spec:
       - name: master-python-occlum
         image:  {{ .Values.image }}
         command: ["/bin/sh","-c"]
-        args: ["bash /ppml/trusted-realtime-ml/start-all-but-flink.sh | tee /ppml/trusted-realtime-ml/log; tail -f /dev/null"]
+        args: ["bash /opt/start-all-but-flink.sh | tee /opt/log; tail -f /dev/null"]
         securityContext:
           privileged: true
         ports:
