@@ -20,6 +20,7 @@ from bigdl.dllib.nn.layer import Model
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import StringType, DoubleType
 
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.nnframes import *
 from bigdl.orca.learn.bigdl.estimator import Estimator
@@ -66,19 +67,39 @@ if __name__ == "__main__":
         parser.print_help()
         parser.error('image_path is required')
 
-    cluster_mode = options.cluster_mode
-    if cluster_mode == "local":
-        sc = init_orca_context(memory="3g")
-    elif cluster_mode.startswith("yarn"):
-        if cluster_mode == "yarn-client":
-            sc = init_orca_context(cluster_mode="yarn-client", num_nodes=2, memory="3g")
+    # cluster_mode = options.cluster_mode
+    # if cluster_mode == "local":
+    #     sc = init_orca_context(memory="3g")
+    # elif cluster_mode.startswith("yarn"):
+    #     if cluster_mode == "yarn-client":
+    #         sc = init_orca_context(cluster_mode="yarn-client", num_nodes=2, memory="3g")
+    #     else:
+    #         sc = init_orca_context(cluster_mode="yarn-cluster", num_nodes=2, memory="3g")
+    # elif cluster_mode == "spark-submit":
+    #     sc = init_orca_context(cluster_mode="spark-submit")
+    # else:
+    #     print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
+    #           + cluster_mode)
+
+    conf = {}
+    if options.clusterMode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                            "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "2g")
+        spark_conf.setAll(conf)
+
+        if options.clusterMode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
         else:
-            sc = init_orca_context(cluster_mode="yarn-cluster", num_nodes=2, memory="3g")
-    elif cluster_mode == "spark-submit":
-        sc = init_orca_context(cluster_mode="spark-submit")
-    else:
-        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-              + cluster_mode)
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    elif options.clusterMode == "local":
+        spark_conf = SparkConf().set("spark.driver.memory", "10g") \
+            .set("spark.driver.cores", 4)
+        sc = init_nncontext(spark_conf, cluster_mode="local")
 
     image_path = options.image_path
     model_path = options.model_path
