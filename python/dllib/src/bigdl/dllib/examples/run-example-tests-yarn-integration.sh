@@ -415,7 +415,7 @@ fi
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageInference/ImageInferenceExample.py \
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f ${HDFS_URI}/kaggle/train_100 --cluster-mode "yarn-cluster"
 if [ $exit_status -ne 0 ]; then
