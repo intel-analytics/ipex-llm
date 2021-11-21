@@ -224,9 +224,9 @@ echo "#16 start test for torchmodel mnist"##
 #timer
 start=$(date "+%s")
 #run the example
-rm -rf /tmp/torchmodel_mnist
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/torchmodel_mnist /tmp/torchmodel_mnist
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /tmp/torchmodel_mnist
+rm -rf /tmp/test_mnist
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/test_mnist /tmp/test_mnist
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /tmp/test_mnist
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   # clear_up
