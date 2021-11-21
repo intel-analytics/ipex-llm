@@ -15,18 +15,16 @@
 #
 
 from bigdl.chronos.forecaster.abstract import Forecaster
-from bigdl.orca.data.shard import SparkXShards
 from bigdl.chronos.forecaster.utils import\
-    np_to_creator, set_pytorch_seed, check_data,\
-    xshard_to_np, np_to_xshard, loader_to_creator
-import numpy as np
-from bigdl.orca.learn.pytorch.estimator import Estimator
-from bigdl.orca.learn.metrics import MSE, MAE
+    np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard
 
+from bigdl.orca.data.shard import SparkXShards
+from bigdl.nano.pytorch.trainer import Trainer
+
+import numpy as np
 import warnings
 import torch
-
-ORCA_METRICS = {"mse": MSE, "mae": MAE}
+from torch.utils.data import TensorDataset, DataLoader
 
 
 class BasePytorchForecaster(Forecaster):
@@ -35,9 +33,13 @@ class BasePytorchForecaster(Forecaster):
     '''
     def __init__(self, **kwargs):
         if self.distributed:
+            from bigdl.orca.learn.pytorch.estimator import Estimator
+            from bigdl.orca.learn.metrics import MSE, MAE
+            ORCA_METRICS = {"mse": MSE, "mae": MAE}
+
             def model_creator_orca(config):
                 set_pytorch_seed(self.seed)
-                model = self.model_creator({**self.config, **self.data_config})
+                model = self.model_creator({**self.model_config, **self.data_config})
                 model.train()
                 return model
             self.internal = Estimator.from_torch(model=model_creator_orca,
@@ -50,8 +52,17 @@ class BasePytorchForecaster(Forecaster):
                                                  config={"lr": self.lr},
                                                  workers_per_node=self.workers_per_node)
         else:
-            set_pytorch_seed(self.seed)
-            self.internal = self.local_model(check_optional_config=False)
+            # seed setting
+            from pytorch_lightning import seed_everything
+            seed_everything(seed=self.seed)
+
+            # Model preparation
+            self.fitted = False
+            model=self.model_creator({**self.model_config, **self.data_config})
+            loss=self.loss_creator(self.loss_config)
+            optimizer=self.optimizer_creator(model, self.optim_config)
+            self.internal = Trainer.compile(model=model, loss=loss, optimizer=optimizer)
+
 
     def fit(self, data, epochs=1, batch_size=32):
         # TODO: give an option to close validation during fit to save time.
@@ -87,7 +98,7 @@ class BasePytorchForecaster(Forecaster):
         """
 
         # input adaption
-        self.config["batch_size"] = batch_size
+        # self.config["batch_size"] = batch_size
 
         # input transform
         if isinstance(data, torch.utils.data.DataLoader) and self.distributed:
@@ -95,6 +106,8 @@ class BasePytorchForecaster(Forecaster):
         if isinstance(data, tuple) and self.distributed:
             data = np_to_creator(data)
         if isinstance(data, SparkXShards) and not self.distributed:
+            warnings.warn("Xshards is collected to local since the ",
+                          "forecaster is non-distribued.")
             data = xshard_to_np(data)
 
         # fit on internal
@@ -114,15 +127,22 @@ class BasePytorchForecaster(Forecaster):
                                      epochs=epochs,
                                      batch_size=batch_size)
         else:
+            from bigdl.nano.pytorch.trainer import Trainer
+
+            # numpy data shape checking
             if isinstance(data, tuple):
                 check_data(data[0], data[1], self.data_config)
             else:
                 warnings.warn("Data shape checking is not supported by dataloader input.")
-            return self.internal.fit_eval(data=data,
-                                          validation_data=data,
-                                          epochs=epochs,
-                                          metric=self.metrics[0],  # only use the first metric
-                                          **{**self.config, **self.data_config})
+
+            # Trainer init and fitting
+            self.trainer = Trainer(logger=False, max_epochs=epochs)
+            self.trainer.fit(self.internal,\
+                             DataLoader(TensorDataset(torch.from_numpy(data[0]),
+                                                      torch.from_numpy(data[1])),
+                                        batch_size=batch_size,
+                                        shuffle=True))
+            self.fitted = True
 
     def predict(self, data, batch_size=32):
         """
@@ -166,9 +186,11 @@ class BasePytorchForecaster(Forecaster):
                 yhat = xshard_to_np(yhat, mode="yhat", expand_dim=expand_dim)
             return yhat
         else:
-            if not self.internal.model_built:
+            if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling predict!")
-            yhat = self.internal.predict(data, batch_size=batch_size)
+            with torch.no_grad():
+                self.internal.eval()
+                yhat = self.internal((torch.from_numpy(data), None)).numpy()  # None here is useless
             if not is_local_data:
                 yhat = np_to_xshard(yhat, prefix="prediction")
             return yhat
@@ -251,10 +273,13 @@ class BasePytorchForecaster(Forecaster):
                 return self.internal.evaluate(data=data,
                                               batch_size=batch_size)
         else:
-            if not self.internal.model_built:
+            from torchmetrics.functional import mean_absolute_error 
+            if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling evaluate!")
-            return self.internal.evaluate(data[0], data[1], metrics=self.metrics,
-                                          multioutput=multioutput, batch_size=batch_size)
+            with torch.no_grad():
+                yhat_torch = self.internal((torch.from_numpy(data[0]), None))
+            y_torch = torch.from_numpy(data[1])
+            return mean_absolute_error(yhat_torch, y_torch)
 
     def evaluate_with_onnx(self, data,
                            batch_size=32,
@@ -320,9 +345,9 @@ class BasePytorchForecaster(Forecaster):
         if self.distributed:
             self.internal.save(checkpoint_file)
         else:
-            if not self.internal.model_built:
+            if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling save!")
-            self.internal.save(checkpoint_file)
+            self.trainer.save_checkpoint(checkpoint_file)
 
     def load(self, checkpoint_file):
         """
@@ -333,7 +358,12 @@ class BasePytorchForecaster(Forecaster):
         if self.distributed:
             self.internal.load(checkpoint_file)
         else:
-            self.internal.restore(checkpoint_file)
+            from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+            model=self.model_creator({**self.model_config, **self.data_config})
+            loss=self.loss_creator(self.loss_config)
+            optimizer=self.optimizer_creator(model, self.optim_config)
+            self.internal = LightningModuleFromTorch.load_from_checkpoint(checkpoint_file, model=model, loss=loss, optimizer=optimizer)
+            self.fitted = True
 
     def to_local(self):
         """
@@ -353,15 +383,14 @@ class BasePytorchForecaster(Forecaster):
         if not self.distributed:
             raise RuntimeError("The forecaster has become local.")
         model = self.internal.get_model()
-        state = {
-            "config": {**self.data_config, **self.config},
-            "model": model.state_dict(),
-            "optimizer": self.optimizer_creator(model, {"lr": self.config["lr"]}).state_dict(),
-        }
         self.internal.shutdown()
-        self.internal = self.local_model(check_optional_config=False)
-        self.internal.load_state_dict(state)
+
+        loss = self.loss_creator(self.loss_config)
+        optimizer = self.optimizer_creator(model, self.optim_config)
+        self.internal = Trainer.compile(model=model, loss=loss, optimizer=optimizer)
+
         self.distributed = False
+        self.fitted = True
         return self
 
     def get_model(self):

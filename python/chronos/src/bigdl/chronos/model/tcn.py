@@ -43,8 +43,8 @@ import warnings
 import torch
 import torch.nn as nn
 from torch.nn.utils import weight_norm
-from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel, \
-    PYTORCH_REGRESSION_LOSS_MAP
+from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
+from .utils import PYTORCH_REGRESSION_LOSS_MAP
 
 
 class Chomp1d(nn.Module):
@@ -167,6 +167,7 @@ def loss_creator(config):
     return getattr(torch.nn, loss_name)()
 
 
+# the PytorchBaseModel will only be used for orca.automl
 class TCNPytorch(PytorchBaseModel):
     def __init__(self, check_optional_config=False):
         super().__init__(model_creator=model_creator,

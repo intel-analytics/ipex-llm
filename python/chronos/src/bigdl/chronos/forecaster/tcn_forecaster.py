@@ -15,8 +15,6 @@
 #
 
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
-from bigdl.chronos.forecaster.utils import set_pytorch_seed
-from bigdl.chronos.model.tcn import TCNPytorch
 from bigdl.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
 
 
@@ -102,18 +100,21 @@ class TCNForecaster(BasePytorchForecaster):
             "input_feature_num": input_feature_num,
             "output_feature_num": output_feature_num
         }
-        self.config = {
-            "lr": lr,
-            "loss": loss,
+        self.model_config = {
             "num_channels": num_channels,
             "kernel_size": kernel_size,
             "repo_initialization": repo_initialization,
-            "optim": optimizer,
             "dropout": dropout
+        }
+        self.loss_config = {
+            "loss": loss
+        }
+        self.optim_config = {
+            "lr": lr,
+            "optim": optimizer
         }
 
         # model creator settings
-        self.local_model = TCNPytorch
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator

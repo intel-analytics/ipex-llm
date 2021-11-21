@@ -53,7 +53,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
-        install_requires=['bigdl-orca=='+VERSION, 'torch>=1.7.1', 'pandas==1.0.3', 'scikit-learn'],
+        install_requires=['bigdl-orca=='+VERSION, 'bigdl-nano[pytorch]', 'pandas==1.0.3', 'scikit-learn'],
         extras_require={'all': ['tensorflow>=1.15.0,<2.0.0', 'h5py==2.10.0',
                                 'aiohttp==3.7.4', 'aioredis==1.3.1',
                                 'ray[tune]==1.2.0', 'tensorboard', 'scipy==1.5',
