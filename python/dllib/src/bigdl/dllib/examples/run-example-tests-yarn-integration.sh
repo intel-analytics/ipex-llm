@@ -190,6 +190,7 @@ echo "#14 start test for pytorch super_resolution"
 start=$(date "+%s")
 #run the example
 rm -rf /tmp/resolution_data
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/resolution_data /tmp/resolution_data
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir /tmp/resolution_data
 #--data_dir '/tmp/super_resolution_data'
 exit_status=$?
@@ -208,7 +209,7 @@ echo "#15 start test for torchmodel imagenet"
 start=$(date "+%s")
 #run the example
 ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet_test /tmp/imagenet_test
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet_test --batch-size 2
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet_test --batch-size 64
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
