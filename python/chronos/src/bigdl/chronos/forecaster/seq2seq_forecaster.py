@@ -101,18 +101,21 @@ class Seq2SeqForecaster(BasePytorchForecaster):
             "input_feature_num": input_feature_num,
             "output_feature_num": output_feature_num
         }
-        self.config = {
-            "lr": lr,
-            "loss": loss,
+        self.model_config = {
             "lstm_hidden_dim": lstm_hidden_dim,
             "lstm_layer_num": lstm_layer_num,
             "teacher_forcing": teacher_forcing,
-            "optim": optimizer,
             "dropout": dropout
+        }
+        self.loss_config = {
+            "loss": loss
+        }
+        self.optim_config = {
+            "lr": lr,
+            "optim": optimizer
         }
 
         # model creator settings
-        self.local_model = Seq2SeqPytorch
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator

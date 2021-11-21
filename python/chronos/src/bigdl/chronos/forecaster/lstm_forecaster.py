@@ -92,17 +92,20 @@ class LSTMForecaster(BasePytorchForecaster):
             "input_feature_num": input_feature_num,
             "output_feature_num": output_feature_num
         }
-        self.config = {
-            "lr": lr,
-            "loss": loss,
+        self.model_config = {
             "hidden_dim": hidden_dim,
             "layer_num": layer_num,
-            "optim": optimizer,
             "dropout": dropout
+        }
+        self.loss_config = {
+            "loss": loss
+        }
+        self.optim_config = {
+            "lr": lr,
+            "optim": optimizer
         }
 
         # model creator settings
-        self.local_model = VanillaLSTMPytorch
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator

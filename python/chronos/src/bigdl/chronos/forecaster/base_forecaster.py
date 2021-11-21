@@ -25,6 +25,7 @@ import numpy as np
 import warnings
 import torch
 from torch.utils.data import TensorDataset, DataLoader
+from torchmetrics.functional import mean_absolute_error
 
 
 class BasePytorchForecaster(Forecaster):
@@ -61,7 +62,7 @@ class BasePytorchForecaster(Forecaster):
             model=self.model_creator({**self.model_config, **self.data_config})
             loss=self.loss_creator(self.loss_config)
             optimizer=self.optimizer_creator(model, self.optim_config)
-            self.internal = Trainer.compile(model=model, loss=loss, optimizer=optimizer)
+            self.internal = Trainer.compile(model=model, loss=loss, optimizer=optimizer, onnx=True)
 
 
     def fit(self, data, epochs=1, batch_size=32):
@@ -101,12 +102,12 @@ class BasePytorchForecaster(Forecaster):
         # self.config["batch_size"] = batch_size
 
         # input transform
-        if isinstance(data, torch.utils.data.DataLoader) and self.distributed:
+        if isinstance(data, DataLoader) and self.distributed:
             data = loader_to_creator(data)
         if isinstance(data, tuple) and self.distributed:
             data = np_to_creator(data)
         if isinstance(data, SparkXShards) and not self.distributed:
-            warnings.warn("Xshards is collected to local since the ",
+            warnings.warn("Xshards is collected to local since the "
                           "forecaster is non-distribued.")
             data = xshard_to_np(data)
 
@@ -135,13 +136,16 @@ class BasePytorchForecaster(Forecaster):
             else:
                 warnings.warn("Data shape checking is not supported by dataloader input.")
 
+            # data transformation
+            if isinstance(data, tuple):
+                data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
+                                                torch.from_numpy(data[1])),
+                                  batch_size=batch_size,
+                                  shuffle=True)
+
             # Trainer init and fitting
             self.trainer = Trainer(logger=False, max_epochs=epochs)
-            self.trainer.fit(self.internal,\
-                             DataLoader(TensorDataset(torch.from_numpy(data[0]),
-                                                      torch.from_numpy(data[1])),
-                                        batch_size=batch_size,
-                                        shuffle=True))
+            self.trainer.fit(self.internal, data)
             self.fitted = True
 
     def predict(self, data, batch_size=32):
@@ -188,14 +192,12 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling predict!")
-            with torch.no_grad():
-                self.internal.eval()
-                yhat = self.internal((torch.from_numpy(data), None)).numpy()  # None here is useless
+            yhat = self.internal.inference(torch.from_numpy(data), backend=None).numpy()
             if not is_local_data:
                 yhat = np_to_xshard(yhat, prefix="prediction")
             return yhat
 
-    def predict_with_onnx(self, data, batch_size=32, dirname=None):
+    def predict_with_onnx(self, data, batch_size=32, dirname="model.onnx"):
         """
         Predict using a trained forecaster with onnxruntime. The method can only be
         used when forecaster is a non-distributed version.
@@ -210,9 +212,10 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
 
         :param batch_size: predict batch size. The value will not affect predict
-               result but will affect resources cost(e.g. memory and time).
+               result but will affect resources cost(e.g. memory and time). Defaults
+               to 32. None for all-data-single-time inference.
         :param dirname: The directory to save onnx model file. This value defaults
-               to None for no saving file.
+               to "model.onnx" in pwd.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
@@ -220,9 +223,9 @@ class BasePytorchForecaster(Forecaster):
             raise NotImplementedError("ONNX inference has not been supported for distributed "
                                       "forecaster. You can call .to_local() to transform the "
                                       "forecaster to a non-distributed version.")
-        if not self.internal.model_built:
+        if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling predict!")
-        return self.internal.predict_with_onnx(data, batch_size=batch_size, dirname=dirname)
+        return self.internal.inference(data, batch_size=batch_size, file_path=dirname)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values"):
         """
@@ -272,18 +275,16 @@ class BasePytorchForecaster(Forecaster):
             else:
                 return self.internal.evaluate(data=data,
                                               batch_size=batch_size)
-        else:
-            from torchmetrics.functional import mean_absolute_error 
+        else: 
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling evaluate!")
-            with torch.no_grad():
-                yhat_torch = self.internal((torch.from_numpy(data[0]), None))
+            yhat_torch = self.internal.inference(torch.from_numpy(data[0]), backend=None)
             y_torch = torch.from_numpy(data[1])
             return mean_absolute_error(yhat_torch, y_torch)
 
     def evaluate_with_onnx(self, data,
                            batch_size=32,
-                           dirname=None,
+                           dirname="model.onnx",
                            multioutput="raw_values"):
         """
         Evaluate using a trained forecaster with onnxruntime. The method can only be
@@ -313,7 +314,7 @@ class BasePytorchForecaster(Forecaster):
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
         :param dirname: The directory to save onnx model file. This value defaults
-               to None for no saving file.
+               to "model.onnx" in pwd.
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.
@@ -324,13 +325,10 @@ class BasePytorchForecaster(Forecaster):
             raise NotImplementedError("ONNX inference has not been supported for distributed "
                                       "forecaster. You can call .to_local() to transform the "
                                       "forecaster to a non-distributed version.")
-        if not self.internal.model_built:
+        if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
-        return self.internal.evaluate_with_onnx(data[0], data[1],
-                                                metrics=self.metrics,
-                                                dirname=dirname,
-                                                multioutput=multioutput,
-                                                batch_size=batch_size)
+        yhat = self.internal.inference(data[0], batch_size=batch_size, file_path=dirname)
+        return mean_absolute_error(torch.from_numpy(yhat), torch.from_numpy(data[1]))
 
     def save(self, checkpoint_file):
         """
@@ -363,6 +361,7 @@ class BasePytorchForecaster(Forecaster):
             loss=self.loss_creator(self.loss_config)
             optimizer=self.optimizer_creator(model, self.optim_config)
             self.internal = LightningModuleFromTorch.load_from_checkpoint(checkpoint_file, model=model, loss=loss, optimizer=optimizer)
+            self.internal = Trainer.compile(self.internal, onnx=True)
             self.fitted = True
 
     def to_local(self):
@@ -387,7 +386,7 @@ class BasePytorchForecaster(Forecaster):
 
         loss = self.loss_creator(self.loss_config)
         optimizer = self.optimizer_creator(model, self.optim_config)
-        self.internal = Trainer.compile(model=model, loss=loss, optimizer=optimizer)
+        self.internal = Trainer.compile(model=model, loss=loss, optimizer=optimizer, onnx=True)
 
         self.distributed = False
         self.fitted = True
@@ -440,10 +439,8 @@ class BasePytorchForecaster(Forecaster):
         import torch
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.internal._build_onnx(dummy_input,
-                                  dirname=None,
-                                  thread_num=thread_num,
-                                  sess_options=None)
+        self.internal.update_ortsess(dummy_input,
+                                     sess_options=sess_options)
 
     def export_onnx_file(self, dirname):
         """
