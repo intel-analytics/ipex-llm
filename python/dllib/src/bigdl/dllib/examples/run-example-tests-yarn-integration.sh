@@ -225,6 +225,7 @@ echo "#16 start test for torchmodel mnist"##
 start=$(date "+%s")
 #run the example
 rm -rf /tmp/torchmodel_mnist
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/torchmodel_mnist /tmp/torchmodel_mnist
 python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /tmp/torchmodel_mnist
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
