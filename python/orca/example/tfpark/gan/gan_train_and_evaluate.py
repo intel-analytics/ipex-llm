@@ -60,6 +60,7 @@ def eval():
 
 
 if __name__ == "__main__":
+    conf = {}
     args = parser.parse_args()
     cluster_mode = args.cluster_mode
     if cluster_mode.startswith("yarn"):
@@ -89,7 +90,7 @@ if __name__ == "__main__":
 
         ds = tfds.load("mnist", split="train")
         ds = ds.map(map_func)
-        dataset = TFDataset.from_tf_data_dataset(ds, batch_size=36)
+        dataset = TFDataset.from_tf_data_dataset(ds, batch_size=56)
         return dataset
 
     opt = GANEstimator(
@@ -104,7 +105,7 @@ if __name__ == "__main__":
     )
 
     for i in range(20):
-        opt.train(input_fn, MaxIteration(1000))
+        opt.train(input_fn, MaxIteration(100))
         eval()
 
     print("finished...")
