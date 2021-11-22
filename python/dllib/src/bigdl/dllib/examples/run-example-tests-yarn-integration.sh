@@ -210,7 +210,7 @@ start=$(date "+%s")
 #run the example
 rm -rf /tmp/imagenet2012
 ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet2012 /tmp/imagenet2012
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet2012 --batch-size 64
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet2012 --batch-size 8
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -277,7 +277,7 @@ echo "#15 Total time cost ${time} seconds"
 # #timer
 # start=$(date "+%s")
 # #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-cluster' --epochs 1  --batch_size 256
+# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-cluster'
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
 #   #clear_up
@@ -293,7 +293,7 @@ echo "#15 Total time cost ${time} seconds"
 # #timer
 # start=$(date "+%s")
 # #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-cluster'   --epochs 1  --batch_size 256
+# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-cluster'
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
 #   #clear_up
@@ -329,7 +329,7 @@ echo "#15 Total time cost ${time} seconds"
 # start=$(date "+%s")
 # #run the example
 # ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet_test /tmp/imagenet_test
-# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet_test --batch-size 64 --deploy_mode yarn-cluster
+# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet_test --deploy_mode 'yarn-cluster'
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
 #   #clear_up
@@ -342,7 +342,7 @@ echo "#15 Total time cost ${time} seconds"
 
 
 # echo "#26 start test for torchmodel mnist"##
-# #timer  324
+# #timer  
 # start=$(date "+%s")
 # #run the example
 # rm -rf /tmp/test_mnist
@@ -360,7 +360,7 @@ echo "#15 Total time cost ${time} seconds"
 
 
 # echo "#27 start test for torchmodel resnet_finetune"
-# #timer  309
+# #timer  
 # start=$(date "+%s")
 # #run the example
 # python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ${HDFS_URI}/dogs_cats/samples --deploy-mode yarn-cluster
