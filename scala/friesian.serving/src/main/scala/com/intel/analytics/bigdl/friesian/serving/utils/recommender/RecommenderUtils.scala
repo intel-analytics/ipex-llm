@@ -74,8 +74,6 @@ object RecommenderUtils {
     val modelFeatureItemIdArr = itemFeatureArr.map(item => {
       val itemF = item._2
       val originFeatureList = itemF.++(userFeature)
-      //      val featureList = idxArr.map(idx => originFeatureList(idx))
-      //      (item._1, featureList)
       (item._1, originFeatureList)
     })
     val itemIDArr = modelFeatureItemIdArr.map(_._1)
