@@ -17,9 +17,13 @@
 package com.intel.analytics.bigdl.ppml.psi.test;
 
 import com.intel.analytics.bigdl.ppml.FLClient;
+<<<<<<< HEAD
 import com.intel.analytics.bigdl.ppml.algorithms.PSI;
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
 import com.intel.analytics.bigdl.ppml.vfl.VflContext;
+=======
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
+>>>>>>> upstream/branch-2.0
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
@@ -72,7 +76,6 @@ public class BenchmarkClient {
         VflContext.initContext();
         PSI psi = new PSI();
         try {
-
             // Get salt from Server
             salt = psi.getSalt();
             logger.info("Client get Slat=" + salt);
@@ -80,6 +83,7 @@ public class BenchmarkClient {
 
             long supload = System.currentTimeMillis();
             psi.uploadSet(ids, salt);
+
             long eupload = System.currentTimeMillis();
             logger.info("### Time of upload data: " + (eupload - supload) + " ms ###");
             logger.info("upload hashed id successfully");
@@ -96,6 +100,7 @@ public class BenchmarkClient {
             // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
             // resources the channel should be shut down when it will no longer be used. If it may be used
             // again leave it running.
+
             psi.close();
         }
     }

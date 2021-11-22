@@ -384,7 +384,8 @@ else
 fi
 dataPath="${ANALYTICS_ZOO_HOME}/bin/data/HiCS/"
 rm -rf "$dataPath"
-unzip -d ${ANALYTICS_ZOO_HOME}/bin/data/HiCS/  ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/realworld.zip
+mkdir -p ${ANALYTICS_ZOO_HOME}/bin/data/HiCS/
+unzip ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/realworld.zip -d ${ANALYTICS_ZOO_HOME}/bin/data/HiCS/  
 ${ANALYTICS_ZOO_HOME}/apps/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo
 sed -i '/get_ipython()/d' ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
 sed -i '127,273d' ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py

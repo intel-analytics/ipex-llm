@@ -25,6 +25,8 @@ import org.apache.flink.streaming.api.functions.source.{RichParallelSourceFuncti
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecords, KafkaConsumer}
 import org.apache.kafka.common.TopicPartition
 import org.apache.log4j.Logger
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 import scala.collection.JavaConverters._
 
@@ -52,13 +54,19 @@ class FlinkKafkaSource()
 
   override def run(sourceContext: SourceFunction
   .SourceContext[List[(String, String, String)]]): Unit = while (isRunning) {
+    implicit val formats = DefaultFormats
     val records: ConsumerRecords[String, String] = consumer.poll(Duration.ofMillis(1))
     if (records != null) {
       val messages = records.records(new TopicPartition(helper.jobName, 0))
       if (messages != null) {
         messages.asScala.foreach(message => {
+          val parsedValue = parse(message.value()).extract[Map[String, String]]
           sourceContext.collect(
-            List((message.key(), message.value(), "serde"))
+            List(
+              (parsedValue.getOrElse("uri", null),
+                parsedValue.getOrElse("data", null),
+                parsedValue.getOrElse("serde", null))
+            )
           )
         })
       }

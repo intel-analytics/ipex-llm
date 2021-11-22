@@ -14,18 +14,23 @@ init_instance() {
     occlum init
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .resource_limits.max_num_of_threads = 256 |
-        .process.default_heap_size = "128MB" |
-        .resource_limits.kernel_space_heap_size="256MB" |
-        .process.default_mmap_size = "15000MB" |
+        .process.default_heap_size = "512MB" |
+        .resource_limits.kernel_space_heap_size="1024MB" |
+        .process.default_mmap_size = "18000MB" |
         .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
         .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
-    sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
+    if [[ -z $SGX_MEM_SIZE ]]; then
+        sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
+    else
+        sed -i "s/SGX_MEM_SIZE/20GB/g" Occlum.json
+    fi
 }
 
 build_spark() {
     # Copy JVM and class file into Occlum instance and build
+    cd /opt/occlum_spark
     mkdir -p image/usr/lib/jvm
     cp -r /usr/lib/jvm/java-11-openjdk-amd64 image/usr/lib/jvm
     cp -rf /etc/java-11-openjdk image/etc/
@@ -39,7 +44,7 @@ build_spark() {
     cp $occlum_glibc/librt.so.1 image/$occlum_glibc
     cp $occlum_glibc/libm.so.6 image/$occlum_glibc
     # Copy libhadoop
-    cp /opt/libhadoop.so image/$occlum_glibc
+    cp /opt/libhadoop.so image/lib
     # Prepare Spark
     mkdir -p image/opt/spark
     cp -rf $SPARK_HOME/* image/opt/spark/
@@ -100,7 +105,7 @@ run_spark_lenet_mnist(){
                 --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
-                -f /bin/data \
+                -f /opt/data \
                 $* | tee spark.local.sgx.log
 }
 
@@ -128,7 +133,7 @@ run_spark_resnet_cifar(){
                 --class com.intel.analytics.bigdl.dllib.models.resnet.TrainCIFAR10 \
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
-                -f /bin/data \
+                -f /opt/data \
                 $* | tee spark.local.sgx.log
 }
 

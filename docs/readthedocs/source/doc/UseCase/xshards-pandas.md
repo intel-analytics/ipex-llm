@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/ncf_xshards_pandas.ipynb) &nbsp;![](../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/ncf_xshards_pandas.ipynb)
+![](../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/ncf_xshards_pandas.ipynb) &nbsp;![](../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/ncf_xshards_pandas.ipynb)
 
 ---
 
@@ -13,7 +13,7 @@
 First, read CVS, JSON or Parquet files into an `XShards` of Pandas Dataframe (i.e., a distributed and sharded dataset where each partition contained a Pandas Dataframe), as shown below:
 
 ```python
-from zoo.orca.data.pandas import read_csv
+from bigdl.orca.data.pandas import read_csv
 full_data = read_csv(new_rating_files, sep=':', header=None,
                      names=['user', 'item', 'label'], usecols=[0, 1, 2],
                      dtype={0: np.int32, 1: np.int32, 2: np.int32})
@@ -99,7 +99,7 @@ model = NCF(embedding_size, max_user_id, max_item_id)
 Finally, directly run distributed model training/inference on the XShards of Pandas DataFrames.
 
 ```python
-from zoo.orca.learn.tf.estimator import Estimator
+from bigdl.orca.learn.tf.estimator import Estimator
 
 # create an Estimator.
 estimator = Estimator.from_graph(

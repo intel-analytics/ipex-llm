@@ -20,7 +20,8 @@ import keras.layers as KLayer
 from keras.models import Sequential as KSequential
 from test.bigdl.test_zoo_utils import ZooTestCase
 import bigdl.dllib.keras.layers as ZLayer
-from bigdl.dllib.keras.models import Model as ZModel, Sequential as ZSequential
+from bigdl.dllib.keras.model import Model as ZModel
+from bigdl.dllib.keras.Sequential import Sequential as ZSequential
 from bigdl.dllib.net import Net
 from bigdl.dllib.nn.layer import Linear, Sigmoid, SoftMax, Model as BModel
 from bigdl.dllib.utils.common import *

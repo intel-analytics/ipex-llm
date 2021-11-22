@@ -4,6 +4,7 @@ ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG TINI_VERSION=v0.18.0
+ARG PYTHON_ENV_NAME=tf1
 
 # stage.1 jdk & spark
 FROM ubuntu:18.04 as spark
@@ -77,6 +78,7 @@ ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG SPARK_HOME
 ARG TINI_VERSION
+ARG PYTHON_ENV_NAME
 
 ENV BIGDL_HOME                          /opt/bigdl-${BIGDL_VERSION}
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
@@ -100,6 +102,7 @@ ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
 ENV SPARK_HOME                          /opt/spark
 ENV JAVA_HOME                           /opt/jdk
 ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/*
+ENV PYTHON_ENV_NAME                     ${PYTHON_ENV_NAME}
 ENV PYTHONPATH                          ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:/opt/models/research/slim
 ENV PATH ${BIGDL_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}
 ENV TINI_VERSION                        ${TINI_VERSION}
@@ -120,12 +123,26 @@ RUN mkdir -p /opt/bigdl-examples/python && \
     ln -sv /bin/bash /bin/sh && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
+
 # python
-ADD ./install-conda-env.sh /opt
-RUN chmod a+x /opt/install-conda-env.sh && \
+# Install Miniconda
+RUN wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh && \
+    chmod +x Miniconda3-4.5.4-Linux-x86_64.sh && \
+    ./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local 
+
+ADD ./install-python-env1.sh /opt
+ADD ./install-python-env2.sh /opt
+RUN chmod a+x /opt/install-python-env1.sh && \
+    chmod a+x /opt/install-python-env2.sh && \
     chmod +x /sbin/tini
-RUN /opt/install-conda-env.sh && \
-    cp /sbin/tini /usr/bin/tini
+RUN if [ $PYTHON_ENV_NAME = "tf1" ]; then \
+        rm /opt/install-python-env2.sh && \
+        /opt/install-python-env1.sh; \
+    elif [ $PYTHON_ENV_NAME = "tf2" ]; then \
+        rm /opt/install-python-env1.sh && \
+        /opt/install-python-env2.sh; \
+    fi
+RUN cp /sbin/tini /usr/bin/tini
 
 WORKDIR /opt/spark/work-dir
 
