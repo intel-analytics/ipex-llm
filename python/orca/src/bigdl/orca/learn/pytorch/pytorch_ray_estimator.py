@@ -23,7 +23,7 @@ import numpy as np
 
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
-from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
+from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
@@ -147,7 +147,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         if backend == "torch_distributed":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
-            RemoteRunner = ray.remote(num_cpus=cores_per_node)(TorchRunner)
+            RemoteRunner = ray.remote(num_cpus=cores_per_node)(PytorchRayWorker)
             self.remote_workers = [
                 RemoteRunner.remote(**params) for i in range(num_nodes)
             ]
@@ -169,7 +169,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         elif backend == "horovod":
             from bigdl.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
             self.horovod_runner = HorovodRayRunner(ray_ctx,
-                                                   worker_cls=TorchRunner,
+                                                   worker_cls=PytorchRayWorker,
                                                    worker_param=params,
                                                    workers_per_node=workers_per_node)
             self.remote_workers = self.horovod_runner.remote_workers
