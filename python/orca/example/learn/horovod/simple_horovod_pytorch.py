@@ -76,7 +76,7 @@ def run_horovod():
 
     kwargs = {}
     train_dataset = \
-        datasets.MNIST('data-%d' % hvd.rank(), train=True, download=True,
+        datasets.MNIST('data-%d' % hvd.rank(), train=True, download=False,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
