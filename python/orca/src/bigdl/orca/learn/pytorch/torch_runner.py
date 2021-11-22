@@ -304,7 +304,7 @@ class TorchRunner:
             self.timers.disable()
         self.training_operator._set_timers(self.timers)
 
-    def state_dict(self):
+    def get_state_dict(self):
         """Returns the state of the runner."""
         state = {
             "epoch": self.epochs,

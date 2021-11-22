@@ -28,9 +28,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This file is adapted from
-# https://github.com/ray-project/ray/blob/master/python/ray/util/sgd/torch/torch_runner.py
-
 import ray
 from bigdl.orca.learn.pytorch.utils import find_free_port
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
@@ -109,14 +106,6 @@ class PytorchRayWorker(TorchRunner):
         self._create_schedulers_if_available()
         self._create_loss()
 
-    def get_node_ip(self):
-        """Returns the IP address of the current node."""
-        return ray._private.services.get_node_ip_address()
-
-    def find_free_port(self):
-        """Finds a free port on the current node."""
-        return utils.find_free_port()
-
     def predict(self, data_creator, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
         config = self.config.copy()
@@ -128,84 +117,3 @@ class PytorchRayWorker(TorchRunner):
 
         partition = ray.get(shards_ref)
         return super().predict(partition=partition, batch_size=batch_size, profile=profile)
-
-    def get_state_dict(self):
-        """Returns the state of the runner."""
-        state = {
-            "epoch": self.epochs,
-            "operator": self.training_operator.state_dict(),
-            "models": [model.state_dict() for model in self.models],
-            "optimizers": [opt.state_dict() for opt in self.optimizers]
-        }
-        if self.schedulers:
-            state.update({
-                "schedulers": [
-                    scheduler.state_dict() for scheduler in self.schedulers
-                ]
-            })
-        return state
-
-    def load_state_dict(self, state):
-        """Sets the state of the model."""
-        for model, state_dict in zip(self.models, state["models"]):
-            model.load_state_dict(state_dict)
-        for optimizer, state_dict in zip(self.optimizers, state["optimizers"]):
-            optimizer.load_state_dict(state_dict)
-        if self.schedulers:
-            for scheduler, state_dict in zip(self.schedulers,
-                                             state["schedulers"]):
-                scheduler.load_state_dict(state_dict)
-
-        self.epochs = state["epoch"]
-        self.training_operator.load_state_dict(state["operator"])
-
-    def get_state_stream(self):
-        """Returns a bytes object for the state dict."""
-        state_dict = self.get_state_dict()
-        _buffer = io.BytesIO()
-        torch.save(state_dict, _buffer)
-        return _buffer.getvalue()
-
-    def load_state_stream(self, byte_obj):
-        """Loads a bytes object the training state dict."""
-        _buffer = io.BytesIO(byte_obj)
-        state_dict = torch.load(_buffer)
-        return self.load_state_dict(state_dict)
-
-    def apply(self, fn):
-        return fn()
-
-    def apply_operator(self, fn):
-        return fn(self.training_operator)
-
-    def shutdown(self):
-        """Attempts to shut down the worker."""
-        del self.training_operator
-        del self.validation_loader
-        del self.train_loader
-        del self.criterion
-        del self.optimizers
-        del self.models
-
-    @property
-    def given_models(self):
-        if len(self.models) > 1:
-            return self.models
-        else:
-            return self.models[0]
-
-    @property
-    def given_optimizers(self):
-        if len(self.optimizers) > 1:
-            return self.optimizers
-        else:
-            return self.optimizers[0]
-
-    @property
-    def given_schedulers(self):
-        if not self.schedulers:
-            return self.schedulers
-        if len(self.schedulers) > 1:
-            return self.schedulers
-        else:
-            return self.schedulers[0]
