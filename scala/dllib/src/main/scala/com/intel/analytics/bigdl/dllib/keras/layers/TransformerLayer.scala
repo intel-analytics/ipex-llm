@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Constant, Variable}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import com.intel.analytics.bigdl.dllib.keras.models.Model
-import com.intel.analytics.bigdl.dllib.keras.Sequential._
+import com.intel.analytics.bigdl.dllib.keras.Sequential
 
 import scala.reflect.ClassTag
 

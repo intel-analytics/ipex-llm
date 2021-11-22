@@ -15,7 +15,6 @@
 #
 
 from optparse import OptionParser
-# from bigdl.dllib.keras.Sequential import *
 import bigdl.dllib.keras.Sequential
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.feature.dataset import mnist
