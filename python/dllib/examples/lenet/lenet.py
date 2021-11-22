@@ -17,9 +17,8 @@
 from optparse import OptionParser
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.keras.layers import *
-from bigdl.dllib.keras.Sequential import *
+import bigdl.dllib.keras.Sequential
 from bigdl.dllib.feature.dataset import mnist
-
 
 def build_model(class_num):
     model = Sequential()
