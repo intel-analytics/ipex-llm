@@ -35,7 +35,7 @@ import socket
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 
 
-def find_ip_and_port():
+def find_ip_and_port(pre_iter):
     tc = BarrierTaskContext().get()
     address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:

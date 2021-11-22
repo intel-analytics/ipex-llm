@@ -336,7 +336,7 @@ class TorchRunner:
 
     def get_state_stream(self):
         """Returns a bytes object for the state dict."""
-        state_dict = self.state_dict()
+        state_dict = self.get_state_dict()
         _buffer = io.BytesIO()
         torch.save(state_dict, _buffer)
         return _buffer.getvalue()
