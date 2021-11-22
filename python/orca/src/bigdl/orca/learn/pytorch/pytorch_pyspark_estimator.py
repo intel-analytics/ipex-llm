@@ -21,7 +21,7 @@ import torch
 import numpy as np
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
-from bigdl.orca.learn.pytorch.torch_pyspark_runner import PytorchPysparkWorker
+from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
@@ -30,7 +30,7 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.orca.learn.pytorch.torch_pyspark_runner import find_ip_and_port
+from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
 
 
 logger = logging.getLogger(__name__)
