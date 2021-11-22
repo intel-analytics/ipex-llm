@@ -138,8 +138,6 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
 
-'
-
 echo "#14 start test for orca yolov3"
 #timer
 start=$(date "+%s")
@@ -161,3 +159,27 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#14 Total time cost ${time} seconds"
+
+'
+
+echo "#14-2 start test for orca yolov3"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/yoloV3.py  \
+  --data_dir /bigdl2.0/data/yolov3 \
+  --output_data /bigdl2.0/data/yolov3/parquet \
+  --weights /bigdl2.0/data/yolov3/yolov3.weights \
+  --checkpoint /bigdl2.0/data/yolov3/yolov3.tf \
+  --class_num 20 \
+  --names /bigdl2.0/data/yolov3/voc2012.names \
+  --epochs 1 ---cluster_mode yarn-cluster
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca yolov3 failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#14-2 Total time cost ${time} seconds"
