@@ -16,16 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.psi.test;
 
-import com.intel.analytics.bigdl.ppml.FLClient;
-<<<<<<< HEAD
 import com.intel.analytics.bigdl.ppml.algorithms.PSI;
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
 import com.intel.analytics.bigdl.ppml.vfl.VflContext;
-=======
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
->>>>>>> upstream/branch-2.0
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
