@@ -138,8 +138,6 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
 
-'
-
 echo "#9 start test for orca learn/tf/image_segmentation/image_segmentation.py"
 #timer
 start=$(date "+%s")
@@ -156,4 +154,24 @@ if [ $exit_status -ne 0 ]; then
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#7 Total time cost ${time} seconds"
+echo "#9 Total time cost ${time} seconds"
+
+'
+
+echo "#9-2 start test for orca learn/tf/image_segmentation/image_segmentation.py"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segmentation.py \
+  --batch_size 64 \
+  --file_path ${HDFS_URI}/carvana \
+  --non_interactive --epochs 1 --cluster_mode yarn-cluster
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca learn/tf/image_segmentation/image_segmentation.py failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#9-2 Total time cost ${time} seconds"
