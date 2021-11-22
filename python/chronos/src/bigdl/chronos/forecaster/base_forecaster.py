@@ -80,7 +80,8 @@ class BasePytorchForecaster(Forecaster):
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
                if you input a pytorch dataloader for `data`, the batch_size will follow the
-               batch_size setted in `data`.
+               batch_size setted in `data`.if the forecaster is distributed, the batch_size will be
+               evenly distributed to all workers.
 
         :return: Evaluation results on data.
         """
@@ -98,6 +99,17 @@ class BasePytorchForecaster(Forecaster):
 
         # fit on internal
         if self.distributed:
+            # for cluster mode
+            from bigdl.orca.common import OrcaContext
+            sc = OrcaContext.get_spark_context().getConf()
+            num_nodes = 1 if sc.get('spark.master').startswith('local') \
+                else int(sc.get('spark.executor.instances'))
+            if batch_size % self.workers_per_node != 0:
+                raise RuntimeError("Please make sure that batch_size can be divisible by "
+                                   "the product of worker_per_node and num_nodes, "
+                                   f"but 'batch_size' is {batch_size}, 'workers_per_node' "
+                                   f"is {self.workers_per_node}, 'num_nodes' is {num_nodes}")
+            batch_size //= (self.workers_per_node * num_nodes)
             return self.internal.fit(data=data,
                                      epochs=epochs,
                                      batch_size=batch_size)
