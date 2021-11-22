@@ -33,6 +33,7 @@ from pyspark import BarrierTaskContext
 from contextlib import closing
 import socket
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
+import torch.distributed as dist
 
 
 def find_ip_and_port(pre_iter):
@@ -148,3 +149,8 @@ class PytorchPysparkWorker(TorchRunner):
         partition = data_creator(config, batch_size)
         self.load_state_dict(self.state_dict)
         return super().predict(partition=partition, batch_size=batch_size, profile=profile)
+
+    def shutdown(self):
+        """Attempts to shut down the worker."""
+        dist.destroy_process_group()
+        super().shutdown()
