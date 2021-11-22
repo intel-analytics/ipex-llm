@@ -100,17 +100,10 @@ class BasePytorchForecaster(Forecaster):
         # fit on internal
         if self.distributed:
             # for cluster mode
-<<<<<<< HEAD
-            from bigdl.dllib.nncontext import init_nncontext
-            nn = init_nncontext().getConf()
-            num_nodes = 1 if nn.get('spark.master').startswith('local') \
-                        else int(nn.get('spark.executor.instances'))
-=======
             from bigdl.orca.common import OrcaContext
             sc = OrcaContext.get_spark_context().getConf()
             num_nodes = 1 if sc.get('spark.master').startswith('local') \
                 else int(sc.get('spark.executor.instances'))
->>>>>>> fix pep8
             if batch_size % self.workers_per_node != 0:
                 raise RuntimeError("Please make sure that batch_size can be divisible by "
                                    "the product of worker_per_node and num_nodes, "
