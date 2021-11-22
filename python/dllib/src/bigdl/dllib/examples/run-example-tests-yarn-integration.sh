@@ -138,8 +138,6 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
 
-'
-
 echo "#10 start test for orca inception"
 #timer
 start=$(date "+%s")
@@ -156,3 +154,22 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#10 Total time cost ${time} seconds"
+
+'
+
+echo "#10-2 start test for orca inception"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
+  --imagenet ${HDFS_URI}/imagenettfrecord \
+  -b 128 --cluster_mode yarn-cluster
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca inception failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#10-2 Total time cost ${time} seconds"
