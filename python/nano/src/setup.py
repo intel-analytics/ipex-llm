@@ -24,10 +24,6 @@ import urllib.request
 import os
 import stat
 import sys
-import re
-from html.parser import HTMLParser
-import platform
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
 nano_home = os.path.abspath(__file__ + "/../")
@@ -67,22 +63,7 @@ def download_libs(url: str):
     st = os.stat(libso_file)
     os.chmod(libso_file, st.st_mode | stat.S_IEXEC)
 
-# The global variable `plat_name` is used to determine which target platform we are packing for.
-# We overwrite the cmdclass in setuptools to restore the `--plat-name` argument we specified.
-# For example, when we call:
-# 
-#    python setup.py bdist_wheel --plat-name darwin-x86_64
-# 
-# `plat_name` will be assigned as `darwin-x86_64`, which means building wheel for MacOS.
-plat_name = "linux-x86_64"
-
-class bdist_wheel(_bdist_wheel):
-    def run(self):
-        plat_name = self.plat_name
-        _bdist_wheel.run(self)
-
-
-def setup_package():
+def setup_package(plat_name):
 
     install_requires = ["intel-openmp"]
 
@@ -97,10 +78,10 @@ def setup_package():
                         "opencv-transforms"]
 
     package_data_plat_ = {"manylinux2010_x86_64":["libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"],
-                          "win-amd64":[]}
+                          "win_amd64":[]}
 
     script_plat = {"manylinux2010_x86_64": "../script/bigdl-nano-init",
-                    "win-amd64": "../script/bigdl-nano-init.ps1"}
+                    "win_amd64": "../script/bigdl-nano-init.ps1"}
 
     if plat_name == 'manylinux2010_x86_64':
         for url in lib_urls:
@@ -116,9 +97,6 @@ def setup_package():
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
                         "pytorch": pytorch_requires},
-        cmdclass={
-          'bdist_wheel': bdist_wheel
-        },
         package_data={"bigdl.nano": package_data_plat_[plat_name]},
         scripts=script_plat[plat_name],
 
@@ -131,4 +109,20 @@ def setup_package():
 
 
 if __name__ == '__main__':
-    setup_package()
+    idx = 0
+    for arg in sys.argv:
+        if arg == "--plat-name":
+            break
+        else:
+            idx += 1
+    if idx >= len(sys.argv):
+        raise ValueError("Cannot find --plat-name argument. bigdl-tf requires --plat-name to build.")
+    verbose_plat_name = sys.argv[idx + 1]
+
+    valid_plat_names = {"win_amd64", "manylinux2010_x86_64"}
+    if verbose_plat_name not in valid_plat_names:
+        raise ValueError(f"--plat-name is not valid. --plat-name should be one of {valid_plat_names}"
+                        f" but got {verbose_plat_name}")
+    plat_name=verbose_plat_name
+
+    setup_package(plat_name)
