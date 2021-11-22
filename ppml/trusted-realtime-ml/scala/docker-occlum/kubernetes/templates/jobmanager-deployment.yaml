@@ -23,9 +23,8 @@ spec:
         image:  {{ .Values.image }}
         command: ["/bin/bash","-c"]
         args: 
-          - cd /ppml/trusted-realtime-ml/java; 
-            test "$SGX_MODE" = sgx && bash init.sh > ../init-java.log; 
-            bash start-flink-jobmanager.sh | tee ../jobmanager.log; 
+          - cd /opt; 
+            bash start-flink-jobmanager.sh | tee ./jobmanager.log; 
             tail -f /dev/null
 #        args: ["tail -f /dev/null"]
         env:

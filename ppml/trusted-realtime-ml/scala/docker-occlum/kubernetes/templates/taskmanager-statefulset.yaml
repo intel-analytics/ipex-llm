@@ -40,8 +40,7 @@ spec:
         command: ["/bin/bash","-c"]
         args:
               - export FLINK_TASK_MANAGER_IP=$(hostname -I);
-                cd /ppml/trusted-realtime-ml/java;
-                test "$SGX_MODE" = sgx && bash init.sh | tee ../init-java.log ;
+                cd /opt;
                 instance_id=`echo $POD_NAME | awk -F '-' '{print $NF}'`;
                 cpu_start=$[instance_id*CORE_NUM] && cpu_end=$[cpu_start+CORE_NUM-1] && export cpuset=${cpu_start}-${cpu_end};
                 taskset -c $cpuset bash start-flink-taskmanager.sh 2>&1 | tee ../taskmanager.log;
