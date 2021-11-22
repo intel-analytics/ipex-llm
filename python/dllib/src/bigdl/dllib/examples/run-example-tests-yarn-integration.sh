@@ -145,7 +145,7 @@ echo "#10 start test for orca inception"
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
-  --imagenet /bigdl2.0/data/imagenettfrecord \
+  --imagenet ${HDFS_URI}/imagenettfrecord \
   -b 128 --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
