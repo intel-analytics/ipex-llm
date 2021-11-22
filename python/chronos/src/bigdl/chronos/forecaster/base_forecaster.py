@@ -108,10 +108,6 @@ class BasePytorchForecaster(Forecaster):
 
         :return: Evaluation results on data.
         """
-
-        # input adaption
-        # self.config["batch_size"] = batch_size
-
         # input transform
         if isinstance(data, DataLoader) and self.distributed:
             data = loader_to_creator(data)
