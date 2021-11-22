@@ -19,7 +19,7 @@ import bigdl.dllib.keras.Sequential
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.feature.dataset import mnist
 
-t=0
+
 def build_model(class_num):
     model = Sequential()
     model.add(Reshape((1, 28, 28), input_shape=(28, 28, 1)))
