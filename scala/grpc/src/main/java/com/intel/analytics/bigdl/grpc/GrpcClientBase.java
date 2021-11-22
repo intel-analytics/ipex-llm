@@ -69,6 +69,7 @@ public class GrpcClientBase extends AbstractGrpcBase {
         parseConfig();
         if (channel == null) {
             channel = ManagedChannelBuilder.forTarget(target)
+                    .maxInboundMessageSize(Integer.MAX_VALUE)
                     // Channels are secure by default (via SSL/TLS).
                     .usePlaintext()
                     .build();
