@@ -35,26 +35,29 @@ class LightningModuleFromTorch(LightningModule):
         self.loss = loss
         self.optimizer = optimizer
 
-    def forward(self, batch):
+    def forward(self, x):
+        return self.model(x)
+
+    def _forward(self, batch):
         # Handle different numbers of input for various models
         nargs = self.model.forward.__code__.co_argcount
         return self.model(*(batch[:nargs - 1]))
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self(batch)
+        y_hat = self._forward(batch)
         loss = self.loss(y_hat, y)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self(batch)
+        y_hat = self._forward(batch)
         loss = self.loss(y_hat, y)
         return loss
 
     def test_step(self, batch, batch_idx):
         x, y = batch
-        y_hat = self(batch)
+        y_hat = self._forward(batch)
         loss = self.loss(y_hat, y)
         return loss
 

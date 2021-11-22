@@ -45,22 +45,33 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 class TestModelsVision(TestCase):
-
-    def test_resnet18_ipex(self):
-        resnet18 = vision.resnet18(
-            pretrained=False, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            resnet18, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_trainer_compile(self):
+    
+    def test_trainer_compile_with_onnx(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
-        pl_model = Trainer.compile(model, loss, optimizer)
-        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+
+        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        train_loader = create_data_loader(data_dir, batch_size,\
+            num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
+        assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
+
+        for x, y in train_loader:
+            onnx_res = pl_model.inference(x.numpy(), file_path="/tmp/model.onnx")  # onnxruntime
+            pytorch_res = pl_model.inference(x, backend=None).numpy()  # native pytorch
+            assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date while inferencing
+            np.testing.assert_almost_equal(onnx_res, pytorch_res, decimal=5)  # same result
+
+        trainer.fit(pl_model, train_loader)
+        assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
+
+        pl_model.update_ortsess()  # update the ortsess with default settings
+        assert pl_model._ortsess_up_to_date is True # ortsess is up-to-date after updating
+
+        trainer.predict(pl_model, train_loader)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
