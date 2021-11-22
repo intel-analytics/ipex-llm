@@ -24,8 +24,19 @@ from bigdl.nano.pytorch.trainer import Trainer
 import numpy as np
 import warnings
 import torch
+from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
-from torchmetrics.functional import mean_absolute_error
+from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
+    mean_absolute_percentage_error, r2_score, symmetric_mean_absolute_percentage_error
+
+TORCHMETRICS_REGRESSION_MAP = {
+    'mae': mean_absolute_error,
+    'mse': mean_squared_error,
+    'rmse': partial(mean_squared_error, squared=False),
+    'mape': mean_absolute_percentage_error,
+    'r2': r2_score,
+    'smape': symmetric_mean_absolute_percentage_error
+}
 
 
 class BasePytorchForecaster(Forecaster):
@@ -280,7 +291,12 @@ class BasePytorchForecaster(Forecaster):
                 raise RuntimeError("You must call fit or restore first before calling evaluate!")
             yhat_torch = self.internal.inference(torch.from_numpy(data[0]), backend=None)
             y_torch = torch.from_numpy(data[1])
-            return mean_absolute_error(yhat_torch, y_torch)
+
+            eval_res = []
+            for metric in self.metrics:
+                eval_res.append(TORCHMETRICS_REGRESSION_MAP[metric](yhat_torch, y_torch))
+
+            return eval_res
 
     def evaluate_with_onnx(self, data,
                            batch_size=32,
@@ -328,7 +344,13 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
         yhat = self.internal.inference(data[0], batch_size=batch_size, file_path=dirname)
-        return mean_absolute_error(torch.from_numpy(yhat), torch.from_numpy(data[1]))
+
+        eval_res = []
+        for metric in self.metrics:
+            eval_res.append(TORCHMETRICS_REGRESSION_MAP[metric](torch.from_numpy(yhat),
+                                                                   torch.from_numpy(data[1])))
+
+        return eval_res
 
     def save(self, checkpoint_file):
         """
@@ -432,17 +454,20 @@ class BasePytorchForecaster(Forecaster):
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
             raise RuntimeError("sess_options should be an onnxruntime.SessionOptions instance"
                                f", but found {type(sess_options)}")
+        if sess_options is None:
+            sess_options = onnxruntime.SessionOptions()
+            if thread_num is not None:
+                sess_options.intra_op_num_threads = thread_num
         if self.distributed:
             raise NotImplementedError("build_onnx has not been supported for distributed "
                                       "forecaster. You can call .to_local() to transform the "
                                       "forecaster to a non-distributed version.")
-        import torch
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
         self.internal.update_ortsess(dummy_input,
                                      sess_options=sess_options)
 
-    def export_onnx_file(self, dirname):
+    def export_onnx_file(self, dirname="model.onnx"):
         """
         Save the onnx model file to the disk.
 
@@ -452,7 +477,7 @@ class BasePytorchForecaster(Forecaster):
             raise NotImplementedError("export_onnx_file has not been supported for distributed "
                                       "forecaster. You can call .to_local() to transform the "
                                       "forecaster to a non-distributed version.")
-        import torch
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.internal._build_onnx(dummy_input, dirname)
+        self.internal.update_ortsess(dummy_input,
+                                     dirname=dirname)
