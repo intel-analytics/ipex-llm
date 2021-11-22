@@ -68,15 +68,15 @@ def run_horovod():
     # Horovod: limit # of CPU threads to be used per worker.
     torch.set_num_threads(4)
 
-    new_mirror = 'https://ossci-datasets.s3.amazonaws.com/mnist'
-    datasets.MNIST.resources = [
-    ('/'.join([new_mirror, url.split('/')[-1]]), md5)
-    for url, md5 in datasets.MNIST.resources
-    ]
+    # new_mirror = 'https://ossci-datasets.s3.amazonaws.com/mnist'
+    # datasets.MNIST.resources = [
+    # ('/'.join([new_mirror, url.split('/')[-1]]), md5)
+    # for url, md5 in datasets.MNIST.resources
+    # ]
 
     kwargs = {}
     train_dataset = \
-        datasets.MNIST('data-%d' % hvd.rank(), train=True, download=False,
+        datasets.MNIST('data-%d' % hvd.rank(), train=True, download=True,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
