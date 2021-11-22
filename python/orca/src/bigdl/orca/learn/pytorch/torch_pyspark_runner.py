@@ -46,7 +46,7 @@ def find_ip_and_port():
     return [free_ip_port]
 
 
-class TorchPysparkRunner(TorchRunner):
+class PytorchPysparkWorker(TorchRunner):
     """Manages a PyTorch model for training."""
 
     def __init__(self,
