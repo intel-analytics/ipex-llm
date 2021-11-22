@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.friesian.serving.utils.{EncodeUtils, Utils}
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features
+import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.{Features, IDs}
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingGrpc.RankingBlockingStub
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.{Content, Prediction}
 import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils
@@ -33,7 +33,6 @@ import org.apache.spark.sql.SparkSession
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 object RecommenderUtils {
   val logger: Logger = Logger.getLogger(getClass)
@@ -74,6 +73,8 @@ object RecommenderUtils {
     val modelFeatureItemIdArr = itemFeatureArr.map(item => {
       val itemF = item._2
       val originFeatureList = itemF.++(userFeature)
+      //      val featureList = idxArr.map(idx => originFeatureList(idx))
+      //      (item._1, featureList)
       (item._1, originFeatureList)
     })
     val itemIDArr = modelFeatureItemIdArr.map(_._1)
@@ -107,7 +108,7 @@ object RecommenderUtils {
       val predContent = Content.newBuilder().setEncodedStr(input).build()
       var result: Prediction = null
       try {
-          result = inferenceStub.doPredict(predContent)
+        result = inferenceStub.doPredict(predContent)
       } catch {
         case e: StatusRuntimeException => throw e
       }
@@ -120,10 +121,20 @@ object RecommenderUtils {
   def getTopK(result: Array[String], itemIDArr: Array[Int], k: Int): (Array[Int], Array[Float]) = {
     val resultArr = result.indices.toParArray.map(idx => {
       val resultStr = result(idx)
-      val resultStrArr = resultStr.replaceAll("\\[", "").dropRight(2).split("\\],")
-      resultStrArr.map(a => {
-        a.split(",")(0).toFloat
-      })
+      val resultActivity = EncodeUtils.bytesToObj(Base64.getDecoder.decode(resultStr))
+        .asInstanceOf[Activity]
+      if (resultActivity.isTensor) {
+        val tensor = resultActivity.toTensor[Float].squeeze(2)
+        try {
+          tensor.toArray()
+        } catch {
+          case _: Exception => throw new Exception("Not supported inference result type, please " +
+            "modify method getTopK in RecommendUtils to ensure the ranking result is correct.")
+        }
+      } else {
+        throw new Exception("Not supported inference result type, please modify method getTopK in " +
+          "RecommendUtils to ensure the ranking result is correct.")
+      }
     }).toArray
     val flattenResult = resultArr.flatten
     val zipped = itemIDArr zip flattenResult
