@@ -184,7 +184,7 @@ class TorchPysparkRunner(TorchRunner):
         self.epochs = state["epoch"]
         self.training_operator.load_state_dict(state["operator"])
 
-    def state_stream(self):
+    def get_state_stream(self):
         """Returns a bytes object for the state dict."""
         state_dict = self.get_state_dict()
         _buffer = io.BytesIO()

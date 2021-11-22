@@ -483,7 +483,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
     def get_state_dict(self):
         stream_ids = [
-            worker.state_stream.remote()
+            worker.get_state_stream.remote()
             for worker in self.remote_workers
         ]
         # get the first task id that finished executing.
