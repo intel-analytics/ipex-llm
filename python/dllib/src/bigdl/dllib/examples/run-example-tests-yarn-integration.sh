@@ -146,29 +146,29 @@ echo "start test for dllib nnframes image inference"
 # time=$((now - start))
 # echo "#7 Total time cost ${time} seconds"
 
-echo "#7 start test for orca mxnet"
-#timer
-start=$(date "+%s")
+# echo "#7 start test for orca mxnet"
+# #timer
+# start=$(date "+%s")
 
-# if [ -f ${BIGDL_ROOT}/data/mnist.zip ]
-# then
-#     echo "mnist.zip already exists"
-# else
-#     wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P ${BIGDL_ROOT}/data
+# # if [ -f ${BIGDL_ROOT}/data/mnist.zip ]
+# # then
+# #     echo "mnist.zip already exists"
+# # else
+# #     wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P ${BIGDL_ROOT}/data
+# # fi
+# # unzip -q ${BIGDL_ROOT}/data/mnist.zip -d ${BIGDL_ROOT}/data
+
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py #--cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca mxnet failed"
+#   exit $exit_status
 # fi
-# unzip -q ${BIGDL_ROOT}/data/mnist.zip -d ${BIGDL_ROOT}/data
-
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py #--cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca mxnet failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#7 Total time cost ${time} seconds"
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#7 Total time cost ${time} seconds"
 
 # echo "#8 start test for orca openvino"
 # #timer
