@@ -15,43 +15,46 @@
 #
 
 import numpy as np
-from pandas import read_csv
 import tensorflow as tf
-from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
+from pandas import read_csv
 from sklearn.model_selection import train_test_split
 
 
 def build_model(num_users, num_items, layers=[20, 10], include_mf=True, mf_embed=20):
     num_layer = len(layers)
-    user_input = Input(shape=(1,), dtype="int32", name="user_input")
-    item_input = Input(shape=(1,), dtype="int32", name="item_input")
+    user_input = tf.keras.layers.Input(shape=(1,), dtype="int32", name="user_input")
+    item_input = tf.keras.layers.Input(shape=(1,), dtype="int32", name="item_input")
 
-    mlp_embed_user = Embedding(input_dim=num_users + 1, output_dim=int(layers[0] / 2),
-                               input_length=1)(user_input)
-    mlp_embed_item = Embedding(input_dim=num_items + 1, output_dim=int(layers[0] / 2),
-                               input_length=1)(item_input)
-    user_latent = Flatten()(mlp_embed_user)
-    item_latent = Flatten()(mlp_embed_item)
+    mlp_embed_user = tf.keras.layers.Embedding(input_dim=num_users + 1,
+                                               output_dim=int(layers[0] / 2),
+                                               input_length=1)(user_input)
+    mlp_embed_item = tf.keras.layers.Embedding(input_dim=num_items + 1,
+                                               output_dim=int(layers[0] / 2),
+                                               input_length=1)(item_input)
+    user_latent = tf.keras.layers.Flatten()(mlp_embed_user)
+    item_latent = tf.keras.layers.Flatten()(mlp_embed_item)
 
-    mlp_latent = concatenate([user_latent, item_latent], axis=1)
+    mlp_latent = tf.keras.layers.concatenate([user_latent, item_latent], axis=1)
     for idx in range(1, num_layer):
-        layer = Dense(layers[idx], activation="relu",
+        layer = tf.keras.layers.Dense(layers[idx], activation="relu",
                       name="layer%d" % idx)
         mlp_latent = layer(mlp_latent)
 
     if include_mf:
-        mf_embed_user = Embedding(input_dim=num_users + 1, output_dim=mf_embed,
-                                  input_length=1)(user_input)
-        mf_embed_item = Embedding(input_dim=num_items + 1, output_dim=mf_embed,
-                                  input_length=1)(item_input)
-        mf_user_flatten = Flatten()(mf_embed_user)
-        mf_item_flatten = Flatten()(mf_embed_item)
+        mf_embed_user = tf.keras.layers.Embedding(input_dim=num_users + 1,
+                                                  output_dim=mf_embed,
+                                                  input_length=1)(user_input)
+        mf_embed_item = tf.keras.layers.Embedding(input_dim=num_items + 1,
+                                                  output_dim=mf_embed,
+                                                  input_length=1)(item_input)
+        mf_user_flatten = tf.keras.layers.Flatten()(mf_embed_user)
+        mf_item_flatten = tf.keras.layers.Flatten()(mf_embed_item)
 
-        mf_latent = multiply([mf_user_flatten, mf_item_flatten])
-        concated_model = concatenate([mlp_latent, mf_latent], axis=1)
-        prediction = Dense(1, activation="relu", name="prediction")(concated_model)
+        mf_latent = tf.keras.layers.multiply([mf_user_flatten, mf_item_flatten])
+        concated_model = tf.keras.layers.concatenate([mlp_latent, mf_latent], axis=1)
+        prediction = tf.keras.layers.Dense(1, activation="relu", name="prediction")(concated_model)
     else:
-        prediction = Dense(1, activation="relu", name="prediction")(mlp_latent)
+        prediction = tf.keras.layers.Dense(1, activation="relu", name="prediction")(mlp_latent)
 
     model = tf.keras.Model([user_input, item_input], prediction)
     return model
@@ -70,14 +73,11 @@ print(min_user_id, max_user_id, min_item_id, max_item_id)
 train, test = train_test_split(full_data, test_size=0.2, random_state=100)
 
 model = build_model(max_user_id, max_item_id)
-print(model.summary())
+model.summary()
 optimizer = tf.keras.optimizers.Adam(1e-2)
-model.compile(optimizer=optimizer,
-              loss="mean_squared_error")
+model.compile(optimizer=optimizer, loss="mean_squared_error")
 model.fit([train.user, train.item], train.label,
           batch_size=800,
           epochs=5,
-          steps_per_epoch=1000,
-          validation_data=([test.user, test.item], test.label),
-          validation_steps=250)
+          validation_data=([test.user, test.item], test.label))
 tf.saved_model.save(model, "./model")
