@@ -33,11 +33,11 @@ import java.util.function.Function;
 
 public class GrpcClientBase extends AbstractGrpcBase {
     protected static final Logger logger = Logger.getLogger(GrpcClientBase.class.getName());
-    protected String target;
+    protected String target = "localhost:8980";
     protected final String clientUUID;
     protected ManagedChannel channel;
 
-    public GrpcClientBase(String[] args) {
+    public GrpcClientBase(String[] args) throws IOException {
         clientUUID = UUID.randomUUID().toString();
         this.args = args;
         this.channel = null;

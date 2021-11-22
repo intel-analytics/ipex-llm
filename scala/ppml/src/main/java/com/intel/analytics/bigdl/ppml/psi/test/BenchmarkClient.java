@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.psi.test;
 
 import com.intel.analytics.bigdl.ppml.FLClient;
+import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
@@ -27,38 +28,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+
+/**
+ * For benchmark test only
+ */
 public class BenchmarkClient {
     private static final Logger logger = LoggerFactory.getLogger(BenchmarkClient.class);
 
     public static void main(String[] args) throws Exception {
-	String taskID;
-	String target;
-	int idSize;
-	int startNum;
-	// Number of arguments to be passed.
-        int argNum = 5;
+        String taskID;
+        int idSize;
+        int startNum;
+        // Number of arguments to be passed.
         if (args.length == 0) {
             logger.info("No argument passed, using default parameters.");
             taskID = "taskID";
-            target = "localhost:50051";
             idSize = 10000;
             startNum = 0;
-        } else if (args.length < argNum || args.length > argNum + 1) {
-            logger.info("Error: detecting " + Integer.toString(args.length) + " arguments. Expecting " + Integer.toString(argNum) + ".");
-            logger.info("Usage: BenchmarkClient taskID ServerIP ServerPort");
-            taskID = "";
-            target = "";
-            idSize = 0;
-            startNum = 0;
-            System.exit(0);
         } else {
+            if (args.length != 3) {
+                throw new Error("args length should be 3, taskID, idSize, startNum");
+            }
             taskID = args[0];
-            target = args[1] + ":" + args[2];
-            idSize = Integer.parseInt(args[3]);
-            startNum = Integer.parseInt(args[4]);
+            idSize = Integer.parseInt(args[1]);
+            startNum = Integer.parseInt(args[2]);
         }
         logger.info("TaskID is: " + taskID);
-        logger.info("Accessing service at: " + target);
+        logger.info("id size: " + idSize + ", start num: " + startNum);
 
         // Example code for flClient
         // Quick lookup for the plaintext of hashed ids
@@ -72,28 +68,15 @@ public class BenchmarkClient {
         HashMap<String, String> hashedIds = new HashMap<>();
         List<String> hashedIdArray;
         String salt;
-
-        // Create a communication channel to the server,  known as a Channel. Channels are thread-safe
-        // and reusable. It is common to create channels at the beginning of your application and reuse
-        // them until the application shuts down.
-        ManagedChannel channel = ManagedChannelBuilder.forTarget(target)
-                // Channels are secure by default (via SSL/TLS).
-                //extend message size of server to 200M to avoid size conflict
-		.maxInboundMessageSize(Integer.MAX_VALUE)
-		.usePlaintext()
-                .build();
+        FLClient flClient = new FLClient();
         try {
-            String[] arg = {"-c", BenchmarkClient.class.getClassLoader()
-                    .getResource("psi/psi-conf.yaml").getPath()};
-            FLClient flClient = new FLClient(arg);
-            flClient.build();
             
             // Get salt from Server
-            salt = flClient.getSalt();
+            salt = flClient.psiStub().getSalt();
             logger.info("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
             long shash = System.currentTimeMillis();
-            hashedIdArray = TestUtils.parallelToSHAHexString(ids, salt);
+            hashedIdArray = HashingUtils.parallelToSHAHexString(ids, salt);
             for (int i = 0; i < ids.size(); i++) {
                 logger.debug(hashedIdArray.get(i));
                 hashedIds.put(hashedIdArray.get(i), ids.get(i));
@@ -102,14 +85,17 @@ public class BenchmarkClient {
             logger.info("### Time of hash data: " + (ehash - shash) + " ms ###");
             logger.info("HashedIDs Size = " + hashedIdArray.size());
             long supload = System.currentTimeMillis();
-            flClient.uploadSet(hashedIdArray);
+            flClient.psiStub().uploadSet(hashedIdArray);
             long eupload = System.currentTimeMillis();
             logger.info("### Time of upload data: " + (eupload - supload) + " ms ###");
             logger.info("upload hashed id successfully");
-            List<String> intersection;
+            List<String> intersection = null;
             
             long sdownload = System.currentTimeMillis();
-            intersection = flClient.downloadIntersection();
+            while (intersection == null) {
+                intersection = flClient.psiStub().downloadIntersection();
+            }
+
             long edownload = System.currentTimeMillis();
             logger.info("### Time of download data: " + (edownload - sdownload) + " ms ###");
             logger.info("Intersection successful. Total id(s) in intersection is " + intersection.size());
@@ -118,7 +104,7 @@ public class BenchmarkClient {
             // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
             // resources the channel should be shut down when it will no longer be used. If it may be used
             // again leave it running.
-            channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+            flClient.getChannel().shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
         }
     }
 }
