@@ -145,7 +145,7 @@ def main():
     test_featureSet = FeatureSet.pytorch_dataloader(val_loader)
     estimator.train_minibatch(train_featureSet, zooCriterion, end_trigger=MaxEpoch(args.max_epochs),
                               checkpoint_trigger=EveryEpoch(), validation_set=test_featureSet,
-                              validation_method=[Accuracy(), Top5Accuracy()])
+                              validation_method=[Accuracy()])
 
 
 if __name__ == '__main__':
