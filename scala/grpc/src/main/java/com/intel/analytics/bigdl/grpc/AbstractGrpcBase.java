@@ -48,12 +48,13 @@ public abstract class AbstractGrpcBase {
         assert cmd != null;
         configPath = cmd.getOptionValue("config", defaultConfigPath);
         if (configPath != null) {
-            logger.info("Load config from " + configPath);
+            logger.info("Trying to load config from " + configPath);
             // config YAML passed, use config YAML first, command-line could overwrite
             assert valueType != null;
             try {
                 return ConfigParser.loadConfigFromPath(configPath, valueType);
             } catch (IOException e) {
+                logger.info("Config is not provided, using default");
                 return valueType.newInstance();
             }
 

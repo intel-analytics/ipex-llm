@@ -33,6 +33,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     VflContext.initContext()
     val pSI = new PSI()
     val salt = pSI.getSalt()
+    flServer.stop()
     require(salt != null, "Get salt failed.")
   }
   "PSI upload set" should "work" in {
@@ -44,6 +45,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     val set = List("key1", "key2")
     val salt = pSI.getSalt()
     pSI.uploadSet(set.asJava, salt)
+    flServer.stop()
 
     require(salt != null, "Get salt failed.")
   }
@@ -61,6 +63,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     pSI1.uploadSet(set1.asJava, salt1)
     pSI2.uploadSet(set2.asJava, salt2)
     val intersection = pSI1.downloadIntersection()
+    flServer.stop()
     require(intersection.size() == 1, "Intersection number is wrong.")
   }
   "PSI download null intersection" should "work" in {
@@ -77,6 +80,8 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     } catch {
       case _: TimeoutException => println("Test pass")
       case _ => throw new Error("Test fail")
+    } finally {
+      flServer.stop()
     }
 
   }
