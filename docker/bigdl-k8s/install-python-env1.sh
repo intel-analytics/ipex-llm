@@ -34,4 +34,4 @@ pip install --no-cache-dir tensorflow==1.15.0 && \
 pip install --no-cache-dir tf_slim && \
 pip install --no-cache-dir tensorflow-datasets==3.2.0 && \
 pip install --no-cache-dir mxnet==1.6.0 && \
-source deactivate &&
+source deactivate
