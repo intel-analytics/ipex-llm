@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils
+package com.intel.analytics.bigdl.friesian.serving.utils
 
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import org.apache.log4j.Logger

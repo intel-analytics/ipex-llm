@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package utils.recall
+package com.intel.analytics.bigdl.friesian.serving.utils.recall
 
 import java.util.{List => JList}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.friesian.serving.recall.RecallService
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import org.apache.log4j.Logger
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
-import utils.Utils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -125,9 +125,31 @@ object RecallUtils {
     }))
   }
 
+  def featureObjToFloatArr(feature: Any): Array[Float] = {
+    feature match {
+      case d: Activity => activityToFloatArr(d)
+      case d: Array[Any] =>
+        if (d.length != 1) {
+          throw new Exception(s"Feature column number should be 1, but got: ${d.length}")
+        }
+        d(0) match {
+          case f: DenseVector => denseVectorToFloatArr(f)
+          case f: Array[Float] => f
+          case _ => throw new Exception(s"Unsupported user vector type, only Activity, " +
+            s"DenseVector and Float[] are supported, but got ${d.getClass.getName}")
+        }
+      case d => throw new Exception(s"Unsupported user vector type, only Activity, DenseVector " +
+        s"and Float[] are supported, but got ${d.getClass.getName}")
+    }
+  }
+
   def activityToFloatArr(data: Activity): Array[Float] = {
     val dTensor: Tensor[Float] = data.toTensor
     val result = dTensor.squeeze(1).toArray()
     result
+  }
+
+  def denseVectorToFloatArr(data: DenseVector): Array[Float] = {
+    data.toArray.map(_.toFloat)
   }
 }

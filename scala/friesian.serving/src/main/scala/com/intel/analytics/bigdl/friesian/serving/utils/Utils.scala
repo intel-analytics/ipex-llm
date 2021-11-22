@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils
+package com.intel.analytics.bigdl.friesian.serving.utils
 
 import java.io.File
 

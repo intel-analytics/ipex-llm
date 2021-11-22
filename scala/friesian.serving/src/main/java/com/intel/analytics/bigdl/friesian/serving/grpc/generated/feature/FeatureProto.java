@@ -22,7 +22,7 @@ public final class FeatureProto {
      * <code>repeated int32 ID = 1;</code>
      * @return A list containing the iD.
      */
-    java.util.List<java.lang.Integer> getIDList();
+    java.util.List<Integer> getIDList();
     /**
      * <code>repeated int32 ID = 1;</code>
      * @return The count of iD.
@@ -51,14 +51,14 @@ public final class FeatureProto {
       iD_ = emptyIntList();
     }
 
-    @java.lang.Override
+    @Override
     @SuppressWarnings({"unused"})
-    protected java.lang.Object newInstance(
+    protected Object newInstance(
         UnusedPrivateParameter unused) {
       return new IDs();
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -69,7 +69,7 @@ public final class FeatureProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException();
       }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
@@ -127,15 +127,15 @@ public final class FeatureProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_IDs_descriptor;
+      return FeatureProto.internal_static_feature_IDs_descriptor;
     }
 
-    @java.lang.Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_IDs_fieldAccessorTable
+      return FeatureProto.internal_static_feature_IDs_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs.Builder.class);
+              IDs.class, Builder.class);
     }
 
     public static final int ID_FIELD_NUMBER = 1;
@@ -144,7 +144,7 @@ public final class FeatureProto {
      * <code>repeated int32 ID = 1;</code>
      * @return A list containing the iD.
      */
-    public java.util.List<java.lang.Integer>
+    public java.util.List<Integer>
         getIDList() {
       return iD_;
     }
@@ -166,7 +166,7 @@ public final class FeatureProto {
     private int iDMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
-    @java.lang.Override
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -176,7 +176,7 @@ public final class FeatureProto {
       return true;
     }
 
-    @java.lang.Override
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
@@ -190,7 +190,7 @@ public final class FeatureProto {
       unknownFields.writeTo(output);
     }
 
-    @java.lang.Override
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -215,15 +215,15 @@ public final class FeatureProto {
       return size;
     }
 
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs)) {
+      if (!(obj instanceof IDs)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs) obj;
+      IDs other = (IDs) obj;
 
       if (!getIDList()
           .equals(other.getIDList())) return false;
@@ -231,7 +231,7 @@ public final class FeatureProto {
       return true;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -247,69 +247,69 @@ public final class FeatureProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(
+    public static IDs parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(
+    public static IDs parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(
+    public static IDs parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(
+    public static IDs parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(byte[] data)
+    public static IDs parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(
+    public static IDs parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(java.io.InputStream input)
+    public static IDs parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(
+    public static IDs parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseDelimitedFrom(java.io.InputStream input)
+    public static IDs parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseDelimitedFrom(
+    public static IDs parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(
+    public static IDs parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parseFrom(
+    public static IDs parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -317,23 +317,23 @@ public final class FeatureProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @java.lang.Override
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs prototype) {
+    public static Builder newBuilder(IDs prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @java.lang.Override
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -343,18 +343,18 @@ public final class FeatureProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:feature.IDs)
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDsOrBuilder {
+        IDsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_IDs_descriptor;
+        return FeatureProto.internal_static_feature_IDs_descriptor;
       }
 
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_IDs_fieldAccessorTable
+        return FeatureProto.internal_static_feature_IDs_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs.Builder.class);
+                IDs.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs.newBuilder()
@@ -363,7 +363,7 @@ public final class FeatureProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -372,7 +372,7 @@ public final class FeatureProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @java.lang.Override
+      @Override
       public Builder clear() {
         super.clear();
         iD_ = emptyIntList();
@@ -380,29 +380,29 @@ public final class FeatureProto {
         return this;
       }
 
-      @java.lang.Override
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_IDs_descriptor;
+        return FeatureProto.internal_static_feature_IDs_descriptor;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs.getDefaultInstance();
+      @Override
+      public IDs getDefaultInstanceForType() {
+        return IDs.getDefaultInstance();
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs build() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs result = buildPartial();
+      @Override
+      public IDs build() {
+        IDs result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs buildPartial() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs(this);
+      @Override
+      public IDs buildPartial() {
+        IDs result = new IDs(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
           iD_.makeImmutable();
@@ -413,50 +413,50 @@ public final class FeatureProto {
         return result;
       }
 
-      @java.lang.Override
+      @Override
       public Builder clone() {
         return super.clone();
       }
-      @java.lang.Override
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
+          Object value) {
         return super.setField(field, value);
       }
-      @java.lang.Override
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @java.lang.Override
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @java.lang.Override
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
+          int index, Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @java.lang.Override
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
+          Object value) {
         return super.addRepeatedField(field, value);
       }
-      @java.lang.Override
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs) {
-          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs)other);
+        if (other instanceof IDs) {
+          return mergeFrom((IDs)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs other) {
-        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs.getDefaultInstance()) return this;
+      public Builder mergeFrom(IDs other) {
+        if (other == IDs.getDefaultInstance()) return this;
         if (!other.iD_.isEmpty()) {
           if (iD_.isEmpty()) {
             iD_ = other.iD_;
@@ -472,21 +472,21 @@ public final class FeatureProto {
         return this;
       }
 
-      @java.lang.Override
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @java.lang.Override
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs parsedMessage = null;
+        IDs parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs) e.getUnfinishedMessage();
+          parsedMessage = (IDs) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -508,7 +508,7 @@ public final class FeatureProto {
        * <code>repeated int32 ID = 1;</code>
        * @return A list containing the iD.
        */
-      public java.util.List<java.lang.Integer>
+      public java.util.List<Integer>
           getIDList() {
         return ((bitField0_ & 0x00000001) != 0) ?
                  java.util.Collections.unmodifiableList(iD_) : iD_;
@@ -558,7 +558,7 @@ public final class FeatureProto {
        * @return This builder for chaining.
        */
       public Builder addAllID(
-          java.lang.Iterable<? extends java.lang.Integer> values) {
+          Iterable<? extends Integer> values) {
         ensureIDIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, iD_);
@@ -575,13 +575,13 @@ public final class FeatureProto {
         onChanged();
         return this;
       }
-      @java.lang.Override
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @java.lang.Override
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -592,18 +592,18 @@ public final class FeatureProto {
     }
 
     // @@protoc_insertion_point(class_scope:feature.IDs)
-    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs DEFAULT_INSTANCE;
+    private static final IDs DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs();
+      DEFAULT_INSTANCE = new IDs();
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs getDefaultInstance() {
+    public static IDs getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<IDs>
         PARSER = new com.google.protobuf.AbstractParser<IDs>() {
-      @java.lang.Override
+      @Override
       public IDs parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -616,13 +616,13 @@ public final class FeatureProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<IDs> getParserForType() {
       return PARSER;
     }
 
-    @java.lang.Override
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs getDefaultInstanceForType() {
+    @Override
+    public IDs getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -633,29 +633,71 @@ public final class FeatureProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated string b64Feature = 1;</code>
+     * <code>repeated string colNames = 1;</code>
+     * @return A list containing the colNames.
+     */
+    java.util.List<String>
+        getColNamesList();
+    /**
+     * <code>repeated string colNames = 1;</code>
+     * @return The count of colNames.
+     */
+    int getColNamesCount();
+    /**
+     * <code>repeated string colNames = 1;</code>
+     * @param index The index of the element to return.
+     * @return The colNames at the given index.
+     */
+    String getColNames(int index);
+    /**
+     * <code>repeated string colNames = 1;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the colNames at the given index.
+     */
+    com.google.protobuf.ByteString
+        getColNamesBytes(int index);
+
+    /**
+     * <code>repeated string b64Feature = 2;</code>
      * @return A list containing the b64Feature.
      */
-    java.util.List<java.lang.String>
+    java.util.List<String>
         getB64FeatureList();
     /**
-     * <code>repeated string b64Feature = 1;</code>
+     * <code>repeated string b64Feature = 2;</code>
      * @return The count of b64Feature.
      */
     int getB64FeatureCount();
     /**
-     * <code>repeated string b64Feature = 1;</code>
+     * <code>repeated string b64Feature = 2;</code>
      * @param index The index of the element to return.
      * @return The b64Feature at the given index.
      */
-    java.lang.String getB64Feature(int index);
+    String getB64Feature(int index);
     /**
-     * <code>repeated string b64Feature = 1;</code>
+     * <code>repeated string b64Feature = 2;</code>
      * @param index The index of the value to return.
      * @return The bytes of the b64Feature at the given index.
      */
     com.google.protobuf.ByteString
         getB64FeatureBytes(int index);
+
+    /**
+     * <code>repeated int32 ID = 3;</code>
+     * @return A list containing the iD.
+     */
+    java.util.List<Integer> getIDList();
+    /**
+     * <code>repeated int32 ID = 3;</code>
+     * @return The count of iD.
+     */
+    int getIDCount();
+    /**
+     * <code>repeated int32 ID = 3;</code>
+     * @param index The index of the element to return.
+     * @return The iD at the given index.
+     */
+    int getID(int index);
   }
   /**
    * Protobuf type {@code feature.Features}
@@ -670,17 +712,19 @@ public final class FeatureProto {
       super(builder);
     }
     private Features() {
+      colNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       b64Feature_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      iD_ = emptyIntList();
     }
 
-    @java.lang.Override
+    @Override
     @SuppressWarnings({"unused"})
-    protected java.lang.Object newInstance(
+    protected Object newInstance(
         UnusedPrivateParameter unused) {
       return new Features();
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -691,7 +735,7 @@ public final class FeatureProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException();
       }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
@@ -705,12 +749,42 @@ public final class FeatureProto {
               done = true;
               break;
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
               if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                b64Feature_ = new com.google.protobuf.LazyStringArrayList();
+                colNames_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000001;
               }
+              colNames_.add(s);
+              break;
+            }
+            case 18: {
+              String s = input.readStringRequireUtf8();
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+                b64Feature_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000002;
+              }
               b64Feature_.add(s);
+              break;
+            }
+            case 24: {
+              if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+                iD_ = newIntList();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              iD_.addInt(input.readInt32());
+              break;
+            }
+            case 26: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000004) != 0) && input.getBytesUntilLimit() > 0) {
+                iD_ = newIntList();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                iD_.addInt(input.readInt32());
+              }
+              input.popLimit(limit);
               break;
             }
             default: {
@@ -729,7 +803,13 @@ public final class FeatureProto {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) != 0)) {
+          colNames_ = colNames_.getUnmodifiableView();
+        }
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
           b64Feature_ = b64Feature_.getUnmodifiableView();
+        }
+        if (((mutable_bitField0_ & 0x00000004) != 0)) {
+          iD_.makeImmutable(); // C
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -737,21 +817,56 @@ public final class FeatureProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_Features_descriptor;
+      return FeatureProto.internal_static_feature_Features_descriptor;
     }
 
-    @java.lang.Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_Features_fieldAccessorTable
+      return FeatureProto.internal_static_feature_Features_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features.Builder.class);
+              Features.class, Builder.class);
     }
 
-    public static final int B64FEATURE_FIELD_NUMBER = 1;
+    public static final int COLNAMES_FIELD_NUMBER = 1;
+    private com.google.protobuf.LazyStringList colNames_;
+    /**
+     * <code>repeated string colNames = 1;</code>
+     * @return A list containing the colNames.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getColNamesList() {
+      return colNames_;
+    }
+    /**
+     * <code>repeated string colNames = 1;</code>
+     * @return The count of colNames.
+     */
+    public int getColNamesCount() {
+      return colNames_.size();
+    }
+    /**
+     * <code>repeated string colNames = 1;</code>
+     * @param index The index of the element to return.
+     * @return The colNames at the given index.
+     */
+    public String getColNames(int index) {
+      return colNames_.get(index);
+    }
+    /**
+     * <code>repeated string colNames = 1;</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the colNames at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getColNamesBytes(int index) {
+      return colNames_.getByteString(index);
+    }
+
+    public static final int B64FEATURE_FIELD_NUMBER = 2;
     private com.google.protobuf.LazyStringList b64Feature_;
     /**
-     * <code>repeated string b64Feature = 1;</code>
+     * <code>repeated string b64Feature = 2;</code>
      * @return A list containing the b64Feature.
      */
     public com.google.protobuf.ProtocolStringList
@@ -759,22 +874,22 @@ public final class FeatureProto {
       return b64Feature_;
     }
     /**
-     * <code>repeated string b64Feature = 1;</code>
+     * <code>repeated string b64Feature = 2;</code>
      * @return The count of b64Feature.
      */
     public int getB64FeatureCount() {
       return b64Feature_.size();
     }
     /**
-     * <code>repeated string b64Feature = 1;</code>
+     * <code>repeated string b64Feature = 2;</code>
      * @param index The index of the element to return.
      * @return The b64Feature at the given index.
      */
-    public java.lang.String getB64Feature(int index) {
+    public String getB64Feature(int index) {
       return b64Feature_.get(index);
     }
     /**
-     * <code>repeated string b64Feature = 1;</code>
+     * <code>repeated string b64Feature = 2;</code>
      * @param index The index of the value to return.
      * @return The bytes of the b64Feature at the given index.
      */
@@ -783,8 +898,35 @@ public final class FeatureProto {
       return b64Feature_.getByteString(index);
     }
 
+    public static final int ID_FIELD_NUMBER = 3;
+    private com.google.protobuf.Internal.IntList iD_;
+    /**
+     * <code>repeated int32 ID = 3;</code>
+     * @return A list containing the iD.
+     */
+    public java.util.List<Integer>
+        getIDList() {
+      return iD_;
+    }
+    /**
+     * <code>repeated int32 ID = 3;</code>
+     * @return The count of iD.
+     */
+    public int getIDCount() {
+      return iD_.size();
+    }
+    /**
+     * <code>repeated int32 ID = 3;</code>
+     * @param index The index of the element to return.
+     * @return The iD at the given index.
+     */
+    public int getID(int index) {
+      return iD_.getInt(index);
+    }
+    private int iDMemoizedSerializedSize = -1;
+
     private byte memoizedIsInitialized = -1;
-    @java.lang.Override
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -794,21 +936,40 @@ public final class FeatureProto {
       return true;
     }
 
-    @java.lang.Override
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < colNames_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, colNames_.getRaw(i));
+      }
       for (int i = 0; i < b64Feature_.size(); i++) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, b64Feature_.getRaw(i));
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, b64Feature_.getRaw(i));
+      }
+      if (getIDList().size() > 0) {
+        output.writeUInt32NoTag(26);
+        output.writeUInt32NoTag(iDMemoizedSerializedSize);
+      }
+      for (int i = 0; i < iD_.size(); i++) {
+        output.writeInt32NoTag(iD_.getInt(i));
       }
       unknownFields.writeTo(output);
     }
 
-    @java.lang.Override
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < colNames_.size(); i++) {
+          dataSize += computeStringSizeNoTag(colNames_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getColNamesList().size();
+      }
       {
         int dataSize = 0;
         for (int i = 0; i < b64Feature_.size(); i++) {
@@ -817,106 +978,132 @@ public final class FeatureProto {
         size += dataSize;
         size += 1 * getB64FeatureList().size();
       }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < iD_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(iD_.getInt(i));
+        }
+        size += dataSize;
+        if (!getIDList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        iDMemoizedSerializedSize = dataSize;
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features)) {
+      if (!(obj instanceof Features)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features) obj;
+      Features other = (Features) obj;
 
+      if (!getColNamesList()
+          .equals(other.getColNamesList())) return false;
       if (!getB64FeatureList()
           .equals(other.getB64FeatureList())) return false;
+      if (!getIDList()
+          .equals(other.getIDList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
+      if (getColNamesCount() > 0) {
+        hash = (37 * hash) + COLNAMES_FIELD_NUMBER;
+        hash = (53 * hash) + getColNamesList().hashCode();
+      }
       if (getB64FeatureCount() > 0) {
         hash = (37 * hash) + B64FEATURE_FIELD_NUMBER;
         hash = (53 * hash) + getB64FeatureList().hashCode();
+      }
+      if (getIDCount() > 0) {
+        hash = (37 * hash) + ID_FIELD_NUMBER;
+        hash = (53 * hash) + getIDList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(
+    public static Features parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(
+    public static Features parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(
+    public static Features parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(
+    public static Features parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(byte[] data)
+    public static Features parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(
+    public static Features parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(java.io.InputStream input)
+    public static Features parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(
+    public static Features parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseDelimitedFrom(java.io.InputStream input)
+    public static Features parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseDelimitedFrom(
+    public static Features parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(
+    public static Features parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parseFrom(
+    public static Features parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -924,23 +1111,23 @@ public final class FeatureProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @java.lang.Override
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features prototype) {
+    public static Builder newBuilder(Features prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @java.lang.Override
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -950,18 +1137,18 @@ public final class FeatureProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:feature.Features)
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.FeaturesOrBuilder {
+        FeaturesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_Features_descriptor;
+        return FeatureProto.internal_static_feature_Features_descriptor;
       }
 
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_Features_fieldAccessorTable
+        return FeatureProto.internal_static_feature_Features_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features.Builder.class);
+                Features.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features.newBuilder()
@@ -970,7 +1157,7 @@ public final class FeatureProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -979,98 +1166,132 @@ public final class FeatureProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @java.lang.Override
+      @Override
       public Builder clear() {
         super.clear();
-        b64Feature_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        colNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000001);
+        b64Feature_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        iD_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
-      @java.lang.Override
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_Features_descriptor;
+        return FeatureProto.internal_static_feature_Features_descriptor;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features.getDefaultInstance();
+      @Override
+      public Features getDefaultInstanceForType() {
+        return Features.getDefaultInstance();
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features build() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features result = buildPartial();
+      @Override
+      public Features build() {
+        Features result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features buildPartial() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features(this);
+      @Override
+      public Features buildPartial() {
+        Features result = new Features(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
-          b64Feature_ = b64Feature_.getUnmodifiableView();
+          colNames_ = colNames_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000001);
         }
+        result.colNames_ = colNames_;
+        if (((bitField0_ & 0x00000002) != 0)) {
+          b64Feature_ = b64Feature_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
         result.b64Feature_ = b64Feature_;
+        if (((bitField0_ & 0x00000004) != 0)) {
+          iD_.makeImmutable();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.iD_ = iD_;
         onBuilt();
         return result;
       }
 
-      @java.lang.Override
+      @Override
       public Builder clone() {
         return super.clone();
       }
-      @java.lang.Override
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
+          Object value) {
         return super.setField(field, value);
       }
-      @java.lang.Override
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @java.lang.Override
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @java.lang.Override
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
+          int index, Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @java.lang.Override
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
+          Object value) {
         return super.addRepeatedField(field, value);
       }
-      @java.lang.Override
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features) {
-          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features)other);
+        if (other instanceof Features) {
+          return mergeFrom((Features)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features other) {
-        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features.getDefaultInstance()) return this;
+      public Builder mergeFrom(Features other) {
+        if (other == Features.getDefaultInstance()) return this;
+        if (!other.colNames_.isEmpty()) {
+          if (colNames_.isEmpty()) {
+            colNames_ = other.colNames_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureColNamesIsMutable();
+            colNames_.addAll(other.colNames_);
+          }
+          onChanged();
+        }
         if (!other.b64Feature_.isEmpty()) {
           if (b64Feature_.isEmpty()) {
             b64Feature_ = other.b64Feature_;
-            bitField0_ = (bitField0_ & ~0x00000001);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureB64FeatureIsMutable();
             b64Feature_.addAll(other.b64Feature_);
+          }
+          onChanged();
+        }
+        if (!other.iD_.isEmpty()) {
+          if (iD_.isEmpty()) {
+            iD_ = other.iD_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureIDIsMutable();
+            iD_.addAll(other.iD_);
           }
           onChanged();
         }
@@ -1079,21 +1300,21 @@ public final class FeatureProto {
         return this;
       }
 
-      @java.lang.Override
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @java.lang.Override
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features parsedMessage = null;
+        Features parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features) e.getUnfinishedMessage();
+          parsedMessage = (Features) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1104,15 +1325,125 @@ public final class FeatureProto {
       }
       private int bitField0_;
 
-      private com.google.protobuf.LazyStringList b64Feature_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      private void ensureB64FeatureIsMutable() {
+      private com.google.protobuf.LazyStringList colNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureColNamesIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          b64Feature_ = new com.google.protobuf.LazyStringArrayList(b64Feature_);
+          colNames_ = new com.google.protobuf.LazyStringArrayList(colNames_);
           bitField0_ |= 0x00000001;
          }
       }
       /**
-       * <code>repeated string b64Feature = 1;</code>
+       * <code>repeated string colNames = 1;</code>
+       * @return A list containing the colNames.
+       */
+      public com.google.protobuf.ProtocolStringList
+          getColNamesList() {
+        return colNames_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string colNames = 1;</code>
+       * @return The count of colNames.
+       */
+      public int getColNamesCount() {
+        return colNames_.size();
+      }
+      /**
+       * <code>repeated string colNames = 1;</code>
+       * @param index The index of the element to return.
+       * @return The colNames at the given index.
+       */
+      public String getColNames(int index) {
+        return colNames_.get(index);
+      }
+      /**
+       * <code>repeated string colNames = 1;</code>
+       * @param index The index of the value to return.
+       * @return The bytes of the colNames at the given index.
+       */
+      public com.google.protobuf.ByteString
+          getColNamesBytes(int index) {
+        return colNames_.getByteString(index);
+      }
+      /**
+       * <code>repeated string colNames = 1;</code>
+       * @param index The index to set the value at.
+       * @param value The colNames to set.
+       * @return This builder for chaining.
+       */
+      public Builder setColNames(
+          int index, String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureColNamesIsMutable();
+        colNames_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string colNames = 1;</code>
+       * @param value The colNames to add.
+       * @return This builder for chaining.
+       */
+      public Builder addColNames(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureColNamesIsMutable();
+        colNames_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string colNames = 1;</code>
+       * @param values The colNames to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllColNames(
+          Iterable<String> values) {
+        ensureColNamesIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, colNames_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string colNames = 1;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearColNames() {
+        colNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string colNames = 1;</code>
+       * @param value The bytes of the colNames to add.
+       * @return This builder for chaining.
+       */
+      public Builder addColNamesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        ensureColNamesIsMutable();
+        colNames_.add(value);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringList b64Feature_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureB64FeatureIsMutable() {
+        if (!((bitField0_ & 0x00000002) != 0)) {
+          b64Feature_ = new com.google.protobuf.LazyStringArrayList(b64Feature_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+      /**
+       * <code>repeated string b64Feature = 2;</code>
        * @return A list containing the b64Feature.
        */
       public com.google.protobuf.ProtocolStringList
@@ -1120,22 +1451,22 @@ public final class FeatureProto {
         return b64Feature_.getUnmodifiableView();
       }
       /**
-       * <code>repeated string b64Feature = 1;</code>
+       * <code>repeated string b64Feature = 2;</code>
        * @return The count of b64Feature.
        */
       public int getB64FeatureCount() {
         return b64Feature_.size();
       }
       /**
-       * <code>repeated string b64Feature = 1;</code>
+       * <code>repeated string b64Feature = 2;</code>
        * @param index The index of the element to return.
        * @return The b64Feature at the given index.
        */
-      public java.lang.String getB64Feature(int index) {
+      public String getB64Feature(int index) {
         return b64Feature_.get(index);
       }
       /**
-       * <code>repeated string b64Feature = 1;</code>
+       * <code>repeated string b64Feature = 2;</code>
        * @param index The index of the value to return.
        * @return The bytes of the b64Feature at the given index.
        */
@@ -1144,13 +1475,13 @@ public final class FeatureProto {
         return b64Feature_.getByteString(index);
       }
       /**
-       * <code>repeated string b64Feature = 1;</code>
+       * <code>repeated string b64Feature = 2;</code>
        * @param index The index to set the value at.
        * @param value The b64Feature to set.
        * @return This builder for chaining.
        */
       public Builder setB64Feature(
-          int index, java.lang.String value) {
+          int index, String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1160,12 +1491,12 @@ public final class FeatureProto {
         return this;
       }
       /**
-       * <code>repeated string b64Feature = 1;</code>
+       * <code>repeated string b64Feature = 2;</code>
        * @param value The b64Feature to add.
        * @return This builder for chaining.
        */
       public Builder addB64Feature(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1175,12 +1506,12 @@ public final class FeatureProto {
         return this;
       }
       /**
-       * <code>repeated string b64Feature = 1;</code>
+       * <code>repeated string b64Feature = 2;</code>
        * @param values The b64Feature to add.
        * @return This builder for chaining.
        */
       public Builder addAllB64Feature(
-          java.lang.Iterable<java.lang.String> values) {
+          Iterable<String> values) {
         ensureB64FeatureIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, b64Feature_);
@@ -1188,17 +1519,17 @@ public final class FeatureProto {
         return this;
       }
       /**
-       * <code>repeated string b64Feature = 1;</code>
+       * <code>repeated string b64Feature = 2;</code>
        * @return This builder for chaining.
        */
       public Builder clearB64Feature() {
         b64Feature_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000001);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
       /**
-       * <code>repeated string b64Feature = 1;</code>
+       * <code>repeated string b64Feature = 2;</code>
        * @param value The bytes of the b64Feature to add.
        * @return This builder for chaining.
        */
@@ -1213,13 +1544,92 @@ public final class FeatureProto {
         onChanged();
         return this;
       }
-      @java.lang.Override
+
+      private com.google.protobuf.Internal.IntList iD_ = emptyIntList();
+      private void ensureIDIsMutable() {
+        if (!((bitField0_ & 0x00000004) != 0)) {
+          iD_ = mutableCopy(iD_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+      /**
+       * <code>repeated int32 ID = 3;</code>
+       * @return A list containing the iD.
+       */
+      public java.util.List<Integer>
+          getIDList() {
+        return ((bitField0_ & 0x00000004) != 0) ?
+                 java.util.Collections.unmodifiableList(iD_) : iD_;
+      }
+      /**
+       * <code>repeated int32 ID = 3;</code>
+       * @return The count of iD.
+       */
+      public int getIDCount() {
+        return iD_.size();
+      }
+      /**
+       * <code>repeated int32 ID = 3;</code>
+       * @param index The index of the element to return.
+       * @return The iD at the given index.
+       */
+      public int getID(int index) {
+        return iD_.getInt(index);
+      }
+      /**
+       * <code>repeated int32 ID = 3;</code>
+       * @param index The index to set the value at.
+       * @param value The iD to set.
+       * @return This builder for chaining.
+       */
+      public Builder setID(
+          int index, int value) {
+        ensureIDIsMutable();
+        iD_.setInt(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 ID = 3;</code>
+       * @param value The iD to add.
+       * @return This builder for chaining.
+       */
+      public Builder addID(int value) {
+        ensureIDIsMutable();
+        iD_.addInt(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 ID = 3;</code>
+       * @param values The iD to add.
+       * @return This builder for chaining.
+       */
+      public Builder addAllID(
+          Iterable<? extends Integer> values) {
+        ensureIDIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, iD_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 ID = 3;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearID() {
+        iD_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
+      }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @java.lang.Override
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1230,18 +1640,18 @@ public final class FeatureProto {
     }
 
     // @@protoc_insertion_point(class_scope:feature.Features)
-    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features DEFAULT_INSTANCE;
+    private static final Features DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features();
+      DEFAULT_INSTANCE = new Features();
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features getDefaultInstance() {
+    public static Features getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<Features>
         PARSER = new com.google.protobuf.AbstractParser<Features>() {
-      @java.lang.Override
+      @Override
       public Features parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1254,13 +1664,13 @@ public final class FeatureProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<Features> getParserForType() {
       return PARSER;
     }
 
-    @java.lang.Override
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features getDefaultInstanceForType() {
+    @Override
+    public Features getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1274,7 +1684,7 @@ public final class FeatureProto {
      * <code>string str = 1;</code>
      * @return The str.
      */
-    java.lang.String getStr();
+    String getStr();
     /**
      * <code>string str = 1;</code>
      * @return The bytes for str.
@@ -1298,14 +1708,14 @@ public final class FeatureProto {
       str_ = "";
     }
 
-    @java.lang.Override
+    @Override
     @SuppressWarnings({"unused"})
-    protected java.lang.Object newInstance(
+    protected Object newInstance(
         UnusedPrivateParameter unused) {
       return new ServerMessage();
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -1316,7 +1726,7 @@ public final class FeatureProto {
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
       if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
+        throw new NullPointerException();
       }
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1329,7 +1739,7 @@ public final class FeatureProto {
               done = true;
               break;
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               str_ = s;
               break;
@@ -1355,31 +1765,31 @@ public final class FeatureProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_ServerMessage_descriptor;
+      return FeatureProto.internal_static_feature_ServerMessage_descriptor;
     }
 
-    @java.lang.Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_ServerMessage_fieldAccessorTable
+      return FeatureProto.internal_static_feature_ServerMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage.Builder.class);
+              ServerMessage.class, Builder.class);
     }
 
     public static final int STR_FIELD_NUMBER = 1;
-    private volatile java.lang.Object str_;
+    private volatile Object str_;
     /**
      * <code>string str = 1;</code>
      * @return The str.
      */
-    public java.lang.String getStr() {
-      java.lang.Object ref = str_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getStr() {
+      Object ref = str_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         str_ = s;
         return s;
       }
@@ -1390,11 +1800,11 @@ public final class FeatureProto {
      */
     public com.google.protobuf.ByteString
         getStrBytes() {
-      java.lang.Object ref = str_;
-      if (ref instanceof java.lang.String) {
+      Object ref = str_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         str_ = b;
         return b;
       } else {
@@ -1403,7 +1813,7 @@ public final class FeatureProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @java.lang.Override
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1413,7 +1823,7 @@ public final class FeatureProto {
       return true;
     }
 
-    @java.lang.Override
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getStrBytes().isEmpty()) {
@@ -1422,7 +1832,7 @@ public final class FeatureProto {
       unknownFields.writeTo(output);
     }
 
-    @java.lang.Override
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1436,15 +1846,15 @@ public final class FeatureProto {
       return size;
     }
 
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage)) {
+      if (!(obj instanceof ServerMessage)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage) obj;
+      ServerMessage other = (ServerMessage) obj;
 
       if (!getStr()
           .equals(other.getStr())) return false;
@@ -1452,7 +1862,7 @@ public final class FeatureProto {
       return true;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1466,69 +1876,69 @@ public final class FeatureProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(
+    public static ServerMessage parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(
+    public static ServerMessage parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(
+    public static ServerMessage parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(
+    public static ServerMessage parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(byte[] data)
+    public static ServerMessage parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(
+    public static ServerMessage parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(java.io.InputStream input)
+    public static ServerMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(
+    public static ServerMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseDelimitedFrom(java.io.InputStream input)
+    public static ServerMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseDelimitedFrom(
+    public static ServerMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(
+    public static ServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parseFrom(
+    public static ServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1536,23 +1946,23 @@ public final class FeatureProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @java.lang.Override
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage prototype) {
+    public static Builder newBuilder(ServerMessage prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @java.lang.Override
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1562,18 +1972,18 @@ public final class FeatureProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:feature.ServerMessage)
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessageOrBuilder {
+        ServerMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_ServerMessage_descriptor;
+        return FeatureProto.internal_static_feature_ServerMessage_descriptor;
       }
 
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_ServerMessage_fieldAccessorTable
+        return FeatureProto.internal_static_feature_ServerMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage.Builder.class);
+                ServerMessage.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage.newBuilder()
@@ -1582,7 +1992,7 @@ public final class FeatureProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1591,7 +2001,7 @@ public final class FeatureProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @java.lang.Override
+      @Override
       public Builder clear() {
         super.clear();
         str_ = "";
@@ -1599,78 +2009,78 @@ public final class FeatureProto {
         return this;
       }
 
-      @java.lang.Override
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.internal_static_feature_ServerMessage_descriptor;
+        return FeatureProto.internal_static_feature_ServerMessage_descriptor;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage.getDefaultInstance();
+      @Override
+      public ServerMessage getDefaultInstanceForType() {
+        return ServerMessage.getDefaultInstance();
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage build() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage result = buildPartial();
+      @Override
+      public ServerMessage build() {
+        ServerMessage result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage buildPartial() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage(this);
+      @Override
+      public ServerMessage buildPartial() {
+        ServerMessage result = new ServerMessage(this);
         result.str_ = str_;
         onBuilt();
         return result;
       }
 
-      @java.lang.Override
+      @Override
       public Builder clone() {
         return super.clone();
       }
-      @java.lang.Override
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
+          Object value) {
         return super.setField(field, value);
       }
-      @java.lang.Override
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return super.clearField(field);
       }
-      @java.lang.Override
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return super.clearOneof(oneof);
       }
-      @java.lang.Override
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
+          int index, Object value) {
         return super.setRepeatedField(field, index, value);
       }
-      @java.lang.Override
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
+          Object value) {
         return super.addRepeatedField(field, value);
       }
-      @java.lang.Override
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage) {
-          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage)other);
+        if (other instanceof ServerMessage) {
+          return mergeFrom((ServerMessage)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage other) {
-        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(ServerMessage other) {
+        if (other == ServerMessage.getDefaultInstance()) return this;
         if (!other.getStr().isEmpty()) {
           str_ = other.str_;
           onChanged();
@@ -1680,21 +2090,21 @@ public final class FeatureProto {
         return this;
       }
 
-      @java.lang.Override
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @java.lang.Override
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage parsedMessage = null;
+        ServerMessage parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage) e.getUnfinishedMessage();
+          parsedMessage = (ServerMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1704,21 +2114,21 @@ public final class FeatureProto {
         return this;
       }
 
-      private java.lang.Object str_ = "";
+      private Object str_ = "";
       /**
        * <code>string str = 1;</code>
        * @return The str.
        */
-      public java.lang.String getStr() {
-        java.lang.Object ref = str_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getStr() {
+        Object ref = str_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           str_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -1727,11 +2137,11 @@ public final class FeatureProto {
        */
       public com.google.protobuf.ByteString
           getStrBytes() {
-        java.lang.Object ref = str_;
+        Object ref = str_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           str_ = b;
           return b;
         } else {
@@ -1744,7 +2154,7 @@ public final class FeatureProto {
        * @return This builder for chaining.
        */
       public Builder setStr(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1779,13 +2189,13 @@ public final class FeatureProto {
         onChanged();
         return this;
       }
-      @java.lang.Override
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
-      @java.lang.Override
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1796,18 +2206,18 @@ public final class FeatureProto {
     }
 
     // @@protoc_insertion_point(class_scope:feature.ServerMessage)
-    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage DEFAULT_INSTANCE;
+    private static final ServerMessage DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage();
+      DEFAULT_INSTANCE = new ServerMessage();
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage getDefaultInstance() {
+    public static ServerMessage getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<ServerMessage>
         PARSER = new com.google.protobuf.AbstractParser<ServerMessage>() {
-      @java.lang.Override
+      @Override
       public ServerMessage parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1820,13 +2230,13 @@ public final class FeatureProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<ServerMessage> getParserForType() {
       return PARSER;
     }
 
-    @java.lang.Override
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage getDefaultInstanceForType() {
+    @Override
+    public ServerMessage getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1855,20 +2265,20 @@ public final class FeatureProto {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n\rfeature.proto\022\007feature\032\033google/protobu" +
-      "f/empty.proto\"\021\n\003IDs\022\n\n\002ID\030\001 \003(\005\"\036\n\010Feat" +
-      "ures\022\022\n\nb64Feature\030\001 \003(\t\"\034\n\rServerMessag" +
-      "e\022\013\n\003str\030\001 \001(\t2\367\001\n\007Feature\0224\n\017getUserFea" +
-      "tures\022\014.feature.IDs\032\021.feature.Features\"\000" +
-      "\0224\n\017getItemFeatures\022\014.feature.IDs\032\021.feat" +
-      "ure.Features\"\000\022>\n\ngetMetrics\022\026.google.pr" +
-      "otobuf.Empty\032\026.feature.ServerMessage\"\000\022@" +
-      "\n\014resetMetrics\022\026.google.protobuf.Empty\032\026" +
-      ".google.protobuf.Empty\"\000BW\nAcom.intel.an" +
-      "alytics.bigdl.friesian.serving.grpc.gene" +
-      "rated.featureB\014FeatureProto\242\002\003RTGb\006proto" +
-      "3"
+      "f/empty.proto\"\021\n\003IDs\022\n\n\002ID\030\001 \003(\005\"<\n\010Feat" +
+      "ures\022\020\n\010colNames\030\001 \003(\t\022\022\n\nb64Feature\030\002 \003" +
+      "(\t\022\n\n\002ID\030\003 \003(\005\"\034\n\rServerMessage\022\013\n\003str\030\001" +
+      " \001(\t2\367\001\n\007Feature\0224\n\017getUserFeatures\022\014.fe" +
+      "ature.IDs\032\021.feature.Features\"\000\0224\n\017getIte" +
+      "mFeatures\022\014.feature.IDs\032\021.feature.Featur" +
+      "es\"\000\022>\n\ngetMetrics\022\026.google.protobuf.Emp" +
+      "ty\032\026.feature.ServerMessage\"\000\022@\n\014resetMet" +
+      "rics\022\026.google.protobuf.Empty\032\026.google.pr" +
+      "otobuf.Empty\"\000BW\nAcom.intel.analytics.bi" +
+      "gdl.friesian.serving.grpc.generated.feat" +
+      "ureB\014FeatureProto\242\002\003RTGb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -1880,19 +2290,19 @@ public final class FeatureProto {
     internal_static_feature_IDs_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_feature_IDs_descriptor,
-        new java.lang.String[] { "ID", });
+        new String[] { "ID", });
     internal_static_feature_Features_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_feature_Features_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_feature_Features_descriptor,
-        new java.lang.String[] { "B64Feature", });
+        new String[] { "ColNames", "B64Feature", "ID", });
     internal_static_feature_ServerMessage_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_feature_ServerMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_feature_ServerMessage_descriptor,
-        new java.lang.String[] { "Str", });
+        new String[] { "Str", });
     com.google.protobuf.EmptyProto.getDescriptor();
   }
 

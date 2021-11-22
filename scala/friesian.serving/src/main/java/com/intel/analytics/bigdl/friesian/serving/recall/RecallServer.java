@@ -39,12 +39,12 @@ import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import utils.TimerMetrics;
-import utils.TimerMetrics$;
-import utils.Utils;
-import utils.feature.FeatureUtils;
-import utils.gRPCHelper;
-import utils.recall.RecallUtils;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils;
+import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
+import com.intel.analytics.bigdl.friesian.serving.utils.recall.RecallUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -182,24 +182,23 @@ public class RecallServer extends GrpcServerBase {
             int userId = msg.getUserID();
             int k = msg.getK();
             Timer.Context predictContext = predictTimer.time();
-            Activity userFeature;
+            float[] userFeatureList;
             if (callFeatureService) {
                 IDs userIds = IDs.newBuilder().addID(userId).build();
                 Features feature = featureServiceStub.getUserFeatures(userIds);
-                Object[] activityList =
-                        Arrays.stream(FeatureUtils.featuresToObject(feature))
-                                .filter(Objects::nonNull).toArray();
-                if (activityList.length == 0) {
+                Object[][] featureList = FeatureUtils.getFeatures(feature);
+                if (featureList[0] == null) {
                     throw new Exception("Can't get user feature from feature service");
                 }
-                userFeature = (Activity) activityList[0];
+                userFeatureList = RecallUtils.featureObjToFloatArr(featureList[0]);
             } else {
-                userFeature = this.userModel
-                        .doPredict(RecallUtils.constructActivity(Collections.singletonList(userId)));
+                Activity userFeature = this.userModel
+                        .doPredict(RecallUtils.constructActivity(
+                                Collections.singletonList(userId)));
+                userFeatureList = RecallUtils.activityToFloatArr(userFeature);
             }
             predictContext.stop();
             Timer.Context faissContext = faissTimer.time();
-            float[] userFeatureList = RecallUtils.activityToFloatArr(userFeature);
             int[] candidates =
                     indexService.search(com.intel.analytics.bigdl.friesian.serving.recall.RecallService.vectorToFloatArray(userFeatureList), k);
             faissContext.stop();
