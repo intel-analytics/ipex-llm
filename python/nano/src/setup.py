@@ -80,8 +80,8 @@ def setup_package(plat_name):
     package_data_plat_ = {"manylinux2010_x86_64":["libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"],
                           "win_amd64":[]}
 
-    script_plat = {"manylinux2010_x86_64": "../script/bigdl-nano-init",
-                    "win_amd64": "../script/bigdl-nano-init.ps1"}
+    script_plat = {"manylinux2010_x86_64": ["../script/bigdl-nano-init"],
+                    "win_amd64": ["../script/bigdl-nano-init.ps1"]}
 
     if plat_name == 'manylinux2010_x86_64':
         for url in lib_urls:
