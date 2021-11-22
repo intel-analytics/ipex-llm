@@ -133,7 +133,7 @@ def main():
         ])),
         batch_size=args.batch_size, shuffle=False)
 
-    iterationPerEpoch = int(math.ceil(float(152) / args.batch_size))
+    iterationPerEpoch = int(math.ceil(float(1281167) / args.batch_size))
     step = Step(iterationPerEpoch * 30, 0.1)
     zooOptimizer = SGD(args.lr, momentum=args.momentum, dampening=0.0,
                        leaningrate_schedule=step, weightdecay=args.weight_decay)
@@ -145,7 +145,7 @@ def main():
     test_featureSet = FeatureSet.pytorch_dataloader(val_loader)
     estimator.train_minibatch(train_featureSet, zooCriterion, end_trigger=MaxEpoch(args.max_epochs),
                               checkpoint_trigger=EveryEpoch(), validation_set=test_featureSet,
-                              validation_method=[Accuracy()])
+                              validation_method=[Accuracy(), Top5Accuracy()])
 
 
 if __name__ == '__main__':
