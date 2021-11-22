@@ -32,9 +32,9 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-class VflEstimator(flClient: FLClient,
-                   model: Module[Float],
-                   optimMethod: OptimMethod[Float]){
+class VflNNEstimator(flClient: FLClient,
+                     model: Module[Float],
+                     optimMethod: OptimMethod[Float]){
   val logger = Logger.getLogger(getClass)
   val (weight, grad) = getParametersFromModel(model)
 
@@ -135,11 +135,11 @@ class VflEstimator(flClient: FLClient,
 
 }
 
-object VflEstimator {
+object VflNNEstimator {
   def apply(flClient: FLClient,
             model: Module[Float],
-            optimMethod: OptimMethod[Float]): VflEstimator = {
-    new VflEstimator(flClient, model, optimMethod)
+            optimMethod: OptimMethod[Float]): VflNNEstimator = {
+    new VflNNEstimator(flClient, model, optimMethod)
   }
 
 }
