@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.example.logisticregression
+package com.intel.analytics.bigdl.ppml.vfl.example.logisticregression
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.ppml.FLClient
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils
+import com.intel.analytics.bigdl.ppml.algorithms.PSI
+import com.intel.analytics.bigdl.ppml.vfl.VflContext
 import com.intel.analytics.bigdl.ppml.example.ExampleUtils
-import com.intel.analytics.bigdl.{DataSet, Module}
+import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
 import org.apache.log4j.Logger
 import scopt.OptionParser
 
@@ -36,21 +35,13 @@ import collection.JavaConversions._
  * and store parameters as Parameter Server
  */
 object VflLogisticRegression {
-  var dataSet: Array[Array[Float]] = null
-  var trainData: DataSet[MiniBatch[Float]] = null
-  var valData: DataSet[MiniBatch[Float]] = null
   var featureNum: Int = _
-  var model: Module[Float] = null
-  var flClient: FLClient = new FLClient()
-  var batchSize: Int = 0
   val logger = Logger.getLogger(getClass)
 
-  protected var hashedKeyPairs: Map[String, String] = null
+  def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
 
-
-  def getData(dataPath: String, rowKeyName: String) = {
-
-    // load data from dataset and preprocess
+    // load data from dataset and preprocess\
+    val salt = pSI.getSalt()
     val sources = Source.fromFile(dataPath, "utf-8").getLines()
     val headers = sources.next().split(",").map(_.trim)
     println(headers.mkString(","))
@@ -60,10 +51,10 @@ object VflLogisticRegression {
       val lines = line.split(",").map(_.trim())
       (lines(rowKeyIndex), (lines.take(rowKeyIndex) ++ lines.drop(rowKeyIndex + 1)).map(_.toFloat))
     }.toMap
-    val ids = data.keys.toArray
-    hashedKeyPairs = uploadKeys(ids)
-    val intersections = getIntersectionKeys()
-    dataSet = intersections.map{id =>
+    val ids = data.keys.toList
+    pSI.uploadSet(ids, salt)
+    val intersections = pSI.downloadIntersection()
+    val dataSet = intersections.asScala.toArray.map{id =>
       data(id)
     }
 
@@ -96,45 +87,6 @@ object VflLogisticRegression {
     (trainDataset, valDataSet)
   }
 
-
-  def uploadKeys(keys: Array[String]): Map[String, String] = {
-    val salt = flClient.getSalt
-    logger.debug("Client get Salt=" + salt)
-    val hashedKeys = HashingUtils.parallelToSHAHexString(keys, salt)
-    val hashedKeyPairs = hashedKeys.zip(keys).toMap
-    // Hash(IDs, salt) into hashed IDs
-    logger.debug("HashedIDs Size = " + hashedKeys.size)
-    flClient.uploadSet(hashedKeys.toList.asJava)
-    hashedKeyPairs
-
-  }
-  def getIntersectionKeys(): Array[String] = {
-    require(null != hashedKeyPairs, "no hashed key pairs found, have you upload keys?")
-    // TODO: just download
-    var maxWait = 20
-    var intersection: java.util.List[String] = null
-    while (maxWait > 0) {
-      intersection = flClient.downloadIntersection()
-      if (intersection == null || intersection.length == 0) {
-        logger.info("Wait 1000ms")
-        Thread.sleep(1000)
-      } else {
-        logger.info("Intersection successful. The id(s) in the intersection are: ")
-        logger.info(intersection.mkString(", "))
-        logger.info("Origin IDs are: ")
-        logger.info(intersection.map(hashedKeyPairs(_)).mkString(", "))
-        //break
-        maxWait = 1
-      }
-      maxWait -= 1
-    }
-    intersection.asScala.toArray.map { k =>
-      require(hashedKeyPairs.contains(k), "unknown intersection keys, please check psi server.")
-      hashedKeyPairs(k)
-    }
-  }
-
-
   def main(args: Array[String]): Unit = {
     case class Params(dataPath: String = null,
                       rowKeyName: String = null,
@@ -161,8 +113,15 @@ object VflLogisticRegression {
     val dataPath = argv.dataPath
     val rowKeyName = argv.rowKeyName
     val learningRate = argv.learningRate
-    batchSize = argv.batchSize
-    getData(dataPath, rowKeyName)
+    val batchSize = argv.batchSize
+
+
+    /**
+     * Usage of BigDL PPML starts from here
+     */
+    VflContext.initContext()
+    val pSI = new PSI()
+    val (trainData, valData) = getData(pSI, dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model
     val lr = new LogisticRegression(featureNum, learningRate)

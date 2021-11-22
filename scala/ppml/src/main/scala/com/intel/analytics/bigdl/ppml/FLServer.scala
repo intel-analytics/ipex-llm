@@ -19,15 +19,15 @@ package com.intel.analytics.bigdl.ppml
 import com.intel.analytics.bigdl.grpc.GrpcServerBase
 import com.intel.analytics.bigdl.ppml.common.Aggregator
 import com.intel.analytics.bigdl.ppml.psi.PSIServiceImpl
-import com.intel.analytics.bigdl.ppml.vfl.NNServiceImpl
-import com.intel.analytics.bigdl.ppml.vfl.VflAggregator
-import com.intel.analytics.bigdl.ppml.vfl.VflNNAggregator
+import com.intel.analytics.bigdl.ppml.vfl.nn.NNServiceImpl
 import com.intel.analytics.bigdl.dllib.nn.BCECriterion
 import com.intel.analytics.bigdl.dllib.nn.Sigmoid
 import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
+
+import com.intel.analytics.bigdl.ppml.vfl.nn.NNServiceImpl
 
 
 
@@ -55,13 +55,10 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
     port = flHelper.serverPort
     // start all services without providing service list
+    // start all services without providing service list
     serverServices.add(new PSIServiceImpl)
-    val nnService = new NNServiceImpl()
-    val lrAggregator = VflAggregator(1, Sigmoid[Float](),
-      null, BCECriterion[Float](), Array(new Top1Accuracy()))
-    lrAggregator.setClientNum(flHelper.worldSize)
-    nnService.setAggregator(lrAggregator)
-    serverServices.add(nnService)
+    serverServices.add(new NNServiceImpl)
+
 
 
   }

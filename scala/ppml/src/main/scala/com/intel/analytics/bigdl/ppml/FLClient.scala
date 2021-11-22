@@ -32,21 +32,22 @@ import org.apache.log4j.Logger
  * @param _args
  */
 class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
-  protected var taskID: String = null
   val logger = Logger.getLogger(getClass)
+  protected var taskID: String = null
   var psiStub: PSIStub = null
   var nnStub: NNStub = null
 
   def this() {
     this(null)
-    build()
   }
 
   @throws[IOException]
   override protected def parseConfig(): Unit = {
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
-    target = flHelper.clientTarget
-    taskID = flHelper.taskID
+    if (flHelper != null) {
+      target = flHelper.clientTarget
+      taskID = flHelper.taskID
+    }
     super.parseConfig()
   }
 
@@ -62,28 +63,4 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
         logger.error("Shutdown Client Error" + e.getMessage)
     }
   }
-
-  /**
-   * Wrap all the api of stubs to expose the API out of the stubs
-   */
-  // PSI stub
-  def getSalt: String = psiStub.getSalt
-
-  def getSalt(name: String, clientNum: Int, secureCode: String): String =
-    psiStub.getSalt(name, clientNum, secureCode)
-
-  def uploadSet(hashedIdArray: util.List[String]): Unit = {
-    psiStub.uploadSet(hashedIdArray)
-  }
-
-  def downloadIntersection(): util.List[String] = psiStub.downloadIntersection
-
-  // NN stub
-  def downloadTrain(modelName: String, flVersion: Int): FLProto.DownloadResponse =
-    nnStub.downloadTrain(modelName, flVersion)
-
-  def uploadTrain(data: FLProto.Table): FLProto.UploadResponse = nnStub.uploadTrain(data)
-
-  def evaluate(data: FLProto.Table, lastBatch: Boolean): FLProto.EvaluateResponse =
-    nnStub.evaluate(data, lastBatch)
 }
