@@ -50,6 +50,7 @@ def main(data_num):
         spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
             .set("spark.executor.cores", 2) \
             .set("spark.executor.instances", 2) \
+            .set("spark.executorEnv.HTTP_PROXY", "http://child-prc.intel.com:913") \
             .set("spark.driver.memory", "2g")
         if cluster_mode == "yarn-client":
             sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
