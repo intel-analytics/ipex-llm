@@ -22,15 +22,15 @@ import tempfile
 import shutil
 import pickle
 
-
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, get_remote_file_to_local
+from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
+    get_remote_file_to_local, put_local_file_to_remote
 
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe
+    process_xshards_of_pandas_dataframe, save_pkl
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
@@ -105,10 +105,10 @@ class SparkTFEstimator():
         import numpy as np
         sc = OrcaContext.get_spark_context()
 
-        if self.model_weights:
-            weights = sc.broadcast(self.model_weights)
-        else:
-            weights = None
+        # if self.model_weights:
+        #     weights = sc.broadcast(self.model_weights)
+        # else:
+        #     weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -116,11 +116,11 @@ class SparkTFEstimator():
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            model_weights=weights,
+            # model_weights=weights,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
-            epoch=self.epoch,
+            # epoch=self.epoch,
             application_id=self.application_id
         )
 
@@ -202,10 +202,10 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
-        if self.model_weights:
-            weights = sc.broadcast(self.model_weights)
-        else:
-            weights = None
+        # if self.model_weights:
+        #     weights = sc.broadcast(self.model_weights)
+        # else:
+        #     weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -213,7 +213,7 @@ class SparkTFEstimator():
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            model_weights=weights,
+            # model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
@@ -277,10 +277,10 @@ class SparkTFEstimator():
         """
         logger.info("Starting predict step.")
         sc = OrcaContext.get_spark_context()
-        if self.model_weights:
-            weights = sc.broadcast(self.model_weights)
-        else:
-            weights = None
+        # if self.model_weights:
+        #     weights = sc.broadcast(self.model_weights)
+        # else:
+        #     weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -288,7 +288,7 @@ class SparkTFEstimator():
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            model_weights=weights,
+            # model_weights=weights,
             mode="predict",
             cluster_info=None,
             model_dir=self.model_dir,
@@ -354,7 +354,11 @@ class SparkTFEstimator():
         """
         model = self.model_creator(self.config)
         model.load_weights(filepath, by_name)
-        self.model_weights = model.get_weights()
+        state = self._get_state()
+        if state is None:
+            state = {}
+        state["weights"] = model.get_weights()
+        save_pkl(state, os.path.join(self.model_dir, self.application_id + "_state.pkl"))
 
     @enable_multi_fs_save
     def save(self, checkpoint, overwrite=False):
@@ -362,7 +366,7 @@ class SparkTFEstimator():
         Saves the model at the provided path.
         :param checkpoint: (str) Path to the target checkpoint file.
         """
-        get_remote_file_to_local(os.path.join(self.model_dir, self.application_id + "_states.pkl"),
+        get_remote_file_to_local(os.path.join(self.model_dir, self.application_id + "_state.pkl"),
                                  checkpoint, over_write=overwrite)
 
     @enable_multi_fs_load
@@ -371,11 +375,9 @@ class SparkTFEstimator():
         Loads the model from the provided checkpoint.
 
         """
-        with open(checkpoint, 'rb') as f:
-            states = pickle.load(f)
-
-        self.model_weights = states["weights"]
-        self.epoch = states["epoch"]
+        put_local_file_to_remote(checkpoint,
+                                 os.path.join(self.model_dir, self.application_id + "_state.pkl"),
+                                 over_write=True)
 
     def get_model(self):
         """
@@ -384,22 +386,21 @@ class SparkTFEstimator():
         :return: the learned model.
         """
         model = self.model_creator(self.config)
-        states = self._get_state()
-        if states:
-            model.set_weights(states["weights"])
+        state = self._get_state()
+        if state:
+            model.set_weights(state["weights"])
         return model
 
     def _get_state(self):
-        if self.model_dir:
-            try:
-                temp_dir = tempfile.mkdtemp()
-                get_remote_file_to_local(os.path.join(self.model_dir, self.application_id + "_states.pkl"),
-                                         os.path.join(temp_dir, "states.pkl"),
-                                         over_write=True)
+        try:
+            temp_dir = tempfile.mkdtemp()
+            get_remote_file_to_local(os.path.join(self.model_dir, self.application_id + "_state.pkl"),
+                                     os.path.join(temp_dir, "state.pkl"),
+                                     over_write=True)
 
-                with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
-                    states = pickle.load(f)
-                    return states
-            finally:
-                shutil.rmtree(temp_dir)
+            with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
+                state = pickle.load(f)
+                return state
+        finally:
+            shutil.rmtree(temp_dir)
         return None
