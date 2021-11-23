@@ -71,7 +71,11 @@ class SparkTFEstimator():
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
+
         self.model_dir = model_dir
+        master = sc.getConf().get("spark.master")
+        if not master.startswith("local"):
+            logger.info("For cluster mode, make sure to use shared filesystem path as model directory.")
 
         self.application_id = sc.applicationId
 
@@ -105,6 +109,13 @@ class SparkTFEstimator():
         import numpy as np
         sc = OrcaContext.get_spark_context()
 
+        # dataframe change to xshard, num_partition >= num_workers
+        data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
+                                                           feature_cols, label_cols,
+                                                           mode="fit",
+                                                           num_workers=self.num_workers,
+                                                           accept_str_col=True)
+
         init_params = dict(
             model_creator=self.model_creator,
             compile_args_creator=self.compile_args_creator,
@@ -128,13 +139,6 @@ class SparkTFEstimator():
             validation_freq=validation_freq,
             data_config=data_config
         )
-
-        # dataframe change to xshard, num_partition >= num_workers
-        data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
-                                                           feature_cols, label_cols,
-                                                           mode="fit",
-                                                           num_workers=self.num_workers,
-                                                           accept_str_col=True)
 
         if isinstance(data, SparkXShards):
             # set train/validation data
@@ -195,6 +199,14 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
+        # dataframe change to xshard, num_partition >= num_workers
+        data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
+                                             feature_cols=feature_cols,
+                                             label_cols=label_cols,
+                                             mode="evaluate",
+                                             num_workers=self.num_workers,
+                                             accept_str_col=True)
+
         init_params = dict(
             model_creator=self.model_creator,
             compile_args_creator=self.compile_args_creator,
@@ -215,14 +227,6 @@ class SparkTFEstimator():
             callbacks=callbacks,
             data_config=data_config,
         )
-
-        # dataframe change to xshard, num_partition >= num_workers
-        data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
-                                             feature_cols=feature_cols,
-                                             label_cols=label_cols,
-                                             mode="evaluate",
-                                             num_workers=self.num_workers,
-                                             accept_str_col=True)
 
         if isinstance(data, SparkXShards):
             # set train/validation data
@@ -336,9 +340,7 @@ class SparkTFEstimator():
         """
         model = self.model_creator(self.config)
         model.load_weights(filepath, by_name)
-        state = self._get_state()
-        if state is None:
-            state = {}
+        state = {}
         state["weights"] = model.get_weights()
         save_pkl(state, os.path.join(self.model_dir, self.application_id + "_state.pkl"))
 
