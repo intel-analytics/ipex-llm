@@ -46,8 +46,6 @@ from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 
-logger = logging.getLogger(__name__)
-
 try:
     from collections.abc import Iterable
 except ImportError:
@@ -66,7 +64,11 @@ class TorchRunner:
                  training_operator_cls=None,
                  config=None,
                  use_tqdm=False,
-                 scheduler_step_freq=None):
+                 scheduler_step_freq=None,
+                 sync_stats=True,
+                 log_level=logging.INFO):
+        logging.basicConfig(level=log_level)
+        self.logger = logging.getLogger(__name__)
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
@@ -86,11 +88,12 @@ class TorchRunner:
         self.training_operator = None
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
+        self.sync_stats = sync_stats
 
     def _create_loss(self):
         if not self.loss_creator:
             return
-        logger.debug("Creating loss.")
+        self.logger.debug("Creating loss.")
         if isinstance(self.loss_creator, torch.nn.modules.loss._Loss):
             self.criterion = self.loss_creator
         else:  # Torch loss is also callable.
@@ -134,14 +137,14 @@ class TorchRunner:
     def setup_components(self):
         """Runs the creator functions without any distributed coordination."""
 
-        logger.debug("Creating model")
+        self.logger.debug("Creating model")
         self.models = self.model_creator(self.config)
         if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
             self.models = [self.models]
         assert all(isinstance(model, nn.Module) for model in self.models), (
             "All models must be PyTorch models: {}.".format(self.models))
 
-        logger.debug("Creating optimizer.")
+        self.logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,
                                                  self.config)
         if not isinstance(self.optimizers, Iterable):
@@ -160,10 +163,11 @@ class TorchRunner:
                 criterion=self.criterion,
                 world_rank=self.rank,
                 schedulers=self.schedulers,
-                use_tqdm=self.use_tqdm)
+                use_tqdm=self.use_tqdm,
+                sync_stats=self.sync_stats)
 
     def with_sampler(self, loader):
-        logger.debug("Wrapping DistributedSampler on DataLoader")
+        self.logger.debug("Wrapping DistributedSampler on DataLoader")
         data_loader_args = {
             "dataset": loader.dataset,
             "batch_size": loader.batch_size,
@@ -209,6 +213,8 @@ class TorchRunner:
         stats_list = list()
         for i in range(epochs):
             stats = self.train_epoch(loader, profile=profile, info=info)
+            if self.rank == 0:
+                self.logger.info(f"Finished training epoch {i + 1}, stats: {stats}")
             stats_list.append(stats)
         return stats_list
 
@@ -220,7 +226,7 @@ class TorchRunner:
         if hasattr(self.train_loader, "sampler") and hasattr(
                 self.train_loader.sampler, "set_epoch"):
             self.train_loader.sampler.set_epoch(self.epochs)
-        logger.debug("Begin Training Step {}".format(self.epochs + 1))
+        self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
         info = info or {}
         self._toggle_profiling(profile=profile)
 

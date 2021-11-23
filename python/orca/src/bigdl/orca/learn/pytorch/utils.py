@@ -37,6 +37,8 @@ import logging
 import numpy as np
 import socket
 import time
+import torch.distributed as dist
+import torch
 
 
 logger = logging.getLogger(__name__)
@@ -219,12 +221,26 @@ class AverageMeterCollection:
         for metric, value in metrics.items():
             self._meters[metric].update(value, n=n)
 
-    def summary(self):
+    def summary(self, sync_stats=False):
         """Returns a dict of average and most recent values for each metric."""
         stats = {BATCH_COUNT: self._batch_count, NUM_SAMPLES: self.n}
+        if sync_stats:
+            if not dist.is_initialized():
+                raise ValueError("torch.distributed must be initialized to user sync_stats")
         for metric, meter in self._meters.items():
-            stats[str(metric)] = meter.avg
-            stats["last_" + str(metric)] = meter.val
+            if sync_stats:
+                world_size = dist.get_world_size()
+                avg = torch.tensor(meter.avg)
+                dist.all_reduce(avg)
+                last_val = torch.tensor(meter.val)
+                dist.all_reduce(last_val)
+                avg = avg.item() / world_size
+                last_val = last_val.item() / world_size
+            else:
+                avg = meter.avg
+                last_val = meter.val
+            stats[str(metric)] = avg
+            stats["last_" + str(metric)] = last_val
         return stats
 
 

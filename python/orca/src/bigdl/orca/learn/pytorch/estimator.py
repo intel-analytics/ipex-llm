@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import logging
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 
 
@@ -32,7 +33,9 @@ class Estimator(object):
                    use_tqdm=False,
                    workers_per_node=1,
                    model_dir=None,
-                   backend="bigdl"):
+                   backend="bigdl",
+                   sync_stats=True,
+                   log_level=logging.INFO):
         """
         Create an Estimator for torch.
 
@@ -76,7 +79,9 @@ class Estimator(object):
                                        scheduler_step_freq=scheduler_step_freq,
                                        use_tqdm=use_tqdm,
                                        workers_per_node=workers_per_node,
-                                       backend=backend)
+                                       backend=backend,
+                                       sync_stats=sync_stats,
+                                       log_level=log_level)
         elif backend == "bigdl":
             from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
             return PyTorchSparkEstimator(model=model,
@@ -98,7 +103,9 @@ class Estimator(object):
                                            config=config,
                                            scheduler_step_freq=scheduler_step_freq,
                                            use_tqdm=use_tqdm,
-                                           workers_per_node=workers_per_node)
+                                           workers_per_node=workers_per_node,
+                                           sync_stats=sync_stats,
+                                           log_level=log_level)
         else:
             raise ValueError("Only horovod, torch_distributed, bigdl and spark backends are "
                              f"supported for now, got backend: {backend}")

@@ -105,7 +105,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             scheduler_step_freq="batch",
             use_tqdm=False,
             backend="torch_distributed",
-            workers_per_node=1):
+            workers_per_node=1,
+            sync_stats=True,
+            log_level=logging.INFO):
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
@@ -124,6 +126,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         self.training_operator_cls = training_operator_cls
         self.scheduler_step_freq = scheduler_step_freq
         self.use_tqdm = use_tqdm
+        self.sync_stats = sync_stats
 
         if not training_operator_cls and not loss_creator:
             raise ValueError("If a loss_creator is not provided, you must "
@@ -141,7 +144,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             scheduler_step_freq=self.scheduler_step_freq,
             use_tqdm=self.use_tqdm,
             config=worker_config,
-            metrics=metrics
+            metrics=metrics,
+            sync_stats=sync_stats,
+            log_level=log_level
         )
 
         if backend == "torch_distributed":

@@ -18,6 +18,8 @@ from unittest import TestCase
 
 import numpy as np
 import pytest
+import logging
+import time
 
 import torch
 import torch.nn as nn
@@ -141,14 +143,17 @@ def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
 
-def get_estimator(workers_per_node=1, model_fn=get_model):
+def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
+                  log_level=logging.INFO):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=nn.BCELoss(),
                                      metrics=Accuracy(),
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
-                                     backend="torch_distributed")
+                                     backend="torch_distributed",
+                                     sync_stats=sync_stats,
+                                     log_level=log_level)
     return estimator
 
 
@@ -312,6 +317,73 @@ class TestPyTorchEstimator(TestCase):
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["f1", "f2"])
         result.collect()
+
+    def test_sync_stats(self):
+        sc = init_nncontext()
+        rdd = sc.range(0, 100)
+        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2, sync_stats=True)
+        stats = estimator.fit(df, batch_size=4, epochs=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              reduce_results=False)
+        worker_0_stat0, worker_1_stats = stats[0]
+
+        for k in worker_0_stat0:
+            v0 = worker_0_stat0[k]
+            v1 = worker_1_stats[k]
+            error_msg = f"stats from all workers should be the same, " \
+                        f"but got worker_0_stat0: {worker_0_stat0}, " \
+                        f"worker_1_stats: {worker_1_stats}"
+            assert abs(v1 - v0) < 1e-6, error_msg
+
+    def test_not_sync_stats(self):
+        sc = init_nncontext()
+        rdd = sc.range(0, 100)
+        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2, sync_stats=False)
+        stats = estimator.fit(df, batch_size=4, epochs=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              reduce_results=False)
+        worker_0_stats, worker_1_stats = stats[0]
+        train_loss_0 = worker_0_stats["train_loss"]
+        train_loss_1 = worker_1_stats["train_loss"]
+        error_msg = f"stats from all workers should not be the same, " \
+                    f"but got worker_0_stats: {worker_0_stats}, worker_1_stats: {worker_1_stats}"
+        assert abs(train_loss_0 - train_loss_1) > 1e-6, error_msg
+
+    # not work right now
+    # ray logs cannot be captured
+    # not sure why
+    # def test_logging_train_stats(self):
+
+    #     sc = init_nncontext()
+    #     rdd = sc.range(0, 100)
+    #     df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+    #                             [int(np.random.randint(0, 2, size=()))])
+    #                  ).toDF(["feature", "label"])
+
+    #     estimator = get_estimator(workers_per_node=2, sync_stats=False, log_level=logging.DEBUG)
+    #     captured_before = self._capsys.readouterr().out
+    #     stats = estimator.fit(df, batch_size=4, epochs=2,
+    #                             feature_cols=["feature"],
+    #                             label_cols=["label"])
+
+    #     captured_after = self._capsys.readouterr().out
+    #     message = captured_after[len(captured_before):]
+    #     assert "Finished training epoch 1, stats: {" in message
+    #     assert "Finished training epoch 2, stats: {" in message
+
+    # @pytest.fixture(autouse=True)
+    # def inject_fixtures(self, capsys):
+    #     self._capsys = capsys
 
 
 if __name__ == "__main__":
