@@ -18,6 +18,9 @@ loadInitialData: true
 # default: "", prefix for redis key
 redisKeyPrefix:
 
+# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
+redisClusterItemSlotType: 2
+
 # default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
 # provided. Only support parquet file
 initialUserDataPath: /home/yina/Documents/data/recsys/wnd_813/wnd_user_2000.parquet
@@ -48,7 +51,7 @@ itemFeatureColumns: present_media, language, tweet_type, engaged_with_user_follo
 
 ### Redis Configuration
 # default: localhost:6379
-# redisUrl:
+redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
 
 # default: 256, JedisPoolMaxTotal
 # redisPoolMaxTotal:

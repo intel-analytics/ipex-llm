@@ -8,7 +8,7 @@ servicePort: 8084
 monitorPort: 1238
 
 # default: false, if load saved index, set true
-loadSavedIndex: false
+loadSavedIndex: true
 
 # default: false, if true, the built index will be saved to indexPath. Ignored when
 # loadSavedIndex=true

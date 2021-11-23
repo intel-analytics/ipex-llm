@@ -83,7 +83,7 @@ object FeatureUtils {
       featureRDD.foreachPartition { partition =>
         if (partition.nonEmpty) {
           val redis = RedisUtils.getInstance(Utils.helper.redisPoolMaxTotal)
-          redis.Hset(keyPrefix, partition.toArray)
+          redis.Mset(keyPrefix, partition.toArray)
         }
       }
     }

@@ -75,6 +75,15 @@ public class RedisUtils {
         }
         return jedis;
     }
+
+    public void Mset(String keyPrefix, List<String>[] dataArray) {
+        if (cluster == null) {
+            jedisMset(keyPrefix, dataArray);
+        } else {
+            clusterSet(keyPrefix, dataArray);
+        }
+    }
+
     public void Hset(String keyPrefix, List<String>[] dataArray) {
         if (cluster == null) {
             piplineHmset(keyPrefix, dataArray);
@@ -111,6 +120,43 @@ public class RedisUtils {
         }
     }
 
+    public void clusterSet(String keyPrefix, List<String>[] dataArray) {
+        if (keyPrefix.equals("user") ||
+                (keyPrefix.equals("item") && Utils.helper().itemSlotType() == 0)) {
+            int cnt = 0;
+            for(List<String> data: dataArray) {
+                if(data.size() != 2) {
+                    logger.warn("Data size in dataArray should be 2, but got" + data.size());
+                } else {
+                    String key = Utils.helper().getRedisKeyPrefix() + keyPrefix + ":" +
+                            data.get(0);
+                    getCluster().set(key, data.get(1));
+                    cnt += 1;
+                }
+            }
+            logger.info(cnt + " valid records written to redis.");
+        } else if (keyPrefix.equals("item")) {
+            if (Utils.helper().itemSlotType() == 1) {
+                keyPrefix = "{" + Utils.helper().getRedisKeyPrefix() + keyPrefix + "}";
+                String[] keyValues = buildKeyValuesArray(keyPrefix, dataArray);
+                getCluster().mset(keyValues);
+                logger.info(keyValues.length / 2 + " valid records written to redis.");
+            } else {
+                Collection<ArrayList<String>> keyValueSlots = buildAndDivideKeyValues(keyPrefix,
+                        dataArray);
+                int cnt = 0;
+                for (ArrayList<String> kv: keyValueSlots) {
+                    String[] kvs = kv.toArray(new String[0]);
+                    getCluster().mset(kvs);
+                    cnt += kvs.length;
+                }
+                logger.info(cnt / 2 + " valid records written to redis.");
+            }
+        } else {
+            logger.error("keyPrefix should be user or item, but got " + keyPrefix);
+        }
+    }
+
     public void piplineHmset(String keyPrefix, List<String>[] dataArray) {
         Jedis jedis = getRedisClient();
         Pipeline ppl = jedis.pipelined();
@@ -130,5 +176,50 @@ public class RedisUtils {
         ppl.sync();
         jedis.close();
         logger.info(cnt + " valid records written to redis.");
+    }
+
+    public void jedisMset(String keyPrefix, List<String>[] dataArray) {
+        Jedis jedis = getRedisClient();
+        keyPrefix = Utils.helper().getRedisKeyPrefix() + keyPrefix;
+        String[] keyValues = buildKeyValuesArray(keyPrefix, dataArray);
+        jedis.mset(keyValues);
+        jedis.close();
+        logger.info(keyValues.length / 2 + " valid records written to redis.");
+    }
+
+    private String[] buildKeyValuesArray(String keyPrefix, List<String>[] dataArray) {
+        int cnt = dataArray.length;
+        ArrayList<String> keyValues = new ArrayList<>(cnt * 2);
+        for(List<String> data: dataArray) {
+            if(data.size() != 2) {
+                logger.warn("Data size in dataArray should be 2, but got" + data.size());
+            } else {
+                String key = keyPrefix + ":" + data.get(0);
+                keyValues.add(key);
+                keyValues.add(data.get(1));
+            }
+        }
+        return keyValues.toArray(new String[0]);
+    }
+
+    private Collection<ArrayList<String>> buildAndDivideKeyValues(String keyPrefix,
+                                                                  List<String>[] dataArray) {
+        keyPrefix = "{" + Utils.helper().getRedisKeyPrefix() + keyPrefix;
+        HashMap<Character, ArrayList<String>> keyValueSlots = new HashMap<>();
+        for(List<String> data: dataArray) {
+            if(data.size() != 2) {
+                logger.warn("Data size in dataArray should be 2, but got" + data.size());
+            } else {
+                String id = data.get(0);
+                char lastChar = id.charAt(id.length() - 1);
+                String key = keyPrefix + lastChar + "}:" + data.get(0);
+                if (!keyValueSlots.containsKey(lastChar)) {
+                    keyValueSlots.put(lastChar, new ArrayList<>());
+                }
+                keyValueSlots.get(lastChar).add(key);
+                keyValueSlots.get(lastChar).add(data.get(1));
+            }
+        }
+        return keyValueSlots.values();
     }
 }
