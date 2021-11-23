@@ -22,6 +22,13 @@ import numpy as np
 from bigdl.orca.data import XShards
 
 
+def loader_to_creator(loader):
+    # Warning, this data creator will not respect the batch_size changing.
+    def data_creator(config, batch_size):
+            return loader
+    return data_creator
+
+
 def np_to_creator(data):
     def data_creator(config, batch_size):
             return DataLoader(TensorDataset(torch.from_numpy(data[0]).float(),

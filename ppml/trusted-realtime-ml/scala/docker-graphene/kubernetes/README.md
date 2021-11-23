@@ -2,27 +2,8 @@
 
 ## Deploy the Intel SGX Device Plugin for Kubenetes
 
-The instructions in this section are modified from the [Intel SGX Device Plugin homepage][intelSGX], to which please refer should questions arise.
+Please refer to the document [here][devicePluginK8sQuickStart].
 
-### Prerequisites
-Prerequisites for building and running these device plugins include:
-- Appropriate hardware
-- A fully configured Kubernetes cluster
-- A working Go environment, of at least version v1.16
-
-Here we would want to deploy the plugin as a DaemonSet, so pull the [source code][pluginCode]. In the working directory, compile with 
-``` bash
-make intel-sgx-plugin
-make intel-sgx-initcontainer
-```
-Deploy the DaemonSet with
-```bash
-kubectl apply -k deployments/sgx_plugin/overlays/epc-register/
-```
-Verify with (replace the `<node name>` with your own node name)
-```
-kubectl describe node <node name> | grep sgx.intel.com
-```
 ## Deploying Trusted Realtime ML for Kubernetes
 
 ### Configurables
@@ -90,3 +71,4 @@ The same goes for the master deployment's ports 6379, 10020, and 10023. Remember
 [pluginCode]: https://github.com/intel/intel-device-plugins-for-kubernetes
 [keysNpassword]: https://github.com/intel-analytics/analytics-zoo/tree/master/ppml/trusted-realtime-ml/scala/docker-graphene#prepare-the-keys
 [helmsite]: https://helm.sh/
+[devicePluginK8sQuickStart]: https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernets.html

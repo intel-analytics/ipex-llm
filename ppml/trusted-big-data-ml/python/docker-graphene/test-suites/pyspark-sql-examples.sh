@@ -15,7 +15,7 @@ SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
   --master 'local[4]' \
   --conf spark.python.use.daemon=false \
   --conf spark.python.worker.reuse=false \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" 2>&1 | tee test-sql-basic-sgx.log && \
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" 2>&1 > test-sql-basic-sgx.log && \
   cat test-sql-basic-sgx.log | egrep '\+\-|Name:' -A10
 status_5_local_spark_basic_sql=$(echo $?)
 fi
@@ -33,7 +33,7 @@ SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
   --conf spark.sql.execution.arrow.enabled=true \
   --conf spark.driver.memory=2g \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/arrow.py" 2>&1 | tee test-sql-arrow-sgx.log
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/arrow.py" 2>&1 > test-sql-arrow-sgx.log
 status_6_local_spark_arrow=$(echo $?)
 fi
 
@@ -49,7 +49,7 @@ SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
   --conf spark.driver.memory=2g \
   --conf spark.sql.broadcastTimeout=30000 \
   --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py" 2>&1 | tee test-sql-hive-sgx.log
+  /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py" 2>&1 > test-sql-hive-sgx.log
 status_7_local_spark_hive=$(echo $?)
 fi
 

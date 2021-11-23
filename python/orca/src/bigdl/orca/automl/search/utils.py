@@ -39,6 +39,7 @@ def process(command, fail_fast=False, timeout=120):
         print(err)
     else:
         print(out)
+    return out, err
 
 
 def get_remote_list(dir_in):
@@ -48,7 +49,6 @@ def get_remote_list(dir_in):
     all_dart_dirs = s_output.split()
     names = []
     for filename in all_dart_dirs:
-        filename = filename.decode()
         name_list = filename.split('/')
         names.append(name_list[-1])
     return names

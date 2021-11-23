@@ -462,6 +462,39 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config['past_seq_len'] == 6
 
+    def test_future_list_input(self):
+        sample_num = np.random.randint(100, 200)
+        df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
+                           "value": np.random.randn(sample_num),
+                           "id": np.array(['00']*sample_num)})
+        train_ts, val_ts, _ = TSDataset.from_pandas(df,
+                                                    target_col=['value'],
+                                                    dt_col='datetime',
+                                                    id_col='id',
+                                                    with_split=True,
+                                                    val_ratio=0.1)
+
+        input_feature_dim, output_feature_dim = 1, 1
+        auto_estimator = AutoTSEstimator(model='seq2seq',
+                                         search_space="minimal",
+                                         past_seq_len=6,
+                                         future_seq_len=[1, 3],
+                                         input_feature_num=input_feature_dim,
+                                         output_target_num=output_feature_dim,
+                                         selected_features="auto",
+                                         metric="mse",
+                                         loss=torch.nn.MSELoss(),
+                                         cpus_per_trial=2,
+                                         name="auto_trainer")
+
+        auto_estimator.fit(data=train_ts,
+                           epochs=1,
+                           batch_size=hp.choice([32, 64]),
+                           validation_data=val_ts,
+                           n_sampling=1)
+        config = auto_estimator.get_best_config()
+        assert config['future_seq_len'] == 2
+        assert auto_estimator._future_seq_len == [1, 3]
 
 if __name__ == "__main__":
     pytest.main([__file__])

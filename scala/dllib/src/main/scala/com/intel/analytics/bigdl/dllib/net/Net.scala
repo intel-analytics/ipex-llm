@@ -37,7 +37,8 @@ import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.dllib.keras.autograd.Variable
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, Merge, WordEmbedding}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
-import com.intel.analytics.bigdl.dllib.keras.models.{KerasNet, Model, Sequential}
+import com.intel.analytics.bigdl.dllib.keras.models.{KerasNet, Model}
+import com.intel.analytics.bigdl.dllib.keras.Sequential._
 import com.intel.analytics.bigdl.dllib.net.{GraphNet, NetUtils}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.Logger
@@ -103,7 +104,7 @@ trait Net {
 
 object Net {
   Model
-  Sequential
+  com.intel.analytics.bigdl.dllib.keras.Sequential.Sequential
   GraphNet
   WordEmbedding
   def setInitMethod(module: AbstractModule[_, _, _],

@@ -404,7 +404,7 @@ class KerasNet(ZooKerasLayer):
                     [float(p) for p in positions])
 
     def to_model(self):
-        from bigdl.dllib.keras.models import Model
+        from bigdl.dllib.keras.model import Model
         return Model.from_jvalue(callZooFunc(self.bigdl_type, "kerasNetToModel", self.value))
 
     @property
