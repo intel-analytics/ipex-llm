@@ -54,7 +54,7 @@ if __name__ == "__main__":
                       help="training data path.")
     parser.add_option("--b", "--batch_size", type=int, dest="batch_size", default="56",
                       help="The number of samples per gradient update. Default is 56.")
-    parser.add_option('--cluster_mode', type=str, dest="clusterMode", default="local",
+    parser.add_option('--cluster_mode', type=str, dest="cluster_mode", default="local",
                       help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
     (options, args) = parser.parse_args(sys.argv)
