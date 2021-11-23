@@ -128,7 +128,7 @@ class PytorchPysparkWorker(TorchRunner):
         if self.rank == 0:
             return [(state_dict, stats_list)]
         else:
-            return []
+            return [(None, stats_list)]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
@@ -136,10 +136,7 @@ class PytorchPysparkWorker(TorchRunner):
         self.load_state_dict(self.state_dict)
         validation_stats = super().validate(data_creator, batch_size, num_steps, profile, info,
                                             wrap_dataloader)
-        if self.rank == 0:
-            return [validation_stats]
-        else:
-            return []
+        return [validation_stats]
 
     def predict(self, data_creator, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""

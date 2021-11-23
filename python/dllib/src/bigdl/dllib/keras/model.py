@@ -20,12 +20,14 @@ from bigdl.dllib.utils.utils import remove_batch
 from .engine.topology import KerasNet
 from bigdl.dllib.utils.common import to_list
 from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.bigdl_export import keras_export
 
 if sys.version >= '3':
     long = int
     unicode = str
 
 
+@keras_export('bigdl.dllib.keras.Model')
 class Model(KerasNet):
     """
     Container for a graph model.
