@@ -88,7 +88,7 @@ class Worker(object):
 if __name__ == "__main__":
     args = parser.parse_args()
     cluster_mode = args.cluster_mode
-    if cluster_mode == "yarn":
+    if cluster_mode.startswith("yarn"):
         sc = init_orca_context(cluster_mode=cluster_mode,
                                cores=args.executor_cores,
                                memory=args.executor_memory,
@@ -139,4 +139,3 @@ if __name__ == "__main__":
         i += 1
     ray_ctx.stop()
     stop_orca_context()
-
