@@ -9,93 +9,92 @@ clear_up () {
 
 set -e
 
-# echo "#start orca ray example tests"
-# echo "#1 Start autoestimator example"
-# start=$(date "+%s")
-# python ${BIGDL_ROOT}/python/orca/example/automl/autoestimator/autoestimator_pytorch.py --trials 5 --epochs 2 --cluster_mode yarn
-# now=$(date "+%s")
-# time1=$((now-start))
+echo "#start orca ray example tests"
+echo "#1 Start autoestimator example"
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/automl/autoestimator/autoestimator_pytorch.py --trials 5 --epochs 2 --cluster_mode yarn
+now=$(date "+%s")
+time1=$((now-start))
 
-# echo "#2 Start autoxgboost example"
-# if [ -f ${BIGDL_ROOT}/data/airline_14col.data ]
-# then
-#     echo "airline_14col.data already exists"
-# else
-#     wget -nv $FTP_URI/analytics-zoo-data/airline_14col.data -P ${BIGDL_ROOT}/data/
-# fi
+echo "#2 Start autoxgboost example"
+if [ -f ${BIGDL_ROOT}/data/airline_14col.data ]
+then
+    echo "airline_14col.data already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/airline_14col.data -P ${BIGDL_ROOT}/data/
+fi
 
-# start=$(date "+%s")
-# python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostClassifier.py -p ${BIGDL_ROOT}/data/airline_14col.data --cluster_mode yarn
-# now=$(date "+%s")
-# time2=$((now-start))
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostClassifier.py -p ${BIGDL_ROOT}/data/airline_14col.data --cluster_mode yarn
+now=$(date "+%s")
+time2=$((now-start))
 
-# echo "#3 Start autoxgboost example"
-# if [ -f ${BIGDL_ROOT}/data/incd.csv ]
-# then
-#     echo "incd.csv already exists"
-# else
-#     wget -nv $FTP_URI/analytics-zoo-data/incd.csv -P ${BIGDL_ROOT}/data/
-# fi
+echo "#3 Start autoxgboost example"
+if [ -f ${BIGDL_ROOT}/data/incd.csv ]
+then
+    echo "incd.csv already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/incd.csv -P ${BIGDL_ROOT}/data/
+fi
 
-# start=$(date "+%s")
-# python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor.py -p ${BIGDL_ROOT}/data/incd.csv --cluster_mode yarn
-# now=$(date "+%s")
-# time3=$((now-start))
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor.py -p ${BIGDL_ROOT}/data/incd.csv --cluster_mode yarn
+now=$(date "+%s")
+time3=$((now-start))
 
-# echo "#4 start test for orca bigdl transformer"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
-#   --cluster_mode yarn_client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca transformer failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#4 Total time cost ${time} seconds"
+echo "#4 start test for orca bigdl transformer"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
+  --cluster_mode yarn_client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca transformer failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#4 Total time cost ${time} seconds"
 
+echo "#5 start test for orca bigdl imageInference"
+#timer
+start=$(date "+%s")
+if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+    -P models
+fi
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
+  -m models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f ${HDFS_URI}/kaggle/train_100 --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca imageInference failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#5 Total time cost ${time} seconds"
 
-# echo "#5 start test for orca bigdl imageInference"
-# #timer
-# start=$(date "+%s")
-# if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-#   echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-# else
-#   wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-#     -P models
-# fi
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
-#   -m models/bigdl_inception-v1_imagenet_0.4.0.model \
-#   -f ${HDFS_URI}/kaggle/train_100 --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca imageInference failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#5 Total time cost ${time} seconds"
-
-# echo "#6 start test for orca pytorch_estimator"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca pytorch_estimator failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#6 Total time cost ${time} seconds"
+echo "#6 start test for orca pytorch_estimator"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca pytorch_estimator failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#6 Total time cost ${time} seconds"
 
 # echo "#7 start test for orca simple_pytorch"
 # #timer
@@ -136,44 +135,44 @@ set -e
 # time=$((now - start))
 # echo "#8 Total time cost ${time} seconds"
 
-# echo "#prepare dataset for ray_on_spark"
-# wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz
-# wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz
-# wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz
-# wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz
-# zip ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/MNIST_data.zip train-images-idx3-ubyte.gz train-labels-idx1-ubyte.gz t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
+echo "#prepare dataset for ray_on_spark"
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz
+zip ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/MNIST_data.zip train-images-idx3-ubyte.gz train-labels-idx1-ubyte.gz t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
 
-# echo "#9 start test for orca ros async"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py \
-#   --iterations 20 --num_workers 2 --cluster_mode yarn
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca ros async failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#9 Total time cost ${time} seconds"
+echo "#9 start test for orca ros async"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py \
+  --iterations 20 --num_workers 2 --cluster_mode yarn
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros async failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#9 Total time cost ${time} seconds"
 
-# echo "#10 start test for orca ros sync"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
-#   --iterations 20 --num_workers 2 --cluster_mode yarn
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca ros sync failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#10 Total time cost ${time} seconds"
+echo "#10 start test for orca ros sync"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
+  --iterations 20 --num_workers 2 --cluster_mode yarn
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros sync failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#10 Total time cost ${time} seconds"
 
 echo "#11 start test for orca rllib"
 #timer
