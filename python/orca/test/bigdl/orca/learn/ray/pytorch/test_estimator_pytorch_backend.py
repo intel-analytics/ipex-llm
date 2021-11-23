@@ -134,6 +134,7 @@ def val_data_loader(config, batch_size):
 
 
 def get_model(config):
+    torch.manual_seed(0)
     return Net()
 
 
