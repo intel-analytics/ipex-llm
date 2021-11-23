@@ -7,7 +7,7 @@
     <groupId>com.intel.analytics.bigdl</groupId>
     <artifactId>bigdl-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.13.0</version>
+    <version>0.13.1-SNAPSHOT</version>
 
     <name>BigDL</name>
     <description>A distributed deep learning library for Apache Spark.</description>

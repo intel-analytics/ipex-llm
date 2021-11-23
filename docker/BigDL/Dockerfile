@@ -20,7 +20,7 @@ MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
 
 WORKDIR /opt/work
 
-ARG BIGDL_VERSION=0.13.0
+ARG BIGDL_VERSION=0.13.1-SNAPSHOT
 ARG SPARK_VERSION=2.1.1
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
