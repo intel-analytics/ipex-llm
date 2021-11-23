@@ -70,7 +70,7 @@ else
   wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
     -P models
 fi
-run the example
+#run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
   -m models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f ${HDFS_URI}/kaggle/train_100 --cluster_mode yarn-client
