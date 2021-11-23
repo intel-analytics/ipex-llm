@@ -42,23 +42,21 @@ set -e
 # now=$(date "+%s")
 # time3=$((now-start))
 
-# set -e
-
-# echo "#4 start test for orca bigdl transformer"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
-#   --cluster_mode yarn_client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca transformer failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#4 Total time cost ${time} seconds"
+echo "#4 start test for orca bigdl transformer"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
+  --cluster_mode yarn_client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca transformer failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#4 Total time cost ${time} seconds"
 
 
 echo "#5 start test for orca bigdl imageInference"
