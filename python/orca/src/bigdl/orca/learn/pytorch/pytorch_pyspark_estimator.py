@@ -290,7 +290,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
     def evaluate(self,
                  data,
-                 batch_size=32,../../../src/bigdl/orca/learn/pytorch/pytorch_pyspark_worker.py
+                 batch_size=32,
                  num_steps=None,
                  profile=False,
                  info=None,
