@@ -42,110 +42,313 @@ python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor
 now=$(date "+%s")
 time3=$((now-start))
 
-ray stop -f
+set -e
 
-#echo "#4 Start rl_pong example"
-#start=$(date "+%s")
-#python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py --iterations 10
-#now=$(date "+%s")
-#time4=$((now-start))
-#
-#echo "#5 Start multiagent example"
-#start=$(date "+%s")
-#python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
-#now=$(date "+%s")
-#time5=$((now-start))
-#
-#echo "#6 Start async_parameter example"
-#start=$(date "+%s")
-#python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
-#now=$(date "+%s")
-#time6=$((now-start))
-#
-#echo "#7 Start sync_parameter example"
-#start=$(date "+%s")
-#python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
-#now=$(date "+%s")
-#time7=$((now-start))
-#
-#echo "#8 Start mxnet lenet example"
-#start=$(date "+%s")
-#
-## get_mnist_iterator in MXNet requires the data to be placed in the `data` folder of the running directory.
-## The running directory of integration test is ${ANALYTICS_ZOO_ROOT}.
-#if [ -f data/mnist.zip ]
-#then
-#    echo "mnist.zip already exists"
-#else
-#    wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P data
-#fi
-#unzip -q data/mnist.zip -d data
-#
-#python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256
-#now=$(date "+%s")
-#time8=$((now-start))
-#
-#echo "#9 Start fashion_mnist example with Tensorboard visualization"
-#start=$(date "+%s")
-#
-#if [ -d ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/data ]
-#then
-#    echo "fashion-mnist already exists"
-#else
-#    wget -nv $FTP_URI/analytics-zoo-data/data/fashion-mnist.zip -P ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/
-#    unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion-mnist.zip
-#fi
-#
-#sed "s/epochs=5/epochs=1/g;s/batch_size=4/batch_size=256/g" \
-#    ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py \
-#    > ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py
-#
-#python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py --backend torch_distributed
-#now=$(date "+%s")
-#time9=$((now-start))
-#
-#
-#echo "#10 start example for orca super-resolution"
-#start=$(date "+%s")
-#
-#if [ ! -f BSDS300-images.tgz ]; then
-#  wget -nv $FTP_URI/analytics-zoo-data/BSDS300-images.tgz
-#fi
-#if [ ! -d dataset/BSDS300/images ]; then
-#  mkdir dataset
-#  tar -xzf BSDS300-images.tgz -C dataset
-#fi
-#
-#python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py --backend torch_distributed
-#
-#now=$(date "+%s")
-#time10=$((now-start))
-#
-#
-#echo "#11 start example for orca cifar10"
-#start=$(date "+%s")
-#
-#if [ -d ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/data ]; then
-#  echo "Cifar10 already exists"
-#else
-#  wget -nv $FTP_URI/analytics-zoo-data/cifar10.zip -P ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10
-#  unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.zip
-#fi
-#
-#python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --backend torch_distributed
-#
-#now=$(date "+%s")
-#time11=$((now-start))
+echo "#4 start test for orca bigdl transformer"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca transformer failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#4 Total time cost ${time} seconds"
+
+
+echo "#5 start test for orca bigdl imageInference"
+#timer
+start=$(date "+%s")
+if [ -f models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+else
+  wget -nv $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+    -P models
+fi
+run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/imageInference/imageInference.py \
+  -m models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f ${HDFS_URI}/kaggle/train_100 --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca imageInference failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#5 Total time cost ${time} seconds"
+
+echo "#6 start test for orca pytorch_estimator"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/horovod/pytorch_estimator.py --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca pytorch_estimator failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#6 Total time cost ${time} seconds"
+
+# echo "#7 start test for orca simple_pytorch"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/horovod/simple_horovod_pytorch.py --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca simple_pytorch failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#7 Total time cost ${time} seconds"
+
+# echo "#8 start test for orca mxnet"
+# #timer
+# start=$(date "+%s")
+
+# # if [ -f ${BIGDL_ROOT}/data/mnist.zip ]
+# # then
+# #     echo "mnist.zip already exists"
+# # else
+# #     wget -nv $FTP_URI/analytics-zoo-data/mnist.zip -P ${BIGDL_ROOT}/data
+# # fi
+# # unzip -q ${BIGDL_ROOT}/data/mnist.zip -d ${BIGDL_ROOT}/data
+
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py #--cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca mxnet failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#8 Total time cost ${time} seconds"
+
+echo "#prepare dataset for ray_on_spark"
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz
+wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz
+wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz
+zip ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/MNIST_data.zip train-images-idx3-ubyte.gz train-labels-idx1-ubyte.gz t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
+
+echo "#9 start test for orca ros async"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py \
+  --iterations 20 --num_workers 2 --cluster_mode yarn
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros async failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#9 Total time cost ${time} seconds"
+
+echo "#10 start test for orca ros sync"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
+  --iterations 20 --num_workers 2 --cluster_mode yarn
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros sync failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#10 Total time cost ${time} seconds"
+
+echo "#11 start test for orca rllib"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py \
+  --iterations 5 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros rllib failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#11 Total time cost ${time} seconds"
+
+echo "#12 start test for orca rl_pong"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py \
+  --iterations 5 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros rl_pong failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#12 Total time cost ${time} seconds"
+
+echo "#13 start test for orca tfpark keras_dataset"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py \
+  --data_path ${HDFS_URI}/mnist \
+  --max_epoch 5 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros rl_pong failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#13 Total time cost ${time} seconds"
+
+echo "#14 start test for orca tfpark keras_dataset"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py \
+  --max_epoch 5 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros rl_pong failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#14 Total time cost ${time} seconds"
+
+# echo "#15 start test for orca tfpark gan"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/tfpark/gan/gan_train_and_evaluate.py \
+#   --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca tfpark gan failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#15 Total time cost ${time} seconds"
+
+echo "#16 start test for orca tfpark estimator_dataset"
+#timer 
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_dataset.py \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark estimator_dataset"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#16 Total time cost ${time} seconds"
+
+echo "#17 start test for orca tfpark estimator_inception"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
+  --image-path ${HDFS_URI}/dogs_cats \
+  --num-classes 2 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark estimator_inception failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#17 Total time cost ${time} seconds"
+
+echo "#18 start test for orca tfpark optimizer train"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/train.py \
+  --max_epoch 1 \
+  --data_num 1000 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark optimizer train failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#18 Total time cost ${time} seconds"
+
+echo "#19 start test for orca tfpark optimizer evaluate"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/evaluate.py \
+  --data_num 1000 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca tfpark optimizer evaluate failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#19 Total time cost ${time} seconds"
+
 echo "Ray example tests finished"
 
 echo "#1 auto-estimator-pytorch time used:$time1 seconds"
 echo "#2 auto-xgboost-classifier time used:$time2 seconds"
 echo "#3 auto-xgboost-regressor time used:$time3 seconds"
-#echo "#4 orca rl_pong time used:$time4 seconds"
-#echo "#5 orca async_parameter_server time used:$time5 seconds"
-#echo "#6 orca sync_parameter_server time used:$time6 seconds"
+echo "#4 bigdl transformer time used:$time4 seconds"
+echo "#5 bigdl imageInference time used:$time5 seconds"
+echo "#6 horovod pytorch_estimator time used:$time6 seconds"
 #echo "#7 orca multiagent_two_trainers time used:$time7 seconds"
 #echo "#8 mxnet_lenet time used:$time8 seconds"
-#echo "#9 fashion-mnist time used:$time9 seconds"
-#echo "#10 orca super-resolution example time used:$time10 seconds"
-#echo "#11 orca cifar10 example time used:$time11 seconds"
+echo "#9 paramerter_server async time used:$time9 seconds"
+echo "#10 paramerter_server sync example time used:$time10 seconds"
+echo "#11 paramerter_server rllib example time used:$time11 seconds"
+echo "#12 paramerter_server rl_pong example time used:$time12 seconds"
+echo "#13 tfaprk keras_dataset example time used:$time13 seconds"
+echo "#14 tfaprk keras_ndarray example time used:$time14 seconds"
+#echo "#15 tfaprk gan_train_and_evaluate example time used:$time15 seconds"
+echo "#16 tfaprk estimator_dataset example time used:$time16 seconds"
+echo "#17 tfaprk estimator_inception example time used:$time17 seconds"
+echo "#18 tfaprk opt_train example time used:$time18 seconds"
+echo "#19 tfaprk opt_evaluate example time used:$time19 seconds"

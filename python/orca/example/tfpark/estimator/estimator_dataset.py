@@ -19,7 +19,15 @@ import numpy as np
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset, TFEstimator
 from bigdl.orca.tfpark import ZooOptimizer
+from bigdl.dllib.utils.common import *
 
+import os
+import argparse
+
+parser = argparse.ArgumentParser(description="Run the tfpark keras "
+                                             "dataset example.")
+parser.add_argument('--cluster_mode', type=str, default="local",
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
 def get_data(dataset):
     from bigdl.dllib.feature.dataset import mnist
@@ -29,7 +37,22 @@ def get_data(dataset):
 
 
 def main():
-    sc = init_nncontext()
+    args = parser.parse_args()
+    cluster_mode = args.cluster_mode
+    if cluster_mode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "2g")
+        if cluster_mode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    else:
+        sc = init_nncontext()
 
     def model_fn(features, labels, mode):
         from nets import lenet
