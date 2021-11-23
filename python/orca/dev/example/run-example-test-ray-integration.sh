@@ -146,8 +146,7 @@ echo "#9 start test for orca ros async"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py \
-  --iterations 20 --num_workers 2 --cluster_mode yarn
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 20 --num_workers 2 --cluster_mode yarn
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
@@ -162,8 +161,7 @@ echo "#10 start test for orca ros sync"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py \
-  --iterations 20 --num_workers 2 --cluster_mode yarn
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 20 --num_workers 2 --cluster_mode yarn
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
