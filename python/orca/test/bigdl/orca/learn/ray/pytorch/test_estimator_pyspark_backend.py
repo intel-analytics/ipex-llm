@@ -164,6 +164,7 @@ class TestPyTorchEstimator(TestCase):
         print(end_val_stats)
         assert 0 < end_val_stats["Accuracy"] < 1
         assert estimator.get_model()
+
         # sanity check that training worked
         dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
         dacc = (end_val_stats["Accuracy"] -
