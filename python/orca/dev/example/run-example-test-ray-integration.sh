@@ -175,22 +175,22 @@ set -e
 # time=$((now - start))
 # echo "#10 Total time cost ${time} seconds"
 
-# echo "#11 start test for orca rllib"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py \
-#   --iterations 5 \
-#   --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca ros rllib failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#11 Total time cost ${time} seconds"
+echo "#11 start test for orca rllib"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py \
+  --iterations 5 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca ros rllib failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#11 Total time cost ${time} seconds"
 
 echo "#12 start test for orca rl_pong"
 #timer
