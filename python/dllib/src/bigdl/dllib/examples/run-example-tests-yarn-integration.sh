@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 clear_up() {
   echo "Clearing up environment. Uninstalling dllib"
   pip uninstall -y bigdl-dllib
