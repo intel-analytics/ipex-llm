@@ -64,6 +64,13 @@ class Estimator(object):
                model_dir.
         :param backend: You can choose "horovod",  "torch_distributed", "bigdl" or "spark" as
                backend. Default: `bigdl`.
+        :param sync_stats: Whether to sync metrics across all distributed workers after each epoch.
+               If set to False, only rank 0's metrics are printed. This param only works horovod,
+               torch_distributed and pyspark backend. For spark backend, the metrics printed are
+               are always synced. This param only affects the printed metrics, the returned metrics
+               are always averaged across workers. Default: True
+        :param log_level: Setting the log_level of each distributed worker. This param only works
+               horovod, torch_distributed and pyspark backend.
         :return: an Estimator object.
         """
         if backend in {"horovod", "torch_distributed"}:
