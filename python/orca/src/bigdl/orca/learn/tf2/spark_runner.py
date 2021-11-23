@@ -382,10 +382,6 @@ class SparkRunner:
         with self.strategy.scope():
             model = self.model_creator(self.config)
 
-        # if self.model_weights is not None:
-        #     print("set weights from broadcast")
-        #     model.set_weights(self.model_weights.value)
-        # elif self.model_dir:
         start = time.time()
         state = load_pkl(os.path.join(self.model_dir, self.application_id + "_state.pkl"))
         end = time.time()
@@ -447,17 +443,11 @@ class SparkRunner:
 
         if self.backend == "tf-distributed":
             local_model = self.model_creator(self.config)
-            # if self.model_weights:
-            #     local_model.set_weights(self.model_weights.value)
-            # elif self.model_dir:
             state = load_pkl(os.path.join(self.model_dir, self.application_id + "_state.pkl"))
             if state:
                 local_model.set_weights(state['weights'])
         else:
             local_model = self.model_creator(self.config)
-            # if self.model_weights:
-            #     local_model.set_weights(self.model_weights.value)
-            # elif self.model_dir:
             state = load_pkl(os.path.join(self.model_dir, self.application_id + "_state.pkl"))
             if state:
                 local_model.set_weights(state['weights'])

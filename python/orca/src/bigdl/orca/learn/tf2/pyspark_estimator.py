@@ -105,22 +105,15 @@ class SparkTFEstimator():
         import numpy as np
         sc = OrcaContext.get_spark_context()
 
-        # if self.model_weights:
-        #     weights = sc.broadcast(self.model_weights)
-        # else:
-        #     weights = None
-
         init_params = dict(
             model_creator=self.model_creator,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            # model_weights=weights,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
-            # epoch=self.epoch,
             application_id=self.application_id
         )
 
@@ -202,18 +195,12 @@ class SparkTFEstimator():
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
-        # if self.model_weights:
-        #     weights = sc.broadcast(self.model_weights)
-        # else:
-        #     weights = None
-
         init_params = dict(
             model_creator=self.model_creator,
             compile_args_creator=self.compile_args_creator,
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            # model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
@@ -277,10 +264,6 @@ class SparkTFEstimator():
         """
         logger.info("Starting predict step.")
         sc = OrcaContext.get_spark_context()
-        # if self.model_weights:
-        #     weights = sc.broadcast(self.model_weights)
-        # else:
-        #     weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -288,7 +271,6 @@ class SparkTFEstimator():
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
-            # model_weights=weights,
             mode="predict",
             cluster_info=None,
             model_dir=self.model_dir,
