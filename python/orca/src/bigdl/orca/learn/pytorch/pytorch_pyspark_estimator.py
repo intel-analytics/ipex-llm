@@ -222,8 +222,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
         self.state_dict = res[0][0]
+        worker_stats = [re[1] for re in res]
 
-        return res[0][1]
+        epoch_stats = list(map(list, zip(*worker_stats)))
+        if reduce_results:
+            for i in range(len(epoch_stats)):
+                epoch_stats[i] = self._process_stats(epoch_stats[i])
+            return epoch_stats
+        else:
+            return epoch_stats
 
     def _predict_spark_xshards(self, xshards, init_params, params):
         def transform_func(iter, init_param, param):
@@ -283,7 +290,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
     def evaluate(self,
                  data,
-                 batch_size=32,
+                 batch_size=32,../../../src/bigdl/orca/learn/pytorch/pytorch_pyspark_worker.py
                  num_steps=None,
                  profile=False,
                  info=None,
@@ -354,7 +361,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        return res[0]
+        return self._process_stats(res)
 
     def get_model(self):
         """
