@@ -37,6 +37,7 @@ class ZooTestCase(TestCase):
         """
         sparkConf = init_spark_conf().setMaster("local[4]").setAppName("zoo test case")\
             .set("spark.driver.memory", "5g")
+        assert str(sparkConf.get("spark.shuffle.reduceLocality.enabled")) == "false"
         assert \
             str(sparkConf.get("spark.serializer")) == "org.apache.spark.serializer.JavaSerializer"
         assert SparkContext._active_spark_context is None
