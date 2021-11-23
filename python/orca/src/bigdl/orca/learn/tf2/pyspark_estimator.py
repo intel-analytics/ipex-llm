@@ -304,8 +304,7 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).predict(**param)
 
-            pred_shards = SparkXShards(xshards.rdd.repartition(self.num_workers) \
-                .mapPartitions(
+            pred_shards = SparkXShards(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         else:
