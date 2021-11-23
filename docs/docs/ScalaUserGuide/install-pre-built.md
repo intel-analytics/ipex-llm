@@ -26,7 +26,7 @@ You can find the optional `${BIGDL_VERSION}` from the [Release Page](../release-
 
 Currently, BigDL development version is hosted on [SonaType](https://oss.sonatype.org/content/groups/public/com/intel/analytics/bigdl/). 
 
-To link your application with the latest BigDL development version, you should add some dependencies like [Linking with BigDL releases](#link-with-a-release-version), but set `${BIGDL_VERSION}` to `0.13.0`, and add below repository to your pom.xml.
+To link your application with the latest BigDL development version, you should add some dependencies like [Linking with BigDL releases](#link-with-a-release-version), but set `${BIGDL_VERSION}` to `0.13.1-SNAPSHOT`, and add below repository to your pom.xml.
 
 ```xml
 <repository>
