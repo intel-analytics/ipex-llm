@@ -59,7 +59,7 @@ object LeNet5 {
   def kerasLayer(classNum: Int): dllib.keras.Sequential[Float] = {
     import com.intel.analytics.bigdl.dllib.keras.layers._
     import com.intel.analytics.bigdl.dllib.utils.Shape
-    import com.intel.analytics.bigdl.dllib.keras.models.Model
+    import com.intel.analytics.bigdl.dllib.keras.Model
     import com.intel.analytics.bigdl.dllib.keras.Sequential
 
     val model = Sequential()
@@ -74,10 +74,10 @@ object LeNet5 {
     model
   }
 
-  def kerasGraph(classNum: Int): dllib.keras.models.Model[Float] = {
+  def kerasGraph(classNum: Int): dllib.keras.Model[Float] = {
     import com.intel.analytics.bigdl.dllib.keras.layers._
     import com.intel.analytics.bigdl.dllib.utils.Shape
-    import com.intel.analytics.bigdl.dllib.keras.models.Model
+    import com.intel.analytics.bigdl.dllib.keras.Model
     import com.intel.analytics.bigdl.dllib.keras.Sequential
 
     val input = Input(inputShape = Shape(28, 28, 1))
