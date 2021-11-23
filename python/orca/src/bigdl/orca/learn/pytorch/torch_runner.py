@@ -41,12 +41,10 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
-import ray
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
-from bigdl.orca.learn.pytorch.utils import find_free_port
 
 logger = logging.getLogger(__name__)
 
@@ -89,10 +87,6 @@ class TorchRunner:
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
 
-        self.backend = "torch-local"
-        self.rank = 0
-        self.size = 0
-
     def _create_loss(self):
         if not self.loss_creator:
             return
@@ -118,20 +112,6 @@ class TorchRunner:
     def setup(self, cores_per_node):
         import torch
         torch.set_num_threads(cores_per_node)
-
-    def setup_horovod(self):
-        import horovod.torch as hvd
-        hvd.init()
-        self.backend = "horovod"
-        self.rank = hvd.rank()
-        self.size = hvd.size()
-        self.setup_components_horovod()
-        self.setup_operator(self.models)
-
-    def setup_address(self):
-        ip = ray._private.services.get_node_ip_address()
-        port = find_free_port()
-        return f"tcp://{ip}:{port}"
 
     def setup_torch_distribute(self, url, world_rank, world_size):
         import torch.distributed as dist
@@ -170,35 +150,6 @@ class TorchRunner:
         self._create_schedulers_if_available()
         self._create_loss()
 
-    def setup_components_horovod(self):
-        import horovod.torch as hvd
-
-        logger.debug("Creating model")
-        self.models = self.model_creator(self.config)
-        if not isinstance(self.models, Iterable):
-            self.models = [self.models]
-        else:
-            raise ValueError("only support single model for now")
-
-        assert all(isinstance(model, nn.Module) for model in self.models), (
-            "All models must be PyTorch models: {}.".format(self.models))
-
-        logger.debug("Creating optimizer.")
-        self.optimizers = self.optimizer_creator(self.given_models,
-                                                 self.config)
-        if not isinstance(self.optimizers, Iterable):
-            hvd.broadcast_parameters(self.models[0].state_dict(), root_rank=0)
-            hvd.broadcast_optimizer_state(self.optimizers, root_rank=0)
-            parameters = self.models[0].named_parameters()
-            self.optimizers = hvd.DistributedOptimizer(self.optimizers,
-                                                       named_parameters=parameters)
-            self.optimizers = [self.optimizers]
-        else:
-            raise ValueError("only support one optimizer for now")
-
-        self._create_schedulers_if_available()
-        self._create_loss()
-
     def setup_operator(self, training_models):
         """Create the training operator."""
         self.training_operator =\
@@ -210,14 +161,6 @@ class TorchRunner:
                 world_rank=self.rank,
                 schedulers=self.schedulers,
                 use_tqdm=self.use_tqdm)
-
-    def get_node_ip(self):
-        """Returns the IP address of the current node."""
-        return ray._private.services.get_node_ip_address()
-
-    def find_free_port(self):
-        """Finds a free port on the current node."""
-        return utils.find_free_port()
 
     def with_sampler(self, loader):
         logger.debug("Wrapping DistributedSampler on DataLoader")
@@ -325,16 +268,11 @@ class TorchRunner:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
 
-    def predict(self, data_creator, batch_size=32, profile=False):
+    def predict(self, partition, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
         config = self.config.copy()
         self._toggle_profiling(profile=profile)
 
-        shards_ref = data_creator(config, batch_size)
-        if not isinstance(shards_ref, ray.ObjectID):
-            raise ValueError("Only xshards is supported for predict")
-
-        partition = ray.get(shards_ref)
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
                     "pin_memory", "drop_last", "timeout", "worker_init_fn",
@@ -366,7 +304,7 @@ class TorchRunner:
             self.timers.disable()
         self.training_operator._set_timers(self.timers)
 
-    def state_dict(self):
+    def get_state_dict(self):
         """Returns the state of the runner."""
         state = {
             "epoch": self.epochs,
@@ -396,9 +334,9 @@ class TorchRunner:
         self.epochs = state["epoch"]
         self.training_operator.load_state_dict(state["operator"])
 
-    def state_stream(self):
+    def get_state_stream(self):
         """Returns a bytes object for the state dict."""
-        state_dict = self.state_dict()
+        state_dict = self.get_state_dict()
         _buffer = io.BytesIO()
         torch.save(state_dict, _buffer)
         return _buffer.getvalue()
