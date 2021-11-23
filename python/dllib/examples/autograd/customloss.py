@@ -17,7 +17,7 @@
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.keras.autograd import *
 from bigdl.dllib.keras.layers import *
-from bigdl.dllib.keras.models import *
+from bigdl.dllib.keras.model import *
 from optparse import OptionParser
 import sys
 
