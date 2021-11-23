@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import warnings
 
-from .autotsestimator import AutoTSEstimator
+try:
+    from .autotsestimator import AutoTSEstimator
+except ImportError:
+    warnings.warn("Please install `bigdl-nano[all]` to use AutoTSEstimator")
 from .tspipeline import TSPipeline
