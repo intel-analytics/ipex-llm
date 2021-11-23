@@ -18,7 +18,9 @@ import sys
 import os
 import glob
 import warnings
+import logging
 
+log = logging.getLogger(__name__)
 
 def exist_pyspark():
     # check whether pyspark package exists
@@ -43,7 +45,7 @@ def check_spark_source_conflict(spark_home, pyspark_path):
 
 def __sys_path_insert(file_path):
     if file_path not in sys.path:
-        print("Prepending %s to sys.path" % file_path)
+        log.info(f"Prepending {file_path} to sys.path")
         sys.path.insert(0, file_path)
 
 
@@ -60,7 +62,7 @@ def __prepare_spark_env():
             raise ValueError(
                 """Could not find Spark. Please make sure SPARK_HOME env is set:
                    export SPARK_HOME=path to your spark home directory.""")
-        print("Using %s" % spark_home)
+        log.info(f"Using {spark_home}")
         py4j = glob.glob(os.path.join(spark_home, 'python/lib', 'py4j-*.zip'))[0]
         pyspark = glob.glob(os.path.join(spark_home, 'python/lib', 'pyspark*.zip'))[0]
         __sys_path_insert(py4j)
@@ -75,7 +77,7 @@ def __prepare_bigdl_env():
     def append_path(env_var_name, jar_path):
         try:
             if jar_path not in os.environ[env_var_name].split(":"):
-	            print("Adding %s to %s" % (jar_path, env_var_name))
+	            log.info(f"Adding {jar_path} to {env_var_name}")
 	            os.environ[env_var_name] = jar_path + ":" + os.environ[env_var_name]  # noqa
         except KeyError:
             os.environ[env_var_name] = jar_path
