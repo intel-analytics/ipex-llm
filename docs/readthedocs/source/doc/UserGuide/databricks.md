@@ -51,6 +51,7 @@ On the cluster configuration page, click the **Advanced Options** toggle. Click 
 See below for an example of Spark config setting needed by BigDL. Here it sets 2 core per executor. Note that "spark.cores.max" needs to be properly set below.
 
 ```
+spark.shuffle.reduceLocality.enabled false
 spark.serializer org.apache.spark.serializer.JavaSerializer
 spark.shuffle.blockTransferService nio
 spark.databricks.delta.preview.enabled true
