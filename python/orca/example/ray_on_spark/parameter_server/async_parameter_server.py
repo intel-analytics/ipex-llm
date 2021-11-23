@@ -25,10 +25,10 @@ import os
 import time
 
 import ray
-import model
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca import OrcaContext
+from bigdl.orca.ray import model
 
 os.environ["LANG"] = "C.UTF-8"
 parser = argparse.ArgumentParser(description="Run the asynchronous parameter "
