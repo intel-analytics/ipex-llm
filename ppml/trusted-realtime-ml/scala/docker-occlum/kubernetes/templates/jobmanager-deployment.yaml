@@ -24,6 +24,7 @@ spec:
         command: ["/bin/bash","-c"]
         args: 
           - cd /opt; 
+            export REDIS_HOST=redis-service;
             bash start-flink-jobmanager.sh | tee ./jobmanager.log; 
             tail -f /dev/null
 #        args: ["tail -f /dev/null"]

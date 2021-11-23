@@ -25,7 +25,8 @@ spec:
         args:
               - export FLINK_TASK_MANAGER_IP=$(hostname -I);
                 cd /opt;
-                bash init-occlum-taskmanager.sh;
+                export PATH=/opt/occlum/build/bin:$PATH;
+                bash init-occlum-taskmanager.sh | tee ./init-taskmanager.log;
                 bash start-flink-taskmanager.sh | tee ./taskmanager.log;
                 tail -f /dev/null
 #        args: ["export FLINK_JOB_MANAGER_IP=flink-jobmanager; tail -f /dev/null"]
