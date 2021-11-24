@@ -56,12 +56,11 @@ parser.add_argument("--extra_executor_memory_for_ray", type=str, default="20g",
                     "You can change it depending on your own cluster setting.")
 parser.add_argument("--extra_python_lib", type=str, 
                     default="python/orca/example/ray_on_spark/parameter_server/model.py",
-                    help="The extra python file to import on distribution."
+                    help="The extra executor memory to store some data."
                     "You can change it depending on your own cluster setting.")
 parser.add_argument("--object_store_memory", type=str, default="4g",
                     help="The memory to store data on local."
                     "You can change it depending on your own cluster setting.")
-
 
 @ray.remote
 class ParameterServer(object):
@@ -101,7 +100,7 @@ def worker_task(ps, worker_index, batch_size=50):
 if __name__ == "__main__":
     args = parser.parse_args()
     cluster_mode = args.cluster_mode
-    if cluster_mode.startswith("yarn"):
+    if cluster_mode == "yarn":
         sc = init_orca_context(cluster_mode=cluster_mode,
                                cores=args.executor_cores,
                                memory=args.executor_memory,
@@ -110,8 +109,9 @@ if __name__ == "__main__":
                                driver_memory=args.driver_memory,
                                driver_cores=args.driver_cores,
                                extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
+                               extra_python_lib=args.extra_python_lib,
                                object_store_memory=args.object_store_memory,
-                               extra_python_lib=args.extra_python_lib)
+                               additional_archive="MNIST_data.zip#MNIST_data")
         ray_ctx = OrcaContext.get_ray_context()
     elif cluster_mode == "local":
         sc = init_orca_context(cores=args.driver_cores)
