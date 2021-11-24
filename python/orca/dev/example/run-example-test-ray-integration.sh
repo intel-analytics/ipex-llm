@@ -328,7 +328,7 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#19 Total time cost ${time} seconds"
 
-echo "#20 start test for basic_text_classification"
+echo "#20 start test for orca tf basic_text_classification basic_text_classification"
 #timer
 start=$(date "+%s")
 #run the example
@@ -343,6 +343,45 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#20 Total time cost ${time} seconds"
+
+echo "#21 start test for orca inception inception"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
+  --imagenet ${HDFS_URI}/imagenettfrecord \
+  -b 128 --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca inception failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#21 Total time cost ${time} seconds"
+
+echo "#22 start test for orca yolov3 yoloV3"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/yoloV3.py  \
+  --data_dir /bigdl2.0/data/yolov3 \
+  --output_data /bigdl2.0/data/yolov3/parquet \
+  --weights /bigdl2.0/data/yolov3/yolov3.weights \
+  --checkpoint /bigdl2.0/data/yolov3/yolov3.tf \
+  --class_num 20 \
+  --names /bigdl2.0/data/yolov3/voc2012.names \
+  --epochs 1 ---cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca yolov3 failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#22 Total time cost ${time} seconds"
 
 echo "Ray example tests finished"
 
@@ -366,3 +405,5 @@ echo "#17 tfaprk estimator_inception example time used:$time17 seconds"
 echo "#18 tfaprk opt_train example time used:$time18 seconds"
 echo "#19 tfaprk opt_evaluate example time used:$time19 seconds"
 echo "#20 tf basic_text_classification time used:$time20 seconds"
+echo "#21 tf inception time used:$time21 seconds"
+echo "#22 tf yoloV3 time used:$time22 seconds"
