@@ -19,7 +19,7 @@ import numpy as np
 from tensorflow.python.keras.datasets import imdb
 from tensorflow.python.keras.preprocessing import sequence
 
-from bigdl.dllib.keras.model import Model
+from bigdl.dllib.keras.models import Model
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.keras.objectives import SparseCategoricalCrossEntropy
 from bigdl.orca.data import XShards

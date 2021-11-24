@@ -28,8 +28,8 @@ import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Variable}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.{GraphRef, KerasUtils}
-import com.intel.analytics.bigdl.dllib.keras.models.Model
-import com.intel.analytics.bigdl.dllib.keras.models.Model.{apply => _, _}
+import com.intel.analytics.bigdl.dllib.keras.Model
+import com.intel.analytics.bigdl.dllib.keras.Model.{apply => _, _}
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer

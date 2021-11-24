@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Input, Log}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Variable}
-import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
