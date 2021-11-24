@@ -25,10 +25,10 @@ import os
 import time
 
 import ray
+from model import SimpleCNN, download_mnist_retry
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca import OrcaContext
-from bigdl.orca.ray import model
 
 os.environ["LANG"] = "C.UTF-8"
 parser = argparse.ArgumentParser(description="Run the asynchronous parameter "
@@ -53,6 +53,9 @@ parser.add_argument("--driver_cores", type=int, default=8,
                     "You can change it depending on your own cluster setting.")
 parser.add_argument("--extra_executor_memory_for_ray", type=str, default="20g",
                     help="The extra executor memory to store some data."
+                    "You can change it depending on your own cluster setting.")
+parser.add_argument("--extra_python_lib", type=str, default="model.py",
+                    help="The extra python file to import on distribution."
                     "You can change it depending on your own cluster setting.")
 parser.add_argument("--object_store_memory", type=str, default="4g",
                     help="The memory to store data on local."
@@ -79,10 +82,10 @@ class ParameterServer(object):
 def worker_task(ps, worker_index, batch_size=50):
     # Download MNIST.
     print("Worker " + str(worker_index))
-    mnist = model.download_mnist_retry(seed=worker_index)
+    mnist = download_mnist_retry(seed=worker_index)
 
     # Initialize the model.
-    net = model.SimpleCNN()
+    net = SimpleCNN()
     keys = net.get_weights()[0]
 
     while True:
@@ -106,6 +109,7 @@ if __name__ == "__main__":
                                driver_memory=args.driver_memory,
                                driver_cores=args.driver_cores,
                                extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
+                               extra_python_lib=args.extra_python_lib,
                                object_store_memory=args.object_store_memory)
         ray_ctx = OrcaContext.get_ray_context()
     elif cluster_mode == "local":
@@ -119,7 +123,7 @@ if __name__ == "__main__":
               + cluster_mode)
 
     # Create a parameter server with some random weights.
-    net = model.SimpleCNN()
+    net = SimpleCNN()
     all_keys, all_values = net.get_weights()
     ps = ParameterServer.remote(all_keys, all_values)
 
@@ -127,7 +131,7 @@ if __name__ == "__main__":
     worker_tasks = [worker_task.remote(ps, i) for i in range(args.num_workers)]
 
     # Download MNIST.
-    mnist = model.download_mnist_retry()
+    mnist = download_mnist_retry()
     print("Begin iteration")
     i = 0
     while i < args.iterations:
