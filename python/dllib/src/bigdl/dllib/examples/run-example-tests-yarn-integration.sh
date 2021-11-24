@@ -4,8 +4,6 @@ clear_up() {
   pip uninstall -y bigdl-dllib
 }
 
-: '
-
 echo "#1 start test for dllib lenet5"
 
 #timer
@@ -138,40 +136,3 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
-
-
-
-echo "#8 start test for basic_text_classification"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/basic_text_classification/basic_text_classification.py \
-  --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca basic_text_classification failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#8 Total time cost ${time} seconds"
-
-'
-
-echo "#8-2 start test for basic_text_classification"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/basic_text_classification/basic_text_classification.py \
-  --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca basic_text_classification failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#8-2 Total time cost ${time} seconds"
-
