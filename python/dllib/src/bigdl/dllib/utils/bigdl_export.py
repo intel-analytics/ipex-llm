@@ -24,18 +24,12 @@ from tensorflow.python.util import tf_decorator
 from tensorflow.python.util import tf_inspect
 
 
-# SEQUENTIAL_API_NAME = 'sequential'
-# Model_API_NAME = 'model'
 Keras_API_NAME = 'keras'
 
 _Attributes = collections.namedtuple(
     'ExportedApiAttributes', ['names'])
 
 API_ATTRS = {
-    # SEQUENTIAL_API_NAME: _Attributes(
-    #     '_sequential_api_names'),
-    # Model_API_NAME: _Attributes(
-    #     '_sequential_api_names')
     Keras_API_NAME: _Attributes(
         '_keras_api_names')
 }
@@ -53,7 +47,6 @@ class api_export(object):  # pylint: disable=invalid-name
           `estimator`). Default is `keras`.
     """
     self._names = args
-    # self._api_name = kwargs.get('api_name', SEQUENTIAL_API_NAME)
     self._api_name = kwargs.get('api_name', Keras_API_NAME)
 
 
@@ -72,6 +65,4 @@ class api_export(object):  # pylint: disable=invalid-name
     setattr(func, api_names_attr, names)
 
 
-# sequential_export = functools.partial(api_export, api_name=SEQUENTIAL_API_NAME)
-# model_export = functools.partial(api_export, api_name=Model_API_NAME)
 keras_export = functools.partial(api_export, api_name=Keras_API_NAME)

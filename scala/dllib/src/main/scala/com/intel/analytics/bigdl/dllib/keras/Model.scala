@@ -100,14 +100,14 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
   }
 
   /**
-    * Save the current model graph to a folder, which can be displayed in TensorBoard
-    * by running the command:
-    * tensorboard --logdir logPath
-    *
-    * @param logPath The path to save the model graph.
-    * @param backward Whether to draw backward graph instead of forward.
-    * @return
-    */
+   * Save the current model graph to a folder, which can be displayed in TensorBoard
+   * by running the command:
+   * tensorboard --logdir logPath
+   *
+   * @param logPath The path to save the model graph.
+   * @param backward Whether to draw backward graph instead of forward.
+   * @return
+   */
   def saveGraphTopology(logPath: String, backward: Boolean = false): this.type = {
     this.labor.asInstanceOf[Graph[T]].saveGraphTopology(logPath, backward)
     this
