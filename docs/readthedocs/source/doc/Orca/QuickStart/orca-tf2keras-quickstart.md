@@ -16,7 +16,7 @@ We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-g
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
 pip install bigdl-orca[ray]
-pip install tensorflow==2.3.0
+pip install tensorflow
 ```
 
 ### **Step 1: Init Orca Context**
