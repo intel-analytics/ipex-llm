@@ -96,9 +96,6 @@ def main():
         sc = init_orca_context()
     else:
         sc = init_orca_context(cluster_mode=args.deploy_mode)
-    # else:
-    #     sc = init_orca_context(cluster_mode=args.deploy_mode,
-    #             cores=2, memory="2g", num_nodes=4)
 
     model = Net()
     model.train()
