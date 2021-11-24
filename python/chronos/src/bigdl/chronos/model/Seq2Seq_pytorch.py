@@ -17,7 +17,6 @@
 import torch
 import torch.nn as nn
 
-from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 import numpy as np
 
@@ -92,36 +91,40 @@ def loss_creator(config):
     return getattr(torch.nn, loss_name)()
 
 
-class Seq2SeqPytorch(PytorchBaseModel):
-    def __init__(self, check_optional_config=False):
-        super().__init__(model_creator=model_creator,
-                         optimizer_creator=optimizer_creator,
-                         loss_creator=loss_creator,
-                         check_optional_config=check_optional_config)
+try:
+    from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
+    class Seq2SeqPytorch(PytorchBaseModel):
+        def __init__(self, check_optional_config=False):
+            super().__init__(model_creator=model_creator,
+                            optimizer_creator=optimizer_creator,
+                            loss_creator=loss_creator,
+                            check_optional_config=check_optional_config)
 
-    def _input_check(self, x, y):
-        if len(x.shape) < 3:
-            raise RuntimeError(f"Invalid data x with {len(x.shape)} dim where 3 dim is required.")
-        if len(y.shape) < 3:
-            raise RuntimeError(f"Invalid data y with {len(y.shape)} dim where 3 dim is required.")
-        if y.shape[-1] > x.shape[-1]:
-            raise RuntimeError("output dim should not larger than input dim, "
-                               f"while we get {y.shape[-1]} > {x.shape[-1]}.")
+        def _input_check(self, x, y):
+            if len(x.shape) < 3:
+                raise RuntimeError(f"Invalid data x with {len(x.shape)} dim where 3 dim is required.")
+            if len(y.shape) < 3:
+                raise RuntimeError(f"Invalid data y with {len(y.shape)} dim where 3 dim is required.")
+            if y.shape[-1] > x.shape[-1]:
+                raise RuntimeError("output dim should not larger than input dim, "
+                                f"while we get {y.shape[-1]} > {x.shape[-1]}.")
 
-    def _forward(self, x, y):
-        self._input_check(x, y)
-        return self.model(x, y)
+        def _forward(self, x, y):
+            self._input_check(x, y)
+            return self.model(x, y)
 
-    def _get_required_parameters(self):
-        return {
-            "input_feature_num",
-            "future_seq_len",
-            "output_feature_num"
-        }
+        def _get_required_parameters(self):
+            return {
+                "input_feature_num",
+                "future_seq_len",
+                "output_feature_num"
+            }
 
-    def _get_optional_parameters(self):
-        return {
-            "lstm_hidden_dim",
-            "lstm_layer_num",
-            "teacher_forcing"
-        } | super()._get_optional_parameters()
+        def _get_optional_parameters(self):
+            return {
+                "lstm_hidden_dim",
+                "lstm_layer_num",
+                "teacher_forcing"
+            } | super()._get_optional_parameters()
+except ImportError:
+    pass

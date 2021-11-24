@@ -16,7 +16,6 @@
 
 import torch
 import torch.nn as nn
-from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
 
 
 class LSTMModel(nn.Module):
@@ -82,26 +81,30 @@ def loss_creator(config):
     return nn.MSELoss()
 
 
-class VanillaLSTMPytorch(PytorchBaseModel):
+try:
+    from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
+    class VanillaLSTMPytorch(PytorchBaseModel):
 
-    def __init__(self, check_optional_config=True):
-        """
-        Constructor of Vanilla LSTM model
-        """
-        super().__init__(model_creator=model_creator,
-                         optimizer_creator=optimizer_creator,
-                         loss_creator=loss_creator,
-                         check_optional_config=check_optional_config)
+        def __init__(self, check_optional_config=True):
+            """
+            Constructor of Vanilla LSTM model
+            """
+            super().__init__(model_creator=model_creator,
+                            optimizer_creator=optimizer_creator,
+                            loss_creator=loss_creator,
+                            check_optional_config=check_optional_config)
 
-    def _get_required_parameters(self):
-        return {
-            "input_feature_num",
-            "output_feature_num"
-        }
+        def _get_required_parameters(self):
+            return {
+                "input_feature_num",
+                "output_feature_num"
+            }
 
-    def _get_optional_parameters(self):
-        return {
-            'hidden_dim',
-            'layer_num',
-            'dropout',
-        } | super()._get_optional_parameters()
+        def _get_optional_parameters(self):
+            return {
+                'hidden_dim',
+                'layer_num',
+                'dropout',
+            } | super()._get_optional_parameters()
+except ImportError:
+    pass

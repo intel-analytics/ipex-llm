@@ -15,8 +15,6 @@
 #
 
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
-from bigdl.chronos.forecaster.utils import set_pytorch_seed
-from bigdl.chronos.model.Seq2Seq_pytorch import Seq2SeqPytorch
 from bigdl.chronos.model.Seq2Seq_pytorch import model_creator, optimizer_creator, loss_creator
 
 

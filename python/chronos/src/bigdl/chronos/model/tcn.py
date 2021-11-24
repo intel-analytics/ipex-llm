@@ -43,7 +43,6 @@ import warnings
 import torch
 import torch.nn as nn
 from torch.nn.utils import weight_norm
-from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 
 
@@ -168,24 +167,28 @@ def loss_creator(config):
 
 
 # the PytorchBaseModel will only be used for orca.automl
-class TCNPytorch(PytorchBaseModel):
-    def __init__(self, check_optional_config=False):
-        super().__init__(model_creator=model_creator,
-                         optimizer_creator=optimizer_creator,
-                         loss_creator=loss_creator,
-                         check_optional_config=check_optional_config)
+try:
+    from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
+    class TCNPytorch(PytorchBaseModel):
+        def __init__(self, check_optional_config=False):
+            super().__init__(model_creator=model_creator,
+                            optimizer_creator=optimizer_creator,
+                            loss_creator=loss_creator,
+                            check_optional_config=check_optional_config)
 
-    def _get_required_parameters(self):
-        return {
-            "past_seq_len",
-            "input_feature_num",
-            "future_seq_len",
-            "output_feature_num"
-        }
+        def _get_required_parameters(self):
+            return {
+                "past_seq_len",
+                "input_feature_num",
+                "future_seq_len",
+                "output_feature_num"
+            }
 
-    def _get_optional_parameters(self):
-        return {
-            "nhid",
-            "levels",
-            "kernel_size",
-        } | super()._get_optional_parameters()
+        def _get_optional_parameters(self):
+            return {
+                "nhid",
+                "levels",
+                "kernel_size",
+            } | super()._get_optional_parameters()
+except ImportError:
+    pass

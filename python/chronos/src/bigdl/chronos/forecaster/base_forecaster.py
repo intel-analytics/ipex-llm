@@ -18,7 +18,6 @@ from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import\
     np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard
 
-from bigdl.orca.data.shard import SparkXShards
 from bigdl.nano.pytorch.trainer import Trainer
 
 import numpy as np
@@ -113,10 +112,14 @@ class BasePytorchForecaster(Forecaster):
             data = loader_to_creator(data)
         if isinstance(data, tuple) and self.distributed:
             data = np_to_creator(data)
-        if isinstance(data, SparkXShards) and not self.distributed:
-            warnings.warn("Xshards is collected to local since the "
-                          "forecaster is non-distribued.")
-            data = xshard_to_np(data)
+        try:
+            from bigdl.orca.data.shard import SparkXShards
+            if isinstance(data, SparkXShards) and not self.distributed:
+                warnings.warn("Xshards is collected to local since the "
+                            "forecaster is non-distribued.")
+                data = xshard_to_np(data)
+        except ImportError:
+            pass
 
         # fit on internal
         if self.distributed:
