@@ -140,9 +140,9 @@ wget -nv $FTP_URI/analytics-zoo-data/mnist/train-labels-idx1-ubyte.gz
 wget -nv $FTP_URI/analytics-zoo-data/mnist/train-images-idx3-ubyte.gz
 wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz
 wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz
-zip ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/MNIST_data.zip train-images-idx3-ubyte.gz train-labels-idx1-ubyte.gz t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
+zip MNIST_data.zip train-images-idx3-ubyte.gz train-labels-idx1-ubyte.gz t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
 
-echo "#9 start test for orca ros async"
+echo "#9 start test for orca ros sync"
 #timer
 start=$(date "+%s")
 #run the example
@@ -150,14 +150,14 @@ python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_para
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
-  echo "orca ros async failed"
+  echo "orca ros sync failed"
   exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#9 Total time cost ${time} seconds"
 
-echo "#10 start test for orca ros sync"
+echo "#10 start test for orca ros async"
 #timer
 start=$(date "+%s")
 #run the example
@@ -165,7 +165,7 @@ python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_par
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
-  echo "orca ros sync failed"
+  echo "orca ros async failed"
   exit $exit_status
 fi
 now=$(date "+%s")
@@ -336,8 +336,8 @@ echo "#5 bigdl imageInference time used:$time5 seconds"
 echo "#6 horovod pytorch_estimator time used:$time6 seconds"
 #echo "#7 orca multiagent_two_trainers time used:$time7 seconds"
 #echo "#8 mxnet_lenet time used:$time8 seconds"
-echo "#9 paramerter_server async time used:$time9 seconds"
-echo "#10 paramerter_server sync example time used:$time10 seconds"
+echo "#9 paramerter_server sync time used:$time9 seconds"
+echo "#10 paramerter_server async example time used:$time10 seconds"
 echo "#11 paramerter_server rllib example time used:$time11 seconds"
 echo "#12 paramerter_server rl_pong example time used:$time12 seconds"
 echo "#13 tfaprk keras_dataset example time used:$time13 seconds"
