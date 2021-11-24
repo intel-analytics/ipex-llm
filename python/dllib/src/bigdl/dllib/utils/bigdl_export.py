@@ -1,3 +1,5 @@
+# This file is adapted from
+# https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/util/tf_export.py
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -22,17 +24,20 @@ from tensorflow.python.util import tf_decorator
 from tensorflow.python.util import tf_inspect
 
 
-SEQUENTIAL_API_NAME = 'sequential'
-Model_API_NAME = 'model'
+# SEQUENTIAL_API_NAME = 'sequential'
+# Model_API_NAME = 'model'
+Keras_API_NAME = 'keras'
 
 _Attributes = collections.namedtuple(
     'ExportedApiAttributes', ['names'])
 
 API_ATTRS = {
-    SEQUENTIAL_API_NAME: _Attributes(
-        '_sequential_api_names'),
-    Model_API_NAME: _Attributes(
-        '_sequential_api_names')
+    # SEQUENTIAL_API_NAME: _Attributes(
+    #     '_sequential_api_names'),
+    # Model_API_NAME: _Attributes(
+    #     '_sequential_api_names')
+    Keras_API_NAME: _Attributes(
+        '_keras_api_names')
 }
 _NAME_TO_SYMBOL_MAPPING = dict()
 
@@ -48,7 +53,8 @@ class api_export(object):  # pylint: disable=invalid-name
           `estimator`). Default is `keras`.
     """
     self._names = args
-    self._api_name = kwargs.get('api_name', SEQUENTIAL_API_NAME)
+    # self._api_name = kwargs.get('api_name', SEQUENTIAL_API_NAME)
+    self._api_name = kwargs.get('api_name', Keras_API_NAME)
 
 
   def __call__(self, func):
@@ -66,5 +72,6 @@ class api_export(object):  # pylint: disable=invalid-name
     setattr(func, api_names_attr, names)
 
 
-sequential_export = functools.partial(api_export, api_name=SEQUENTIAL_API_NAME)
-model_export = functools.partial(api_export, api_name=Model_API_NAME)
+# sequential_export = functools.partial(api_export, api_name=SEQUENTIAL_API_NAME)
+# model_export = functools.partial(api_export, api_name=Model_API_NAME)
+keras_export = functools.partial(api_export, api_name=Keras_API_NAME)

@@ -25,7 +25,7 @@ from bigdl.dllib.utils.file_utils import callZooFunc
 # from zoo.models.common import ZooModel
 from bigdl.dllib.keras.engine import ZooKerasLayer
 from bigdl.dllib.keras.layers import *
-from bigdl.dllib.keras.Sequential import *
+from bigdl.dllib.keras.models import Sequential
 from bigdl.dllib.keras.models import Model
 import bigdl.dllib.keras.autograd as auto
 

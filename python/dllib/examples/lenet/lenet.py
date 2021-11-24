@@ -21,11 +21,6 @@ import bigdl.dllib.keras.Sequential
 from bigdl.dllib.feature.dataset import mnist
 
 
-import bigdl.dllib.keras.Model
-input = Input(shape=(5,))
-output = Dense(10)(input)
-zmodel = Model(input, output, name="graph1")
-
 def build_model(class_num):
     model = Sequential()
     model.add(Reshape((1, 28, 28), input_shape=(28, 28, 1)))

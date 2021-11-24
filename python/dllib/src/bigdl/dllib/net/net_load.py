@@ -44,7 +44,8 @@ class JavaToPython:
 
         jpackage_name = ".".join(self.jfullname.split(".")[:-1])
         pclass_name = self._get_py_name(self.jfullname.split(".")[-1])
-        if self.jfullname == "com.intel.analytics.bigdl.dllib.keras.Sequential":
+        if self.jfullname in ("com.intel.analytics.bigdl.dllib.keras.Sequential",
+                              "com.intel.analytics.bigdl.dllib.keras.Model"):
             base_module = self._load_ppackage_by_jpackage(self.jfullname)
         else:
             base_module = self._load_ppackage_by_jpackage(jpackage_name)
@@ -64,14 +65,9 @@ class JavaToPython:
             raise Exception("Not supported type: {}".format(jclass_name))
 
     def _load_ppackage_by_jpackage(self, jpackage_name):
-        # if jpackage_name=="com.intel.analytics.bigdl.dllib.keras.models":
-        #     return importlib.import_module('bigdl.dllib.keras.model')
-        # if jpackage_name=="com.intel.analytics.bigdl.dllib.keras.Sequential":
-        #     return importlib.import_module('bigdl.dllib.keras.Sequential')
-        if jpackage_name=="com.intel.analytics.bigdl.dllib.keras.models":
-            return importlib.import_module('bigdl.dllib.keras.model')
-        if jpackage_name=="com.intel.analytics.bigdl.dllib.keras.Sequential":
-            return importlib.import_module('bigdl.dllib.keras.Sequential')
+        if jpackage_name in ("com.intel.analytics.bigdl.dllib.keras.Model",
+                             "com.intel.analytics.bigdl.dllib.keras.Sequential"):
+            return importlib.import_module('bigdl.dllib.keras.models')
         raise Exception("Not supported package: {}".format(jpackage_name))
 
 
