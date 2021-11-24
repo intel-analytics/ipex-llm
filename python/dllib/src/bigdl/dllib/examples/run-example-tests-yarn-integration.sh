@@ -152,7 +152,6 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#11 Total time cost ${time} seconds"
 
-
 echo "#12 start test for pytorch cifar10"
 #timer
 start=$(date "+%s")
@@ -168,7 +167,6 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#12 Total time cost ${time} seconds"
 
-
 echo "#13 start test for pytorch fashion_mnist"
 #timer
 start=$(date "+%s")
@@ -183,7 +181,6 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#13 Total time cost ${time} seconds"
-
 
 echo "#14 start test for pytorch super_resolution"
 #timer
@@ -201,59 +198,6 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#14 Total time cost ${time} seconds"
 
-
-echo "#15 start test for torchmodel imagenet"
-#timer
-start=$(date "+%s")
-#run the example
-rm -rf /tmp/imagenet2012
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet2012 /tmp/imagenet2012
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /tmp/imagenet2012 --batch-size 8
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "####################torchmodel imagenet failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#15 Total time cost ${time} seconds"
-
-
-echo "#16 start test for torchmodel mnist"
-#timer
-start=$(date "+%s")
-#run the example
-rm -rf /tmp/test_mnist
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/test_mnist /tmp/test_mnist
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /tmp/test_mnist
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "####################torchmodel mnist failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#16 Total time cost ${time} seconds"
-
-
-echo "#17 start test for torchmodel resnet_finetune"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ${HDFS_URI}/dogs_cats/samples
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "####################torchmodel resnet_finetune failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#17 Total time cost ${time} seconds"
-
-
 echo "##21 start test for data spark_pandas"
 #timer
 start=$(date "+%s")
@@ -268,7 +212,6 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#21 Total time cost ${time} seconds"
-
 
 echo "#22 start test for pytorch cifar10"
 #timer
@@ -285,7 +228,6 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#22 Total time cost ${time} seconds"
 
-
 echo "#23 start test for pytorch fashion_mnist"
 #timer
 start=$(date "+%s")
@@ -300,7 +242,6 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#23 Total time cost ${time} seconds"
-
 
 echo "#24 start test for pytorch super_resolution"
 #timer
@@ -320,7 +261,6 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#24 Total time cost ${time} seconds"
 
-
 echo "#25 start test for torchmodel imagenet"
 #timer
 start=$(date "+%s")
@@ -336,7 +276,6 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#25 Total time cost ${time} seconds"
-
 
 echo "#26 start test for torchmodel mnist"##
 #timer  
@@ -354,7 +293,6 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#26 Total time cost ${time} seconds"
-
 
 echo "#27 start test for torchmodel resnet_finetune"
 #timer  
