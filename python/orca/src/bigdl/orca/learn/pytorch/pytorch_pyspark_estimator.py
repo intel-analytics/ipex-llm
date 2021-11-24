@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import io
 import types
 import logging
 import numbers
@@ -22,7 +21,7 @@ import torch
 import numpy as np
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
-from bigdl.orca.learn.pytorch.torch_pyspark_runner import TorchPysparkRunner
+from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
@@ -31,10 +30,11 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.orca.learn.pytorch.torch_pyspark_runner import find_ip_and_port
+from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
 
 
 logger = logging.getLogger(__name__)
+
 
 def partition_to_creator(partition):
 
@@ -68,6 +68,7 @@ def partition_to_creator(partition):
         return data_loader
 
     return data_creator
+
 
 class PyTorchPySparkEstimator(BaseEstimator):
     def __init__(
@@ -126,7 +127,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=self._get_cluster_info(sc)
         )
 
-        self.driver_runner = TorchPysparkRunner(**self.worker_init_params, mode='predict')
+        self.driver_runner = PytorchPysparkWorker(**self.worker_init_params, mode='predict')
 
         self.state_dict = self.driver_runner.get_state_dict()
 
@@ -198,7 +199,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             def transform_func(iter, init_params, param):
                 partition_data = list(iter)
                 param["data_creator"] = partition_to_creator(partition_data)
-                runner = TorchPysparkRunner(**init_params)
+                runner = PytorchPysparkWorker(**init_params)
                 result = runner.train_epochs(**param)
                 runner.shutdown()
                 return result
@@ -215,21 +216,28 @@ class PyTorchPySparkEstimator(BaseEstimator):
             params["data_creator"] = data
 
             def transform_func(iter, init_param, param):
-                return TorchPysparkRunner(**init_param).train_epochs(**param)
+                return PytorchPysparkWorker(**init_param).train_epochs(**param)
 
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
         self.state_dict = res[0][0]
+        worker_stats = [re[1] for re in res]
 
-        return res[0][1]
+        epoch_stats = list(map(list, zip(*worker_stats)))
+        if reduce_results:
+            for i in range(len(epoch_stats)):
+                epoch_stats[i] = self._process_stats(epoch_stats[i])
+            return epoch_stats
+        else:
+            return epoch_stats
 
     def _predict_spark_xshards(self, xshards, init_params, params):
         def transform_func(iter, init_param, param):
             partition_data = list(iter)
             # res = combine_in_partition(partition_data)
             param["data_creator"] = make_data_creator(partition_data)
-            return TorchPysparkRunner(**init_param).predict(**params)
+            return PytorchPysparkWorker(**init_param).predict(**params)
 
         pred_shards = SparkXShards(xshards.rdd.mapPartitions(
                                         lambda iter: transform_func(iter, init_params, params)))
@@ -340,7 +348,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
                 param["data_creator"] = partition_to_creator(partition_data)
-                return TorchPysparkRunner(**init_param).validate(**param)
+                return PytorchPysparkWorker(**init_param).validate(**param)
 
             res = data.rdd.repartition(self.num_workers).barrier() \
                 .mapPartitions(lambda iter: transform_func(iter, init_params, params)).collect()
@@ -348,12 +356,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
             params["data_creator"] = data
 
             def transform_func(iter, init_param, param):
-                return TorchPysparkRunner(**init_param).validate(**param)
+                return PytorchPysparkWorker(**init_param).validate(**param)
 
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        return res[0]
+        return self._process_stats(res)
 
     def get_model(self):
         """

@@ -134,6 +134,7 @@ def val_data_loader(config, batch_size):
 
 
 def get_model(config):
+    torch.manual_seed(0)
     return Net()
 
 
@@ -153,14 +154,24 @@ def get_estimator(workers_per_node=1, model_fn=get_model):
 
 
 class TestPyTorchEstimator(TestCase):
-    def test_data_creator(self):
+    def test_data_creator_convergence(self):
         estimator = get_estimator(workers_per_node=2)
-        train_stats = estimator.fit(train_data_loader, epochs=2, batch_size=128)
+        start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(start_val_stats)
+        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128)
         print(train_stats)
-        val_stats = estimator.evaluate(val_data_loader, batch_size=64)
-        print(val_stats)
-        assert 0 < val_stats["Accuracy"] < 1
+        end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(end_val_stats)
+        assert 0 < end_val_stats["Accuracy"] < 1
         assert estimator.get_model()
+
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] -
+                start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
 
     def test_spark_xshards(self):
         from bigdl.dllib.nncontext import init_nncontext
@@ -245,7 +256,7 @@ class TestPyTorchEstimator(TestCase):
         expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
         assert result.selectExpr(expr).first()["error"] == 0
 
-    def test_xshards_predict(self):
+    def test_xshards_predict_save_load(self):
 
         sc = init_nncontext()
         rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
@@ -255,10 +266,22 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: IdentityNet())
         result_shards = estimator.predict(shards, batch_size=4)
-        result = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
+        result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
         expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
+        assert np.array_equal(result_before, expected_result)
 
-        assert np.array_equal(result, expected_result)
+        path = "/tmp/model.pth"
+        try:
+            estimator.save(path)
+            estimator.load(path)
+            result_shards = estimator.predict(shards, batch_size=4)
+            result_after = np.concatenate([shard["prediction"]
+                                           for shard in result_shards.collect()])
+
+        finally:
+            os.remove(path)
+
+        assert np.array_equal(result_before, result_after)
 
     # currently do not support pandas dataframe
     # def test_pandas_dataframe(self):

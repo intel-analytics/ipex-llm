@@ -26,6 +26,7 @@ import time
 
 from python.orca.example.ray_on_spark.parameter_server import model
 import ray
+#import model
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca import OrcaContext
@@ -97,7 +98,7 @@ def worker_task(ps, worker_index, batch_size=50):
 if __name__ == "__main__":
     args = parser.parse_args()
     cluster_mode = args.cluster_mode
-    if cluster_mode == "yarn":
+    if cluster_mode.startswith("yarn"):
         sc = init_orca_context(cluster_mode=cluster_mode,
                                cores=args.executor_cores,
                                memory=args.executor_memory,
@@ -106,8 +107,7 @@ if __name__ == "__main__":
                                driver_memory=args.driver_memory,
                                driver_cores=args.driver_cores,
                                extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
-                               object_store_memory=args.object_store_memory,
-                               additional_archive="MNIST_data.zip#MNIST_data")
+                               object_store_memory=args.object_store_memory)
         ray_ctx = OrcaContext.get_ray_context()
     elif cluster_mode == "local":
         sc = init_orca_context(cores=args.driver_cores)
@@ -143,4 +143,3 @@ if __name__ == "__main__":
         time.sleep(1)
     ray_ctx.stop()
     stop_orca_context()
-

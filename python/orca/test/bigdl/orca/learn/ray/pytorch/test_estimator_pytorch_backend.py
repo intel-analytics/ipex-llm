@@ -134,6 +134,7 @@ def val_data_loader(config, batch_size):
 
 
 def get_model(config):
+    torch.manual_seed(0)
     return Net()
 
 
@@ -155,17 +156,26 @@ def get_estimator(workers_per_node=1, model_fn=get_model):
 class TestPyTorchEstimator(TestCase):
     def test_data_creator(self):
         estimator = get_estimator(workers_per_node=2)
-        train_stats = estimator.fit(train_data_loader, epochs=2, batch_size=128)
+        start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(start_val_stats)
+        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128)
         print(train_stats)
-        val_stats = estimator.evaluate(val_data_loader, batch_size=64)
-        print(val_stats)
-        assert 0 < val_stats["Accuracy"] < 1
+        end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(end_val_stats)
+        assert 0 < end_val_stats["Accuracy"] < 1
         assert estimator.get_model()
 
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] -
+                start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
         # Verify syncing weights, i.e. the two workers have the same weights after training
         import ray
         remote_workers = estimator.remote_workers
-        state_dicts = ray.get([worker.state_dict.remote() for worker in remote_workers])
+        state_dicts = ray.get([worker.get_state_dict.remote() for worker in remote_workers])
         weights = [state["models"] for state in state_dicts]
         worker1_weights = weights[0][0]
         worker2_weights = weights[1][0]

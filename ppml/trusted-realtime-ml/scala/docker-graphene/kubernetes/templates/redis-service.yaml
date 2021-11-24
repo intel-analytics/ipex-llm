@@ -8,5 +8,5 @@ spec:
   - name: redisport
     port: 6379
   selector:
-    app: analytics-zoo-ppml-trusted-realtime-ml-graphene
+    app: bigdl-ppml-trusted-realtime-ml-graphene
     component: master

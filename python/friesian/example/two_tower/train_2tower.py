@@ -195,7 +195,7 @@ if __name__ == '__main__':
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executor, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf, extra_python_lib="two_tower.py",
+                               conf=spark_conf, extra_python_lib="model.py",
                                object_store_memory="80g",
                                init_ray_on_spark=True)
     elif args.cluster_mode == "spark-submit":

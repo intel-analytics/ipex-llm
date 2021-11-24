@@ -56,7 +56,7 @@ parser.add_argument('--cluster_mode', type=str,
                     default='local', help='The mode of spark cluster.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
-                         'bigdl and torch_distributed are supported.')
+                         'bigdl, torch_distributed and spark are supported.')
 parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')                         
 opt = parser.parse_args()
 
@@ -268,12 +268,12 @@ if opt.backend == "bigdl":
     print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
           .format(10 * log10(1. / val_stats["MSE"]), val_stats["MSE"]))
 
-elif opt.backend == "torch_distributed":
+elif opt.backend in ["torch_distributed", "spark"]:
     estimator = Estimator.from_torch(
         model=model_creator,
         optimizer=optim_creator,
         loss=criterion,
-        backend="torch_distributed",
+        backend=opt.backend,
         config={
             "lr": opt.lr,
             "upscale_factor": opt.upscale_factor,

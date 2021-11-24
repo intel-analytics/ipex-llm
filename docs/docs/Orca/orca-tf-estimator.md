@@ -20,9 +20,9 @@ It can support various data types, like XShards, Spark DataFrame, tf.data.Datase
 
 It supports both native Tensorflow Graph model and Tensorflow Keras model in the unified APIs. 
 
-For native Tensorflow Graph model, you can reference our [graph model example](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/tf_lenet_mnist.ipynb).
+For native Tensorflow Graph model, you can reference our [graph model example](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/tf_lenet_mnist.ipynb).
 
-For Tensorflow Keras model, you can reference our [keras model example](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/orca/quickstart/keras_lenet_mnist.ipynb).
+For Tensorflow Keras model, you can reference our [keras model example](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/orca/colab-notebook/quickstart/keras_lenet_mnist.ipynb).
 
 #### **Create Estimator with graph model**
 

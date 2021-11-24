@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Parameter, Variable}
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers._
+import com.intel.analytics.bigdl.dllib.keras.Sequential
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -52,21 +53,6 @@ class ModelSerialTest extends ModuleSerializationTest {
       inputData)
 
     testParameterSerialWithModel()
-  }
-}
-
-class SequentialSerialTest extends ModuleSerializationTest {
-  override def test(): Unit = {
-    val model = Sequential[Float]()
-    model.add(Dense[Float](8, inputShape = Shape(10)))
-    val tmpFile = ZooSpecHelper.createTmpFile()
-    model.saveModule(tmpFile.getAbsolutePath, overWrite = true)
-    val reloadModel = Net.load[Float](tmpFile.getAbsolutePath)
-    val inputData = Tensor[Float](2, 10).rand()
-    ZooSpecHelper.compareOutputAndGradInput(
-      model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      reloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      inputData)
   }
 }
 

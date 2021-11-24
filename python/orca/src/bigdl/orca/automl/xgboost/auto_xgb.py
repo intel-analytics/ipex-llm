@@ -66,7 +66,7 @@ class AutoXGBClassifier(AutoEstimator):
 
 class AutoXGBRegressor(AutoEstimator):
     def __init__(self,
-                 logs_dir="~/auto_xgb_regressor_logs",
+                 logs_dir="/tmp/auto_xgb_regressor_logs",
                  cpus_per_trial=1,
                  name=None,
                  **xgb_configs

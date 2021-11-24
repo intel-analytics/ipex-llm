@@ -89,18 +89,16 @@ class TestTFEstimator(TestCase):
                               validation_data=df,
                               validation_steps=1)
 
+            print("start saving")
+            model = trainer.get_model()
+            trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            trainer.save(os.path.join(temp_dir, "a.ckpt"))
+            trainer.load(os.path.join(temp_dir, "a.ckpt"))
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
             print("validation result: ", res)
 
-            print("start saving")
-
-            model = trainer.get_model()
-
-            trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
-            trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
-            trainer.save(os.path.join(temp_dir, "a.model"))
-            trainer.load(os.path.join(temp_dir, "a.model"))
             res = trainer.predict(df, feature_cols=["feature"]).collect()
         finally:
             shutil.rmtree(temp_dir)

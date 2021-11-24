@@ -17,17 +17,21 @@
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.chronos.forecaster.utils import\
-    np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard
+    np_to_creator, set_pytorch_seed, check_data,\
+        xshard_to_np, np_to_xshard, loader_to_creator
 import numpy as np
 from bigdl.orca.learn.pytorch.estimator import Estimator
 from bigdl.orca.learn.metrics import MSE, MAE
+
+import warnings
+import torch
 
 ORCA_METRICS = {"mse": MSE, "mae": MAE}
 
 
 class BasePytorchForecaster(Forecaster):
     '''
-    Forecaster base model for lstm, mtnet, seq2seq and tcn forecasters.
+    Forecaster base model for lstm, seq2seq and tcn forecasters.
     '''
     def __init__(self, **kwargs):
         if self.distributed:
@@ -61,12 +65,23 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
                | 2. a xshard item:
                | each partition can be a dictionary of {'x': x, 'y': y}, where x and y's shape
                | should follow the shape stated before.
+               |
+               | 3. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
 
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
+               if you input a pytorch dataloader for `data`, the batch_size will follow the
+               batch_size setted in `data`.if the forecaster is distributed, the batch_size will be
+               evenly distributed to all workers.
 
         :return: Evaluation results on data.
         """
@@ -75,6 +90,8 @@ class BasePytorchForecaster(Forecaster):
         self.config["batch_size"] = batch_size
 
         # input transform
+        if isinstance(data, torch.utils.data.DataLoader) and self.distributed:
+            data = loader_to_creator(data)
         if isinstance(data, tuple) and self.distributed:
             data = np_to_creator(data)
         if isinstance(data, SparkXShards) and not self.distributed:
@@ -82,16 +99,30 @@ class BasePytorchForecaster(Forecaster):
 
         # fit on internal
         if self.distributed:
+            # for cluster mode
+            from bigdl.orca.common import OrcaContext
+            sc = OrcaContext.get_spark_context().getConf()
+            num_nodes = 1 if sc.get('spark.master').startswith('local') \
+                else int(sc.get('spark.executor.instances'))
+            if batch_size % self.workers_per_node != 0:
+                raise RuntimeError("Please make sure that batch_size can be divisible by "
+                                   "the product of worker_per_node and num_nodes, "
+                                   f"but 'batch_size' is {batch_size}, 'workers_per_node' "
+                                   f"is {self.workers_per_node}, 'num_nodes' is {num_nodes}")
+            batch_size //= (self.workers_per_node * num_nodes)
             return self.internal.fit(data=data,
                                      epochs=epochs,
                                      batch_size=batch_size)
         else:
-            check_data(data[0], data[1], self.data_config)
+            if isinstance(data, tuple):
+                check_data(data[0], data[1], self.data_config)
+            else:
+                warnings.warn("Data shape checking is not supported by dataloader input.")
             return self.internal.fit_eval(data=data,
                                           validation_data=data,
                                           epochs=epochs,
                                           metric=self.metrics[0],  # only use the first metric
-                                          **self.config)
+                                          **{**self.config, **self.data_config})
 
     def predict(self, data, batch_size=32):
         """

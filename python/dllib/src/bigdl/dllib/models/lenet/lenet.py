@@ -15,8 +15,8 @@
 #
 
 from optparse import OptionParser
-from bigdl.dllib.nn.keras.layers.topology import Sequential
-from bigdl.dllib.nn.keras.layers.layer import *
+import bigdl.dllib.keras.Sequential
+from bigdl.dllib.keras.layers import *
 from bigdl.dllib.feature.dataset import mnist
 
 
@@ -41,6 +41,8 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args(sys.argv)
 
     (X_train, Y_train), (X_test, Y_test) = mnist.load_data(options.dataPath)
+    Y_train = Y_train - 1
+    Y_test = Y_test - 1
 
     model = build_model(10)
     model.compile(loss='sparse_categorical_crossentropy',

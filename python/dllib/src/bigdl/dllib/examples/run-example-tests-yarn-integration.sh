@@ -4,17 +4,6 @@ clear_up() {
   pip uninstall -y bigdl-dllib
 }
 
-
-echo "start test for dllib rnn"
-echo "start test for dllib custom"
-echo "start test for dllib custom loss"
-echo "start test for dllib imageframe inception validation"
-echo "start test for dllib keras imdb bigdl backend"
-echo "start test for dllib keras imdb cnn lstm"
-echo "start test for dllib keras mnist cnn"
-echo "start test for dllib nnframes image transfer learning"
-echo "start test for dllib nnframes image inference"
-
 echo "#1 start test for dllib lenet5"
 
 #timer
@@ -76,3 +65,74 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#3 Total time cost ${time} seconds"
 
+
+echo "#4 start test for dllib autograd custom"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/dllib/examples/autograd/custom.py --cluster-mode "yarn-client"
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "dllib autograd custom failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#4 Total time cost ${time} seconds"
+
+
+echo "#5 start test for dllib autograd customloss"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/dllib/examples/autograd/customloss.py --cluster-mode "yarn-client"
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "dllib autograd customloss failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#5 Total time cost ${time} seconds"
+
+
+echo "#6 start test for dllib nnframes_imageInference"
+
+if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+else
+  wget $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+    -P analytics-zoo-models
+fi
+
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageInference/ImageInferenceExample.py \
+  -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f ${HDFS_URI}/kaggle/train_100 --cluster-mode "yarn-client"
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "dllib nnframes_imageInference failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#6 Total time cost ${time} seconds"
+
+
+echo "#7 start test for dllib nnframes_imageTransfer learning"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
+  -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f ${HDFS_URI}/dogs_cats/samples --nb_epoch 2 --cluster-mode "yarn-client"
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "dllib nnframes_imageTransfer learning failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#7 Total time cost ${time} seconds"

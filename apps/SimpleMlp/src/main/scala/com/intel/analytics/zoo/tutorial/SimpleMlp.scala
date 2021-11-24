@@ -1,6 +1,7 @@
 package com.intel.analytics.zoo.tutorial
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.keras.layers._
 import com.intel.analytics.bigdl.dllib.keras.models._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -35,16 +36,16 @@ object SimpleMlp {
         Sample[Float](featureTensor, labelTensor)
       }
 
-      val model = Sequential[Float]()
-      model.add(Dense[Float](nHidden, activation = "relu", inputShape = Shape(dimInput)).setName("fc_1"))
-      model.add(Dense[Float](nHidden, activation = "relu").setName("fc_2"))
-      model.add(Dense[Float](1).setName("fc_3"))
+      val model = Sequential()
+      model.add(Dense(nHidden, activation = "relu", inputShape = Shape(dimInput)).setName("fc_1"))
+      model.add(Dense(nHidden, activation = "relu").setName("fc_2"))
+      model.add(Dense(1).setName("fc_3"))
 
       println(model)
 
       model.compile(
-        optimizer = new SGD[Float](learningRate = 0.01),
-        loss = MSECriterion[Float]()
+        optimizer = new SGD(learningRate = 0.01),
+        loss = MSECriterion()
       )
       model.fit(data, batchSize = param.batchSize, nbEpoch = param.maxEpoch)
 

@@ -14,13 +14,12 @@
 # limitations under the License.
 #
 
-
 import argparse
 import numpy as np
 from tensorflow.python.keras.datasets import imdb
 from tensorflow.python.keras.preprocessing import sequence
 
-from bigdl.dllib.keras.models import Model
+from bigdl.dllib.keras.model import Model
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.keras.objectives import SparseCategoricalCrossEntropy
 from bigdl.orca.data import XShards
@@ -35,7 +34,7 @@ args = parser.parse_args()
 cluster_mode = args.cluster_mode
 conf = {"spark.executor.extraJavaOptions": "-Xss512m",
         "spark.driver.extraJavaOptions": "-Xss512m"}
-max_features = 20000
+max_features = 2000
 max_len = 200
 
 if cluster_mode == "local":
@@ -44,12 +43,19 @@ if cluster_mode == "local":
                            driver_memory="20g",
                            conf=conf
                            )
-elif cluster_mode == "yarn":
-    sc = init_orca_context(cluster_mode="yarn-client", num_nodes=8, cores=8,
+elif cluster_mode.startswith("yarn"):
+    if cluster_mode == "yarn_client":
+        sc = init_orca_context(cluster_mode="yarn-client", num_nodes=8, cores=8,
                            memory="100g",
                            driver_memory="20g",
                            conf=conf
-                           )
+                            )
+    else:
+        sc = init_orca_context(cluster_mode="yarn-cluster", num_nodes=8, cores=8,
+                            memory="100g",
+                            driver_memory="20g",
+                            conf=conf
+                            )
 elif cluster_mode == "spark-submit":
     sc = init_orca_context(cluster_mode="spark-submit")                           
 else:
@@ -106,4 +112,3 @@ print(result)
 
 print("finished...")
 stop_orca_context()
-

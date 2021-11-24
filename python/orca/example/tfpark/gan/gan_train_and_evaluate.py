@@ -19,6 +19,7 @@ from bigdl.orca.tfpark.gan.gan_estimator import GANEstimator
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset
 from bigdl.orca.tfpark import ZooOptimizer
+from bigdl.dllib.utils.common import *
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -26,9 +27,15 @@ from tensorflow_gan.examples.mnist.networks import *
 from tensorflow_gan.python.losses.losses_impl import *
 import tensorflow_datasets as tfds
 
+import os
+import argparse
+
 MODEL_DIR = "/tmp/gan_model"
 NOISE_DIM = 64
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--cluster_mode', type=str, default="local",
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
 def eval():
 
@@ -53,7 +60,23 @@ def eval():
 
 
 if __name__ == "__main__":
-    sc = init_nncontext()
+    conf = {}
+    args = parser.parse_args()
+    cluster_mode = args.cluster_mode
+    if cluster_mode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "2g")
+        if cluster_mode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    else:
+        sc = init_nncontext()
 
     def input_fn():
         def map_func(data):
@@ -67,7 +90,7 @@ if __name__ == "__main__":
 
         ds = tfds.load("mnist", split="train")
         ds = ds.map(map_func)
-        dataset = TFDataset.from_tf_data_dataset(ds, batch_size=36)
+        dataset = TFDataset.from_tf_data_dataset(ds, batch_size=56)
         return dataset
 
     opt = GANEstimator(
