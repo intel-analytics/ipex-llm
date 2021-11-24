@@ -110,7 +110,8 @@ if __name__ == "__main__":
                                driver_cores=args.driver_cores,
                                extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
                                extra_python_lib=args.extra_python_lib,
-                               object_store_memory=args.object_store_memory)
+                               object_store_memory=args.object_store_memory,
+                               additional_archive="MNIST_data.zip#MNIST_data")
         ray_ctx = OrcaContext.get_ray_context()
     elif cluster_mode == "local":
         sc = init_orca_context(cores=args.driver_cores)
