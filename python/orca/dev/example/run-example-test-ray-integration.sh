@@ -328,6 +328,22 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#19 Total time cost ${time} seconds"
 
+echo "#20 start test for basic_text_classification"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/tf/basic_text_classification/basic_text_classification.py \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca basic_text_classification failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#20 Total time cost ${time} seconds"
+
 echo "Ray example tests finished"
 
 echo "#1 auto-estimator-pytorch time used:$time1 seconds"
@@ -349,3 +365,4 @@ echo "#16 tfaprk estimator_dataset example time used:$time16 seconds"
 echo "#17 tfaprk estimator_inception example time used:$time17 seconds"
 echo "#18 tfaprk opt_train example time used:$time18 seconds"
 echo "#19 tfaprk opt_evaluate example time used:$time19 seconds"
+echo "#20 tf basic_text_classification time used:$time20 seconds"
