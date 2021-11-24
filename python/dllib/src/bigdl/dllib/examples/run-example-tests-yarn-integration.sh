@@ -138,6 +138,8 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
 
+'
+
 echo "#9 start test for orca learn/tf/image_segmentation/image_segmentation.py"
 #timer
 start=$(date "+%s")
@@ -156,8 +158,7 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#9 Total time cost ${time} seconds"
 
-'
-
+: '
 echo "#9-2 start test for orca learn/tf/image_segmentation/image_segmentation.py"
 #timer
 start=$(date "+%s")
@@ -175,3 +176,4 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#9-2 Total time cost ${time} seconds"
+'
