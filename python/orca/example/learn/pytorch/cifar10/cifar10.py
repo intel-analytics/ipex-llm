@@ -67,8 +67,6 @@ transform = transforms.Compose(
 def train_loader_creator(config, batch_size):
     trainset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=True,
                                             download=True, transform=transform)
-    trainset = torchvision.datasets.CIFAR10(root="/tmp/cifar10_data", train=True,
-                                            download=True, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
                                               shuffle=True, num_workers=2)
     return trainloader
@@ -76,8 +74,6 @@ def train_loader_creator(config, batch_size):
 
 def test_loader_creator(config, batch_size):
     testset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=False,
-                                           download=True, transform=transform)
-    testset = torchvision.datasets.CIFAR10(root="/tmp/cifar10_data", train=False,
                                            download=True, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=2)
