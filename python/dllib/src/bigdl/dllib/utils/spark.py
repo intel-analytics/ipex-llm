@@ -348,7 +348,7 @@ class SparkRunner:
         if "spark.driver.host" not in conf:
             conf["spark.driver.host"] = get_node_ip()
         if "spark.driver.port" not in conf:
-            conf["spark.driver.host"] = random.randint(10000, 65535)
+            conf["spark.driver.port"] = random.randint(10000, 65535)
         if "BIGDL_CLASSPATH" in os.environ:
             zoo_bigdl_jar_path = os.environ["BIGDL_CLASSPATH"]
         else:
