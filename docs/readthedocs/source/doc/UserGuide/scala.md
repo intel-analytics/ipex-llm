@@ -12,6 +12,9 @@ You can download the BigDL official releases and nightly build from the [Release
 export SPARK_HOME=folder path where you extract the Spark package
 export BIGDL_HOME=folder path where you extract the BigDL package
 ```
+Supported Platforms: Linux and macOS.
+
+ _**Note:** Windows is not supported._
 
 #### **1.2 Use Spark interactive shell**
 You can  try BigDL using the Spark interactive shell as follows:
