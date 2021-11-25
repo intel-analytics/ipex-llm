@@ -27,7 +27,7 @@
   ```
 - Supported Platforms: Linux and macOS.
 
- _**Note:** Windows is not supported._
+  _**Note:** Windows is not supported._
 
 #### **1.1 Official Release**
 
