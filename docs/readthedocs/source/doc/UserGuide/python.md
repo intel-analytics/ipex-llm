@@ -25,6 +25,9 @@
   export PATH=$PATH:$JAVA_HOME/bin
   java -version  # Verify the version of JDK.
   ```
+- Supported Platforms: Linux and macOS.
+
+ _**Note:** Windows is not supported._
 
 #### **1.1 Official Release**
 
