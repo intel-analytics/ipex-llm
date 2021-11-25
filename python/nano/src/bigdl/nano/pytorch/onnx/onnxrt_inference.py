@@ -65,8 +65,8 @@ def _build_ortsess(self,
     default_onnx_export_args.update(kwargs)
 
     self.to_onnx(file_path,
-                    input_sample,
-                    **default_onnx_export_args)
+                 input_sample,
+                 **default_onnx_export_args)
 
     self._ortsess = ort.InferenceSession(file_path, sess_options=sess_options)
     self._ortsess_up_to_date = True
@@ -92,13 +92,6 @@ def update_ortsess(self,
                         file_path=file_path,
                         sess_options=sess_options,
                         **kwargs)
-
-
-# predict_step (LightningModule method overwrite)
-# note: this overwrite users' customized predict_step if valid
-def predict_step(self, batch, batch_idx):
-    # use batch[0] because that we assume data loader will have 2 outputs in format of (x, y)
-    return self.inference(batch[0].numpy())
 
 
 # inference (new API to unifying users' inference method)
@@ -194,7 +187,6 @@ def bind_onnxrt_methods(pl_model: LightningModule):
     pl_model._build_ortsess = partial(_build_ortsess, pl_model)
     pl_model.update_ortsess = partial(update_ortsess, pl_model)
     pl_model.on_fit_start = partial(on_fit_start, pl_model)
-    pl_model.predict_step = partial(predict_step, pl_model)
     pl_model.inference = partial(inference, pl_model)
 
     return pl_model

@@ -71,7 +71,8 @@ class TestModelsVision(TestCase):
         pl_model.update_ortsess()  # update the ortsess with default settings
         assert pl_model._ortsess_up_to_date is True # ortsess is up-to-date after updating
 
-        trainer.predict(pl_model, train_loader)
+        for x, y in train_loader:
+            pl_model.inference(x.numpy(), file_path="/tmp/model.onnx")
 
 
 if __name__ == '__main__':
