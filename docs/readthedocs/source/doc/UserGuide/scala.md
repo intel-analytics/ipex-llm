@@ -1,7 +1,9 @@
 # Scala User Guide
 
 ---
-
+Supported Platforms: Linux and macOS.<br>
+ _**Note:** Windows is not supported._
+ 
 ### **1. Try BigDL Examples**
 This section will show you how to download BigDL prebuild packages and run the build-in examples.
 
