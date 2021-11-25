@@ -27,7 +27,6 @@ ONNXRT_BINDED_COMPONENTS = ['_ortsess_up_to_date',
                             '_ortsess',
                             '_build_ortsess',
                             'update_ortsess',
-                            'predict_step',
                             'on_fit_start',
                             'inference']
 
