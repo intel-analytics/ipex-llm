@@ -20,4 +20,4 @@ status_8_scala_e2e=$(echo $?)
 
 echo "#### example.8 Excepted result(e2e): INFO this is results count: XXX"
 echo "---- example.8 Actual result: "
-cat e2e-customer-profile-sgx.log | egrep -a 'INFO this is results count:'
+cat spark-example-sql-e2e-sgx.log | egrep -a 'INFO this is results count:'
