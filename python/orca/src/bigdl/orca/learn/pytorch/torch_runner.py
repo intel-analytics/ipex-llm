@@ -51,6 +51,47 @@ try:
 except ImportError:
     from collections import Iterable
 
+class DistBackend:
+
+    def get_world_size(self):
+        pass
+
+    def all_reduce(self, *args, **kwargs):
+        pass
+
+    def is_initialized(self):
+        pass
+
+
+class HorovodDistBackend(DistBackend):
+
+    def get_world_size(self):
+        import horovod.torch as hvd
+        return hvd.size()
+
+    def all_reduce(self, *args, **kwargs):
+        import horovod.torch as hvd
+        return hvd.all_reduce(*args, **kwargs)
+
+    def is_initialized(self):
+        import horovod.torch as hvd
+        return hvd.is_initialized()
+
+
+class TorchDistBackend(DistBackend):
+
+    def get_world_size(self):
+        import torch.distributed as dist
+        return dist.get_world_size()
+
+    def all_reduce(self, *args, **kwargs):
+        import torch.distributed as dist
+        return dist.all_reduce(*args, **kwargs)
+
+    def is_initialized(self):
+        import torch.distributed as dist
+        return dist.is_initialized()
+
 
 class TorchRunner:
     """Manages a PyTorch model for training."""
@@ -156,13 +197,9 @@ class TorchRunner:
     def setup_operator(self, training_models):
         """Create the training operator."""
         if self.backend == "horovod":
-            import horovod.torch as hvd
-            dist_backend = hvd
-            world_size = dist.size()
+            dist_backend = HorovodDistBackend()
         else:
-            import torch.distributed as dist
-            dist_backend = dist
-            world_size = dist.get_world_size()
+            dist_backend = TorchDistBackend()
 
         self.training_operator =\
             self.training_operator_cls(
@@ -174,8 +211,7 @@ class TorchRunner:
                 schedulers=self.schedulers,
                 use_tqdm=self.use_tqdm,
                 sync_stats=self.sync_stats,
-                dist_backend=dist_backend,
-                world_size=world_size)
+                dist_backend=dist_backend)
 
     def with_sampler(self, loader):
         self.logger.debug("Wrapping DistributedSampler on DataLoader")

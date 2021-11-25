@@ -221,7 +221,7 @@ class AverageMeterCollection:
         for metric, value in metrics.items():
             self._meters[metric].update(value, n=n)
 
-    def summary(self, sync_stats=False, dist_backend=None, world_size=None):
+    def summary(self, sync_stats=False, dist_backend=None):
         """Returns a dict of average and most recent values for each metric."""
         stats = {BATCH_COUNT: self._batch_count, NUM_SAMPLES: self.n}
         if sync_stats:

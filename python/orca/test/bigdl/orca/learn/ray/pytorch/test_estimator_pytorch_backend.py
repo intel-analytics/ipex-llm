@@ -92,9 +92,8 @@ class IdentityNet2(nn.Module):
     def __init__(self):
         super().__init__()
         # need this line to avoid optimizer raise empty variable list
-        self.fc1 = nn.Linear(1, 1)
+        self.fc1 = nn.Linear(1, 1, bias=False)
         self.fc1.weight.data.fill_(1.0)
-        self.fc1.bias.data.fill_(0.0)
 
     def forward(self, input_):
         return self.fc1(input_)
@@ -342,14 +341,14 @@ class TestPyTorchEstimator(TestCase):
                         ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2,
-                                    model_fn=lambda config: IdentityNet2(),
-                                    loss=nn.MSELoss(),
-                                    optimizer=get_zero_optimizer,
-                                    sync_stats=True)
+                                  model_fn=lambda config: IdentityNet2(),
+                                  loss=nn.MSELoss(),
+                                  optimizer=get_zero_optimizer,
+                                  sync_stats=True)
         stats = estimator.fit(df, batch_size=4, epochs=2,
-                                feature_cols=["feature"],
-                                label_cols=["label"],
-                                reduce_results=False)
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              reduce_results=False)
         worker_0_stat0, worker_1_stats = stats[0]
 
         for k in worker_0_stat0:
@@ -361,7 +360,7 @@ class TestPyTorchEstimator(TestCase):
                         f"but got worker_0_stat0: {worker_0_stat0}, " \
                         f"worker_1_stats: {worker_1_stats}"
             assert abs(v1 - v0) < 1e-6, error_msg
-            assert abs(v1 = 0.5) < 1e-6, "loss should be 0.5"
+            assert abs(v1 - 0.5) < 1e-6, "loss should be 0.5"
 
     def test_not_sync_stats(self):
         sc = init_nncontext()

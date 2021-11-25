@@ -52,7 +52,6 @@ def _is_multiple(component):
     """Checks if a component (optimizer, model, etc) is not singular."""
     return isinstance(component, collections.Iterable) and len(component) > 1
 
-
 class TrainingOperator:
     """Abstract class for custom training or validation loops.
 
@@ -86,8 +85,7 @@ class TrainingOperator:
                  use_fp16=False,
                  use_tqdm=False,
                  sync_stats=False,
-                 dist_backend=None,
-                 world_size=None):
+                 dist_backend=None):
         # You are not expected to override this method.
         self._models = models  # List of models
         assert isinstance(
@@ -115,7 +113,6 @@ class TrainingOperator:
         self.global_step = 0
         self.sync_stats = sync_stats
         self.dist_backend = dist_backend
-        self.world_size = world_size
 
         if type(self) is TrainingOperator:
             for component in (models, schedulers, optimizers):
@@ -222,8 +219,7 @@ class TrainingOperator:
             self.scheduler.step()
 
         return metric_meters.summary(sync_stats=self.sync_stats,
-                                     dist_backend=self.dist_backend,
-                                     world_size=self.world_size)
+                                     dist_backend=self.dist_backend)
 
     def train_batch(self, batch, batch_info):
         """Computes loss and updates the model over one batch.
