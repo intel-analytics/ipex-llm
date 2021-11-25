@@ -27,7 +27,6 @@ from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
-from bigdl.orca.ray import RayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 
@@ -98,6 +97,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             optimizer_creator,
             loss_creator=None,
             metrics=None,
+            num_nodes=1,
+            cores_per_node=4,
             scheduler_creator=None,
             training_operator_cls=TrainingOperator,
             initialization_hook=None,
@@ -110,8 +111,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
 
-        # todo remove ray_ctx to run on workers
-        ray_ctx = RayContext.get()
         if not (isinstance(model_creator, types.FunctionType) and
                 isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
             raise ValueError(
@@ -145,8 +144,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         )
 
         if backend == "torch_distributed":
-            cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
-            num_nodes = ray_ctx.num_ray_nodes * workers_per_node
             RemoteRunner = ray.remote(num_cpus=cores_per_node)(PytorchRayWorker)
             self.remote_workers = [
                 RemoteRunner.remote(**params) for i in range(num_nodes)
@@ -168,10 +165,10 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
         elif backend == "horovod":
             from bigdl.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
-            self.horovod_runner = HorovodRayRunner(ray_ctx,
+            self.horovod_runner = HorovodRayRunner(num_nodes=num_nodes,
+                                                   cores_per_node=cores_per_node,
                                                    worker_cls=PytorchRayWorker,
-                                                   worker_param=params,
-                                                   workers_per_node=workers_per_node)
+                                                   worker_param=params)
             self.remote_workers = self.horovod_runner.remote_workers
             cores_per_node = self.horovod_runner.cores_per_node
             ray.get([

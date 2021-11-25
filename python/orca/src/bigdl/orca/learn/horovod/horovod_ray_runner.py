@@ -81,9 +81,7 @@ def get_horovod_version():
 class HorovodRayRunner:
 
     # todo check whether horovod is built with gloo
-    def __init__(self, ray_ctx, worker_cls=None, worker_param=None, workers_per_node=1):
-        self.cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
-        self.num_nodes = ray_ctx.num_ray_nodes * workers_per_node
+    def __init__(self, num_nodes, cores_per_node, worker_cls=None, worker_param=None):
         if worker_param is None:
             worker_param = {}
         worker_cls = make_worker(worker_cls, HorovodWorker)

@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import logging
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 
 
@@ -32,6 +33,7 @@ class Estimator(object):
                    use_tqdm=False,
                    workers_per_node=1,
                    model_dir=None,
+                   cluster=None,
                    backend="bigdl"):
         """
         Create an Estimator for torch.
@@ -63,6 +65,13 @@ class Estimator(object):
                backend. Default: `bigdl`.
         :return: an Estimator object.
         """
+
+        if cluster is not None:
+            assert cluster.name == "ray", "Only ray cluster is supported for now."
+            assert backend in {"horovod", "torch_distributed"}, \
+                       "Only horovod and torch_distributed are supported in ray cluster."
+
+
         if backend in {"horovod", "torch_distributed"}:
             from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
             return PyTorchRayEstimator(model_creator=model,
