@@ -81,8 +81,12 @@ def setup_package(plat_name):
                         "onnx",
                         "onnxruntime"]
 
-    package_data_plat_ = {"manylinux2010_x86_64": ["libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"],
-                          "win_amd64": []}
+    package_data_plat_ = {"manylinux2010_x86_64": [
+        "libs/libjemalloc.so",
+        "libs/libturbojpeg.so.0.2.0",
+        "libs/libtcmalloc.so"
+    ],
+        "win_amd64": []}
 
     script_plat = {"manylinux2010_x86_64": ["../script/bigdl-nano-init"],
                    "win_amd64": ["../script/bigdl-nano-init.ps1"]}
@@ -124,7 +128,8 @@ if __name__ == '__main__':
 
     valid_plat_names = {"win_amd64", "manylinux2010_x86_64"}
     if verbose_plat_name not in valid_plat_names:
-        raise ValueError(f"--plat-name is not valid. --plat-name should be one of {valid_plat_names}"
+        raise ValueError(f"--plat-name is not valid. "
+                         f"--plat-name should be one of {valid_plat_names}"
                          f" but got {verbose_plat_name}")
     plat_name = verbose_plat_name
 
