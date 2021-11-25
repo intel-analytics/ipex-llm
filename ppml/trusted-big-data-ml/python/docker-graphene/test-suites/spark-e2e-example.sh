@@ -11,7 +11,6 @@ if [ $status_8_scala_e2e -ne 0 ]; then
     --master 'local[4]' \
     --conf spark.driver.host=$LOCAL_IP \
     --conf spark.driver.memory=8g \
-    --conf spark.sql.debug.maxToStringFields=100 \
     --executor-memory 8g \
     --class test.SqlExample \
     /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/e2e.jar \
