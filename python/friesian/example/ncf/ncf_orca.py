@@ -68,14 +68,14 @@ cluster_mode = "local"
 if cluster_mode == "local":
     sc = init_orca_context()
 elif cluster_mode == "standalone":
-    sc = init_orca_context("standalone", master="spark://", cores=8, num_nodes=4, memory="10g")
+    sc = init_orca_context("standalone", master="spark://...", cores=8, num_nodes=4, memory="10g")
 elif cluster_mode == "yarn":
     sc = init_orca_context("yarn", cores=8, num_nodes=4, memory="10g")
 elif cluster_mode == "k8s":
     sc = init_orca_context(cluster_mode="k8s", cores=8, num_nodes=4,
-                           master="k8s://https://127.0.0.1:8443",
+                           master="k8s://https://172.16.0.200:6443",
                            container_image="10.239.45.10/arda/intelanalytics/bigdl-k8s-spark-3.1.2:0.14.0-SNAPSHOT",
-                           conf={"spark.driver.host": "172.16.0.200",
+                           conf={"spark.driver.host": "172.16.0.188",
                                  "spark.driver.port": "54321",
                                  "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
                                  "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data",
