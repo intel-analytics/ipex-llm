@@ -80,4 +80,4 @@ cat k8s-spark-sql-example-sgx.log | egrep -a 'Justin' | wc -l
 
 echo "#### example.4 Excepted result(k8s-spark-sql-e2e): INFO this is results count: XXX"
 echo "---- example.5 Actual result: "
-cat k8s-spark-sql-e2e-100w-sgx.log | egrep -a 'INFO this is `results count:'
+cat k8s-spark-sql-e2e-100w-sgx.log | egrep -a 'INFO this is results count:'
