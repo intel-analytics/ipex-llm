@@ -63,8 +63,8 @@ def build_model(num_users, num_items, layers=[20, 10], include_mf=True, mf_embed
     return model
 
 
-cluster_mode = "local"
-# cluster_mode = "k8s"
+#cluster_mode = "local"
+cluster_mode = "k8s"
 if cluster_mode == "local":
     sc = init_orca_context()
 elif cluster_mode == "standalone":
@@ -75,17 +75,16 @@ elif cluster_mode == "k8s":
     sc = init_orca_context(cluster_mode="k8s", cores=8, num_nodes=4,
                            master="k8s://https://172.16.0.200:6443",
                            container_image="10.239.45.10/arda/intelanalytics/bigdl-k8s-spark-3.1.2:0.14.0-SNAPSHOT",
-                           conf={"spark.driver.host": "172.16.0.188",
-                                 "spark.driver.port": "54321",
-                                 "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
+                           conf={"spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
                                  "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data",
                                  "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
                                  "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data"})
 elif cluster_mode == "spark-submit":  # To test k8s using spark-submit
     sc = init_orca_context(cluster_mode="spark-submit")
 
-data_path = "/home/kai/Downloads"
-# data_path = "/bigdl2.0/data"
+#data_path = "/home/kai/Downloads"
+#data_path = "/opt/work/kai"
+data_path = "/bigdl2.0/data"
 # Need spark3 to support delimiter with more than one character.
 full_data = read_csv("{}/ml-1m/ratings.dat".format(data_path), sep="::", header=None, names=["user", "item", "label"],
                      usecols=[0, 1, 2], dtype={0: np.int32, 1: np.int32, 2: np.int32})
