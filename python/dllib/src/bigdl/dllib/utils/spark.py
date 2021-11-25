@@ -16,8 +16,8 @@
 
 import os
 import sys
-import platform
 import random
+import platform
 
 from pyspark import SparkContext
 from bigdl.dllib.nncontext import init_internal_nncontext, init_spark_conf
