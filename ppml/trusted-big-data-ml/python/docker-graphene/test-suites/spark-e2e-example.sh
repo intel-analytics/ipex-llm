@@ -14,7 +14,7 @@ if [ $status_8_scala_e2e -ne 0 ]; then
     --executor-memory 8g \
     --class test.SqlExample \
     /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar \
-    $DB_PATH" 2>&1 > e2e-customer-profile-sgx.log
+    $DB_PATH" 2>&1 > spark-example-sql-e2e-sgx.log
 fi
 status_8_scala_e2e=$(echo $?)
 
