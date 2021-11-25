@@ -88,7 +88,7 @@ class IdentityNet(nn.Module):
     def forward(self, input_):
         return input_
 
-class IdentityNet2(nn.Module):
+class LinearModel(nn.Module):
     def __init__(self):
         super().__init__()
         # need this line to avoid optimizer raise empty variable list
@@ -351,7 +351,7 @@ class TestPyTorchEstimator(TestCase):
                         ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet2(),
+                                  model_fn=lambda config: LinearModel(),
                                   loss=nn.MSELoss(),
                                   optimizer=get_zero_optimizer,
                                   sync_stats=True)
@@ -382,7 +382,7 @@ class TestPyTorchEstimator(TestCase):
                      ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet2(),
+                                  model_fn=lambda config: LinearModel(),
                                   loss=nn.MSELoss(),
                                   optimizer=get_zero_optimizer,
                                   sync_stats=False)
@@ -396,6 +396,48 @@ class TestPyTorchEstimator(TestCase):
         error_msg = f"stats from all workers should not be the same, " \
                     f"but got worker_0_stats: {worker_0_stats}, worker_1_stats: {worker_1_stats}"
         assert abs(train_loss_0 - train_loss_1) > 0.9, error_msg
+
+    def test_data_parallel_sgd_correctness(self):
+        sc = init_nncontext()
+        rdd = sc.range(0, 100).repartition(2)
+
+        # partition 0: [(0, 0), (0, 0)]
+        # partition 1: [(1, 0), (1, 0)]
+        # model: y = w * x
+        # loss = (wx)^2
+        # dloss/dw = 2x^2*w
+        # end of first iteration:
+        #    partition 0 loss: 0.0
+        #    partition 1 loss: 1.0
+        #    avg_grad = avg([0, 0, 2, 2]) = 1
+        #    weight = 1.0 - 0.5 * avg_grad = 0.5
+        # end of second iteration:
+        #    partition 0 loss: 0.0
+        #    partition 1 loss: 0.25
+        #    avg_grad = avg([0, 0, 1, 1]) = 0.5
+        #    weight = 0.5 - 0.5 * avg_grad = 0.25
+        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter][:2]
+                        ).toDF(["feature", "label"])
+
+        def get_optimizer(model, config):
+            return torch.optim.SGD(model.parameters(), lr=0.5)
+
+        estimator = Estimator.from_torch(model=lambda config: LinearModel(),
+                                         optimizer=get_optimizer,
+                                         loss=torch.nn.MSELoss(),
+                                         metrics=Accuracy(),
+                                         config={},
+                                         workers_per_node=2,
+                                         backend="torch_distributed",
+                                         sync_stats=False)
+
+        stats = estimator.fit(df, batch_size=4, epochs=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              reduce_results=False)
+
+        state = estimator.get_state_dict()
+        assert state['models'][0]['fc1.weight'].item() == 0.25
 
     # not work right now
     # ray logs cannot be captured

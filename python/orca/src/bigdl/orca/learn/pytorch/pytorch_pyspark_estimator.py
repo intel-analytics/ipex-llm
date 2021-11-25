@@ -378,6 +378,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         model.load_state_dict(model_state)
         return model.module if hasattr(model, "module") else model
 
+    def get_state_dict(self):
+        return self.state_dict
+
     @enable_multi_fs_save
     def save(self, model_path):
         """
