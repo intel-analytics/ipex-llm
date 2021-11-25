@@ -80,6 +80,8 @@ if __name__ == "__main__":
                           num_nodes=args.num_executor, memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           conf=conf)
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context("spark-submit")
 
     begin = time.time()
     transaction_tbl = FeatureTable.read_json(args.input_transaction).select(
