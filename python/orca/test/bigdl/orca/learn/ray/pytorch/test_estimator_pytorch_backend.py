@@ -88,6 +88,17 @@ class IdentityNet(nn.Module):
     def forward(self, input_):
         return input_
 
+class IdentityNet2(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # need this line to avoid optimizer raise empty variable list
+        self.fc1 = nn.Linear(1, 1)
+        self.fc1.weight.data.fill_(1.0)
+        self.fc1.bias.data.fill_(0.0)
+
+    def forward(self, input_):
+        return self.fc1(input_)
+
 
 class MultiInputNet(nn.Module):
     def __init__(self):
@@ -143,11 +154,14 @@ def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
 
+def get_zero_optimizer(model, config):
+    return torch.optim.SGD(model.parameters(), lr=0.0)
+
 def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
-                  log_level=logging.INFO):
+                  log_level=logging.INFO, loss=nn.BCELoss(), optimizer=get_optimizer):
     estimator = Estimator.from_torch(model=model_fn,
-                                     optimizer=get_optimizer,
-                                     loss=nn.BCELoss(),
+                                     optimizer=optimizer,
+                                     loss=loss,
                                      metrics=Accuracy(),
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
@@ -320,34 +334,50 @@ class TestPyTorchEstimator(TestCase):
 
     def test_sync_stats(self):
         sc = init_nncontext()
-        rdd = sc.range(0, 100)
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
-                     ).toDF(["feature", "label"])
+        rdd = sc.range(0, 100).repartition(2)
+        # the data and model are constructed that loss on worker 0 is always 0.0
+        # and loss on worker 1 is always 1.0
 
-        estimator = get_estimator(workers_per_node=2, sync_stats=True)
+        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter]
+                        ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2,
+                                    model_fn=lambda config: IdentityNet2(),
+                                    loss=nn.MSELoss(),
+                                    optimizer=get_zero_optimizer,
+                                    sync_stats=True)
         stats = estimator.fit(df, batch_size=4, epochs=2,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              reduce_results=False)
+                                feature_cols=["feature"],
+                                label_cols=["label"],
+                                reduce_results=False)
         worker_0_stat0, worker_1_stats = stats[0]
 
         for k in worker_0_stat0:
+            if k in {"num_samples"}:
+                continue
             v0 = worker_0_stat0[k]
             v1 = worker_1_stats[k]
             error_msg = f"stats from all workers should be the same, " \
                         f"but got worker_0_stat0: {worker_0_stat0}, " \
                         f"worker_1_stats: {worker_1_stats}"
             assert abs(v1 - v0) < 1e-6, error_msg
+            assert abs(v1 = 0.5) < 1e-6, "loss should be 0.5"
 
     def test_not_sync_stats(self):
         sc = init_nncontext()
-        rdd = sc.range(0, 100)
-        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
-                                [int(np.random.randint(0, 2, size=()))])
+        rdd = sc.range(0, 100).repartition(2)
+
+        # the data and model are constructed that loss on worker 0 is always 0.0
+        # and loss on worker 1 is always 1.0
+
+        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter]
                      ).toDF(["feature", "label"])
 
-        estimator = get_estimator(workers_per_node=2, sync_stats=False)
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: IdentityNet2(),
+                                  loss=nn.MSELoss(),
+                                  optimizer=get_zero_optimizer,
+                                  sync_stats=False)
         stats = estimator.fit(df, batch_size=4, epochs=2,
                               feature_cols=["feature"],
                               label_cols=["label"],
@@ -357,7 +387,7 @@ class TestPyTorchEstimator(TestCase):
         train_loss_1 = worker_1_stats["train_loss"]
         error_msg = f"stats from all workers should not be the same, " \
                     f"but got worker_0_stats: {worker_0_stats}, worker_1_stats: {worker_1_stats}"
-        assert abs(train_loss_0 - train_loss_1) > 1e-6, error_msg
+        assert abs(train_loss_0 - train_loss_1) > 0.9, error_msg
 
     # not work right now
     # ray logs cannot be captured
