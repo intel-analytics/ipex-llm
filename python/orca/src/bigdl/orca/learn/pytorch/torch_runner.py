@@ -155,6 +155,15 @@ class TorchRunner:
 
     def setup_operator(self, training_models):
         """Create the training operator."""
+        if self.backend == "horovod":
+            import horovod.torch as hvd
+            dist_backend = hvd
+            world_size = dist.size()
+        else:
+            import torch.distributed as dist
+            dist_backend = dist
+            world_size = dist.get_world_size()
+
         self.training_operator =\
             self.training_operator_cls(
                 self.config,
@@ -164,7 +173,9 @@ class TorchRunner:
                 world_rank=self.rank,
                 schedulers=self.schedulers,
                 use_tqdm=self.use_tqdm,
-                sync_stats=self.sync_stats)
+                sync_stats=self.sync_stats,
+                dist_backend=dist_backend,
+                world_size=world_size)
 
     def with_sampler(self, loader):
         self.logger.debug("Wrapping DistributedSampler on DataLoader")

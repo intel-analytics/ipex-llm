@@ -221,19 +221,19 @@ class AverageMeterCollection:
         for metric, value in metrics.items():
             self._meters[metric].update(value, n=n)
 
-    def summary(self, sync_stats=False):
+    def summary(self, sync_stats=False, dist_backend=None, world_size=None):
         """Returns a dict of average and most recent values for each metric."""
         stats = {BATCH_COUNT: self._batch_count, NUM_SAMPLES: self.n}
         if sync_stats:
-            if not dist.is_initialized():
-                raise ValueError("torch.distributed must be initialized to user sync_stats")
+            if dist_backend is None or not dist_backend.is_initialized():
+                raise ValueError("dist_backend must be initialized to use sync_stats")
         for metric, meter in self._meters.items():
             if sync_stats:
-                world_size = dist.get_world_size()
+                world_size = dist_backend.get_world_size()
                 avg = torch.tensor(meter.avg)
-                dist.all_reduce(avg)
+                dist_backend.all_reduce(avg)
                 last_val = torch.tensor(meter.val)
-                dist.all_reduce(last_val)
+                dist_backend.all_reduce(last_val)
                 avg = avg.item() / world_size
                 last_val = last_val.item() / world_size
             else:
