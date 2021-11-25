@@ -68,7 +68,7 @@ class HorovodDistBackend(DistBackend):
 
     def all_reduce(self, *args, **kwargs):
         import horovod.torch as hvd
-        return hvd.all_reduce(*args, **kwargs)
+        return hvd.allreduce(*args, **kwargs)
 
 
 class TorchDistBackend(DistBackend):
