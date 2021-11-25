@@ -126,7 +126,7 @@ if __name__ == '__main__':
             "Cannot find --plat-name argument. bigdl-tf requires --plat-name to build.")
     verbose_plat_name = sys.argv[idx + 1]
 
-    valid_plat_names = {"win_amd64", "manylinux2010_x86_64"}
+    valid_plat_names = ("win_amd64", "manylinux2010_x86_64")
     if verbose_plat_name not in valid_plat_names:
         raise ValueError(f"--plat-name is not valid. "
                          f"--plat-name should be one of {valid_plat_names}"
