@@ -93,7 +93,8 @@ def setup_package():
                           'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1', 'bigdl-dllib=='+VERSION],
         extras_require={'ray': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
                                 'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1'],
-                        'automl': ['ray[tune]==1.2.0', 'scikit-learn', 'tensorboard', 'xgboost']
+                        'automl': ['aiohttp==3.7.4', 'aioredis==1.3.1',
+                                   'ray[tune]==1.2.0', 'scikit-learn', 'tensorboard', 'xgboost']
                         },
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
