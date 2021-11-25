@@ -79,9 +79,8 @@ class TCNForecaster(BasePytorchForecaster):
         :param lr: Specify the learning rate. This value defaults to 0.001.
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
-               distributed forecaster. You may choose from "mse", "me", "mae",
-               "mse","rmse","msle","r2", "mpe", "mape", "mspe", "smape", "mdape"
-               and "smdape" for a non-distributed forecaster.
+               distributed forecaster. You may choose from "mse", "mae",
+               "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.

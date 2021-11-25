@@ -295,7 +295,7 @@ class BasePytorchForecaster(Forecaster):
 
             eval_res = []
             for metric in self.metrics:
-                eval_res.append(TORCHMETRICS_REGRESSION_MAP[metric](yhat_torch, y_torch))
+                eval_res.append(TORCHMETRICS_REGRESSION_MAP[metric.lower()](yhat_torch, y_torch))
 
             return eval_res
 
@@ -348,8 +348,8 @@ class BasePytorchForecaster(Forecaster):
 
         eval_res = []
         for metric in self.metrics:
-            eval_res.append(TORCHMETRICS_REGRESSION_MAP[metric](torch.from_numpy(yhat),
-                                                                   torch.from_numpy(data[1])))
+            eval_res.append(TORCHMETRICS_REGRESSION_MAP[metric.lower()](torch.from_numpy(yhat),
+                                                                        torch.from_numpy(data[1])))
 
         return eval_res
 
