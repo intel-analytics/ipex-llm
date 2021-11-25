@@ -39,7 +39,7 @@ def _parse_args():
     parser = ArgumentParser()
 
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The cluster mode, such as local, yarn or standalone.')
+                        help='The cluster mode, such as local, yarn, standalone or spark-submit.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
     parser.add_argument('--executor_cores', type=int, default=48,

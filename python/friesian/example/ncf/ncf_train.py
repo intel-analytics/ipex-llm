@@ -67,7 +67,7 @@ def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=Tru
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Two Tower Training/Inference')
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The cluster mode, such as local, yarn or standalone.')
+                        help='The cluster mode, such as local, yarn, standalone or spark-submit.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
     parser.add_argument('--executor_cores', type=int, default=8,

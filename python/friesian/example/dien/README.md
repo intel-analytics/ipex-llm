@@ -52,7 +52,7 @@ python dien_preprocessing.py \
 ```
 
 __Options:__
-* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn or standalone. Default to be local.
+* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone or spark-submit. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
 * `executor_cores`: The number of cores to use on each node. 
 * `executor_memory`: The amount of memory to allocate on each node. 
@@ -99,7 +99,7 @@ python dien_train.py \
 ```
 
 __Options:__
-* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn or standalone. Default to be local.
+* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone, or spark-submit. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
 * `executor_cores`: The number of cores to use on each node. Default to be 48.
 * `executor_memory`: The amount of memory to allocate on each node. Default to be 240g.
