@@ -224,9 +224,6 @@ class AverageMeterCollection:
     def summary(self, sync_stats=False, dist_backend=None):
         """Returns a dict of average and most recent values for each metric."""
         stats = {BATCH_COUNT: self._batch_count, NUM_SAMPLES: self.n}
-        if sync_stats:
-            if dist_backend is None or not dist_backend.is_initialized():
-                raise ValueError("dist_backend must be initialized to use sync_stats")
         for metric, meter in self._meters.items():
             if sync_stats:
                 world_size = dist_backend.get_world_size()

@@ -360,7 +360,6 @@ class TestPyTorchEstimator(TestCase):
                         f"but got worker_0_stat0: {worker_0_stat0}, " \
                         f"worker_1_stats: {worker_1_stats}"
             assert abs(v1 - v0) < 1e-6, error_msg
-            assert abs(v1 - 0.5) < 1e-6, "loss should be 0.5"
 
     def test_not_sync_stats(self):
         sc = init_nncontext()

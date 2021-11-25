@@ -59,9 +59,6 @@ class DistBackend:
     def all_reduce(self, *args, **kwargs):
         pass
 
-    def is_initialized(self):
-        pass
-
 
 class HorovodDistBackend(DistBackend):
 
@@ -72,10 +69,6 @@ class HorovodDistBackend(DistBackend):
     def all_reduce(self, *args, **kwargs):
         import horovod.torch as hvd
         return hvd.all_reduce(*args, **kwargs)
-
-    def is_initialized(self):
-        import horovod.torch as hvd
-        return hvd.is_initialized()
 
 
 class TorchDistBackend(DistBackend):
