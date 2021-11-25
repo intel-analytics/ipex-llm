@@ -129,4 +129,9 @@ class TCNForecaster(BasePytorchForecaster):
         self.metrics = metrics
         self.seed = seed
 
+        # nano setting
+        self.num_processes = 1  # currently TCN can't be distributed training
+        self.use_ipex = False  # TCN has worse performance on ipex
+        self.onnx_available = True
+
         super().__init__()

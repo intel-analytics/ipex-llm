@@ -72,7 +72,8 @@ class BasePytorchForecaster(Forecaster):
             model=self.model_creator({**self.model_config, **self.data_config})
             loss=self.loss_creator(self.loss_config)
             optimizer=self.optimizer_creator(model, self.optim_config)
-            self.internal = Trainer.compile(model=model, loss=loss, optimizer=optimizer, onnx=True)
+            self.internal = Trainer.compile(model=model, loss=loss,
+                                            optimizer=optimizer, onnx=self.onnx_available)
 
 
     def fit(self, data, epochs=1, batch_size=32):
@@ -154,7 +155,8 @@ class BasePytorchForecaster(Forecaster):
                                   shuffle=True)
 
             # Trainer init and fitting
-            self.trainer = Trainer(logger=False, max_epochs=epochs)
+            self.trainer = Trainer(logger=False, max_epochs=epochs,
+                                   num_processes=self.num_processes, use_ipex=self.use_ipex)
             self.trainer.fit(self.internal, data)
             self.fitted = True
 
@@ -382,7 +384,7 @@ class BasePytorchForecaster(Forecaster):
             loss=self.loss_creator(self.loss_config)
             optimizer=self.optimizer_creator(model, self.optim_config)
             self.internal = LightningModuleFromTorch.load_from_checkpoint(checkpoint_file, model=model, loss=loss, optimizer=optimizer)
-            self.internal = Trainer.compile(self.internal, onnx=True)
+            self.internal = Trainer.compile(self.internal, onnx=self.onnx_available)
             self.fitted = True
 
     def to_local(self):
@@ -407,7 +409,8 @@ class BasePytorchForecaster(Forecaster):
 
         loss = self.loss_creator(self.loss_config)
         optimizer = self.optimizer_creator(model, self.optim_config)
-        self.internal = Trainer.compile(model=model, loss=loss, optimizer=optimizer, onnx=True)
+        self.internal = Trainer.compile(model=model, loss=loss,
+                                        optimizer=optimizer, onnx=self.onnx_available)
 
         self.distributed = False
         self.fitted = True

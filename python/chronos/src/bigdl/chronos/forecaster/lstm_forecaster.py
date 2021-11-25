@@ -118,4 +118,11 @@ class LSTMForecaster(BasePytorchForecaster):
         self.metrics = metrics
         self.seed = seed
 
+        # nano setting
+        self.num_processes = 1
+        # ipex only available for lstm layer without dropout
+        dropout_sum = sum(dropout) if isinstance(dropout, list) else dropout
+        self.use_ipex = True if dropout_sum == 0 else False
+        self.onnx_available = True
+
         super().__init__()
