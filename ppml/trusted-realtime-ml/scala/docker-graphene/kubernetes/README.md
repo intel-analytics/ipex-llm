@@ -1,6 +1,6 @@
 # Trusted Realtime ML for Kubernetes
 
-## Deploy the Intel SGX Device Plugin for Kubenetes
+## Deploy the Intel SGX Device Plugin for Kubernetes
 
 Please refer to the document [here][devicePluginK8sQuickStart].
 
