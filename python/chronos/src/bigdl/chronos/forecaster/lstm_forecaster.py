@@ -26,12 +26,12 @@ class LSTMForecaster(BasePytorchForecaster):
                                         input_feature_num=2,
                                         output_feature_num=2,
                                         ...)
-            >>> forecaster.fit((x_train, y_train))
-            >>> forecaster.to_local()  # if you set distributed=True
-            >>> test_pred = forecaster.predict(x_test)
-            >>> test_eval = forecaster.evaluate((x_test, y_test))
-            >>> forecaster.save({ckpt_name})
-            >>> forecaster.restore({ckpt_name})
+        >>> forecaster.fit((x_train, y_train))
+        >>> forecaster.to_local()  # if you set distributed=True
+        >>> test_pred = forecaster.predict(x_test)
+        >>> test_eval = forecaster.evaluate((x_test, y_test))
+        >>> forecaster.save({ckpt_name})
+        >>> forecaster.load({ckpt_name})
     """
 
     def __init__(self,

@@ -295,7 +295,16 @@ class BasePytorchForecaster(Forecaster):
 
             eval_res = []
             for metric in self.metrics:
-                eval_res.append(TORCHMETRICS_REGRESSION_MAP[metric.lower()](yhat_torch, y_torch))
+                if multioutput=="raw_values":
+                    res = torch.zeros(y_torch.shape[1], y_torch.shape[2])
+                    for i in range(y_torch.shape[1]):
+                        for j in range(y_torch.shape[2]):
+                            res[i, j] = TORCHMETRICS_REGRESSION_MAP[metric.lower()](yhat_torch[:, i, j],
+                                                                                    y_torch[:, i, j])
+                    eval_res.append(res.numpy())
+                else:
+                    res = TORCHMETRICS_REGRESSION_MAP[metric.lower()](yhat_torch, y_torch)
+                    eval_res.append(res.numpy())
 
             return eval_res
 
@@ -348,8 +357,16 @@ class BasePytorchForecaster(Forecaster):
 
         eval_res = []
         for metric in self.metrics:
-            eval_res.append(TORCHMETRICS_REGRESSION_MAP[metric.lower()](torch.from_numpy(yhat),
-                                                                        torch.from_numpy(data[1])))
+            if multioutput=="raw_values":
+                res = torch.zeros(data[1].shape[1], data[1].shape[2])
+                for i in range(data[1].shape[1]):
+                    for j in range(data[1].shape[2]):
+                        res[i, j] = TORCHMETRICS_REGRESSION_MAP[metric.lower()](torch.from_numpy(yhat)[:, i, j],
+                                                                                torch.from_numpy(data[1])[:, i, j])
+                eval_res.append(res.numpy())
+            else:
+                res = TORCHMETRICS_REGRESSION_MAP[metric.lower()](torch.from_numpy(yhat), torch.from_numpy(data[1]))
+                eval_res.append(res.numpy())
 
         return eval_res
 

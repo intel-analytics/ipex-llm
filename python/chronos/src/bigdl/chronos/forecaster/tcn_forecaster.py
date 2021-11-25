@@ -32,7 +32,7 @@ class TCNForecaster(BasePytorchForecaster):
             >>> test_pred = forecaster.predict(x_test)
             >>> test_eval = forecaster.evaluate((x_test, y_test))
             >>> forecaster.save({ckpt_name})
-            >>> forecaster.restore({ckpt_name})
+            >>> forecaster.load({ckpt_name})
     """
     def __init__(self,
                  past_seq_len,
