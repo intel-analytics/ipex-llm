@@ -34,6 +34,7 @@ from contextlib import closing
 import socket
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist
+import logging
 
 
 def find_ip_and_port(pre_iter):
@@ -65,9 +66,12 @@ class PytorchPysparkWorker(TorchRunner):
                  scheduler_step_freq=None,
                  state_dict=None,
                  backend="torch-distributed",
-                 mode="fit"):
+                 mode="fit",
+                 sync_stats=True,
+                 log_level=logging.INFO):
         super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
-                         training_operator_cls, config, use_tqdm, scheduler_step_freq)
+                         training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
+                         log_level=log_level)
 
         self.state_dict = state_dict
         self.size = size

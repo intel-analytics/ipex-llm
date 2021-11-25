@@ -84,7 +84,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
-            workers_per_node=1):
+            workers_per_node=1,
+            sync_stats=True,
+            log_level=logging.INFO):
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
@@ -124,8 +126,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
             metrics=metrics,
             size=self.num_workers,
             cores_per_worker=self.cores_per_worker,
-            cluster_info=self._get_cluster_info(sc)
-        )
+            cluster_info=self._get_cluster_info(sc),
+            sync_stats=sync_stats,
+            log_level=log_level)
 
         self.driver_runner = PytorchPysparkWorker(**self.worker_init_params, mode='predict')
 
