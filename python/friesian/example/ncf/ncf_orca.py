@@ -83,7 +83,6 @@ elif cluster_mode == "spark-submit":  # To test k8s using spark-submit
     sc = init_orca_context(cluster_mode="spark-submit")
 
 #data_path = "/home/kai/Downloads"
-#data_path = "/opt/work/kai"
 data_path = "/bigdl2.0/data"
 # Need spark3 to support delimiter with more than one character.
 full_data = read_csv("{}/ml-1m/ratings.dat".format(data_path), sep="::", header=None, names=["user", "item", "label"],
