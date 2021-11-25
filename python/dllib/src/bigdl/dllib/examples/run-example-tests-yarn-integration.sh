@@ -154,22 +154,22 @@ clear_up() {
 # time=$((now - start))
 # echo "#20 Total time cost ${time} seconds"
 
-echo "#21 start test for orca torchmodel mnist"
-#timer
-start=$(date "+%s")
-#run the example
-rm -rf /tmp/test_mnist
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/test_mnist /tmp/test_mnist
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /tmp/test_mnist
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca torchmodel mnist failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#21 Total time cost ${time} seconds"
+# echo "#21 start test for orca torchmodel mnist"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# rm -rf /tmp/test_mnist
+# ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/test_mnist /tmp/test_mnist
+# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /tmp/test_mnist
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca torchmodel mnist failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#21 Total time cost ${time} seconds"
 
 echo "#22 start test for orca torchmodel resnet_finetune"
 #timer
