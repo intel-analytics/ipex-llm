@@ -2,7 +2,7 @@
 
 ---
 Supported Platforms: Linux and macOS.<br>
- _**Note:** Windows is not supported._
+ _**Note:** Windows is currently not supported._
  
 ### **1. Install**
 - We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment as follows:
@@ -28,8 +28,6 @@ Supported Platforms: Linux and macOS.<br>
   export PATH=$PATH:$JAVA_HOME/bin
   java -version  # Verify the version of JDK.
   ```
-- Supported Platforms: Linux and macOS.<br>
-  _**Note:** Windows is not supported._
 
 #### **1.1 Official Release**
 
