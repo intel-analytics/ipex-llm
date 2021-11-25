@@ -33,10 +33,10 @@ ONNXRT_BINDED_COMPONENTS = ['_ortsess_up_to_date',
 
 # internal function to build an ortsess
 def _build_ortsess(self,
-                    input_sample=None,
-                    file_path="model.onnx",
-                    sess_options=None,
-                    **kwargs):
+                   input_sample=None,
+                   file_path="model.onnx",
+                   sess_options=None,
+                   **kwargs):
     '''
     Internal function to build a ortsess and bind to the lightningmodule.
 
@@ -60,7 +60,7 @@ def _build_ortsess(self,
                                 'input_names': ['input'],
                                 'output_names': ['output'],
                                 'dynamic_axes': {'input': {0: 'batch_size'},
-                                                    'output': {0: 'batch_size'}}}
+                                                 'output': {0: 'batch_size'}}}
     default_onnx_export_args.update(kwargs)
 
     self.to_onnx(file_path,
@@ -73,10 +73,10 @@ def _build_ortsess(self,
 
 # external method to update(& rebuild) ortsess
 def update_ortsess(self,
-                    input_sample=None,
-                    file_path="model.onnx",
-                    sess_options=None,
-                    **kwargs):
+                   input_sample=None,
+                   file_path="model.onnx",
+                   sess_options=None,
+                   **kwargs):
     '''
     Update the onnxruntime session options and rebuild the session.
     Users may also want to call this method before `inference(..., onnx=True`)`
@@ -95,12 +95,11 @@ def update_ortsess(self,
 
 # inference (new API to unifying users' inference method)
 def inference(self,
-                input_data,
-                batch_size=None,
-                file_path="model.onnx",
-                sess_options=None,
-                backend="onnx",
-                **kwargs):
+              input_data,
+              batch_size=None,
+              sess_options=None,
+              backend="onnx",
+              **kwargs):
     '''
     Inference with/without onnxruntime.
     This method will implicitly build onnxruntime session if it has never been built
@@ -113,7 +112,6 @@ def inference(self,
     :param batch_size: int, inferencing batch_size. This value should not affect the
             final inferencing result but will affect resources cost(e.g. memory and time).
             Default to None, which takes all input_data in one batch.
-    :param file_path: The path to save onnx model file.
     :param sess_options: ortsess options in ort.SessionOptions type.
     :param backend: str, to set the backend library. "onnx" for onnxruntime, which
             provides lower latency and any other value will make `inference` call
@@ -124,10 +122,10 @@ def inference(self,
     if backend == "onnx":
         if not self._ortsess_up_to_date:
             warnings.warn("Onnxruntime session will be built implicitly,"
-                            " this may harm your inference latency.")
+                          " this may harm your inference latency.")
             input_sample = torch.Tensor(input_data)
             self._build_ortsess(input_sample=input_sample,
-                                file_path=file_path,
+                                file_path="model.onnx",
                                 sess_options=sess_options,
                                 **kwargs)
         input_name = self._ortsess.get_inputs()[0].name
@@ -142,7 +140,7 @@ def inference(self,
             batch_num = math.ceil(sample_num / batch_size)
             for batch_id in range(batch_num):
                 ort_inputs = {input_name: input_data[batch_id * batch_size:
-                                                        (batch_id + 1) * batch_size]}
+                                                     (batch_id + 1) * batch_size]}
                 ort_outs = self._ortsess.run(None, ort_inputs)
                 yhat_list.append(ort_outs[0])
             # this operation may cause performance degradation
@@ -158,7 +156,7 @@ def inference(self,
             batch_num = math.ceil(sample_num / batch_size)
             for batch_id in range(batch_num):
                 yhat_list.append(self(input_data[batch_id * batch_size:
-                                                    (batch_id + 1) * batch_size]))
+                                                 (batch_id + 1) * batch_size]))
             yhat = torch.cat(yhat_list, axis=0)
             return yhat
 
