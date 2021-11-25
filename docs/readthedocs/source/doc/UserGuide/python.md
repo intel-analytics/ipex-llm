@@ -1,6 +1,9 @@
 # Python User Guide
 
 ---
+Supported Platforms: Linux and macOS.<br>
+ _**Note:** Windows is not supported._
+ 
 ### **1. Install**
 - We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment as follows:
 
