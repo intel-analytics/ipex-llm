@@ -40,7 +40,6 @@ ENV PATH                ${JAVA_HOME}/bin:${PATH}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget unzip patch zip git maven
 ADD hadoop-common-shell.patch /opt/hadoop-common-shell.patch
-ADD spark-example-sql-e2e.jar spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
 
 # java
 RUN wget $JDK_URL && \
@@ -84,6 +83,9 @@ RUN cd /opt && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-examples_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
     mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
+
+ADD spark-example-sql-e2e.jar spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
+
 # hadoop
 RUN cd /opt && \
     apt-get install -y build-essential && \
