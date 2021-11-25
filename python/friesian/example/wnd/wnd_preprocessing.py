@@ -113,6 +113,8 @@ if __name__ == '__main__':
                           num_nodes=args.num_executor, memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           conf=conf)
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context("spark-submit")
 
     time_start = time()
     paths = [os.path.join(args.input_folder, 'day_%d.parquet' % i) for i in args.day_range]
