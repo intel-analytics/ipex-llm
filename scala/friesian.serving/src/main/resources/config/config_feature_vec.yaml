@@ -13,7 +13,7 @@ monitorPort: 1236
 serviceType: kv
 
 # default: false, if need to load initial data to redis, set true
-loadInitialData: true
+loadInitialData: false
 
 # default: "", prefix for redis key
 redisKeyPrefix: 2tower_
@@ -51,7 +51,7 @@ userFeatureColumns: prediction
 
 ### Redis Configuration
 # default: localhost:6379
-redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
+# redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
 
 # default: 256, JedisPoolMaxTotal
 # redisPoolMaxTotal:

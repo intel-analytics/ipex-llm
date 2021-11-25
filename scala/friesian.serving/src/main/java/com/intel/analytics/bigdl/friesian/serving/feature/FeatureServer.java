@@ -273,10 +273,6 @@ public class FeatureServer extends GrpcServerBase {
                 }
             }
             redisContext.stop();
-            if (jedis != null) {
-                jedis.close();
-            }
-
             if (!colNamesMap.containsValue(keyPrefix)) {
                 String colNamesStr;
                 if (!redisCluster) {
@@ -287,6 +283,10 @@ public class FeatureServer extends GrpcServerBase {
                 colNamesMap.put(keyPrefix, colNamesStr.split(","));
             }
             featureBuilder.addAllColNames(Arrays.asList(colNamesMap.get(keyPrefix)));
+
+            if (jedis != null) {
+                jedis.close();
+            }
             return featureBuilder.build();
         }
 
