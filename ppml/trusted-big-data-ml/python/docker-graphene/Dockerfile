@@ -40,7 +40,7 @@ ENV PATH                ${JAVA_HOME}/bin:${PATH}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget unzip patch zip git maven
 ADD hadoop-common-shell.patch /opt/hadoop-common-shell.patch
-ADD e2e.jar spark-${SPARK_VERSION}/examples/jars/e2e.jar
+ADD spark-example-sql-e2e.jar spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
 
 # java
 RUN wget $JDK_URL && \
