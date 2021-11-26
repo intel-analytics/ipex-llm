@@ -282,9 +282,9 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-cluster' --epochs 1  --batch_size 32 --data_dir /data/cifar10_data --download False
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "orca pytorch cifar10 failed"
-  exit $exit_status
+  #exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -298,9 +298,9 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-cluster'   --epochs 1  --batch_size 32 --download False --data_dir /data/fashion_mnist
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "orca pytorch fashion_mnist failed"
-  exit $exit_status
+  #exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -313,9 +313,9 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-cluster' --data_dir /data/dataset 
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "orca pytorch super_resolution failed"
-  exit $exit_status
+  #exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -329,9 +329,9 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-cluster' --dir /data/test_mnist --download False
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "orca torchmodel mnist failed"
-  exit $exit_status
+  #exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -347,9 +347,9 @@ ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet2012 /data/imagenet2012
 python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /data/imagenet2012 --batch-size 8 --max_epochs 1 --deploy_mode yarn-cluster
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "orca torchmodel imagenet failed"
-  exit $exit_status
+  #exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -364,9 +364,9 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py /data/dogs_cats/samples --deploy-mode yarn-cluster
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
+  #clear_up
   echo "orca torchmodel resnet_finetune failed"
-  exit $exit_status
+  #exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
