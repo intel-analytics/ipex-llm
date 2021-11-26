@@ -71,4 +71,4 @@ The same goes for the master deployment's ports 6379, 10020, and 10023. Remember
 [pluginCode]: https://github.com/intel/intel-device-plugins-for-kubernetes
 [keysNpassword]: https://github.com/intel-analytics/analytics-zoo/tree/master/ppml/trusted-realtime-ml/scala/docker-graphene#prepare-the-keys
 [helmsite]: https://helm.sh/
-[devicePluginK8sQuickStart]: https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernets.html
+[devicePluginK8sQuickStart]: https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html
