@@ -110,11 +110,11 @@ The `/opt` directory contains:
 
 ### **3. Submit to k8s from remote**
 
-You can also submit BigDL application from a remote node with the following steps:
+Instead of lanuching a client container, you can also submit BigDL application from a remote node with the following steps:
 
 1. Check the [prerequisites](https://spark.apache.org/docs/latest/running-on-kubernetes.html#prerequisites) of running Spark on Kubernetes.
 
-    - The remote node needs to properly setup the configurations and authentications of the k8s cluster (e.g. the config file under ~/.kube, especially the server address in the config).
+    - The remote node needs to properly setup the configurations and authentications of the k8s cluster (e.g. the `config` file under `~/.kube`, especially the server address in the `config`).
 
     - Install `kubectl` on the remote node and run some sample commands for verification, for example `kubectl auth can-i <list|create|edit|delete> pods`. 
     Note that the installation of `kubectl` is not a must for the remote node, but it is a useful tool to verify whether the remote node has access to the k8s cluster.
@@ -124,11 +124,11 @@ You can also submit BigDL application from a remote node with the following step
 2. Follow the steps in the [Python User Guide](./python.html#install) to install BigDL in a conda environment.
 
 
-### **4. Run BigDL Examples on k8s**
+### **4. Run BigDL on k8s**
 
 _**Note**: Please make sure `kubectl` has appropriate permission to create, list and delete pod._
 
-_**Note**: Please refer to Section 5 for some know issues._
+You may refer to [Section 5](#known-issues) for some known issues when running BigDL on k8s.
 
 #### **4.1 K8s client mode**
 
@@ -246,7 +246,7 @@ Options:
 - --class: scala example class name.
 - --inputDir: input data path of the nnframe example. The data path is the mounted filesystem of the host. Refer to more details by [Kubernetes Volumes](https://spark.apache.org/docs/latest/running-on-kubernetes.html#using-kubernetes-volumes).
 
-### **5 Know Issues**
+### **5 Known Issues**
 
 This section shows some common topics for both client mode and cluster mode.
 
