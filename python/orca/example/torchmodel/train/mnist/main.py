@@ -70,6 +70,8 @@ def main():
                         help='For Saving the current Model')
     parser.add_argument('--deploy-mode', default="local",
                         help='supported deploy mode is local, yarn-client, yarn-cluster')
+    parser.add_argument('--download', type=bool, default=True,
+                        help='download dataset or prepare by yourself')
 
     args = parser.parse_args()
 
@@ -77,14 +79,14 @@ def main():
     if not exists(args.dir):
         makedirs(args.dir)
     train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(args.dir, train=True, download=False,
+        datasets.MNIST(args.dir, train=True, download=args.download,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
                        ])),
         batch_size=args.batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(args.dir, train=False,download=False,
+        datasets.MNIST(args.dir, train=False,download=args.download,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
