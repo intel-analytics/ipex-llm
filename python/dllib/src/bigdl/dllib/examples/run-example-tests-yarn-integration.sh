@@ -232,7 +232,7 @@ echo "#26 start test for pytorch super_resolution"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'local' --data_dir /data/resolution_data 
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir /data/resolution_data 
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
