@@ -250,7 +250,7 @@ Options:
 
 This section shows some common topics for both client mode and cluster mode.
 
-#### **5.1 How to specify python environment**
+#### **5.1 How to specify python environment?**
 
 The k8s image provides conda python environment. Image "intelanalytics/bigdl-k8s:latest" installs python environment in "/usr/local/envs/pytf1/bin/python". Image "intelanalytics/bigdl-k8s:latest-tf2" installs python environment in "/usr/local/envs/pytf2/bin/python".
 
@@ -275,7 +275,7 @@ The k8s would delete the pod once the executor failed in client mode and cluster
 init_orca_context(..., extra_params = {"temp-dir": "/bigdl/"})
 ```
 
-#### **5.3 How to deal with "JSONDecodeError" ?**
+#### **5.3 How to deal with "JSONDecodeError"?**
 
 If you set `temp-dir` to a mounted nfs storage and use multiple executors , you may meet `JSONDecodeError` since multiple executors would write to the same physical folder and cause conflicts. Do not mount `temp-dir` to shared storage is one option to avoid conflicts. But if you debug ray on k8s, you need to output logs to a shared storage. In this case, you could set num-nodes to 1. After testing, you can remove `temp-dir` setting and run multiple executors.
 
@@ -305,7 +305,7 @@ ${SPARK_HOME}/bin/spark-submit \
   file:///path/script.py
 ```
 
-#### **5.5 How to deal with "RayActorError" ?**
+#### **5.5 How to deal with "RayActorError"?**
 
 "RayActorError" may caused by running out of the ray memory. If you meet this error, try to increase the memory for ray.
 
@@ -313,7 +313,7 @@ ${SPARK_HOME}/bin/spark-submit \
 init_orca_context(..., extra_executor_memory_for_ray="100g")
 ```
 
-#### **5.6 How to set proper "steps_per_epoch" and "validation steps" ?**
+#### **5.6 How to set proper "steps_per_epoch" and "validation steps"?**
 
 The `steps_per_epoch` and `validation_steps` should equal to numbers of dataset divided by batch size if you want to train all dataset. The `steps_per_epoch` and `validation_steps` do not relate to the `num_nodes` when total dataset and batch size are fixed. For example, you set `num_nodes` to 1, and set `steps_per_epoch` to 6. If you change the `num_nodes` to 3, the `steps_per_epoch` should still be 6.
 
