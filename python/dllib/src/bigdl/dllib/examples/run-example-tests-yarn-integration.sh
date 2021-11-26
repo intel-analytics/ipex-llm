@@ -203,7 +203,7 @@ echo "#25 start test for pytorch fashion_mnist"
 start=$(date "+%s")
 #run the example
 ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/fashion_mnist/ /data/fashion_mnist/
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-client'   --epochs 1  --batch_size 256 --doenload False --data_dir /data/fashion_mnist
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-client'   --epochs 1  --batch_size 256 --download False --data_dir /data/fashion_mnist
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
