@@ -241,7 +241,7 @@ ls /data
 echo "test resolution###############"
 ls /data/dataset
 cat /etc/hostname
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir /data/dataset 
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn' --data_dir /data/dataset 
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
