@@ -160,22 +160,6 @@ clear_up() {
 ls /data
 cat /etc/hostname
 echo "###################"
-echo "#22 start test for orca torchmodel resnet_finetune"
-#timer
-start=$(date "+%s")
-#run the example
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/dogs_cats /data/dogs_cats
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py /data/dogs_cats/samples
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca torchmodel resnet_finetune failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#22 Total time cost ${time} seconds"
-
 
 
 echo "##23 start test for orca data spark_pandas"
@@ -246,6 +230,23 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#20 Total time cost ${time} seconds"
+
+
+echo "#22 start test for orca torchmodel resnet_finetune"
+#timer
+start=$(date "+%s")
+#run the example
+# ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/dogs_cats /data/dogs_cats
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ${HDFS_URI}/dogs_cats/samples
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca torchmodel resnet_finetune failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#22 Total time cost ${time} seconds"
 
 # echo "#26 start test for pytorch super_resolution"
 # #timer succeed
