@@ -63,16 +63,16 @@ def build_model(num_users, num_items, layers=[20, 10], include_mf=True, mf_embed
     return model
 
 
-#cluster_mode = "local"
+# cluster_mode = "local"
 cluster_mode = "k8s"
 if cluster_mode == "local":
-    sc = init_orca_context()
+    sc = init_orca_context(memory="20g")
 elif cluster_mode == "standalone":
     sc = init_orca_context("standalone", master="spark://...", cores=8, num_nodes=4, memory="10g")
 elif cluster_mode == "yarn":
     sc = init_orca_context("yarn", cores=8, num_nodes=4, memory="10g")
 elif cluster_mode == "k8s":
-    sc = init_orca_context(cluster_mode="k8s", cores=8, num_nodes=4,
+    sc = init_orca_context(cluster_mode="k8s", cores=8, num_nodes=4, memory="20g",
                            master="k8s://https://172.16.0.200:6443",
                            container_image="10.239.45.10/arda/intelanalytics/bigdl-k8s-spark-3.1.2:0.14.0-SNAPSHOT",
                            conf={"spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
@@ -82,13 +82,15 @@ elif cluster_mode == "k8s":
 elif cluster_mode == "spark-submit":  # To test k8s using spark-submit
     sc = init_orca_context(cluster_mode="spark-submit")
 
-#data_path = "/home/kai/Downloads"
+# data_path = "/home/kai/Downloads"
 data_path = "/bigdl2.0/data"
+# data_type = "ml-latest-small"
+data_type = "ml-25m"
 # Need spark3 to support delimiter with more than one character.
-full_data = read_csv("{}/ml-1m/ratings.dat".format(data_path), sep="::", header=None, names=["user", "item", "label"],
+full_data = read_csv("{}/{}/ratings.csv".format(data_path, data_type), sep=",",
                      usecols=[0, 1, 2], dtype={0: np.int32, 1: np.int32, 2: np.int32})
-user_set = set(full_data["user"].unique())
-item_set = set(full_data["item"].unique())
+user_set = set(full_data["userId"].unique())
+item_set = set(full_data["movieId"].unique())
 
 min_user_id = min(user_set)
 max_user_id = max(user_set)
@@ -111,8 +113,8 @@ estimator = Estimator.from_keras(model)
 estimator.fit(train_data,
               batch_size=800,
               epochs=5,
-              feature_cols=["user", "item"],
-              label_cols=["label"],
+              feature_cols=["userId", "movieId"],
+              label_cols=["rating"],
               validation_data=test_data)
 tf.saved_model.save(estimator.get_model(), "./model")
 
