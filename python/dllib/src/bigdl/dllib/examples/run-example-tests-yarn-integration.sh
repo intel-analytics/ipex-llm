@@ -146,7 +146,7 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segmentation.py \
   --batch_size 64 \
-  --file_path ${HDFS_URI}/data/carvana \
+  --file_path /data/carvana \
   --non_interactive --epochs 1 --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
