@@ -14,15 +14,16 @@
 # limitations under the License.
 #
 
-from bigdl.dataset import movielens
+import math
+import argparse
+import pandas as pd
+import tensorflow as tf
+from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
+
+from bigdl.dllib.feature.dataset import movielens
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.friesian.feature import FeatureTable
-from bigdl.orca import init_orca_context, stop_orca_context
-from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
-import tensorflow as tf
-import math
-import pandas as pd
-import argparse
 
 
 def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=True, mf_embed=20):
@@ -38,11 +39,11 @@ def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=Tru
     user_latent = Flatten()(mlp_embed_user)
     item_latent = Flatten()(mlp_embed_item)
 
-    mlp_lalent = concatenate([user_latent, item_latent], axis=1)
+    mlp_latent = concatenate([user_latent, item_latent], axis=1)
     for idx in range(1, num_layer):
         layer = Dense(layers[idx], activation='relu',
                       name='layer%d' % idx)
-        mlp_lalent = layer(mlp_lalent)
+        mlp_latent = layer(mlp_latent)
 
     if include_mf:
         mf_embed_user = Embedding(input_dim=num_users,
@@ -55,17 +56,17 @@ def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=Tru
         mf_item_flatten = Flatten()(mf_embed_item)
 
         mf_latent = multiply([mf_user_flatten, mf_item_flatten])
-        concated_model = concatenate([mlp_lalent, mf_latent], axis=1)
-        prediction = Dense(class_num, activation="softmax")(concated_model)
+        concated_model = concatenate([mlp_latent, mf_latent], axis=1)
+        prediction = Dense(class_num, activation='softmax', name='prediction')(concated_model)
     else:
-        prediction = Dense(class_num, activation='softmax', name='prediction')(mlp_lalent)
+        prediction = Dense(class_num, activation='softmax', name='prediction')(mlp_latent)
 
     model = tf.keras.Model([user_input, item_input], prediction)
     return model
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Two Tower Training/Inference')
+    parser = argparse.ArgumentParser(description='NCF Training/Inference')
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn, standalone or spark-submit.')
     parser.add_argument('--master', type=str, default=None,
