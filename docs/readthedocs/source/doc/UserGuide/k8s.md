@@ -128,7 +128,7 @@ Instead of lanuching a client container, you can also submit BigDL application f
 
 _**Note**: Please make sure `kubectl` has appropriate permission to create, list and delete pod._
 
-You may refer to [Section 5](#5-known-issues) for some known issues when running BigDL on k8s.
+You may refer to [Section 5](#known-issues) for some known issues when running BigDL on k8s.
 
 #### **4.1 K8s client mode**
 
