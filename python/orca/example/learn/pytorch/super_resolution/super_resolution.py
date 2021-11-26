@@ -73,6 +73,8 @@ elif opt.cluster_mode == "spark-submit":
 else:
     print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + opt.cluster_mode)
+if not exists(args.data_dir):
+        makedirs(args.data_dir)
 
 
 def download_report(count, block_size, total_size):
@@ -230,6 +232,8 @@ criterion = nn.MSELoss()
 model_dir = opt.data_dir+"/models"
 
 if opt.backend == "bigdl":
+    if not exists(model_dir):
+        makedirs(model_dir)
     model = model_creator(
         config={
             "upscale_factor": opt.upscale_factor,
