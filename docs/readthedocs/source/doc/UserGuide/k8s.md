@@ -250,7 +250,7 @@ Options:
 
 This section shows some common topics for both client mode and cluster mode.
 
-#### **5.1 How to specify python environment?**
+#### **5.1 How to specify the Python environment?**
 
 The k8s image provides conda python environment. Image "intelanalytics/bigdl-k8s:latest" installs python environment in "/usr/local/envs/pytf1/bin/python". Image "intelanalytics/bigdl-k8s:latest-tf2" installs python environment in "/usr/local/envs/pytf2/bin/python".
 
