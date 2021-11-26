@@ -137,35 +137,35 @@ clear_up() {
 # time=$((now - start))
 # echo "#7 Total time cost ${time} seconds"
 
-echo "#21 start test for orca torchmodel mnist"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /data/test_mnist
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca torchmodel mnist failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#21 Total time cost ${time} seconds"
-
-# echo "#22 start test for orca torchmodel resnet_finetune"
+# echo "#21 start test for orca torchmodel mnist"
 # #timer
 # start=$(date "+%s")
 # #run the example
-# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py /data/dogs_cats/samples
+# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode 'yarn-client' --dir /data/test_mnist
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
 #   clear_up
-#   echo "orca torchmodel resnet_finetune failed"
+#   echo "orca torchmodel mnist failed"
 #   exit $exit_status
 # fi
 # now=$(date "+%s")
 # time=$((now - start))
-# echo "#22 Total time cost ${time} seconds"
+# echo "#21 Total time cost ${time} seconds"
+
+echo "#22 start test for orca torchmodel resnet_finetune"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py /data/dogs_cats/samples
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca torchmodel resnet_finetune failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#22 Total time cost ${time} seconds"
 
 # echo "##23 start test for orca data spark_pandas"
 # #timer
