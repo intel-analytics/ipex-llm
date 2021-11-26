@@ -182,20 +182,21 @@ clear_up() {
 # time=$((now - start))
 # echo "#23 Total time cost ${time} seconds"
 
-# echo "#24 start test for pytorch cifar10"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-client' --epochs 1  --batch_size 256 --data_dir /data/cifar10_data
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca pytorch cifar10 failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#24 Total time cost ${time} seconds"
+echo "#24 start test for pytorch cifar10"
+#timer
+start=$(date "+%s")
+#run the example
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/cifar10_data /data/cifar10_data
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-client' --epochs 1  --batch_size 256 --data_dir /data/cifar10_data --download False
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca pytorch cifar10 failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#24 Total time cost ${time} seconds"
 
 # echo "#25 start test for pytorch fashion_mnist"
 # #timer
@@ -233,24 +234,20 @@ clear_up() {
 # time=$((now - start))
 # echo "#20 Total time cost ${time} seconds"
 
-echo "#26 start test for pytorch super_resolution"
-#timer
-start=$(date "+%s")
-#run the example
-ls /data
-echo "test resolution###############"
-ls /data/dataset
-cat /etc/hostname
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir /data/dataset 
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca pytorch super_resolution failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#26 Total time cost ${time} seconds"
+# echo "#26 start test for pytorch super_resolution"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode 'yarn-client' --data_dir /data/dataset 
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   clear_up
+#   echo "orca pytorch super_resolution failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#26 Total time cost ${time} seconds"
 
 # echo "##21 start test for data spark_pandas"
 # #timer

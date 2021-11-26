@@ -48,6 +48,7 @@ parser.add_argument('--backend', type=str, default="bigdl",
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default="./data",help='The path to dataset')
+parser.add_argument('--download', type=bool, default=True,help='Download dataset or not')
 args = parser.parse_args()
 
 if args.cluster_mode == "local":
@@ -67,7 +68,7 @@ transform = transforms.Compose(
 
 def train_loader_creator(config, batch_size):
     trainset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=True,
-                                            download=True, transform=transform)
+                                            download=args.download, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
                                               shuffle=True, num_workers=2)
     return trainloader
@@ -75,7 +76,7 @@ def train_loader_creator(config, batch_size):
 
 def test_loader_creator(config, batch_size):
     testset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=False,
-                                           download=True, transform=transform)
+                                           download=args.download, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=2)
     return testloader
