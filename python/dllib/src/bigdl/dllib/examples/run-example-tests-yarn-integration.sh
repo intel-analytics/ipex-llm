@@ -216,8 +216,8 @@ echo "#20 start test for orca torchmodel imagenet"
 #timer
 start=$(date "+%s")
 #run the example
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet2012 /data/imagenet_test
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /data/imagenet_test --batch-size 8 --max_epochs 1
+${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet2012 /home/imagenet_test
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /home/imagenet_test --batch-size 8 --max_epochs 1 --deploy_mode local
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
