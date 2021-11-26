@@ -138,6 +138,8 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
 
+'
+
 echo "#11 start test for orca transfer learning"
 #timer
 start=$(date "+%s")
@@ -154,9 +156,7 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#11 Total time cost ${time} seconds"
 
-'
-
-
+: '
 echo "#11-2 start test for orca transfer learning"
 #timer
 start=$(date "+%s")
@@ -172,3 +172,4 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#11-2 Total time cost ${time} seconds"
+'
