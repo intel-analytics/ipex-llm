@@ -73,8 +73,8 @@ elif opt.cluster_mode == "spark-submit":
 else:
     print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + opt.cluster_mode)
-if not exists(args.data_dir):
-        makedirs(args.data_dir)
+if not exists(opt.data_dir):
+        makedirs(opt.data_dir)
 
 
 def download_report(count, block_size, total_size):
