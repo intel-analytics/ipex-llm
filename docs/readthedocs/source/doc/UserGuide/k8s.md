@@ -246,7 +246,7 @@ Options:
 - --class: scala example class name.
 - --inputDir: input data path of the nnframe example. The data path is the mounted filesystem of the host. Refer to more details by [Kubernetes Volumes](https://spark.apache.org/docs/latest/running-on-kubernetes.html#using-kubernetes-volumes).
 
-### **5 Know issues**
+### **5 Know Issues**
 
 This section shows some common topics for both client mode and cluster mode.
 
@@ -305,12 +305,12 @@ ${SPARK_HOME}/bin/spark-submit \
   file:///path/script.py
 ```
 
-#### **5.5 How to deal with  "RayActorError" ?**
+#### **5.5 How to deal with "RayActorError" ?**
 
 "RayActorError" may caused by running out of the ray memory. If you meet this error, try to increase the memory for ray.
 
 ```python
-init_orca_context(..., exra_executor_memory_for_ray="100g")
+init_orca_context(..., extra_executor_memory_for_ray="100g")
 ```
 
 #### **5.6 How to set proper "steps_per_epoch" and "validation steps" ?**
