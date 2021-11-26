@@ -43,8 +43,8 @@ def train_data_creator(config, batch_size):
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
 
-    trainset = torchvision.datasets.FashionMNIST('./data',
-                                                 download=True,
+    trainset = torchvision.datasets.FashionMNIST(args.data_dir,
+                                                 download=args.download,
                                                  train=True,
                                                  transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -56,8 +56,8 @@ def validation_data_creator(config, batch_size):
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
-    testset = torchvision.datasets.FashionMNIST(root='./data', train=False,
-                                                download=True, transform=transform)
+    testset = torchvision.datasets.FashionMNIST(root=args.data_dir, train=False,
+                                                download=args.download, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=2)
     return testloader
@@ -114,6 +114,8 @@ def main():
                              'bigdl, torch_distributed and spark are supported.')
     parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
     parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
+    parser.add_argument('--data_dir', type=str, default="./data", help='The path of dataset')
+    parser.add_argument('--download', type=bool, default=True, help='Download dataset or not')
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
@@ -123,7 +125,7 @@ def main():
     elif args.cluster_mode == "spark-submit":
         init_orca_context(cluster_mode=args.cluster_mode)
 
-    tensorboard_dir = "runs"
+    tensorboard_dir = args.data_dir+"runs"
     writer = SummaryWriter(tensorboard_dir + '/fashion_mnist_experiment_1')
     # constant for classes
     classes = ('T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
