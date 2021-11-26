@@ -77,14 +77,14 @@ def main():
     if not exists(args.dir):
         makedirs(args.dir)
     train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(args.dir, train=True, download=True,
+        datasets.MNIST(args.dir, train=True, download=False,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
                        ])),
         batch_size=args.batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(args.dir, train=False,download=True,
+        datasets.MNIST(args.dir, train=False,download=False,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
