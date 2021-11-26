@@ -6,7 +6,7 @@ export NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test
 
 wget -nv ${FTP_URI}/analytics-zoo-data/cifar-10-python.tar.gz -P ${NANO_TEST_DIR}/data
 
-source bigdl-nano-init
+# source bigdl-nano-init
 
 set -e
 echo "#Start bigdl-nano ipex tests"
