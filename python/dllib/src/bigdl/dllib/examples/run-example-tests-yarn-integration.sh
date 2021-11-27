@@ -139,7 +139,7 @@ clear_up() {
 
 
 
-
+ls /data
 cat /etc/hostname
 echo "###################"
 
@@ -279,7 +279,7 @@ echo "#24 start test for pytorch cifar10"
 start=$(date "+%s")
 #run the example
 # ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/cifar10_data /data/cifar10_data
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-cluster' --epochs 1  --batch_size 32 --data_dir /data/cifar10_data --download False
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-cluster' --epochs 1  --batch_size 8 --data_dir /data/cifar10_data --download False
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -295,7 +295,7 @@ echo "#25 start test for pytorch fashion_mnist"
 start=$(date "+%s")
 #run the example
 # ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/fashion_mnist/ /data/
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-cluster'   --epochs 1  --batch_size 32 --download False --data_dir /data/fashion_mnist
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --cluster_mode 'yarn-cluster'   --epochs 1  --batch_size 8 --download False --data_dir /data/fashion_mnist
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
@@ -338,22 +338,22 @@ time=$((now - start))
 echo "#21 Total time cost ${time} seconds"
 
 
-echo "#20 start test for orca torchmodel imagenet"
-#timer  
-start=$(date "+%s")
-#run the example
-# rm -rf /home/imagenet2012
-${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet2012 /data/imagenet2012
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /data/imagenet2012 --batch-size 8 --max_epochs 1 --deploy_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "orca torchmodel imagenet failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#20 Total time cost ${time} seconds"
+# echo "#20 start test for orca torchmodel imagenet"
+# #timer  
+# start=$(date "+%s")
+# #run the example
+# # rm -rf /home/imagenet2012
+# # ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/imagenet2012 /data/imagenet2012 
+# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/imagenet/main.py  /data/imagenet2012 --batch-size 8 --max_epochs 1 --deploy_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "orca torchmodel imagenet failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#20 Total time cost ${time} seconds"
 
 
 echo "#22 start test for orca torchmodel resnet_finetune"
