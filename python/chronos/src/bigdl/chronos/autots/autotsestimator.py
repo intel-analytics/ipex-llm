@@ -256,7 +256,14 @@ class AutoTSEstimator:
                 scheduler_params=scheduler_params
             )
 
-        return TSPipeline(best_model=self._get_best_automl_model(),
+        best_model = self._get_best_automl_model()
+
+        return TSPipeline(model=best_model.model,
+                          loss=best_model.criterion,
+                          optimizer=best_model.optimizer,
+                          model_creator=best_model.model_creator,
+                          loss_creator=best_model.loss_creator,
+                          optimizer_creator=best_model.optimizer_creator,
                           best_config=self.get_best_config(),
                           scaler=self._scaler,
                           scaler_index=self._scaler_index)
