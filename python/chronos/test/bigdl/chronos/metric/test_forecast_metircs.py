@@ -34,26 +34,26 @@ class TestChronosForecastMetrics(TestCase):
         y_true = np.arange(n_samples) + 1
         y_pred = y_true + 1
 
-        assert_almost_equal(Evaluator.evaluate("mse", y_true, y_pred, multioutput="uniform_average"), 1.)
-        assert_almost_equal(Evaluator.evaluate("mae", y_true, y_pred, multioutput="uniform_average"), 1.)
-        assert_almost_equal(Evaluator.evaluate("r2", y_true, y_pred, multioutput="uniform_average"), 0.995, 2)
-        assert_almost_equal(Evaluator.evaluate("smape", y_true, y_pred, multioutput="uniform_average"), 3.89*2/100, 2)
+        assert_almost_equal(Evaluator.evaluate("mse", y_true, y_pred, aggregate="mean")[0], 1.)
+        assert_almost_equal(Evaluator.evaluate("mae", y_true, y_pred, aggregate="mean")[0], 1.)
+        assert_almost_equal(Evaluator.evaluate("r2", y_true, y_pred, aggregate="mean")[0], 0.995, 2)
+        assert_almost_equal(Evaluator.evaluate("smape", y_true, y_pred, aggregate="mean")[0], 3.89*2/100, 2)
 
         y_true = np.array([3, -0.5, 2, 7])
         y_pred = np.array([2.5, -0.3, 2, 8])
 
-        assert_almost_equal(Evaluator.evaluate("mape", y_true, y_pred, multioutput="uniform_average"), 17.74/100, 2)
-        assert_almost_equal(Evaluator.evaluate("RMSE", y_true, y_pred, multioutput="uniform_average"), 0.57, 2)
+        assert_almost_equal(Evaluator.evaluate("mape", y_true, y_pred, aggregate="mean")[0], 17.74/100, 2)
+        assert_almost_equal(Evaluator.evaluate("RMSE", y_true, y_pred, aggregate="mean")[0], 0.57, 2)
 
     def test_highdim_array_metrics(self):
         y_true = np.array([[[3, -0.5], [2, 7]], [[3, -0.5], [2, 7]], [[3, -0.5], [2, 7]]])
         y_pred = np.array([[[2.5, -0.3], [2, 8]], [[2.5, -0.3], [2, 8]], [[2.5, -0.3], [2, 8]]])
 
-        assert_almost_equal(Evaluator.evaluate("smape", y_true, y_pred, multioutput="raw_values"),
+        assert_almost_equal(Evaluator.evaluate("smape", y_true, y_pred, aggregate=None)[0],
                             [[9.09*2/100, 25*2/100], [0*2/100, 6.67*2/100]], 2)
-        assert_almost_equal(Evaluator.evaluate("mape", y_true, y_pred, multioutput="raw_values"),
+        assert_almost_equal(Evaluator.evaluate("mape", y_true, y_pred, aggregate=None)[0],
                             [[16.67/100, 40.00/100], [0/100, 14.29/100]], 2)
-        assert_almost_equal(Evaluator.evaluate("rmse", y_true, y_pred, multioutput="raw_values"),
+        assert_almost_equal(Evaluator.evaluate("rmse", y_true, y_pred, aggregate=None)[0],
                             [[0.5, 0.2], [0, 1]], 2)
-        assert_almost_equal(Evaluator.evaluate("mse", y_true, y_pred, multioutput="raw_values"),
+        assert_almost_equal(Evaluator.evaluate("mse", y_true, y_pred, aggregate=None)[0],
                             [[0.25, 0.04], [0, 1]], 2)
