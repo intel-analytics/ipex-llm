@@ -252,7 +252,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             return PytorchPysparkWorker(**init_param).predict(**params)
 
         pred_shards = SparkXShards(xshards.rdd.mapPartitions(
-                                        lambda iter: transform_func(iter, init_params, params)))
+                                   lambda iter: transform_func(iter, init_params, params)))
         return pred_shards
 
     def predict(self,
@@ -345,8 +345,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params = dict(
             mode="evaluate",
             state_dict=self.state_dict,
-            cluster_info=cluster_info,
-            )
+            cluster_info=cluster_info)
+
         init_params.update(self.worker_init_params)
 
         params = dict(

@@ -22,7 +22,8 @@ import tempfile
 import shutil
 
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, get_remote_file_to_local
+from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
+    get_remote_file_to_local
 
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
@@ -33,6 +34,7 @@ from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
 logger = logging.getLogger(__name__)
+
 
 class SparkTFEstimator():
     def __init__(self,
@@ -57,9 +59,9 @@ class SparkTFEstimator():
         self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
                                         self.total_cores * 4).repartition(self.num_workers)
 
-        if not "inter_op_parallelism"  in self.config:
+        if "inter_op_parallelism" not in self.config:
             self.config["inter_op_parallelism"] = 1
-        if not "intra_op_parallelism" in self.config:
+        if "intra_op_parallelism" not in self.config:
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
@@ -316,7 +318,7 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).predict(**param)
 
-            pred_shards = SparkXShards(xshards.rdd.repartition(self.num_workers) \
+            pred_shards = SparkXShards(xshards.rdd.repartition(self.num_workers)
                                        .mapPartitions(
                                            lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
@@ -381,7 +383,6 @@ class SparkTFEstimator():
         import tensorflow as tf
         model = tf.keras.models.load_model(filepath)
         self.model_weights = model.get_weights()
-
 
     def get_model(self):
         """
