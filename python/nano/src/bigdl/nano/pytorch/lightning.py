@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from collections import OrderedDict
+from typing import List, Callable
 
 from pytorch_lightning import LightningModule
 from torch import nn, Tensor
@@ -22,7 +23,7 @@ from torch.optim import Optimizer
 
 
 class LightningModuleFromTorch(LightningModule):
-    def __init__(self, model: nn.Module, loss: _Loss, optimizer: Optimizer, metrics=None):
+    def __init__(self, model: nn.Module, loss: _Loss, optimizer: Optimizer, metrics: List[Callable] = None):
         """
         Integrate pytorch modules, loss, optimizer to pytorch-lightning model.
 
