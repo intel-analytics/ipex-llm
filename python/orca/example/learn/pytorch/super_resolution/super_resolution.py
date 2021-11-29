@@ -26,7 +26,6 @@ from math import log10
 from PIL import Image
 import urllib
 import tarfile
-import os
 from os import makedirs, remove, listdir
 from os.path import exists, join, basename
 
@@ -60,16 +59,17 @@ parser.add_argument('--backend', type=str, default="bigdl",
                          'bigdl, torch_distributed and spark are supported.')
 parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
 opt = parser.parse_args()
-for filepath,dirnames,filenames in os.walk(opt.data_dir):
-    for filename in filenames:
-        print(filename)
+
 print(opt)
 
 if opt.cluster_mode == "local":
     init_orca_context()
 elif opt.cluster_mode.startswith("yarn"):
+    hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+    assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+            "set the environment variable HADOOP_CONF_DIR"
     additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
-    init_orca_context(cluster_mode=opt.cluster_mode, cores=4, num_nodes=2,
+    init_orca_context(cluster_mode=opt.cluster_mode, cores=4, num_nodes=2, hadoop_conf=hadoop_conf,
                     additional_archive=additional)
 elif opt.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
