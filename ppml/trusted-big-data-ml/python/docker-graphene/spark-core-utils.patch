@@ -1,0 +1,3 @@
+562a563,564
+>     println("INFO fork chmod is forbidden !!!" + targetFile.getAbsolutePath)
+>     // FileUtil.chmod(targetFile.getAbsolutePath, "a+x")

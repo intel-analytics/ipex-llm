@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# parse config file
+function parse_yaml {
+   local prefix=$2
+   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+   sed -ne "s|^\($s\):|\1|" \
+        -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
+   awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
+      }
+   }'
+}
+while [ "$1" != "" ]; do
+    case $1 in
+        -c | --config_path )    shift
+                                config_path=$1
+                                ;;
+        -o | --omp )            shift
+                                export OMP_NUM_THREADS=$1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+if [ -z "${config_path// }" ]; then
+  config_path=config.yaml
+fi
+
+
+parse_yaml $config_path
+eval $(parse_yaml $config_path)
+
+if [ -z "${model_name}" ]; then
+    model_name=serving_stream
+fi
+
+if [ -z "${redis_maxmem}" ]; then
+    echo "Redis maxmemory is not set, using default value 8G"
+    redis_maxmem=8G
+fi
+
+# try to start redis server
+if [ -z "${REDIS_HOME}" ]; then
+    echo "REDIS_HOME variable is not set, skip redis start. "
+    echo "Note that you need to set it otherwise Cluster Serving would not start or stop Redis for you."
+else
+    echo "Trying to start Redis server with redis configuration file"
+    ${REDIS_HOME}/src/redis-server ${REDIS_HOME}/redis.conf &
+#    sleep 1
+#
+#    # sleep for 1 sec to ensure server is ready and client could connect
+#    echo "setting redis stop-writes-on-bgsave-error no: "`${REDIS_HOME}/src/redis-cli config set stop-writes-on-bgsave-error no`
+#    echo "setting redis save \"\": "`${REDIS_HOME}/src/redis-cli config set save ""`
+#    echo "setting redis maxmemory 4g: "`${REDIS_HOME}/src/redis-cli config set maxmemory 4g`
+#    # bind can not be set after redis starts
+#    # /opt/work/redis-5.0.5/src/redis-cli config set bind "0.0.0.0"
+#    echo "setting redis protected-mode no: "`${REDIS_HOME}/src/redis-cli config set protected-mode no`
+#    echo "setting redis maxclients 10000: "`${REDIS_HOME}/src/redis-cli config set maxclients 10000`
+    echo "To set specific parameter, use \"\$REDIS_HOME/src/redis-cli config set key value\" later."
+fi
+
+BIGDL_SERVING_JAR_PATH=$(find . -maxdepth 1 -name 'bigdl-serving-*.jar')
+
+
+if [ -z "${FLINK_HOME}" ]; then
+  echo "FLINK_HOME variable is not set, you need to set it to start Cluster Serving with Flink backend."
+  exit 1
+fi
+
+if [[ $($FLINK_HOME/bin/flink list) == *"Cluster Serving"* ]]; then
+  echo "Starting new Cluster Serving job. There exists Cluster Serving job, if not, please check."
+else
+  echo "Starting new Cluster Serving job."
+fi
+
+${FLINK_HOME}/bin/flink run -c com.intel.analytics.bigdl.serving.ClusterServing $BIGDL_SERVING_JAR_PATH -c $config_path
+
+

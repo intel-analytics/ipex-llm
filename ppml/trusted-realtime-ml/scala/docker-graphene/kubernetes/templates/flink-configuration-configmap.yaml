@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flink-config
+  labels:
+    app: bigdl-ppml-trusted-realtime-ml-graphene
+data:
+  flink.jobmanager.ip: flink-jobmanager
+  taskmanager.memory.managed.size: 8192mb
+  taskmanager.memory.task.heap.size: 10gb
+  xmx.size: 10g
+  taskmanager.rpc.port: "6125"
+  sgx.mode: sgx

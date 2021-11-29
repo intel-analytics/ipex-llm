@@ -25,12 +25,13 @@ Parameters:
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, SimpleRNN}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.SimpleRNN
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
-model.add(SimpleRNN(8, activation = "relu", inputShape = Shape(4, 5)))
+model.add(SimpleRNN[Float](8, activation = "relu", inputShape = Shape(4, 5)))
 val input = Tensor[Float](2, 4, 5).randn()
 val output = model.forward(input)
 ```
@@ -62,11 +63,11 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import SimpleRNN
+from zoo.pipeline.api.keras.layers import SimpleRNN
+from zoo.pipeline.api.keras.models import Sequential
 
 model = Sequential()
-model.add(SimpleRNN(8, activation = "relu", input_shape = (4, 5)))
+model.add(SimpleRNN(8, activation="relu", input_shape=(4, 5)))
 input = np.random.random([2, 4, 5])
 output = model.forward(input)
 ```
@@ -114,15 +115,17 @@ Parameters:
 * `uRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied the recurrent weights matrices. Default is null.
 * `bRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the bias. Default is null.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `name`: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, LSTM}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.LSTM
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
-model.add(LSTM(8, inputShape = Shape(2, 3)))
+model.add(LSTM[Float](8, inputShape = Shape(2, 3)))
 val input = Tensor[Float](2, 2, 3).randn()
 val output = model.forward(input)
 ```
@@ -130,28 +133,28 @@ Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,.,.) =
-1.3485646	0.38385049	0.676986
-0.13189854	0.30926105	0.4539456
+0.6857518	0.21570909	-0.019308459
+0.17754157	0.25172755	-1.189466
 
 (2,.,.) =
--1.7166822	-0.71257055	-0.477679
--0.36572325	-0.5534503	-0.018431915
+0.23807438	1.6879119	-0.36335373
+0.9826865	0.49549296	0.8100107
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3]
 ```
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
--0.20168768	-0.20359062	-0.11801678	-0.08987579	0.20480658	-0.05170132	-0.048530716	0.08447949
--0.07134238	-0.11233686	0.073534355	0.047955263	0.13415548	0.12862797	-0.07839044	    0.28296617
+0.13552098	-0.043483295	-0.10553853	0.19386405	0.18295142	0.037892513	-0.05510225	-0.2420117
+-0.04152686	-0.13908584	0.18151914	0.14170776	0.15598273	0.18968433	-0.042683482	-0.05782121
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x8]
 ```
 
 **Python example:**
 ```python
 import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import LSTM
+from zoo.pipeline.api.keras.layers import LSTM
+from zoo.pipeline.api.keras.models import Sequential
 
 model = Sequential()
 model.add(LSTM(8, input_shape = (2, 3)))
@@ -160,18 +163,18 @@ output = model.forward(input)
 ```
 Input is:
 ```python
-[[[0.84004043 0.2081865  0.76093342]
-  [0.06878797 0.13804673 0.23251666]]
+array([[[ 0.67619723,  0.5168176 ,  0.8093504 ],
+        [ 0.93787417,  0.53016934,  0.51934568]],
 
- [[0.24651173 0.5650254  0.41424478]
-  [0.49338729 0.40505622 0.01497762]]]
+       [[ 0.57334472,  0.40007739,  0.65670337],
+        [ 0.74457042,  0.15209156,  0.02015092]]])
 ```
 Output is:
 ```python
-[[ 0.01089199  0.02563154 -0.04335827  0.03037791  0.11265078 -0.17756112
-   0.14166507  0.01017009]
- [ 0.0144811   0.03360332  0.00676281 -0.01473055  0.09639315 -0.16620669
-   0.07391933  0.01746811]]
+array([[-0.01563799,  0.16000053, -0.20192699,  0.08859081, -0.14184587,
+         0.11160418,  0.19090165,  0.03475797],
+       [-0.02395577,  0.10148412, -0.13211192,  0.05772379, -0.16488783,
+         0.13513438,  0.15624164,  0.02866406]], dtype=float32)
 ```
 
 ---
@@ -196,19 +199,20 @@ Parameters:
 * `innerActivation`: String representation of the activation function for inner cells. See [here](activation/#available-activations) for available activation strings. Default is 'hard_sigmoid'.
 * `returnSequences`: Whether to return the full sequence or only return the last output in the output sequence. Default is false.
 * `goBackwards`: Whether the input sequence will be processed backwards. Default is false.
-* `wRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
-* `uRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied the recurrent weights matrices. Default is null.
-* `bRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `wRegularizer`: An instance of [Regularizer](https://bigdl-project.github.io/master/#APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `uRegularizer`: An instance of [Regularizer](https://bigdl-project.github.io/master/#APIGuide/Regularizers/), applied the recurrent weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](https://bigdl-project.github.io/master/#APIGuide/Regularizers/), applied to the bias. Default is null.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, GRU}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.GRU
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
-model.add(GRU(8, inputShape = Shape(2, 3)))
+model.add(GRU[Float](8, inputShape = Shape(2, 3)))
 val input = Tensor[Float](2, 2, 3).randn()
 val output = model.forward(input)
 ```
@@ -236,11 +240,11 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import GRU
+from zoo.pipeline.api.keras.layers import GRU
+from zoo.pipeline.api.keras.models import Sequential
 
 model = Sequential()
-model.add(GRU(8, input_shape = (2, 3)))
+model.add(GRU(8, input_shape=(2, 3)))
 input = np.random.random([2, 2, 3])
 output = model.forward(input)
 ```
@@ -278,19 +282,20 @@ Highway(activation=None, W_regularizer=None, b_regularizer=None, bias=True, inpu
 Parameters:
 
 * `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
-* `wRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
-* `bRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `wRegularizer`: An instance of [Regularizer](https://bigdl-project.github.io/master/#APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](https://bigdl-project.github.io/master/#APIGuide/Regularizers/), applied to the bias. Default is null.
 * `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, Highway}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.Highway
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
-model.add(Highway(inputShape = Shape(3)))
+model.add(Highway[Float](inputShape = Shape(3)))
 val input = Tensor[Float](2, 3).randn()
 val output = model.forward(input)
 ```
@@ -312,11 +317,11 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import Highway
+from zoo.pipeline.api.keras.layers import Highway
+from zoo.pipeline.api.keras.models import Sequential
 
 model = Sequential()
-model.add(Highway(input_shape = (3)))
+model.add(Highway(input_shape=(3, )))
 input = np.random.random([2, 3])
 output = model.forward(input)
 ```
@@ -329,106 +334,4 @@ Output is:
 ```python
 [[0.5762107  0.4567929  0.00370956]
  [0.24133313 0.38104653 0.05249191]]
-```
-
----
-## **ConvLSTM2D**
-Convolutional LSTM.
-
-Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
-
-Border mode currently supported for this layer is 'same'.
-
-The convolution kernel for this layer is a square kernel with equal strides 'subsample'.
-
-The input of this layer should be 5D.
-
-**Scala:**
-```scala
-ConvLSTM2D(nbFilter, nbKernel, activation = "tanh", innerActivation = "hard_sigmoid", dimOrdering = "th", subsample = 1, wRegularizer = null, uRegularizer = null, bRegularizer = null, returnSequences = false, goBackwards = false, inputShape = null)
-```
-**Python:**
-```python
-ConvLSTM2D(nb_filter, nb_row, nb_col, activation="tanh", inner_activation="hard_sigmoid", dim_ordering="th", border_mode="same", subsample=(1, 1), W_regularizer=None, U_regularizer=None, b_regularizer=None, return_sequences=False, go_backwards=False, input_shape=None, name=None)
-```
-
-**Parameters:**
-
-* `nbFilter`: Number of convolution filters to use.
-* `nbKernel`: Number of rows/columns in the convolution kernel. Square kernel. In Python, require nb_row==nb_col.
-* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is 'tanh'.
-* `innerActivation`: String representation of the activation function to use for inner cells. See [here](activation/#available-activations) for available activation strings. Default is 'hard_sigmoid'.
-* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
-* `subsample`: Factor by which to subsample output. Also called strides elsewhere.
-* `wRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
-* `uRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default is null.
-* `bRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the bias. Default is null.
-* `returnSequences`: Whether to return the full sequence or the last output in the output sequence. Default is false.
-* `goBackwards`: Whether the input sequence will be processed backwards. Default is false.
-* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, ConvLSTM2D}
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor.Tensor
-
-val model = Sequential[Float]()
-model.add(ConvLSTM2D(2, 2, inputShape = Shape(1, 2, 2, 2)))
-val input = Tensor[Float](1, 1, 2, 2, 2).randn()
-val output = model.forward(input)
-```
-Input is:
-```scala
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,1,1,.,.) =
--0.3935159	-2.0734277
-0.16473202	-1.0574125
-
-(1,1,2,.,.) =
-1.2325795	0.510846
--0.4246685	-0.109434046
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x2x2x2]
-```
-Output is:
-```scala
-output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
-(1,1,.,.) =
--0.12613402	    0.035963967
-0.046498444	    0.03568305
-
-(1,2,.,.) =
--0.1547083	    -0.046905644
--0.115438126	-0.08817647
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2x2]
-```
-
-**Python example:**
-```python
-import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import ConvLSTM2D
-
-model = Sequential()
-model.add(ConvLSTM2D(2, 2, 2, input_shape=(1, 2, 2, 2)))
-input = np.random.random([1, 1, 2, 2, 2])
-output = model.forward(input)
-```
-Input is:
-```python
-[[[[[0.53293431 0.02606896]
-    [0.50916001 0.6927234 ]]
-
-   [[0.44282168 0.05963464]
-    [0.22863441 0.45312165]]]]]
-```
-Output is
-```python
-[[[[ 0.09322705  0.09817358]
-   [ 0.12197719  0.11264911]]
-
-  [[ -0.03922357 -0.11715978]
-   [ -0.01915754 -0.03141996]]]]
 ```

@@ -1,0 +1,54 @@
+######## Feature Service
+
+### Basic setting
+
+# Default: 8980, which port to create the server
+servicePort: 8085
+
+# Default: null, open a port for prometheus monitoring tool, if set, user can check the
+# performance using prometheus
+monitorPort: 1236
+
+# 'kv' or 'inference' default: kv
+serviceType: kv, inference
+
+# default: false, if need to load initial data to redis, set true
+loadInitialData: true
+
+# default: "", prefix for redis key
+redisKeyPrefix: 2tower_
+
+# default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
+# provided. Only support parquet file
+initialUserDataPath: /home/yina/Documents/data/recsys/exp8/vec_feature_user_2000.parquet
+# initialItemDataPath:
+
+# default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
+# userFeatureColumns must be provided
+userIDColumn: enaging_user_id
+userFeatureColumns: enaging_user_is_verified, user_id, user_num
+
+# default: null, if loadInitialData=true and initialItemDataPath != null, userIDColumn and
+# userFeatureColumns must be provided
+# itemIDColumn:
+# itemFeatureColumns:
+
+# default: null, user model path or item model path must be provided if serviceType
+# contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
+# be ignored
+userModelPath: /home/yina/Documents/model/recys2021/2tower/exp8/user-model
+
+# default: null, user model path or item model path must be provided if serviceType
+# contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
+# be ignored
+# itemModelPath:
+
+# default: 1, number of models used for inference
+# modelParallelism: 3
+
+### Redis Configuration
+# default: localhost:6379
+# redisUrl:
+
+# default: 256, JedisPoolMaxTotal
+# redisPoolMaxTotal:
