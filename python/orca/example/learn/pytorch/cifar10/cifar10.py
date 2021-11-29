@@ -52,17 +52,13 @@ parser.add_argument('--download', type=bool, default=True,help='Download dataset
 parser.add_argument("--executor_memory", type=str, default="2g", help="executor memory")
 args = parser.parse_args()
 
-for filepath,dirnames,filenames in os.walk(args.data_dir):
-    for filename in filenames:
-        print(filename)
-
 if args.cluster_mode == "local":
     init_orca_context(memory="4g")
 elif args.cluster_mode.startswith("yarn"):
     if args.cluster_mode == "yarn-client":
         init_orca_context(cluster_mode="yarn-client")
     elif args.cluster_mode == "yarn-cluster":
-        init_orca_context(cluster_mode="yarn-cluster", conf={"spark.executor.memory": args.executor_memory})
+        init_orca_context(cluster_mode="yarn-cluster", memory=args.executor_memory)
 elif args.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 
