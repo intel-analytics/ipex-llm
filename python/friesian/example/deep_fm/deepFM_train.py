@@ -22,6 +22,8 @@ from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.trigger import EveryEpoch
+
 import argparse
 
 spark_conf = {"spark.network.timeout": "10000000",
@@ -114,10 +116,12 @@ if __name__ == '__main__':
                         help='snapshot directory name (default: snapshot)')
     parser.add_argument('--data_dir', type=str, help='data directory')
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
-
+    parser.add_argument('--backend', type=str, default="bigdl",
+                        help='The backend of PyTorch Estimator; '
+                             'bigdl, torch_distributed and spark are supported.')
     args = parser.parse_args()
     if args.cluster_mode == "local":
-        sc = init_orca_context("local", init_ray_on_spark=True)
+        sc = init_orca_context("local")
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executor,
@@ -135,8 +139,7 @@ if __name__ == '__main__':
 
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
-                "len_hashtags", "len_domains", "len_links", "hashtags", "present_links",
-                "present_domains"]
+                "len_hashtags", "len_domains", "len_links"]
     cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
                 "present_media", "tweet_type", "language"]
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
@@ -174,7 +177,7 @@ if __name__ == '__main__':
 
     config = {'linear_feature_columns': fixlen_feature_columns,
               'dnn_feature_columns': fixlen_feature_columns, 'feature_names': feature_names,
-              'lr': args.lr}
+              'lr': args.lr, "drop_last": True}
 
     def model_creator(config):
         model = DeepFM(linear_feature_columns=config["linear_feature_columns"],
@@ -188,20 +191,31 @@ if __name__ == '__main__':
 
     criterion = torch.nn.BCELoss()
 
-    est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion,
-                               metrics=[Accuracy()],
-                               backend="torch_distributed", config=config)
-    train_stats = est.fit(data=train.df, feature_cols=["combine"], label_cols=["label"],
-                          epochs=args.epochs,
-                          batch_size=args.batch_size)
+    if args.backend == "bigdl":
+        model = model_creator(config)
+        optimizer = optim_creator(model=model, config=config)
+        est = Estimator.from_torch(model=model, optimizer=optimizer, loss=criterion,
+                                   metrics=[Accuracy()],
+                                   backend=args.backend)
+        train_stats = est.fit(data=train.df, feature_cols=["combine"], label_cols=["label"],
+                              epochs=args.epochs,
+                              batch_size=args.batch_size, checkpoint_trigger=EveryEpoch())
+    elif args.backend in ["torch_distributed", "spark"]:
+        est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion,
+                                   metrics=[Accuracy()],
+                                   backend=args.backend, config=config)
+        train_stats = est.fit(data=train.df, feature_cols=["combine"], label_cols=["label"],
+                              epochs=args.epochs,
+                              batch_size=args.batch_size)
+    else:
+        raise NotImplementedError("Only bigdl and torch_distributed are supported "
+                                  "as the backend, but got {}".format(args.backend))
+
     valid_stats = est.evaluate(data=test.df, feature_cols=["combine"], label_cols=["label"],
                                batch_size=args.batch_size)
 
     predicts = est.predict(data=test.df, feature_cols=["combine"], batch_size=args.batch_size)
-    predicts = predicts.select("prediction").rdd.flatMap(lambda x: x).collect()
-    auc = uAUC(test_labels, predicts, test_user_ids)
     print("Train stats: {}".format(train_stats))
     print("Validation stats: {}".format(valid_stats))
-    print("AUC: ", auc)
     est.shutdown()
     stop_orca_context()
