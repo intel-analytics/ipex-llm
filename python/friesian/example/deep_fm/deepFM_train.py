@@ -111,12 +111,12 @@ if __name__ == '__main__':
                         help='The driver memory.')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=1, type=int, help='train epoch')
-    parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
+    parser.add_argument('--batch_size', default=32, type=int, help='batch size')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
     parser.add_argument('--data_dir', type=str, help='data directory')
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
-    parser.add_argument('--backend', type=str, default="bigdl",
+    parser.add_argument('--backend', type=str, default="spark",
                         help='The backend of PyTorch Estimator; '
                              'bigdl, torch_distributed and spark are supported.')
     args = parser.parse_args()
