@@ -132,8 +132,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
             cluster_info=self._get_cluster_info(sc),
-            **self.worker_init_params
-            )
+            **self.worker_init_params)
 
         self.state_dict = self.driver_runner.get_state_dict()
 
@@ -193,8 +192,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params = dict(
             mode="fit",
             state_dict=self.state_dict,
-            cluster_info=cluster_info,
-            )
+            cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
         params = dict(
