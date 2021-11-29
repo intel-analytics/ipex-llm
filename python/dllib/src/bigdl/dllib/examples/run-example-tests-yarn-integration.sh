@@ -354,7 +354,7 @@ echo "#24 start test for pytorch cifar10"
 #timer  memory
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode yarn-cluster --epochs 1  --batch_size 4 --data_dir /data/cifar10_data --download False --executor_memory '8g'
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode yarn-cluster --epochs 1  --batch_size 4 --data_dir /data/cifar10_data --download False --executor_memory '1g'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
