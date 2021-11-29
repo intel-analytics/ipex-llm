@@ -16,10 +16,7 @@
 import json
 import logging
 import os
-
-from re import VERBOSE
-from subprocess import call
-from sys import version
+import time
 
 from pyspark import BarrierTaskContext
 from pyspark.context import SparkContext
@@ -29,7 +26,11 @@ from contextlib import closing
 import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.learn.utils import save_pkl
+from bigdl.orca.data.file import exists
+from bigdl.orca.learn.utils import save_pkl, load_pkl
+
+logger = logging.getLogger(__name__)
+
 
 def find_free_port(tc):
     address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
@@ -39,16 +40,17 @@ def find_free_port(tc):
         tc.barrier()
         return f"{address}:{s.getsockname()[1]}"
 
-def handle_datasets_train(data_creator, validation_data_creator):   
-        train_dataset = data_creator()
-        if validation_data_creator is not None:
-            test_dataset = validation_data_creator()
-        else:
-            test_dataset = None
-        return train_dataset, test_dataset
+
+def handle_datasets_train(data_creator, validation_data_creator):
+    train_dataset = data_creator()
+    if validation_data_creator is not None:
+        test_dataset = validation_data_creator()
+    else:
+        test_dataset = None
+    return train_dataset, test_dataset
+
 
 class DatasetHandler:
-
     def __init__(self, rank, size):
         self.rank = rank
         self.size = size
@@ -63,7 +65,7 @@ class DatasetHandler:
         config['size'] = self.size
         train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, list) and \
-            all([isinstance(x, dict) for x in train_dataset]):
+                all([isinstance(x, dict) for x in train_dataset]):
             assert steps_per_epoch is not None, "steps_per_epoch must be provided for xshard"
             train_dataset = self._handle_xshards(train_dataset,
                                                  steps=steps_per_epoch * epochs,
@@ -127,13 +129,13 @@ class DatasetHandler:
 
 
 class TFDistributedDatasetHandler(DatasetHandler):
-
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
 
         data, label = ray_partition_get_data_label(dataset,
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+                                                   allow_tuple=True,
+                                                   allow_list=False)
+
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
             options = tf.data.Options()
@@ -162,12 +164,11 @@ class TFDistributedDatasetHandler(DatasetHandler):
 
 
 class LocalDatasetHandler(DatasetHandler):
-
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
         data, label = ray_partition_get_data_label(dataset,
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+                                                   allow_tuple=True,
+                                                   allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
@@ -200,8 +201,9 @@ class SparkRunner:
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
-                 epoch=0
-                ):
+                 epoch=0,
+                 application_id=None
+                 ):
         """Initializes the runner.
                 Args:
                     model_creator (dict -> Model): see tf_trainer.py.
@@ -227,6 +229,7 @@ class SparkRunner:
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed(self.mode, self.cluster_info)
         self.model_dir = model_dir
+        self.application_id = application_id
 
     def setup(self):
         import tensorflow as tf
@@ -261,7 +264,6 @@ class SparkRunner:
                 break
         return global_rank
 
-
     def setup_distributed(self, mode, cluster):
         """Sets up TensorFLow distributed environment and initializes the model.
         Args:
@@ -272,7 +274,7 @@ class SparkRunner:
         self.cluster = cluster
         tc = BarrierTaskContext().get()
         self.rank = self._get_rank(cluster, tc)
-        print("cluster is: ", cluster)
+        logger.info("cluster is: %s", cluster)
 
         import os
         os.environ["TF_CONFIG"] = json.dumps({
@@ -291,16 +293,20 @@ class SparkRunner:
         self.backend = "tf-distributed"
         # self.size = size
 
-
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
-             callbacks=None, initial_epoch=0, validation_data_creator=None, class_weight=None,
-             steps_per_epoch=None, validation_steps=None, validation_freq=1):
+                               callbacks=None, initial_epoch=0, validation_data_creator=None, class_weight=None,
+                               steps_per_epoch=None, validation_steps=None, validation_freq=1):
         """
         Sets up TensorFLow distributed environment, initializes the model,
         runs a training epoch and updates the model parameters
         """
         with self.strategy.scope():
             model = self.model_creator(self.config)
+            state = load_pkl(os.path.join(self.model_dir, self.application_id + "_state.pkl"))
+            if state:
+                if 'epoch' in state:
+                    self.epoch = state['epoch']
+                model.set_weights(state['weights'])
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
                 .handle_datasets_train(data_creator=data_creator,
@@ -310,18 +316,18 @@ class SparkRunner:
                                        validation_steps=validation_steps)
 
         history = model.fit(train_dataset,
-                                 epochs=epochs,
-                                 verbose=verbose,
-                                 callbacks=callbacks,
-                                 validation_data=test_dataset,
-                                 class_weight=class_weight,
-                                 initial_epoch=initial_epoch,
-                                 steps_per_epoch=steps_per_epoch,
-                                 validation_steps=validation_steps,
-                                 validation_freq=validation_freq)
+                            epochs=epochs,
+                            verbose=verbose,
+                            callbacks=callbacks,
+                            validation_data=test_dataset,
+                            class_weight=class_weight,
+                            initial_epoch=initial_epoch,
+                            steps_per_epoch=steps_per_epoch,
+                            validation_steps=validation_steps,
+                            validation_freq=validation_freq)
 
         return (model, history)
-        
+
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
@@ -353,17 +359,16 @@ class SparkRunner:
         else:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
-            if self.model_dir is not None:
-                model_states = {
-                    "epoch": self.epoch,
-                    "weights": weights,
-                    "optimizer_weights": model.optimizer.get_weights()
-                }
-                save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
+            model_state = {
+                "epoch": self.epoch,
+                "weights": weights,
+                "optimizer_weights": model.optimizer.get_weights()
+            }
+            save_pkl(model_state, os.path.join(self.model_dir, self.application_id + "_state.pkl"))
             return [stats]
         else:
             return []
-    
+
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
         """
@@ -376,8 +381,13 @@ class SparkRunner:
 
         with self.strategy.scope():
             model = self.model_creator(self.config)
-            if self.model_weights:
-                model.set_weights(self.model_weights.value)
+
+        start = time.time()
+        state = load_pkl(os.path.join(self.model_dir, self.application_id + "_state.pkl"))
+        end = time.time()
+        print("loading state time: ", end - start)
+        if state:
+            model.set_weights(state['weights'])
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -396,12 +406,14 @@ class SparkRunner:
         )
         results = model.evaluate(dataset, **params)
 
+        print("result is: ", results)
+
         if results is None:
             local_model = self.model_creator(self.config)
             if self.model_weights:
                 local_model = local_model.set_weights(self.model_weights.value)
             results = local_model.evaluate(dataset, **params)
-        
+
         if isinstance(results, list):
             stats = {
                 "validation_" + k: v
@@ -409,12 +421,11 @@ class SparkRunner:
             }
         else:
             stats = {"results": results}
-        
+
         if self.rank == 0:
             return [stats]
         else:
             return []
-
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
         config = self.config.copy()
@@ -432,10 +443,14 @@ class SparkRunner:
 
         if self.backend == "tf-distributed":
             local_model = self.model_creator(self.config)
-            if self.model_weights:
-                local_model.set_weights(self.model_weights.value)
+            state = load_pkl(os.path.join(self.model_dir, self.application_id + "_state.pkl"))
+            if state:
+                local_model.set_weights(state['weights'])
         else:
             local_model = self.model_creator(self.config)
+            state = load_pkl(os.path.join(self.model_dir, self.application_id + "_state.pkl"))
+            if state:
+                local_model.set_weights(state['weights'])
 
         def predict_fn(shard):
             y = local_model.predict(shard["x"], **params)
@@ -444,4 +459,3 @@ class SparkRunner:
         new_part = [predict_fn(shard) for shard in partition]
 
         return new_part
-

@@ -22,7 +22,11 @@ import numpy as np
 import pickle
 import os
 import subprocess
+import tempfile
+import shutil
+import logging
 
+logger = logging.getLogger(__name__)
 
 def find_latest_checkpoint(model_dir, model_type="bigdl"):
     import os
@@ -344,57 +348,6 @@ def data_length(data):
         return x[0].shape[0]
 
 
-# def save_weights_tf(model, path, overwrite=True, save_format=None):
-#     import tempfile
-#     import os
-#     filename = os.path.basename(path)
-#     tmp_dir = tempfile.mkdtemp()
-#     tmp_file = os.path.join(tmp_dir, filename)
-#     model.save_weights(tmp_file, overwrite=overwrite, save_format=save_format)
-#     if save_format is None:
-#         if (path.endswith('.h5') or path.endswith('.keras') or
-#                 path.endswith('.hdf5')):
-#             save_format = 'h5'
-#         else:
-#             save_format = 'tf'
-#     else:
-#         user_format = save_format.lower().strip()
-#         if user_format in ('tensorflow', 'tf'):
-#             save_format = 'tf'
-#         elif user_format in ('hdf5', 'h5', 'keras'):
-#             save_format = 'h5'
-#     if save_format == 'tf':
-#         raise Exception("Cannot save to tensorflow format at this time")
-#
-#     with open(tmp_file, "rb") as f:
-#         content = f.read()
-#     if path.startswith("hdfs"):  # hdfs://url:port/file_path
-#         import pyarrow as pa
-#         fs = pa.hdfs.connect()
-#         with fs.open(path, 'wb') as f:
-#             result = f.write(content)
-#             f.close()
-#             return result
-#     elif path.startswith("s3"):  # s3://bucket/file_path
-#         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
-#         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
-#         import boto3
-#         s3_client = boto3.Session(
-#             aws_access_key_id=access_key_id,
-#             aws_secret_access_key=secret_access_key).client('s3', verify=False)
-#         path_parts = path.split("://")[1].split('/')
-#         bucket = path_parts.pop(0)
-#         key = "/".join(path_parts)
-#         return s3_client.put_object(Bucket=bucket, Key=key, Body=content)
-#     else:
-#         if path.startswith("file://"):
-#             path = path[len("file://"):]
-#         with open(path, 'wb') as f:
-#             result = f.write(content)
-#             f.close()
-#             return result
-
-
 def save_pkl(data, path):
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
         import pyarrow as pa
@@ -422,3 +375,61 @@ def save_pkl(data, path):
             path = path[len("file://"):]
         with open(path, 'wb') as f:
             pickle.dump(data, f)
+
+
+def load_pkl(path):
+    """
+
+    Load arrays or pickled objects from pickled files.
+    It supports local, hdfs, s3 file systems.
+
+    :param path: file path
+    :return: array, tuple, dict, etc.
+
+    """
+    import numpy as np
+    if path.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        host_port = path.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if fs.exists(path):
+            from io import BytesIO
+            buf = BytesIO()
+            fs.download(path, buf)
+            buf.seek(0)
+            data = pickle.load(buf)
+            return data
+        else:
+            logger.warning("The path %s to be loaded does not exist".format(path))
+            return None
+    elif path.startswith("s3"):  # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        from io import BytesIO
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = path.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        key = "/".join(path_parts)
+        results = s3_client.list_objects(Bucket=bucket, Prefix=key)
+        if 'Contents' in results:
+            data = s3_client.get_object(Bucket=bucket, Key=key)
+            return pickle.load(BytesIO(data["Body"].read()))
+        else:
+            logger.warning("The path %s to be loaded does not exist".format(path))
+            return None
+    else:  # Local path
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        if os.path.exists(path):
+            with open(path, 'rb') as f:
+                data = pickle.load(f)
+            return data
+        else:
+            logger.warning("The path %s to be loaded does not exist".format(path))
+            return None
