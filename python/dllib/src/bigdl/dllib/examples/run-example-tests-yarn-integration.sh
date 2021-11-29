@@ -274,21 +274,21 @@ echo "###################"
 # time=$((now - start))
 # echo "#23 Total time cost ${time} seconds"
 
-echo "#24 start test for pytorch cifar10"
-#timer  succeed
-start=$(date "+%s")
-#run the example
-# ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/cifar10_data /data/cifar10_data
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode yarn-cluster --epochs 1  --batch_size 8 --data_dir /data/cifar10_data --download False
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "orca pytorch cifar10 failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#24 Total time cost ${time} seconds"
+# echo "#24 start test for pytorch cifar10"
+# #timer  succeed
+# start=$(date "+%s")
+# #run the example
+# # ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/cifar10_data /data/cifar10_data
+# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode yarn-cluster --epochs 1  --batch_size 8 --data_dir /data/cifar10_data --download False
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "orca pytorch cifar10 failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#24 Total time cost ${time} seconds"
 
 echo "#25 start test for pytorch fashion_mnist"
 #timer succeed
@@ -306,36 +306,36 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#25 Total time cost ${time} seconds"
 
-echo "#26 start test for pytorch super_resolution"
-#timer succeed
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode yarn-cluster --data_dir /data/dataset 
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "orca pytorch super_resolution failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#26 Total time cost ${time} seconds"
-
-
-# echo "#21 start test for orca torchmodel mnist"
-# #timer  succeed 
+# echo "#26 start test for pytorch super_resolution"
+# #timer succeed
 # start=$(date "+%s")
 # #run the example
-# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode yarn-cluster --dir /data/test_mnist --download False
+# python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py  --cluster_mode yarn-cluster --data_dir /data/dataset 
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
 #   #clear_up
-#   echo "orca torchmodel mnist failed"
+#   echo "orca pytorch super_resolution failed"
 #   #exit $exit_status
 # fi
 # now=$(date "+%s")
 # time=$((now - start))
-# echo "#21 Total time cost ${time} seconds"
+# echo "#26 Total time cost ${time} seconds"
+
+
+echo "#21 start test for orca torchmodel mnist"
+#timer  succeed 
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py  --deploy-mode yarn-cluster --dir /data/test_mnist --download False
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  #clear_up
+  echo "orca torchmodel mnist failed"
+  #exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#21 Total time cost ${time} seconds"
 
 
 # echo "#20 start test for orca torchmodel imagenet"
