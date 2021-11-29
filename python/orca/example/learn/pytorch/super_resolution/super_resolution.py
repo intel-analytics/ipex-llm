@@ -26,6 +26,7 @@ from math import log10
 from PIL import Image
 import urllib
 import tarfile
+import os
 from os import makedirs, remove, listdir
 from os.path import exists, join, basename
 
@@ -59,7 +60,9 @@ parser.add_argument('--backend', type=str, default="bigdl",
                          'bigdl, torch_distributed and spark are supported.')
 parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
 opt = parser.parse_args()
-
+for filepath,dirnames,filenames in os.walk(opt.data_dir):
+    for filename in filenames:
+        print (filename)
 print(opt)
 
 if opt.cluster_mode == "local":

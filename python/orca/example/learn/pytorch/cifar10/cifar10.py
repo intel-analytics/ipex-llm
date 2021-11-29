@@ -49,7 +49,12 @@ parser.add_argument('--batch_size', type=int, default=64, help='The training bat
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default="./data",help='The path to dataset')
 parser.add_argument('--download', type=bool, default=True,help='Download dataset or not')
+parser.add_argument("--executor_memory", type=str, default="2g", help="executor memory")
 args = parser.parse_args()
+
+for filepath,dirnames,filenames in os.walk(args.data_dir):
+    for filename in filenames:
+        print (filename)
 
 if args.cluster_mode == "local":
     init_orca_context(memory="4g")
@@ -57,7 +62,7 @@ elif args.cluster_mode.startswith("yarn"):
     if args.cluster_mode == "yarn-client":
         init_orca_context(cluster_mode="yarn-client")
     elif args.cluster_mode == "yarn-cluster":
-        init_orca_context(cluster_mode="yarn-cluster", memory="2g")
+        init_orca_context(cluster_mode="yarn-cluster", conf={"spark.executor.memory": args.executor_memory})
 elif args.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 
