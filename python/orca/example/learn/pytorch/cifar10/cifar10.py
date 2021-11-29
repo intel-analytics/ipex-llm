@@ -54,7 +54,7 @@ args = parser.parse_args()
 
 for filepath,dirnames,filenames in os.walk(args.data_dir):
     for filename in filenames:
-        print (filename)
+        print(filename)
 
 if args.cluster_mode == "local":
     init_orca_context(memory="4g")

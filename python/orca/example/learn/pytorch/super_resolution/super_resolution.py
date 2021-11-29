@@ -62,7 +62,7 @@ parser.add_argument('--data_dir', type=str, default="./dataset", help='The path 
 opt = parser.parse_args()
 for filepath,dirnames,filenames in os.walk(opt.data_dir):
     for filename in filenames:
-        print (filename)
+        print(filename)
 print(opt)
 
 if opt.cluster_mode == "local":
