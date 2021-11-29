@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 from optparse import OptionParser
 import torchvision
 import torch.nn as nn
@@ -82,9 +81,6 @@ if __name__ == '__main__':
 
     # prepare training data as Spark DataFrame
     image_path = sys.argv[1]
-    for filepath,dirnames,filenames in os.walk(image_path):
-        for filename in filenames:
-            print(filename)
     imageDF = NNImageReader.readImages(image_path, sc, resizeH=256, resizeW=256, image_codec=1)
     getName = udf(lambda row: os.path.basename(row[0]), StringType())
     getLabel = udf(lambda name: 1.0 if name.startswith('cat') else 0.0, DoubleType())
