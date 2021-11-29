@@ -53,7 +53,7 @@ class Evaluator(object):
         """
         if isinstance(metrics, str):
             metrics = [metrics]
-        metrics = list(map(lambda x:x.lower(), metrics))
+        metrics = list(map(lambda x: x.lower(), metrics))
         assert all([metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics]),\
             f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()}, "\
             f"but get {metrics}."
