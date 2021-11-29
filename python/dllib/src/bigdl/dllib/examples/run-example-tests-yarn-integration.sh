@@ -271,7 +271,7 @@ exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
   echo "orca torchmodel imagenet failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
