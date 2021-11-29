@@ -41,3 +41,6 @@ jobs:
 
       - name: License checking
         run: bash python/dev/check-license
+
+      - name: Chronos style checking
+        run: bash python/chronos/dev/test/lint-python

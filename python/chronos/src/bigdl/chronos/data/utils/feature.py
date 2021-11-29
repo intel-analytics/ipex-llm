@@ -19,7 +19,6 @@ import numpy as np
 from packaging import version
 
 
-
 def _is_awake(hour):
     return (((hour >= 6) & (hour <= 23)) | (hour == 0)).astype(int).values
 
