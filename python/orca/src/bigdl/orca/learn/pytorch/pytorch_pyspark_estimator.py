@@ -353,8 +353,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             batch_size=batch_size,
             num_steps=num_steps,
             profile=profile,
-            info=info,
-        )
+            info=info)
 
         from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
