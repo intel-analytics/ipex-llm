@@ -18,7 +18,7 @@ from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.chronos.forecaster.utils import\
     np_to_creator, set_pytorch_seed, check_data,\
-        xshard_to_np, np_to_xshard, loader_to_creator
+    xshard_to_np, np_to_xshard, loader_to_creator
 import numpy as np
 from bigdl.orca.learn.pytorch.estimator import Estimator
 from bigdl.orca.learn.metrics import MSE, MAE
