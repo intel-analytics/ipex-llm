@@ -93,21 +93,24 @@ def loss_creator(config):
 
 try:
     from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
+
     class Seq2SeqPytorch(PytorchBaseModel):
         def __init__(self, check_optional_config=False):
             super().__init__(model_creator=model_creator,
-                            optimizer_creator=optimizer_creator,
-                            loss_creator=loss_creator,
-                            check_optional_config=check_optional_config)
+                             optimizer_creator=optimizer_creator,
+                             loss_creator=loss_creator,
+                             check_optional_config=check_optional_config)
 
         def _input_check(self, x, y):
             if len(x.shape) < 3:
-                raise RuntimeError(f"Invalid data x with {len(x.shape)} dim where 3 dim is required.")
+                raise RuntimeError(f"Invalid data x with {len(x.shape)} "
+                                   "dim where 3 dim is required.")
             if len(y.shape) < 3:
-                raise RuntimeError(f"Invalid data y with {len(y.shape)} dim where 3 dim is required.")
+                raise RuntimeError(f"Invalid data y with {len(y.shape)} dim "
+                                   "where 3 dim is required.")
             if y.shape[-1] > x.shape[-1]:
-                raise RuntimeError("output dim should not larger than input dim, "
-                                f"while we get {y.shape[-1]} > {x.shape[-1]}.")
+                raise RuntimeError("output dim should not larger than input dim "
+                                   f"while we get {y.shape[-1]} > {x.shape[-1]}.")
 
         def _forward(self, x, y):
             self._input_check(x, y)

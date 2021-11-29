@@ -169,12 +169,13 @@ def loss_creator(config):
 # the PytorchBaseModel will only be used for orca.automl
 try:
     from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
+
     class TCNPytorch(PytorchBaseModel):
         def __init__(self, check_optional_config=False):
             super().__init__(model_creator=model_creator,
-                            optimizer_creator=optimizer_creator,
-                            loss_creator=loss_creator,
-                            check_optional_config=check_optional_config)
+                             optimizer_creator=optimizer_creator,
+                             loss_creator=loss_creator,
+                             check_optional_config=check_optional_config)
 
         def _get_required_parameters(self):
             return {

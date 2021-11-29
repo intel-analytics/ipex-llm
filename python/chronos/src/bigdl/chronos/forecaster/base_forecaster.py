@@ -59,12 +59,11 @@ class BasePytorchForecaster(Forecaster):
 
             # Model preparation
             self.fitted = False
-            model=self.model_creator({**self.model_config, **self.data_config})
-            loss=self.loss_creator(self.loss_config)
-            optimizer=self.optimizer_creator(model, self.optim_config)
+            model = self.model_creator({**self.model_config, **self.data_config})
+            loss = self.loss_creator(self.loss_config)
+            optimizer = self.optimizer_creator(model, self.optim_config)
             self.internal = Trainer.compile(model=model, loss=loss,
                                             optimizer=optimizer, onnx=self.onnx_available)
-
 
     def fit(self, data, epochs=1, batch_size=32):
         # TODO: give an option to close validation during fit to save time.
@@ -107,7 +106,7 @@ class BasePytorchForecaster(Forecaster):
             from bigdl.orca.data.shard import SparkXShards
             if isinstance(data, SparkXShards) and not self.distributed:
                 warnings.warn("Xshards is collected to local since the "
-                            "forecaster is non-distribued.")
+                              "forecaster is non-distribued.")
                 data = xshard_to_np(data)
         except ImportError:
             pass
@@ -275,13 +274,14 @@ class BasePytorchForecaster(Forecaster):
             else:
                 return self.internal.evaluate(data=data,
                                               batch_size=batch_size)
-        else: 
+        else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling evaluate!")
             yhat_torch = self.internal.inference(torch.from_numpy(data[0]), backend=None)
 
-            aggregate = 'mean' if multioutput=='uniform_average' else None
-            return Evaluator.evaluate(self.metrics, data[1], yhat_torch.numpy(), aggregate=aggregate)
+            aggregate = 'mean' if multioutput == 'uniform_average' else None
+            return Evaluator.evaluate(self.metrics, data[1],
+                                      yhat_torch.numpy(), aggregate=aggregate)
 
     def evaluate_with_onnx(self, data,
                            batch_size=32,
@@ -327,7 +327,7 @@ class BasePytorchForecaster(Forecaster):
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
         yhat = self.internal.inference(data[0], batch_size=batch_size)
 
-        aggregate = 'mean' if multioutput=='uniform_average' else None
+        aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
 
     def save(self, checkpoint_file):
@@ -357,10 +357,13 @@ class BasePytorchForecaster(Forecaster):
             self.internal.load(checkpoint_file)
         else:
             from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
-            model=self.model_creator({**self.model_config, **self.data_config})
-            loss=self.loss_creator(self.loss_config)
-            optimizer=self.optimizer_creator(model, self.optim_config)
-            self.internal = LightningModuleFromTorch.load_from_checkpoint(checkpoint_file, model=model, loss=loss, optimizer=optimizer)
+            model = self.model_creator({**self.model_config, **self.data_config})
+            loss = self.loss_creator(self.loss_config)
+            optimizer = self.optimizer_creator(model, self.optim_config)
+            self.internal = LightningModuleFromTorch.load_from_checkpoint(checkpoint_file,
+                                                                          model=model,
+                                                                          loss=loss,
+                                                                          optimizer=optimizer)
             self.internal = Trainer.compile(self.internal, onnx=self.onnx_available)
             self.fitted = True
 
