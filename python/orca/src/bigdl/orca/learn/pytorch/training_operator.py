@@ -37,9 +37,9 @@ import numpy as np
 
 from bigdl.orca.learn.metrics import Metric
 from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
-                                          NUM_SAMPLES)
+                                            NUM_SAMPLES)
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
-                                              SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
+                                                SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
 
 tqdm = None
 try:
@@ -51,6 +51,7 @@ except ImportError:
 def _is_multiple(component):
     """Checks if a component (optimizer, model, etc) is not singular."""
     return isinstance(component, collections.Iterable) and len(component) > 1
+
 
 class TrainingOperator:
     """Abstract class for custom training or validation loops.

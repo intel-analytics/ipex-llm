@@ -1,4 +1,4 @@
-name: Nano code style checking
+name: code style checking
 
 # Controls when the action will run. 
 on:
@@ -31,7 +31,10 @@ jobs:
         run: pip install pycodestyle
       
       # Runs a single command using the runners shell
-      - name: Style checking
+      - name: Nano style checking
         run: bash python/nano/test/run-nano-codestyle-test.sh
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Orca style checking
+        run: bash python/orca/dev/test/lint-python

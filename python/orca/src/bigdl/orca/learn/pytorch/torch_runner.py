@@ -51,6 +51,7 @@ try:
 except ImportError:
     from collections import Iterable
 
+
 class DistBackend:
 
     def get_world_size(self):
