@@ -277,7 +277,10 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/start-tpch.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-e2e-example.sh
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-e2e-example.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-pi.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-sql-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
