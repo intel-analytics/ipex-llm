@@ -23,13 +23,15 @@ from torch.optim import Optimizer
 
 
 class LightningModuleFromTorch(LightningModule):
-    def __init__(self, model: nn.Module, loss: _Loss, optimizer: Optimizer, metrics: List[Callable] = None):
+    def __init__(self, model: nn.Module, loss: _Loss, optimizer: Optimizer,
+                 metrics: List[Callable] = None):
         """
         Integrate pytorch modules, loss, optimizer to pytorch-lightning model.
 
         :param model:       Pytorch model to be converted.
         :param loss:        A torch loss function.
         :param optimizer:   A torch optimizer.
+        :param metrics:     A list of metrics to calculate accuracy of the model.
         """
         super().__init__()
         self.model = model
