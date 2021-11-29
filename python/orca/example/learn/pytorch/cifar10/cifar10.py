@@ -50,6 +50,7 @@ parser.add_argument('--epochs', type=int, default=2, help='The number of epochs 
 parser.add_argument('--data_dir', type=str, default="./data",help='The path to dataset')
 parser.add_argument('--download', type=bool, default=True,help='Download dataset or not')
 parser.add_argument("--executor_memory", type=str, default="2g", help="executor memory")
+parser.add_argument("--driver_memory", type=str, default="2g", help="driver memory")
 args = parser.parse_args()
 
 if args.cluster_mode == "local":
@@ -58,7 +59,7 @@ elif args.cluster_mode.startswith("yarn"):
     if args.cluster_mode == "yarn-client":
         init_orca_context(cluster_mode="yarn-client")
     elif args.cluster_mode == "yarn-cluster":
-        init_orca_context(cluster_mode="yarn-cluster", memory=args.executor_memory)
+        init_orca_context(cluster_mode="yarn-cluster", memory=args.executor_memory, driver_memory=args.driver_memory)
 elif args.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 

@@ -137,7 +137,7 @@ clear_up() {
 # time=$((now - start))
 # echo "#7 Total time cost ${time} seconds"
 
-# echo "##23 start test for orca data spark_pandas"
+# echo "#23 start test for orca data spark_pandas"
 # #timer succeed
 # start=$(date "+%s")
 # #run the example
@@ -354,14 +354,13 @@ echo "#24 start test for pytorch cifar10"
 #timer  memory
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode yarn-cluster --epochs 1  --batch_size 4 --data_dir /data/cifar10_data --download False --executor_memory '1g'
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode yarn-cluster --epochs 1  --batch_size 4 --data_dir /data/cifar10_data --download False --executor_memory '4g' --driver_memory '4g'
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
+  clear_up
   echo "orca pytorch cifar10 failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#24 Total time cost ${time} seconds"
-
