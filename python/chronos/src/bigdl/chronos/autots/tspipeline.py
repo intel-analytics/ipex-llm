@@ -60,12 +60,11 @@ class TSPipeline:
         if "scaler" in kwargs.keys():
             self._scaler = kwargs["scaler"]
             self._scaler_index = kwargs["scaler_index"]
-        
+
         # for save/load
         self.model_creator = model_creator
         self.loss_creator = loss_creator
         self.optimizer_creator = optimizer_creator
-        
 
     def evaluate(self, data, metrics=['mse'], multioutput="uniform_average", batch_size=32):
         '''
@@ -243,14 +242,14 @@ class TSPipeline:
             data_process = pickle.load(f)
         with open(best_config_path, "rb") as f:
             best_config = pickle.load(f)
- 
+
         model_creator = model_init["model_creator"]
         optimizer_creator = model_init["optimizer_creator"]
         loss_creator = model_init["loss_creator"]
 
         model = model_creator(best_config)
         model.load_state_dict(torch.load(model_path))
-        
+
         if isinstance(optimizer_creator, types.FunctionType):
             optimizer = optimizer_creator(model, best_config)
         else:
@@ -281,7 +280,7 @@ class TSPipeline:
                                                 horizon=horizon,
                                                 feature_col=selected_features)
         return data_loader
-    
+
     def _tsdataset_to_numpy(self, data, is_predict=False):
         lookback = self._best_config["past_seq_len"]
         horizon = 0 if is_predict else self._best_config["future_seq_len"]
