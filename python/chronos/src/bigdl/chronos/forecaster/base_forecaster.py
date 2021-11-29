@@ -17,6 +17,7 @@
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import\
     np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 from bigdl.nano.pytorch.trainer import Trainer
 
@@ -25,17 +26,6 @@ import warnings
 import torch
 from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
-from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
-    mean_absolute_percentage_error, r2_score, symmetric_mean_absolute_percentage_error
-
-TORCHMETRICS_REGRESSION_MAP = {
-    'mae': mean_absolute_error,
-    'mse': mean_squared_error,
-    'rmse': partial(mean_squared_error, squared=False),
-    'mape': mean_absolute_percentage_error,
-    'r2': r2_score,
-    'smape': symmetric_mean_absolute_percentage_error
-}
 
 
 class BasePytorchForecaster(Forecaster):
@@ -209,7 +199,7 @@ class BasePytorchForecaster(Forecaster):
                 yhat = np_to_xshard(yhat, prefix="prediction")
             return yhat
 
-    def predict_with_onnx(self, data, batch_size=32, dirname="model.onnx"):
+    def predict_with_onnx(self, data, batch_size=32):
         """
         Predict using a trained forecaster with onnxruntime. The method can only be
         used when forecaster is a non-distributed version.
@@ -226,8 +216,6 @@ class BasePytorchForecaster(Forecaster):
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
                to 32. None for all-data-single-time inference.
-        :param dirname: The directory to save onnx model file. This value defaults
-               to "model.onnx" in pwd.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
@@ -237,7 +225,7 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling predict!")
-        return self.internal.inference(data, batch_size=batch_size, file_path=dirname)
+        return self.internal.inference(data, batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values"):
         """
@@ -291,26 +279,12 @@ class BasePytorchForecaster(Forecaster):
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling evaluate!")
             yhat_torch = self.internal.inference(torch.from_numpy(data[0]), backend=None)
-            y_torch = torch.from_numpy(data[1])
 
-            eval_res = []
-            for metric in self.metrics:
-                if multioutput=="raw_values":
-                    res = torch.zeros(y_torch.shape[1], y_torch.shape[2])
-                    for i in range(y_torch.shape[1]):
-                        for j in range(y_torch.shape[2]):
-                            res[i, j] = TORCHMETRICS_REGRESSION_MAP[metric.lower()](yhat_torch[:, i, j],
-                                                                                    y_torch[:, i, j])
-                    eval_res.append(res.numpy())
-                else:
-                    res = TORCHMETRICS_REGRESSION_MAP[metric.lower()](yhat_torch, y_torch)
-                    eval_res.append(res.numpy())
-
-            return eval_res
+            aggregate = 'mean' if multioutput=='uniform_average' else None
+            return Evaluator.evaluate(self.metrics, data[1], yhat_torch.numpy(), aggregate=aggregate)
 
     def evaluate_with_onnx(self, data,
                            batch_size=32,
-                           dirname="model.onnx",
                            multioutput="raw_values"):
         """
         Evaluate using a trained forecaster with onnxruntime. The method can only be
@@ -339,8 +313,6 @@ class BasePytorchForecaster(Forecaster):
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
-        :param dirname: The directory to save onnx model file. This value defaults
-               to "model.onnx" in pwd.
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.
@@ -353,22 +325,10 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
-        yhat = self.internal.inference(data[0], batch_size=batch_size, file_path=dirname)
+        yhat = self.internal.inference(data[0], batch_size=batch_size)
 
-        eval_res = []
-        for metric in self.metrics:
-            if multioutput=="raw_values":
-                res = torch.zeros(data[1].shape[1], data[1].shape[2])
-                for i in range(data[1].shape[1]):
-                    for j in range(data[1].shape[2]):
-                        res[i, j] = TORCHMETRICS_REGRESSION_MAP[metric.lower()](torch.from_numpy(yhat)[:, i, j],
-                                                                                torch.from_numpy(data[1])[:, i, j])
-                eval_res.append(res.numpy())
-            else:
-                res = TORCHMETRICS_REGRESSION_MAP[metric.lower()](torch.from_numpy(yhat), torch.from_numpy(data[1]))
-                eval_res.append(res.numpy())
-
-        return eval_res
+        aggregate = 'mean' if multioutput=='uniform_average' else None
+        return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
 
     def save(self, checkpoint_file):
         """
