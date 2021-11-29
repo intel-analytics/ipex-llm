@@ -19,7 +19,7 @@ import torch
 import types
 
 from bigdl.chronos.data import TSDataset
-from bigdl.orca.automl.metrics import Evaluator
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.nano.pytorch.trainer import Trainer
 
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
@@ -91,9 +91,8 @@ class TSPipeline:
         # unscale
         y = self._tsdataset_unscale(y)
         # evaluate
-        eval_result = [Evaluator.evaluate(m, y_true=y, y_pred=yhat,
-                                          multioutput=multioutput)
-                       for m in metrics]
+        aggregate = 'mean' if multioutput == 'uniform_average' else None
+        eval_result = Evaluator.evaluate(metrics, y, yhat, aggregate=aggregate)
         return eval_result
 
     def evaluate_with_onnx(self, data, metrics=['mse'], multioutput="uniform_average",
@@ -121,9 +120,8 @@ class TSPipeline:
         # unscale
         y = self._tsdataset_unscale(y)
         # evaluate
-        eval_result = [Evaluator.evaluate(m, y_true=y, y_pred=yhat,
-                                          multioutput=multioutput)
-                       for m in metrics]
+        aggregate = 'mean' if multioutput == 'uniform_average' else None
+        eval_result = Evaluator.evaluate(metrics, y, yhat, aggregate=aggregate)
         return eval_result
 
     def predict(self, data, batch_size=32):
