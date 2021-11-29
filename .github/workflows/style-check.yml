@@ -38,3 +38,6 @@ jobs:
 
       - name: Orca style checking
         run: bash python/orca/dev/test/lint-python
+
+      - name: License checking
+        run: bash python/dev/check-license
