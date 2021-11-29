@@ -26,6 +26,7 @@ from math import log10
 from PIL import Image
 import urllib
 import tarfile
+import os
 from os import makedirs, remove, listdir
 from os.path import exists, join, basename
 
