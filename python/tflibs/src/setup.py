@@ -17,41 +17,45 @@
 #
 
 import os
+import sys
 from setuptools import setup
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
-# The global variable `plat_name` is used to determine which target platform we are packing for.
-# We overwrite the cmdclass in setuptools to restore the `--plat-name` argument we specified.
-# For example, when we call:
-# 
-#    python setup.py bdist_wheel --plat-name darwin-x86_64
-# 
-# `plat_name` will be assigned as `darwin-x86_64`, which means building wheel for MacOS.
-plat_name = "linux-x86_64"
+idx = 0
+for arg in sys.argv:
+    if arg == "--plat-name":
+        break
+    else:
+        idx += 1
 
-class bdist_wheel(_bdist_wheel):
-    def run(self):
-        plat_name = self.plat_name
-        _bdist_wheel.run(self)
+if idx >= len(sys.argv):
+    raise ValueError("Cannot find --plat-name argument. bigdl-tf requires --plat-name to build.")
 
+verbose_plat_name = sys.argv[idx + 1]
+
+valid_plat_names = {"macosx_10_11_x86_64", "manylinux2010_x86_64"}
+verbose_plat_names_to_plat_name = {"macosx_10_11_x86_64": "darwin-x86_64",
+                                   "manylinux2010_x86_64": "linux-x86_64"}
+if verbose_plat_name not in valid_plat_names:
+    raise ValueError(f"--plat-name is not valid. --plat-name should be one of {valid_plat_names}"
+                      f" but got {verbose_plat_name}")
+
+plat_name = verbose_plat_names_to_plat_name[verbose_plat_name]
 
 def setup_package():
     package_data_plat_ = {"linux-x86_64":["libtensorflow_framework-zoo.so",
                                           "libtensorflow_jni.so"],
                           "darwin-x86_64":["libtensorflow_framework.dylib",
-                                          "libtensorflow_jni.dylib"]}
+                                           "libtensorflow_jni.dylib"]}
 
     packages_name = "bigdl.share.tflibs." + plat_name
 
     metadata = dict(
         name='bigdl-tf',
         version=VERSION,
-        cmdclass={
-          'bdist_wheel': bdist_wheel
-        },
         description='TensorFlow Dependency Library for bigdl-orca',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
@@ -60,7 +64,6 @@ def setup_package():
         packages=[packages_name],
         package_data={packages_name: package_data_plat_[plat_name]}
     )
-
     setup(**metadata)
 
 

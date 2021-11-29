@@ -12,5 +12,5 @@ spec:
   - name: webui
     port: 8081
   selector:
-    app: analytics-zoo-ppml-trusted-realtime-ml-graphene
+    app: bigdl-ppml-trusted-realtime-ml-graphene
     component: jobmanager

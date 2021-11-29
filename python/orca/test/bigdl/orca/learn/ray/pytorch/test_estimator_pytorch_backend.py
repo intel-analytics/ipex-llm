@@ -18,6 +18,8 @@ from unittest import TestCase
 
 import numpy as np
 import pytest
+import logging
+import time
 
 import torch
 import torch.nn as nn
@@ -86,6 +88,16 @@ class IdentityNet(nn.Module):
     def forward(self, input_):
         return input_
 
+class LinearModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # need this line to avoid optimizer raise empty variable list
+        self.fc1 = nn.Linear(1, 1, bias=False)
+        self.fc1.weight.data.fill_(1.0)
+
+    def forward(self, input_):
+        return self.fc1(input_)
+
 
 class MultiInputNet(nn.Module):
     def __init__(self):
@@ -134,6 +146,7 @@ def val_data_loader(config, batch_size):
 
 
 def get_model(config):
+    torch.manual_seed(0)
     return Net()
 
 
@@ -141,31 +154,46 @@ def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
 
-def get_estimator(workers_per_node=1, model_fn=get_model):
+def get_zero_optimizer(model, config):
+    return torch.optim.SGD(model.parameters(), lr=0.0)
+
+def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
+                  log_level=logging.INFO, loss=nn.BCELoss(), optimizer=get_optimizer):
     estimator = Estimator.from_torch(model=model_fn,
-                                     optimizer=get_optimizer,
-                                     loss=nn.BCELoss(),
+                                     optimizer=optimizer,
+                                     loss=loss,
                                      metrics=Accuracy(),
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
-                                     backend="torch_distributed")
+                                     backend="torch_distributed",
+                                     sync_stats=sync_stats,
+                                     log_level=log_level)
     return estimator
 
 
 class TestPyTorchEstimator(TestCase):
     def test_data_creator(self):
         estimator = get_estimator(workers_per_node=2)
-        train_stats = estimator.fit(train_data_loader, epochs=2, batch_size=128)
+        start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(start_val_stats)
+        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128)
         print(train_stats)
-        val_stats = estimator.evaluate(val_data_loader, batch_size=64)
-        print(val_stats)
-        assert 0 < val_stats["Accuracy"] < 1
+        end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(end_val_stats)
+        assert 0 < end_val_stats["Accuracy"] < 1
         assert estimator.get_model()
 
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] -
+                start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
         # Verify syncing weights, i.e. the two workers have the same weights after training
         import ray
         remote_workers = estimator.remote_workers
-        state_dicts = ray.get([worker.state_dict.remote() for worker in remote_workers])
+        state_dicts = ray.get([worker.get_state_dict.remote() for worker in remote_workers])
         weights = [state["models"] for state in state_dicts]
         worker1_weights = weights[0][0]
         worker2_weights = weights[1][0]
@@ -312,6 +340,130 @@ class TestPyTorchEstimator(TestCase):
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["f1", "f2"])
         result.collect()
+
+    def test_sync_stats(self):
+        sc = init_nncontext()
+        rdd = sc.range(0, 100).repartition(2)
+        # the data and model are constructed that loss on worker 0 is always 0.0
+        # and loss on worker 1 is always 1.0
+
+        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter]
+                        ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: LinearModel(),
+                                  loss=nn.MSELoss(),
+                                  optimizer=get_zero_optimizer,
+                                  sync_stats=True)
+        stats = estimator.fit(df, batch_size=4, epochs=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              reduce_results=False)
+        worker_0_stat0, worker_1_stats = stats[0]
+
+        for k in worker_0_stat0:
+            if k in {"num_samples"}:
+                continue
+            v0 = worker_0_stat0[k]
+            v1 = worker_1_stats[k]
+            error_msg = f"stats from all workers should be the same, " \
+                        f"but got worker_0_stat0: {worker_0_stat0}, " \
+                        f"worker_1_stats: {worker_1_stats}"
+            assert abs(v1 - v0) < 1e-6, error_msg
+
+    def test_not_sync_stats(self):
+        sc = init_nncontext()
+        rdd = sc.range(0, 100).repartition(2)
+
+        # the data and model are constructed that loss on worker 0 is always 0.0
+        # and loss on worker 1 is always 1.0
+
+        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter]
+                     ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: LinearModel(),
+                                  loss=nn.MSELoss(),
+                                  optimizer=get_zero_optimizer,
+                                  sync_stats=False)
+        stats = estimator.fit(df, batch_size=4, epochs=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              reduce_results=False)
+        worker_0_stats, worker_1_stats = stats[0]
+        train_loss_0 = worker_0_stats["train_loss"]
+        train_loss_1 = worker_1_stats["train_loss"]
+        error_msg = f"stats from all workers should not be the same, " \
+                    f"but got worker_0_stats: {worker_0_stats}, worker_1_stats: {worker_1_stats}"
+        assert abs(train_loss_0 - train_loss_1) > 0.9, error_msg
+
+    def test_data_parallel_sgd_correctness(self):
+        sc = init_nncontext()
+        rdd = sc.range(0, 100).repartition(2)
+
+        # partition 0: [(0, 0), (0, 0)]
+        # partition 1: [(1, 0), (1, 0)]
+        # model: y = w * x
+        # loss = (wx)^2
+        # dloss/dw = 2x^2*w
+        # end of first iteration:
+        #    partition 0 loss: 0.0
+        #    partition 1 loss: 1.0
+        #    avg_grad = avg([0, 0, 2, 2]) = 1
+        #    weight = 1.0 - 0.5 * avg_grad = 0.5
+        # end of second iteration:
+        #    partition 0 loss: 0.0
+        #    partition 1 loss: 0.25
+        #    avg_grad = avg([0, 0, 1, 1]) = 0.5
+        #    weight = 0.5 - 0.5 * avg_grad = 0.25
+        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter][:2]
+                        ).toDF(["feature", "label"])
+
+        def get_optimizer(model, config):
+            return torch.optim.SGD(model.parameters(), lr=0.5)
+
+        estimator = Estimator.from_torch(model=lambda config: LinearModel(),
+                                         optimizer=get_optimizer,
+                                         loss=torch.nn.MSELoss(),
+                                         metrics=Accuracy(),
+                                         config={},
+                                         workers_per_node=2,
+                                         backend="torch_distributed",
+                                         sync_stats=False)
+
+        stats = estimator.fit(df, batch_size=4, epochs=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              reduce_results=False)
+
+        state = estimator.get_state_dict()
+        assert state['models'][0]['fc1.weight'].item() == 0.25
+
+    # not work right now
+    # ray logs cannot be captured
+    # not sure why
+    # def test_logging_train_stats(self):
+
+    #     sc = init_nncontext()
+    #     rdd = sc.range(0, 100)
+    #     df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+    #                             [int(np.random.randint(0, 2, size=()))])
+    #                  ).toDF(["feature", "label"])
+
+    #     estimator = get_estimator(workers_per_node=2, sync_stats=False, log_level=logging.DEBUG)
+    #     captured_before = self._capsys.readouterr().out
+    #     stats = estimator.fit(df, batch_size=4, epochs=2,
+    #                             feature_cols=["feature"],
+    #                             label_cols=["label"])
+
+    #     captured_after = self._capsys.readouterr().out
+    #     message = captured_after[len(captured_before):]
+    #     assert "Finished training epoch 1, stats: {" in message
+    #     assert "Finished training epoch 2, stats: {" in message
+
+    # @pytest.fixture(autouse=True)
+    # def inject_fixtures(self, capsys):
+    #     self._capsys = capsys
 
 
 if __name__ == "__main__":

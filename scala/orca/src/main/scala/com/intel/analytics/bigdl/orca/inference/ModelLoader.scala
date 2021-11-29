@@ -25,7 +25,8 @@ import com.intel.analytics.bigdl.dllib.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.dllib.keras.layers.WordEmbedding
-import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}
+import com.intel.analytics.bigdl.dllib.keras.Model
+import com.intel.analytics.bigdl.dllib.keras.Sequential
 import com.intel.analytics.bigdl.orca.net.{TFNet, TorchModel}
 import com.intel.analytics.bigdl.dllib.net.{GraphNet, NetUtils}
 import org.slf4j.LoggerFactory

@@ -1,10 +1,10 @@
-package com.intel.analytics.bigdl.ppml.vfl
+package com.intel.analytics.bigdl.ppml.algorithms.vfl
 
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
 import com.intel.analytics.bigdl.dllib.nn.{Linear, Sequential}
 import com.intel.analytics.bigdl.dllib.optim.Adam
-import com.intel.analytics.bigdl.ppml.vfl.VflEstimator
+import com.intel.analytics.bigdl.ppml.vfl.{VflEstimator, VflModel}
 
 class LogisticRegression(featureNum: Int,
                          learningRate: Float = 0.005f) extends VflModel() {

@@ -104,19 +104,19 @@ wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P /tmp/mni
 wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/mnist
 
 echo "start example test for TFPark tf_optimizer train 1"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/train.py 1 1000
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/train.py --max_epoch 1 --data_num 1000
 
 echo "start example test for TFPark tf_optimizer evaluate 2"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/evaluate.py 1000
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/evaluate.py --data_num 1000
 
 echo "start example test for TFPark keras keras_dataset 3"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py 5
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py
 
 echo "start example test for TFPark keras keras_ndarray 4"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py 5
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py
 
 echo "start example test for TFPark estimator estimator_dataset 5"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_dataset.py
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_dataset.py 
 
 echo "start example test for TFPark estimator estimator_inception 6"
 python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \

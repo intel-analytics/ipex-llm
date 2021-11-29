@@ -43,8 +43,7 @@ forecaster = Seq2SeqForecaster(past_seq_len=100,
                                workers_per_node=args.workers_per_node,
                                seed=0)
 
-forecaster.fit((x_train, y_train), epochs=args.epochs,
-               batch_size=512//(1 if not forecaster.distributed else args.workers_per_node))
+forecaster.fit((x_train, y_train), epochs=args.epochs, batch_size=512)
 ```
 
 ## Evaluate

@@ -45,7 +45,7 @@ conf = {"spark.network.timeout": "10000000",
 def _parse_args():
     parser = ArgumentParser()
     parser.add_argument("--cluster_mode", type=str, default="local",
-                        help="The cluster mode, local, yarn or standalone.")
+                        help="The cluster mode, such as local, yarn, standalone or spark-submit.")
     parser.add_argument("--master", type=str, default=None,
                         help="The master url, only used when the cluster_mode is standalone.")
     parser.add_argument("--cores", type=int, default=48,
@@ -110,6 +110,9 @@ if __name__ == "__main__":
                           num_nodes=args.num_nodes, memory=args.memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           conf=conf)
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context("spark-submit")
+
     time_start = time()
 
     paths = [os.path.join(args.input_folder, "day_%d.parquet" % i) for i in args.day_range]

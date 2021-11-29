@@ -37,9 +37,9 @@ import numpy as np
 
 from bigdl.orca.learn.metrics import Metric
 from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
-                                          NUM_SAMPLES)
+                                            NUM_SAMPLES)
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
-                                              SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
+                                                SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
 
 tqdm = None
 try:
@@ -84,7 +84,9 @@ class TrainingOperator:
                  criterion=None,
                  schedulers=None,
                  use_fp16=False,
-                 use_tqdm=False):
+                 use_tqdm=False,
+                 sync_stats=False,
+                 dist_backend=None):
         # You are not expected to override this method.
         self._models = models  # List of models
         assert isinstance(
@@ -110,6 +112,8 @@ class TrainingOperator:
             raise ValueError("tqdm must be installed to use tqdm in training.")
         self._use_tqdm = use_tqdm
         self.global_step = 0
+        self.sync_stats = sync_stats
+        self.dist_backend = dist_backend
 
         if type(self) is TrainingOperator:
             for component in (models, schedulers, optimizers):
@@ -215,7 +219,8 @@ class TrainingOperator:
         if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
             self.scheduler.step()
 
-        return metric_meters.summary()
+        return metric_meters.summary(sync_stats=self.sync_stats,
+                                     dist_backend=self.dist_backend)
 
     def train_batch(self, batch, batch_info):
         """Computes loss and updates the model over one batch.
@@ -269,11 +274,7 @@ class TrainingOperator:
         # Compute gradients in a backward pass.
         with self.timers.record("grad"):
             self.optimizer.zero_grad()
-            if self.use_fp16:
-                with amp.scale_loss(loss, self.optimizer) as scaled_loss:
-                    scaled_loss.backward()
-            else:
-                loss.backward()
+            loss.backward()
 
         # Call step of optimizer to update model params.
         with self.timers.record("apply"):

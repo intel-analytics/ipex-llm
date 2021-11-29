@@ -82,6 +82,7 @@ BigDL Documentation
    doc/PPML/Overview/trusted_big_bata_analytics_and_ml.md
    doc/PPML/Overview/trusted_fl.md
    doc/PPML/QuickStart/build_kernel_with_sgx.md
+   doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.md
    doc/PPML/QuickStart/trusted-serving-on-k8s-guide.md
 
 .. toctree::

@@ -36,7 +36,9 @@ import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Constant, _}
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, _}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
-import com.intel.analytics.bigdl.dllib.keras.models.{KerasNet, Model, Sequential}
+import com.intel.analytics.bigdl.dllib.keras.models.KerasNet
+import com.intel.analytics.bigdl.dllib.keras.Model
+import com.intel.analytics.bigdl.dllib.keras.Sequential
 import com.intel.analytics.bigdl.dllib.keras.objectives._
 import com.intel.analytics.bigdl.dllib.keras.optimizers.{Adam, AdamWeightDecay, PolyEpochDecay}
 import org.apache.spark.api.java.JavaRDD
