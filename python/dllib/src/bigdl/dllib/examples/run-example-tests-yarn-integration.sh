@@ -143,6 +143,7 @@ echo "#7 Total time cost ${time} seconds"
 echo "#9 start test for orca learn/tf/image_segmentation/image_segmentation.py"
 #timer
 start=$(date "+%s")
+cat /etc/hostname
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segmentation.py \
   --batch_size 64 \
