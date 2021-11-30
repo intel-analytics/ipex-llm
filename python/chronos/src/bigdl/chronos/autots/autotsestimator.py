@@ -352,15 +352,15 @@ class AutoTSEstimator:
         :return: A dictionary of best hyper parameters
         """
         return self.model.get_best_config()
-    
+
     def _n_sampling(self, n_sampling, batch_size):
         """
         Only process n_sampling.
-        
+
         :return: According to the number of searches, round up n_sampling.
         """
         import math
-        search_count = sum([len(v.get('grid_search')) for _, v\
+        search_count = sum([len(v.get('grid_search')) for _, v
                             in self.model.search_space.items() if isinstance(v, dict)])
         search_count += len(batch_size.get('grid_search')) if isinstance(batch_size, dict) else 0
         n_sampling /= search_count
