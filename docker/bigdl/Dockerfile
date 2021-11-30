@@ -110,9 +110,12 @@ RUN apt-get update --fix-missing && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
 # python
-    apt-get install -y python3-minimal && \
-    apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
-    pip3 install --no-cache-dir --upgrade pip && \
+# Install Miniconda
+    wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh && \
+    chmod +x Miniconda3-4.5.4-Linux-x86_64.sh && \
+    ./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local && \
+    conda create -y -n bigdl python=3.7 && \
+    source activate bigdl && \
     pip install --no-cache-dir --upgrade setuptools && \
     pip install --no-cache-dir numpy==1.18.1 scipy && \
     pip install --no-cache-dir pandas==1.0.3 && \
@@ -143,7 +146,8 @@ RUN apt-get update --fix-missing && \
     pip install --no-cache-dir aioredis==1.1.0 && \
     pip install --no-cache-dir tensorflow==1.15.0 && \
     pip install --no-cache-dir tf_slim && \
-    pip install --no-cache-dir tensorflow-datasets==3.2.0
+    pip install --no-cache-dir tensorflow-datasets==3.2.0 && \
+    pip install --no-cache-dir imageio==2.8.0
 
 ADD ./start-notebook.sh /opt/work
 RUN chmod a+x /opt/work/start-notebook.sh
