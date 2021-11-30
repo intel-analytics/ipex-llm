@@ -48,9 +48,9 @@ def load_data(file_path):
 
 def main(cluster_mode, max_epoch, file_path, batch_size, platform, non_interactive):
     import os
-    for filepath,dirnames,filenames in os.walk('/data'):
-        for filename in filenames:
-            print(os.path.join(filepath,filename))
+    #for filepath,dirnames,filenames in os.walk('/data'):
+    #    for filename in filenames:
+    #        print(os.path.join(filepath,filename))
             
     import matplotlib
     if not non_interactive and platform == "mac":
