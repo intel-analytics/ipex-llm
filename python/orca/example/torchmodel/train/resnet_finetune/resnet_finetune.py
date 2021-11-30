@@ -49,10 +49,6 @@ class CatDogModel(nn.Module):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) == 1:
-        print(sys.argv)
-        print("Need parameters: <imagePath>")
-        exit(-1)
     parser = OptionParser()
     parser.add_option("--executor-cores", type=int, dest="cores", default=4, help="number of executor cores")
     parser.add_option("--num-executors", type=int, dest="executors", default=16, help="number of executors")
