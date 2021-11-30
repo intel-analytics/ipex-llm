@@ -9,9 +9,6 @@ if [ -c "/dev/sgx/enclave" ]; then
     echo "/dev/sgx/enclave is ready"
 elif [ -c "/dev/sgx_enclave" ]; then
     echo "/dev/sgx/enclave not ready, try to link to /dev/sgx_enclave"
-    if [ -c "/dev/sgx/enclave" ]; then
-        rm /dev/sgx/enclave
-    fi
     mkdir -p /dev/sgx
     ln -s /dev/sgx_enclave /dev/sgx/enclave
 else
@@ -22,9 +19,6 @@ if [ -c "/dev/sgx/provision" ]; then
     echo "/dev/sgx/provision is ready"
 elif [ -c "/dev/sgx_provision" ]; then
     echo "/dev/sgx/provision not ready, try to link to /dev/sgx_provision"
-    if [ -c "/dev/sgx/provision" ]; then
-        rm /dev/sgx/provision
-    fi
     mkdir -p /dev/sgx
     ln -s /dev/sgx_provision /dev/sgx/provision
 else
