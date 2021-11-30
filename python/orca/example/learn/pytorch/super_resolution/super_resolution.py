@@ -77,19 +77,7 @@ elif opt.cluster_mode == "spark-submit":
 else:
     print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + opt.cluster_mode)
-
-# if opt.cluster_mode == "local":
-#     init_orca_context()
-# elif opt.cluster_mode == "yarn":
-#     additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
-#     init_orca_context(cluster_mode="yarn-client", cores=4, num_nodes=2,
-#                       additional_archive=additional)
-# elif opt.cluster_mode == "spark-submit":
-#     init_orca_context(cluster_mode="spark-submit")                      
-# else:
-#     print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-#           + opt.cluster_mode)
-
+          
 
 def download_report(count, block_size, total_size):
     downloaded = count * block_size
