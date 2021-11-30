@@ -144,6 +144,10 @@ echo "#9 start test for orca learn/tf/image_segmentation/image_segmentation.py"
 #timer
 start=$(date "+%s")
 cat /etc/hostname
+for filepath,dirnames,filenames in os.walk('/data'):
+for filename in filenames:
+print(os.path.join(filepath,filename))
+
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segmentation.py \
   --batch_size 64 \
