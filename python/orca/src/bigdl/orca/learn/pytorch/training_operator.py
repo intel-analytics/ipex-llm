@@ -194,27 +194,28 @@ class TrainingOperator:
         metric_meters = AverageMeterCollection()
 
         self.model.train()
-        for batch_idx, batch in enumerate(iterator):
-            batch_info = {
-                "batch_idx": batch_idx,
-                "global_step": self.global_step
-            }
-            batch_info.update(info)
-            metrics = self.train_batch(batch, batch_info=batch_info)
+        with self.model.join():
+            for batch_idx, batch in enumerate(iterator):
+                batch_info = {
+                    "batch_idx": batch_idx,
+                    "global_step": self.global_step
+                }
+                batch_info.update(info)
+                metrics = self.train_batch(batch, batch_info=batch_info)
 
-            if self.use_tqdm and self.world_rank == 0:
-                _progress_bar.n = batch_idx + 1
-                postfix = {}
-                if "train_loss" in metrics:
-                    postfix.update(loss=metrics["train_loss"])
-                _progress_bar.set_postfix(postfix)
+                if self.use_tqdm and self.world_rank == 0:
+                    _progress_bar.n = batch_idx + 1
+                    postfix = {}
+                    if "train_loss" in metrics:
+                        postfix.update(loss=metrics["train_loss"])
+                    _progress_bar.set_postfix(postfix)
 
-            if self.scheduler and batch_info.get(
-                    SCHEDULER_STEP) == SCHEDULER_STEP_BATCH:
-                self.scheduler.step()
+                if self.scheduler and batch_info.get(
+                        SCHEDULER_STEP) == SCHEDULER_STEP_BATCH:
+                    self.scheduler.step()
 
-            metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
-            self.global_step += 1
+                metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
+                self.global_step += 1
 
         if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
             self.scheduler.step()
