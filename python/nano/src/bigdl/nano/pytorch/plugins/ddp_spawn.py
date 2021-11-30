@@ -126,6 +126,8 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         }
 
     def start_training(self, trainer):
+        # reset ortsess, since InferenceSession can not be pickled
+        self.model._ortsess = None
         start_processes_new(self.new_process, **self.mp_spawn_kwargs)
         # reset optimizers, since main process is never used for training
         # and thus does not have a valid optim state
