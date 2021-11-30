@@ -116,7 +116,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         # over partition to cover tasks all over the cluster
         self.workerRDD = self.sc.parallelize(list(range(self.total_cores * 4)),
-                                        self.total_cores * 4).repartition(self.num_workers)
+                                             self.total_cores * 4).repartition(self.num_workers)
 
         self.worker_init_params = dict(
             model_creator=self.model_creator,
