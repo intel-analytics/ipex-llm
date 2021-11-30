@@ -165,7 +165,7 @@ public class RecommenderServer extends GrpcServerBase {
 
                 Tuple2<int[], Table[]> itemInputTuple;
                 try {
-                     itemInputTuple = this.buildRankingInput(userFeature, itemFeature);
+                    itemInputTuple = this.buildRankingInput(userFeature, itemFeature);
                 } catch (Exception e) {
                     e.printStackTrace();
                     logger.warn("FeaturesToRankingInputSet: "+ e.getMessage());
@@ -181,10 +181,15 @@ public class RecommenderServer extends GrpcServerBase {
                     responseObserver.onError(Status.UNAVAILABLE.withDescription("ranking " +
                             "service unavailable: " + e.getMessage()).asRuntimeException());
                     return;
+                } catch (Exception e) {
+                    responseObserver.onError(Status.UNAVAILABLE.withDescription(e.getMessage())
+                            .asRuntimeException());
+                    return;
                 }
                 resultBuilder.addIDProbList(idProb);
             }
-            overallContext.stop();responseObserver.onNext(resultBuilder.build());
+            overallContext.stop();
+            responseObserver.onNext(resultBuilder.build());
             responseObserver.onCompleted();
         }
 
@@ -249,7 +254,7 @@ public class RecommenderServer extends GrpcServerBase {
             Tuple2<int[], Table[]> itemInputTuple;
             try {
                 itemInputTuple = RecommenderUtils.featuresToRankingInputSet(userFeature,
-                        itemFeature, 0);
+                        itemFeature, Utils.helper().getInferenceBatch());
             } catch (Exception e) {
                 e.printStackTrace();
                 logger.warn("FeaturesToRankingInputSet: "+ e.getMessage());
@@ -273,8 +278,15 @@ public class RecommenderServer extends GrpcServerBase {
             }
             rankingContext.stop();
             Timer.Context topKContext = topKTimer.time();
-            Tuple2<int[], float[]> topKIDProbsTuple = RecommenderUtils.getTopK(result,
-                    itemIDArr, k);
+            Tuple2<int[], float[]> topKIDProbsTuple;
+            try {
+                topKIDProbsTuple = RecommenderUtils.getTopK(result,
+                        itemIDArr, k);
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn("Ranking encounter an error: "+ e.getMessage());
+                throw e;
+            }
             int[] topKIDs = topKIDProbsTuple._1;
             float[] topKProbs = topKIDProbsTuple._2;
             IDProbs.Builder idProbBuilder = IDProbs.newBuilder();
