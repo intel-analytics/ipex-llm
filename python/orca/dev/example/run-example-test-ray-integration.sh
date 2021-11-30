@@ -249,7 +249,7 @@ echo "#14 Total time cost ${time} seconds"
 # echo "#15 Total time cost ${time} seconds"
 
 echo "#16 start test for orca tfpark estimator_dataset"
-#timer
+#timer 
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_dataset.py \
@@ -338,3 +338,4 @@ echo "#16 tfaprk estimator_dataset example time used:$time16 seconds"
 echo "#17 tfaprk estimator_inception example time used:$time17 seconds"
 echo "#18 tfaprk opt_train example time used:$time18 seconds"
 echo "#19 tfaprk opt_evaluate example time used:$time19 seconds"
+
