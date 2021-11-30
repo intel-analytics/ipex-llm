@@ -1,4 +1,4 @@
-# Deploy the Intel SGX Device Plugin for Kubenetes
+# Deploy the Intel SGX Device Plugin for Kubernetes
 
 The instructions in this section are modified from the [Intel SGX Device Plugin homepage][intelSGX], to which please refer should questions arise.
 

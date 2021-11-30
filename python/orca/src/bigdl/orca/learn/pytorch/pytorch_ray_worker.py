@@ -1,0 +1,125 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Copyright 2017 The Ray Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import ray
+from bigdl.orca.learn.pytorch.utils import find_free_port
+from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
+import torch.nn as nn
+
+
+import logging
+
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
+
+
+class PytorchRayWorker(TorchRunner):
+    """Manages a PyTorch model for training."""
+
+    def __init__(self,
+                 model_creator,
+                 optimizer_creator,
+                 loss_creator=None,
+                 metrics=None,
+                 scheduler_creator=None,
+                 training_operator_cls=None,
+                 config=None,
+                 use_tqdm=False,
+                 scheduler_step_freq=None,
+                 sync_stats=True,
+                 log_level=logging.INFO):
+        super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
+                         training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
+                         log_level=log_level)
+
+        self.backend = "torch-local"
+        self.rank = 0
+        self.size = 0
+
+    def setup_horovod(self):
+        import horovod.torch as hvd
+        hvd.init()
+        self.backend = "horovod"
+        self.rank = hvd.rank()
+        self.size = hvd.size()
+        self.setup_components_horovod()
+        self.setup_operator(self.models)
+
+    def setup_address(self):
+        ip = self.get_node_ip()
+        port = find_free_port()
+        return f"tcp://{ip}:{port}"
+
+    def get_node_ip(self):
+        """Returns the IP address of the current node."""
+        return ray._private.services.get_node_ip_address()
+
+    def setup_components_horovod(self):
+        import horovod.torch as hvd
+
+        self.logger.debug("Creating model")
+        self.models = self.model_creator(self.config)
+        if not isinstance(self.models, Iterable):
+            self.models = [self.models]
+        else:
+            raise ValueError("only support single model for now")
+
+        assert all(isinstance(model, nn.Module) for model in self.models), (
+            "All models must be PyTorch models: {}.".format(self.models))
+
+        self.logger.debug("Creating optimizer.")
+        self.optimizers = self.optimizer_creator(self.given_models,
+                                                 self.config)
+        if not isinstance(self.optimizers, Iterable):
+            hvd.broadcast_parameters(self.models[0].state_dict(), root_rank=0)
+            hvd.broadcast_optimizer_state(self.optimizers, root_rank=0)
+            parameters = self.models[0].named_parameters()
+            self.optimizers = hvd.DistributedOptimizer(self.optimizers,
+                                                       named_parameters=parameters)
+            self.optimizers = [self.optimizers]
+        else:
+            raise ValueError("only support one optimizer for now")
+
+        self._create_schedulers_if_available()
+        self._create_loss()
+
+    def predict(self, data_creator, batch_size=32, profile=False):
+        """Evaluates the model on the validation data set."""
+        config = self.config.copy()
+        self._toggle_profiling(profile=profile)
+
+        shards_ref = data_creator(config, batch_size)
+        if not isinstance(shards_ref, ray.ObjectID):
+            raise ValueError("Only xshards is supported for predict")
+
+        partition = ray.get(shards_ref)
+        return super().predict(partition=partition, batch_size=batch_size, profile=profile)

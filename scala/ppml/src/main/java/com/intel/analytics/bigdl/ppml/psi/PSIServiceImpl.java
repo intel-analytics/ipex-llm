@@ -150,6 +150,14 @@ public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
         if (psiTasks.containsKey(taskId)) {
             try {
                 List<String> intersection = psiTasks.get(taskId).getIntersection();
+                if (intersection == null) {
+                    DownloadIntersectionResponse response = DownloadIntersectionResponse.newBuilder()
+                            .setTaskId(taskId)
+                            .setStatus(SIGNAL.EMPTY_INPUT).build();
+                    responseObserver.onNext(response);
+                    responseObserver.onCompleted();
+                    return;
+                }
                 int split = request.getSplit();
                 int numSplit = Utils.getTotalSplitNum(intersection, splitSize);
                 List<String> splitIntersection = Utils.getSplit(intersection, split, numSplit, splitSize);
@@ -172,6 +180,12 @@ public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
             }
+        } else {
+            DownloadIntersectionResponse response = DownloadIntersectionResponse.newBuilder()
+                    .setTaskId(taskId)
+                    .setStatus(SIGNAL.ERROR).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
         }
     }
 

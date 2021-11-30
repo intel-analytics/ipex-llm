@@ -4,7 +4,7 @@
 Prior to deploying PPML Cluster Serving, please make sure the following is setup
 - Hardware that supports SGX
 - A fully configured Kubernetes cluster 
-- Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions [here](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes#deploy-the-intel-sgx-device-plugin-for-kubenetes "here"))
+- Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions [here](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes#deploy-the-intel-sgx-device-plugin-for-kubernetes "here"))
 - Java
 
 ## Deploy Trusted Realtime ML for Kubernetes ##

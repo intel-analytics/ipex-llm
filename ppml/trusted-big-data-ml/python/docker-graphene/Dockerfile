@@ -83,6 +83,9 @@ RUN cd /opt && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-examples_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
     mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
+
+ADD spark-example-sql-e2e.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
+
 # hadoop
 RUN cd /opt && \
     apt-get install -y build-essential && \
@@ -273,7 +276,11 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/start-tpch.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-e2e-example.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-pi.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-sql-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml

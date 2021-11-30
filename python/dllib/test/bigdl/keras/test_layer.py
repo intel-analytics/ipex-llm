@@ -20,8 +20,8 @@ import numpy as np
 
 from test.bigdl.test_zoo_utils import ZooTestCase
 import bigdl.dllib.keras.layers as ZLayer
-from bigdl.dllib.keras.model import Model as ZModel
-from bigdl.dllib.keras.Sequential import Sequential as ZSequential
+from bigdl.dllib.keras.models import Model as ZModel
+from bigdl.dllib.keras.models import Sequential as ZSequential
 import keras.layers as KLayer
 from keras.engine import merge as kmerge, Model as KModel
 from keras.models import Sequential as KSequential

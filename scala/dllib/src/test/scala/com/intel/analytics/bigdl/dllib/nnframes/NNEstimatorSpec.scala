@@ -33,7 +33,7 @@ import com.intel.analytics.bigdl.dllib.feature.common.{TensorToSample, _}
 import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.keras.layers.Merge.merge
 import com.intel.analytics.bigdl.dllib.keras.layers.{Dense, Input}
-import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.objectives.ZooClassNLLCriterion
 // import org.apache.flink.types.Nothing
@@ -486,7 +486,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val modelLocation = getClass.getClassLoader.getResource("models/nnframes_keras").getFile
     /** code to generate model
      * import com.intel.analytics.bigdl.dllib.keras.layers.{Dense, Embedding, Input}
-     * import com.intel.analytics.bigdl.dllib.keras.models.Model
+     * import com.intel.analytics.bigdl.dllib.keras.Model
      * val input = Input(inputShape = Shape(6))
      * val output = Dense(2).inputs(input)
      * val module = Model(input, output)

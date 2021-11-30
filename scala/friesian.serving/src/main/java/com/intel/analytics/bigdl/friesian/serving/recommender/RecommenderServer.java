@@ -59,7 +59,7 @@ public class RecommenderServer extends GrpcServerBase {
     }
 
     @Override
-    public void parseConfig() throws IOException {
+    public void parseConfig() throws IOException, InstantiationException, IllegalAccessException {
         Utils.helper_$eq(getConfigFromYaml(gRPCHelper.class, configPath));
         Utils.helper().parseConfigStrings();
         if (Utils.helper() != null) {
