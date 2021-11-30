@@ -21,6 +21,8 @@ import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
 import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import com.intel.analytics.bigdl.orca.inference.InferenceModel;
@@ -37,11 +39,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.sql.SparkSession;
 import redis.clients.jedis.Jedis;
-import utils.TimerMetrics;
-import utils.TimerMetrics$;
-import utils.Utils;
-import utils.feature.FeatureUtils;
-import utils.gRPCHelper;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
+import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -104,6 +104,7 @@ public class FeatureServer extends GrpcServerBase {
         private RedisUtils redis;
         private final boolean redisCluster;
         private Set<ServiceType> serviceType;
+        private Map<String, String[]> colNamesMap;
         private MetricRegistry metrics = new MetricRegistry();
         Timer overallTimer = metrics.timer("feature.overall");
         Timer userPredictTimer = metrics.timer("feature.user.predict");
@@ -112,6 +113,7 @@ public class FeatureServer extends GrpcServerBase {
 
         FeatureService() throws Exception {
             serviceType = new HashSet<>();
+            colNamesMap = new HashMap<>();
             parseServiceType();
             if (serviceType.contains(ServiceType.KV)) {
                 redis = RedisUtils.getInstance(Utils.helper().getRedisPoolMaxTotal());
@@ -245,7 +247,7 @@ public class FeatureServer extends GrpcServerBase {
         private Features getFeaturesFromRedis(IDs msg, SearchType searchType) {
             String keyPrefix =
                     Utils.helper().getRedisKeyPrefix() +
-                            (searchType == SearchType.USER ? "userid": "itemid");
+                            (searchType == SearchType.USER ? "user": "item");
             List<Integer> ids = msg.getIDList();
             Jedis jedis = redisCluster ? null : redis.getRedisClient();
 
@@ -265,9 +267,21 @@ public class FeatureServer extends GrpcServerBase {
                 }
                 featureBuilder.addB64Feature(value);
             }
+            featureBuilder.addAllID(ids);
             if (jedis != null) {
                 jedis.close();
             }
+
+            if (!colNamesMap.containsValue(keyPrefix)) {
+                String colNamesStr;
+                if (!redisCluster) {
+                    colNamesStr = jedis.get(keyPrefix);
+                } else {
+                    colNamesStr = redis.getCluster().get(keyPrefix);
+                }
+                colNamesMap.put(keyPrefix, colNamesStr.split(","));
+            }
+            featureBuilder.addAllColNames(Arrays.asList(colNamesMap.get(keyPrefix)));
             return featureBuilder.build();
         }
 

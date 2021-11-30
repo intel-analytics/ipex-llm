@@ -28,6 +28,8 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallGr
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.*;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.recommender.RecommenderUtils;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import io.grpc.*;
@@ -38,11 +40,9 @@ import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import scala.Tuple2;
-import utils.TimerMetrics;
-import utils.TimerMetrics$;
-import utils.Utils;
-import utils.gRPCHelper;
-import utils.recommender.RecommenderUtils;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
+import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 
 import java.io.IOException;
 import java.util.List;
