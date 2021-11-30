@@ -116,7 +116,6 @@ class SparkTFEstimator():
         else:
             weights = None
 
-
         init_params = dict(
             model_creator=self.model_creator,
             compile_args_creator=self.compile_args_creator,
@@ -378,9 +377,9 @@ class SparkTFEstimator():
         # So we need to call get_state on every remote workers, otherwise
         # it might get stuck
         state = {
-                    "epoch": self.epoch,
-                    "weights": self.model_weights
-                }
+            "epoch": self.epoch,
+            "weights": self.model_weights
+        }
 
         with open(checkpoint, "wb") as f:
             pickle.dump(state, f)
