@@ -102,6 +102,7 @@ COPY --from=spark /opt/spark /opt/work/spark-${SPARK_VERSION}
 COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION} /opt/work/bigdl-${BIGDL_VERSION}
 
 ADD ./install-python-env.sh /opt
+RUN chmod a+x /opt/install-python-env.sh
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git && \
@@ -115,6 +116,7 @@ RUN apt-get update --fix-missing && \
     wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh && \
     chmod +x Miniconda3-4.5.4-Linux-x86_64.sh && \
     ./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local && \
+    rm Miniconda3-4.5.4-Linux-x86_64.sh && \
 # python
     /opt/install-python-env.sh
 
