@@ -123,7 +123,17 @@ Instead of lanuching a client container, you can also submit BigDL application f
 
 2. Follow the steps in the [Python User Guide](./python.html#install) to install BigDL in a conda environment.
 
-
+3. Pack conda environment and use on both the driver and executor.
+    - Pack the current conda environment to `environment.tar.gz` (you can use any name you like):
+    ```
+    conda pack -o environment.tar.gz
+    ```
+    - spark-submit with "--archives" and specify python stores for dirver and executor
+    ```
+    --conf spark.pyspark.driver.python=./env/bin/python \
+    --conf spark.pyspark.python=./env/bin/python \ 
+    --archives local:///bigdl2.0/data/environment.tar.gz#env \  # this path shoud be that k8s pod can access
+    ```
 ### **4. Run BigDL on k8s**
 
 _**Note**: Please make sure `kubectl` has appropriate permission to create, list and delete pod._
