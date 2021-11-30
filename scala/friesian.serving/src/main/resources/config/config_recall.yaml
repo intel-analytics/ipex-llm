@@ -7,8 +7,11 @@ servicePort: 8084
 # performance using prometheus
 monitorPort: 1238
 
+# default: 128, the dimensionality of the embedding vectors
+indexDim: 50
+
 # default: false, if load saved index, set true
-loadSavedIndex: true
+loadSavedIndex: false
 
 # default: false, if true, the built index will be saved to indexPath. Ignored when
 # loadSavedIndex=true
@@ -16,7 +19,7 @@ saveBuiltIndex: true
 
 # default: null, path to saved index path, must be provided if loadSavedIndex=true or
 # saveBuiltIndex=true
-indexPath: ./item.idx
+indexPath: ./item_50.idx
 
 # default: false
 getFeatureFromFeatureService: true
@@ -35,7 +38,10 @@ itemIDColumn: tweet_id
 # itemModelPath:
 
 # default: null, Only support parquet file
-initialDataPath: /home/yina/Documents/data/recsys/full_data/vec_feature_item_prediction_1000.parquet
+# initialDataPath: /home/yina/Documents/data/recsys/full_data/vec_feature_item_prediction_1000.parquet
+initialDataPath: /home/yina/Documents/data/friesian-demo/vec_feature_item_prediction.parquet
 
 # default: 1, number of models used in inference service
 # modelParallelism: 3
+
+part: 27

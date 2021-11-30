@@ -91,9 +91,7 @@ object RecallUtils {
       })
     } else {
       val itemFeatureColumns = Array(Utils.helper.itemIDColumn, "prediction")
-      val parquetList = Utils.getListOfFiles(dataDir)
-      logger.info(s"ParquetList length: ${parquetList.length}")
-      val readList = parquetList.sliding(10, 10).toArray
+      val readList = Utils.getListOfFiles(dataDir)
       val start = System.currentTimeMillis()
       for (parquetFiles <- readList) {
         var df = spark.read.parquet(parquetFiles: _*)

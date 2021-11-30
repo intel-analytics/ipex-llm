@@ -13,7 +13,7 @@ monitorPort: 1236
 serviceType: kv
 
 # default: false, if need to load initial data to redis, set true
-loadInitialData: false
+loadInitialData: true
 
 # default: "", prefix for redis key
 redisKeyPrefix: 2tower_
@@ -23,7 +23,7 @@ redisClusterItemSlotType: 1
 
 # default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
 # provided. Only support parquet file
-initialUserDataPath: /home/yina/Documents/data/recsys/wnd_813/vec_feature_user_prediction_2000.parquet
+initialUserDataPath: /home/yina/Documents/data/friesian-demo/vec_feature_user_prediction.parquet
 # initialItemDataPath:
 
 # default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
