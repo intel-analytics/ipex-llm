@@ -90,10 +90,10 @@ class PytorchPysparkWorker(TorchRunner):
             address = f"tcp://{cluster_info[0]}"
 
             dist.init_process_group(
-            backend="gloo",
-            init_method=address,
-            rank=self.rank,
-            world_size=self.size)
+                backend="gloo",
+                init_method=address,
+                rank=self.rank,
+                world_size=self.size)
             self.state_sync_group = dist.new_group([0, self.size - 1])
 
             from torch.nn.parallel import DistributedDataParallel

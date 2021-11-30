@@ -32,6 +32,8 @@ from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
+
+import threading
 import io
 
 
@@ -213,7 +215,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         )
 
         broadcasted_state_dict = self.sc.broadcast(self.state_dict)
-        import threading # time out
         driver_receive = threading.Thread(target=self.thread_func, args=[cluster_info])
         driver_receive.start()
 
