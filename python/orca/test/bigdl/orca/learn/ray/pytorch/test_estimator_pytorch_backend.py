@@ -149,7 +149,6 @@ def get_model(config):
     torch.manual_seed(0)
     return Net()
 
-
 def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
@@ -341,6 +340,25 @@ class TestPyTorchEstimator(TestCase):
                                    feature_cols=["f1", "f2"])
         result.collect()
 
+    def test_unenven_data(self):
+        sc = init_nncontext()
+        rdd = sc.range(0, 100).repartition(3)
+        # the data and model are constructed that loss on worker 0 is always 0.0
+        # and loss on worker 1 is always 1.0
+
+        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter]
+                        ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: LinearModel(),
+                                  loss=nn.MSELoss())
+        stats = estimator.fit(df, batch_size=4, epochs=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"])
+        estimator.evaluate(df, batch_size=4,
+                           feature_cols=["feature"],
+                           label_cols=["label"])
+
     def test_sync_stats(self):
         sc = init_nncontext()
         rdd = sc.range(0, 100).repartition(2)
@@ -362,7 +380,7 @@ class TestPyTorchEstimator(TestCase):
         worker_0_stat0, worker_1_stats = stats[0]
 
         for k in worker_0_stat0:
-            if k in {"num_samples"}:
+            if k in {"num_samples", "batch_count"}:
                 continue
             v0 = worker_0_stat0[k]
             v1 = worker_1_stats[k]
