@@ -55,9 +55,9 @@ class PytorchPysparkWorker(TorchRunner):
                  model_creator,
                  optimizer_creator,
                  size,
-                 cluster_info,
                  cores_per_worker,
                  loss_creator=None,
+                 cluster_info=None,
                  metrics=None,
                  scheduler_creator=None,
                  training_operator_cls=None,
@@ -88,13 +88,24 @@ class PytorchPysparkWorker(TorchRunner):
             self.rank = self._get_rank(cluster_info)
             print("cluster is: ", cluster_info)
             address = f"tcp://{cluster_info[0]}"
-            self.setup_torch_distribute(url=address,
-                                        world_rank=self.rank,
-                                        world_size=self.size)
+
+            dist.init_process_group(
+            backend="gloo",
+            init_method=address,
+            rank=self.rank,
+            world_size=self.size)
+            self.state_sync_group = dist.new_group([0, self.size - 1])
+
+            from torch.nn.parallel import DistributedDataParallel
+            ddp_model_group = dist.new_group(list(range(self.size - 1)))
+            training_models = [
+                DistributedDataParallel(model, process_group=ddp_model_group)
+                for model in self.models
+            ]
         else:
-            self.rank = 0
-            self.setup_components()
-            self.setup_operator(self.models)
+            training_models = self.models
+        self.setup_components()
+        self.setup_operator(training_models)
 
     @staticmethod
     def _get_rank(cluster_info):
@@ -130,9 +141,9 @@ class PytorchPysparkWorker(TorchRunner):
         state_dict = self.get_state_dict()
 
         if self.rank == 0:
-            return [(state_dict, stats_list)]
-        else:
-            return [(None, stats_list)]
+            import torch.distributed as dist
+            dist.broadcast_object_list(state_dict, group=self.state_sync_group, src=0)
+        return [stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
