@@ -120,8 +120,9 @@ class AutoARIMA:
                optimized to the metric_threshold or it has been trained for {epochs} epochs.
         :param validation_data: Validation data. A 1-D numpy array.
         :param metric_threshold: a trial will be terminated when metric threshold is met
-        :param n_sampling: Number of times to sample from the search_space. Defaults to 1.
-               If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
+        :param n_sampling: Number of trials to evaluate in total. Defaults to 1.
+               If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+               and round up n_sampling according to hp.grid_search.
                If this is -1, (virtually) infinite samples are generated
                until a stopping condition is met.
         :param search_alg: str, all supported searcher provided by ray tune

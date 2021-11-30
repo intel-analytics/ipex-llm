@@ -197,8 +197,9 @@ class AutoTSEstimator:
                It defaults to 32.
         :param validation_data: Validation data. Validation data type should be the same as data.
         :param metric_threshold: a trial will be terminated when metric threshold is met.
-        :param n_sampling: Number of times to sample from the search_space. Defaults to 1.
-               If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
+        :param n_sampling: Number of trials to evaluate in total. Defaults to 1.
+               If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+               and round up n_sampling according to hp.grid_search.
                If this is -1, (virtually) infinite samples are generated
                until a stopping condition is met.
         :param search_alg: str, all supported searcher provided by ray tune
@@ -234,7 +235,7 @@ class AutoTSEstimator:
                 validation_data=val_d,
                 metric=self.metric,
                 metric_threshold=metric_threshold,
-                n_sampling=n_sampling,
+                n_sampling=self._n_sampling(n_sampling, batch_size) if n_sampling != -1 else -1,
                 search_space=self.search_space,
                 search_alg=search_alg,
                 search_alg_params=search_alg_params,
@@ -249,7 +250,7 @@ class AutoTSEstimator:
                 batch_size=batch_size,
                 validation_data=val_d,
                 metric_threshold=metric_threshold,
-                n_sampling=n_sampling,
+                n_sampling=self._n_sampling(n_sampling, batch_size) if n_sampling != -1 else -1,
                 search_alg=search_alg,
                 search_alg_params=search_alg_params,
                 scheduler=scheduler,
@@ -351,3 +352,17 @@ class AutoTSEstimator:
         :return: A dictionary of best hyper parameters
         """
         return self.model.get_best_config()
+    
+    def _n_sampling(self, n_sampling, batch_size):
+        """
+        Only process n_sampling.
+        
+        :return: According to the number of searches, round up n_sampling.
+        """
+        import math
+        search_count = sum([len(v.get('grid_search')) for _, v\
+                            in self.model.search_space.items() if isinstance(v, dict)])
+        search_count += len(batch_size.get('grid_search')) if isinstance(batch_size, dict) else 0
+        n_sampling /= search_count
+        # TODO Number of cores specified by the user corresponds to n_sampling and give warning.
+        return math.ceil(n_sampling)
