@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.dllib.{nn => bnn}
 import com.intel.analytics.bigdl.dllib.keras.layers._
 import com.intel.analytics.bigdl.dllib.keras.layers.internal._
 import com.intel.analytics.bigdl.dllib.keras.models._
+import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.layers.TimeDistributed
 
 import scala.reflect.ClassTag

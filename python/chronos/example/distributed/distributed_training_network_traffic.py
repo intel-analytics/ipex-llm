@@ -75,8 +75,7 @@ if __name__ == '__main__':
                                    workers_per_node=args.workers_per_node,
                                    seed=0)
 
-    forecaster.fit((x_train, y_train), epochs=args.epochs,
-                   batch_size=512//(1 if not forecaster.distributed else args.workers_per_node))
+    forecaster.fit((x_train, y_train), epochs=args.epochs, batch_size=512)
 
     yhat = forecaster.predict(x_test)
     unscale_yhat = tsdata_test.unscale_numpy(yhat)

@@ -20,38 +20,33 @@ import com.intel.analytics.bigdl.grpc.GrpcClientBase
 import com.intel.analytics.bigdl.ppml.generated.FLProto
 import com.intel.analytics.bigdl.ppml.psi.PSIStub
 import com.intel.analytics.bigdl.ppml.vfl.NNStub
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util
-import java.util.List
 import java.util.concurrent.TimeUnit
 
+import org.apache.log4j.Logger
 
-object FLClient {
-  private val logger = LoggerFactory.getLogger(classOf[FLClient])
-}
 
+/**
+ * FLClient wraps the gRPC stubs corresponded to gRPC services in FLServer
+ * @param _args
+ */
 class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   protected var taskID: String = null
-  /**
-   * All supported FL implementations are listed below
-   * VFL includes Private Set Intersection, Neural Network, Gradient Boosting
-   */
+  val logger = Logger.getLogger(getClass)
   var psiStub: PSIStub = null
   var nnStub: NNStub = null
 
   def this() {
     this(null)
+    build()
   }
 
   @throws[IOException]
   override protected def parseConfig(): Unit = {
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
-    if (flHelper != null) {
-      target = flHelper.clientTarget
-      taskID = flHelper.taskID
-    }
+    target = flHelper.clientTarget
+    taskID = flHelper.taskID
     super.parseConfig()
   }
 
@@ -64,7 +59,7 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
     try channel.shutdown.awaitTermination(5, TimeUnit.SECONDS)
     catch {
       case e: InterruptedException =>
-        FLClient.logger.error("Shutdown Client Error" + e.getMessage)
+        logger.error("Shutdown Client Error" + e.getMessage)
     }
   }
 

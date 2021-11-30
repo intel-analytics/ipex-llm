@@ -109,7 +109,7 @@ class gRPCHelper extends Serializable {
     if (inferenceColumns != null) {
       inferenceColArr = inferenceColumns.split("\\s*,\\s*")
     }
-
+    
     itemSlotType = if (redisClusterItemSlotType != 0 && redisClusterItemSlotType != 1 &&
       redisClusterItemSlotType != 2) {
       0

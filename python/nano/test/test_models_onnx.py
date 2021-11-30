@@ -59,18 +59,20 @@ class TestModelsVision(TestCase):
         assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
 
         for x, y in train_loader:
-            onnx_res = pl_model.inference(x.numpy(), file_path="/tmp/model.onnx")  # onnxruntime
+            onnx_res = pl_model.inference(x.numpy())  # onnxruntime
             pytorch_res = pl_model.inference(x, backend=None).numpy()  # native pytorch
             assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date while inferencing
             np.testing.assert_almost_equal(onnx_res, pytorch_res, decimal=5)  # same result
 
+        trainer = Trainer(max_epochs=1)
         trainer.fit(pl_model, train_loader)
         assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
 
         pl_model.update_ortsess()  # update the ortsess with default settings
         assert pl_model._ortsess_up_to_date is True # ortsess is up-to-date after updating
 
-        trainer.predict(pl_model, train_loader)
+        for x, y in train_loader:
+            pl_model.inference(x.numpy())
 
 
 if __name__ == '__main__':

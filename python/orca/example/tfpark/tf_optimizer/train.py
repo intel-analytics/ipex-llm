@@ -17,17 +17,29 @@ import tensorflow as tf
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFOptimizer, TFDataset
 from bigdl.dllib.optim.optimizer import *
+from bigdl.dllib.utils.common import *
 import numpy as np
-import sys
 
 from bigdl.dllib.feature.dataset import mnist
 from bigdl.dllib.feature.dataset.transformer import *
+
+import os
+import sys
+import argparse
 
 sys.path.append("/tmp/models/slim")  # add the slim library
 from nets import lenet
 
 slim = tf.contrib.slim
 
+parser = argparse.ArgumentParser(description="Run the tfpark keras "
+                                             "dataset example.")
+parser.add_argument('--max_epoch', type=int, default=5,
+                    help='Set max_epoch for training, it should be integer.')
+parser.add_argument('--data_num', type=int, default=60000,
+                    help='Set data_num for training, it should be integer.')                    
+parser.add_argument('--cluster_mode', type=str, default="local",
+                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
 def accuracy(logits, labels):
     predictions = tf.argmax(logits, axis=1, output_type=labels.dtype)
@@ -36,7 +48,22 @@ def accuracy(logits, labels):
 
 
 def main(max_epoch, data_num):
-    sc = init_nncontext()
+    args = parser.parse_args()
+    cluster_mode = args.cluster_mode
+    if cluster_mode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "2g")
+        if cluster_mode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    else:
+        sc = init_nncontext()
 
     # get data, pre-process and create TFDataset
     (train_images_data, train_labels_data) = mnist.read_data_sets("/tmp/mnist", "train")
@@ -73,10 +100,8 @@ def main(max_epoch, data_num):
 
 if __name__ == '__main__':
 
-    max_epoch = 5
-    data_num = 60000
+    args = parser.parse_args()
+    max_epoch = args.max_epoch
+    data_num = args.data_num
 
-    if len(sys.argv) > 1:
-        max_epoch = int(sys.argv[1])
-        data_num = int(sys.argv[2])
     main(max_epoch, data_num)

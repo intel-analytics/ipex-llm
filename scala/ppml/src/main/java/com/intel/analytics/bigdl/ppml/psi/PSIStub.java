@@ -105,7 +105,7 @@ public class PSIStub {
      * Download intersection from FL Server in VFL
      * @return List of String, the intersection downloaded
      */
-    public List<String> downloadIntersection() {
+    public List<String> downloadIntersection() throws Exception {
         List<String> result = new ArrayList<String>();
         try {
             logger.info("Downloading 0th intersection");
@@ -114,6 +114,13 @@ public class PSIStub {
                     .setSplit(0)
                     .build();
             FLProto.DownloadIntersectionResponse response = stub.downloadIntersection(request);
+            if (response.getStatus() == FLProto.SIGNAL.ERROR) {
+                throw new Exception("Task ID does not exist on server, please upload set first.");
+            }
+            if (response.getStatus() == FLProto.SIGNAL.EMPTY_INPUT) {
+                // empty intersection, just return
+                return null;
+            }
             logger.info("Downloaded 0th intersection");
             result.addAll(response.getIntersectionList());
             for (int i = 1; i < response.getNumSplit(); i++) {
