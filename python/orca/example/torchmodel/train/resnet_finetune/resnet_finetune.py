@@ -57,7 +57,9 @@ if __name__ == '__main__':
     parser.add_option("--deploy-mode", type=str, dest="deployMode", default="yarn-client", help="yarn deploy mode, yarn-client or yarn-cluster")
     (options, args) = parser.parse_args(sys.argv)
 
-    sc = init_orca_context(cluster_mode=options.deployMode)
+    hadoop_conf = os.environ.get('HADOOP_CONF_DIR')
+
+    sc = init_orca_context(cluster_mode=options.deployMode, hadoop_conf=hadoop_conf)
     model = CatDogModel()
     zoo_model = TorchModel.from_pytorch(model)
 
