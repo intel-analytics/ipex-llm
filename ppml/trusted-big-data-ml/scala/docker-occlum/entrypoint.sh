@@ -49,13 +49,13 @@ case "$SPARK_K8S_CMD" in
       --deploy-mode client
       "$@"
     )
-    exec /sbin/tini -s -- "${CMD[@]}"
     ;;
   executor)
     echo $SGX_MEM_SIZE
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    CMD=(
+        /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
         "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
         -XX:-UseCompressedOops \
         -XX:MaxMetaspaceSize=256m \
@@ -73,9 +73,11 @@ case "$SPARK_K8S_CMD" in
         --cores $SPARK_EXECUTOR_CORES \
         --app-id $SPARK_APPLICATION_ID \
         --hostname $SPARK_EXECUTOR_POD_IP
+        )
     ;;
 
   *)
     echo "Unknown command: $SPARK_K8S_CMD" 1>&2
     exit 1
 esac
+occlum run /sbin/tini -s -- "${CMD[@]}"
