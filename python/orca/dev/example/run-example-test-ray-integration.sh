@@ -9,6 +9,7 @@ clear_up () {
 
 set -e
 
+: '
 echo "#start orca ray example tests"
 echo "#1 Start autoestimator example"
 start=$(date "+%s")
@@ -316,6 +317,8 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#19 Total time cost ${time} seconds"
+
+'
 
 echo "#20 start test for orca tf basic_text_classification basic_text_classification"
 #timer
