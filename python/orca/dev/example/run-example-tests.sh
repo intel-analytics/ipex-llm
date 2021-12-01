@@ -181,7 +181,7 @@ time5=$((now - start))
 echo "#6 start test for orca tf transfer_learning"
 #timer
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py
+python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py --epochs 1
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   echo "orca tf transfer_learning failed"
