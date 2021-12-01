@@ -38,7 +38,7 @@ from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.trigger import EveryEpoch
 
 
-def train_data_creator(config, batch_size):
+def train_data_creator(config={'download':True, 'data_dir':'./data'}, batch_size=4):
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
@@ -52,7 +52,7 @@ def train_data_creator(config, batch_size):
     return trainloader
 
 
-def validation_data_creator(config, batch_size):
+def validation_data_creator(config={'download':True, 'data_dir':'./data'}, batch_size=4):
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
