@@ -13,7 +13,7 @@ monitorPort: 1235
 serviceType: kv
 
 # default: false, if need to load initial data to redis, set true
-loadInitialData: false
+loadInitialData: true
 
 # default: "", prefix for redis key
 redisKeyPrefix:
@@ -23,8 +23,8 @@ redisClusterItemSlotType: 2
 
 # default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
 # provided. Only support parquet file
-initialUserDataPath: /home/yina/Documents/data/recsys/wnd_813/wnd_user_2000.parquet
-initialItemDataPath: /home/yina/Documents/data/recsys/wnd_813/wnd_item_1000.parquet
+initialUserDataPath: /home/yina/Documents/data/friesian-demo/wnd_user_2000.parquet
+initialItemDataPath: /home/yina/Documents/data/friesian-demo/wnd_item_1000.parquet
 
 # default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
 # userFeatureColumns must be provided
