@@ -29,16 +29,13 @@ viewed = time.time()*1000
 print("PERF viewed", viewed)
 
 # a.
-result1 = bob.filter(bob.c_id == 'ab').join(alice, alice.id == bob.id).filter('c1028 is not null').groupBy('c1028').count().sort('c1028')
-result1.show(n=1000, truncate = False)
+result1 = bob.filter(bob.c_id == 'ab').join(alice, alice.id == bob.id).filter('c1028 is not null').groupBy('c1028').count()
 result1ed = time.time()*1000
 print("PERF result1ed", result1ed)
-print("INFO result1: ", str(result1))
-# result count
-print(result1.count())
+print("INFO this is result1 count: ", result1.count())
 
 # b.
 result2 = alice.filter('a1169 in (151, 152)').union(alice.filter('b1209 in (220, 330)')).union(alice.filter('c1034 in (422, 63)')).distinct().count()
 result2ed = time.time()*1000
 print("PERF result2ed", result2ed)
-print("INFO this is results count: ", result2)
+print("INFO this is result2 count: ", result2)
