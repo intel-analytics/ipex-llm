@@ -41,15 +41,16 @@ class RayContext(object):
             del ray_args["ray_node_cpu_cores"]
             self.ray_args = ray_args
 
-    def init(self):
+    def init(self, driver_cores=0):
         if self.cluster_mode == "ray":
             import ray
-            ray.init(**self.ray_args)
+            return ray.init(**self.ray_args)
         else:
-            self._ray_on_spark_context.init()
+            return self._ray_on_spark_context.init(driver_cores=driver_cores)
 
     def stop(self):
         pass
 
     @classmethod
-    def get()
+    def get():
+        pass
