@@ -19,21 +19,25 @@ package com.intel.analytics.bigdl.ppml.vfl
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
 import com.intel.analytics.bigdl.ppml.FLClient
+import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNEstimator
+import org.apache.spark.sql.DataFrame
 
 class FLModel() {
   val estimator: VflNNEstimator = null
-  def fit(trainData: DataSet[MiniBatch[Float]],
-          valData: DataSet[MiniBatch[Float]],
+  def fit(trainData: DataFrame,
+          valData: DataFrame,
           epoch : Int = 1) = {
-    estimator.train(epoch, trainData.toLocal(), valData.toLocal())
+    val _trainData = DataFrameUtils.dataFrameToSample(trainData)
+    val _valData = DataFrameUtils.dataFrameToSample(valData)
+    estimator.train(epoch, _trainData.toLocal(), _valData.toLocal())
   }
   def evaluate() = {
     estimator.getEvaluateResults().foreach{r =>
       println(r._1 + ":" + r._2.mkString(","))
     }
   }
-  def predict(data: DataSet[MiniBatch[Float]]) = {
+  def predict(data: DataFrame) = {
 
   }
 }

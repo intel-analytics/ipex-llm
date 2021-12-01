@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.vfl.VflContext
 import com.intel.analytics.bigdl.ppml.example.ExampleUtils
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
+import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import org.apache.log4j.Logger
 import scopt.OptionParser
 
@@ -42,49 +43,16 @@ object VflLogisticRegression {
 
     // load data from dataset and preprocess\
     val salt = pSI.getSalt()
-    val sources = Source.fromFile(dataPath, "utf-8").getLines()
-    val headers = sources.next().split(",").map(_.trim)
-    println(headers.mkString(","))
-    val rowKeyIndex = headers.indexOf(rowKeyName)
-    require(rowKeyIndex != -1, s"couldn't find ${rowKeyName} in headers(${headers.mkString(", ")})")
-    val data = sources.toArray.map{line =>
-      val lines = line.split(",").map(_.trim())
-      (lines(rowKeyIndex), (lines.take(rowKeyIndex) ++ lines.drop(rowKeyIndex + 1)).map(_.toFloat))
-    }.toMap
-    val ids = data.keys.toList
+    val spark = VflContext.getSparkSession()
+    import spark.implicits._
+    val df = spark.read.csv(dataPath)
+    val ids = df.select(rowKeyName).as[String].collect().toList
     pSI.uploadSet(ids, salt)
     val intersections = pSI.downloadIntersection()
-    val dataSet = intersections.asScala.toArray.map{id =>
-      data(id)
-    }
+    val dataSet = df.select(intersections.head, intersections.tail: _*)
+    // we use same dataset to train and validate in this example
+    (dataSet, dataSet)
 
-    /**
-     * Split data into train and validation set
-     */
-    val samples = if (headers.last == "Outcome") {
-      println("hasLabel")
-      featureNum = headers.length - 2
-      (0 until featureNum).foreach(i => ExampleUtils.minMaxNormalize(dataSet, i))
-      (dataSet.map{d =>
-        val features = Tensor[Float](d.slice(0, featureNum), Array(featureNum))
-        val target = Tensor[Float](Array(d(featureNum)), Array(1))
-        Sample(features, target)
-      })
-    } else {
-      println("no label")
-      featureNum = headers.length - 1
-      (0 until featureNum).foreach(i => ExampleUtils.minMaxNormalize(dataSet, i))
-      (dataSet.map{d =>
-        val features = Tensor[Float](d, Array(featureNum))
-        Sample(features)
-      })
-    }
-    val trainDataset = DataSet.array(samples) ->
-      SampleToMiniBatch(batchSize, parallelizing = false)
-    //TODO: Find a better dataset has val dataset.
-    val valDataSet = DataSet.array(samples) ->
-      SampleToMiniBatch(batchSize, parallelizing = false)
-    (trainDataset, valDataSet)
   }
 
   def main(args: Array[String]): Unit = {
