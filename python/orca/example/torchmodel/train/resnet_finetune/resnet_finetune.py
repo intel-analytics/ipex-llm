@@ -57,11 +57,7 @@ if __name__ == '__main__':
     parser.add_option("--deploy-mode", type=str, dest="deployMode", default="yarn-client", help="yarn deploy mode, yarn-client or yarn-cluster")
     (options, args) = parser.parse_args(sys.argv)
 
-    hadoop_conf = os.environ.get('HADOOP_CONF_DIR')
-    assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-            "set the environment variable HADOOP_CONF_DIR"
-
-    sc = init_orca_context(cluster_mode=options.deployMode, hadoop_conf=hadoop_conf,
+    sc = init_orca_context(cluster_mode=options.deployMode,
         conf={"spark.executor.memory": options.executorMemory,
                 "spark.executor.cores": options.cores,
                 "spark.executor.instances": options.executors,

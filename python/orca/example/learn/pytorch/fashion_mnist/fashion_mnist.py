@@ -177,7 +177,7 @@ def main():
                                               loss=criterion,
                                               metrics=[Accuracy()],
                                               backend=args.backend)
-        stats = orca_estimator.fit(train_data_creator, epochs=epochs, batch_size=batch_size)
+        stats = orca_estimator.fit(train_data_creator, epochs=epochs, batch_size=batch_size, download=args.download, data_dir=args.data_dir)
 
         for stat in stats:
             writer.add_scalar("training_loss", stat['train_loss'], stat['epoch'])
