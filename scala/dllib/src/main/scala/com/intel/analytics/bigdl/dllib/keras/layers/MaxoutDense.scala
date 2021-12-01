@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.dllib.nn.keras.{MaxoutDense => BigDLMaxoutDense}
+import com.intel.analytics.bigdl.dllib.nn.internal.{MaxoutDense => BigDLMaxoutDense}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape

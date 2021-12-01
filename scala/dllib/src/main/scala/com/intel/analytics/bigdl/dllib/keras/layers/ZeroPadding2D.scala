@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.SpatialAveragePooling
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, ZeroPadding2D => BigDLZeroPadding2D}
+import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, ZeroPadding2D => BigDLZeroPadding2D}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import com.intel.analytics.bigdl.dllib.nn.Padding
 import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}

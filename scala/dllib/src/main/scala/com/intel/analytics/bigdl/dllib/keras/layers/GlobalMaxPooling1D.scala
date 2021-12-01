@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn._
 import com.intel.analytics.bigdl.dllib.nn.SpatialMaxPooling
-import com.intel.analytics.bigdl.dllib.nn.keras.GlobalPooling1D
+import com.intel.analytics.bigdl.dllib.nn.internal.GlobalPooling1D
 import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
