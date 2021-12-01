@@ -344,7 +344,27 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#20 Total time cost ${time} seconds"
 
-echo "#21 start test for orca inception inception"
+echo "#21 start test for orca tf image_segmentation image_segmentation.py"
+#timer
+start=$(date "+%s")
+cat /etc/hostname
+
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segmentation.py \
+  --batch_size 64 \
+  --file_path /data/carvana \
+  --non_interactive --epochs 1 --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca image_segmentation failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#21 Total time cost ${time} seconds"
+
+echo "#22 start test for orca inception inception"
 #timer
 start=$(date "+%s")
 #run the example
@@ -359,9 +379,9 @@ if [ $exit_status -ne 0 ]; then
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#21 Total time cost ${time} seconds"
+echo "#22 Total time cost ${time} seconds"
 
-echo "#22 start test for orca yolov3 yoloV3"
+echo "#23 start test for orca yolov3 yoloV3"
 #timer
 start=$(date "+%s")
 #run the example
@@ -381,7 +401,7 @@ if [ $exit_status -ne 0 ]; then
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#22 Total time cost ${time} seconds"
+echo "#23 Total time cost ${time} seconds"
 
 echo "Ray example tests finished"
 
@@ -405,5 +425,6 @@ echo "#17 tfaprk estimator_inception example time used:$time17 seconds"
 echo "#18 tfaprk opt_train example time used:$time18 seconds"
 echo "#19 tfaprk opt_evaluate example time used:$time19 seconds"
 echo "#20 tf basic_text_classification time used:$time20 seconds"
-echo "#21 tf inception time used:$time21 seconds"
-echo "#22 tf yoloV3 time used:$time22 seconds"
+echo "#21 tf image_segmentation time used:$time21 seconds"
+echo "#22 tf inception time used:$time22 seconds"
+echo "#23 tf yoloV3 time used:$time23 seconds"
