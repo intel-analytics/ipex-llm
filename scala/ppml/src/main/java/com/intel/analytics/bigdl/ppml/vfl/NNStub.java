@@ -30,20 +30,22 @@ public class NNStub {
         this.clientID = clientID;
         stub = NNServiceGrpc.newBlockingStub(channel);
     }
-    public FLProto.DownloadResponse downloadTrain(String modelName, int flVersion) {
+    public FLProto.DownloadResponse downloadTrain(String modelName, int flVersion, String algorithm) {
         logger.info("Download the following data:");
         FLProto.TableMetaData metadata = FLProto.TableMetaData.newBuilder()
                 .setName(modelName).setVersion(flVersion + 1).build();
-        FLProto.DownloadRequest downloadRequest = FLProto.DownloadRequest.newBuilder().setMetaData(metadata).build();
+        FLProto.DownloadRequest downloadRequest = FLProto.DownloadRequest
+                .newBuilder().setMetaData(metadata).setAlgorithm(algorithm).build();
         return stub.downloadTrain(downloadRequest);
     }
 
-    public FLProto.UploadResponse uploadTrain(FLProto.Table data) {
+    public FLProto.UploadResponse uploadTrain(FLProto.Table data, String algorithm) {
 
         FLProto.UploadRequest uploadRequest = FLProto.UploadRequest
                 .newBuilder()
                 .setData(data)
                 .setClientuuid(clientID)
+                .setAlgorithm(algorithm)
                 .build();
 
         logger.info("Upload the following data:");

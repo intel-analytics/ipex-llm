@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.common;
 
 import com.intel.analytics.bigdl.ppml.generated.FLProto.Table;
+import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,28 +25,41 @@ import java.util.Map;
 import static com.intel.analytics.bigdl.ppml.common.FLPhase.*;
 
 
-public abstract class Aggregator {
+public abstract class Aggregator<T> {
     /**
      * aggregateTypeMap is a map to map to simplify the operations of the storage
      * it maps the enum type: TRAIN, EVAL, PREDICT to corresponded storage
      */
-    public Map<FLPhase, Storage> aggregateTypeMap;
+    private Logger logger = Logger.getLogger(getClass());
+    public Map<FLPhase, Storage<T>> aggregateTypeMap;
 
     public Aggregator() {
         aggregateTypeMap = new HashMap<>();
         aggregateTypeMap.put(TRAIN, trainStorage);
         aggregateTypeMap.put(EVAL, evalStorage);
         aggregateTypeMap.put(PREDICT, predictStorage);
+        initStorage();
     }
-    public Storage trainStorage = new Storage();
-    public Storage evalStorage = new Storage();
-    public Storage predictStorage = new Storage();
+
+    public void setClientNum(Integer clientNum) {
+        this.clientNum = clientNum;
+    }
+
+    public Storage<T> trainStorage;
+    public Storage<T> evalStorage;
+    public Storage<T> predictStorage;
+
+    public void initStorage() {
+        trainStorage = new Storage<>("train");
+        evalStorage = new Storage<>("eval");
+        predictStorage = new Storage<>("predict");
+    }
 
     protected Integer clientNum;
-    public abstract void aggregate();
+    public abstract void aggregate(FLPhase flPhase);
 
-    public Storage getServerData(FLPhase type) {
-        Storage storage = null;
+    public Storage<T> getServerData(FLPhase type) {
+        Storage<T> storage = null;
         switch (type) {
             case TRAIN: storage = trainStorage; break;
             case EVAL: storage = evalStorage; break;
@@ -54,14 +68,14 @@ public abstract class Aggregator {
         }
         return storage;
     }
-    public void putClientData(FLPhase type, String clientUUID, int version, Table data)
+    public <T> void putClientData(FLPhase type, String clientUUID, int version, T data)
             throws IllegalArgumentException {
         Storage storage = getServerData(type);
         storage.put(clientUUID, data);
 
         // Aggregate when buffer is full
         if (storage.size() >= clientNum) {
-            aggregate();
+            aggregate(type);
         }
     }
 

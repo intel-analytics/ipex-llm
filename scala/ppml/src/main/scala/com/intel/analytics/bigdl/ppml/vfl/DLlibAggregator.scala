@@ -20,21 +20,20 @@ import com.intel.analytics.bigdl.dllib.nn.Sequential
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.ppml.common.FLPhase._
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLPhase, Storage}
 import com.intel.analytics.bigdl.ppml.generated.FLProto
 import com.intel.analytics.bigdl.ppml.generated.FLProto.TableMetaData
 import com.intel.analytics.bigdl.ppml.vfl.utils.ProtoUtils.toFloatTensor
 import org.apache.log4j.Logger
-
+import com.intel.analytics.bigdl.ppml.common.FLPhase._
 import scala.collection.JavaConverters._
 
-trait DLlibAggregator extends Aggregator {
+trait DLlibAggregator extends Aggregator[FLProto.Table] {
   val logger = Logger.getLogger(this.getClass)
   var module: Sequential[Float] = null
   var target: Tensor[Float] = null
   def protoTableMapToTensorIterableMap(inputMap: java.util.Map[String, FLProto.Table]):
-    Map[String, Iterable[Tensor[Float]]] = {
+  Map[String, Iterable[Tensor[Float]]] = {
     inputMap.asScala.mapValues(_.getTableMap).values
       .flatMap(_.asScala).groupBy(_._1)
       .map{data =>
@@ -59,36 +58,7 @@ trait DLlibAggregator extends Aggregator {
 
     T.seq(outputs.values.head.toSeq)
   }
-  def postProcess(aggType: FLPhase, grad: Activity = null, loss: Activity = null): Unit = {
-    def updateStorage(storage: Storage, table: FLProto.Table): Unit = {
-      storage.localData.clear()
-      storage.serverData = table
-      storage.version += 1
-      logger.info(s"${trainStorage.version} run aggregate successfully: loss is ${loss}")
-    }
-    val gradProto = if (grad != null) {
-      toFloatTensor(grad.toTable.apply[Tensor[Float]](1))
-    } else null
-    val lossProto = if (loss != null) {
-      toFloatTensor(Tensor[Float](loss.toTable))
-    } else null
-    val metaBuilder = TableMetaData.newBuilder()
-    var aggregatedTable: FLProto.Table = null
-    if (aggType == TRAIN) {
-      val meta = metaBuilder.setName("gradInput").setVersion(trainStorage.version).build()
-      aggregatedTable = FLProto.Table.newBuilder()
-        .setMetaData(meta)
-        .putTable("gradInput", gradProto)
-        .putTable("loss", lossProto)
-        .build()
-    } else if (aggType == EVAL) {
-      val meta = metaBuilder.setName("evaluateResult").setVersion(evalStorage.version).build()
-      aggregatedTable = FLProto.Table.newBuilder()
-        .setMetaData(meta)
-        .build()
-    } else if (aggType == PREDICT) {
-      val meta = metaBuilder.setName("predictResult").setVersion(predictStorage.version).build()
-    }
-    updateStorage(aggregateTypeMap.get(aggType), aggregatedTable);
-  }
+
+
+
 }

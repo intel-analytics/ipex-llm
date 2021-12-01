@@ -14,33 +14,27 @@
  * limitations under the License.
  */
 
-
 package com.intel.analytics.bigdl.ppml.vfl
 
+import com.intel.analytics.bigdl.DataSet
+import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
 import com.intel.analytics.bigdl.ppml.FLClient
+import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNEstimator
 
-
-/**
- * VflContext is a singleton object holding a FLClient object
- * For multiple vfl usage of an application, only one FLClient exists thus avoiding Channel cost
- */
-object VflContext {
-  var flClient: FLClient = null
-  def initContext(target: String = null) = {
-    this.synchronized {
-      if (flClient == null) {
-        this.synchronized {
-          flClient = new FLClient()
-          if (target != null) {
-            flClient.setTarget(target)
-          }
-          flClient.build()
-        }
-      }
+class FLModel() {
+  val estimator: VflNNEstimator = null
+  def fit(trainData: DataSet[MiniBatch[Float]],
+          valData: DataSet[MiniBatch[Float]],
+          epoch : Int = 1) = {
+    estimator.train(epoch, trainData.toLocal(), valData.toLocal())
+  }
+  def evaluate() = {
+    estimator.getEvaluateResults().foreach{r =>
+      println(r._1 + ":" + r._2.mkString(","))
     }
   }
-  def getClient(): FLClient = {
-    flClient
-  }
+  def predict(data: DataSet[MiniBatch[Float]]) = {
 
+  }
 }
+
