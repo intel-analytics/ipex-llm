@@ -66,10 +66,8 @@ object FeatureUtils {
 
   def divideFileAndLoad(spark: SparkSession, dataDir: String, featureCols: Array[String],
                         keyPrefix: String): Unit = {
-    val parquetList = Utils.getListOfFiles(dataDir)
-    logger.info(s"ParquetList length: ${parquetList.length}")
     var totalCnt: Long = 0
-    val readList = parquetList.sliding(10, 10).toArray
+    val readList = Utils.getListOfFiles(dataDir)
     val start = System.currentTimeMillis()
     for (parquetFiles <- readList) {
       var df = spark.read.parquet(parquetFiles: _*)
@@ -83,7 +81,7 @@ object FeatureUtils {
       featureRDD.foreachPartition { partition =>
         if (partition.nonEmpty) {
           val redis = RedisUtils.getInstance(Utils.helper.redisPoolMaxTotal)
-          redis.Hset(keyPrefix, partition.toArray)
+          redis.Mset(keyPrefix, partition.toArray)
         }
       }
     }

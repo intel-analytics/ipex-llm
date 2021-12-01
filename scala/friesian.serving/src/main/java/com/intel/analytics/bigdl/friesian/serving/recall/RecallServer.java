@@ -117,7 +117,8 @@ public class RecallServer extends GrpcServerBase {
                                 Utils.helper().getUserModelPath(), null);
             }
             // load or build faiss index
-            indexService = new com.intel.analytics.bigdl.friesian.serving.recall.RecallService(128);
+            indexService = new com.intel.analytics.bigdl.friesian.serving.recall
+                    .RecallService(Utils.helper().indexDim());
             if (Utils.helper().loadSavedIndex()) {
                 assert(Utils.helper().getIndexPath() != null): "indexPath must be provided " +
                         "if loadSavedIndex=true.";

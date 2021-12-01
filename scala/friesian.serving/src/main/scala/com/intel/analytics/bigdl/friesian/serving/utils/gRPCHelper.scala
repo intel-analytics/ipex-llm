@@ -59,6 +59,8 @@ class gRPCHelper extends Serializable {
   @BeanProperty var indexPath: String = _
   @BeanProperty var getFeatureFromFeatureService = false
   @BeanProperty var saveBuiltIndex = false
+  @BeanProperty var indexDim: Int = 128
+  @BeanProperty var part: Int = 20
 
   // feature & recall service attributes
   @BeanProperty var userModelPath: String = _
@@ -109,7 +111,7 @@ class gRPCHelper extends Serializable {
     if (inferenceColumns != null) {
       inferenceColArr = inferenceColumns.split("\\s*,\\s*")
     }
-    
+
     itemSlotType = if (redisClusterItemSlotType != 0 && redisClusterItemSlotType != 1 &&
       redisClusterItemSlotType != 2) {
       0

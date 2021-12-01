@@ -23,7 +23,7 @@ redisClusterItemSlotType: 1
 
 # default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
 # provided. Only support parquet file
-initialUserDataPath: /home/yina/Documents/data/recsys/wnd_813/vec_feature_user_prediction_2000.parquet
+initialUserDataPath: /home/yina/Documents/data/friesian-demo/vec_feature_user_prediction.parquet
 # initialItemDataPath:
 
 # default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
@@ -51,7 +51,7 @@ userFeatureColumns: prediction
 
 ### Redis Configuration
 # default: localhost:6379
-# redisUrl:
+# redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
 
 # default: 256, JedisPoolMaxTotal
 # redisPoolMaxTotal:
