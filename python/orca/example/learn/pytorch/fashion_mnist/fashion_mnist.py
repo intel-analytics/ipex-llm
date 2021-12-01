@@ -38,13 +38,13 @@ from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.trigger import EveryEpoch
 
 
-def train_data_creator(config, batch_size, download, data_dir):
+def train_data_creator(config, batch_size):
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
 
-    trainset = torchvision.datasets.FashionMNIST(root=data_dir,
-                                                 download=download,
+    trainset = torchvision.datasets.FashionMNIST(root=config['data_dir'],
+                                                 download=config['download'],
                                                  train=True,
                                                  transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -52,12 +52,12 @@ def train_data_creator(config, batch_size, download, data_dir):
     return trainloader
 
 
-def validation_data_creator(config, batch_size, download, data_dir):
+def validation_data_creator(config, batch_size):
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
-    testset = torchvision.datasets.FashionMNIST(root=data_dir, train=False,
-                                                download=download, transform=transform)
+    testset = torchvision.datasets.FashionMNIST(root=config['data_dir'], train=False,
+                                                download=config['download'], transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=2)
     return testloader
@@ -132,7 +132,7 @@ def main():
                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle Boot')
 
     # plot some random training images
-    dataiter = iter(train_data_creator(config={}, batch_size=4, download=args.download, data_dir=args.data_dir))
+    dataiter = iter(train_data_creator(config={'download':args.download, 'data_dir':args.data_dir}, batch_size=4))
     images, labels = dataiter.next()
 
     # create grid of images
@@ -153,8 +153,8 @@ def main():
     batch_size = args.batch_size
     epochs = args.epochs
     if args.backend == "bigdl":
-        train_loader = train_data_creator(config={}, batch_size=batch_size, download=args.download, data_dir=args.data_dir)
-        test_loader = validation_data_creator(config={}, batch_size=batch_size, download=args.download, data_dir=args.data_dir)
+        train_loader = train_data_creator(config={'download':args.download, 'data_dir':args.data_dir}, batch_size=batch_size)
+        test_loader = validation_data_creator(config={'download':args.download, 'data_dir':args.data_dir}, batch_size=batch_size)
 
         net = model_creator(config={})
         optimizer = optimizer_creator(model=net, config={"lr": 0.001})
