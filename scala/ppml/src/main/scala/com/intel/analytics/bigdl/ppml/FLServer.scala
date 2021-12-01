@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.nn.Sigmoid
 import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.IOException
+import java.io.{File, IOException}
 
 import com.intel.analytics.bigdl.ppml.vfl.nn.NNServiceImpl
 
@@ -52,8 +52,11 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
 
   @throws[IOException]
   override def parseConfig(): Unit = {
-    val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
-    port = flHelper.serverPort
+    val f = new File(configPath)
+    if (f.exists()) {
+      val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
+      port = flHelper.serverPort
+    }
     // start all services without providing service list
     // start all services without providing service list
     serverServices.add(new PSIServiceImpl)

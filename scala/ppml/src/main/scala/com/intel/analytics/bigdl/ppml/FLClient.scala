@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.grpc.GrpcClientBase
 import com.intel.analytics.bigdl.ppml.generated.FLProto
 import com.intel.analytics.bigdl.ppml.psi.PSIStub
 import com.intel.analytics.bigdl.ppml.vfl.NNStub
-import java.io.IOException
+import java.io.{File, IOException}
 import java.util
 import java.util.concurrent.TimeUnit
 
@@ -33,20 +33,23 @@ import org.apache.log4j.Logger
  */
 class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   val logger = Logger.getLogger(getClass)
+  configPath = "ppml-conf.yaml"
   protected var taskID: String = null
   var psiStub: PSIStub = null
   var nnStub: NNStub = null
 
   def this() {
     this(null)
-    build()
   }
 
   @throws[IOException]
   override protected def parseConfig(): Unit = {
-    val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
-    target = flHelper.clientTarget
-    taskID = flHelper.taskID
+    val f = new File(configPath)
+    if (f.exists()) {
+      val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
+      target = flHelper.clientTarget
+      taskID = flHelper.taskID
+    }
     super.parseConfig()
   }
 
