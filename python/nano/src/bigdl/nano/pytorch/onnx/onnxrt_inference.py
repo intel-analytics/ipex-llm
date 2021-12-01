@@ -260,7 +260,9 @@ def bind_onnxrt_methods(pl_model: LightningModule):
     # check conflicts
     for component in ONNXRT_BINDED_COMPONENTS:
         if component in dir(pl_model):
-            warnings.warn(f"{component} method/property will be replaced.")
+            warnings.warn(f"{component} method/property will be replaced. You may rename your",
+                          " customized attributes or methods and call `Trainer.compile again `",
+                          "to avoid being overwrite.")
 
     # additional attributes
     pl_model._ortsess_up_to_date = False  # indicate if we need to build ortsess again
