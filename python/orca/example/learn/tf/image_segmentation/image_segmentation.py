@@ -47,14 +47,22 @@ def load_data(file_path):
 
 
 def main(cluster_mode, max_epoch, file_path, batch_size, platform, non_interactive):
+    import os
+    for filepath,dirnames,filenames in os.walk('/data'):
+        for filename in filenames:
+            print(os.path.join(filepath,filename))
+            
     import matplotlib
     if not non_interactive and platform == "mac":
         matplotlib.use('qt5agg')
 
     if cluster_mode == "local":
         init_orca_context(cluster_mode="local", cores=4, memory="3g")
-    elif cluster_mode == "yarn":
-        init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g")
+    elif cluster_mode.startswith("yarn"):
+        if cluster_mode == "yarn-client":
+            init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g")
+        else:
+            init_orca_context(cluster_mode="yarn-cluster", num_nodes=2, cores=2, driver_memory="3g")
     elif cluster_mode == "spark-submit":
         init_orca_context(cluster_mode="spark-submit")
     load_data(file_path)
