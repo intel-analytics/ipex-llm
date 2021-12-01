@@ -256,10 +256,10 @@ class TorchRunner:
             stats = self.train_epoch(loader, profile=profile, info=info)
             if self.rank == 0:
                 if self.sync_stats:
-                    self.logger.info(f"Finished training epoch {i + 1}, " + \
+                    self.logger.info(f"Finished training epoch {i + 1}, " +
                                      f"stats averaged over workers: {stats}")
                 else:
-                    self.logger.info(f"Finished training epoch {i + 1}, " + \
+                    self.logger.info(f"Finished training epoch {i + 1}, " +
                                      f"stats on rank 0: {stats}")
             stats_list.append(stats)
         return stats_list
