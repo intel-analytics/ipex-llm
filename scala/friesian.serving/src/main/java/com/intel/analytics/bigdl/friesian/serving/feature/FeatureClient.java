@@ -23,13 +23,13 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.Feature
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage;
 import com.intel.analytics.bigdl.friesian.serving.utils.CMDParser;
 import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import utils.Utils;
 
 import java.util.Base64;
 import java.util.List;

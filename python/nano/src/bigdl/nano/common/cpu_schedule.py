@@ -18,43 +18,66 @@
 import subprocess
 import re
 from typing import Optional
+import platform
 
 
 def get_cgroup_cpuset():
-    with open("/sys/fs/cgroup/cpuset/cpuset.cpus", "r") as f:
-        content = f.readlines()
-    cpu_set = []
-    values = content[0].strip().split(",")
-    for value in values:
-        if "-" in value:
-            # Parse the value like "2-4"
-            start, end = value.split("-")
-            cpu_set.extend([i for i in range(int(start), int(end) + 1)])
-        else:
-            cpu_set.append(int(value))
+    if platform.system() == "Windows":
+        get_physical_core_args = ["wmic", "CPU",
+                                  "GET", "NumberOfCores", "/VALUE"]
+        cpu_set = [i for i in range(int(subprocess.check_output(
+            get_physical_core_args, universal_newlines=True).splitlines()[4].split("=")[1]))]
+    else:
+        with open("/sys/fs/cgroup/cpuset/cpuset.cpus", "r") as f:
+            content = f.readlines()
+        cpu_set = []
+        values = content[0].strip().split(",")
+        for value in values:
+            if "-" in value:
+                # Parse the value like "2-4"
+                start, end = value.split("-")
+                cpu_set.extend([i for i in range(int(start), int(end) + 1)])
+            else:
+                cpu_set.append(int(value))
     return cpu_set
 
 
 def get_cpu_info():
-    cpuinfo = []
-    args = ["lscpu", "--parse=CPU,Core,Socket"]
-    lscpu_info = subprocess.check_output(args, universal_newlines=True).split("\n")
-
-    # Get information about  cpu, core, socket and node
-    for line in lscpu_info:
-        pattern = r"^([\d]+,[\d]+,[\d]+)"
-        regex_out = re.search(pattern, line)
-        if regex_out:
-            cpuinfo.append(regex_out.group(1).strip().split(","))
-
     get_physical_core = {}
     get_socket = {}
+    if platform.system() == "Windows":
+        get_physical_core_args = ["wmic", "CPU",
+                                  "GET", "NumberOfCores", "/VALUE"]
+        physical_cores = int(subprocess.check_output(
+            get_physical_core_args, universal_newlines=True).splitlines()[4].split("=")[1])
+        get_logical_core_args = ["wmic", "CPU", "GET",
+                                 "NumberOfLogicalProcessors", "/VALUE"]
+        logical_cores = int(subprocess.check_output(
+            get_logical_core_args, universal_newlines=True).splitlines()[4].split("=")[1])
+        for i in range(logical_cores):
+            for j in range(physical_cores):
+                get_physical_core[i] = j
+        for i in range(logical_cores):
+            get_socket[i] = 0
+    else:
+        cpuinfo = []
 
-    for line in cpuinfo:
-        int_line = [int(x) for x in line]
-        l_id, p_id, s_id = int_line
-        get_physical_core[l_id] = p_id
-        get_socket[l_id] = s_id
+        args = ["lscpu", "--parse=CPU,Core,Socket"]
+        lscpu_info = subprocess.check_output(
+            args, universal_newlines=True).split("\n")
+
+        # Get information about  cpu, core, socket and node
+        for line in lscpu_info:
+            pattern = r"^([\d]+,[\d]+,[\d]+)"
+            regex_out = re.search(pattern, line)
+            if regex_out:
+                cpuinfo.append(regex_out.group(1).strip().split(","))
+
+        for line in cpuinfo:
+            int_line = [int(x) for x in line]
+            l_id, p_id, s_id = int_line
+            get_physical_core[l_id] = p_id
+            get_socket[l_id] = s_id
 
     return get_physical_core, get_socket
 

@@ -18,12 +18,12 @@ package com.intel.analytics.bigdl.friesian.serving.recommender;
 
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto;
 import com.intel.analytics.bigdl.friesian.serving.utils.CMDParser;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import utils.Utils;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;

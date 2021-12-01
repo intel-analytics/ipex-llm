@@ -35,7 +35,6 @@ import torch.nn as nn
 
 
 import logging
-logger = logging.getLogger(__name__)
 
 try:
     from collections.abc import Iterable
@@ -55,9 +54,12 @@ class PytorchRayWorker(TorchRunner):
                  training_operator_cls=None,
                  config=None,
                  use_tqdm=False,
-                 scheduler_step_freq=None):
+                 scheduler_step_freq=None,
+                 sync_stats=True,
+                 log_level=logging.INFO):
         super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
-                         training_operator_cls, config, use_tqdm, scheduler_step_freq)
+                         training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
+                         log_level=log_level)
 
         self.backend = "torch-local"
         self.rank = 0
@@ -84,7 +86,7 @@ class PytorchRayWorker(TorchRunner):
     def setup_components_horovod(self):
         import horovod.torch as hvd
 
-        logger.debug("Creating model")
+        self.logger.debug("Creating model")
         self.models = self.model_creator(self.config)
         if not isinstance(self.models, Iterable):
             self.models = [self.models]
@@ -94,7 +96,7 @@ class PytorchRayWorker(TorchRunner):
         assert all(isinstance(model, nn.Module) for model in self.models), (
             "All models must be PyTorch models: {}.".format(self.models))
 
-        logger.debug("Creating optimizer.")
+        self.logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,
                                                  self.config)
         if not isinstance(self.optimizers, Iterable):

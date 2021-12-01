@@ -24,9 +24,8 @@ import argparse
 import os
 import time
 
-from python.orca.example.ray_on_spark.parameter_server import model
 import ray
-#import model
+from model import SimpleCNN, download_mnist_retry
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca import OrcaContext
@@ -55,10 +54,13 @@ parser.add_argument("--driver_cores", type=int, default=8,
 parser.add_argument("--extra_executor_memory_for_ray", type=str, default="20g",
                     help="The extra executor memory to store some data."
                     "You can change it depending on your own cluster setting.")
+parser.add_argument("--extra_python_lib", type=str, 
+                    default="python/orca/example/ray_on_spark/parameter_server/model.py",
+                    help="The extra executor memory to store some data."
+                    "You can change it depending on your own cluster setting.")
 parser.add_argument("--object_store_memory", type=str, default="4g",
                     help="The memory to store data on local."
                     "You can change it depending on your own cluster setting.")
-
 
 @ray.remote
 class ParameterServer(object):
@@ -80,10 +82,10 @@ class ParameterServer(object):
 def worker_task(ps, worker_index, batch_size=50):
     # Download MNIST.
     print("Worker " + str(worker_index))
-    mnist = model.download_mnist_retry(seed=worker_index)
+    mnist = download_mnist_retry(seed=worker_index)
 
     # Initialize the model.
-    net = model.SimpleCNN()
+    net = SimpleCNN()
     keys = net.get_weights()[0]
 
     while True:
@@ -98,7 +100,7 @@ def worker_task(ps, worker_index, batch_size=50):
 if __name__ == "__main__":
     args = parser.parse_args()
     cluster_mode = args.cluster_mode
-    if cluster_mode.startswith("yarn"):
+    if cluster_mode == "yarn":
         sc = init_orca_context(cluster_mode=cluster_mode,
                                cores=args.executor_cores,
                                memory=args.executor_memory,
@@ -107,7 +109,9 @@ if __name__ == "__main__":
                                driver_memory=args.driver_memory,
                                driver_cores=args.driver_cores,
                                extra_executor_memory_for_ray=args.extra_executor_memory_for_ray,
-                               object_store_memory=args.object_store_memory)
+                               extra_python_lib=args.extra_python_lib,
+                               object_store_memory=args.object_store_memory,
+                               additional_archive="MNIST_data.zip#MNIST_data")
         ray_ctx = OrcaContext.get_ray_context()
     elif cluster_mode == "local":
         sc = init_orca_context(cores=args.driver_cores)
@@ -120,7 +124,7 @@ if __name__ == "__main__":
               + cluster_mode)
 
     # Create a parameter server with some random weights.
-    net = model.SimpleCNN()
+    net = SimpleCNN()
     all_keys, all_values = net.get_weights()
     ps = ParameterServer.remote(all_keys, all_values)
 
@@ -128,7 +132,7 @@ if __name__ == "__main__":
     worker_tasks = [worker_task.remote(ps, i) for i in range(args.num_workers)]
 
     # Download MNIST.
-    mnist = model.download_mnist_retry()
+    mnist = download_mnist_retry()
     print("Begin iteration")
     i = 0
     while i < args.iterations:

@@ -107,7 +107,7 @@ class ZooTestCase(TestCase):
         Compare forward results for Keras layer against Zoo Keras API layer.
         """
         from keras.models import Sequential as KSequential
-        from bigdl.dllib.keras.Sequential import Sequential as ZSequential
+        from bigdl.dllib.keras.models import Sequential as ZSequential
         zmodel = ZSequential()
         zmodel.add(zlayer)
         kmodel = KSequential()

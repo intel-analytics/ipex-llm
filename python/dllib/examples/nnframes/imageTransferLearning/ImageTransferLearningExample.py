@@ -74,6 +74,8 @@ if __name__ == "__main__":
         spark_conf = SparkConf().set("spark.driver.memory", "10g") \
             .set("spark.driver.cores", 4)
         sc = init_nncontext(spark_conf, cluster_mode="local")
+    elif options.clusterMode == "spark-submit":
+        sc = init_nncontext(cluster_mode="spark-submit")
 
     imageDF = NNImageReader.readImages(options.image_path, sc, resizeH=300, resizeW=300,
                                        image_codec=1)

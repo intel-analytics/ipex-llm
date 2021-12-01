@@ -1,10 +1,10 @@
 package com.intel.analytics.bigdl.friesian.serving.feature.utils;
 
 
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import org.apache.log4j.Logger;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import utils.Utils;
 
 import java.util.*;
 
@@ -22,7 +22,7 @@ public class RedisUtils {
 
         if (Utils.helper().redisHostPort().size() == 1) {
             jedisPool = new JedisPool(jedisPoolConfig, Utils.helper().redisHostPort().get(0)._1,
-                    (int) Utils.helper().redisHostPort().get(0)._2);
+                    (int) Utils.helper().redisHostPort().get(0)._2, 30000);
         } else {
             Set<HostAndPort> hps = new HashSet<HostAndPort>();
             for (int i = 0; i < Utils.helper().redisHostPort().size(); i++) {
@@ -33,7 +33,14 @@ public class RedisUtils {
             // default maxAttempt=5, service likely to down, increase to 20
             cluster = new JedisCluster(hps, 50000, 20, jedisPoolConfig);
         }
-
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (cluster != null) {
+                cluster.close();
+            }
+            if (jedisPool != null) {
+                jedisPool.close();
+            }
+        }));
     }
 
     public JedisCluster getCluster() {
@@ -92,6 +99,18 @@ public class RedisUtils {
         }
         logger.info(cnt + " valid records written to redis.");
     }
+
+    public void setSchema(String keyPrefix, String colNames) {
+        String hKey = Utils.helper().getRedisKeyPrefix() + keyPrefix;
+        if (cluster == null) {
+            Jedis jedis = getRedisClient();
+            jedis.set(hKey, colNames);
+            jedis.close();
+        } else {
+            getCluster().set(hKey, colNames);
+        }
+    }
+
     public void piplineHmset(String keyPrefix, List<String>[] dataArray) {
         Jedis jedis = getRedisClient();
         Pipeline ppl = jedis.pipelined();
@@ -112,10 +131,4 @@ public class RedisUtils {
         jedis.close();
         logger.info(cnt + " valid records written to redis.");
     }
-
-    // TODO: close
-//    public void closePool() {
-//        jedisPool.close();
-//        jedisPool = null;
-//    }
 }

@@ -32,6 +32,7 @@ import com.intel.analytics.bigdl.dllib.keras.autograd.{Variable, AutoGrad => A}
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers._
 import com.intel.analytics.bigdl.dllib.keras.Sequential
+import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.python.PythonZooKeras
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD

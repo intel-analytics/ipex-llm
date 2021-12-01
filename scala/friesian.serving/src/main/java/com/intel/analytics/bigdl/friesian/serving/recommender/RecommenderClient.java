@@ -20,13 +20,13 @@ import com.google.protobuf.Empty;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.*;
 import com.intel.analytics.bigdl.friesian.serving.utils.CMDParser;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import utils.Utils;
 
 import java.util.concurrent.TimeUnit;
 

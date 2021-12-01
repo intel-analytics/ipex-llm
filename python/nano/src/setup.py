@@ -24,15 +24,13 @@ import urllib.request
 import os
 import stat
 import sys
-import re
-from html.parser import HTMLParser
-
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
 nano_home = os.path.abspath(__file__ + "/../")
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
-VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
+VERSION = open(os.path.join(bigdl_home, 'python/version.txt'),
+               'r').read().strip()
 
 lib_urls = [
     "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
@@ -67,7 +65,7 @@ def download_libs(url: str):
     os.chmod(libso_file, st.st_mode | stat.S_IEXEC)
 
 
-def setup_package():
+def setup_package(plat_name):
 
     install_requires = ["intel-openmp"]
 
@@ -83,8 +81,19 @@ def setup_package():
                         "onnx",
                         "onnxruntime"]
 
-    for url in lib_urls:
-        download_libs(url)
+    package_data_plat_ = {"manylinux2010_x86_64": [
+        "libs/libjemalloc.so",
+        "libs/libturbojpeg.so.0.2.0",
+        "libs/libtcmalloc.so"
+    ],
+        "win_amd64": []}
+
+    script_plat = {"manylinux2010_x86_64": ["../script/bigdl-nano-init"],
+                   "win_amd64": ["../script/bigdl-nano-init.ps1"]}
+
+    if plat_name == 'manylinux2010_x86_64':
+        for url in lib_urls:
+            download_libs(url)
 
     metadata = dict(
         name='bigdl-nano',
@@ -96,14 +105,32 @@ def setup_package():
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
                         "pytorch": pytorch_requires},
+        package_data={"bigdl.nano": package_data_plat_[plat_name]},
+        scripts=script_plat[plat_name],
+
         packages=get_nano_packages(),
-        package_data={"bigdl.nano": [
-            "libs/libjemalloc.so", "libs/libturbojpeg.so.0.2.0", "libs/libtcmalloc.so"]},
-        scripts=['../script/bigdl-nano-init']
     )
 
     setup(**metadata)
 
 
 if __name__ == '__main__':
-    setup_package()
+    idx = 0
+    for arg in sys.argv:
+        if arg == "--plat-name":
+            break
+        else:
+            idx += 1
+    if idx >= len(sys.argv):
+        raise ValueError(
+            "Cannot find --plat-name argument. bigdl-tf requires --plat-name to build.")
+    verbose_plat_name = sys.argv[idx + 1]
+
+    valid_plat_names = ("win_amd64", "manylinux2010_x86_64")
+    if verbose_plat_name not in valid_plat_names:
+        raise ValueError(f"--plat-name is not valid. "
+                         f"--plat-name should be one of {valid_plat_names}"
+                         f" but got {verbose_plat_name}")
+    plat_name = verbose_plat_name
+
+    setup_package(plat_name)

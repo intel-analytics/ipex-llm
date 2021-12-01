@@ -26,6 +26,61 @@ if sys.version >= '3':
     long = int
     unicode = str
 
+
+@keras_export('bigdl.dllib.keras.Model')
+class Model(KerasNet):
+    """
+    Container for a graph model.
+
+    # Arguments
+    input: An input node or a list of input nodes.
+    output: An output node or a list of output nodes.
+    name: String to specify the name of the graph model. Default is None.
+    """
+
+    def __init__(self, input, output, jvalue=None, **kwargs):
+        super(Model, self).__init__(jvalue,
+                                    to_list(input),
+                                    to_list(output),
+                                    **kwargs)
+
+    def save_graph_topology(self, log_path, backward=False):
+        """
+        Save the current model graph to a folder, which can be displayed in TensorBoard
+        by running the command:
+        tensorboard --logdir log_path
+
+        # Arguments
+        log_path: The path to save the model graph.
+        backward: The name of the application.
+        """
+        callZooFunc(self.bigdl_type, "zooSaveGraphTopology",
+                    self.value,
+                    log_path,
+                    backward)
+
+    def new_graph(self, outputs):
+        value = callZooFunc(self.bigdl_type, "newGraph", self.value, outputs)
+        return self.from_jvalue(value)
+
+    def freeze_up_to(self, names):
+        callZooFunc(self.bigdl_type, "freezeUpTo", self.value, names)
+
+    def unfreeze(self, names):
+        callZooFunc(self.bigdl_type, "unFreeze", self.value, names)
+
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
+        """
+        Create a Python Model base on the given java value
+        :param jvalue: Java object create by Py4j
+        :return: A Python Model
+        """
+        model = Model([], [], jvalue=jvalue)
+        model.value = jvalue
+        return model
+
+
 @keras_export('bigdl.dllib.keras.Sequential')
 class Sequential(KerasNet):
     """

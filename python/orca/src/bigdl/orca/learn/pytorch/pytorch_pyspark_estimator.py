@@ -84,7 +84,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
-            workers_per_node=1):
+            workers_per_node=1,
+            sync_stats=True,
+            log_level=logging.INFO):
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
@@ -124,10 +126,13 @@ class PyTorchPySparkEstimator(BaseEstimator):
             metrics=metrics,
             size=self.num_workers,
             cores_per_worker=self.cores_per_worker,
-            cluster_info=self._get_cluster_info(sc)
-        )
+            sync_stats=sync_stats,
+            log_level=log_level)
 
-        self.driver_runner = PytorchPysparkWorker(**self.worker_init_params, mode='predict')
+        self.driver_runner = PytorchPysparkWorker(
+            mode='predict',
+            cluster_info=self._get_cluster_info(sc),
+            **self.worker_init_params)
 
         self.state_dict = self.driver_runner.get_state_dict()
 
@@ -175,7 +180,19 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
-        init_params = dict(mode="fit", state_dict=self.state_dict)
+        data, _ = maybe_dataframe_to_xshards(data,
+                                             validation_data=None,
+                                             feature_cols=feature_cols,
+                                             label_cols=label_cols,
+                                             mode="fit",
+                                             num_workers=self.num_workers)
+
+        sc = OrcaContext.get_spark_context()
+        cluster_info = self._get_cluster_info(sc)
+        init_params = dict(
+            mode="fit",
+            state_dict=self.state_dict,
+            cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
         params = dict(
@@ -184,13 +201,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             profile=profile,
             info=info,
         )
-
-        data, _ = maybe_dataframe_to_xshards(data,
-                                             validation_data=None,
-                                             feature_cols=feature_cols,
-                                             label_cols=label_cols,
-                                             mode="fit",
-                                             num_workers=self.num_workers)
 
         if isinstance(data, SparkXShards):
             # set train/validation
@@ -240,7 +250,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             return PytorchPysparkWorker(**init_param).predict(**params)
 
         pred_shards = SparkXShards(xshards.rdd.mapPartitions(
-                                        lambda iter: transform_func(iter, init_params, params)))
+                                   lambda iter: transform_func(iter, init_params, params)))
         return pred_shards
 
     def predict(self,
@@ -258,18 +268,23 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param feature_cols: feature column names if data is a Spark DataFrame.
         :return: A SparkXShards that contains the predictions with key "prediction" in each shard
         """
+        from bigdl.orca.data import SparkXShards
+        from pyspark.sql import DataFrame
+
+        sc = OrcaContext.get_spark_context()
+        cluster_info = self._get_cluster_info(sc)
         init_params = dict(
             mode="predict",
             state_dict=self.state_dict,
+            cluster_info=cluster_info,
         )
         init_params.update(self.worker_init_params)
 
-        from bigdl.orca.data import SparkXShards
         params = dict(
             batch_size=batch_size,
             profile=profile
         )
-        from pyspark.sql import DataFrame
+
         if isinstance(data, DataFrame):
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
@@ -323,18 +338,20 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 You can also provide custom metrics by passing in a custom training_operator_cls
                 when creating the Estimator.
         """
+        sc = OrcaContext.get_spark_context()
+        cluster_info = self._get_cluster_info(sc)
         init_params = dict(
             mode="evaluate",
             state_dict=self.state_dict,
-            )
+            cluster_info=cluster_info)
+
         init_params.update(self.worker_init_params)
 
         params = dict(
             batch_size=batch_size,
             num_steps=num_steps,
             profile=profile,
-            info=info,
-        )
+            info=info)
 
         from bigdl.orca.data import SparkXShards
         data, _ = maybe_dataframe_to_xshards(data,
@@ -374,6 +391,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         model_state = state["models"][0]
         model.load_state_dict(model_state)
         return model.module if hasattr(model, "module") else model
+
+    def get_state_dict(self):
+        return self.state_dict
 
     @enable_multi_fs_save
     def save(self, model_path):
