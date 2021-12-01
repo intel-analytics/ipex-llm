@@ -3,7 +3,7 @@
 export MASTER=YOUR_MASTER_IP
 export WORKERS=(YOUR_WORKER_IP_1 YOUR_WORKER_IP_2 YOUR_WORKER_IP_3)
 
-export TRUSTED_BIGDATA_ML_DOCKER=10.239.45.10/arda/intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-python-graphene:0.11-SNAPSHOT
+export TRUSTED_BIGDATA_ML_DOCKER=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
 
 export SOURCE_ENCLAVE_KEY_PATH=YOUR_LOCAL_ENCLAVE_KEY_PATH
 export SOURCE_KEYS_PATH=YOUR_LOCAL_KEYS_PATH
