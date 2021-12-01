@@ -84,6 +84,7 @@ def download_report(count, block_size, total_size):
 
 def download_bsd300(dest=opt.data_dir):
     output_image_dir = join(dest, "BSDS300/images")
+    print(output_image_dir)
 
     if not exists(output_image_dir):
         makedirs(dest)
@@ -156,6 +157,7 @@ def target_transform(crop_size):
 def train_data_creator(config, batch_size):
     def get_training_set(upscale_factor):
         root_dir = download_bsd300()
+        print("Dataset ready")
         train_dir = join(root_dir, "train")
         crop_size = calculate_valid_crop_size(256, upscale_factor)
 
