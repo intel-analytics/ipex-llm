@@ -108,9 +108,11 @@ echo "#10 start example for orca super-resolution"
 start=$(date "+%s")
 
 if [ ! -f BSDS300-images.tgz ]; then
+  echo "Downloading images from ftp"
   wget -nv $FTP_URI/analytics-zoo-data/BSDS300-images.tgz
 fi
 if [ ! -d dataset/BSDS300/images ]; then
+  echo "Extracting images"
   mkdir dataset
   tar -xzf BSDS300-images.tgz -C dataset
 fi

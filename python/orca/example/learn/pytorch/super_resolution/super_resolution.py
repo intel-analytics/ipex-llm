@@ -156,6 +156,7 @@ def target_transform(crop_size):
 
 def train_data_creator(config, batch_size):
     def get_training_set(upscale_factor):
+        print("Getting training dataset")
         root_dir = download_bsd300()
         print("Dataset ready")
         train_dir = join(root_dir, "train")
