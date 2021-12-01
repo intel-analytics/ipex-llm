@@ -34,7 +34,7 @@ import org.apache.log4j.Logger
 class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   val logger = Logger.getLogger(getClass)
   configPath = "ppml-conf.yaml"
-  protected var taskID: String = null
+  protected var taskID: String = "taskID"
   var psiStub: PSIStub = null
   var nnStub: NNStub = null
 
