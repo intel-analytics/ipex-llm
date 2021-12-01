@@ -57,12 +57,7 @@ if __name__ == '__main__':
     parser.add_option("--deploy-mode", type=str, dest="deployMode", default="yarn-client", help="yarn deploy mode, yarn-client or yarn-cluster")
     (options, args) = parser.parse_args(sys.argv)
 
-    sc = init_orca_context(cluster_mode=options.deployMode,
-        conf={"spark.executor.memory": options.executorMemory,
-                "spark.executor.cores": options.cores,
-                "spark.executor.instances": options.executors,
-                "spark.driver.memory": options.driverMemory
-        })
+    sc = init_orca_context(cluster_mode=options.deployMode)
     model = CatDogModel()
     zoo_model = TorchModel.from_pytorch(model)
 
