@@ -34,7 +34,7 @@ class Estimator(object):
                    workers_per_node=1,
                    model_dir=None,
                    backend="bigdl",
-                   sync_stats=True,
+                   sync_stats=False,
                    log_level=logging.INFO):
         """
         Create an Estimator for torch.
