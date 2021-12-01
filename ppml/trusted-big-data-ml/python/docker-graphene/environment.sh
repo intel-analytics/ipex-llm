@@ -1,5 +1,4 @@
 #!/usr/bin/bash
-
 export MASTER=YOUR_MASTER_IP
 export WORKERS=(YOUR_WORKER_IP_1 YOUR_WORKER_IP_2 YOUR_WORKER_IP_3)
 
