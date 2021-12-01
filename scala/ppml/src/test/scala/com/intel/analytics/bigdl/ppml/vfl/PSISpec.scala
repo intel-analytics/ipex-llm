@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.ppml.vfl
 import com.intel.analytics.bigdl.ppml.FLServer
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
+import com.intel.analytics.bigdl.ppml.utils.PortUtils
+import org.apache.log4j.Logger
 
 import scala.collection.JavaConverters._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -26,8 +28,17 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.concurrent.TimeoutException
 
 class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
+  var port: Int = 8980
+  var target: String = "localhost:8980"
+  val logger = Logger.getLogger(getClass)
+  before {
+    port = PortUtils.findNextPortAvailable(port)
+    target = "localhost:" + port
+    logger.info(s"Running test on port: $port, target: $target")
+  }
   "PSI get salt" should "work" in {
     val flServer = new FLServer()
+    flServer.setPort(port)
     flServer.build()
     flServer.start()
     VflContext.initContext()
@@ -38,6 +49,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
   "PSI upload set" should "work" in {
     val flServer = new FLServer()
+    flServer.setPort(port)
     flServer.build()
     flServer.start()
     VflContext.initContext()
@@ -51,6 +63,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
   "PSI download intersection" should "work" in {
     val flServer = new FLServer()
+    flServer.setPort(port)
     flServer.build()
     flServer.start()
     VflContext.initContext()
@@ -68,6 +81,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
   "PSI download null intersection" should "work" in {
     val flServer = new FLServer()
+    flServer.setPort(port)
     flServer.build()
     flServer.start()
     VflContext.initContext()

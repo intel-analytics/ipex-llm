@@ -40,6 +40,7 @@ from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollect
                                             NUM_SAMPLES)
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
                                                 SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 tqdm = None
 try:
@@ -190,10 +191,25 @@ class TrainingOperator:
                 desc=desc,
                 unit="batch",
                 leave=False)
+        else:
+            _progress_bar = None
 
         metric_meters = AverageMeterCollection()
 
         self.model.train()
+        if isinstance(self.model, DDP):
+            with self.model.join():
+                self._train_loop(iterator, info, _progress_bar, metric_meters)
+        else:
+            self._train_loop(iterator, info, _progress_bar, metric_meters)
+
+        if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
+            self.scheduler.step()
+
+        return metric_meters.summary(sync_stats=self.sync_stats,
+                                     dist_backend=self.dist_backend)
+
+    def _train_loop(self, iterator, info, _progress_bar, metric_meters):
         for batch_idx, batch in enumerate(iterator):
             batch_info = {
                 "batch_idx": batch_idx,
@@ -215,12 +231,6 @@ class TrainingOperator:
 
             metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
             self.global_step += 1
-
-        if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
-            self.scheduler.step()
-
-        return metric_meters.summary(sync_stats=self.sync_stats,
-                                     dist_backend=self.dist_backend)
 
     def train_batch(self, batch, batch_info):
         """Computes loss and updates the model over one batch.

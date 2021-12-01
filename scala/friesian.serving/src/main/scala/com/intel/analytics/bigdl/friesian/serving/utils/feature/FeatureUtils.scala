@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package utils.feature
+package com.intel.analytics.bigdl.friesian.serving.utils.feature
 
 import java.util.{Base64, List => JList}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils
-import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils
+import com.intel.analytics.bigdl.friesian.serving.utils.{EncodeUtils, Utils}
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto._
 import EncodeUtils.objToBytes
 import org.apache.log4j.Logger
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Row, SparkSession}
-import utils.Utils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -40,47 +39,49 @@ object FeatureUtils {
     assert(Utils.helper.initialUserDataPath != null ||
       Utils.helper.initialItemDataPath != null, "initialUserDataPath or " +
       "initialItemDataPath should be provided if loadInitialData is true")
+    val redis = RedisUtils.getInstance(Utils.helper.redisPoolMaxTotal)
     if (Utils.helper.initialUserDataPath != null) {
       assert(Utils.helper.userIDColumn != null)
       assert(Utils.helper.userFeatureColArr != null)
       logger.info("Start inserting user features...")
+      val colNames = Utils.helper.userFeatureColArr.mkString(",")
+      redis.setSchema("user", colNames)
       val userFeatureColumns = Utils.helper.userIDColumn +: Utils.helper.userFeatureColArr
       divideFileAndLoad(spark, Utils.helper.initialUserDataPath, userFeatureColumns,
-        "userid")
+        "user")
     }
 
     if (Utils.helper.initialItemDataPath != null) {
       assert(Utils.helper.itemIDColumn != null)
       assert(Utils.helper.itemFeatureColArr != null)
       logger.info("Start inserting item features...")
+      val colNames = Utils.helper.itemFeatureColArr.mkString(",")
+      redis.setSchema("item", colNames)
       val itemFeatureColumns = Utils.helper.itemIDColumn +: Utils.helper.itemFeatureColArr
       divideFileAndLoad(spark, Utils.helper.initialItemDataPath, itemFeatureColumns,
-        "itemid")
+        "item")
     }
     logger.info(s"Insert finished")
   }
 
   def divideFileAndLoad(spark: SparkSession, dataDir: String, featureCols: Array[String],
                         keyPrefix: String): Unit = {
-    val parquetList = Utils.getListOfFiles(dataDir)
-    logger.info(s"ParquetList length: ${parquetList.length}")
     var totalCnt: Long = 0
-    val readList = parquetList.sliding(10, 10).toArray
+    val readList = Utils.getListOfFiles(dataDir)
     val start = System.currentTimeMillis()
     for (parquetFiles <- readList) {
       var df = spark.read.parquet(parquetFiles: _*)
       df = df.select(featureCols.map(col): _*).distinct()
       val cnt = df.count()
       totalCnt = totalCnt + cnt
-      val cols = df.columns
       logger.info(s"Load ${cnt} features into redis.")
       val featureRDD = df.rdd.map(row => {
-        encodeRowWithCols(row, cols)
+        encodeRow(row)
       })
       featureRDD.foreachPartition { partition =>
         if (partition.nonEmpty) {
           val redis = RedisUtils.getInstance(Utils.helper.redisPoolMaxTotal)
-          redis.Hset(keyPrefix, partition.toArray)
+          redis.Mset(keyPrefix, partition.toArray)
         }
       }
     }
@@ -89,12 +90,13 @@ object FeatureUtils {
   }
 
   def encodeRow(row: Row): JList[String] = {
-    val rowSeq = row.toSeq
-    val id = rowSeq.head.toString
-    val encodedValue = java.util.Base64.getEncoder.encodeToString(objToBytes(rowSeq))
+    val id = row.get(0).toString
+    val rowArr = row.toSeq.drop(1).toArray
+    val encodedValue = java.util.Base64.getEncoder.encodeToString(objToBytes(rowArr))
     List(id, encodedValue).asJava
   }
 
+  @Deprecated
   def encodeRowWithCols(row: Row, cols: Array[String]): JList[String] = {
     val rowSeq = row.toSeq
     val id = rowSeq.head.toString
@@ -117,7 +119,7 @@ object FeatureUtils {
 
   def predictFeatures(features: Features, model: InferenceModel, featureColumns: Array[String]):
   JList[String] = {
-    val featureArr = FeatureUtils.featuresToObject(features)
+    val featureArr = FeatureUtils.getFeatures(features)
     val featureArrNotNull = featureArr.filter(_ != null)
     if (featureArrNotNull.length == 0) {
       throw new Exception("Cannot find target user/item in redis.")
@@ -177,13 +179,13 @@ object FeatureUtils {
     }).toList.asJava
   }
 
-  def featuresToObject(features: Features): Array[AnyRef] = {
+  def getFeatures(features: Features): Array[Array[Any]] = {
     val b64Features = features.getB64FeatureList.asScala
     b64Features.map(feature => {
       if (feature == "") {
         null
       } else {
-        EncodeUtils.bytesToObj(Base64.getDecoder.decode(feature))
+        EncodeUtils.bytesToObj(Base64.getDecoder.decode(feature)).asInstanceOf[Array[Any]]
       }
     }).toArray
   }

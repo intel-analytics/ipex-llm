@@ -304,6 +304,9 @@ class SparkRunner:
         """
         with self.strategy.scope():
             model = self.model_creator(self.config)
+            if self.model_weights:
+                model.set_weights(self.model_weights.value)
+
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
                 .handle_datasets_train(data_creator=data_creator,
@@ -358,12 +361,12 @@ class SparkRunner:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
             if self.model_dir is not None:
-                model_states = {
+                model_state = {
                     "epoch": self.epoch,
                     "weights": weights,
                     "optimizer_weights": model.optimizer.get_weights()
                 }
-                save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
+                save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
             return [stats]
         else:
             return []

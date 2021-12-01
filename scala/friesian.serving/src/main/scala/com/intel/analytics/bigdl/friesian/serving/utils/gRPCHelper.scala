@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils
+package com.intel.analytics.bigdl.friesian.serving.utils
 
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import org.apache.log4j.Logger
@@ -52,12 +52,15 @@ class gRPCHelper extends Serializable {
   @BeanProperty var userIDColumn: String = _
   @BeanProperty var itemIDColumn: String = _
   @BeanProperty var redisKeyPrefix: String = _
+  @BeanProperty var redisClusterItemSlotType = 0
 
   // recall service attributes
   @BeanProperty var loadSavedIndex = false
   @BeanProperty var indexPath: String = _
   @BeanProperty var getFeatureFromFeatureService = false
   @BeanProperty var saveBuiltIndex = false
+  @BeanProperty var indexDim: Int = 128
+  @BeanProperty var part: Int = 20
 
   // feature & recall service attributes
   @BeanProperty var userModelPath: String = _
@@ -65,6 +68,7 @@ class gRPCHelper extends Serializable {
 
   // recommend service attributes
   @BeanProperty var inferenceColumns: String = _
+  @BeanProperty var inferenceBatch: Int = 0
   @BeanProperty var recallServiceURL = "localhost:8980"
   @BeanProperty var featureServiceURL = "localhost:8980"
   @BeanProperty var rankingServiceURL = "localhost:8980"
@@ -77,6 +81,7 @@ class gRPCHelper extends Serializable {
   var itemFeatureColArr: Array[String] = _
   var inferenceColArr: Array[String] = _
   var itemModel: InferenceModel = _
+  var itemSlotType: Int = 0
 
   val logger: Logger = Logger.getLogger(getClass)
 
@@ -90,9 +95,9 @@ class gRPCHelper extends Serializable {
       redisKeyPrefix = ""
     }
     // TODO: value check
-//    if (serviceType != "kv" && serviceType != "inference") {
-//      logger.error(s"serviceType must be 'kv' or 'inference' but got ${serviceType}")
-//    }
+    //    if (serviceType != "kv" && serviceType != "inference") {
+    //      logger.error(s"serviceType must be 'kv' or 'inference' but got ${serviceType}")
+    //    }
     if (savedModelInputs != null) {
       savedModelInputsArr = savedModelInputs.split("\\s*,\\s*")
     }
@@ -105,6 +110,13 @@ class gRPCHelper extends Serializable {
     }
     if (inferenceColumns != null) {
       inferenceColArr = inferenceColumns.split("\\s*,\\s*")
+    }
+
+    itemSlotType = if (redisClusterItemSlotType != 0 && redisClusterItemSlotType != 1 &&
+      redisClusterItemSlotType != 2) {
+      0
+    } else {
+      redisClusterItemSlotType
     }
   }
 

@@ -31,6 +31,9 @@ jobs:
         run: pip install pycodestyle
       
       # Runs a single command using the runners shell
+      - name: License checking
+        run: bash python/dev/check-license
+
       - name: Nano style checking
         run: bash python/nano/test/run-nano-codestyle-test.sh
         env:
@@ -39,8 +42,8 @@ jobs:
       - name: Orca style checking
         run: bash python/orca/dev/test/lint-python
 
-      - name: License checking
-        run: bash python/dev/check-license
+      - name: Friesian style checking
+        run: bash python/friesian/dev/test/lint-python
 
       - name: Chronos style checking
         run: bash python/chronos/dev/test/lint-python

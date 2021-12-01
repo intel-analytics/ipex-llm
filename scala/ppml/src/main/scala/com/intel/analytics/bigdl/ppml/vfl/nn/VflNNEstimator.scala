@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl
+package com.intel.analytics.bigdl.ppml.vfl.nn
 
-import com.intel.analytics.bigdl.{Criterion, Module}
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
-import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod}
 import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil
 import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil.getParametersFromModel
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.optim.OptimMethod
 import com.intel.analytics.bigdl.ppml.FLClient
+import com.intel.analytics.bigdl.ppml.generated.FLProto.{EvaluateResponse, TableMetaData}
+import com.intel.analytics.bigdl.ppml.vfl.VflContext
 import com.intel.analytics.bigdl.ppml.vfl.utils.ProtoUtils._
-import com.intel.analytics.bigdl.ppml.generated.FLProto.{EvaluateResponse, Table, TableMetaData}
-import io.netty.handler.ssl.SslContext
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-class VflEstimator(flClient: FLClient,
-                   model: Module[Float],
-                   optimMethod: OptimMethod[Float]){
+class VflNNEstimator(algorithm: String,
+                     model: Module[Float],
+                     optimMethod: OptimMethod[Float]){
   val logger = Logger.getLogger(getClass)
+  val flClient = VflContext.getClient()
   val (weight, grad) = getParametersFromModel(model)
 
   def train(endEpoch: Int,
@@ -74,7 +75,7 @@ class VflEstimator(flClient: FLClient,
         uploadOutput(model, iteration, target)
         model.zeroGradParameters()
         // Download average model
-        val gradInput = downloadTrain(flClient, "gradInput", iteration)
+        val gradInput = downloadTrain(flClient, "gradInput", iteration, algorithm)
         // model replace
         val errors = getTensor("gradInput", gradInput)
         val loss = getTensor("loss", gradInput).value()
@@ -118,7 +119,7 @@ class VflEstimator(flClient: FLClient,
 
     // TODO: support table output and table target
     val tableProto = outputTargetToTableProto(model.output, target, metadata)
-    flClient.uploadTrain(tableProto)
+    flClient.nnStub.uploadTrain(tableProto, algorithm)
   }
 
   def evaluateOutput(model: Module[Float],
@@ -130,16 +131,8 @@ class VflEstimator(flClient: FLClient,
 
     // TODO: support table output and table target
     val tableProto = outputTargetToTableProto(model.output, target, metadata)
-    flClient.evaluate(tableProto, lastBatch)
+    flClient.nnStub.evaluate(tableProto, lastBatch)
   }
 
 }
 
-object VflEstimator {
-  def apply(flClient: FLClient,
-            model: Module[Float],
-            optimMethod: OptimMethod[Float]): VflEstimator = {
-    new VflEstimator(flClient, model, optimMethod)
-  }
-
-}

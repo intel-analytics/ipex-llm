@@ -8,7 +8,7 @@ servicePort: 8083
 monitorPort: 1234
 
 # model path must be provided
-modelPath: /home/yina/Documents/model/recys2021/wnd_813/recsys_wnd
+modelPath: /home/yina/Documents/data/friesian-demo/recsys_wnd
 
 # default: null, savedmodel input list if the model is tf savedmodel. If not provided, the inputs
 # of the savedmodel will be arranged in alphabetical order

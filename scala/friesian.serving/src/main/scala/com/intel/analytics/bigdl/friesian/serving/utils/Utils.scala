@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package utils
+package com.intel.analytics.bigdl.friesian.serving.utils
 
 import java.io.File
 
@@ -24,6 +24,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SparkSession
+import scala.math._
 
 object Utils {
   var helper: gRPCHelper = _
@@ -47,15 +48,18 @@ object Utils {
     result
   }
 
-  def getListOfFiles(dir: String): List[String] = {
+  def getListOfFiles(dir: String): Array[List[String]] = {
     val d = new File(dir)
     if (d.exists && d.isDirectory) {
       logger.info("file exists & dir")
-      d.listFiles.filter(_.isFile).toList.map(_.getAbsolutePath)
+      val parquetList = d.listFiles.filter(_.isFile).toList.map(_.getAbsolutePath)
         .filter(path => !path.endsWith("SUCCESS") & !path.endsWith(".crc"))
+      logger.info(s"ParquetList length: ${parquetList.length}")
+      val batch = (parquetList.length.toFloat / helper.part).ceil.toInt
+      parquetList.sliding(batch, batch).toArray
     } else {
       logger.info(s"empty, exists: ${d.exists()}, dir: ${d.isDirectory}")
-      List[String]()
+      Array[List[String]]()
     }
   }
 

@@ -60,6 +60,10 @@ public abstract class GrpcServerBase extends AbstractGrpcBase {
         this.args = args;
     }
 
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     public void parseConfig() throws Exception {}
 
     /** Entrypoint of GrpcServerBase */

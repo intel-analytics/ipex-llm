@@ -65,7 +65,7 @@ public class BenchmarkClient {
         logger.info("### Time of producing data: " + (etproduce - stproduce) + " ms ###");
         List<String> hashedIdArray;
         String salt;
-        VflContext.initContext();
+        VflContext.initContext(null);
         PSI psi = new PSI();
         try {
             // Get salt from Server
