@@ -27,7 +27,9 @@ message IDs {
 }
 
 message Features {
-    repeated string b64Feature = 1;
+    repeated string colNames = 1;
+    repeated string b64Feature = 2;
+    repeated int32 ID = 3;
 }
 
 message ServerMessage {

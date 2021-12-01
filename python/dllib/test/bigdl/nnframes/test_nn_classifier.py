@@ -30,7 +30,7 @@ from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.common import *
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.keras import layers as ZLayer
-from bigdl.dllib.keras.model import Model as ZModel
+from bigdl.dllib.keras.models import Model as ZModel
 from bigdl.dllib.keras.optimizers import Adam as KAdam
 from bigdl.dllib.nnframes import *
 from bigdl.dllib.utils.tf import *

@@ -30,6 +30,7 @@ class Test_Image3D():
         """
         self.sc = init_nncontext(create_spark_conf().setMaster("local[4]")
                                  .setAppName("test image set")
+                                 .set("spark.shuffle.reduceLocality.enabled", "false")
                                  .set("spark.shuffle.blockTransferService", "nio")
                                  .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
                                  .set("spark.speculation", "false")

@@ -16,10 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.psi.test;
 
-import com.intel.analytics.bigdl.ppml.FLClient;
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import com.intel.analytics.bigdl.ppml.algorithms.PSI;
+import com.intel.analytics.bigdl.ppml.vfl.VflContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,36 +63,26 @@ public class BenchmarkClient {
         }
         long etproduce = System.currentTimeMillis();
         logger.info("### Time of producing data: " + (etproduce - stproduce) + " ms ###");
-        HashMap<String, String> hashedIds = new HashMap<>();
         List<String> hashedIdArray;
         String salt;
-        FLClient flClient = new FLClient();
+        VflContext.initContext();
+        PSI psi = new PSI();
         try {
-            
             // Get salt from Server
-            salt = flClient.psiStub().getSalt();
+            salt = psi.getSalt();
             logger.info("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
-            long shash = System.currentTimeMillis();
-            hashedIdArray = HashingUtils.parallelToSHAHexString(ids, salt);
-            for (int i = 0; i < ids.size(); i++) {
-                logger.debug(hashedIdArray.get(i));
-                hashedIds.put(hashedIdArray.get(i), ids.get(i));
-            }
-            long ehash = System.currentTimeMillis();
-            logger.info("### Time of hash data: " + (ehash - shash) + " ms ###");
-            logger.info("HashedIDs Size = " + hashedIdArray.size());
+
             long supload = System.currentTimeMillis();
-            flClient.psiStub().uploadSet(hashedIdArray);
+            psi.uploadSet(ids, salt);
+
             long eupload = System.currentTimeMillis();
             logger.info("### Time of upload data: " + (eupload - supload) + " ms ###");
             logger.info("upload hashed id successfully");
             List<String> intersection = null;
             
             long sdownload = System.currentTimeMillis();
-            while (intersection == null) {
-                intersection = flClient.psiStub().downloadIntersection();
-            }
+            psi.downloadIntersection(Integer.MAX_VALUE, 3000);
 
             long edownload = System.currentTimeMillis();
             logger.info("### Time of download data: " + (edownload - sdownload) + " ms ###");
@@ -104,7 +92,8 @@ public class BenchmarkClient {
             // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
             // resources the channel should be shut down when it will no longer be used. If it may be used
             // again leave it running.
-            flClient.getChannel().shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+
+            psi.close();
         }
     }
 }

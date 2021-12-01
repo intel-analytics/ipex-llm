@@ -40,6 +40,7 @@ class ZooTestCase(TestCase):
         K.set_image_dim_ordering("th")
         sparkConf = init_spark_conf().setMaster("local[4]").setAppName("zoo test case")\
             .set("spark.driver.memory", "5g")
+        assert str(sparkConf.get("spark.shuffle.reduceLocality.enabled")) == "false"
         assert \
             str(sparkConf.get("spark.serializer")) == "org.apache.spark.serializer.JavaSerializer"
         assert SparkContext._active_spark_context is None
@@ -106,7 +107,7 @@ class ZooTestCase(TestCase):
         Compare forward results for Keras layer against Zoo Keras API layer.
         """
         from keras.models import Sequential as KSequential
-        from bigdl.dllib.keras.Sequential import Sequential as ZSequential
+        from bigdl.dllib.keras.models import Sequential as ZSequential
         zmodel = ZSequential()
         zmodel.add(zlayer)
         kmodel = KSequential()

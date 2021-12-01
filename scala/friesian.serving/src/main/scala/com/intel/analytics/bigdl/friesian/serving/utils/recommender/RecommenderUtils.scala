@@ -14,39 +14,43 @@
  * limitations under the License.
  */
 
-package utils.recommender
+package com.intel.analytics.bigdl.friesian.serving.utils.recommender
 
 import java.util
 import java.util.Base64
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features
+import com.intel.analytics.bigdl.friesian.serving.utils.{EncodeUtils, Utils}
+import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.{Features, IDs}
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingGrpc.RankingBlockingStub
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.{Content, Prediction}
+import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils
 import io.grpc.StatusRuntimeException
 import org.apache.log4j.Logger
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.SparkSession
-import utils.Utils
-import utils.feature.FeatureUtils
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 object RecommenderUtils {
   val logger: Logger = Logger.getLogger(getClass)
 
   def featuresToRankingInputSet(userFeatures: Features, itemFeatures: Features, batchSize: Int)
   : (Array[Int], Array[Table]) = {
-    val userFeatureArr = FeatureUtils.featuresToObject(userFeatures)
+    val userFeatureArr = FeatureUtils.getFeatures(userFeatures)
     assert(userFeatureArr.length == 1, "userFeatures length should be 1")
-    val userFeature = userFeatureArr(0).asInstanceOf[Map[String, AnyRef]]
+    val userSchema = userFeatures.getColNamesList.asScala
+    if (userFeatureArr(0) == null) {
+      throw new Exception("Cannot find user feature, userid: " + userFeatures.getID(0))
+    }
+    val userFeature = userFeatureArr(0)
     // TODO: not found update
-    val itemFeatureArr = FeatureUtils.featuresToObject(itemFeatures)
-      .filter(idx => idx != null)
+    val itemSchema = itemFeatures.getColNamesList.asScala
+    val itemIDs = itemFeatures.getIDList.asScala.toArray.map(_.intValue())
+    val itemFeatureArr = itemIDs.zip(FeatureUtils.getFeatures(itemFeatures))
+      .filter(idx => idx._2 != null)
     logger.info("Got item feature: " + itemFeatureArr.length)
 
     val batchSizeUse = if (batchSize <= 0) {
@@ -59,46 +63,41 @@ object RecommenderUtils {
         "your initial datasets are matched.")
     }
     val inferenceColumns = Utils.helper.inferenceColArr
+    val featureSchema = itemSchema.++(userSchema)
+    val idxArr = inferenceColumns.map(col => featureSchema.indexOf(col))
+    if (idxArr.contains(-1)) {
+      throw new Exception("The feature " + inferenceColumns(idxArr.indexOf(-1)) + " doesn't exist" +
+        " in features.")
+    }
 
-    val userItemFeatureItemIdArr = itemFeatureArr.map(itemF => {
-      val itemFMap = itemF.asInstanceOf[Map[String, AnyRef]]
-      val userItemFMap = itemFMap.++(userFeature)
-      val featureList = inferenceColumns.map(colName => {
-        userItemFMap.getOrElse(colName, -1)
-      })
-      val itemId = userItemFMap.getOrElse(Utils.helper.itemIDColumn, -1).asInstanceOf[Int]
-      (itemId, featureList)
+    val modelFeatureItemIdArr = itemFeatureArr.map(item => {
+      val itemF = item._2
+      val originFeatureList = itemF.++(userFeature)
+      //      val featureList = idxArr.map(idx => originFeatureList(idx))
+      //      (item._1, featureList)
+      (item._1, originFeatureList)
     })
-    val itemIDArr = userItemFeatureItemIdArr.map(_._1)
-    val userItemFeatureArr = userItemFeatureItemIdArr.map(_._2)
+    val itemIDArr = modelFeatureItemIdArr.map(_._1)
+    val userItemFeatureArr = modelFeatureItemIdArr.map(_._2)
     val batchedFeatureArr = userItemFeatureArr.sliding(batchSizeUse, batchSizeUse).toArray
     val batchedActivityList = batchedFeatureArr.map(featureArr => {
-      val tensorArray = ArrayBuffer[Tensor[Float]]()
-      inferenceColumns.indices.foreach(idx => {
-        var singleDim = true
-        val converted = featureArr.map(singleFeature => {
-          // TODO: null
-          singleFeature(idx) match {
-            case d: Int => Array(d.toFloat)
-            case d: Float => Array(d)
-            case d: Long => Array(d.toFloat)
-            case d: mutable.WrappedArray[AnyRef] =>
-              singleDim = false
-              d.toArray.map(_.asInstanceOf[Number].floatValue())
-            case d => throw new IllegalArgumentException(s"Illegal input: ${d}")
-          }
-        })
-        val inputTensor = if (singleDim) {
-          Tensor[Float](converted.flatten, Array(converted.length))
-        } else {
-          // TODO: empty
-          Tensor[Float](converted.flatten, Array(converted.length, converted(0).length))
+      val tensorArray = idxArr.map(idx => {
+        val features = featureArr.map(feature => feature(idx))
+        val dim = Array(features.length)
+        features(0) match {
+          case _: Int => Tensor[Float](features.map(_.toString.toFloat), dim)
+          case _: Float => Tensor[Float](features.map(_.toString.toFloat), dim)
+          case _: Long => Tensor[Float](features.map(_.toString.toFloat), dim)
+          case _:Double => Tensor[Float](features.map(_.toString.toFloat), dim)
+          case _: mutable.WrappedArray[Any] =>
+            val arr2d = features.map(a =>
+              a.asInstanceOf[mutable.WrappedArray[Any]].array.map(_.toString.toFloat))
+            Tensor[Float](arr2d.flatten, dim :+ arr2d(0).length)
+          case d => throw new IllegalArgumentException(s"Illegal input: ${d}")
         }
-        tensorArray.append(inputTensor)
       })
-      T.array(tensorArray.toArray)
+      T.array(tensorArray)
     })
-
     (itemIDArr, batchedActivityList)
   }
 
@@ -109,7 +108,7 @@ object RecommenderUtils {
       val predContent = Content.newBuilder().setEncodedStr(input).build()
       var result: Prediction = null
       try {
-          result = inferenceStub.doPredict(predContent)
+        result = inferenceStub.doPredict(predContent)
       } catch {
         case e: StatusRuntimeException => throw e
       }
@@ -122,10 +121,20 @@ object RecommenderUtils {
   def getTopK(result: Array[String], itemIDArr: Array[Int], k: Int): (Array[Int], Array[Float]) = {
     val resultArr = result.indices.toParArray.map(idx => {
       val resultStr = result(idx)
-      val resultStrArr = resultStr.replaceAll("\\[", "").dropRight(2).split("\\],")
-      resultStrArr.map(a => {
-        a.split(",")(0).toFloat
-      })
+      val resultActivity = EncodeUtils.bytesToObj(Base64.getDecoder.decode(resultStr))
+        .asInstanceOf[Activity]
+      if (resultActivity.isTensor) {
+        val tensor = resultActivity.toTensor[Float].squeeze(2)
+        try {
+          tensor.toArray()
+        } catch {
+          case _: Exception => throw new Exception("Not supported inference result type, please " +
+            "modify method getTopK in RecommendUtils to ensure the ranking result is correct.")
+        }
+      } else {
+        throw new Exception("Not supported inference result type, please modify method getTopK in " +
+          "RecommendUtils to ensure the ranking result is correct.")
+      }
     }).toArray
     val flattenResult = resultArr.flatten
     val zipped = itemIDArr zip flattenResult
