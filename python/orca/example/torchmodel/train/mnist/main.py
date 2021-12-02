@@ -13,12 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from __future__ import print_function
+import os
+from os.path import exists
+from os import makedirs
 import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import datasets, transforms
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.torch import TorchModel, TorchLoss, TorchOptim
 from bigdl.orca.common import *
 from bigdl.dllib.estimator import *
@@ -65,20 +70,23 @@ def main():
                         help='For Saving the current Model')
     parser.add_argument('--deploy-mode', default="local",
                         help='supported deploy mode is local, yarn-client, yarn-cluster')
+    parser.add_argument('--download', type=bool, default=True,
+                        help='download dataset or prepare by yourself')
 
     args = parser.parse_args()
 
     torch.manual_seed(args.seed)
-
+    if not exists(args.dir):
+        makedirs(args.dir)
     train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(args.dir, train=True, download=True,
+        datasets.MNIST(args.dir, train=True, download=args.download,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
                        ])),
         batch_size=args.batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST(args.dir, train=False,
+        datasets.MNIST(args.dir, train=False,download=args.download,
                        transform=transforms.Compose([
                            transforms.ToTensor(),
                            transforms.Normalize((0.1307,), (0.3081,))
@@ -89,8 +97,7 @@ def main():
     if args.deploy_mode == "local":
         sc = init_orca_context()
     else:
-        sc = init_orca_context(cluster_mode=args.deploy_mode,
-                cores=2, memory="2g", num_nodes=4)
+        sc = init_orca_context(cluster_mode=args.deploy_mode)
 
     model = Net()
     model.train()
@@ -113,3 +120,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
