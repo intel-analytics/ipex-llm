@@ -20,6 +20,13 @@ python -m pytest -s ${NANO_TEST_DIR}/test_trainer_ipex.py
 now=$(date "+%s")
 time2=$((now-start))
 
+echo "#3 Start test models onnx"
+start=$(date "+%s")
+python -m pytest -s ${NANO_TEST_DIR}/test_models_onnx.py
+now=$(date "+%s")
+time3=$((now-start))
+
 echo "Bigdl-nano ipex tests finished"
 echo "#1 model vision ipex time used:$time1 seconds"
 echo "#2 trainer ipex time used:$time2 seconds"
+echo "#3 models onnx time used:$time3 seconds"

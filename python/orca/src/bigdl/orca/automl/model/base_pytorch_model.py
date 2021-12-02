@@ -104,9 +104,9 @@ class PytorchBaseModel(BaseModel):
                torch.utils.data.DataLoader. torch.Tensor should be generated from the
                dataloader.
         :param validation_data: validation data could be a tuple with numpy ndarray
-               with form (x, y) or a data creator which takes a config dict and returns a
-               torch.utils.data.DataLoader. torch.Tensor should be generated from the
-               dataloader.
+               with form (x, y), a PyTorch DataLoader or a data creator which takes
+               a config dict and returns a torch.utils.data.DataLoader. torch.Tensor
+               should be generated from the dataloader.
         fit_eval will build a model at the first time it is built
         config will be updated for the second or later times with only non-model-arch
         params be functional
@@ -125,7 +125,7 @@ class PytorchBaseModel(BaseModel):
 
         # update config settings
         def update_config():
-            if not isinstance(data, types.FunctionType):
+            if not isinstance(data, types.FunctionType) and not isinstance(data, DataLoader):
                 x = self._reshape_input(data[0])
                 y = self._reshape_input(data[1])
                 config.setdefault("past_seq_len", x.shape[-2])

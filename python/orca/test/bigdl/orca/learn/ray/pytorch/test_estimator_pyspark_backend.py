@@ -87,6 +87,17 @@ class IdentityNet(nn.Module):
         return input_
 
 
+class LinearModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # need this line to avoid optimizer raise empty variable list
+        self.fc1 = nn.Linear(1, 1, bias=False)
+        self.fc1.weight.data.fill_(1.0)
+
+    def forward(self, input_):
+        return self.fc1(input_)
+
+
 class MultiInputNet(nn.Module):
     def __init__(self):
         super().__init__()
@@ -164,6 +175,7 @@ class TestPyTorchEstimator(TestCase):
         print(end_val_stats)
         assert 0 < end_val_stats["Accuracy"] < 1
         assert estimator.get_model()
+
         # sanity check that training worked
         dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
         dacc = (end_val_stats["Accuracy"] -
@@ -322,6 +334,49 @@ class TestPyTorchEstimator(TestCase):
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["f1", "f2"])
         result.collect()
+
+
+    def test_data_parallel_sgd_correctness(self):
+        sc = init_nncontext()
+        rdd = sc.range(0, 100).repartition(2)
+
+        # partition 0: [(0, 0), (0, 0)]
+        # partition 1: [(1, 0), (1, 0)]
+        # model: y = w * x
+        # loss = (wx)^2
+        # dloss/dw = 2x^2*w
+        # end of first iteration:
+        #    partition 0 loss: 0.0
+        #    partition 1 loss: 1.0
+        #    avg_grad = avg([0, 0, 2, 2]) = 1
+        #    weight = 1.0 - 0.5 * avg_grad = 0.5
+        # end of second iteration:
+        #    partition 0 loss: 0.0
+        #    partition 1 loss: 0.25
+        #    avg_grad = avg([0, 0, 1, 1]) = 0.5
+        #    weight = 0.5 - 0.5 * avg_grad = 0.25
+        df = rdd.mapPartitionsWithIndex(lambda idx, iter: [([float(idx)], [0.0]) for _ in iter][:2]
+                        ).toDF(["feature", "label"])
+
+        def get_optimizer(model, config):
+            return torch.optim.SGD(model.parameters(), lr=0.5)
+
+        estimator = Estimator.from_torch(model=lambda config: LinearModel(),
+                                         optimizer=get_optimizer,
+                                         loss=torch.nn.MSELoss(),
+                                         metrics=Accuracy(),
+                                         config={},
+                                         workers_per_node=2,
+                                         backend="spark",
+                                         sync_stats=False)
+
+        stats = estimator.fit(df, batch_size=4, epochs=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              reduce_results=False)
+
+        state = estimator.get_state_dict()
+        assert state['models'][0]['fc1.weight'].item() == 0.25
 
 
 if __name__ == "__main__":

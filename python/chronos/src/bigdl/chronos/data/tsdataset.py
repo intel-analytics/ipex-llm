@@ -367,8 +367,8 @@ class TSDataset:
             MinimalFCParameters, EfficientFCParameters
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
-                  "minimal": MinimalFCParameters(),
-                  "efficient": EfficientFCParameters()}
+                          "minimal": MinimalFCParameters(),
+                          "efficient": EfficientFCParameters()}
 
         assert not self._has_generate_agg_feature, \
             "Only one of gen_global_feature and gen_rolling_feature should be called."
@@ -432,8 +432,8 @@ class TSDataset:
             MinimalFCParameters, EfficientFCParameters
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
-                  "minimal": MinimalFCParameters(),
-                  "efficient": EfficientFCParameters()}
+                          "minimal": MinimalFCParameters(),
+                          "efficient": EfficientFCParameters()}
 
         assert not self._has_generate_agg_feature,\
             "Only one of gen_global_feature and gen_rolling_feature should be called."
@@ -486,7 +486,7 @@ class TSDataset:
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
                if `horizon` is a list, we will sample discretely according
-               to the input list.
+               to the input list. 1 means the timestamp just after the observed data.
                specially, when `horizon` is set to 0, ground truth will be generated as None.
         :param feature_col: str or list, indicates the feature col name. Default to None,
                where we will take all available feature in rolling.

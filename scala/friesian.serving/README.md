@@ -17,57 +17,57 @@ docker run -itd --name grpcwnd1 --net=host grpcwnd
 docker exec -it grpcwnd1 bash
 ```
 
-3. Add 2-tower user model, 2-tower item model, vec_feature_user.parquet, vec_feature_item.parquet
-/vec_feature_item_prediction.parquet, wnd model, wnd_item.parquet and wnd_user.parquet
+3. Add vec_feature_user_prediction.parquet, vec_feature_item_prediction.parquet, wnd model,
+   wnd_item.parquet and wnd_user.parquet
 
 4. Start ranking service
 ```bash
 export OMP_NUM_THREADS=1
 export TF_DISABLE_MKL=1
-java -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.ranking.RankingServer -c config_ranking.yaml > logs/inf.log 2>&1 &
+java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.ranking.RankingServer -c config_ranking.yaml > logs/inf.log 2>&1 &
 ```
 
 5. Start feature service for recommender service
 ```bash
 ./redis-5.0.5/src/redis-server &
-java -Dspark.master=local[*] -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature.yaml > logs/feature.log 2>&1 &
+java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature.yaml > logs/feature.log 2>&1 &
 ```
 
 6. Start feature service for recall service
 ```bash
-java -Dspark.master=local[*] -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature_vec.yaml > logs/fea_recall.log 2>&1 &
+java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c config_feature_vec.yaml > logs/fea_recall.log 2>&1 &
 ```
 
 7. Start recall service
 ```bash
-java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml > logs/vec.log 2>&1 &
+java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml > logs/vec.log 2>&1 &
 ```
 
 8. Start recommender service
 ```bash
-java -cp com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderServer -c config_recommender.yaml > logs/rec.log 2>&1 &
+java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderServer -c config_recommender.yaml > logs/rec.log 2>&1 &
 ```
 
 9. Check if the services are running
 ```bash
-ps aux|grep rec
+ps aux|grep friesian
 ```
 You will see 5 processes start with 'java'
 
 10. Run client to test
 ```bash
-java -Dspark.master=local[*] -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderMultiThreadClient -target localhost:8980 -dataDir wnd_user.parquet -k 50 -clientNum 4 -testNum 2
+java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recommender.RecommenderMultiThreadClient -target localhost:8980 -dataDir wnd_user.parquet -k 50 -clientNum 4 -testNum 2
 ```
 11. Close services
 ```bash
-ps aux|grep rec (find the service pid)
+ps aux|grep friesian (find the service pid)
 kill xxx (pid of the service which should be closed)
 ```
 
 ### Config for different service
 You can pass some important information to services using `-c config.yaml`
 ```bash
-java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml
+java -Dspark.master=local[*] -Dspark.driver.maxResultSize=2G -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c config_recall.yaml
 ```
 
 #### Ranking Service Config
@@ -149,7 +149,7 @@ itemFeatureColumns: present_media, language, tweet_id, hashtags, present_links, 
 ```
 
 2. load user features into redis. Get features from redis, use model at 'userModelPath' to do
- inference and get the user embedding
+   inference and get the user embedding
 ```yaml
 ### Basic setting
 # Default: 8980, which port to create the server
@@ -319,7 +319,7 @@ rankingServiceURL: localhost:8083
 #### Generate proto java files
 You should init a maven project and use proto files in [friesian gRPC project](https://github.com/analytics-zoo/friesian/tree/recsys-grpc/src/main/proto)
 Make sure to add the following extensions and plugins in your pom.xml, and replace
- *protocExecutable* with your own protoc executable.
+*protocExecutable* with your own protoc executable.
 ```xml
     <build>
         <extensions>
@@ -439,6 +439,13 @@ Then, call initialization command on one machine, if you choose M=1 above, use `
 redis-cli --cluster create 172.168.3.115:6379 172.168.3.115:6380 172.168.3.116:6379 172.168.3.116:6380 172.168.3.117:6379 172.168.3.117:6380 --cluster-replicas 1
 ```
 and the Redis cluster would be ready.
+
 #### Scale Service with Envoy
 Each of the services could be scaled out. It is recommended to use the same resource, e.g. single machine with same CPU and memory, to test which service is bottleneck. From empirical observations, vector search and inference usually be.
 
+##### How to run envoy:
+1. [download](https://www.envoyproxy.io/docs/envoy/latest/start/install) and deploy envoy(below use docker as example):
+ * download: `docker pull envoyproxy/envoy-dev:21df5e8676a0f705709f0b3ed90fc2dbbd63cfc5`
+2. run command: `docker run --rm -it  -p 9082:9082 -p 9090:9090 envoyproxy/envoy-dev:79ade4aebd02cf15bd934d6d58e90aa03ef6909e --config-yaml "$(cat path/to/service-specific-envoy.yaml)" --parent-shutdown-time-s 1000000`
+3. validate: run `netstat -tnlp` to see if the envoy process is listening to the corresponding port in the envoy config file.
+4. For details on envoy and sample procedure, read [envoy](envoy.md).

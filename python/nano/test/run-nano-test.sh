@@ -20,6 +20,7 @@ python -m pytest -s ${NANO_TEST_DIR}/test_models_vision.py
 now=$(date "+%s")
 time2=$((now-start))
 
+
 echo "Bigdl-nano tests finished"
 echo "#1 imagefolder time used:$time1 seconds"
 echo "#2 models vision time used:$time2 seconds"
