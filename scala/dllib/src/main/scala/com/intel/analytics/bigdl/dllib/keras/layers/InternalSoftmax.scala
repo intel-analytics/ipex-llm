@@ -37,13 +37,25 @@ private[bigdl] class InternalSoftMax[T: ClassTag]()
     val dim = input.dim()
     val sizes = input.size()
     val shift = input.max(dim)._1
+    val shiftInput = input.clone()
 
-    val shiftedInput = input.clone().sub(shift.expand(sizes).contiguous())
-    val exp = shiftedInput.exp()
+    if (dim <= 4) {
+      optimzedOperation(shiftInput, shift, "-")
+    } else {
+      shiftInput.sub(shift.expand(sizes).contiguous())
+    }
 
-    val sum = exp.sum(dim)
-    output = exp.div(sum.expand(sizes).contiguous())
+    val exp = shiftInput.exp()
 
+    val clonedExp = exp.clone()
+    val sum = clonedExp.sum(dim)
+
+    if (dim < 4) {
+      optimzedOperation(clonedExp, sum, "/")
+    } else {
+      clonedExp.div(sum.expand(sizes).contiguous())
+    }
+    output = clonedExp
     output
   }
 
@@ -52,6 +64,66 @@ private[bigdl] class InternalSoftMax[T: ClassTag]()
     val sum = (output.clone().cmul(gradOutput)).sum(dim)
     gradInput = output.clone().cmul(gradOutput - sum.expand(input.size()))
     gradInput
+  }
+
+  private def optimzedOperation(input1: Tensor[T], input2: Tensor[T], operation: String) = {
+    val dim = input1.dim()
+    val kk = Array.fill[Int](dim-1)(1)
+    var m = 0
+    var cnt = 0
+
+    while (kk(0) < input1.size(1) + 1) {
+      cnt += 1
+      if (cnt < input1.dim() - 1) {
+        m = 1
+        while (m<kk.size) {
+          kk(m) = 1
+          m += 1
+        }
+        while (kk(1) < input1.size(2) + 1) {
+          cnt += 1
+          if (cnt<input1.dim() - 1) {
+            m = 2
+            while(m<kk.size) {
+              kk(m) = 1
+              m += 1
+            }
+            while (kk(2) < input1.size(3) + 1) {
+              cnt += 1
+              if (cnt<input1.dim() - 1) {}
+              else {
+                if (operation == "-") {
+                  input1.narrow(1, kk(0), 1).narrow(2, kk(1), 1).narrow(3, kk(2), 1)
+                    .sub(input2.valueAt(kk(0), kk(1), kk(2), 1))
+                } else {
+                  input1.narrow(1, kk(0), 1).narrow(2, kk(1), 1).narrow(3, kk(2), 1)
+                    .div(input2.valueAt(kk(0), kk(1), kk(2), 1))
+                }
+              }
+              kk(2) += 1
+              cnt = 2
+            }
+          } else {
+            if (operation == "-") {
+              input1.narrow(1, kk(0), 1).narrow(2, kk(1), 1).sub(input2.valueAt(kk(0), kk(1), 1))
+            } else {
+              input1.narrow(1, kk(0), 1).narrow(2, kk(1), 1).div(input2.valueAt(kk(0), kk(1), 1))
+            }
+
+          }
+          kk(1) += 1
+          cnt = 1
+        }
+      } else {
+        if (operation == "-") {
+          input1.narrow(1, kk(0), 1).sub(input2.valueAt(kk(0), 1))
+        } else {
+          input1.narrow(1, kk(0), 1).div(input2.valueAt(kk(0), 1))
+        }
+      }
+      kk(0) += 1
+      cnt = 0
+    }
   }
 }
 
