@@ -4,7 +4,6 @@ clear_up() {
   pip uninstall -y bigdl-dllib
 }
 
-: '
 echo "#1 start test for dllib lenet5"
 
 #timer
@@ -137,39 +136,3 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
-
-'
-
-echo "#11 start test for orca transfer learning"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py \
-  --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca transfer learning failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#11 Total time cost ${time} seconds"
-
-: '
-echo "#11-2 start test for orca transfer learning"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py \
-  --data_dir ${HDFS_URI}/datasets --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca transfer learning failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#11-2 Total time cost ${time} seconds"
-'
