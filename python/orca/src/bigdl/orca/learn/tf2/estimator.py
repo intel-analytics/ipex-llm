@@ -71,7 +71,7 @@ class Estimator(object):
                                     compile_args_creator=compile_args_creator,
                                     workers_per_node=workers_per_node,
                                     log_to_driver=log_to_driver,
-                                    model_dir = model_dir
+                                    model_dir = model_dir,
                                     **kwargs)
         else:
             raise ValueError("Only horovod, tf2 and spark backends are supported"

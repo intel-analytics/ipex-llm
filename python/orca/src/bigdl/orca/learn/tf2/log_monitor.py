@@ -1,3 +1,19 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import argparse
 import errno
 import glob
@@ -6,63 +22,27 @@ import logging
 import os
 import shutil
 import time
-import traceback
-import subprocess
-
-import redis
-
-from bigdl.orca.learn.utils import format_error_message
+import tempfile
+import pickle
+import zmq
 
 logger = logging.getLogger(__name__)
-
-LOG_FILE_CHANNEL = "SPARK_LOG_CHANNEL"
-
-
-def create_redis_client(redis_address, password=None):
-    """Create a Redis client.
-
-    Args:
-        The IP address, port, and password of the Redis server.
-
-    Returns:
-        A Redis client.
-    """
-    redis_ip_address, redis_port = redis_address.split(":")
-    # For this command to work, some other client (on the same machine
-    # as Redis) must have run "CONFIG SET protected-mode no".
-    return redis.StrictRedis(
-        host=redis_ip_address, port=int(redis_port), password=password)
-
 
 class LogFileInfo:
     def __init__(self,
                  filename=None,
+                 executor_id=None,
                  size_when_last_opened=None,
                  file_position=None,
-                 file_handle=None):
+                 file_handle=None
+                 ):
         assert (filename is not None and size_when_last_opened is not None
                 and file_position is not None)
         self.filename = filename
+        self.executor_id = executor_id
         self.size_when_last_opened = size_when_last_opened
         self.file_position = file_position
         self.file_handle = file_handle
-        self.worker_pid = None
-
-
-def open_file(self, data, path):
-    if path.startswith("hdfs"):  # hdfs://url:port/file_path
-        import pyarrow as pa
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
-        os.environ["CLASSPATH"] = classpath.decode("utf-8")
-        fs = pa.hdfs.connect()
-        fd = fs.open(path, 'ab')
-        return fd
-    else:
-        if path.startswith("file://"):
-            path = path[len("file://"):]
-        fd = open(path, 'ab')
-        return fd
 
 
 class LogMonitor:
@@ -97,64 +77,55 @@ class LogMonitor:
             false otherwise.
     """
 
-    def __init__(self, logs_dir, sharing_log_dir):
+    def __init__(self, driver_ip, driver_port, logs_dir):
         """Initialize the log monitor object."""
         from bigdl.dllib.utils.utils import get_node_ip
         self.ip = get_node_ip()
         self.logs_dir = logs_dir
+        application_id = os.path.basename(logs_dir)
         self.log_filenames = set()
         self.open_file_infos = []
         self.closed_file_infos = []
-        self.can_open_more_files = True
-        self.sharing_log_dir = sharing_log_dir
-        self.fd = open_file()
+        # self.can_open_more_files = True
+        context = zmq.Context()
+        self.socket = context.socket(zmq.REQ)
+        self.socket.connect("tcp://{}:{}".format(driver_ip, driver_port))
+        self.file_info_path = os.path.join(tempfile.gettempdir(), "{}_file_info.pkl".format(application_id))
 
     def close_all_files(self):
         """Close all open files (so that we can open more)."""
+        print("call close files")
         while len(self.open_file_infos) > 0:
             file_info = self.open_file_infos.pop(0)
             file_info.file_handle.close()
             file_info.file_handle = None
-            try:
-                # Test if the worker process that generated the log file
-                # is still alive. Only applies to worker processes.
-                if file_info.worker_pid != "raylet":
-                    os.kill(file_info.worker_pid, 0)
-            except OSError:
-                # The process is not alive any more, so move the log file
-                # out of the log directory so glob.glob will not be slowed
-                # by it.
-                target = os.path.join(self.logs_dir, "old",
-                                      os.path.basename(file_info.filename))
-                try:
-                    shutil.move(file_info.filename, target)
-                except (IOError, OSError) as e:
-                    if e.errno == errno.ENOENT:
-                        logger.warning("Warning: The file {} was not "
-                                       "found.".format(file_info.filename))
-                    else:
-                        raise e
-            else:
-                self.closed_file_infos.append(file_info)
-        self.can_open_more_files = True
+            self.closed_file_infos.append(file_info)
+        # save file info
+        with open(self.file_info_path, 'wb') as f:
+            pickle.dump(self.closed_file_infos, f)
 
     def update_log_filenames(self):
         """Update the list of log files to monitor."""
         # output of user code is written here
-        log_file_paths = glob.glob("{}/**/[stdout|stderr]".format(
-            self.logs_dir))
-        for file_path in log_file_paths:
-            if os.path.isfile(
-                    file_path) and file_path not in self.log_filenames:
-                self.log_filenames.add(file_path)
-                self.closed_file_infos.append(
-                    LogFileInfo(
-                        filename=file_path,
-                        size_when_last_opened=0,
-                        file_position=0,
-                        file_handle=None))
-                log_filename = os.path.basename(file_path)
-                logger.info("Beginning to track file {}".format(log_filename))
+        if os.path.exists(self.file_info_path):
+            with open(self.file_info_path, "rb") as f:
+                self.closed_file_infos = pickle.load(f)
+        else:
+            log_file_paths = glob.glob("{}/**/stdout".format(self.logs_dir))\
+                             + glob.glob("{}/**/stderr".format(self.logs_dir))
+            for file_path in log_file_paths:
+                if os.path.isfile(file_path):
+                    self.log_filenames.add(file_path)
+                    executor_id = os.path.basename(os.path.dirname(file_path))
+                    self.closed_file_infos.append(
+                        LogFileInfo(
+                            filename=file_path,
+                            executor_id=executor_id,
+                            size_when_last_opened=0,
+                            file_position=0,
+                            file_handle=None))
+                    log_filename = os.path.basename(file_path)
+                    logger.info("Beginning to track file {}".format(log_filename))
 
     def open_closed_files(self):
         """Open some closed files if they may have new lines.
@@ -162,50 +133,23 @@ class LogMonitor:
         Opening more files may require us to close some of the already open
         files.
         """
-        # if not self.can_open_more_files:
-        #     # If we can't open any more files. Close all of the files.
-        #     self.close_all_files()
-
-        files_with_no_updates = []
         while len(self.closed_file_infos) > 0:
             file_info = self.closed_file_infos.pop(0)
             assert file_info.file_handle is None
-            # Get the file size to see if it has gotten bigger since we last
-            # opened it.
             try:
-                file_size = os.path.getsize(file_info.filename)
+                f = open(file_info.filename, "rb")
             except (IOError, OSError) as e:
-                # Catch "file not found" errors.
                 if e.errno == errno.ENOENT:
                     logger.warning("Warning: The file {} was not "
-                                   "found.".format(file_info.filename))
+                                       "found.".format(file_info.filename))
                     self.log_filenames.remove(file_info.filename)
                     continue
-                raise e
+                else:
+                    raise e
 
-            # If some new lines have been added to this file, try to reopen the
-            # file.
-            if file_size > file_info.size_when_last_opened:
-                try:
-                    f = open(file_info.filename, "rb")
-                except (IOError, OSError) as e:
-                    if e.errno == errno.ENOENT:
-                        logger.warning("Warning: The file {} was not "
-                                       "found.".format(file_info.filename))
-                        self.log_filenames.remove(file_info.filename)
-                        continue
-                    else:
-                        raise e
-
-                f.seek(file_info.file_position)
-                file_info.filesize_when_last_opened = file_size
-                file_info.file_handle = f
-                self.open_file_infos.append(file_info)
-            else:
-                files_with_no_updates.append(file_info)
-
-        # Add the files with no changes back to the list of closed files.
-        self.closed_file_infos += files_with_no_updates
+            f.seek(file_info.file_position)
+            file_info.file_handle = f
+            self.open_file_infos.append(file_info)
 
     def check_log_files_and_publish_updates(self):
         """Get any changes to the log files and push updates to Redis.
@@ -230,8 +174,8 @@ class LogMonitor:
                         break
                     if next_line[-1] == "\n":
                         next_line = next_line[:-1]
-                    new_line = "[executor_id = %s, ip = %s]".format(file_info.worker_id, self.ip) \
-                               + next_line + "\n"
+                    new_line = "[executor_id = {}, ip = {}] ".format(file_info.executor_id, self.ip) \
+                               + next_line
                     lines_to_publish.append(new_line)
                 except Exception:
                     logger.error("Error: Reading file: {}, position: {} "
@@ -244,8 +188,11 @@ class LogMonitor:
             file_info.file_position = file_info.file_handle.tell()
 
             if len(lines_to_publish) > 0:
-                self.fd.write(lines_to_publish.encode("utf-8"))
-                anything_published = True
+                message = "\n".join(lines_to_publish)
+                self.socket.send_string(message)
+                res = self.socket.recv().decode("utf-8")
+                if res == "received":
+                    anything_published = True
 
         return anything_published
 
@@ -255,45 +202,19 @@ class LogMonitor:
         This will query Redis once every second to check if there are new log
         files to monitor. It will also store those log files in Redis.
         """
-        while True:
+        try:
             self.update_log_filenames()
             self.open_closed_files()
-            anything_published = self.check_log_files_and_publish_updates()
-            # If nothing was published, then wait a little bit before checking
-            # for logs to avoid using too much CPU.
-            if not anything_published:
-                time.sleep(0.05)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description=("log monitor to connect "
-                     "to."))
-    parser.add_argument(
-        "--logs_dir",
-        required=True,
-        type=str,
-        help="Specify the path of the temporary directory used by Ray "
-             "processes.")
-    parser.add_argument(
-        "--executor_id",
-        required=True,
-        type=int,
-        help="Specify the executor id")
-    parser.add_argument(
-        "--target_file",
-        required=True,
-        type=str,
-        help="Specify the sharing path of the file to be written.")
-
-    args = parser.parse_args()
-    log_monitor = LogMonitor(
-        args.logs_dir, args.executor_id, args.target_file)
-
-    try:
-        log_monitor.run()
-    except Exception as e:
-        traceback_str = format_error_message(traceback.format_exc())
-        message = ("The log monitor on executor {} failed with the following "
-                   "error:\n{}".format(log_monitor.executor_id, traceback_str))
-        raise Exception(message)
+            while True:
+                # self.update_log_filenames()
+                # self.open_closed_files()
+                anything_published = self.check_log_files_and_publish_updates()
+                # If nothing was published, then wait a little bit before checking
+                # for logs to avoid using too much CPU.
+                if not anything_published:
+                    time.sleep(1)
+        except Exception as e:
+            self.socket.send_string(str(e))
+            raise e
+        finally:
+            self.close_all_files()

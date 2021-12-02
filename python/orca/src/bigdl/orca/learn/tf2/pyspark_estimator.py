@@ -24,13 +24,15 @@ from pyspark.sql.dataframe import DataFrame
 import numpy as np
 import tempfile
 import shutil
+import zmq
 
-from bigdl.orca.learn.utils import session_execute_no_wait, decode
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, get_remote_file_to_local
 
+from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
+from bigdl.orca.learn.utils import find_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
@@ -78,48 +80,19 @@ class SparkTFEstimator():
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
         self.model_dir = model_dir
+        self.application_id = sc.applicationId
 
-        from bigdl.dllib.utils.utils import get_node_ip
         self.ip = get_node_ip()
-        if "redis_port" in kwargs:
-            self.redis_port = kwargs["redis_port"]
-        else:
-            self.redis_port = random.randint(10000, 65535)
-        if "redis_password" in kwargs:
-            self.redis_password = kwargs["redis_password"]
-        else:
-            self.redis_password = None
+        self.port = find_free_port()
         self.is_local = sc.master.startswith("local")
         # if not self.is_local:
         #     if log_to_driver:
-        #         # start redis
-        #         process_info = self._start_redis()
-        #
-        #         # print executor logs
-        #         import redis
-        #         redis_client = redis.StrictRedis(
-        #             host=self.ip, port=self.port)
-        #         threads_stopped = threading.Event()
-        #         logger_thread = threading.Thread(
-        #             target=self._print_logs,
-        #             name="print_logs",
-        #             args=(redis_client, threads_stopped))
-        #         logger_thread.daemon = True
-        #         logger_thread.start()
         if log_to_driver:
-            # start redis
-            # process_info = self._start_redis()
-
-            # print executor logs
-            # import redis
-            # redis_client = redis.StrictRedis(
-            #     host=self.ip, port=self.redis_port)
             threads_stopped = threading.Event()
             logger_thread = threading.Thread(
                 target=self._print_logs,
-                name="print_logs",
-                args=(redis_client, threads_stopped))
-            logger_thread.daemon = True
+                name="print_logs")
+            logger_thread.daemon = False
             logger_thread.start()
 
     def _get_cluster_info(self, sc):
@@ -161,7 +134,10 @@ class SparkTFEstimator():
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
-            epoch=self.epoch
+            epoch=self.epoch,
+            driver_ip=self.ip,
+            driver_port=self.port,
+            application_id=self.application_id
         )
 
         params = dict(
@@ -270,8 +246,9 @@ class SparkTFEstimator():
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc),
             is_local=self.is_local,
-            redis_address=":".join([self.ip, str(self.redis_port)]),
-            redis_password=self.redis_password
+            driver_ip=self.ip,
+            driver_port=self.port,
+            application_id=self.application_id
         )
 
         params = dict(
@@ -344,10 +321,11 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=weights,
             mode="predict",
-            cluster_info=None,
+            cluster_info=self._get_cluster_info(sc),
             is_local=self.is_local,
-            redis_address=":".join([self.ip, str(self.redis_port)]),
-            redis_password=self.redis_password
+            driver_ip=self.ip,
+            driver_port=self.port,
+            application_id=self.application_id
         )
 
         params = dict(
@@ -373,7 +351,7 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).predict(**param)
 
-            pred_shards = SparkXShards(xshards.rdd.repartition(self.num_workers) \
+            pred_shards = SparkXShards(xshards.rdd.barrier() \
                                        .mapPartitions(
                                            lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
@@ -439,7 +417,7 @@ class SparkTFEstimator():
         model = tf.keras.models.load_model(filepath)
         self.model_weights = model.get_weights()
 
-    def _print_logs(self, redis_client, threads_stopped):
+    def _print_logs(self):
         """Prints log messages from workers on all of the nodes.
 
         Args:
@@ -447,39 +425,15 @@ class SparkTFEstimator():
             threads_stopped (threading.Event): A threading event used to signal to
                 the thread that it should exit.
         """
-        import redis
-        pubsub_client = redis_client.pubsub(ignore_subscribe_messages=True)
-        pubsub_client.subscribe(LOG_FILE_CHANNEL)
-        print("driver subscribe channel: ", LOG_FILE_CHANNEL)
-        try:
-            # Keep track of the number of consecutive log messages that have been
-            # received with no break in between. If this number grows continually,
-            # then the worker is probably not able to process the log messages as
-            # rapidly as they are coming in.
-            num_consecutive_messages_received = 0
-            while True:
-                # Exit if we received a signal that we should stop.
-                if threads_stopped.is_set():
-                    return
+        context = zmq.Context()
+        socket = context.socket(zmq.REP)
+        socket.bind("tcp://*:{}".format(self.port))
+        print("started log server")
 
-                msg = pubsub_client.get_message()
-                if msg is None:
-                    num_consecutive_messages_received = 0
-                    threads_stopped.wait(timeout=0.01)
-                    continue
-                num_consecutive_messages_received += 1
-
-                data = json.loads(decode(msg["data"]))
-                for line in data["lines"]:
-                    print("(executor {}, ip={}) {}".format(
-                            data["executor_id"],
-                            data["ip"], line))
-
-        except (OSError, redis.exceptions.ConnectionError) as e:
-            logger.error("print_logs: {}".format(e))
-        finally:
-            # Close the pubsub client to avoid leaking file descriptors.
-            pubsub_client.close()
+        while True:
+            message = socket.recv()
+            print(message.decode("utf-8"))
+            socket.send(b"received")
 
     def get_model(self):
         """

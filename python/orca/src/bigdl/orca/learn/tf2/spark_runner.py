@@ -18,9 +18,7 @@ import logging
 import os
 import sys
 
-from re import VERBOSE
-from subprocess import call
-from sys import version
+import threading
 
 from pyspark import BarrierTaskContext
 from pyspark.context import SparkContext
@@ -30,8 +28,8 @@ from contextlib import closing
 import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.learn.utils import session_execute_no_wait
 from bigdl.orca.learn.utils import save_pkl
+from bigdl.orca.learn.tf2.log_monitor import LogMonitor
 
 def find_free_port(tc):
     address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
@@ -202,7 +200,10 @@ class SparkRunner:
                  mode="fit",
                  model_dir=None,
                  epoch=0,
-                 is_local=True
+                 is_local=True,
+                 driver_ip=None,
+                 driver_port=None,
+                 application_id=None
                 ):
         """Initializes the runner.
                 Args:
@@ -229,13 +230,24 @@ class SparkRunner:
         if self.backend == "tf-distributed":
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed()
-        self.is_local = is_local
-        if not self.is_local:
-            if self.local_rank == 0:
-                self._start_log_monitor(
-                    logs_dir="$SPARK_WORKER_DIR/applID/executorID",
-                    sharing_dir="hdfs:///tmp")
         self.model_dir = model_dir
+        self.is_local = is_local
+        # if not self.is_local:
+        if self.local_rank == 0:
+            # log_dir = os.getenv("SPARK_WORKER_DIR")
+            log_dir = "/tmp"
+            print("log dir is: ", log_dir)
+            # logger_thread = threading.Thread(
+            #     target=self._start_log_monitor,
+            #     args=(driver_ip, driver_port, "{}/{}".format(log_dir, application_id)),
+            #     name="monitor_logs")
+            logger_thread = threading.Thread(
+                target=self._start_log_monitor,
+                args=(driver_ip, driver_port, log_dir),
+                name="monitor_logs")
+            logger_thread.daemon = False
+            logger_thread.start()
+
 
     def setup(self):
         import tensorflow as tf
@@ -445,31 +457,12 @@ class SparkRunner:
 
         return new_part
 
-    def _start_log_monitor(
-            logs_dir,
-            target_dir):
-        """Start a log monitor process.
-
-        Args:
-            redis_address (str): The address of the Redis instance.
-            logs_dir (str): The directory of logging files.
-            stdout_file: A file handle opened for writing to redirect stdout to. If
-                no redirection should happen, then this should be None.
-            stderr_file: A file handle opened for writing to redirect stderr to. If
-                no redirection should happen, then this should be None.
-            redis_password (str): The password of the redis server.
-
-        Returns:
-            ProcessInfo for the process that was started.
+    def _start_log_monitor(self, driver_ip, driver_port, logs_dir):
         """
-        log_monitor_filepath = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "log_monitor.py")
-        command = [
-            sys.executable, "-u", log_monitor_filepath,
-            "--logs_dir={}".format(logs_dir),
-            "--target_dir={}".format(target_dir)
-        ]
-        process_info = session_execute_no_wait(
-            command,
-            tag="log_monitor")
-        return process_info
+        Start a log monitor thread.
+
+        """
+        log_monitor = LogMonitor(driver_ip=driver_ip,
+                                 driver_port=driver_port,
+                                 logs_dir=logs_dir)
+        log_monitor.run()
