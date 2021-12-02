@@ -4,9 +4,6 @@ clear_up() {
   pip uninstall -y bigdl-dllib
 }
 
-echo "before test"
-echo "after test"
-
 echo "#12 start test for orca tf2 resnet-50-imagenet"
 #timer
 start=$(date "+%s")
