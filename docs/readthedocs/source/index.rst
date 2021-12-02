@@ -91,6 +91,12 @@ BigDL Documentation
 
    doc/Serving/Overview/serving.md
    doc/Serving/QuickStart/serving-quickstart.md
+   doc/Serving/ProgrammingGuide/serving-installation.md
+   doc/Serving/ProgrammingGuide/serving-start.md
+   doc/Serving/ProgrammingGuide/serving-inference.md
+   doc/Serving/Example/example.md
+   doc/Serving/FAQ/faq.md
+   doc/Serving/FAQ/contribute-guide.md
 
 .. toctree::
    :maxdepth: 1
