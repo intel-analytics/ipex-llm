@@ -1,4 +1,4 @@
-# BigDL Cluster Serving Overview
+# Cluster Serving User Guide
 BigDL Cluster Serving is a lightweight distributed, real-time serving solution that supports a wide range of deep learning models (such as TensorFlow, PyTorch, Caffe, BigDL and OpenVINO models). It provides a simple pub/sub API, so that the users can easily send their inference requests to the input queue (using a simple Python API); Cluster Serving will then automatically manage the scale-out and real-time model inference across a large cluster (using distributed streaming frameworks such as Apache Spark Streaming, Apache Flink, etc.) 
 
 The overall architecture of BigDL Cluster Serving solution is illustrated as below: 
@@ -26,3 +26,12 @@ You can launch the Cluster Serving service by running the startup script on the 
 Cluster Serving provides a simple pub/sub API to the users, so that you can easily send the inference requests to an input queue (currently Redis Streams is used) using a simple Python API.
 
 Cluster Serving will then read the requests from the Redis stream, run the distributed real-time inference across the cluster (using Flink), and return the results back through Redis. As a result, you may get the inference results again using a simple Python API.
+
+## Deploy Cluster Serving
+To deploy Cluster Serving, follow steps below
+
+[1. Install Cluster Serving](#https://bigdl.readthedocs.io/en/latest/doc/Serving/ProgrammingGuide/serving-installation)
+
+[2. Start Cluster Serving](#https://bigdl.readthedocs.io/en/latest/doc/Serving/ProgrammingGuide/serving-start)
+
+[3. Inference by Cluster Serving](#https://bigdl.readthedocs.io/en/latest/doc/Serving/ProgrammingGuide/serving-inference)
