@@ -151,6 +151,7 @@ ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                /graphene/meson_build_output/bin:${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP                            127.0.0.1
 ENV SGX_MEM_SIZE                        32G
+ENV SGX_LOG_LEVEL                       error
 ENV SPARK_MASTER_IP                     127.0.0.1
 ENV SPARK_MASTER_PORT                   7077
 ENV SPARK_MASTER_WEBUI_PORT             8080
