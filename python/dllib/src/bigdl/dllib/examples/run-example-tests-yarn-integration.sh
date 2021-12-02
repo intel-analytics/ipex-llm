@@ -138,6 +138,8 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#7 Total time cost ${time} seconds"
 
+'
+
 echo "#12 start test for orca tf2 resnet-50-imagenet"
 #timer
 start=$(date "+%s")
@@ -157,7 +159,7 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#12 Total time cost ${time} seconds"
 
-'
+: '
 
 echo "#12-2 start test for orca tf2 resnet-50-imagenet"
 #timer
@@ -177,3 +179,4 @@ fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#12-2 Total time cost ${time} seconds"
+'
