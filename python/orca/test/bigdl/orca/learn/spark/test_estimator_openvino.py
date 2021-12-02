@@ -28,7 +28,7 @@ from bigdl.orca.learn.openvino import Estimator
 
 # property_path = os.path.join(os.path.split(__file__)[0],
 #                              "../../../../../../zoo/target/classes/app.properties")
-data_url = "http://10.239.45.10:8081/repository/raw"
+data_url = "https://sourceforge.net/projects/analytics-zoo/files/"
 resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 local_path = "/tmp/tmpyhny717gopenvino"
 
@@ -80,7 +80,7 @@ class TestEstimatorForOpenVINO(TestCase):
 
     def load_roberta(self):
         os.makedirs(local_path, exist_ok=True)
-        model_url = data_url + "/analytics-zoo-data/roberta/roberta.tar"
+        model_url = data_url + "/analytics-zoo-data/roberta.tar"
         model_path = maybe_download("roberta.tar",
                                     local_path, model_url)
         tar = tarfile.open(model_path)
