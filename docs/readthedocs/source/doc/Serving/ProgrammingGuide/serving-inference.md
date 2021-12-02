@@ -1,4 +1,4 @@
-# BigDL Cluster Serving Programming Guide
+# Inference by Cluster Serving
 
 ## Model Inference
 Once you finish the installation and service launch, you could do inference using Cluster Serving client API.
