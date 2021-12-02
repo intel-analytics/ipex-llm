@@ -227,20 +227,20 @@ echo "#13 Total time cost ${time} seconds"
 # time=$((now - start))
 # echo "#16 Total time cost ${time} seconds"
 
-# echo "#17 start test for orca torchmodel resnet_finetune"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py ${HDFS_URI}/dogs_cats/samples
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca torchmodel resnet_finetune failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#17 Total time cost ${time} seconds"
+echo "#17 start test for orca torchmodel resnet_finetune"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/resnet_finetune/resnet_finetune.py /data/dogs_cats/samples --deploy-mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca torchmodel resnet_finetune failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#17 Total time cost ${time} seconds"
 
 # ########################  cluster
 # echo "##18 start test for orca data spark_pandas"

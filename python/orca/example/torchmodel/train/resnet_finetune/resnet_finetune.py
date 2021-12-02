@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser.add_option("--num-executors", type=int, dest="executors", default=16, help="number of executors")
     parser.add_option("--executor-memory", type=str, dest="executorMemory", default="30g", help="executor memory")
     parser.add_option("--driver-memory", type=str, dest="driverMemory", default="30g", help="driver memory")
-    parser.add_option("--deploy-mode", type=str, dest="deployMode", default="yarn-client", help="yarn deploy mode, yarn-client or yarn-cluster")
+    parser.add_option("--deploy-mode", type=str, dest="deployMode", default="local", help="deploy mode, local, yarn-client or yarn-cluster")
     (options, args) = parser.parse_args(sys.argv)
 
     hadoop_conf = os.environ.get('HADOOP_CONF_DIR')
