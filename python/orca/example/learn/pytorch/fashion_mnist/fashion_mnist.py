@@ -39,12 +39,14 @@ from bigdl.orca.learn.trigger import EveryEpoch
 
 
 def train_data_creator(config={'download':True, 'data_dir':'./data'}, batch_size=4):
+    download=config['download']
+    data_dir=config['data_dir']
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
 
-    trainset = torchvision.datasets.FashionMNIST(root=config['data_dir'],
-                                                 download=config['download'],
+    trainset = torchvision.datasets.FashionMNIST(root=data_dir,
+                                                 download=download,
                                                  train=True,
                                                  transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -53,11 +55,13 @@ def train_data_creator(config={'download':True, 'data_dir':'./data'}, batch_size
 
 
 def validation_data_creator(config={'download':True, 'data_dir':'./data'}, batch_size=4):
+    download=config['download']
+    data_dir=config['data_dir']
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
-    testset = torchvision.datasets.FashionMNIST(root=config['data_dir'], train=False,
-                                                download=config['download'], transform=transform)
+    testset = torchvision.datasets.FashionMNIST(root=data_dir, train=False,
+                                                download=download, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=2)
     return testloader
