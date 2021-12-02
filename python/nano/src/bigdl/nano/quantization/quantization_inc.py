@@ -60,7 +60,7 @@ class QuantizationINC:
                 cfg.model.outputs = outputs
         self.quantizer = Quantization(qconf)
 
-    def quantize_torch(self, model, trainer, calib_dataloader, val_dataloader,
+    def quantize_torch(self, model, calib_dataloader, val_dataloader, trainer,
                        metric: str):
         q_litmodel = copy.deepcopy(model)
         quantizer = self.quantizer
@@ -87,9 +87,9 @@ class QuantizationINC:
             return q_litmodel
         return None
 
-    def __call__(self, model, *args, **kwargs):
+    def __call__(self, model, calib_dataloader, val_dataloader, *args, **kwargs):
         framework = self.quantizer.cfg.model.framework
         if 'pytorch' in framework:
-            return self.quantize_torch(model, *args, **kwargs)
+            return self.quantize_torch(model, calib_dataloader, val_dataloader,  *args, **kwargs)
         else:
             raise NotImplementedError("Only support pytorch for now.")
