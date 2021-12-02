@@ -89,8 +89,8 @@ BigDL Documentation
    :maxdepth: 1
    :caption: Serving Overview
 
-   doc/PPML/Overview/serving-overview.md
-   doc/PPML/QuickStart/serving-quickstart.md
+   doc/Serving/Overview/serving-overview.md
+   doc/Serving/QuickStart/serving-quickstart.md
 
 .. toctree::
    :maxdepth: 1
