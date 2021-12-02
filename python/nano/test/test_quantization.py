@@ -66,3 +66,14 @@ class TestQuantizationINC(TestCase):
         if quantized_model:
             trainer.validate(quantized_model, train_loader)
             trainer.test(quantized_model, train_loader)
+
+    def test_quantize_pytorch_qat(self):
+        quantizer = QuantizationINC(
+            framework='pytorch_fx',
+            approach='quant_aware_training',
+            accuracy_criterion={'relative': 0.99},
+        )
+        quantized_model = quantizer(pl_model, train_loader, train_loader, trainer, metric='F1')
+        if quantized_model:
+            trainer.validate(quantized_model, train_loader)
+            trainer.test(quantized_model, train_loader)
