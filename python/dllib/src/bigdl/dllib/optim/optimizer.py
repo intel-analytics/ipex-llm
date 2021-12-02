@@ -46,8 +46,10 @@ class Top1Accuracy(JavaValue):
     >>> top1 = Top1Accuracy()
     creating: createTop1Accuracy
     """
+
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
+
 
 class TreeNNAccuracy(JavaValue):
     """
@@ -56,8 +58,10 @@ class TreeNNAccuracy(JavaValue):
     >>> top1 = TreeNNAccuracy()
     creating: createTreeNNAccuracy
     """
+
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
+
 
 class Top5Accuracy(JavaValue):
     """
@@ -66,8 +70,10 @@ class Top5Accuracy(JavaValue):
     >>> top5 = Top5Accuracy()
     creating: createTop5Accuracy
     """
+
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
+
 
 class MeanAveragePrecision(JavaValue):
     """
@@ -77,8 +83,10 @@ class MeanAveragePrecision(JavaValue):
     >>> MAP = MeanAveragePrecision(10, 20)
     creating: createMeanAveragePrecision
     """
+
     def __init__(self, k, classes, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, k, classes)
+
 
 class MeanAveragePrecisionObjectDetection(JavaValue):
     """
@@ -87,6 +95,7 @@ class MeanAveragePrecisionObjectDetection(JavaValue):
     >>> MAPObj = MeanAveragePrecisionObjectDetection(20)
     creating: createMeanAveragePrecisionObjectDetection
     """
+
     def __init__(self, classes, iou=0.5, use_voc2007=False, skip_class=-1, bigdl_type="float"):
         """
         :param classes: the number of classes
@@ -96,8 +105,8 @@ class MeanAveragePrecisionObjectDetection(JavaValue):
         """
         JavaValue.__init__(self, None, bigdl_type, classes, iou, use_voc2007, skip_class)
 
-class Loss(JavaValue):
 
+class Loss(JavaValue):
     """
     This evaluation method is calculate loss of output with respect to target
     >>> from bigdl.dllib.nn.criterion import ClassNLLCriterion
@@ -109,11 +118,13 @@ class Loss(JavaValue):
     creating: createClassNLLCriterion
     creating: createLoss
     """
+
     def __init__(self, cri=None, bigdl_type="float"):
         from bigdl.dllib.nn.criterion import ClassNLLCriterion
         if cri is None:
             cri = ClassNLLCriterion()
         JavaValue.__init__(self, None, bigdl_type, cri)
+
 
 class HitRatio(JavaValue):
     """
@@ -123,7 +134,8 @@ class HitRatio(JavaValue):
     >>> hr10 = HitRatio(k = 10)
     creating: createHitRatio
     """
-    def __init__(self, k = 10, neg_num = 100, bigdl_type="float"):
+
+    def __init__(self, k=10, neg_num=100, bigdl_type="float"):
         """
         Create hit ratio validation method.
 
@@ -131,6 +143,7 @@ class HitRatio(JavaValue):
         :param neg_num: number of negative items.
         """
         JavaValue.__init__(self, None, bigdl_type, k, neg_num)
+
 
 class NDCG(JavaValue):
     """
@@ -140,7 +153,8 @@ class NDCG(JavaValue):
     >>> ndcg = NDCG(k = 10)
     creating: createNDCG
     """
-    def __init__(self, k = 10, neg_num = 100, bigdl_type="float"):
+
+    def __init__(self, k=10, neg_num=100, bigdl_type="float"):
         """
         Create NDCG validation method.
 
@@ -149,6 +163,7 @@ class NDCG(JavaValue):
         """
         JavaValue.__init__(self, None, bigdl_type, k, neg_num)
 
+
 class MAE(JavaValue):
     """
     This evaluation method calculates the mean absolute error of output with respect to target.
@@ -156,8 +171,10 @@ class MAE(JavaValue):
     >>> mae = MAE()
     creating: createMAE
     """
+
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
+
 
 class MaxIteration(JavaValue):
     """
@@ -171,6 +188,7 @@ class MaxIteration(JavaValue):
     >>> maxIteration = MaxIteration(20)
     creating: createMaxIteration
     """
+
     def __init__(self, max, bigdl_type="float"):
         """
         Create a MaxIteration trigger.
@@ -193,6 +211,7 @@ class MaxEpoch(JavaValue):
     >>> maxEpoch = MaxEpoch(2)
     creating: createMaxEpoch
     """
+
     def __init__(self, max_epoch, bigdl_type="float"):
         """
         Create a MaxEpoch trigger.
@@ -215,6 +234,7 @@ class EveryEpoch(JavaValue):
     >>> everyEpoch = EveryEpoch()
     creating: createEveryEpoch
     """
+
     def __init__(self, bigdl_type="float"):
         """
         Create a EveryEpoch trigger.
@@ -235,6 +255,7 @@ class SeveralIteration(JavaValue):
     >>> serveralIteration = SeveralIteration(2)
     creating: createSeveralIteration
     """
+
     def __init__(self, interval, bigdl_type="float"):
         """
         Create a SeveralIteration trigger.
@@ -253,6 +274,7 @@ class MaxScore(JavaValue):
     >>> maxScore = MaxScore(0.4)
     creating: createMaxScore
     """
+
     def __init__(self, max, bigdl_type="float"):
         """
         Create a MaxScore trigger.
@@ -271,6 +293,7 @@ class MinLoss(JavaValue):
     >>> minLoss = MinLoss(0.1)
     creating: createMinLoss
     """
+
     def __init__(self, min, bigdl_type="float"):
         """
         Create a MinLoss trigger.
@@ -279,6 +302,7 @@ class MinLoss(JavaValue):
         :param min: min loss
         """
         JavaValue.__init__(self, None, bigdl_type, min)
+
 
 class TriggerAnd(JavaValue):
     """
@@ -290,6 +314,7 @@ class TriggerAnd(JavaValue):
     creating: createMaxEpoch
     creating: createTriggerAnd
     """
+
     def __init__(self, first, *other):
         """
         Create a And trigger.
@@ -299,6 +324,7 @@ class TriggerAnd(JavaValue):
         :param other: other Trigger
         """
         JavaValue.__init__(self, None, "float", first, list(other))
+
 
 class TriggerOr(JavaValue):
     """
@@ -310,6 +336,7 @@ class TriggerOr(JavaValue):
     creating: createMaxEpoch
     creating: createTriggerOr
     """
+
     def __init__(self, first, *other):
         """
         Create a Or trigger.
@@ -319,6 +346,7 @@ class TriggerOr(JavaValue):
         :param other: other Trigger
         """
         JavaValue.__init__(self, None, "float", first, list(other))
+
 
 class Poly(JavaValue):
     """
@@ -333,8 +361,9 @@ class Poly(JavaValue):
     >>> poly = Poly(0.5, 2)
     creating: createPoly
     """
+
     def __init__(self, power, max_iteration, bigdl_type="float"):
-            JavaValue.__init__(self, None, bigdl_type, power, max_iteration)
+        JavaValue.__init__(self, None, bigdl_type, power, max_iteration)
 
 
 class Exponential(JavaValue):
@@ -349,6 +378,7 @@ class Exponential(JavaValue):
     >>> exponential = Exponential(100, 0.1)
     creating: createExponential
     """
+
     def __init__(self, decay_step, decay_rate, stair_case=False, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, decay_step, decay_rate, stair_case)
 
@@ -366,8 +396,10 @@ class Step(JavaValue):
     >>> step = Step(2, 0.3)
     creating: createStep
     """
+
     def __init__(self, step_size, gamma, bigdl_type="float"):
-            JavaValue.__init__(self, None, bigdl_type, step_size, gamma)
+        JavaValue.__init__(self, None, bigdl_type, step_size, gamma)
+
 
 class Default(JavaValue):
     """
@@ -380,6 +412,7 @@ class Default(JavaValue):
     >>> step = Default()
     creating: createDefault
     """
+
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
@@ -405,6 +438,7 @@ class Plateau(JavaValue):
     >>> plateau = Plateau("score")
     creating: createPlateau
     """
+
     def __init__(self,
                  monitor,
                  factor=0.1,
@@ -417,6 +451,7 @@ class Plateau(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, monitor, factor, patience, mode, epsilon,
                            cooldown, min_lr)
 
+
 class Warmup(JavaValue):
     """
     A learning rate gradual increase policy, where the effective learning rate
@@ -428,8 +463,10 @@ class Warmup(JavaValue):
     >>> warmup = Warmup(0.05)
     creating: createWarmup
     """
+
     def __init__(self, delta, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, delta)
+
 
 class SequentialSchedule(JavaValue):
     """
@@ -446,6 +483,7 @@ class SequentialSchedule(JavaValue):
 
 
     """
+
     def __init__(self, iteration_per_epoch, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, iteration_per_epoch)
 
@@ -458,11 +496,12 @@ class SequentialSchedule(JavaValue):
         """
         return callBigDlFunc(bigdl_type, "addScheduler", self.value, scheduler, max_iteration)
 
+
 class OptimMethod(JavaValue):
 
     def __init__(self, jvalue, bigdl_type, *args):
         if (jvalue):
-            assert(type(jvalue) == JavaObject)
+            assert (type(jvalue) == JavaObject)
             self.value = jvalue
         else:
             self.value = callBigDlFunc(
@@ -483,8 +522,9 @@ class OptimMethod(JavaValue):
         :param path      path
         :param overWrite whether to overwrite
         """
-        method=self.value
+        method = self.value
         return callBigDlFunc(self.bigdl_type, "saveOptimMethod", method, path, overWrite)
+
 
 class SGD(OptimMethod):
     """
@@ -502,6 +542,7 @@ class SGD(OptimMethod):
     creating: createDefault
     creating: createSGD
     """
+
     def __init__(self,
                  learningrate=1e-3,
                  learningrate_decay=0.0,
@@ -514,9 +555,11 @@ class SGD(OptimMethod):
                  weightdecays=None,
                  bigdl_type="float"):
         super(SGD, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay,
-                           momentum, dampening, nesterov,
-                           leaningrate_schedule if (leaningrate_schedule) else Default(),
-                           JTensor.from_ndarray(learningrates), JTensor.from_ndarray(weightdecays))
+                                  momentum, dampening, nesterov,
+                                  leaningrate_schedule if (leaningrate_schedule) else Default(),
+                                  JTensor.from_ndarray(learningrates),
+                                  JTensor.from_ndarray(weightdecays))
+
 
 class Adagrad(OptimMethod):
     """
@@ -529,12 +572,15 @@ class Adagrad(OptimMethod):
     >>> adagrad = Adagrad()
     creating: createAdagrad
     """
+
     def __init__(self,
                  learningrate=1e-3,
                  learningrate_decay=0.0,
                  weightdecay=0.0,
                  bigdl_type="float"):
-        super(Adagrad, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay)
+        super(Adagrad, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
+                                      weightdecay)
+
 
 class LBFGS(OptimMethod):
     """
@@ -560,6 +606,7 @@ class LBFGS(OptimMethod):
     >>> lbfgs = LBFGS()
     creating: createLBFGS
     """
+
     def __init__(self,
                  max_iter=20,
                  max_eval=DOUBLEMAX,
@@ -574,7 +621,9 @@ class LBFGS(OptimMethod):
         if linesearch or linesearch_options:
             raise ValueError('linesearch and linesearch_options must be None in LBFGS')
         super(LBFGS, self).__init__(None, bigdl_type, max_iter, max_eval, tolfun, tolx,
-                       ncorrection, learningrate, verbose, linesearch, linesearch_options)
+                                    ncorrection, learningrate, verbose, linesearch,
+                                    linesearch_options)
+
 
 class Adadelta(OptimMethod):
     """
@@ -585,11 +634,13 @@ class Adadelta(OptimMethod):
     >>> adagrad = Adadelta()
     creating: createAdadelta
     """
+
     def __init__(self,
-                 decayrate = 0.9,
-                 epsilon = 1e-10,
+                 decayrate=0.9,
+                 epsilon=1e-10,
                  bigdl_type="float"):
         super(Adadelta, self).__init__(None, bigdl_type, decayrate, epsilon)
+
 
 class Adam(OptimMethod):
     """
@@ -602,15 +653,17 @@ class Adam(OptimMethod):
     >>> adam = Adam()
     creating: createAdam
     """
+
     def __init__(self,
-                 learningrate = 1e-3,
-                 learningrate_decay = 0.0,
-                 beta1 = 0.9,
-                 beta2 = 0.999,
-                 epsilon = 1e-8,
+                 learningrate=1e-3,
+                 learningrate_decay=0.0,
+                 beta1=0.9,
+                 beta2=0.999,
+                 epsilon=1e-8,
                  bigdl_type="float"):
         super(Adam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
-                           beta1, beta2, epsilon)
+                                   beta1, beta2, epsilon)
+
 
 class ParallelAdam(OptimMethod):
     """
@@ -624,18 +677,20 @@ class ParallelAdam(OptimMethod):
     >>> pAdam = ParallelAdam()
     creating: createParallelAdam
     """
+
     def __init__(self,
-                 learningrate = 1e-3,
-                 learningrate_decay = 0.0,
-                 beta1 = 0.9,
-                 beta2 = 0.999,
-                 epsilon = 1e-8,
-                 parallel_num = -1,
+                 learningrate=1e-3,
+                 learningrate_decay=0.0,
+                 beta1=0.9,
+                 beta2=0.999,
+                 epsilon=1e-8,
+                 parallel_num=-1,
                  bigdl_type="float"):
         if parallel_num == -1:
             parallel_num = get_node_and_core_number()[1]
         super(ParallelAdam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
-                                   beta1, beta2, epsilon, parallel_num)
+                                           beta1, beta2, epsilon, parallel_num)
+
 
 class Ftrl(OptimMethod):
     """
@@ -656,19 +711,21 @@ class Ftrl(OptimMethod):
     >>> ftrl2 = Ftrl(1e-2, -0.1, 0.2, 0.3, 0.4, 0.5)
     creating: createFtrl
     """
+
     def __init__(self,
-                 learningrate = 1e-3,
-                 learningrate_power = -0.5,
-                 initial_accumulator_value = 0.1,
-                 l1_regularization_strength = 0.0,
-                 l2_regularization_strength = 0.0,
-                 l2_shrinkage_regularization_strength = 0.0,
+                 learningrate=1e-3,
+                 learningrate_power=-0.5,
+                 initial_accumulator_value=0.1,
+                 l1_regularization_strength=0.0,
+                 l2_regularization_strength=0.0,
+                 l2_shrinkage_regularization_strength=0.0,
                  bigdl_type="float"):
         super(Ftrl, self).__init__(None, bigdl_type, learningrate, learningrate_power,
                                    initial_accumulator_value,
                                    l1_regularization_strength,
                                    l2_regularization_strength,
                                    l2_shrinkage_regularization_strength)
+
 
 class Adamax(OptimMethod):
     """
@@ -680,13 +737,15 @@ class Adamax(OptimMethod):
     >>> adagrad = Adamax()
     creating: createAdamax
     """
+
     def __init__(self,
-                 learningrate = 0.002,
-                 beta1 = 0.9,
-                 beta2 = 0.999,
-                 epsilon = 1e-38,
+                 learningrate=0.002,
+                 beta1=0.9,
+                 beta2=0.999,
+                 epsilon=1e-38,
                  bigdl_type="float"):
         super(Adamax, self).__init__(None, bigdl_type, learningrate, beta1, beta2, epsilon)
+
 
 class RMSprop(OptimMethod):
     """
@@ -698,13 +757,16 @@ class RMSprop(OptimMethod):
     >>> adagrad = RMSprop()
     creating: createRMSprop
     """
+
     def __init__(self,
-                 learningrate = 1e-2,
-                 learningrate_decay = 0.0,
-                 decayrate = 0.99,
-                 epsilon = 1e-8,
+                 learningrate=1e-2,
+                 learningrate_decay=0.0,
+                 decayrate=0.99,
+                 epsilon=1e-8,
                  bigdl_type="float"):
-        super(RMSprop, self).__init__(None, bigdl_type, learningrate, learningrate_decay, decayrate, epsilon)
+        super(RMSprop, self).__init__(None, bigdl_type, learningrate, learningrate_decay, decayrate,
+                                      epsilon)
+
 
 class MultiStep(JavaValue):
     """
@@ -718,6 +780,7 @@ class MultiStep(JavaValue):
     >>> step = MultiStep([2, 5], 0.3)
     creating: createMultiStep
     """
+
     def __init__(self, step_sizes, gamma, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, step_sizes, gamma)
 
@@ -894,7 +957,8 @@ class Optimizer(BaseOptimizer):
            e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
         :param end_trigger: when to end the optimization. default value is MapEpoch(1)
         :param batch_size: training batch size
-        :param cores: This is for local optimizer only and use total physical cores as the default value
+        :param cores: This is for local optimizer only and use total physical cores as the default
+        value
         """
         if not end_trigger:
             end_trigger = MaxEpoch(1)
@@ -949,8 +1013,7 @@ class Optimizer(BaseOptimizer):
         :return:
         """
         callBigDlFunc(self.bigdl_type, "setTrainData", self.value,
-                     training_rdd, batch_size)
-
+                      training_rdd, batch_size)
 
 
 class DistriOptimizer(Optimizer):
@@ -1008,6 +1071,7 @@ class LocalOptimizer(BaseOptimizer):
     :param batch_size: training batch size
     :param cores: by default is the total physical cores.
     """
+
     def __init__(self,
                  X,
                  Y,
@@ -1067,6 +1131,7 @@ class TrainSummary(JavaValue, ):
 
     Use optimizer.setTrainSummary to enable train logger.
     """
+
     def __init__(self, log_dir, app_name, bigdl_type="float"):
         """
         Create a TrainSummary. Logs will be saved to log_dir/app_name/train.
@@ -1093,7 +1158,13 @@ class TrainSummary(JavaValue, ):
         Set the interval of recording for each indicator.
 
 
-        :param tag: tag name. Supported tag names are "LearningRate", "Loss","Throughput", "Parameters". "Parameters" is an umbrella tag thatincludes weight, bias, gradWeight, gradBias, and some running status(eg. runningMean and runningVar in BatchNormalization). If youdidn't set any triggers, we will by default record Loss and Throughputin each iteration, while *NOT* recording LearningRate and Parameters,as recording parameters may introduce substantial overhead when themodel is very big, LearningRate is not a public attribute for allOptimMethod.
+        :param tag: tag name. Supported tag names are "LearningRate", "Loss","Throughput",
+        "Parameters". "Parameters" is an umbrella tag thatincludes weight, bias, gradWeight,
+         gradBias, and some running status(eg. runningMean and runningVar in BatchNormalization).
+         If youdidn't set any triggers, we will by default record Loss and Throughputin each
+         iteration, while *NOT* recording LearningRate and Parameters,as recording parameters may
+         introduce substantial overhead when themodel is very big, LearningRate is not a public
+         attribute for allOptimMethod.
         :param trigger: trigger
         """
         return callBigDlFunc(self.bigdl_type, "summarySetTrigger", self.value,
@@ -1116,6 +1187,7 @@ class ValidationSummary(JavaValue):
 
      Use optimizer.setValidationSummary to enable validation logger.
     """
+
     def __init__(self, log_dir, app_name, bigdl_type="float"):
         """
         Create a ValidationSummary. Logs will be saved to
@@ -1136,7 +1208,8 @@ class ValidationSummary(JavaValue):
         by default.
 
 
-        :param tag: the type of the logs. The tag should match the name ofthe ValidationMethod set into the optimizer. e.g."Top1AccuracyLoss","Top1Accuracy" or "Top5Accuracy".
+        :param tag: the type of the logs. The tag should match the name ofthe ValidationMethod set
+         into the optimizer. e.g."Top1AccuracyLoss","Top1Accuracy" or "Top5Accuracy".
         """
         return callBigDlFunc(self.bigdl_type, "summaryReadScalar", self.value,
                              tag)
@@ -1150,8 +1223,10 @@ class L1L2Regularizer(JavaValue):
     :param l2 l2 regularization rate
 
     """
+
     def __init__(self, l1, l2, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, l1, l2)
+
 
 class ActivityRegularization(JavaValue):
     """
@@ -1161,8 +1236,10 @@ class ActivityRegularization(JavaValue):
     :param l2 l2 regularization rate
 
     """
+
     def __init__(self, l1, l2, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, l1, l2)
+
 
 class L1Regularizer(JavaValue):
     """
@@ -1171,6 +1248,7 @@ class L1Regularizer(JavaValue):
     :param l1 l1 regularization rate
 
     """
+
     def __init__(self, l1, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, l1)
 
@@ -1182,6 +1260,7 @@ class L2Regularizer(JavaValue):
     :param l2 l2 regularization rate
 
     """
+
     def __init__(self, l2, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, l2)
 
@@ -1201,6 +1280,7 @@ def _test():
                                                   optionflags=doctest.ELLIPSIS)
     if failure_count:
         exit(-1)
+
 
 if __name__ == "__main__":
     _test()

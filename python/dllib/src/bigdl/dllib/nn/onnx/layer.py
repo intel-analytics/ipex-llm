@@ -45,7 +45,8 @@ class Gather(Layer):
 
 class Gemm(Layer):
     """
-    General Matrix multiplication: https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms#Level_3
+    General Matrix multiplication: https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms#
+    Level_3
 
     A' = transpose(A) if transA else A
     B' = transpose(B) if transB else B
@@ -68,7 +69,8 @@ class Gemm(Layer):
 
 class Reshape(Layer):
     """
-    A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
+    A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the
+     input.
     >>> shape = (2, 2)
     >>> reshape = Reshape(shape)
     creating: createReshape
@@ -79,11 +81,11 @@ class Reshape(Layer):
 
 class Shape(Layer):
     """
-    A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the input.
+    A layer which takes a tensor as input and outputs an 1D tensor containing the shape of the
+     input.
 
     >>> shape = Shape()
     creating: createShape
     """
     def __init__(self, bigdl_type="float"):
         super(Shape, self).__init__(None, bigdl_type)
-

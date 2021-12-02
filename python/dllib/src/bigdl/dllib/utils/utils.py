@@ -25,6 +25,7 @@ if sys.version >= '3':
     long = int
     unicode = str
 
+
 def to_sample_rdd(x, y, sc, num_slices=None):
     """
     Convert x and y into RDD[Sample]
@@ -109,7 +110,7 @@ def pack_conda_main(conda_name, tmp_path):
     pack_env = os.environ.copy()
     if "PYTHONHOME" in pack_env:
         pack_env.pop("PYTHONHOME")
-    pack_cmd = "conda pack --format tar.gz --n-threads 8 -f -n {} -o {}"\
+    pack_cmd = "conda pack --format tar.gz --n-threads 8 -f -n {} -o {}" \
         .format(conda_name, tmp_path)
     pro = subprocess.Popen(pack_cmd, shell=True, env=pack_env)
     if pro.wait() != 0:
@@ -138,13 +139,14 @@ def get_executor_conda_zoo_classpath(conda_path):
     from bigdl.dllib.utils.engine import get_bigdl_jars
     bigdl_jars = get_bigdl_jars()
     python_interpreter_name = get_conda_python_path().split("/")[-1]  # Python version
-    prefix = "{}/lib/{}/site-packages/"\
+    prefix = "{}/lib/{}/site-packages/" \
         .format(conda_path, python_interpreter_name)
-    executor_classpath=[]
+    executor_classpath = []
     for jar_path in list(bigdl_jars):
         postfix = "/".join(jar_path.split("/")[-5:])
         executor_classpath.append("{}/{}".format(prefix, postfix))
     return executor_classpath
+
 
 def get_zoo_bigdl_classpath_on_driver():
     from bigdl.dllib.utils.engine import get_bigdl_classpath

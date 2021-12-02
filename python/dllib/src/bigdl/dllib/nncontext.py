@@ -127,22 +127,22 @@ def init_spark_on_yarn(hadoop_conf,
 
 
 def init_spark_on_yarn_cluster(hadoop_conf,
-                       conda_name,
-                       num_executors,
-                       executor_cores,
-                       executor_memory="2g",
-                       driver_cores=4,
-                       driver_memory="2g",
-                       extra_executor_memory_for_ray=None,
-                       extra_python_lib=None,
-                       penv_archive=None,
-                       additional_archive=None,
-                       hadoop_user_name="root",
-                       spark_yarn_archive=None,
-                       spark_log_level="WARN",
-                       redirect_spark_log=True,
-                       jars=None,
-                       conf=None):
+                               conda_name,
+                               num_executors,
+                               executor_cores,
+                               executor_memory="2g",
+                               driver_cores=4,
+                               driver_memory="2g",
+                               extra_executor_memory_for_ray=None,
+                               extra_python_lib=None,
+                               penv_archive=None,
+                               additional_archive=None,
+                               hadoop_user_name="root",
+                               spark_yarn_archive=None,
+                               spark_log_level="WARN",
+                               redirect_spark_log=True,
+                               jars=None,
+                               conf=None):
     """
     Create a SparkContext with Analytics Zoo configurations on Yarn cluster for yarn-cluster mode.
     You only need to create a conda environment and install the python dependencies in that
@@ -185,23 +185,22 @@ def init_spark_on_yarn_cluster(hadoop_conf,
         runner = SparkRunner(spark_log_level=spark_log_level,
                              redirect_spark_log=redirect_spark_log)
         return_value = runner.init_spark_on_yarn_cluster(
-          hadoop_conf=hadoop_conf,
-          conda_name=conda_name,
-          num_executors=num_executors,
-          executor_cores=executor_cores,
-          executor_memory=executor_memory,
-          driver_cores=driver_cores,
-          driver_memory=driver_memory,
-          extra_executor_memory_for_ray=extra_executor_memory_for_ray,
-          extra_python_lib=extra_python_lib,
-          penv_archive=penv_archive,
-          additional_archive=additional_archive,
-          hadoop_user_name=hadoop_user_name,
-          spark_yarn_archive=spark_yarn_archive,
-          jars=jars,
-          conf=conf)
+            hadoop_conf=hadoop_conf,
+            conda_name=conda_name,
+            num_executors=num_executors,
+            executor_cores=executor_cores,
+            executor_memory=executor_memory,
+            driver_cores=driver_cores,
+            driver_memory=driver_memory,
+            extra_executor_memory_for_ray=extra_executor_memory_for_ray,
+            extra_python_lib=extra_python_lib,
+            penv_archive=penv_archive,
+            additional_archive=additional_archive,
+            hadoop_user_name=hadoop_user_name,
+            spark_yarn_archive=spark_yarn_archive,
+            jars=jars,
+            conf=conf)
     sys.exit(return_value)
-
 
 
 def init_spark_standalone(num_executors,
@@ -345,7 +344,6 @@ def stop_spark_standalone():
 
 
 class ZooContextMeta(type):
-
     _log_output = False
     _barrier_mode = True
 
@@ -410,7 +408,8 @@ def _read_stream(fd, fn):
             fn(buff.decode('utf-8'))
 
 
-def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN", redirect_spark_log=True, **kwargs):
+def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN",
+                   redirect_spark_log=True, **kwargs):
     """
     Creates or gets a SparkContext with optimized configurations for BigDL performance.
     This method will also initialize the BigDL engine.
@@ -522,7 +521,8 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
         sc = init_spark_standalone(num_executors=num_nodes, executor_cores=cores,
                                    executor_memory=memory, **spark_args)
     else:
-        raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster, standalone or spark-submit, "
+        raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster, standalone or"
+                         " spark-submit, "
                          "but got: %s".format(cluster_mode))
     return sc
 

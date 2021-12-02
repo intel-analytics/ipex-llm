@@ -28,6 +28,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
+
     def __convert_optim_method(self, optimizer):
         optimizer = optimizer.lower()
         if optimizer == "adagrad":
@@ -93,7 +94,8 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
                    string representation, such as 'sgd'.
         loss: Criterion to be used. One can alternatively pass in the corresponding string
               representation, such as 'mse'.
-        metrics: List of validation methods to be used. Default is None. One can alternatively use ['accuracy'].
+        metrics: List of validation methods to be used. Default is None. One can alternatively use
+        ['accuracy'].
         """
         if isinstance(optimizer, six.string_types):
             optimizer = self.__convert_optim_method(optimizer)
@@ -209,6 +211,7 @@ class Sequential(KerasModel):
     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
+
     def __init__(self, jvalue=None, **kwargs):
         warnings.warn("bigdl.dllib.keras is deprecated in 0.11. "
                       "Recommend to use Analytics Zoo's Keras API.")
@@ -242,13 +245,15 @@ class Model(KerasModel):
     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
-    def __init__(self, input, output, jvalue=None,  **kwargs):
+
+    def __init__(self, input, output, jvalue=None, **kwargs):
         warnings.warn("bigdl.dllib.keras is deprecated in BigDL 0.11."
                       "Recommend to use Analytics Zoo's Keras API.")
         super(Model, self).__init__(jvalue,
                                     to_list(input),
                                     to_list(output),
                                     **kwargs)
+
     @staticmethod
     def from_jvalue(jvalue, bigdl_type="float"):
         """

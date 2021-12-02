@@ -20,6 +20,7 @@ import itertools
 import sys
 from nltk.tokenize import word_tokenize
 
+
 def read_localfile(fileName):
     lines = []
     with open(fileName) as f:
@@ -28,14 +29,17 @@ def read_localfile(fileName):
     f.close()
     return lines
 
+
 def sentences_split(line):
     nltk.data.path.append(os.environ.get('PWD'))
     sent_tokenizer = nltk.tokenize.PunktSentenceTokenizer()
     sentenized = sent_tokenizer.tokenize(line)
     return sentenized
 
+
 def sentences_bipadding(sent):
     return "SENTENCESTART " + sent + " SENTENCEEND"
+
 
 def sentence_tokenizer(sentences):
     tokenized_sents = nltk.word_tokenize(sentences)

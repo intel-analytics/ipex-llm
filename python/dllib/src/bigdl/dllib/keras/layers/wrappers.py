@@ -22,6 +22,7 @@ if sys.version >= '3':
     long = int
     unicode = str
 
+
 class TimeDistributed(ZooKerasLayer):
     """
     TimeDistributed wrapper.
@@ -44,6 +45,7 @@ class TimeDistributed(ZooKerasLayer):
     creating: createZooKerasDense
     creating: createZooKerasTimeDistributed
     """
+
     def __init__(self, layer, input_shape=None, **kwargs):
         super(TimeDistributed, self).__init__(None,
                                               layer,
@@ -74,6 +76,7 @@ class Bidirectional(ZooKerasLayer):
     creating: createZooKerasLSTM
     creating: createZooKerasBidirectional
     """
+
     def __init__(self, layer, merge_mode="concat", input_shape=None, **kwargs):
         super(Bidirectional, self).__init__(None,
                                             layer,
@@ -99,6 +102,7 @@ class KerasLayerWrapper(ZooKerasLayer):
     >>> kerasLayer = KerasLayerWrapper(linear, input_shape=(100, ))
     creating: createZooKerasKerasLayerWrapper
     """
+
     def __init__(self, torch_layer, input_shape=None, **kwargs):
         super(KerasLayerWrapper, self).__init__(None,
                                                 torch_layer,

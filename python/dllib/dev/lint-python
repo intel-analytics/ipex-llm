@@ -34,7 +34,7 @@ python -B -m compileall -q -l $PATHS_TO_CHECK > "$PEP8_REPORT_PATH"
 compile_status="${PIPESTATUS[0]}"
 
 PEP8_VERSION="1.7.0"
-PEP8_SCRIPT_PATH="$PYTHON_ROOT_DIR/test/pep8-$PEP8_VERSION.py"
+PEP8_SCRIPT_PATH="$PYTHON_ROOT_DIR/dev/pep8-$PEP8_VERSION.py"
 PEP8_SCRIPT_REMOTE_PATH="https://raw.githubusercontent.com/jcrocholl/pep8/$PEP8_VERSION/pep8.py"
 
 echo "PEP8_SCRIPT_PATH" "$PEP8_SCRIPT_PATH"
