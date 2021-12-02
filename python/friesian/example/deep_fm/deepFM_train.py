@@ -22,7 +22,6 @@ from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
-from bigdl.orca.learn.trigger import EveryEpoch
 
 import argparse
 
@@ -46,7 +45,7 @@ spark_conf = {"spark.network.timeout": "10000000",
 class DeepFM(BaseModel):
     def __init__(self,
                  linear_feature_columns, dnn_feature_columns, use_fm=True,
-                 dnn_hidden_units=(512, 256, 128), l2_reg_linear=0.00001, l2_reg_embedding=0.00001,
+                 dnn_hidden_units=(256, 128, 64), l2_reg_linear=0.00001, l2_reg_embedding=0.00001,
                  l2_reg_dnn=0, init_std=0.0001, seed=1024, dnn_dropout=0, dnn_activation='relu',
                  dnn_use_bn=False, task='binary', device='cpu', gpus=None):
 
@@ -111,31 +110,23 @@ if __name__ == '__main__':
                         help='The driver memory.')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=1, type=int, help='train epoch')
-    parser.add_argument('--batch_size', default=32, type=int, help='batch size')
+    parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
     parser.add_argument('--data_dir', type=str, help='data directory')
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
-    parser.add_argument('--backend', type=str, default="spark",
-                        help='The backend of PyTorch Estimator; '
-                             'bigdl, torch_distributed and spark are supported.')
     args = parser.parse_args()
+
     if args.cluster_mode == "local":
         sc = init_orca_context("local")
-    elif args.cluster_mode == "standalone":
-        sc = init_orca_context("standalone", master=args.master,
-                               cores=args.executor_cores, num_nodes=args.num_executor,
-                               memory=args.executor_memory,
-                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf,
-                               init_ray_on_spark=True)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executor, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf, object_store_memory="80g", init_ray_on_spark=True)
+                               conf=spark_conf, object_store_memory="40g", init_ray_on_spark=True,
+                               extra_python_lib="evaluation.py")
     elif args.cluster_mode == "spark-submit":
-        sc = init_orca_context("spark-submit")
+        sc = init_orca_context("spark-submit", object_store_memory="40g")
 
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
@@ -152,32 +143,34 @@ if __name__ == '__main__':
         to_list("engaged_with_user_id")
     test_labels = test.select("label").to_list("label")
 
-    full = train.concat(test, "outer")
+    full = train.concat(test)
     reindex_tbls = full.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     full, min_max_dict = full.min_max_scale(num_cols)
 
-    embed_in_dims = {}
+    sparse_dims = {}
     for i, c, in enumerate(embed_cols):
-        embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0]) + 1
-    fixlen_feature_columns = [SparseFeat(feat, int(embed_in_dims[feat])) for feat in embed_in_dims] + \
+        sparse_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0]) + 1
+    cat_dims = full.max(cat_cols).to_dict()
+    cat_dims = dict(zip(cat_dims['column'], [dim + 1 for dim in cat_dims['max']]))
+    sparse_dims.update(cat_dims)
+
+    fixlen_feature_columns = [SparseFeat(feat, int(sparse_dims[feat])) for feat in sparse_dims] + \
                              [DenseFeat(feat, 1, ) for feat in num_cols]
     feature_names = get_feature_names(fixlen_feature_columns)
 
     train = train.reindex(embed_cols, reindex_tbls)\
         .transform_min_max_scale(num_cols, min_max_dict)\
-        .merge_cols(feature_names, "combine") \
-        .select(["label", "combine"])\
+        .merge_cols(feature_names, "feature") \
+        .select(["label", "feature"])\
         .apply("label", "label", lambda x: [float(x)], dtype="array<float>")
 
     test = test.reindex(embed_cols, reindex_tbls) \
         .transform_min_max_scale(num_cols, min_max_dict) \
-        .merge_cols(feature_names, "combine") \
-        .select(["label", "combine"]) \
+        .merge_cols(feature_names, "feature") \
+        .select(["label", "feature"]) \
         .apply("label", "label", lambda x: [float(x)], dtype="array<float>")
 
-    config = {'linear_feature_columns': fixlen_feature_columns,
-              'dnn_feature_columns': fixlen_feature_columns, 'feature_names': feature_names,
-              'lr': args.lr, "drop_last": True}
+    test.cache()
 
     def model_creator(config):
         model = DeepFM(linear_feature_columns=config["linear_feature_columns"],
@@ -191,31 +184,26 @@ if __name__ == '__main__':
 
     criterion = torch.nn.BCELoss()
 
-    if args.backend == "bigdl":
-        model = model_creator(config)
-        optimizer = optim_creator(model=model, config=config)
-        est = Estimator.from_torch(model=model, optimizer=optimizer, loss=criterion,
-                                   metrics=[Accuracy()],
-                                   backend=args.backend)
-        train_stats = est.fit(data=train.df, feature_cols=["combine"], label_cols=["label"],
-                              epochs=args.epochs,
-                              batch_size=args.batch_size, checkpoint_trigger=EveryEpoch())
-    elif args.backend in ["torch_distributed", "spark"]:
-        est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion,
-                                   metrics=[Accuracy()],
-                                   backend=args.backend, config=config)
-        train_stats = est.fit(data=train.df, feature_cols=["combine"], label_cols=["label"],
-                              epochs=args.epochs,
-                              batch_size=args.batch_size)
-    else:
-        raise NotImplementedError("Only bigdl and torch_distributed are supported "
-                                  "as the backend, but got {}".format(args.backend))
+    config = {'linear_feature_columns': fixlen_feature_columns,
+              'dnn_feature_columns': fixlen_feature_columns,
+              'feature_names': feature_names,
+              'lr': args.lr}
 
-    valid_stats = est.evaluate(data=test.df, feature_cols=["combine"], label_cols=["label"],
+    est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion,
+                               metrics=[Accuracy()], use_tqdm=True, backend="torch_distributed",
+                               config=config)
+    train_stats = est.fit(data=train.df, feature_cols=["feature"], label_cols=["label"],
+                          epochs=args.epochs, batch_size=args.batch_size)
+
+    valid_stats = est.evaluate(data=test.df, feature_cols=["feature"], label_cols=["label"],
                                batch_size=args.batch_size)
 
-    predicts = est.predict(data=test.df, feature_cols=["combine"], batch_size=args.batch_size)
     print("Train stats: {}".format(train_stats))
     print("Validation stats: {}".format(valid_stats))
+
+    predicts = est.predict(data=test.df, feature_cols=["feature"], batch_size=args.batch_size)
+    predicts = predicts.select("prediction").collect()
+    auc = uAUC(test_labels, predicts, test_user_ids)
+    print("AUC: ", auc)
     est.shutdown()
     stop_orca_context()

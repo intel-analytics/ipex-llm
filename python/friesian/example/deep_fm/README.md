@@ -8,6 +8,7 @@ conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you c
 conda activate bigdl
 pip install --pre --upgrade bigdl-friesian
 pip install deepctr-torch==0.2.6
+pip install numba
 ```
 
 ## Preprocess data
@@ -23,18 +24,6 @@ python deepFM_train.py \
     --model_dir /path/to/the/folder/to/save/trained_model
 ```
 
-* Spark standalone, example command:
-```bash
-python deepFM_train.py \
-    --cluster_mode standalone \
-    --master spark://master-url:port \
-    --executor_cores 56 \
-    --executor_memory 240g \
-    --num_executor 8 \
-    --data_dir /path/to/the/folder/of/sample_data \
-    --model_dir /path/to/the/folder/to/save/trained_model
-```
-
 * Spark yarn client mode, example command:
 ```bash
 python deepFM_train.py \
@@ -46,7 +35,7 @@ python deepFM_train.py \
 ```
 
 __Options:__
-* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn or standalone. Default to be local.
+* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, spark submit or yarn Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
 * `executor_cores`: The number of cores to use on each node. Default to be 48.
 * `executor_memory`: The amount of memory to allocate on each node. Default to be 240g.
