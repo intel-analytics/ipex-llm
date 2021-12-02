@@ -10,7 +10,7 @@ BigDL Documentation
 * `RayOnSpark <doc/Ray/Overview/ray.html>`_: run Ray programs directly on Big Data clusters
 * `Chronos <doc/Chronos/Overview/chronos.html>`_: scalable time series analysis using AutoML
 * `PPML <doc/PPML/Overview/ppml.html>`_: privacy preserving big data analysis and machine learning (*experimental*)
-
+* `Serving <doc/Serving/Overview/serving.html>`_: distributed and automated model inference on Big Data streaming frameworks
  
 -------
 
@@ -84,6 +84,13 @@ BigDL Documentation
    doc/PPML/QuickStart/build_kernel_with_sgx.md
    doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.md
    doc/PPML/QuickStart/trusted-serving-on-k8s-guide.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Serving Overview
+
+   doc/PPML/Overview/serving-overview.md
+   doc/PPML/QuickStart/serving-quickstart.md
 
 .. toctree::
    :maxdepth: 1
