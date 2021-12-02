@@ -52,7 +52,10 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 class TestLightningModuleFromTorch(TestCase):
 
     def test_resnet18(self):
-        pl_model = LightningModuleFromTorch(model, loss, optimizer, [torchmetrics.F1(10), torchmetrics.F1(10)])
+        pl_model = LightningModuleFromTorch(
+            model, loss, optimizer,
+            [torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+        )
         data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
         trainer = Trainer(max_epochs=1)
         trainer.fit(pl_model, data_loader)

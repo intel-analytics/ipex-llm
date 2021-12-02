@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 from collections import OrderedDict
-from typing import List, Callable
+from typing import List
 
+from torchmetrics.metric import Metric
 from pytorch_lightning import LightningModule
 from torch import nn, Tensor
 from torch.nn.modules.loss import _Loss
@@ -24,7 +25,7 @@ from torch.optim import Optimizer
 
 class LightningModuleFromTorch(LightningModule):
     def __init__(self, model: nn.Module, loss: _Loss, optimizer: Optimizer,
-                 metrics: List[Callable] = None):
+                 metrics: List[Metric] = None):
         """
         Integrate pytorch modules, loss, optimizer to pytorch-lightning model.
 
@@ -60,7 +61,7 @@ class LightningModuleFromTorch(LightningModule):
         loss = self.loss(y_hat, y)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True, logger=True)
         if self.metrics:
-            acc = {"val_acc_%d" % i: metric(y_hat, y) for i, metric in enumerate(self.metrics)}
+            acc = {type(metric).__name__: metric(y_hat, y) for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
         else:
             acc = None
@@ -72,7 +73,7 @@ class LightningModuleFromTorch(LightningModule):
         loss = self.loss(y_hat, y)
         self.log("test_loss", loss, on_epoch=True, prog_bar=True, logger=True)
         if self.metrics:
-            acc = {"test_acc_%d" % i: metric(y_hat, y) for i, metric in enumerate(self.metrics)}
+            acc = {type(metric).__name__: metric(y_hat, y) for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
         else:
             acc = None
