@@ -38,9 +38,7 @@ from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.trigger import EveryEpoch
 
 
-def train_data_creator(config={'download':True, 'data_dir':'./data'}, batch_size=4):
-    download=config['download']
-    data_dir=config['data_dir']
+def train_data_creator(config={}, batch_size=4, download=True, data_dir='./data'):
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
@@ -54,9 +52,7 @@ def train_data_creator(config={'download':True, 'data_dir':'./data'}, batch_size
     return trainloader
 
 
-def validation_data_creator(config={'download':True, 'data_dir':'./data'}, batch_size=4):
-    download=config['download']
-    data_dir=config['data_dir']
+def validation_data_creator(config={}, batch_size=4, download=True, data_dir='./data'):
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
@@ -136,7 +132,7 @@ def main():
                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle Boot')
 
     # plot some random training images
-    dataiter = iter(train_data_creator(config={'download':args.download, 'data_dir':args.data_dir}, batch_size=4))
+    dataiter = iter(train_data_creator(config={}, batch_size=4, download=args.download, data_dir=args.data_dir))
     images, labels = dataiter.next()
 
     # create grid of images
@@ -157,8 +153,8 @@ def main():
     batch_size = args.batch_size
     epochs = args.epochs
     if args.backend == "bigdl":
-        train_loader = train_data_creator(config={'download':args.download, 'data_dir':args.data_dir}, batch_size=batch_size)
-        test_loader = validation_data_creator(config={'download':args.download, 'data_dir':args.data_dir}, batch_size=batch_size)
+        train_loader = train_data_creator(config={}, batch_size=4, download=args.download, data_dir=args.data_dir)
+        test_loader = validation_data_creator(config={}, batch_size=4, download=args.download, data_dir=args.data_dir)
 
         net = model_creator(config={})
         optimizer = optimizer_creator(model=net, config={"lr": 0.001})
