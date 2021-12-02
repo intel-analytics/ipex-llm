@@ -145,7 +145,7 @@ echo "#11 start test for orca transfer learning"
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py \
-  --data_dir ${HDFS_URI} --cluster_mode yarn-client
+  --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
