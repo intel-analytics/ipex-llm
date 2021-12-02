@@ -220,12 +220,14 @@ class Net(nn.Module):
 
 
 def model_creator(config):
+    print("Creating model")
     torch.manual_seed(config.get("seed", 123))
     net = Net(upscale_factor=config.get("upscale_factor", 3))
     return net
 
 
 def optim_creator(model, config):
+    print("Creating optimizer")
     return optim.Adam(model.parameters(), lr=config.get("lr", 0.01))
 
 
