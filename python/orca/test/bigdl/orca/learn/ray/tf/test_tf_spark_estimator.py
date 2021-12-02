@@ -87,6 +87,7 @@ class TestTFEstimator(TestCase):
                               label_cols=["label"],
                               validation_data=df,
                               validation_steps=1)
+            # trainer._stop_log_to_driver()
 
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])

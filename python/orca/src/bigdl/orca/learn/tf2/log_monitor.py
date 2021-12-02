@@ -77,7 +77,7 @@ class LogMonitor:
             false otherwise.
     """
 
-    def __init__(self, driver_ip, driver_port, logs_dir):
+    def __init__(self, driver_ip, driver_port, logs_dir, threads_stopped):
         """Initialize the log monitor object."""
         from bigdl.dllib.utils.utils import get_node_ip
         self.ip = get_node_ip()
@@ -91,6 +91,7 @@ class LogMonitor:
         self.socket = context.socket(zmq.REQ)
         self.socket.connect("tcp://{}:{}".format(driver_ip, driver_port))
         self.file_info_path = os.path.join(tempfile.gettempdir(), "{}_file_info.pkl".format(application_id))
+        self.threads_stopped = threads_stopped
 
     def close_all_files(self):
         """Close all open files (so that we can open more)."""
@@ -206,6 +207,9 @@ class LogMonitor:
             self.update_log_filenames()
             self.open_closed_files()
             while True:
+                # Exit if we received a signal that we should stop.
+                if self.threads_stopped.is_set():
+                    return
                 # self.update_log_filenames()
                 # self.open_closed_files()
                 anything_published = self.check_log_files_and_publish_updates()

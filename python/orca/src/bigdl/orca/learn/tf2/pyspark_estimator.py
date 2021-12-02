@@ -88,12 +88,17 @@ class SparkTFEstimator():
         # if not self.is_local:
         #     if log_to_driver:
         if log_to_driver:
-            threads_stopped = threading.Event()
-            logger_thread = threading.Thread(
+            # context = zmq.Context()
+            # self.socket = context.socket(zmq.REP)
+            # self.socket.bind("tcp://*:{}".format(self.port))
+            # print("started log server")
+
+            self.threads_stopped = threading.Event()
+            self.logger_thread = threading.Thread(
                 target=self._print_logs,
                 name="print_logs")
-            logger_thread.daemon = False
-            logger_thread.start()
+            self.logger_thread.daemon = True
+            self.logger_thread.start()
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
@@ -122,7 +127,8 @@ class SparkTFEstimator():
                the model to "pay more attention" to samples from an under-represented class.
         :return:
         """
-        import numpy as np
+        # self._start_print_log()
+
         sc = OrcaContext.get_spark_context()
 
         init_params = dict(
@@ -205,6 +211,7 @@ class SparkTFEstimator():
             finally:
                 shutil.rmtree(temp_dir)
 
+        # self._stop_log_to_driver()
         return res[0]
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
@@ -227,7 +234,7 @@ class SparkTFEstimator():
                the model to "pay more attention" to samples from an under-represented class.
         :return: validation result
         """
-        import numpy as np
+        # self._start_print_log()
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
@@ -285,7 +292,6 @@ class SparkTFEstimator():
 
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
-
         return res[0]
 
     def predict(self, data, batch_size=None, verbose=1,
@@ -444,3 +450,22 @@ class SparkTFEstimator():
         model = self.model_creator(self.config)
         model.set_weights(self.model_weights)
         return model
+
+    def _start_print_log(self):
+        if hasattr(self, "socket"):
+            self.logger_thread = threading.Thread(
+                target=self._print_logs,
+                args=self.socket,
+                name="print_logs")
+            self.logger_thread.daemon = False
+            self.logger_thread.start()
+
+    def _stop_log_to_driver(self):
+        print("called stop")
+        if hasattr(self, "threads_stopped"):
+            self.threads_stopped.set()
+        if hasattr(self, "logger_thread"):
+            self.logger_thread.join()
+        if hasattr(self, "threads_stopped"):
+            self.threads_stopped.clear()
+

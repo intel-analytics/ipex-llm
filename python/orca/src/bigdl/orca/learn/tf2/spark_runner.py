@@ -237,16 +237,20 @@ class SparkRunner:
             # log_dir = os.getenv("SPARK_WORKER_DIR")
             log_dir = "/tmp"
             print("log dir is: ", log_dir)
+            # This event is checked regularly by all of the threads so that they
+            # know when to exit.
+            self.threads_stopped = threading.Event()
+
             # logger_thread = threading.Thread(
             #     target=self._start_log_monitor,
             #     args=(driver_ip, driver_port, "{}/{}".format(log_dir, application_id)),
             #     name="monitor_logs")
-            logger_thread = threading.Thread(
+            self.logger_thread = threading.Thread(
                 target=self._start_log_monitor,
-                args=(driver_ip, driver_port, log_dir),
+                args=(driver_ip, driver_port, log_dir, self.threads_stopped),
                 name="monitor_logs")
-            logger_thread.daemon = False
-            logger_thread.start()
+            self.logger_thread.daemon = True
+            self.logger_thread.start()
 
 
     def setup(self):
@@ -372,8 +376,10 @@ class SparkRunner:
                     "optimizer_weights": model.optimizer.get_weights()
                 }
                 save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
+            self._stop_log_monitor()
             return [stats]
         else:
+            self._stop_log_monitor()
             return []
     
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
@@ -423,8 +429,10 @@ class SparkRunner:
             stats = {"results": results}
         
         if self.rank == 0:
+            self._stop_log_monitor()
             return [stats]
         else:
+            self._stop_log_monitor()
             return []
 
 
@@ -455,14 +463,24 @@ class SparkRunner:
 
         new_part = [predict_fn(shard) for shard in partition]
 
+        self._stop_log_monitor()
         return new_part
 
-    def _start_log_monitor(self, driver_ip, driver_port, logs_dir):
+    def _start_log_monitor(self, driver_ip, driver_port, logs_dir, threads_stopped):
         """
         Start a log monitor thread.
 
         """
         log_monitor = LogMonitor(driver_ip=driver_ip,
                                  driver_port=driver_port,
-                                 logs_dir=logs_dir)
+                                 logs_dir=logs_dir,
+                                 threads_stopped=threads_stopped)
         log_monitor.run()
+
+    def _stop_log_monitor(self):
+        if hasattr(self, "threads_stopped"):
+            self.threads_stopped.set()
+        if hasattr(self, "logger_thread"):
+            self.logger_thread.join()
+        if hasattr(self, "threads_stopped"):
+            self.threads_stopped.clear()
