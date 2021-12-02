@@ -108,7 +108,7 @@ def _parse_function(img, label):
     return tf.cast(image_resized, dtype=tf.float32) / 255., tf.cast(label, dtype=tf.uint8)
 
 
-builder = tfds.folder_dataset.ImageFolder(base_dir)
+builder = tfds.ImageFolder(base_dir)
 ds = builder.as_dataset(shuffle_files=True, as_supervised=True)
 train_dataset = ds['train'].map(_parse_function)
 
