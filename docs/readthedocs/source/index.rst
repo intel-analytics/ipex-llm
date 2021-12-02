@@ -89,7 +89,7 @@ BigDL Documentation
    :maxdepth: 1
    :caption: Serving Overview
 
-   doc/Serving/Overview/serving-overview.md
+   doc/Serving/Overview/serving.md
    doc/Serving/QuickStart/serving-quickstart.md
 
 .. toctree::
