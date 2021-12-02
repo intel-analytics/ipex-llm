@@ -53,6 +53,8 @@ python lenet5.py --dataPath /tmp/mnist --on-yarn
 
 * ```--mkl-dnn``` options to enable mkldnn.
 
+Note that `mkldnn` is not supported on macOS.
+
 ##### In order to use MKL-DNN as the backend, you should:
 1. Define a graph model with Model or convert a sequential model to a graph model using:
    ```
