@@ -947,3 +947,24 @@ class TestTSDataset(ZooTestCase):
                                        dt_col='datetime')
         with pytest.raises(RuntimeError):
             tsdata._check_basic_invariants(strict_check=True)
+
+    def test_cycle_length_est(self):
+        pass
+        # TODO gengrate
+        df = get_multi_id_ts_df()
+        tsdata = TSDataset.from_pandas(df,
+                                       target_col='value',
+                                       dt_col='datetime',
+                                       extra_feature_col='extra feature',
+                                       id_col='id')
+        tsdata.get_best_lookback(aggregate='mode', top_k=3)
+        assert tsdata.best_lookback>=1 and tsdata.best_lookback<=100
+
+        with pytest.raises(NameError):
+            tsdata.get_best_lookback(aggregate="normal")
+        with pytest.raises(AssertionError):
+            tsdata.get_best_lookback(aggregate=10)
+        with pytest.raises(AssertionError):
+            tsdata.get_best_lookback(top_k='3')
+        with pytest.raises(AssertionError):
+            tsdata.get_best_lookback(top_k=24)

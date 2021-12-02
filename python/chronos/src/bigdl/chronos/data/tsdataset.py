@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from _pytest.python_api import raises
 import pandas as pd
 import numpy as np
 import functools
@@ -25,6 +26,7 @@ from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
+from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
@@ -53,6 +55,7 @@ class TSDataset:
         self.scaler = None
         self.scaler_index = [i for i in range(len(self.target_col))]
         self.id_sensitive = None
+        self.best_lookback = None
         self._has_generate_agg_feature = False
         self._check_basic_invariants()
 
@@ -473,8 +476,8 @@ class TSDataset:
         return self
 
     def roll(self,
-             lookback,
-             horizon,
+             lookback=None,
+             horizon=None,
              feature_col=None,
              target_col=None,
              id_sensitive=False):
@@ -564,7 +567,8 @@ class TSDataset:
             self.df.groupby([self.id_col]) \
                 .apply(lambda df: roll_timeseries_dataframe(df=df,
                                                             roll_feature_df=roll_feature_df,
-                                                            lookback=lookback,
+                                                            lookback=lookback if lookback
+                                                            else self.get_best_lookback(),
                                                             horizon=horizon,
                                                             feature_col=feature_col,
                                                             target_col=target_col))
@@ -660,8 +664,8 @@ class TSDataset:
         from torch.utils.data import TensorDataset, DataLoader
         import torch
         if roll:
-            if lookback is None:
-                raise ValueError("You must input lookback if roll is True")
+            # if lookback is None:
+            #     raise ValueError("You must input lookback if roll is True")
             if horizon is None:
                 raise ValueError("You must input horizon if roll is True")
             from bigdl.chronos.data.utils.roll_dataset import RollDataset
@@ -674,7 +678,7 @@ class TSDataset:
             self.scaler_index = [self.target_col.index(t) for t in target_col]
 
             torch_dataset = RollDataset(self.df,
-                                        lookback=lookback,
+                                        lookback=lookback if lookback else self.get_best_lookback(),
                                         horizon=horizon,
                                         feature_col=feature_col,
                                         target_col=target_col,
@@ -812,3 +816,41 @@ class TSDataset:
         # check dt sorted
         if strict_check:
             _check_dt_is_sorted(self.df, self.dt_col)
+
+    def get_best_lookback(self, aggregate='mode', top_k=3):
+        """
+        Use the calculation of Fourier transform and autocorrelation coefficient to
+        get the time period of all columns, and select the appropriate training time
+        period for the model by specifying aggregate.
+
+        Args:
+            top_k (int): The freq with top top_k power after fft will be
+                used to check the autocorrelation.
+            aggregate (str): Select the mode of calculation time period,
+                We only support 'min', 'max', 'mode', 'median', 'mean'.
+
+        Returns:
+            int: A best time period.
+        """
+        df = self.df.copy()
+        assert isinstance(top_k, int), f"top_k type must bu int, but found {type(top_k)}."
+        assert isinstance(aggregate, str), \
+            f"aggregate type must bu str, but found {type(aggregate)}."
+    
+        res = df.groupby(self.id_col).apply(lambda x: [cycle_length_est(x[col].values, top_k)
+                                                       for col in self.target_col][0])
+
+        if aggregate.lower().strip() == 'mode':
+            self.best_lookback = int(res.unique()[0])
+        elif aggregate.lower().strip() == 'mean':
+            self.best_lookback = int(res.mean())
+        elif aggregate.lower().strip() == 'median':
+            self.best_lookback = int(res.median())
+        elif aggregate.lower().strip() == 'min':
+            self.best_lookback = int(res.min())
+        elif aggregate.lower().strip() == 'max':
+            self.best_lookback = int(res.max())
+        else:
+            raise NameError("We only support 'mode','mean','median','min','max' "
+                            f"but found {aggregate}.")
+        return self.best_lookback

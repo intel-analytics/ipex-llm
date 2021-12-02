@@ -274,6 +274,8 @@ class AutoTSEstimator:
         # automatically inference output_feature_num
         # input_feature_num will be set by base pytorch model according to selected features.
         search_space['output_feature_num'] = len(train_data.target_col)
+        search_space['past_seq_len'] = train_data.best_lookback if \
+            train_data.best_lookback else search_space['past_seq_len']
 
         # append feature selection into search space
         # TODO: more flexible setting

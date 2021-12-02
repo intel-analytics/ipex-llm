@@ -28,6 +28,8 @@ def cycle_length_est(data, top_k=3):
     :param top_k: The freq with top top_k power after fft will be
            used to check the autocorrelation.
     '''
+    assert (data.shape[0]//2) > abs(top_k)+1, \
+        "top_k must be less than half the length of the time series"
 
     fft_series = fft(data)
     power = np.abs(fft_series)

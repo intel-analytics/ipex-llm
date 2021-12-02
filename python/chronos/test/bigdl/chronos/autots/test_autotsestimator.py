@@ -496,5 +496,31 @@ class TestAutoTrainer(TestCase):
         assert config['future_seq_len'] == 2
         assert auto_estimator._future_seq_len == [1, 3]
 
+    def test_autogener_best_lookback(self):
+        sample_num = 100
+        df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
+                           "value": np.arange(sample_num),
+                           "id": np.array(['00'] * sample_num)})
+
+        train_ts = TSDataset.from_pandas(df,
+                                         target_col=['value'],
+                                         dt_col='datetime',
+                                         id_col='id',
+                                         with_split=False)
+        train_ts.roll(horizon=1)
+
+        input_feature_dim, output_feature_dim = 1, 1
+        auto_estimator = AutoTSEstimator(model='lstm',
+                                         search_space="minimal",
+                                         input_feature_num=input_feature_dim,
+                                         output_target_num=output_feature_dim)
+        
+        auto_estimator.fit(data=train_ts,
+                           epochs=1,
+                           batch_size=hp.choice([16, 32]),
+                           validation_data=train_ts)
+        config = auto_estimator.get_best_config()
+        assert config['past_seq_len'] == 33
+
 if __name__ == "__main__":
     pytest.main([__file__])
