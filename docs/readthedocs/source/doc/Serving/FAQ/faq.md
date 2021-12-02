@@ -1,4 +1,4 @@
-# BigDL Cluster Serving FAQ
+# Cluster Serving FAQ
 
 ## General Debug Guide
 You could use following guide to debug if serving is not working properly.

@@ -1,4 +1,4 @@
-# BigDL Cluster Serving Example
+# Cluster Serving Example
 
 There are some examples provided for new user or existing Tensorflow user.
 ## End-to-end Example

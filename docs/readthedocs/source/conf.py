@@ -25,6 +25,8 @@ sys.path.insert(0, os.path.abspath("../../../python/friesian/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/chronos/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/dllib/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/orca/src/"))
+sys.path.insert(0, os.path.abspath("../../../python/serving/src/"))
+
 
 
 # -- Project information -----------------------------------------------------
