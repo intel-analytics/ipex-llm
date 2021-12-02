@@ -260,13 +260,16 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                                  'and use the default cluster_mode instead')
             assert "master" in kwargs, "Please specify master for k8s-client mode"
             assert "container_image" in kwargs, "Please specify container_image for k8s-client mode"
+            from bigdl.dllib.utils.utils import detect_conda_env_name
+            conda_env_name = detect_conda_env_name()
             for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
-                        "extra_python_lib", "jars", "python_location"]:
+                        "extra_python_lib", "penv_archive", "jars", "python_location"]:
                 if key in kwargs:
                     spark_args[key] = kwargs[key]
             from bigdl.dllib.nncontext import init_spark_on_k8s
             sc = init_spark_on_k8s(master=kwargs["master"],
                                    container_image=kwargs["container_image"],
+                                   conda_name=conda_env_name,
                                    num_executors=num_nodes, executor_cores=cores,
                                    executor_memory=memory, **spark_args)
         elif cluster_mode == "standalone":
