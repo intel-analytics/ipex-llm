@@ -42,6 +42,9 @@ else
     export PYTHON_EXECUTABLES=("python2.7" "python3.5")
 fi
 
+export TF_LIBS_PATH=$(python -c 'import site; print(site.getsitepackages()[0])')/bigdl/share/tflibs
+echo "TF_LIBS_PATH: $TF_LIBS_PATH"
+
 function run_notebook() {
     notebook_path=$1
     target_notebook_path=${DL_PYTHON_HOME}/tmp_${PYTHON_EXECUTABLE}.ipynb
