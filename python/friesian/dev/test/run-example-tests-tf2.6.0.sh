@@ -34,7 +34,7 @@ fi
 
 python ../../example/two_tower/train_2tower.py \
     --executor_cores 4 \
-    --executor_memory 50g \
+    --executor_memory 10g \
     --data_dir ./data/input_2tower \
     --model_dir ./result \
     --frequency_limit 2
@@ -54,7 +54,7 @@ fi
 
 python ../../example/wnd/train/wnd_train_recsys.py \
     --executor_cores 4 \
-    --executor_memory 50g \
+    --executor_memory 10g \
     --data_dir ./data/input_wnd \
     --model_dir ./result \
     -b 1600
