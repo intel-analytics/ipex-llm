@@ -61,11 +61,12 @@ cluster_mode = args.cluster_mode
 
 dataset_dir = args.data_dir
 if not exists(dataset_dir):
+    print("not exist############################################################################################")
     makedirs(dataset_dir)
 zip_file = tf.keras.utils.get_file(
     origin="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
     fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
-base_dir, _ = os.path.splitext(zip_file)
+base_dir =  '/data/datasets/cats_and_dogs_filtered' #, _ =#os.path.splitext(zip_file)
 
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
