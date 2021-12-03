@@ -21,6 +21,6 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export 
 status_8_local_spark_customer_profile=$(echo $?)
 fi
 
-echo "#### example.8 Excepted result(e2e): INFO this is results count: XXX"
+echo "#### example.8 Excepted result(e2e): INFO this is result2 count: XXX"
 echo "---- example.8 Actual result: "
-cat customer_profile-sgx.log | egrep -a 'INFO this is results count:'
+cat customer_profile-sgx.log | egrep -a 'INFO this is result2 count:'
