@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, LocallyConnected2D => BigDLLocallyConnected2D}
+import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, LocallyConnected2D => BigDLLocallyConnected2D}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.nn.LookupTableSparse
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor

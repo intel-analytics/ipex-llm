@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.dllib.keras.autograd
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn._
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.nn.tf.InternalWithoutInput
 import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, RandomUniform, VariableFormat}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor

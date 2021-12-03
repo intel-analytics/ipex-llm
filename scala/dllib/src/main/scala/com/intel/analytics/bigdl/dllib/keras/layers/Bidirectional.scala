@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.dllib.nn.keras.{Bidirectional => BBidirectional}
+import com.intel.analytics.bigdl.dllib.nn.internal.{Bidirectional => BBidirectional}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.keras.Net
@@ -40,7 +40,7 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Bidirectional[T: ClassTag](
-   override val layer: com.intel.analytics.bigdl.dllib.nn.keras.Recurrent[T],
+   override val layer: com.intel.analytics.bigdl.dllib.nn.internal.Recurrent[T],
    override val mergeMode: String = "concat",
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BBidirectional[T] (
@@ -49,7 +49,7 @@ class Bidirectional[T: ClassTag](
 
 object Bidirectional {
   def apply[@specialized(Float, Double) T: ClassTag](
-    layer: com.intel.analytics.bigdl.dllib.nn.keras.Recurrent[T],
+    layer: com.intel.analytics.bigdl.dllib.nn.internal.Recurrent[T],
     mergeMode: String = "concat",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Bidirectional[T] = {
     new Bidirectional[T](layer, mergeMode, inputShape)
