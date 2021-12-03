@@ -17,6 +17,7 @@ import shutil
 import tempfile
 from unittest import TestCase
 
+import time
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -88,6 +89,8 @@ class TestTFEstimator(TestCase):
                               validation_data=df,
                               validation_steps=1)
             # trainer._stop_log_to_driver()
+
+            time.sleep(10)
 
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])

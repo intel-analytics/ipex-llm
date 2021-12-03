@@ -234,10 +234,11 @@ class SparkRunner:
         self.is_local = is_local
         # if not self.is_local:
         if self.local_rank == 0:
-            log_root = os.getenv("SPARK_WORKER_DIR")
-            log_dir = os.path.join(log_root, application_id)
-            # log_dir = "/tmp"
+            # log_root = os.getenv("SPARK_WORKER_DIR")
+            # log_dir = os.path.join(log_root, application_id)
+            log_dir = "/"
             print("log dir is: ", log_dir)
+            # application_id = "app1"
             # This event is checked regularly by all of the threads so that they
             # know when to exit.
             self.threads_stopped = threading.Event()
@@ -248,7 +249,7 @@ class SparkRunner:
             #     name="monitor_logs")
             self.logger_thread = threading.Thread(
                 target=self._start_log_monitor,
-                args=(driver_ip, driver_port, log_dir, self.threads_stopped),
+                args=(driver_ip, driver_port, log_dir, self.threads_stopped, application_id),
                 name="monitor_logs")
             self.logger_thread.daemon = True
             self.logger_thread.start()
@@ -467,7 +468,7 @@ class SparkRunner:
         self._stop_log_monitor()
         return new_part
 
-    def _start_log_monitor(self, driver_ip, driver_port, logs_dir, threads_stopped):
+    def _start_log_monitor(self, driver_ip, driver_port, logs_dir, threads_stopped, application_id):
         """
         Start a log monitor thread.
 
@@ -475,7 +476,8 @@ class SparkRunner:
         log_monitor = LogMonitor(driver_ip=driver_ip,
                                  driver_port=driver_port,
                                  logs_dir=logs_dir,
-                                 threads_stopped=threads_stopped)
+                                 threads_stopped=threads_stopped,
+                                 application_id=application_id)
         log_monitor.run()
 
     def _stop_log_monitor(self):

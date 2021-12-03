@@ -23,6 +23,7 @@ import os
 import shutil
 import time
 import tempfile
+import re
 import pickle
 import zmq
 
@@ -77,12 +78,12 @@ class LogMonitor:
             false otherwise.
     """
 
-    def __init__(self, driver_ip, driver_port, logs_dir, threads_stopped):
+    def __init__(self, driver_ip, driver_port, logs_dir, threads_stopped, application_id):
         """Initialize the log monitor object."""
         from bigdl.dllib.utils.utils import get_node_ip
         self.ip = get_node_ip()
         self.logs_dir = logs_dir
-        application_id = os.path.basename(logs_dir)
+        self.application_id = application_id
         self.log_filenames = set()
         self.open_file_infos = []
         self.closed_file_infos = []
@@ -102,6 +103,7 @@ class LogMonitor:
             file_info.file_handle = None
             self.closed_file_infos.append(file_info)
         # save file info
+        # if len(self.open_file_infos) > 0:
         with open(self.file_info_path, 'wb') as f:
             pickle.dump(self.closed_file_infos, f)
 
@@ -112,8 +114,9 @@ class LogMonitor:
             with open(self.file_info_path, "rb") as f:
                 self.closed_file_infos = pickle.load(f)
         else:
-            log_file_paths = glob.glob("{}/**/stdout".format(self.logs_dir))\
-                             + glob.glob("{}/**/stderr".format(self.logs_dir))
+            # log_file_paths = glob.glob("{}/**/stdout".format(self.logs_dir))\
+            #                  + glob.glob("{}/**/stderr".format(self.logs_dir))
+            log_file_paths = self.find_log_files()
             for file_path in log_file_paths:
                 if os.path.isfile(file_path):
                     self.log_filenames.add(file_path)
@@ -222,3 +225,26 @@ class LogMonitor:
             raise e
         finally:
             self.close_all_files()
+
+    def find_log_files(self):
+        file_list = []
+        for root, dirs, files in os.walk(self.logs_dir):
+            for file in files:
+                if file == "stdout" or file == "stderr":
+                    file_list.append(os.path.join(root, file))
+
+        print("file list is: ", file_list)
+
+        log_files = []
+        pattern_str = '(.*){}/(.*)/[stderr/stdout]'.format(self.application_id)
+
+        pattern_re = re.compile(pattern_str)
+
+        for file_path in file_list:
+            matched = pattern_re.match(file_path)
+            if matched is not None:
+                log_files.append(file_path)
+        print("log files is: ", log_files)
+
+        return log_files
+
