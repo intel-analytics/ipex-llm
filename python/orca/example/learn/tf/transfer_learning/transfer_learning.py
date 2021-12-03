@@ -46,7 +46,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf.estimator import Estimator
 
 import os
-for filepath,dirnames,filenames in os.walk('/data'):
+for filepath,dirnames,filenames in os.walk('/data/datasets/cats_and_dogs_filtered/'):
     for filename in filenames:
         print(os.path.join(filepath,filename))
 
