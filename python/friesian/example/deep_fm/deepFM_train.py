@@ -45,7 +45,7 @@ spark_conf = {"spark.network.timeout": "10000000",
 class DeepFM(BaseModel):
     def __init__(self,
                  linear_feature_columns, dnn_feature_columns, use_fm=True,
-                 dnn_hidden_units=(256, 128, 64), l2_reg_linear=0.00001, l2_reg_embedding=0.00001,
+                 dnn_hidden_units=(1024, 512, 128), l2_reg_linear=0.00001, l2_reg_embedding=0.00001,
                  l2_reg_dnn=0, init_std=0.0001, seed=1024, dnn_dropout=0, dnn_activation='relu',
                  dnn_use_bn=False, task='binary', device='cpu', gpus=None):
 
@@ -131,8 +131,8 @@ if __name__ == '__main__':
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
                 "len_hashtags", "len_domains", "len_links"]
-    cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
-                "present_media", "tweet_type", "language"]
+    cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified", "present_media",
+                "tweet_type", "language", 'present_media_language']
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
 
@@ -154,9 +154,9 @@ if __name__ == '__main__':
     cat_dims = dict(zip(cat_dims['column'], [dim + 1 for dim in cat_dims['max']]))
     sparse_dims.update(cat_dims)
 
-    fixlen_feature_columns = [SparseFeat(feat, int(sparse_dims[feat])) for feat in sparse_dims] + \
-                             [DenseFeat(feat, 1, ) for feat in num_cols]
-    feature_names = get_feature_names(fixlen_feature_columns)
+    feature_columns = [SparseFeat(feat, int(sparse_dims[feat]), 16) for feat in sparse_dims] + \
+                      [DenseFeat(feat, 1) for feat in num_cols]
+    feature_names = get_feature_names(feature_columns)
 
     train = train.reindex(embed_cols, reindex_tbls)\
         .transform_min_max_scale(num_cols, min_max_dict)\
@@ -169,7 +169,6 @@ if __name__ == '__main__':
         .merge_cols(feature_names, "feature") \
         .select(["label", "feature"]) \
         .apply("label", "label", lambda x: [float(x)], dtype="array<float>")
-
     test.cache()
 
     def model_creator(config):
@@ -177,6 +176,7 @@ if __name__ == '__main__':
                        dnn_feature_columns=config["dnn_feature_columns"],
                        task='binary', l2_reg_embedding=1e-1)
         model.float()
+        print(model)
         return model
 
     def optim_creator(model, config):
@@ -184,8 +184,8 @@ if __name__ == '__main__':
 
     criterion = torch.nn.BCELoss()
 
-    config = {'linear_feature_columns': fixlen_feature_columns,
-              'dnn_feature_columns': fixlen_feature_columns,
+    config = {'linear_feature_columns': feature_columns,
+              'dnn_feature_columns': feature_columns,
               'feature_names': feature_names,
               'lr': args.lr}
 
@@ -198,6 +198,7 @@ if __name__ == '__main__':
     valid_stats = est.evaluate(data=test.df, feature_cols=["feature"], label_cols=["label"],
                                batch_size=args.batch_size)
 
+    est.save(args.model_dir)
     print("Train stats: {}".format(train_stats))
     print("Validation stats: {}".format(valid_stats))
 
