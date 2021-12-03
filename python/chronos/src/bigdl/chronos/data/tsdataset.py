@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from _pytest.python_api import raises
 import pandas as pd
 import numpy as np
 import functools
@@ -55,7 +54,6 @@ class TSDataset:
         self.scaler = None
         self.scaler_index = [i for i in range(len(self.target_col))]
         self.id_sensitive = None
-        self.best_lookback = None
         self._has_generate_agg_feature = False
         self._check_basic_invariants()
 
@@ -476,15 +474,16 @@ class TSDataset:
         return self
 
     def roll(self,
-             lookback=None,
-             horizon=None,
+             horizon,
+             lookback='auto',
              feature_col=None,
              target_col=None,
              id_sensitive=False):
         '''
         Sampling by rolling for machine learning/deep learning models.
 
-        :param lookback: int, lookback value.
+        :param lookback: int, lookback value. Default to 'auto',
+               Will use the most cycles to sample.
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
@@ -563,12 +562,13 @@ class TSDataset:
         roll_feature_df = None if self.roll_feature_df is None \
             else self.roll_feature_df[additional_feature_col]
 
+        if lookback == 'auto':
+            lookback = self.get_cycle_length('mode', top_k=3)
         rolling_result = \
             self.df.groupby([self.id_col]) \
                 .apply(lambda df: roll_timeseries_dataframe(df=df,
                                                             roll_feature_df=roll_feature_df,
-                                                            lookback=lookback if lookback
-                                                            else self.get_best_lookback(),
+                                                            lookback=lookback,
                                                             horizon=horizon,
                                                             feature_col=feature_col,
                                                             target_col=target_col))
@@ -608,7 +608,7 @@ class TSDataset:
     def to_torch_data_loader(self,
                              batch_size=32,
                              roll=False,
-                             lookback=None,
+                             lookback='auto',
                              horizon=None,
                              feature_col=None,
                              target_col=None, ):
@@ -622,7 +622,8 @@ class TSDataset:
         :param roll: Boolean. Whether to roll the dataframe before converting to DataLoader.
                If True, you must also specify lookback and horizon for rolling. If False, you must
                have called tsdataset.roll() before calling to_torch_data_loader(). Default to False.
-        :param lookback: int, lookback value.
+        :param lookback: int, lookback value. Default to 'auto',
+               Will use the most cycles to sample.
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
@@ -664,8 +665,6 @@ class TSDataset:
         from torch.utils.data import TensorDataset, DataLoader
         import torch
         if roll:
-            # if lookback is None:
-            #     raise ValueError("You must input lookback if roll is True")
             if horizon is None:
                 raise ValueError("You must input horizon if roll is True")
             from bigdl.chronos.data.utils.roll_dataset import RollDataset
@@ -677,8 +676,10 @@ class TSDataset:
             # set scaler index for unscale_numpy
             self.scaler_index = [self.target_col.index(t) for t in target_col]
 
+            if lookback == 'auto':
+                lookback = self.get_cycle_length('mode', top_k=3)
             torch_dataset = RollDataset(self.df,
-                                        lookback=lookback if lookback else self.get_best_lookback(),
+                                        lookback=lookback,
                                         horizon=horizon,
                                         feature_col=feature_col,
                                         target_col=target_col,
@@ -817,11 +818,9 @@ class TSDataset:
         if strict_check:
             _check_dt_is_sorted(self.df, self.dt_col)
 
-    def get_best_lookback(self, aggregate='mode', top_k=3):
+    def get_cycle_length(self, aggregate='mode', top_k=3):
         """
-        Use the calculation of Fourier transform and autocorrelation coefficient to
-        get the time period of all columns, and select the appropriate training time
-        period for the model by specifying aggregate.
+        calculate the cycle length of the time series in this TSDataset.
 
         Args:
             top_k (int): The freq with top top_k power after fft will be
@@ -832,13 +831,15 @@ class TSDataset:
         Returns:
             int: A best time period.
         """
-        df = self.df.copy()
-        assert isinstance(top_k, int), f"top_k type must bu int, but found {type(top_k)}."
-        assert isinstance(aggregate, str), \
-            f"aggregate type must bu str, but found {type(aggregate)}."
-    
-        res = df.groupby(self.id_col).apply(lambda x: [cycle_length_est(x[col].values, top_k)
-                                                       for col in self.target_col][0])
+        assert isinstance(top_k, int),\
+            f"top_k type must be int, but found {type(top_k)}."
+        assert isinstance(aggregate, str),\
+            f"aggregate type must be str, but found {type(aggregate)}."
+        assert aggregate.lower().strip() in ['min', 'max', 'mode', 'median', 'mean'], \
+            f"We Only support 'min' 'max' 'mode' 'median' 'mean', but found {aggregate}."
+
+        res = self.df.groupby(self.id_col).apply(lambda x: [cycle_length_est(x[col].values, top_k)
+                                                 for col in self.target_col][0])
 
         if aggregate.lower().strip() == 'mode':
             self.best_lookback = int(res.unique()[0])
@@ -850,7 +851,5 @@ class TSDataset:
             self.best_lookback = int(res.min())
         elif aggregate.lower().strip() == 'max':
             self.best_lookback = int(res.max())
-        else:
-            raise NameError("We only support 'mode','mean','median','min','max' "
-                            f"but found {aggregate}.")
+
         return self.best_lookback

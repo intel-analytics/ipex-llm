@@ -949,22 +949,34 @@ class TestTSDataset(ZooTestCase):
             tsdata._check_basic_invariants(strict_check=True)
 
     def test_cycle_length_est(self):
-        pass
-        # TODO gengrate
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df,
                                        target_col='value',
                                        dt_col='datetime',
                                        extra_feature_col='extra feature',
                                        id_col='id')
-        tsdata.get_best_lookback(aggregate='mode', top_k=3)
-        assert tsdata.best_lookback>=1 and tsdata.best_lookback<=100
 
-        with pytest.raises(NameError):
-            tsdata.get_best_lookback(aggregate="normal")
         with pytest.raises(AssertionError):
-            tsdata.get_best_lookback(aggregate=10)
+            tsdata.get_cycle_length(aggregate="normal")
         with pytest.raises(AssertionError):
-            tsdata.get_best_lookback(top_k='3')
+            tsdata.get_cycle_length(aggregate=10)
         with pytest.raises(AssertionError):
-            tsdata.get_best_lookback(top_k=24)
+            tsdata.get_cycle_length(top_k='3')
+        with pytest.raises(AssertionError):
+            tsdata.get_cycle_length(top_k=24)
+        
+        df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=100),
+                           "value": np.arange(100),
+                           "id": np.array(['00']*100),
+                           "extra feature": np.random.randn(100)})
+        tsdata = TSDataset.from_pandas(df,
+                                       target_col='value',
+                                       dt_col='datetime',
+                                       extra_feature_col='extra feature')
+        tsdata.roll(lookback='auto', horizon=1)
+        df_x, _ = tsdata.to_numpy()
+        assert df_x.shape[1] == 33
+
+        tsdata.roll(lookback=tsdata.get_cycle_length(aggregate='median', top_k=4),
+                    horizon=1)
+        assert tsdata.best_lookback == 25

@@ -507,11 +507,11 @@ class TestAutoTrainer(TestCase):
                                          dt_col='datetime',
                                          id_col='id',
                                          with_split=False)
-        train_ts.roll(horizon=1)
 
         input_feature_dim, output_feature_dim = 1, 1
         auto_estimator = AutoTSEstimator(model='lstm',
                                          search_space="minimal",
+                                         past_seq_len='auto',
                                          input_feature_num=input_feature_dim,
                                          output_target_num=output_feature_dim)
         
@@ -520,7 +520,7 @@ class TestAutoTrainer(TestCase):
                            batch_size=hp.choice([16, 32]),
                            validation_data=train_ts)
         config = auto_estimator.get_best_config()
-        assert config['past_seq_len'] == 33
+        assert config['past_seq_len'] == 16 or config['past_seq_len'] == 64
 
 if __name__ == "__main__":
     pytest.main([__file__])
