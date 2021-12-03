@@ -110,7 +110,7 @@ class SoftMaxSpec extends TorchSpec {
 
   "A SoftMax 2D input with pos parameter" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new SoftMax[Double](-1)
+    val layer = new SoftMax[Double]()
     val input = Tensor[Double](3, 5)
     input.apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](3, 5)

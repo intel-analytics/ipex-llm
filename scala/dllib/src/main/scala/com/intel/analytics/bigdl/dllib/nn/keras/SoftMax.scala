@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.nn.keras
 
+import com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalSoftMax
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.{Transpose, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -32,33 +33,12 @@ class SoftMax[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def computeOutputShape(inputShape: Shape): Shape = {
-    val input = inputShape.toSingle().toArray
-    require(input.length == 2 || input.length == 3 || input.length == 4,
-      s"SoftMax requires 2D or 3D or 4D input, but got input dim ${input.length}")
     inputShape
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val input = inputShape.toSingle().toArray
-    val layer = com.intel.analytics.bigdl.dllib.nn.SoftMax()
-    if (input.length <= 2) {
-      layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    } else if (input.length == 3) {
-      val model = TSequential[T]()
-      model.add(Transpose(Array((1, 3))))
-      model.add(layer)
-      model.add(Transpose(Array((1, 3))))
-      model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    } else if (input.length == 4) {
-      val model = TSequential[T]()
-      model.add(Transpose(Array((2, 4))))
-      model.add(layer)
-      model.add(Transpose(Array((2, 4))))
-      model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    } else {
-      throw new IllegalArgumentException(s"SoftMax requires 2D or 3D or 4D input, " +
-        s"but got input dim ${input.length}")
-    }
+    val layer = InternalSoftMax()
+    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 

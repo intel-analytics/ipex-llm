@@ -16,10 +16,11 @@
 
 package com.intel.analytics.bigdl.dllib.nn
 
+import com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalSoftMax
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{Engine}
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.Shape
 
 import scala.concurrent.Future
@@ -32,46 +33,17 @@ import scala.reflect.ClassTag
  * where shift = max_i(x_i).
  */
 @SerialVersionUID(- 7842335603491194236L)
-class SoftMax[T: ClassTag](var pos: Int = 1)(implicit ev: TensorNumeric[T])
+class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
-  @transient
-  private var results: Array[Future[Unit]] = null
-
-  private def getPositiveDimension(input: Tensor[T]): Int = {
-    val inputDim = input.nDimension() // data batch dim
-    pos = if (pos <= 0) {
-      inputDim + pos
-    }
-    else pos
-    require(1 <= pos && pos <= input.nDimension(),
-      s"Invalid position: $pos ." + s"input dimension ${input.nDimension()}")
-    pos
-  }
+  private val layer = InternalSoftMax()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(1 <= input.nDimension() && input.nDimension() <= 4,
-      "1D, 2D, 3D or 4D tensor expected" +
-        s"input dimension ${input.nDimension()}")
-    pos = getPositiveDimension(input)
-    // get nFrame and stride value based on the input
-    val (nFrame, stride) = input.nDimension() - pos match {
-      case 0 => (1, 1)
-      case 1 => (input.size(pos), 1)
-      case 2 => (1, input.size(pos + 1) * input.size(pos + 2))
-      case _ => (input.size(pos), input.size(pos + 2) * input.size(pos + 3))
-    }
-
-    if (results == null || results.length != nFrame * stride) {
-      results = new Array[Future[Unit]](nFrame * stride)
-    }
-    output.resizeAs(input)
-    SoftMax.updateOutput[T](input, output, results, pos)
+    output = layer.updateOutput(input)
     output
   }
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(output)
-    SoftMax.updateGradInput[T](input, gradOutput, gradInput, output, results, pos)
+    gradInput = layer.updateGradInput(input, gradOutput)
     gradInput
   }
 
@@ -81,13 +53,9 @@ class SoftMax[T: ClassTag](var pos: Int = 1)(implicit ev: TensorNumeric[T])
 }
 object SoftMax{
 
-  def apply[@specialized(Float, Double) T: ClassTag](pos: Int = 1)
-      (implicit ev: TensorNumeric[T]) : SoftMax[T] = {
-    new SoftMax[T](pos)
-  }
-  def apply[@specialized(Float, Double) T: ClassTag]
+  def apply[@specialized(Float, Double) T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : SoftMax[T] = {
-    new SoftMax[T](1)
+    new SoftMax[T]()
   }
   // Notice: SoftMin will call this function
   private[nn] def updateOutput[T: ClassTag](input: Tensor[T], output: Tensor[T],
