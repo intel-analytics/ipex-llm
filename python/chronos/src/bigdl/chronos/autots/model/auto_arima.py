@@ -164,7 +164,7 @@ class AutoARIMA:
         assist_num = 1
         if search_count:
             for val in search_count:
-                 assist_num*= val          
+                assist_num *= val
         n_sampling /= assist_num
         # TODO Number of threads specified by the user corresponds to n_sampling and give warning.
         return math.ceil(n_sampling)
