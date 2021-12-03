@@ -169,7 +169,7 @@ class AutoProphet:
                           validation_data=validation_data,
                           metric=self.metric,
                           metric_threshold=metric_threshold,
-                          n_sampling=n_sampling,
+                          n_sampling=self._n_sampling(n_sampling) if n_sampling != -1 else -1,
                           search_space=self.search_space,
                           search_alg=search_alg,
                           search_alg_params=search_alg_params,
@@ -236,3 +236,18 @@ class AutoProphet:
         Get the best Prophet model.
         """
         return self.best_model.model
+
+    def _n_sampling(self, n_sampling):
+        """
+        Only process n_sampling.
+
+        :return: According to the number of searches, round up to n_sampling.
+        """
+        import math
+        search_count = [len(v['grid_search']) for _, v
+                        in self.model.search_space.items() if isinstance(v, dict)]
+        search_count = sum([val for val in search_count if val > 1])\
+            if len(search_count) > 1 else sum(search_count)
+        n_sampling /= (search_count if search_count > 0 else 1)
+        # TODO Number of cores specified by the user corresponds to n_sampling and give warning.
+        return math.ceil(n_sampling)

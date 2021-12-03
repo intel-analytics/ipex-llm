@@ -72,7 +72,7 @@ class BasePytorchAutomodel:
             validation_data=validation_data,
             metric=self.metric,
             metric_threshold=metric_threshold,
-            n_sampling=n_sampling,
+            n_sampling=self._n_sampling(n_sampling, batch_size) if n_sampling != -1 else -1,
             search_space=self.search_space,
             search_alg=search_alg,
             search_alg_params=search_alg_params,
@@ -308,3 +308,20 @@ class BasePytorchAutomodel:
 
     def _get_best_automl_model(self):
         return self.best_model
+
+    def _n_sampling(self, n_sampling, batch_size):
+        """
+        Only process n_sampling.
+
+        :return: According to the number of searches, round up n_sampling.
+        """
+        import math
+        search_count = [len(v['grid_search']) for _, v
+                        in self.search_space.items() if isinstance(v, dict)]
+        search_count = sum([val for val in search_count if val > 1])\
+            if len(search_count) > 1 else sum(search_count)
+        batch_size_count = len(batch_size['grid_search']) if isinstance(batch_size, dict) else 0
+        search_count += (batch_size_count if batch_size_count >= 2 else 0)
+        n_sampling /= (search_count if search_count > 0 else 1)
+        # TODO Number of cores specified by the user corresponds to n_sampling and give warning.
+        return math.ceil(n_sampling)
