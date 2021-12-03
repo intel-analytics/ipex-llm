@@ -25,7 +25,8 @@ import scala.sys.process._
 class OpenVINOModelSpec extends FlatSpec with Matchers {
   ClusterServing.helper = new ClusterServingHelper()
   "OpenVINO Inception_v1" should "work" in {
-    ("wget -O /tmp/openvino_inception_v1.tar https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/openvino_inception_v1.tar").!
+    ("wget -O /tmp/openvino_inception_v1.tar https://sourceforge.net/projects/ " +
+"analytics-zoo/files/analytics-zoo-data/openvino_inception_v1.tar").!
     "tar -xvf /tmp/openvino_inception_v1.tar -C /tmp/".!
     val resource = getClass().getClassLoader().getResource("serving")
     val dataPath = resource.getPath + "/image-3_224_224-arrow-base64"
@@ -52,7 +53,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
   }
 
   "OpenVINO Mobilenet_v1" should "work" in {
-    ("wget -O /tmp/openvino_mobilenet_v1.tar https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/openvino_mobilenet_v1.tar").!
+    ("wget -O /tmp/openvino_mobilenet_v1.tar https://sourceforge.net/projects/ " +
+"analytics-zoo/files/analytics-zoo-data/openvino_mobilenet_v1.tar").!
     "tar -xvf /tmp/openvino_mobilenet_v1.tar -C /tmp/".!
     val resource = getClass().getClassLoader().getResource("serving")
     val dataPath = resource.getPath + "/image-3_224_224-arrow-base64"
@@ -81,7 +83,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
 
   "OpenVINO Mobilenet_v2" should "work" in {
-    ("wget -O /tmp/openvino_mobilenet_v2.tar https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/openvino_mobilenet_v2.tar").!
+    ("wget -O /tmp/openvino_mobilenet_v2.tar https://sourceforge.net/projects/ " +
+"analytics-zoo/files/analytics-zoo-data/openvino_mobilenet_v2.tar").!
     "tar -xvf /tmp/openvino_mobilenet_v2.tar -C /tmp/".!
     val resource = getClass().getClassLoader().getResource("serving")
     val dataPath = resource.getPath + "/image-3_224_224-arrow-base64"
@@ -110,7 +113,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
 
   "OpenVINO Resnet50_openvino2020" should "work" in {
-    ("wget -O /tmp/openvino2020_resnet50.tar https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/openvino2020_resnet50.tar").!
+    ("wget -O /tmp/openvino2020_resnet50.tar https://sourceforge.net/projects/ " +
+"analytics-zoo/files/analytics-zoo-data/openvino2020_resnet50.tar").!
     "tar -xvf /tmp/openvino2020_resnet50.tar -C /tmp/".!
     val resource = getClass().getClassLoader().getResource("serving")
     val dataPath = resource.getPath + "/image-3_224_224-arrow-base64"
@@ -139,7 +143,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
 
   "OpenVINO Resnet50" should "work" in {
-    ("wget -O /tmp/openvino_resnet50.tar https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/openvino_resnet50.tar").!
+    ("wget -O /tmp/openvino_resnet50.tar https://sourceforge.net/projects/ " +
+"analytics-zoo/files/analytics-zoo-data/openvino_resnet50.tar").!
     "tar -xvf /tmp/openvino_resnet50.tar -C /tmp/".!
     val resource = getClass().getClassLoader().getResource("serving")
     val dataPath = resource.getPath + "/image-3_224_224-arrow-base64"
@@ -169,7 +174,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
 
   "OpenVINO Vgg16" should "work" in {
-    ("wget -O /tmp/openvino_vgg16.tar https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/openvino_vgg16.tar").!
+    ("wget -O /tmp/openvino_vgg16.tar https://sourceforge.net/projects/ " +
+"analytics-zoo/files/analytics-zoo-data/openvino_vgg16.tar").!
     "tar -xvf /tmp/openvino_vgg16.tar -C /tmp/".!
     val resource = getClass().getClassLoader().getResource("serving")
     val dataPath = resource.getPath + "/image-3_224_224-arrow-base64"
@@ -198,7 +204,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
 
   "OpenVINO face_detection_0100" should "work" in {
-    ("wget -O /tmp/openvino_face_detection_0100.tar https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/openvino_face_detection_0100.tar").!
+    ("wget -O /tmp/openvino_face_detection_0100.tar https://sourceforge.net/projects/ " +
+"analytics-zoo/files/analytics-zoo-data/openvino_face_detection_0100.tar").!
     "tar -xvf /tmp/openvino_face_detection_0100.tar -C /tmp/".!
     val resource = getClass().getClassLoader().getResource("serving")
     val dataPath = resource.getPath + "/image-3_224_224-arrow-base64"
