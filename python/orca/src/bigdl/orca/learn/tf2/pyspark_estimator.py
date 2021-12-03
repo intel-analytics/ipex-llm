@@ -433,8 +433,8 @@ class SparkTFEstimator():
         """
         context = zmq.Context()
         socket = context.socket(zmq.REP)
-        socket.bind("tcp://*:{}".format(self.port))
-        print("started log server")
+        socket.bind("tcp://{}:{}".format(self.ip, self.port))
+        print("started log server on {}:{}".format(self.ip, self.port))
 
         while True:
             message = socket.recv()
