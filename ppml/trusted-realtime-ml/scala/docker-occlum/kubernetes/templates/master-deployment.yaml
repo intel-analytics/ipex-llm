@@ -1,0 +1,91 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: master-deployment
+spec:
+  selector:
+    matchLabels:
+      app: bigdl-ppml-trusted-realtime-ml-occlum
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bigdl-ppml-trusted-realtime-ml-occlum
+        component: master
+    spec:
+      tolerations:
+      - key: sgx.intel.com/epc
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: master-python-occlum
+        image:  {{ .Values.image }}
+        command: ["/bin/sh","-c"]
+        args: ["bash /opt/start-all-but-flink.sh | tee /opt/log; tail -f /dev/null"]
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 6379
+        env:
+          - name: CORE_NUM
+            value: "16"
+          - name: FLINK_JOB_MANAGER_IP
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: flink.jobmanager.ip
+          - name: SGX_MODE
+            valueFrom:
+              configMapKeyRef:
+                name: flink-config
+                key: sgx.mode
+#        resources:
+#          requests:
+#            cpu: 10
+#            sgx.intel.com/epc: 133258905600
+#          limits:
+#            cpu: 12
+#            sgx.intel.com/epc: 133258905600
+        volumeMounts:
+          - name: device-plugin
+            mountPath: /var/lib/kubelet/device-plugins
+          - name: entry
+            mountPath: /ppml/trusted-realtime-ml/start-all-but-flink.sh
+          - name: aesm-socket
+            mountPath: /var/run/aesmd/aesm.socket
+          - name: enclave-keys
+            mountPath: /occlum/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+          - name: redis-secure-keys
+            mountPath: /opt/redis/work/keys
+          - name: redis-secure-password
+            mountPath: /opt/redis/work/password
+          - name: java-secure-keys
+            mountPath: /opt/keys
+          - name: java-secure-password
+            mountPath: /opt/password
+      volumes:
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        hostPath:
+          path: /var/run/aesmd/aesm.socket
+      - name: enclave-keys
+        hostPath:
+          path: {{ .Values.enclaveKeysPath }}
+      - name: entry
+        hostPath:
+          path: {{ .Values.startAllButFlinkPath }}
+      - name: redis-secure-keys
+        secret:
+          secretName: ssl-keys
+      - name: redis-secure-password
+        secret:
+          secretName: ssl-password
+      - name: java-secure-keys
+        secret:
+          secretName: ssl-keys
+      - name: java-secure-password
+        secret:
+          secretName: ssl-password
