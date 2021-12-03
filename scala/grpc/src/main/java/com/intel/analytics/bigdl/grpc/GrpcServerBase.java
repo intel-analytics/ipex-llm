@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class GrpcServerBase extends AbstractGrpcBase {
     protected static final Logger logger = Logger.getLogger(GrpcServerBase.class.getName());
-    protected int port;
+    protected int port = 8980;
     protected Server server;
     protected LinkedList<BindableService> serverServices = new LinkedList<BindableService>();
     protected LinkedList<ServerServiceDefinition> serverDefinitionServices =
@@ -58,6 +58,10 @@ public abstract class GrpcServerBase extends AbstractGrpcBase {
      */
     public GrpcServerBase(String[] args) {
         this.args = args;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public void parseConfig() throws Exception {}

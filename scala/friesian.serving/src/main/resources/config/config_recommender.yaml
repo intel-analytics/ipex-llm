@@ -13,6 +13,9 @@ itemIDColumn: tweet_id
 # default: null, must be provided, column names for inference, order related.
 inferenceColumns: engaged_with_user_is_verified, enaging_user_is_verified, present_media_language, present_media, tweet_type, language, engaged_with_user_follower_count, engaged_with_user_following_count, enaging_user_follower_count, enaging_user_following_count, len_hashtags, len_domains, len_links
 
+# default: 0, if set, ranking service request will be divided
+inferenceBatch: 0
+
 # default: localhost:8980, recall service target
 recallServiceURL: localhost:8084
 

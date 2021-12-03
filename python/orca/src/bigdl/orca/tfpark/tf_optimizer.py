@@ -361,7 +361,8 @@ class TFOptimizer:
         variable names.
 
         :param loss: The loss tensor of the TensorFlow model, should be a scalar
-        :param optim_method: the optimization method to be used, such as bigdl.dllib.optim.optimizer.Adam
+        :param optim_method: the optimization method to be used, such as
+        bigdl.dllib.optim.optimizer.Adam
         :param sess: the current TensorFlow Session, if you want to used a pre-trained model, you
         should use the Session to load the pre-trained variables and pass it to TFOptimizer.
         """
@@ -520,7 +521,8 @@ class TFOptimizer:
         The loss tensor must come from a TensorFlow graph that only takes TFDataset.tensors and
         the tensors in `tensor_with_value` as inputs.
         :param loss: The loss tensor of the TensorFlow model, should be a scalar
-        :param optim_method: the optimization method to be used, such as bigdl.dllib.optim.optimizer.Adam
+        :param optim_method: the optimization method to be used, such as
+        bigdl.dllib.optim.optimizer.Adam
         :param session: the current TensorFlow Session, if you want to used a pre-trained model,
         you should use the Session to load the pre-trained variables and pass it to TFOptimizer.
         :param val_outputs: the validation output TensorFlow tensor to be used by val_methods

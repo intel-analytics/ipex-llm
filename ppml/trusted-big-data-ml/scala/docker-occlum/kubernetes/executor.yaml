@@ -8,7 +8,6 @@ spec:
   - name: spark-example
     image: intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT
     imagePullPolicy: Never
-    workingDir: /opt/spark
     volumeMounts:
     - name: sgx-enclave
       mountPath: /dev/sgx/enclave

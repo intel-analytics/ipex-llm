@@ -68,6 +68,7 @@ RUN cd /opt && \
     rm spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    rm spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar && \
     rm spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
 # spark modification
@@ -75,11 +76,16 @@ RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-examples_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/pyspark.zip && \
     mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark-examples_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
     mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
+
+ADD spark-example-sql-e2e.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
+
 # hadoop
 RUN cd /opt && \
     apt-get install -y build-essential && \
@@ -145,6 +151,7 @@ ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                /graphene/meson_build_output/bin:${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP                            127.0.0.1
 ENV SGX_MEM_SIZE                        32G
+ENV SGX_LOG_LEVEL                       error
 ENV SPARK_MASTER_IP                     127.0.0.1
 ENV SPARK_MASTER_PORT                   7077
 ENV SPARK_MASTER_WEBUI_PORT             8080
@@ -233,7 +240,7 @@ ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
 ADD ./check-status.sh /ppml/trusted-big-data-ml/check-status.sh
 ADD ./tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
-ADD ./test-suits /ppml/trusted-big-data-ml/work/test-suits
+ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
 ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
 
@@ -264,10 +271,17 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-classifier-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-data-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-e2e-example.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-simple-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-sql-api-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suits/pyspark-sql-examples.sh
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-e2e-example.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/start-tpch.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-sql-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-e2e-example.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-pi.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-sql-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml

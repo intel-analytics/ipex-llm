@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from optparse import OptionParser
 import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
@@ -21,6 +22,7 @@ from pyspark.sql.functions import col, udf
 from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.torch import TorchModel, TorchLoss
 from bigdl.dllib.nnframes import *
 from bigdl.dllib.keras.metrics import Accuracy
@@ -47,29 +49,17 @@ class CatDogModel(nn.Module):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) != 2:
-        print(sys.argv)
-        print("Need parameters: <imagePath>")
-        exit(-1)
+    parser = OptionParser()
+    parser.add_option("--executor-cores", type=int, dest="cores", default=4, help="number of executor cores")
+    parser.add_option("--num-executors", type=int, dest="executors", default=16, help="number of executors")
+    parser.add_option("--executor-memory", type=str, dest="executorMemory", default="30g", help="executor memory")
+    parser.add_option("--driver-memory", type=str, dest="driverMemory", default="30g", help="driver memory")
+    parser.add_option("--deploy-mode", type=str, dest="deployMode", default="local", help="deploy mode, local, yarn-client or yarn-cluster")
+    (options, args) = parser.parse_args(sys.argv)
 
-    hadoop_conf_dir = os.environ.get('HADOOP_CONF_DIR')
+    hadoop_conf = os.environ.get('HADOOP_CONF_DIR')
 
-    if hadoop_conf_dir:
-        num_executors = 2
-        num_cores_per_executor = 4
-        zoo_conda_name = detect_conda_env_name()  # auto detect current conda env name
-        sc = init_spark_on_yarn(
-            hadoop_conf=hadoop_conf_dir,
-            conda_name=zoo_conda_name,
-            num_executors=num_executors,
-            executor_cores=num_cores_per_executor,
-            executor_memory="8g",
-            driver_memory="2g",
-            driver_cores=1)
-    else:
-        num_cores_per_executor = 4
-        sc = init_spark_on_local(cores=num_cores_per_executor, conf={"spark.driver.memory": "10g"})
-
+    sc = init_orca_context(cluster_mode=options.deployMode, hadoop_conf=hadoop_conf)
     model = CatDogModel()
     zoo_model = TorchModel.from_pytorch(model)
 

@@ -522,8 +522,8 @@ Use the following commands to enter the docker of spark driver.
 ```bash
 sudo docker exec -it spark-driver bash
 cd /ppml/trusted-big-data-ml
-./start-spark-standalone-driver-sgx.sh
 ./init.sh
+./start-spark-standalone-driver-sgx.sh
 ```
 
 #### 2. Run pyspark examples 

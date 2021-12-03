@@ -22,6 +22,8 @@ from unittest import TestCase
 import torch
 from torch import nn
 
+import numpy as np
+
 from test._train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
@@ -31,6 +33,16 @@ batch_size = 256
 num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 
+class ResNet18(nn.Module):
+    def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+        super().__init__()
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+        output_size = backbone.get_output_size()
+        head = nn.Linear(output_size, num_classes)
+        self.model = nn.Sequential(backbone, head)
+
+    def forward(self, x):
+        return self.model(x)
 
 class TestModelsVision(TestCase):
 
@@ -42,25 +54,13 @@ class TestModelsVision(TestCase):
             use_orca_lite_trainer=True)
 
     def test_trainer_compile(self):
-        class ResNet18(nn.Module):
-            def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
-                super().__init__()
-                backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
-                output_size = backbone.get_output_size()
-                head = nn.Linear(output_size, num_classes)
-                self.model = nn.Sequential(backbone, head)
-
-            def forward(self, x):
-                return self.model(x)
-
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
-        pl_model = trainer.compile(model, loss, optimizer)
+        pl_model = Trainer.compile(model, loss, optimizer)
         train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
         trainer.fit(pl_model, train_loader)
-
 
 if __name__ == '__main__':
     pytest.main([__file__])
