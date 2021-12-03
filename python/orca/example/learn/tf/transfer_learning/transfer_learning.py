@@ -67,6 +67,7 @@ zip_file = tf.keras.utils.get_file(
     origin="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
     fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
 base_dir =  '/data/datasets/cats_and_dogs_filtered' #, _ =#os.path.splitext(zip_file)
+print(base_dir+"################################################################################")
 
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
