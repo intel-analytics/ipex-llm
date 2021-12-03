@@ -11,7 +11,7 @@ start=$(date "+%s")
 cat /etc/hostname
 
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py \
-  --data_dir ${HDFS_URI}/data//cats_and_dogs_filtered \
+  --data_dir ${HDFS_URI}/data/cats_and_dogs_filtered \
   --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
