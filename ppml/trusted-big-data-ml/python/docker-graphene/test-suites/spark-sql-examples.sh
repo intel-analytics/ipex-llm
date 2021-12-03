@@ -9,6 +9,7 @@ status_5_scala_sql_UserDefinedScalar=1
 status_6_scala_sql_UserDefinedTypedAggregation=1
 status_7_scala_sql_UserDefinedUntypedAggregation=1
 status_8_scala_sql_SparkHiveExample=1
+LOCAL_SPARK_IP=192.168.0.112
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
@@ -112,7 +113,7 @@ SGX=1 ./pal_loader bash -c "
         --executor-cores 4 \
         --total-executor-cores 4 \
         --executor-memory 10G \
-        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar hdfs://127.0.0.1:9000/spark-warehouse" 2>&1 > test-scala-spark-sql-SparkHiveExample-sgx.log
+        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar hdfs://$LOCAL_SPARK_IP:9000/spark-warehouse" 2>&1 > test-scala-spark-sql-SparkHiveExample-sgx.log
 fi
 status_8_scala_sql_SparkHiveExample=$(echo $?)
 
