@@ -113,7 +113,7 @@ class AutoProphet:
             expect_horizon=None,
             freq=None,
             metric_threshold=None,
-            n_sampling=1,
+            n_sampling=16,
             search_alg=None,
             search_alg_params=None,
             scheduler=None,
