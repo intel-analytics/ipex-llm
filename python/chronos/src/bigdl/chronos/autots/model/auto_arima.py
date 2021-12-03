@@ -156,13 +156,15 @@ class AutoARIMA:
         """
         Only process n_sampling.
 
-        :return: According to the number of searches, round up to n_sampling.
+        :param n_sampling: Number of trials to evaluate in total.
         """
         import math
         search_count = [len(v['grid_search']) for _, v
-                        in self.model.search_space.items() if isinstance(v, dict)]
-        search_count = sum([val for val in search_count if val > 1])\
-            if len(search_count) > 1 else sum(search_count)
-        n_sampling /= (search_count if search_count > 0 else 1)
-        # TODO Number of cores specified by the user corresponds to n_sampling and give warning.
+                        in self.search_space.items() if isinstance(v, dict)]
+        assist_num = 1
+        if search_count:
+            for val in search_count:
+                 assist_num*= val          
+        n_sampling /= assist_num
+        # TODO Number of threads specified by the user corresponds to n_sampling and give warning.
         return math.ceil(n_sampling)
