@@ -48,24 +48,30 @@ from bigdl.orca.learn.tf.estimator import Estimator
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
-parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
+#parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
+#dataset path
+parser.add_argument('--file_path', type=str, default="tmp/data/",
+                    help="The path to cats_and_dogs_filtered.zip.")
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
-dataset_dir = args.data_dir
-if not exists(dataset_dir):
-    makedirs(dataset_dir)
-zip_file = tf.keras.utils.get_file(
-    origin="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
-    fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
-base_dir, _ = os.path.splitext(zip_file)
+#dataset_dir = args.data_dir
+#if not exists(dataset_dir):
+    #makedirs(dataset_dir)
+#zip_file = tf.keras.utils.get_file(
+    #origin="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
+    #fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
+#base_dir, _ = os.path.splitext(zip_file)
 
+base_dir = args.file_path + 'cats_and_dogs_filtered'
+#print("base_Dir:",base_dir)
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
 elif cluster_mode == "yarn":
-    additional = "datasets/cats_and_dogs_filtered.zip#" + dataset_dir
+    additional = args.file_path +"cats_and_dogs_filtered.zip#"
+    #additional = "datasets/cats_and_dogs_filtered.zip#" + dataset_dir
     init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g",
                       additional_archive=additional)
 elif cluster_mode == "spark-submit":

@@ -181,7 +181,15 @@ time5=$((now - start))
 echo "#6 start test for orca tf transfer_learning"
 #timer
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py --epochs 1
+#prepare the data
+if [ -d tmp/data/cats_and_dogs_filtered ]; then
+  echo "tmp/cats_and_dogs_filtered already exists"
+else
+  wget $FTP_URI/analytics-zoo-data/cats_and_dogs_filtered.zip \
+    -P tmp/data/ && unzip tmp/data/cats_and_dogs_filtered.zip -d tmp/data/
+fi
+
+python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py --file_path tmp/data/ --epochs 1
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   echo "orca tf transfer_learning failed"
