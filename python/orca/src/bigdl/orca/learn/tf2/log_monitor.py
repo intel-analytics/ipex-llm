@@ -91,7 +91,7 @@ class LogMonitor:
         context = zmq.Context()
         self.socket = context.socket(zmq.REQ)
         self.socket.connect("tcp://{}:{}".format(driver_ip, driver_port))
-        print("Connected ZMQ server on {}:{}".fomat(driver_ip, driver_port))
+        print("Connected ZMQ server on {}:{}".format(driver_ip, driver_port))
         self.file_info_path = os.path.join(tempfile.gettempdir(), "{}_file_info.pkl".format(application_id))
         self.threads_stopped = threads_stopped
 
