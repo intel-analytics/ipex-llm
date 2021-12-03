@@ -45,6 +45,11 @@ from tensorflow import keras
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf.estimator import Estimator
 
+import os
+for filepath,dirnames,filenames in os.walk('/data'):
+    for filename in filenames:
+        print(os.path.join(filepath,filename))
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
