@@ -234,8 +234,9 @@ class SparkRunner:
         self.is_local = is_local
         # if not self.is_local:
         if self.local_rank == 0:
-            # log_dir = os.getenv("SPARK_WORKER_DIR")
-            log_dir = "/tmp"
+            log_root = os.getenv("SPARK_WORKER_DIR")
+            log_dir = os.path.join(log_root, application_id)
+            # log_dir = "/tmp"
             print("log dir is: ", log_dir)
             # This event is checked regularly by all of the threads so that they
             # know when to exit.
