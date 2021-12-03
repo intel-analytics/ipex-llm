@@ -3,6 +3,12 @@ import copy
 from neural_compressor.conf.config import Quantization_Conf
 from neural_compressor.experimental import Quantization
 
+APPROACH_MAP = {
+    'ptsq': 'post_training_static_quant',
+    'ptdq': 'post_training_dynamic_quant',
+    'qat': 'quant_aware_training'
+}
+
 
 class QuantizationINC:
     def __init__(self,
@@ -26,8 +32,11 @@ class QuantizationINC:
                             Quantization.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, use default config.
-        :param approach:    post_training_static_quant, post_training_dynamic_quant,
-                            quant_aware_training. Default: post_training_static_quant.
+        :param approach:    ptsq, ptdq or qat.
+                            ptsq: post_training_static_quant,
+                            ptdq: post_training_dynamic_quant,
+                            qat: quant_aware_training.
+                            Default: post_training_static_quant.
         :param strategy:    bayesian, basic, mse, sigopt. Default: bayesian.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, higher_is_better=True}
@@ -48,7 +57,7 @@ class QuantizationINC:
             cfg = qconf.usr_cfg
             # Override default config
             cfg.model.framework = framework
-            cfg.quantization.approach = approach
+            cfg.quantization.approach = APPROACH_MAP[approach]
             cfg.tuning.strategy.name = strategy
             if accuracy_criterion:
                 cfg.tuning.accuracy_criterion = accuracy_criterion
@@ -90,6 +99,6 @@ class QuantizationINC:
     def __call__(self, model, calib_dataloader, val_dataloader, *args, **kwargs):
         framework = self.quantizer.cfg.model.framework
         if 'pytorch' in framework:
-            return self.quantize_torch(model, calib_dataloader, val_dataloader,  *args, **kwargs)
+            return self.quantize_torch(model, calib_dataloader, val_dataloader, *args, **kwargs)
         else:
             raise NotImplementedError("Only support pytorch for now.")

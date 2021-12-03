@@ -46,12 +46,11 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
+model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
 loss = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 trainer = Trainer(max_epochs=1)
-pl_model = Trainer.compile(model, loss, optimizer)
-pl_model.metrics = [torchmetrics.F1(10)]
+pl_model = Trainer.compile(model, loss, optimizer, metrics=[torchmetrics.F1(10)])
 train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
 
 
@@ -59,7 +58,7 @@ class TestQuantizationINC(TestCase):
     def test_quantize_pytorch_ptq(self):
         quantizer = QuantizationINC(
             framework='pytorch_fx',
-            approach='post_training_static_quant',
+            approach='ptsq',
             accuracy_criterion={'relative': 0.99},
         )
         quantized_model = quantizer(pl_model, train_loader, train_loader, trainer, metric='F1')
@@ -70,7 +69,7 @@ class TestQuantizationINC(TestCase):
     def test_quantize_pytorch_qat(self):
         quantizer = QuantizationINC(
             framework='pytorch_fx',
-            approach='quant_aware_training',
+            approach='qat',
             accuracy_criterion={'relative': 0.99},
         )
         quantized_model = quantizer(pl_model, train_loader, train_loader, trainer, metric='F1')
