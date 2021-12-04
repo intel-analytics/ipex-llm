@@ -656,7 +656,7 @@ class Layer(JavaValue, SharedStaticUtils):
         >>> input = np.ones((2, 1, 4, 4))
         >>> output = conv.forward(input)
         >>> expected_output = np.array([[[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]], [[[9., 9.],
-        >>> [9., 9.]], [[9., 9.], [9., 9.]]]])
+        ... [9., 9.]], [[9., 9.], [9., 9.]]]])
         >>> np.testing.assert_allclose(output, expected_output)
         >>> quantized_conv = conv.quantize()
         >>> quantized_output = quantized_conv.forward(input)
@@ -1066,7 +1066,7 @@ class Linear(Layer):
     >>> init_grad_weight = np.zeros([10, 100])
     >>> init_grad_bias = np.zeros([10])
     >>> linear = Linear(100, 10, True, L1Regularizer(0.5), L1Regularizer(0.5), init_weight,
-    >>> init_bias, init_grad_weight, init_grad_bias)
+    ... init_bias, init_grad_weight, init_grad_bias)
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createLinear
@@ -1114,7 +1114,7 @@ class SparseLinear(Layer):
 
 
     >>> sparselinear = SparseLinear(100, 10, True, wRegularizer=L1Regularizer(0.5),
-    >>> bRegularizer=L1Regularizer(0.5))
+    ... bRegularizer=L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createSparseLinear
@@ -1567,8 +1567,8 @@ class SpatialConvolution(Layer):
     >>> init_grad_weight = np.zeros([1, 12, 6, 5, 5])
     >>> init_grad_bias = np.zeros([12])
     >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True,
-    >>> L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight,
-    >>> init_grad_bias, True, "NCHW")
+    ... L1Regularizer(0.5), L1Regularizer(0.5), init_weight, init_bias, init_grad_weight,
+    ... init_grad_bias, True, "NCHW")
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createSpatialConvolution
@@ -1793,7 +1793,7 @@ class LSTM(Layer):
 
 
     >>> lstm = LSTM(4, 3, 0.5, 'tanh', Sigmoid(), L1Regularizer(0.5), L1Regularizer(0.5),
-    >>> L1Regularizer(0.5))
+    L1Regularizer(0.5))
     creating: createSigmoid
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -1889,7 +1889,7 @@ class GRU(Layer):
 
 
     >>> gru = GRU(4, 3, 0.5, Tanh(), Sigmoid(), L1Regularizer(0.5), L1Regularizer(0.5),
-    >>> L1Regularizer(0.5))
+    L1Regularizer(0.5))
     creating: createTanh
     creating: createSigmoid
     creating: createL1Regularizer
@@ -1932,7 +1932,7 @@ class RnnCell(Layer):
 
 
     >>> rnn = RnnCell(4, 3, Tanh(), True, True, L1Regularizer(0.5), L1Regularizer(0.5),
-    >>> L1Regularizer(0.5))
+    ... L1Regularizer(0.5))
     creating: createTanh
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -2113,7 +2113,7 @@ class SpatialBatchNormalization(Layer):
     >>> init_bias = np.array([0.0])
     >>> init_grad_bias = np.array([0.0])
     >>> spatialBatchNormalization = SpatialBatchNormalization(1, 1e-5, 0.1, True, init_weight,
-    >>> init_bias, init_grad_weight, init_grad_bias)
+    ... init_bias, init_grad_weight, init_grad_bias)
     creating: createSpatialBatchNormalization
     >>> spatialBatchNormalization = SpatialBatchNormalization(1, 1e-5, 0.1, True, init_weight,
     >>> init_bias, init_grad_weight, init_grad_bias, "NHWC")
@@ -2458,7 +2458,7 @@ class BatchNormalization(Layer):
     >>> init_bias = np.zeros([2])
     >>> init_grad_bias = np.zeros([2])
     >>> batchNormalization = BatchNormalization(2, 1e-5, 1e-5, True, init_weight, init_bias,
-    >>> init_grad_weight, init_grad_bias)
+     init_grad_weight, init_grad_bias)
     creating: createBatchNormalization
     '''
 
@@ -3364,7 +3364,7 @@ class LookupTableSparse(Layer):
     >>> layer1.set_weights(np.arange(1, 41, 1).reshape(10, 4)) # set weight to 1 to 40
     >>> output = layer1.forward([input, weight])
     >>> expected_output = np.array([[6.5999999 , 7.60000038, 8.60000038, 9.60000038],
-    >>> [ 1., 2., 3., 4.], [5., 6., 7., 8.]])
+    ... [ 1., 2., 3., 4.], [5., 6., 7., 8.]])
     >>> np.testing.assert_allclose(output, expected_output, rtol=1e-6, atol=1e-6)
     '''
 
@@ -3887,7 +3887,7 @@ class SpatialSeparableConvolution(Layer):
     >>> conv.setBRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
     >>> conv = SpatialSeparableConvolution(6, 12, 1, 5, 5, 1, 1, 0, 0, True, "NCHW",
-    >>> L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    ... L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -3978,7 +3978,7 @@ class SReLU(Layer):
     >>> init = Xavier()
     creating: createXavier
     >>> srelu = srelu.set_init_method(tLeftInit=init, aLeftInit=init, tRightInit=init,
-    >>> aRightInit=init)
+    ... aRightInit=init)
     '''
 
     def __init__(self,
@@ -4062,7 +4062,7 @@ class RoiPooling(Layer):
     >>> import numpy as np
     >>> input_data = np.random.rand(2,2,6,8)
     >>> input_rois = np.array([0, 0, 0, 7, 5, 1, 6, 2, 7, 5, 1, 3, 1, 6, 4, 0, 3, 3, 3, 3],
-    >>>  dtype='float64').reshape(4,5)
+    ... dtype='float64').reshape(4,5)
     >>> m = RoiPooling(3,2,1.0)
     creating: createRoiPooling
     >>> out = m.forward([input_data,input_rois])
@@ -4524,7 +4524,7 @@ class SpatialShareConvolution(Layer):
     >>> init_grad_weight = np.zeros([1, 12, 6, 5, 5])
     >>> init_grad_bias = np.zeros([12])
     >>> conv = SpatialShareConvolution(6, 12, 5, 5, 1, 1, 0, 0, 1, True, L1Regularizer(0.5),
-    >>> L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
+    ... L1Regularizer(0.5), init_weight, init_bias, init_grad_weight, init_grad_bias)
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createSpatialShareConvolution
@@ -5313,7 +5313,7 @@ class ConvLSTMPeephole(Layer):
     :param with_peephole: whether use last cell status control a gate.
 
     >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, -1, Tanh(), HardSigmoid(), L1Regularizer(0.5),
-    >>>  L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+     L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createTanh
     creating: createHardSigmoid
     creating: createL1Regularizer
@@ -5383,7 +5383,7 @@ class ConvLSTMPeephole3D(Layer):
     :param with_peephole: whether use last cell status control a gate.
 
     >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, -1, L1Regularizer(0.5), L1Regularizer(0.5),
-    >>> L1Regularizer(0.5), L1Regularizer(0.5))
+    ... L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -5791,7 +5791,7 @@ class RoiAlign(Layer):
     >>> import numpy as np
     >>> input_data = np.random.rand(1,2,6,8)
     >>> input_rois = np.array([0, 0, 7, 5, 6, 2, 7, 5, 3, 1, 6, 4, 3, 3, 3, 3],dtype='float').
-    >>> reshape(4,4)
+    ... reshape(4,4)
     >>> m = RoiAlign(1.0,3,2,2)
     creating: createRoiAlign
     >>> out = m.forward([input_data,input_rois])
@@ -5824,7 +5824,7 @@ class Pooler(Layer):
     >>> feature2 = np.random.rand(1,2,8,8)
     >>> features = [feature0, feature1, feature2]
     >>> input_rois = np.array([0, 0, 3, 3, 2, 2, 50, 50, 50, 50, 500, 500],dtype='float').
-    >>> reshape(3,4)
+    ... reshape(3,4)
     >>> m = Pooler(2,[1.0, 0.5, 0.25],2)
     creating: createPooler
     >>> out = m.forward([features,input_rois])
