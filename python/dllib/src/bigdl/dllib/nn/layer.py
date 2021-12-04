@@ -661,7 +661,7 @@ class Layer(JavaValue, SharedStaticUtils):
         >>> quantized_conv = conv.quantize()
         >>> quantized_output = quantized_conv.forward(input)
         >>> expected_quantized_output = np.array([[[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]],
-        >>> [[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]]])
+        ... [[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]]])
         >>> np.testing.assert_allclose(quantized_output, expected_quantized_output)
         >>> assert("quantized.SpatialConvolution" in quantized_conv.__str__())
         >>> seq = Sequential()
@@ -1124,7 +1124,7 @@ class SparseLinear(Layer):
     >>> init_grad_weight = np.zeros([10, 100])
     >>> init_grad_bias = np.zeros([10])
     >>> sparselinear = SparseLinear(100, 10, True, 1, 5, L1Regularizer(0.5), L1Regularizer(0.5),
-    >>> init_weight, init_bias, init_grad_weight, init_grad_bias)
+    ... init_weight, init_bias, init_grad_weight, init_grad_bias)
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createSparseLinear
@@ -1793,7 +1793,7 @@ class LSTM(Layer):
 
 
     >>> lstm = LSTM(4, 3, 0.5, 'tanh', Sigmoid(), L1Regularizer(0.5), L1Regularizer(0.5),
-    L1Regularizer(0.5))
+    ... L1Regularizer(0.5))
     creating: createSigmoid
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -1889,7 +1889,7 @@ class GRU(Layer):
 
 
     >>> gru = GRU(4, 3, 0.5, Tanh(), Sigmoid(), L1Regularizer(0.5), L1Regularizer(0.5),
-    L1Regularizer(0.5))
+    ... L1Regularizer(0.5))
     creating: createTanh
     creating: createSigmoid
     creating: createL1Regularizer
@@ -2116,7 +2116,7 @@ class SpatialBatchNormalization(Layer):
     ... init_bias, init_grad_weight, init_grad_bias)
     creating: createSpatialBatchNormalization
     >>> spatialBatchNormalization = SpatialBatchNormalization(1, 1e-5, 0.1, True, init_weight,
-    >>> init_bias, init_grad_weight, init_grad_bias, "NHWC")
+    ... init_bias, init_grad_weight, init_grad_bias, "NHWC")
     creating: createSpatialBatchNormalization
     '''
 
@@ -2458,7 +2458,7 @@ class BatchNormalization(Layer):
     >>> init_bias = np.zeros([2])
     >>> init_grad_bias = np.zeros([2])
     >>> batchNormalization = BatchNormalization(2, 1e-5, 1e-5, True, init_weight, init_bias,
-     init_grad_weight, init_grad_bias)
+    ... init_grad_weight, init_grad_bias)
     creating: createBatchNormalization
     '''
 
@@ -5313,7 +5313,7 @@ class ConvLSTMPeephole(Layer):
     :param with_peephole: whether use last cell status control a gate.
 
     >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, -1, Tanh(), HardSigmoid(), L1Regularizer(0.5),
-     L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    ... L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createTanh
     creating: createHardSigmoid
     creating: createL1Regularizer

@@ -2402,7 +2402,7 @@ class TimeDistributed(KerasLayer):
           generated string.
 
     >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12),
-    >>> name="timedistributeddense")
+    ... name="timedistributeddense")
     creating: createKerasDense
     creating: createKerasTimeDistributed
 
@@ -2436,7 +2436,7 @@ class Bidirectional(KerasLayer):
           generated string.
 
     >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16),
-    >>> name="bidirectionallstm")
+    ... name="bidirectionallstm")
     creating: createKerasLSTM
     creating: createKerasBidirectional
 

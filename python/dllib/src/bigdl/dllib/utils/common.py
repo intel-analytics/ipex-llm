@@ -206,7 +206,7 @@ class JTensor(object):
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
         >>> expected_storage = np.array([[0.69646919, 0.28613934, 0.22685145], [0.55131477,
-        >>> 0.71946895, 0.42310646]])
+        ... 0.71946895, 0.42310646]])
         >>> expected_shape = np.array([2, 3])
         >>> np.testing.assert_allclose(result.storage, expected_storage, rtol=1e-6, atol=1e-6)
         >>> np.testing.assert_allclose(result.shape, expected_shape)
@@ -334,7 +334,7 @@ class Sample(object):
         >>> np.random.seed(123)
         >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
         >>> expected_feature_storage = np.array(([[0.69646919, 0.28613934, 0.22685145], [0.55131477,
-        >>> 0.71946895, 0.42310646]]))
+        ... 0.71946895, 0.42310646]]))
         >>> expected_feature_shape = np.array([2, 3])
         >>> expected_label_storage = np.array(([[0.98076421, 0.68482971, 0.48093191], [0.39211753,
         >>> 0.343178, 0.72904968]]))
