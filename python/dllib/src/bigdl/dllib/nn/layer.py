@@ -514,8 +514,8 @@ class Layer(JavaValue, SharedStaticUtils):
         ... except Py4JJavaError as err:
         ...     print(err.java_exception)
         ...
-        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is
-        not consistant with number of weight/bias of this layer, number of input 1, number of
+        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is \
+        not consistant with number of weight/bias of this layer, number of input 1, number of \
         output 2
         >>> cAdd = CAdd([4, 1])
         creating: createCAdd
@@ -678,7 +678,7 @@ class Layer(JavaValue, SharedStaticUtils):
         >>> quantized_seq = seq.quantize()
         >>> quantized_output = quantized_seq.forward(input)
         >>> expected_quantized_output = np.array([[37., 37.], [37., 37.], [37., 37.], [37., 37.],
-        >>> [37., 37.], [37., 37.], [37., 37.], [37., 37.]])
+        ... [37., 37.], [37., 37.], [37., 37.], [37., 37.]])
         >>> np.testing.assert_allclose(quantized_output, expected_quantized_output)
         >>> assert("quantized.Linear" in quantized_seq.__str__())
         >>> assert("quantized.SpatialConvolution" in quantized_seq.__str__())
@@ -1137,7 +1137,7 @@ class SparseLinear(Layer):
     ... 2, 100, 500]), np.array([2, 1000]))
     >>> output = sparselinear.forward(input)
     >>> expected_output = np.array([[10.09569263, -10.94844246, -4.1086688, 1.02527523, 11.80737209]
-    >>> , [7.9651413, 9.7131443, -10.22719955, 0.02345783, -3.74368906]])
+    ... , [7.9651413, 9.7131443, -10.22719955, 0.02345783, -3.74368906]])
     >>> np.testing.assert_allclose(output, expected_output, rtol=1e-6, atol=1e-6)
     '''
 
