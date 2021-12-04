@@ -515,8 +515,8 @@ class Layer(JavaValue, SharedStaticUtils):
         ...     print(err.java_exception)
         ...
         java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is \
-        not consistant with number of weight/bias of this layer, number of input 1, number of \
-        output 2
+        ...not consistant with number of weight/bias of this layer, number of input 1, number of \
+        ...output 2
         >>> cAdd = CAdd([4, 1])
         creating: createCAdd
         >>> cAdd.set_weights(np.ones([4, 1]))

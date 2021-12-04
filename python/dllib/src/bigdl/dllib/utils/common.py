@@ -340,7 +340,7 @@ class Sample(object):
         ... 0.343178, 0.72904968]]))
         >>> expected_label_shape = np.array([2, 3])
         >>> assert_allclose(sample.features[0].storage, expected_feature_storage, rtol=1e-6,
-        >>> atol=1e-6)
+        ... atol=1e-6)
         >>> assert_allclose(sample.features[0].shape, expected_feature_shape)
         >>> assert_allclose(sample.labels[0].storage, expected_label_storage, rtol=1e-6, atol=1e-6)
         >>> assert_allclose(sample.labels[0].shape, expected_label_shape)
