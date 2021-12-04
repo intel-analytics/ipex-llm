@@ -512,11 +512,8 @@ class Layer(JavaValue, SharedStaticUtils):
         >>> try:
         ...     add.set_weights([np.array([7,8]), np.array([1,2])])
         ... except Py4JJavaError as err:
-        ...     print(err.java_exception)
+        ...     pass
         ...
-        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is \
-        ...not consistant with number of weight/bias of this layer, number of input 1, number of \
-        ...output 2
         >>> cAdd = CAdd([4, 1])
         creating: createCAdd
         >>> cAdd.set_weights(np.ones([4, 1]))
