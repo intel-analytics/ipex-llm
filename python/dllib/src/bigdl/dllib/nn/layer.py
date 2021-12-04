@@ -673,7 +673,7 @@ class Layer(JavaValue, SharedStaticUtils):
         >>> input = np.ones([1, 1, 6, 6])
         >>> output = seq.forward(input)
         >>> expected_output = np.array([[37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.],
-        >>> [37., 37.], [37., 37.], [37., 37.]])
+        ... [37., 37.], [37., 37.], [37., 37.]])
         >>> np.testing.assert_allclose(output, expected_output)
         >>> quantized_seq = seq.quantize()
         >>> quantized_output = quantized_seq.forward(input)
@@ -1134,7 +1134,7 @@ class SparseLinear(Layer):
     >>> sparselinear = SparseLinear(1000, 5, init_weight=init_weight, init_bias=init_bias)
     creating: createSparseLinear
     >>> input = JTensor.sparse(np.array([1, 3, 5, 2, 4, 6]), np.array([0, 0, 0, 1, 1, 1, 1, 5, 300,
-    >>> 2, 100, 500]), np.array([2, 1000]))
+    ... 2, 100, 500]), np.array([2, 1000]))
     >>> output = sparselinear.forward(input)
     >>> expected_output = np.array([[10.09569263, -10.94844246, -4.1086688, 1.02527523, 11.80737209]
     >>> , [7.9651413, 9.7131443, -10.22719955, 0.02345783, -3.74368906]])
@@ -5790,8 +5790,8 @@ class RoiAlign(Layer):
 
     >>> import numpy as np
     >>> input_data = np.random.rand(1,2,6,8)
-    >>> input_rois = np.array([0, 0, 7, 5, 6, 2, 7, 5, 3, 1, 6, 4, 3, 3, 3, 3],dtype='float').
-    ... reshape(4,4)
+    >>> input_rois = np.array([0, 0, 7, 5, 6, 2, 7, 5, 3, 1, 6, 4, 3, 3, 3, 3],
+    ... dtype='float').reshape(4,4)
     >>> m = RoiAlign(1.0,3,2,2)
     creating: createRoiAlign
     >>> out = m.forward([input_data,input_rois])
@@ -5823,8 +5823,8 @@ class Pooler(Layer):
     >>> feature1 = np.random.rand(1,2,4,4)
     >>> feature2 = np.random.rand(1,2,8,8)
     >>> features = [feature0, feature1, feature2]
-    >>> input_rois = np.array([0, 0, 3, 3, 2, 2, 50, 50, 50, 50, 500, 500],dtype='float').
-    ... reshape(3,4)
+    >>> input_rois = np.array([0, 0, 3, 3, 2, 2, 50, 50, 50, 50, 500, 500],
+    ... dtype='float').reshape(3,4)
     >>> m = Pooler(2,[1.0, 0.5, 0.25],2)
     creating: createPooler
     >>> out = m.forward([features,input_rois])
