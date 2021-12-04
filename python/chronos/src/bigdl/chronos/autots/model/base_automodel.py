@@ -17,6 +17,7 @@
 
 import os
 import json
+from bigdl.chronos.autots.utils import recalculate_n_sampling
 DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
 DEFAULT_BEST_CONFIG_DIR = "best_config.json"
 
@@ -66,13 +67,15 @@ class BasePytorchAutomodel:
         :param scheduler_params: parameters for scheduler.
         """
         self.search_space["batch_size"] = batch_size
+        n_sampling = recalculate_n_sampling(self.search_space,
+                                            n_sampling) if n_sampling != -1 else -1
         self.auto_est.fit(
             data=data,
             epochs=epochs,
             validation_data=validation_data,
             metric=self.metric,
             metric_threshold=metric_threshold,
-            n_sampling=self._n_sampling(n_sampling) if n_sampling != -1 else -1,
+            n_sampling=n_sampling,
             search_space=self.search_space,
             search_alg=search_alg,
             search_alg_params=search_alg_params,
@@ -308,20 +311,3 @@ class BasePytorchAutomodel:
 
     def _get_best_automl_model(self):
         return self.best_model
-
-    def _n_sampling(self, n_sampling):
-        """
-        Only process n_sampling.
-
-        :param n_sampling: Number of trials to evaluate in total.
-        """
-        import math
-        search_count = [len(v['grid_search']) for _, v
-                        in self.search_space.items() if isinstance(v, dict)]
-        assist_num = 1
-        if search_count:
-            for val in search_count:
-                assist_num *= val
-        n_sampling /= assist_num
-        # TODO Number of threads specified by the user corresponds to n_sampling and give warning.
-        return math.ceil(n_sampling)
