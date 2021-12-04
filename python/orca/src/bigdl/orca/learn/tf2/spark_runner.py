@@ -200,7 +200,7 @@ class SparkRunner:
                  mode="fit",
                  model_dir=None,
                  epoch=0,
-                 is_local=True,
+                 need_to_log=True,
                  driver_ip=None,
                  driver_port=None,
                  application_id=None
@@ -231,28 +231,19 @@ class SparkRunner:
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed()
         self.model_dir = model_dir
-        self.is_local = is_local
-        # if not self.is_local:
-        if self.local_rank == 0:
-            # log_root = os.getenv("SPARK_WORKER_DIR")
-            # log_dir = os.path.join(log_root, application_id)
-            log_dir = "/"
-            print("log dir is: ", log_dir)
-            # application_id = "app1"
-            # This event is checked regularly by all of the threads so that they
-            # know when to exit.
-            self.threads_stopped = threading.Event()
-
-            # logger_thread = threading.Thread(
-            #     target=self._start_log_monitor,
-            #     args=(driver_ip, driver_port, "{}/{}".format(log_dir, application_id)),
-            #     name="monitor_logs")
-            self.logger_thread = threading.Thread(
-                target=self._start_log_monitor,
-                args=(driver_ip, driver_port, log_dir, self.threads_stopped, application_id),
-                name="monitor_logs")
-            self.logger_thread.daemon = True
-            self.logger_thread.start()
+        if need_to_log:
+            if self.local_rank == 0:
+                log_dir = "/"
+                print("log dir is: ", log_dir)
+                # This event is checked regularly by all of the threads so that they
+                # know when to exit.
+                self.threads_stopped = threading.Event()
+                self.logger_thread = threading.Thread(
+                    target=self._start_log_monitor,
+                    args=(driver_ip, driver_port, log_dir, self.threads_stopped, application_id),
+                    name="monitor_logs")
+                self.logger_thread.daemon = True
+                self.logger_thread.start()
 
 
     def setup(self):

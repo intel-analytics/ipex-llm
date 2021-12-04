@@ -49,33 +49,6 @@ class LogFileInfo:
 class LogMonitor:
     """A monitor process for monitoring worker log files.
 
-    This class mantains a list of open files and a list of closed log files. We
-    can't simply leave all files open because we'll run out of file
-    descriptors.
-
-    The "run" method of this class will cycle between doing several things:
-    1. First, it will check if any new files have appeared in the log
-       directory. If so, they will be added to the list of closed files.
-    2. Then, if we are unable to open any new files, we will close all of the
-       files.
-    3. Then, we will open as many closed files as we can that may have new
-       lines (judged by an increase in file size since the last time the file
-       was opened).
-    4. Then we will loop through the open files and see if there are any new
-       lines in the file. If so, we will publish them to Redis.
-
-    Attributes:
-        host (str): The hostname of this machine. Used to improve the log
-            messages published to Redis.
-        logs_dir (str): The directory that the log files are in.
-        redis_client: A client used to communicate with the Redis server.
-        log_filenames (set): This is the set of filenames of all files in
-            open_file_infos and closed_file_infos.
-        open_file_infos (list[LogFileInfo]): Info for all of the open files.
-        closed_file_infos (list[LogFileInfo]): Info for all of the closed
-            files.
-        can_open_more_files (bool): True if we can still open more files and
-            false otherwise.
     """
 
     def __init__(self, driver_ip, driver_port, logs_dir, threads_stopped, application_id):
@@ -87,7 +60,6 @@ class LogMonitor:
         self.log_filenames = set()
         self.open_file_infos = []
         self.closed_file_infos = []
-        # self.can_open_more_files = True
         context = zmq.Context()
         self.socket = context.socket(zmq.REQ)
         self.socket.connect("tcp://{}:{}".format(driver_ip, driver_port))
@@ -133,11 +105,6 @@ class LogMonitor:
                     logger.info("Beginning to track file {}".format(log_filename))
 
     def open_closed_files(self):
-        """Open some closed files if they may have new lines.
-
-        Opening more files may require us to close some of the already open
-        files.
-        """
         while len(self.closed_file_infos) > 0:
             file_info = self.closed_file_infos.pop(0)
             assert file_info.file_handle is None
@@ -202,11 +169,6 @@ class LogMonitor:
         return anything_published
 
     def run(self):
-        """Run the log monitor.
-
-        This will query Redis once every second to check if there are new log
-        files to monitor. It will also store those log files in Redis.
-        """
         try:
             self.update_log_filenames()
             self.open_closed_files()
@@ -214,13 +176,11 @@ class LogMonitor:
                 # Exit if we received a signal that we should stop.
                 if self.threads_stopped.is_set():
                     return
-                # self.update_log_filenames()
-                # self.open_closed_files()
                 anything_published = self.check_log_files_and_publish_updates()
                 # If nothing was published, then wait a little bit before checking
                 # for logs to avoid using too much CPU.
                 if not anything_published:
-                    time.sleep(1)
+                    time.sleep(0.1)
         except Exception as e:
             self.socket.send_string(str(e))
             raise e
@@ -228,6 +188,7 @@ class LogMonitor:
             self.close_all_files()
 
     def find_log_files(self):
+        start = time.time()
         file_list = []
         for root, dirs, files in os.walk(self.logs_dir):
             for file in files:
@@ -235,6 +196,8 @@ class LogMonitor:
                     file_list.append(os.path.join(root, file))
 
         print("file list is: ", file_list)
+        end = time.time()
+        print("time to list std files: ", end - start)
 
         log_files = []
         pattern_str = '(.*){}/(.*)/[stderr/stdout]'.format(self.application_id)
@@ -246,6 +209,8 @@ class LogMonitor:
             if matched is not None:
                 log_files.append(file_path)
         print("log files is: ", log_files)
+        end2 = time.time()
+        print("time to get log files: ", end2 - end)
 
         return log_files
 

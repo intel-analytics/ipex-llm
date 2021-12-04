@@ -43,6 +43,7 @@ LOG_FILE_CHANNEL = "SPARK_LOG_CHANNEL"
 
 logger = logging.getLogger(__name__)
 
+
 class SparkTFEstimator():
     def __init__(self,
                  model_creator,
@@ -68,7 +69,7 @@ class SparkTFEstimator():
         self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
                                         self.total_cores * 4).repartition(self.num_workers)
 
-        if not "inter_op_parallelism"  in self.config:
+        if not "inter_op_parallelism" in self.config:
             self.config["inter_op_parallelism"] = 1
         if not "intra_op_parallelism" in self.config:
             self.config["intra_op_parallelism"] = num_core // workers_per_node
@@ -84,15 +85,9 @@ class SparkTFEstimator():
 
         self.ip = get_node_ip()
         self.port = find_free_port()
-        self.is_local = sc.master.startswith("local")
-        # if not self.is_local:
-        #     if log_to_driver:
-        if log_to_driver:
-            # context = zmq.Context()
-            # self.socket = context.socket(zmq.REP)
-            # self.socket.bind("tcp://*:{}".format(self.port))
-            # print("started log server")
-
+        is_local = sc.master.startswith("local")
+        self.need_to_log = (not is_local) and log_to_driver
+        if self.need_to_log:
             self.threads_stopped = threading.Event()
             self.logger_thread = threading.Thread(
                 target=self._print_logs,
@@ -140,6 +135,7 @@ class SparkTFEstimator():
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
+            need_to_log=self.need_to_log,
             epoch=self.epoch,
             driver_ip=self.ip,
             driver_port=self.port,
@@ -174,7 +170,7 @@ class SparkTFEstimator():
 
                 res = data.rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).collect()
+                    lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
                     data_tuple_list = list(iter)
@@ -186,7 +182,7 @@ class SparkTFEstimator():
 
                 res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).collect()
+                    lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -252,7 +248,7 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc),
-            is_local=self.is_local,
+            need_to_log=self.need_to_log,
             driver_ip=self.ip,
             driver_port=self.port,
             application_id=self.application_id
@@ -328,7 +324,7 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="predict",
             cluster_info=self._get_cluster_info(sc),
-            is_local=self.is_local,
+            need_to_log=self.need_to_log,
             driver_ip=self.ip,
             driver_port=self.port,
             application_id=self.application_id
@@ -358,8 +354,8 @@ class SparkTFEstimator():
                 return SparkRunner(**init_param).predict(**param)
 
             pred_shards = SparkXShards(xshards.rdd.barrier() \
-                                       .mapPartitions(
-                                           lambda iter: transform_func(iter, init_params, params)))
+                .mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
@@ -468,4 +464,3 @@ class SparkTFEstimator():
             self.logger_thread.join()
         if hasattr(self, "threads_stopped"):
             self.threads_stopped.clear()
-
