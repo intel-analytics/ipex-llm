@@ -465,9 +465,14 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 stats[stat_key] = worker_stats[0][stat_key]
         return stats
 
-    def _train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False, info=None, callbacks=None):
+    def _train_epochs(self, data_creator,
+                      epochs=1, batch_size=32,
+                      profile=False, info=None,
+                      callbacks=None):
+
         params = dict(data_creator=data_creator, epochs=epochs,
-                      batch_size=batch_size, profile=profile, info=info)
+                      batch_size=batch_size, profile=profile, info=info,
+                      callbacks=callbacks)
         remote_worker_stats = []
         for i, w in enumerate(self.remote_workers):
             stats = w.train_epochs.remote(**params)
