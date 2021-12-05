@@ -64,6 +64,8 @@ args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
 dataset_dir = args.data_dir
+print(dataset_dir)
+
 download_url = args.download_url
 if not exists(dataset_dir):
     makedirs(dataset_dir)
