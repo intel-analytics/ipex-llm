@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.utils
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.dllib.nn.keras.{Input, KerasLayer, Model}
+import com.intel.analytics.bigdl.dllib.nn.internal.{Input, KerasLayer, Model}
 import com.intel.analytics.bigdl.dllib.nn.{Graph, Linear}
 import com.intel.analytics.bigdl.dllib.utils.{Engine, Shape}
 import com.intel.analytics.bigdl.dllib.NNContext

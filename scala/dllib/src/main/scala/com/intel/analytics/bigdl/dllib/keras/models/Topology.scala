@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.dllib.optim
 import com.intel.analytics.bigdl.dllib._
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasLayerSerializable}
+import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, KerasLayerSerializable}
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.MklDnnModule
 import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, Module, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.{Cache, CacheV1}

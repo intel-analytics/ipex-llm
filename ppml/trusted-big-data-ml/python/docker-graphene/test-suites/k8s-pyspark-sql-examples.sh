@@ -78,6 +78,6 @@ echo "#### example.2 Excepted result(k8s-pyspark-sql-basic): 8"
 echo "---- example.2 Actual result: "
 cat k8s-pyspark-sql-basic-sgx.log | egrep -a 'Justin' | wc -l
 
-echo "#### example.3 Excepted result(k8s-pyspark-sql-e2e): INFO this is results count: XXX"
+echo "#### example.3 Excepted result(k8s-pyspark-sql-e2e): INFO this is result2 count: XXX"
 echo "---- example.3 Actual result: "
-cat k8s-pyspark-sql-e2e-100w-sgx.log | egrep -a 'INFO this is results count:'
+cat k8s-pyspark-sql-e2e-100w-sgx.log | egrep -a 'INFO this is result2 count:'

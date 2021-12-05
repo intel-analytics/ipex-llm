@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.example.languagemodel.PTBModel
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.dllib.nn
-import com.intel.analytics.bigdl.dllib.nn.keras
+import com.intel.analytics.bigdl.dllib.nn.internal
 import com.intel.analytics.bigdl.dllib.nn.mkldnn._
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.utils._

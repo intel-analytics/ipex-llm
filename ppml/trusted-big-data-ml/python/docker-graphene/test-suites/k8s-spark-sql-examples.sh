@@ -69,7 +69,7 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.mem=32g \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
     --class test.SqlExample \
-    /ppml/trusted-big-data-ml/work/data/sqlite_example/spark-example-sql-e2e.jar \
+    /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar \
     $DB_PATH" 2>&1 > k8s-spark-sql-e2e-100w-sgx.log
 fi
 status_5_k8s_spark_sql_e2e=$(echo $?)
@@ -78,6 +78,6 @@ echo "#### example.4 Excepted result(k8s-spark-sql-example): 10"
 echo "---- example.5 Actual result: "
 cat k8s-spark-sql-example-sgx.log | egrep -a 'Justin' | wc -l
 
-echo "#### example.4 Excepted result(k8s-spark-sql-e2e): INFO this is results count: XXX"
+echo "#### example.4 Excepted result(k8s-spark-sql-e2e): INFO this is result2 count: XXX"
 echo "---- example.5 Actual result: "
-cat k8s-spark-sql-e2e-100w-sgx.log | egrep -a 'INFO this is results count:'
+cat k8s-spark-sql-e2e-100w-sgx.log | egrep -a 'INFO this is result2 count:'

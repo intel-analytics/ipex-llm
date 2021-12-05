@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, Xavier}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -64,7 +64,7 @@ class Convolution1D[T: ClassTag](
   override val bias: Boolean = true,
   override val inputShape: Shape = null)
   (implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.dllib.nn.keras.Convolution1D[T](nbFilter, filterLength, init,
+  extends com.intel.analytics.bigdl.dllib.nn.internal.Convolution1D[T](nbFilter, filterLength, init,
     activation, borderMode, subsampleLength, wRegularizer,
     bRegularizer, bias, inputShape) with Net {}
 

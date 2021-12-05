@@ -218,7 +218,7 @@ if __name__ == '__main__':
     reindex_tbls = full_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     train_tbl, test_tbl, user_info, item_info = prepare_features(train_tbl, test_tbl, reindex_tbls)
 
-    output_dir = args.data_dir + "/embed_reindex"
+    output_dir = args.data_dir + "/embed_reindex/"
     for i, c in enumerate(embed_cols):
         reindex_tbls[i].write_parquet(output_dir + "_" + c)
 
