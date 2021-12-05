@@ -48,8 +48,8 @@ from bigdl.orca.learn.tf.estimator import Estimator
 import os
 print("&&&&&&&&&&&&&&&&&&Current path&&&&&&&&&&&&&&&&&&&&&&")
 print(os.getcwd())
-for filepath,dirnames,filenames in os.walk('/opt/work/manfei/BigDL/python/orca/example/learn/tf/transfer_learning'):
-    for filename in filenames:
+#for filepath,dirnames,filenames in os.walk('/opt/work/manfei/BigDL/python/orca/example/learn/tf/transfer_learning'):
+#    for filename in filenames:
         #print(os.path.join(filepath,filename))
 
 parser = argparse.ArgumentParser()
