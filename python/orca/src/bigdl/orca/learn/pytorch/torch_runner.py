@@ -237,7 +237,7 @@ class TorchRunner:
                 and not_iterable)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None):
+                     info=None, wrap_dataloader=None, callbacks=None):
         config = self.config.copy()
         if OrcaContext.serialize_data_creator:
             with FileLock(

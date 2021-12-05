@@ -243,6 +243,12 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                              label_cols=label_cols,
                                              mode="fit",
                                              num_workers=self.num_workers)
+        # TODO: Handle callbacks
+        for callback in callbacks:
+            from bigdl.orca.learn.pytorch.callbacks import Callback
+            assert isinstance(callback, Callback), \
+                "All elements in callbacks should be an instance of Callback. " \
+                "But got type:{}".format(type(callback))
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -254,7 +260,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 data_creator = partition_refs_to_creator(partition_refs)
                 # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
                 return worker.train_epochs.remote(
-                    data_creator, epochs, batch_size, profile, info, False)
+                    data_creator, epochs, batch_size, profile, info, False, callbacks)
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
@@ -269,11 +275,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                                        profile=profile,
                                                        info=info)
 
-        # TODO: Handle callbacks
-        for callback in callbacks:
-            from python.orca.src.bigdl.orca.learn.pytorch.callbacks import Callback
-            assert isinstance(callback, Callback), \
-                "All elements in callbacks should be an instance of Callback. But got type:{}".format(type(callback))
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
@@ -466,7 +467,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 stats[stat_key] = worker_stats[0][stat_key]
         return stats
 
-    def _train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False, info=None):
+    def _train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False, info=None, callbacks=None):
         params = dict(data_creator=data_creator, epochs=epochs,
                       batch_size=batch_size, profile=profile, info=info)
         remote_worker_stats = []
