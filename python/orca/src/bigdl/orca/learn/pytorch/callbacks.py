@@ -14,33 +14,11 @@ class Callback(object):
     def on_epoch_end(self):
         pass
 
-    def on_predict_batch_begin(self):
-        pass
-
-    def on_predict_batch_end(self):
-        pass
-
-    def on_predict_begin(self):
-        pass
-
-    def on_predict_end(self):
-        pass
-
-    def on_test_batch_begin(self):
-        pass
-
-    def on_test_batch_end(self):
-        pass
-
-    def on_test_begin(self):
-        pass
-
-    def on_test_end(self):
-        pass
-
+    @abstractmethod
     def on_train_batch_begin(self):
         pass
 
+    @abstractmethod
     def on_train_batch_end(self):
         pass
 
