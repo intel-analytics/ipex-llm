@@ -46,6 +46,8 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf.estimator import Estimator
 
 import os
+print("&&&&&&&&&&&&&&&&&&Current path&&&&&&&&&&&&&&&&&&&&&&")
+print(os.getcwd())
 for filepath,dirnames,filenames in os.walk('/opt/work/manfei/BigDL/python/orca/example/learn/tf/transfer_learning'):
     for filename in filenames:
         print(os.path.join(filepath,filename))
