@@ -31,7 +31,6 @@ from bigdl.orca.ray import RayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 
-
 import ray
 from ray.exceptions import RayActorError
 
@@ -57,7 +56,6 @@ def check_for_failure(remote_values):
 
 
 def partition_refs_to_creator(partition_refs):
-
     def data_creator(config, batch_size):
         from bigdl.orca.data.utils import ray_partitions_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
