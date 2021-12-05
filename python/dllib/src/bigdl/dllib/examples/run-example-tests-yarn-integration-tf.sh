@@ -13,7 +13,7 @@ cat /etc/hostname
 
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py \
   --batch_size 4 \
-  --data_dir /opt/work/manfei/BigDL/python/orca/example/learn/tf/transfer_learning \
+  --data_dir /tmp \
   --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
