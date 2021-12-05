@@ -251,6 +251,9 @@ class TorchRunner:
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
+
+        for callback in callbacks:
+            callback.set_model(self.models)
         stats_list = list()
         for i in range(epochs):
             stats = self.train_epoch(loader, profile=profile, info=info)
