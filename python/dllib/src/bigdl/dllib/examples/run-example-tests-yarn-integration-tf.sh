@@ -13,7 +13,6 @@ cat /etc/hostname
 
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py \
   --batch_size 4 \
-  --data_dir /opt/work/jenkins/workspace/ZOO-PR-Python-integration-test \
   --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
