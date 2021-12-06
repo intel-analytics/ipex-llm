@@ -52,16 +52,17 @@ class LightningModuleFromTorch(LightningModule):
         x, y = batch
         y_hat = self._forward(batch)
         loss = self.loss(y_hat, y)
-        self.log("train_loss", loss, on_step=True, logger=True)
+        self.log("train/loss", loss, on_step=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self._forward(batch)
         loss = self.loss(y_hat, y)
-        self.log("val_loss", loss, on_epoch=True, prog_bar=True, logger=True)
+        self.log("val/loss", loss, on_epoch=True, prog_bar=True, logger=True)
         if self.metrics:
-            acc = {type(metric).__name__: metric(y_hat, y) for i, metric in enumerate(self.metrics)}
+            acc = {"val/metrics/" + type(metric).__name__: metric(y_hat, y)
+                   for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
         else:
             acc = None
@@ -71,9 +72,10 @@ class LightningModuleFromTorch(LightningModule):
         x, y = batch
         y_hat = self._forward(batch)
         loss = self.loss(y_hat, y)
-        self.log("test_loss", loss, on_epoch=True, prog_bar=True, logger=True)
+        self.log("test/loss", loss, on_epoch=True, prog_bar=True, logger=True)
         if self.metrics:
-            acc = {type(metric).__name__: metric(y_hat, y) for i, metric in enumerate(self.metrics)}
+            acc = {"test/metrics/" + type(metric).__name__: metric(y_hat, y)
+                   for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
         else:
             acc = None
