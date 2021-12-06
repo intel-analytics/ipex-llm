@@ -10,7 +10,7 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py  \
   --worker_num 8 --cores 17 \
-  --data_dir /bigdl2.0/data/imagenet_to_tfrecord --use_bf16 \
+  --data_dir /data/imagenettfrecord --use_bf16 \
   --enable_numa_binding \
   --cluster_mode yarn-client
 exit_status=$?
