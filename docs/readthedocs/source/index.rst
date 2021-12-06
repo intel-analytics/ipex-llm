@@ -122,4 +122,3 @@ BigDL Documentation
    
    doc/Application/presentations.md
    doc/Application/powered-by.md  
-   doc/Application/blog.md
