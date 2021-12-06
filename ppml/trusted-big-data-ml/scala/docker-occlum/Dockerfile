@@ -98,7 +98,7 @@ RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data
     cp -f /opt/src/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-${HADOOP_VERSION}.jar ${SPARK_HOME}/jars && \
     rm -rf /opt/src
 
-FROM occlum/occlum:0.25.0-ubuntu18.04 as ppml
+FROM occlum/occlum:0.26.0-ubuntu18.04 as ppml
 
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
