@@ -43,16 +43,21 @@ fi
 /opt/occlum/start_aesm.sh
 case "$SPARK_K8S_CMD" in
   driver)
-    echo $SGX_MEM_SIZE
+    echo "SGX Mem $SGX_MEM_SIZE"
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
     CMD=(
         /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
         -Divy.home="/tmp/.ivy" \
         -Dos.name="Linux" \
+        -XX:-UseCompressedOops \
+        -XX:MaxMetaspaceSize=256m \
         -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
-        -Xmx1g \
+        -Xms5g \
+        -Xmx5g \
+        -XX:ActiveProcessorCount=4 \
+        -Dio.netty.availableProcessors=64 \
         org.apache.spark.deploy.SparkSubmit \
         --conf "spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS" \
         --deploy-mode client \
@@ -60,7 +65,7 @@ case "$SPARK_K8S_CMD" in
         )
     ;;
   executor)
-    echo $SGX_MEM_SIZE
+    echo "SGX Mem $SGX_MEM_SIZE"
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
     CMD=(
@@ -73,7 +78,7 @@ case "$SPARK_K8S_CMD" in
         -Xms$SPARK_EXECUTOR_MEMORY \
         -Xmx$SPARK_EXECUTOR_MEMORY \
         -Dos.name=Linux \
-        -Dio.netty.availableProcessors=32 \
+        -Dio.netty.availableProcessors=64 \
         -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
         org.apache.spark.executor.CoarseGrainedExecutorBackend \
