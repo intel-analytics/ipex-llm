@@ -325,7 +325,8 @@ class SparkRunner:
                           python_location=None):
         print("Initializing SparkContext for k8s-client mode")
         executor_python_env = "python_env"
-        os.environ["PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
+        executor_python_env_path = "./python_env"
+        os.environ["PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env_path)
         pack_env = False
         assert penv_archive or conda_name, \
             "You should either specify penv_archive or conda_name explicitly"
@@ -346,14 +347,14 @@ class SparkRunner:
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                         executor_cores, executor_memory, extra_executor_memory_for_ray)
             py_version = ".".join(platform.python_version().split(".")[0:2])
-            preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
-            ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" +\
+            preload_so = executor_python_env_path + "/lib/libpython" + py_version + "m.so"
+            ld_path = executor_python_env_path + "/lib:" + executor_python_env + "/lib/python" +\
                 py_version + "/lib-dynload"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
             conf.update({"spark.cores.max": num_executors * executor_cores,
-                        "spark.executorEnv.PYTHONHOME": executor_python_env,
-                        "spark.pyspark.python" : "{}/bin/python".format(executor_python_env),
+                        "spark.executorEnv.PYTHONHOME": executor_python_env_path,
+                        "spark.pyspark.python" : "{}/bin/python".format(executor_python_env_path),
                         "spark.executor.extraLibraryPath": ld_path,
                         "spark.executorEnv.LD_PRELOAD": preload_so,
                         "spark.kubernetes.container.image": container_image})
