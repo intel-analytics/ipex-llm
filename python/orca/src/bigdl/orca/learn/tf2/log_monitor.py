@@ -191,19 +191,10 @@ class LogMonitor:
     def find_log_files(self):
         start = time.time()
         file_list = []
-        # for root, dirs, files in os.walk(self.logs_dir):
-        #     for file in files:
-        #         if file == "stdout" or file == "stderr":
-        #             file_list.append(os.path.join(root, file))
-
-        stdout_path = subprocess.Popen(["find", self.logs_dir, "-name", "stdout"],
-                                     stdout=subprocess.PIPE).communicate()[0]
-        stdout_files = stdout_path.decode("utf-8").strip().split("\n")
-
-        stderr_path = subprocess.Popen(["find", self.logs_dir, "-name", "stderr"],
-                                       stdout=subprocess.PIPE).communicate()[0]
-        stderr_files = stderr_path.decode("utf-8").strip().split("\n")
-        file_list = stdout_files + stderr_files
+        for root, dirs, files in os.walk(self.logs_dir):
+            for file in files:
+                if file == "stdout" or file == "stderr":
+                    file_list.append(os.path.join(root, file))
         print("file list is: ", file_list)
         end = time.time()
         print("time to list std files: ", end - start)
