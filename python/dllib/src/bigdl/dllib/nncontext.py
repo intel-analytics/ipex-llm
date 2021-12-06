@@ -276,6 +276,7 @@ def init_spark_standalone(num_executors,
 
 def init_spark_on_k8s(master,
                       container_image,
+                      conda_name,
                       num_executors,
                       executor_cores,
                       executor_memory="2g",
@@ -283,6 +284,7 @@ def init_spark_on_k8s(master,
                       driver_cores=4,
                       extra_executor_memory_for_ray=None,
                       extra_python_lib=None,
+                      penv_archive=None,
                       spark_log_level="WARN",
                       redirect_spark_log=True,
                       jars=None,
@@ -324,12 +326,14 @@ def init_spark_on_k8s(master,
         master=master,
         container_image=container_image,
         num_executors=num_executors,
+        conda_name=conda_name,
         executor_cores=executor_cores,
         executor_memory=executor_memory,
         driver_memory=driver_memory,
         driver_cores=driver_cores,
         extra_executor_memory_for_ray=extra_executor_memory_for_ray,
         extra_python_lib=extra_python_lib,
+        penv_archive=penv_archive,
         jars=jars,
         conf=conf,
         python_location=python_location)
@@ -507,9 +511,12 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
             if key in kwargs:
                 spark_args[key] = kwargs[key]
         from bigdl.dllib.nncontext import init_spark_on_k8s
+        from bigdl.dllib.utils.utils import detect_conda_env_name
 
+        conda_env_name = detect_conda_env_name()
         sc = init_spark_on_k8s(master=kwargs["master"],
                                container_image=kwargs["container_image"],
+                               conda_name=conda_env_name,
                                num_executors=num_nodes, executor_cores=cores,
                                executor_memory=memory, **spark_args)
     elif cluster_mode == "standalone":

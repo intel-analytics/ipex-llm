@@ -356,6 +356,7 @@ class SparkRunner:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
             conf.update({"spark.cores.max": num_executors * executor_cores,
                         "spark.executorEnv.PYTHONHOME": executor_python_env,
+                        "spark.pyspark.python" : "{}/bin/python".format(executor_python_env),
                         "spark.executor.extraLibraryPath": ld_path,
                         "spark.executorEnv.LD_PRELOAD": preload_so,
                         "spark.kubernetes.container.image": container_image})
