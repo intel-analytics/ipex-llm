@@ -30,11 +30,24 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_train_begin(self):
+    def on_train_begin(self, logs=None):
+        """Called at the beginning of training.
+        Subclasses should override for any actions to run.
+        Args:
+            logs: Dict. Currently, no data is passed to this argument for this method
+              but that may change in the future.
+        """
         pass
 
     @abstractmethod
-    def on_train_end(self):
+    def on_train_end(self, logs=None):
+        """Called at the end of training.
+        Subclasses should override for any actions to run.
+        Args:
+            logs: Dict. Currently, the output of the last call to `on_epoch_end()`
+              is passed to this argument for this method but that may change in
+              the future.
+        """
         pass
 
     @abstractmethod

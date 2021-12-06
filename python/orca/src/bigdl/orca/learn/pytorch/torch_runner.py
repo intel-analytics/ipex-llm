@@ -277,12 +277,15 @@ class TorchRunner:
     def train_epoch(self,
                     data_loader,
                     profile=False,
-                    info=None):
+                    info=None,
+                    callbacks=None):
         """Runs a training epoch and updates the model parameters."""
         if hasattr(self.train_loader, "sampler") and hasattr(
                 self.train_loader.sampler, "set_epoch"):
             self.train_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
+        for callback in callbacks:
+            callback.on_batch_begin(self.epochs)
         info = info or {}
         self._toggle_profiling(profile=profile)
 
@@ -292,7 +295,8 @@ class TorchRunner:
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
             train_stats = self.training_operator.train_epoch(data_loader, info)
-
+        for callback in callbacks:
+            callback.on_batch_end(self.epochs)
         self.epochs += 1
         # This is so that `epochs` is first in ordering.
         stats = dict(epoch=self.epochs, **train_stats)
