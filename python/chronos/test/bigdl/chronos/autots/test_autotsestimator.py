@@ -496,7 +496,7 @@ class TestAutoTrainer(TestCase):
         assert config['future_seq_len'] == 2
         assert auto_estimator._future_seq_len == [1, 3]
 
-    def test_autogener_best_lookback(self):
+    def test_autogener_best_cycle_length(self):
         sample_num = 100
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
                            "value": np.arange(sample_num),

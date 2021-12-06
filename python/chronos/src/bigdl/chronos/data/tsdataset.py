@@ -822,7 +822,7 @@ class TSDataset:
 
     def get_cycle_length(self, aggregate='mode', top_k=3):
         """
-        calculate the cycle length of the time series in this TSDataset.
+        Calculate the cycle length of the time series in this TSDataset.
 
         Args:
             top_k (int): The freq with top top_k power after fft will be
