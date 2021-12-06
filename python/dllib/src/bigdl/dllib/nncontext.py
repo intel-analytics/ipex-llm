@@ -325,8 +325,8 @@ def init_spark_on_k8s(master,
     sc = runner.init_spark_on_k8s(
         master=master,
         container_image=container_image,
-        num_executors=num_executors,
         conda_name=conda_name,
+        num_executors=num_executors,
         executor_cores=executor_cores,
         executor_memory=executor_memory,
         driver_memory=driver_memory,
@@ -507,7 +507,7 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
         assert "master" in kwargs, "Please specify master for k8s-client mode"
         assert "container_image" in kwargs, "Please specify container_image for k8s-client mode"
         for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
-                    "extra_python_lib", "jars", "python_location"]:
+                    "extra_python_lib", "penv_archive", "jars", "python_location"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
         from bigdl.dllib.nncontext import init_spark_on_k8s

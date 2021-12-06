@@ -325,6 +325,7 @@ class SparkRunner:
                           python_location=None):
         print("Initializing SparkContext for k8s-client mode")
         executor_python_env = "python_env"
+        os.environ["PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
         pack_env = False
         assert penv_archive or conda_name, \
             "You should either specify penv_archive or conda_name explicitly"
@@ -335,10 +336,6 @@ class SparkRunner:
                 pack_env = True
 
             archive = "{}#{}".format(penv_archive, executor_python_env)
-
-            if "PYSPARK_PYTHON" not in os.environ:
-                os.environ["PYSPARK_PYTHON"] = \
-                    python_location if python_location else detect_python_location()
 
             submit_args = "--master " + master + " --deploy-mode client"
             submit_args = submit_args + " --archives {}".format(archive)
