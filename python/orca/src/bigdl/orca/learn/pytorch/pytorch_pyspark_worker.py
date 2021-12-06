@@ -142,7 +142,6 @@ class PytorchPysparkWorker(TorchRunner):
         state_dict = self.get_state_dict()
 
         if self.rank == 0:
-            import torch.distributed as dist
             dist.broadcast_object_list([state_dict], group=self.state_sync_group, src=0)
         return [stats_list]
 

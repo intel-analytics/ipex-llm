@@ -19,7 +19,6 @@ import logging
 import numbers
 import torch
 import numpy as np
-from torch.distributed.distributed_c10d import broadcast_object_list
 
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import PytorchPysparkWorker
@@ -34,7 +33,6 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
 
 import threading
-import io
 
 
 logger = logging.getLogger(__name__)
