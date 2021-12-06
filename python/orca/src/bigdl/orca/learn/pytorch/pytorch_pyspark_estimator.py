@@ -128,7 +128,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             use_tqdm=use_tqdm,
             config=self.config.copy(),
             metrics=metrics,
-            size=self.num_workers + 1,
+            size=self.num_workers,
             cores_per_worker=self.cores_per_worker,
             sync_stats=sync_stats,
             log_level=log_level)
@@ -144,7 +144,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         return cluster_info
 
     def thread_func(self, cluster_info):
+        import time
         import torch.distributed as dist
+        time.sleep(2)
         rank = self.num_workers
         dist.init_process_group(
             backend="gloo",
@@ -152,7 +154,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
             rank=rank,
             world_size=rank + 1)
         state_sync_group = dist.new_group([0, rank])
-        dist.broadcast_object_list(self.state_dict, group=state_sync_group, src=0)
+        ddp_group = dist.new_group(list(range(rank)))
+
+        state_dict = [self.state_dict]
+        dist.broadcast_object_list(state_dict, group=state_sync_group, src=0)
+        self.state_dict = state_dict[0]
+        dist.destroy_process_group()
 
     def fit(self,
             data,
@@ -215,7 +222,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         )
 
         broadcasted_state_dict = self.sc.broadcast(self.state_dict)
-        driver_receive = threading.Thread(target=self.thread_func, args=[cluster_info])
+        driver_receive = threading.Thread(target=self.thread_func, args=(cluster_info,))
         driver_receive.start()
 
         if isinstance(data, SparkXShards):
@@ -232,7 +239,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 runner.shutdown()
                 return result
 
-            res = data.rdd.repartition(self.num_workers).barrier() \
+            worker_stats = data.rdd.repartition(self.num_workers).barrier() \
                 .mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
@@ -247,11 +254,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 init_params["state_dict"] = state_dict
                 return PytorchPysparkWorker(**init_param).train_epochs(**param)
 
-            res = self.workerRDD.barrier().mapPartitions(
+            worker_stats = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
         driver_receive.join()
-        worker_stats = [re[1] for re in res]
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:

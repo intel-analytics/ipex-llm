@@ -85,27 +85,28 @@ class PytorchPysparkWorker(TorchRunner):
 
     def setup_distributed(self, mode, cluster_info):
         if mode == "fit":
+            self.setup_components()
             self.rank = self._get_rank(cluster_info)
-            print("cluster is: ", cluster_info)
             address = f"tcp://{cluster_info[0]}"
 
             dist.init_process_group(
                 backend="gloo",
                 init_method=address,
                 rank=self.rank,
-                world_size=self.size)
-            self.state_sync_group = dist.new_group([0, self.size - 1])
+                world_size=self.size + 1)
+            self.state_sync_group = dist.new_group([0, self.size])
 
             from torch.nn.parallel import DistributedDataParallel
-            ddp_model_group = dist.new_group(list(range(self.size - 1)))
+            ddp_model_group = dist.new_group(list(range(self.size)))
             training_models = [
                 DistributedDataParallel(model, process_group=ddp_model_group)
                 for model in self.models
             ]
+            self.setup_operator(training_models)
         else:
-            training_models = self.models
-        self.setup_components()
-        self.setup_operator(training_models)
+            self.rank = 0
+            self.setup_components()
+            self.setup_operator(self.models)
 
     @staticmethod
     def _get_rank(cluster_info):
@@ -142,7 +143,7 @@ class PytorchPysparkWorker(TorchRunner):
 
         if self.rank == 0:
             import torch.distributed as dist
-            dist.broadcast_object_list(state_dict, group=self.state_sync_group, src=0)
+            dist.broadcast_object_list([state_dict], group=self.state_sync_group, src=0)
         return [stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
