@@ -254,9 +254,12 @@ class TorchRunner:
 
         for callback in callbacks:
             callback.set_model(self.models)
+            callback.on_train_begin()
         stats_list = list()
         for i in range(epochs):
-            stats = self.train_epoch(loader, profile=profile, info=info)
+            for callback in callbacks:
+                callback.on_epoch_begin(epoch=self.epochs)
+            stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks)
             if self.rank == 0:
                 if self.sync_stats:
                     self.logger.info(f"Finished training epoch {i + 1}, " +
@@ -265,6 +268,10 @@ class TorchRunner:
                     self.logger.info(f"Finished training epoch {i + 1}, " +
                                      f"stats on rank 0: {stats}")
             stats_list.append(stats)
+            for callback in callbacks:
+                callback.on_epoch_end(epoch=self.epochs)
+        for callback in callbacks:
+            callback.on_train_end()
         return stats_list
 
     def train_epoch(self,

@@ -14,11 +14,11 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_epoch_begin(self):
+    def on_epoch_begin(self, epoch, logs=None):
         pass
 
     @abstractmethod
-    def on_epoch_end(self):
+    def on_epoch_end(self, epoch, logs=None):
         pass
 
     @abstractmethod
