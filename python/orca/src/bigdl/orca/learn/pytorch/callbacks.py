@@ -6,11 +6,11 @@ class Callback(object):
         self.model = None
 
     @abstractmethod
-    def on_batch_begin(self):
+    def on_batch_begin(self, batch, logs=None):
         pass
 
     @abstractmethod
-    def on_batch_end(self):
+    def on_batch_end(self, batch, logs=None):
         pass
 
     @abstractmethod
@@ -22,11 +22,11 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_train_batch_begin(self):
+    def on_train_batch_begin(self, batch, logs=None):
         pass
 
     @abstractmethod
-    def on_train_batch_end(self):
+    def on_train_batch_end(self, batch, logs=None):
         pass
 
     @abstractmethod
