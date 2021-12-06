@@ -22,4 +22,5 @@ spec:
   - name: sgx-provision
     hostPath:
       path: /dev/sgx_provision
-
+  nodeSelector:
+    nodeid: 113

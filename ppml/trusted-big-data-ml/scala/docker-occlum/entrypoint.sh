@@ -43,12 +43,21 @@ fi
 /opt/occlum/start_aesm.sh
 case "$SPARK_K8S_CMD" in
   driver)
+    echo $SGX_MEM_SIZE
+    /opt/run_spark_on_occlum_glibc.sh init
+    cd /opt/occlum_spark
     CMD=(
-      "$SPARK_HOME/bin/spark-submit"
-      --conf "spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS"
-      --deploy-mode client
-      "$@"
-    )
+        /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+        -Divy.home="/tmp/.ivy" \
+        -Dos.name="Linux" \
+        -Djdk.lang.Process.launchMechanism=posix_spawn \
+        -cp "$SPARK_CLASSPATH" \
+        -Xmx1g \
+        org.apache.spark.deploy.SparkSubmit \
+        --conf "spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS" \
+        --deploy-mode client \
+        "$@"
+        )
     ;;
   executor)
     echo $SGX_MEM_SIZE
@@ -59,7 +68,7 @@ case "$SPARK_K8S_CMD" in
         "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
         -XX:-UseCompressedOops \
         -XX:MaxMetaspaceSize=256m \
-        -XX:ActiveProcessorCount=4 \
+        -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
         -Divy.home=/tmp/.ivy \
         -Xms$SPARK_EXECUTOR_MEMORY \
         -Xmx$SPARK_EXECUTOR_MEMORY \
@@ -80,4 +89,5 @@ case "$SPARK_K8S_CMD" in
     echo "Unknown command: $SPARK_K8S_CMD" 1>&2
     exit 1
 esac
-occlum run /sbin/tini -s -- "${CMD[@]}"
+
+/sbin/tini -s -- occlum run "${CMD[@]}"
