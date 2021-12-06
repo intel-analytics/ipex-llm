@@ -335,7 +335,6 @@ class TestPyTorchEstimator(TestCase):
                                    feature_cols=["f1", "f2"])
         result.collect()
 
-
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()
         rdd = sc.range(0, 100).repartition(2)
