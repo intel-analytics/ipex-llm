@@ -61,7 +61,7 @@ class LightningModuleFromTorch(LightningModule):
         loss = self.loss(y_hat, y)
         self.log("val/loss", loss, on_epoch=True, prog_bar=True, logger=True)
         if self.metrics:
-            acc = {"val/metrics/" + type(metric).__name__: metric(y_hat, y)
+            acc = {"val/" + type(metric).__name__: metric(y_hat, y)
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
         else:
@@ -74,7 +74,7 @@ class LightningModuleFromTorch(LightningModule):
         loss = self.loss(y_hat, y)
         self.log("test/loss", loss, on_epoch=True, prog_bar=True, logger=True)
         if self.metrics:
-            acc = {"test/metrics/" + type(metric).__name__: metric(y_hat, y)
+            acc = {"test/" + type(metric).__name__: metric(y_hat, y)
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
         else:
