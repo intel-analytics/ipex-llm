@@ -91,7 +91,9 @@ class AutoTSEstimator:
                tf.keras optimizer instance.
         :param past_seq_len: Int or or hp sampling function. The number of historical steps (i.e.
                lookback) used for forecasting. For hp sampling, see bigdl.orca.automl.hp for more
-               details. The values defaults to 'auto'.
+               details. The values defaults to 'auto', which will automatically infer the
+               cycle length of each time series and take the mode of them. The search space
+               will be automatically set to hp.randint(0.5*cycle_length, 2*cycle_length).
         :param future_seq_len: Int or List. The number of future steps to forecast. The value
                defaults to 1, if `future_seq_len` is a list, we will sample discretely according
                to the input list. 1 means the timestamp just after the observed data.
@@ -277,7 +279,7 @@ class AutoTSEstimator:
         if search_space['past_seq_len'] == 'auto':
             cycle_length = train_data.get_cycle_length(aggregate='mode', top_k=3)
             cycle_length = 2 if cycle_length < 2 else cycle_length
-            search_space['past_seq_len'] = hp.grid_search([cycle_length//2, cycle_length*2])
+            search_space['past_seq_len'] = hp.randint(cycle_length//2, cycle_length*2)
 
         # append feature selection into search space
         # TODO: more flexible setting

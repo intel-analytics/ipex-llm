@@ -966,7 +966,7 @@ class TestTSDataset(ZooTestCase):
             tsdata.get_cycle_length(top_k=24)
         
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=100),
-                           "value": np.arange(100),
+                           "value": np.sin(np.array((0, 30, 45, 60, 90)*20)*np.pi/180),
                            "id": np.array(['00']*100),
                            "extra feature": np.random.randn(100)})
         tsdata = TSDataset.from_pandas(df,
@@ -975,11 +975,11 @@ class TestTSDataset(ZooTestCase):
                                        extra_feature_col='extra feature')
         tsdata.roll(lookback='auto', horizon=1)
         df_x, _ = tsdata.to_numpy()
-        assert df_x.shape[1] == 33
+        assert df_x.shape[1] == 5
 
         tsdata.roll(lookback=tsdata.get_cycle_length(aggregate='median', top_k=4),
                     horizon=1)
-        assert tsdata.best_cycle_length == 25
+        assert tsdata.best_cycle_length == 5
 
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=100),
                            "value": np.ones(100)})
