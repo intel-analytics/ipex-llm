@@ -276,6 +276,7 @@ class AutoTSEstimator:
         search_space['output_feature_num'] = len(train_data.target_col)
         if search_space['past_seq_len'] == 'auto':
             cycle_length = train_data.get_cycle_length(aggregate='mode', top_k=3)
+            cycle_length = 2 if cycle_length < 2 else cycle_length
             search_space['past_seq_len'] = hp.grid_search([cycle_length//2, cycle_length*2])
 
         # append feature selection into search space

@@ -483,7 +483,8 @@ class TSDataset:
         Sampling by rolling for machine learning/deep learning models.
 
         :param lookback: int, lookback value. Default to 'auto',
-               Will use the most cycles to sample.
+               if 'auto', we will calculate a cycle, this cycle is
+               the most distributed cycle in the dataset.
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
@@ -623,7 +624,8 @@ class TSDataset:
                If True, you must also specify lookback and horizon for rolling. If False, you must
                have called tsdataset.roll() before calling to_torch_data_loader(). Default to False.
         :param lookback: int, lookback value. Default to 'auto',
-               Will use the most cycles to sample.
+               if 'auto', we will calculate a cycle, this cycle is
+               the most distributed cycle in the dataset.
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
@@ -829,7 +831,7 @@ class TSDataset:
                 We only support 'min', 'max', 'mode', 'median', 'mean'.
 
         Returns:
-            int: A best time period.
+            A best cycle length.
         """
         assert isinstance(top_k, int),\
             f"top_k type must be int, but found {type(top_k)}."
@@ -842,14 +844,14 @@ class TSDataset:
                                                  for col in self.target_col][0])
 
         if aggregate.lower().strip() == 'mode':
-            self.best_lookback = int(res.unique()[0])
+            self.best_cycle_length = int(res.unique()[0])
         elif aggregate.lower().strip() == 'mean':
-            self.best_lookback = int(res.mean())
+            self.best_cycle_length = int(res.mean())
         elif aggregate.lower().strip() == 'median':
-            self.best_lookback = int(res.median())
+            self.best_cycle_length = int(res.median())
         elif aggregate.lower().strip() == 'min':
-            self.best_lookback = int(res.min())
+            self.best_cycle_length = int(res.min())
         elif aggregate.lower().strip() == 'max':
-            self.best_lookback = int(res.max())
+            self.best_cycle_length = int(res.max())
 
-        return self.best_lookback
+        return self.best_cycle_length

@@ -979,4 +979,12 @@ class TestTSDataset(ZooTestCase):
 
         tsdata.roll(lookback=tsdata.get_cycle_length(aggregate='median', top_k=4),
                     horizon=1)
-        assert tsdata.best_lookback == 25
+        assert tsdata.best_cycle_length == 25
+
+        df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=100),
+                           "value": np.ones(100)})
+        tsdata = TSDataset.from_pandas(df,
+                                       target_col='value',
+                                       dt_col='datetime')
+        with pytest.raises(AssertionError):
+            tsdata.get_cycle_length(aggregate='min', top_k=3)
