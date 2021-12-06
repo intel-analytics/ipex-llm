@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.dllib.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.InvalidLayer
-import com.intel.analytics.bigdl.dllib.nn.keras.{Activation, Convolution1D, Dense, GlobalMaxPooling1D, Input, InputLayer, KerasIdentityWrapper, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.internal.{Activation, Convolution1D, Dense, GlobalMaxPooling1D, Input, InputLayer, KerasIdentityWrapper, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Equivalent
 import com.intel.analytics.bigdl.dllib.nn.{Input => TInput, Sequential => TSequential, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat

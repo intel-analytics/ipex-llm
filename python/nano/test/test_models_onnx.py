@@ -33,6 +33,7 @@ batch_size = 256
 num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 
+
 class ResNet18(nn.Module):
     def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
         super().__init__()
@@ -44,7 +45,8 @@ class ResNet18(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-class TestModelsVision(TestCase):
+
+class TestModelsOnnx(TestCase):
     
     def test_trainer_compile_with_onnx(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)

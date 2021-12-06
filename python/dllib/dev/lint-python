@@ -20,7 +20,7 @@
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 PYTHON_ROOT_DIR="$SCRIPT_DIR/.."
 echo $PYTHON_ROOT_DIR
-PATHS_TO_CHECK="."
+PATHS_TO_CHECK="$SCRIPT_DIR/../src"
 PEP8_REPORT_PATH="$PYTHON_ROOT_DIR/dev/pep8-report.txt"
 PYLINT_REPORT_PATH="$PYTHON_ROOT_DIR/dev/pylint-report.txt"
 PYLINT_INSTALL_INFO="$PYTHON_ROOT_DIR/dev/pylint-info.txt"

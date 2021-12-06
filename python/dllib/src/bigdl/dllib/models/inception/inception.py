@@ -41,7 +41,7 @@ def inception_layer_v1(input_size, config, name_prefix=""):
     concat = Concat(2)
     conv1 = Sequential()
     conv1.add(SpatialConvolution(input_size, config[1][1], 1, 1, 1, 1)
-              .set_init_method(weight_init_method=Xavier(),bias_init_method=ConstInitMethod(0.1))
+              .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
               .set_name(name_prefix + "1x1"))
     conv1.add(ReLU(True).set_name(name_prefix + "relu_1x1"))
     concat.add(conv1)
@@ -128,7 +128,8 @@ def inception_v1_no_aux_classifier(class_num, has_dropout=True):
 def inception_v1(class_num, has_dropout=True):
     feature1 = Sequential()
     feature1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, False)
-                 .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
+                 .set_init_method(weight_init_method=Xavier(),
+                                  bias_init_method=ConstInitMethod(0.1))
                  .set_name("conv1/7x7_s2"))
     feature1.add(ReLU(True).set_name("conv1/relu_7x7"))
     feature1.add(
@@ -137,26 +138,31 @@ def inception_v1(class_num, has_dropout=True):
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75)
                  .set_name("pool1/norm1"))
     feature1.add(SpatialConvolution(64, 64, 1, 1, 1, 1)
-                 .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
+                 .set_init_method(weight_init_method=Xavier(),
+                                  bias_init_method=ConstInitMethod(0.1))
                  .set_name("conv2/3x3_reduce"))
     feature1.add(ReLU(True).set_name("conv2/relu_3x3_reduce"))
     feature1.add(SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1)
-                 .set_init_method(weight_init_method=Xavier(), bias_init_method=ConstInitMethod(0.1))
+                 .set_init_method(weight_init_method=Xavier(),
+                                  bias_init_method=ConstInitMethod(0.1))
                  .set_name("conv2/3x3"))
     feature1.add(ReLU(True).set_name("conv2/relu_3x3"))
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("conv2/norm2"))
     feature1.add(
         SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool2/3x3_s2"))
-    feature1.add(inception_layer_v1(192, t([
-        t([64]), t([96, 128]), t([16, 32]), t([32])]),
+    feature1.add(inception_layer_v1(192,
+                                    t([t([64]), t([96, 128]), t([16, 32]), t([32])]),
                                     "inception_3a/"))
-    feature1.add(inception_layer_v1(256, t([
-        t([128]), t([128, 192]), t([32, 96]), t([64])]),
+
+    feature1.add(inception_layer_v1(256,
+                                    t([t([128]), t([128, 192]), t([32, 96]), t([64])]),
                                     "inception_3b/"))
+
     feature1.add(
         SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool3/3x3_s2"))
-    feature1.add(inception_layer_v1(480, t([
-        t([192]), t([96, 208]), t([16, 48]), t([64])]),
+
+    feature1.add(inception_layer_v1(480,
+                                    t([t([192]), t([96, 208]), t([16, 48]), t([64])]),
                                     "inception_4a/"))
 
     output1 = Sequential()
@@ -249,27 +255,41 @@ def config_option_parser():
                       help="url of hdfs folder store the hadoop sequence files")
     parser.add_option("--model", type=str, dest="model", default="", help="model snapshot location")
     parser.add_option("--state", type=str, dest="state", default="", help="state snapshot location")
-    parser.add_option("--checkpoint", type=str, dest="checkpoint", default="", help="where to cache the model")
+    parser.add_option("--checkpoint", type=str, dest="checkpoint", default="",
+                      help="where to cache the model")
     parser.add_option("-o", "--overwrite", action="store_true", dest="overwrite", default=False,
                       help="overwrite checkpoint files")
-    parser.add_option("-e", "--maxEpoch", type=int, dest="maxEpoch", default=0, help="epoch numbers")
-    parser.add_option("-i", "--maxIteration", type=int, dest="maxIteration", default=62000, help="iteration numbers")
-    parser.add_option("-l", "--learningRate", type=float, dest="learningRate", default=0.01, help="learning rate")
-    parser.add_option("--warmupEpoch", type=int, dest="warmupEpoch", default=0, help="warm up epoch numbers")
+    parser.add_option("-e", "--maxEpoch", type=int, dest="maxEpoch", default=0,
+                      help="epoch numbers")
+    parser.add_option("-i", "--maxIteration", type=int, dest="maxIteration", default=62000,
+                      help="iteration numbers")
+    parser.add_option("-l", "--learningRate", type=float, dest="learningRate", default=0.01,
+                      help="learning rate")
+    parser.add_option("--warmupEpoch", type=int, dest="warmupEpoch", default=0,
+                      help="warm up epoch numbers")
     parser.add_option("--maxLr", type=float, dest="maxLr", default=0.0, help="max Lr after warm up")
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", help="batch size")
     parser.add_option("--classNum", type=int, dest="classNum", default=1000, help="class number")
-    parser.add_option("--weightDecay", type=float, dest="weightDecay", default=0.0001, help="weight decay")
+    parser.add_option("--weightDecay", type=float, dest="weightDecay", default=0.0001,
+                      help="weight decay")
     parser.add_option("--checkpointIteration", type=int, dest="checkpointIteration", default=620,
                       help="checkpoint interval of iterations")
-    parser.add_option("--gradientMin", type=float, dest="gradientMin", default=0.0, help="min gradient clipping by")
-    parser.add_option("--gradientMax", type=float, dest="gradientMax", default=0.0, help="max gradient clipping by")
-    parser.add_option("--gradientL2NormThreshold", type=float, dest="gradientL2NormThreshold", default=0.0, help="gradient L2-Norm threshold")
-    parser.add_option("--executor-cores", type=int, dest="cores", default=4, help="number of executor cores")
-    parser.add_option("--num-executors", type=int, dest="executors", default=16, help="number of executors")
-    parser.add_option("--executor-memory", type=str, dest="executorMemory", default="30g", help="executor memory")
-    parser.add_option("--driver-memory", type=str, dest="driverMemory", default="30g", help="driver memory")
-    parser.add_option("--deploy-mode", type=str, dest="deployMode", default="yarn-client", help="yarn deploy mode, yarn-client or yarn-cluster")
+    parser.add_option("--gradientMin", type=float, dest="gradientMin", default=0.0,
+                      help="min gradient clipping by")
+    parser.add_option("--gradientMax", type=float, dest="gradientMax", default=0.0,
+                      help="max gradient clipping by")
+    parser.add_option("--gradientL2NormThreshold", type=float, dest="gradientL2NormThreshold",
+                      default=0.0, help="gradient L2-Norm threshold")
+    parser.add_option("--executor-cores", type=int, dest="cores", default=4,
+                      help="number of executor cores")
+    parser.add_option("--num-executors", type=int, dest="executors", default=16,
+                      help="number of executors")
+    parser.add_option("--executor-memory", type=str, dest="executorMemory", default="30g",
+                      help="executor memory")
+    parser.add_option("--driver-memory", type=str, dest="driverMemory", default="30g",
+                      help="driver memory")
+    parser.add_option("--deploy-mode", type=str, dest="deployMode", default="yarn-client",
+                      help="yarn deploy mode, yarn-client or yarn-cluster")
 
     return parser
 
@@ -286,11 +306,11 @@ if __name__ == "__main__":
     # init
     hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
     assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-            "set the environment variable HADOOP_CONF_DIR"
+                        "set the environment variable HADOOP_CONF_DIR"
 
-    conf = create_spark_conf().set("spark.executor.memory", options.executorMemory)\
-        .set("spark.executor.cores", options.cores)\
-        .set("spark.executor.instances", options.executors)\
+    conf = create_spark_conf().set("spark.executor.memory", options.executorMemory) \
+        .set("spark.executor.cores", options.cores) \
+        .set("spark.executor.instances", options.executors) \
         .set("spark.driver.memory", options.driverMemory)
 
     sc = init_nncontext(conf, cluster_mode=options.deployMode, hadoop_conf=hadoop_conf)
@@ -301,7 +321,8 @@ if __name__ == "__main__":
                                   RandomCropper(image_size, image_size, True, "Random", 3),
                                   ChannelNormalize(123.0, 117.0, 104.0),
                                   MatToTensor(to_rgb=False),
-                                  ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
+                                  ImageFrameToSample(input_keys=["imageTensor"],
+                                                     target_keys=["label"])
                                   ])
     raw_train_data = get_inception_data(options.folder, sc, "train")
     train_data = DataSet.image_frame(raw_train_data).transform(train_transformer)
@@ -311,7 +332,8 @@ if __name__ == "__main__":
                                 RandomCropper(image_size, image_size, False, "Center", 3),
                                 ChannelNormalize(123.0, 117.0, 104.0),
                                 MatToTensor(to_rgb=False),
-                                  ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
+                                ImageFrameToSample(input_keys=["imageTensor"],
+                                                   target_keys=["label"])
                                 ])
     raw_val_data = get_inception_data(options.folder, sc, "val")
     val_data = DataSet.image_frame(raw_val_data).transform(val_transformer)
@@ -341,12 +363,13 @@ if __name__ == "__main__":
                 maxlr = options.maxLr
             else:
                 maxlr = options.learningRate
-            warmupDelta = (maxlr - options.learningRate)/warmup_iteration
+            warmupDelta = (maxlr - options.learningRate) / warmup_iteration
         polyIteration = maxIteration - warmup_iteration
         lrSchedule = SequentialSchedule(iterationPerEpoch)
         lrSchedule.add(Warmup(warmupDelta), warmup_iteration)
         lrSchedule.add(Poly(0.5, maxIteration), polyIteration)
-        optim = SGD(learningrate=options.learningRate, learningrate_decay=0.0, weightdecay=options.weightDecay,
+        optim = SGD(learningrate=options.learningRate, learningrate_decay=0.0,
+                    weightdecay=options.weightDecay,
                     momentum=0.9, dampening=0.0, nesterov=False,
                     leaningrate_schedule=lrSchedule)
 

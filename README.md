@@ -18,6 +18,8 @@ BigDL makes it easy for data scientists and data engineers to build end-to-end, 
  * [Chronos](#getting-started-with-chronos): scalable time series analysis using AutoML
  
  * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning (*experimental*)
+ 
+ * [Serving](#getting-started-with-serving): Distributed and Automated Model Inference on Big Data Streaming Frameworks
 
 For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
@@ -198,6 +200,13 @@ See the Chronos [user guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/
 ***BigDL PPML*** provides a *Trusted Cluster Environment* for protecting the end-to-end Big Data AI pipeline. It combines various low level hardware and software security technologies (e.g., Intel SGX, LibOS such as Graphene and Occlum, Federated Learning, etc.), and allows users to run unmodified Big Data analysis and ML/DL programs (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) in a secure fashion on (private or public) cloud.
 
 See the [PPML user guide](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) for more details. 
+
+## Getting Started with Serving
+BigDL Cluster Serving is an end-to-end pipeline to scale-out local applications. We recommend you to refer to following example to kick-off.
+
+[Migrate Keras application to Serving](https://bigdl.readthedocs.io/en/latest/doc/Serving/Example/keras-to-cluster-serving-example.ipynb)
+
+See the Serving [user guide](https://bigdl.readthedocs.io/en/latest/doc/Serving/Overview/serving.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Serving/QuickStart/serving-quickstart.html) for more details.
 
 ## More information
 

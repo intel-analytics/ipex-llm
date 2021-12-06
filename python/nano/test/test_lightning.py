@@ -18,6 +18,7 @@ import os
 from unittest import TestCase
 
 import torch
+import torchmetrics
 from torch import nn
 
 from _train_torch_lightning import create_data_loader, data_transform
@@ -51,10 +52,14 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 class TestLightningModuleFromTorch(TestCase):
 
     def test_resnet18(self):
-        pl_model = LightningModuleFromTorch(model, loss, optimizer)
-        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
-        trainer = Trainer(max_epochs=1)
-        trainer.fit(pl_model, train_loader)
+        pl_model = LightningModuleFromTorch(
+            model, loss, optimizer,
+            [torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+        )
+        data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+        trainer = Trainer(max_epochs=4, log_every_n_steps=1)
+        trainer.fit(pl_model, data_loader, data_loader)
+        trainer.test(pl_model, data_loader)
 
     def test_load_state_dict_from_torch(self):
         torch.save(model.state_dict(), "resnet18_test.pth")

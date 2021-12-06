@@ -51,14 +51,17 @@ parser.add_argument('--cluster_mode', type=str, default="local",
 parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
+parser.add_argument('--download_url', type=str, default="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
+                    help="The url of cats_and_dogs_filtered.zip.")
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
 dataset_dir = args.data_dir
+download_url = args.download_url
 if not exists(dataset_dir):
     makedirs(dataset_dir)
 zip_file = tf.keras.utils.get_file(
-    origin="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
+    origin=download_url,
     fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
 base_dir, _ = os.path.splitext(zip_file)
 
@@ -173,4 +176,3 @@ print("==>unfreeze")
 result = est.evaluate(validation_dataset)
 print(result)
 stop_orca_context()
-

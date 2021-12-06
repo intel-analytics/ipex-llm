@@ -21,8 +21,8 @@ import copy
 import tempfile
 import re
 import shutil
-from bigdl.dllib.utils.file_utils import put_local_file_to_remote, get_remote_file_to_local, get_file_list,\
-    is_local_path
+from bigdl.dllib.utils.file_utils import put_local_file_to_remote, get_remote_file_to_local,\
+    get_file_list, is_local_path
 
 
 def process_grad(grad):

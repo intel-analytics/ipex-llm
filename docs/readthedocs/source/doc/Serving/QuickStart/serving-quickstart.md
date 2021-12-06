@@ -1,4 +1,4 @@
-# BigDL Cluster Serving Quick Start
+# Cluster Serving Quick Start
 
 This section provides a quick start example for you to run BigDL Cluster Serving. To simplify the example, we use docker to run Cluster Serving. If you do not have docker installed, [install docker](https://docs.docker.com/install/) first. The quick start example contains all the necessary components so the first time users can get it up and running within minutes:
 

@@ -18,6 +18,7 @@ from bigdl.dllib.utils.common import JavaValue
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 
+
 class Estimator(JavaValue):
     """
     Estimator class for training and evaluation BigDL models.

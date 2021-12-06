@@ -17,7 +17,7 @@
  package com.intel.analytics.bigdl.dllib.keras.layers
 
  import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
- import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+ import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
  import com.intel.analytics.bigdl.dllib.tensor.Tensor
  import com.intel.analytics.bigdl.dllib.utils.Shape
  import com.intel.analytics.bigdl.dllib.keras.Sequential

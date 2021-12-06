@@ -44,7 +44,8 @@ class ResNet18(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-class TestModelsVision(TestCase):
+
+class TestTrainer(TestCase):
 
     def test_resnet18_ipex(self):
         resnet18 = vision.resnet18(

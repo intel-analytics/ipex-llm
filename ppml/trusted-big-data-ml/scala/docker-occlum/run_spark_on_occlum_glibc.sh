@@ -34,6 +34,10 @@ build_spark() {
     mkdir -p image/usr/lib/jvm
     cp -r /usr/lib/jvm/java-11-openjdk-amd64 image/usr/lib/jvm
     cp -rf /etc/java-11-openjdk image/etc/
+    # Copy K8s secret
+    mkdir -p image/var/run/secrets/
+    cp -r /var/run/secrets/* image/var/run/secrets/
+    ls image/var/run/secrets/kubernetes.io/serviceaccount/
     # Copy libs
     cp /lib/x86_64-linux-gnu/libz.so.1 image/lib
     cp /lib/x86_64-linux-gnu/libz.so.1 image/$occlum_glibc
@@ -60,8 +64,6 @@ build_spark() {
     # Prepare BigDL
     mkdir -p image/bin/jars
     cp -f $BIGDL_HOME/jars/* image/bin/jars
-    # Copy Data dir
-    cp -rf /opt/data image/opt/
     occlum build
 }
 

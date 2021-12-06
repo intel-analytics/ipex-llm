@@ -53,6 +53,7 @@ class HasBatchSize(Params):
         """
         return self.getOrDefault(self.batchSize)
 
+
 class HasMaxEpoch(Params):
     maxEpoch = Param(Params._dummy(), "maxEpoch", "number of max Epoch")
 
@@ -73,6 +74,7 @@ class HasMaxEpoch(Params):
         """
         return self.getOrDefault(self.maxEpoch)
 
+
 class HasFeatureSize(Params):
     featureSize = Param(Params._dummy(), "featureSize", "size of the feature")
 
@@ -89,6 +91,7 @@ class HasFeatureSize(Params):
 
     def getFeatureSize(self):
         return self.getOrDefault(self.featureSize)
+
 
 class HasLearningRate(Params):
     learningRate = Param(Params._dummy(), "learningRate", "learning rate")
@@ -110,13 +113,16 @@ class HasLearningRate(Params):
         """
         return self.getOrDefault(self.learningRate)
 
-class DLEstimator(Estimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasBatchSize, HasMaxEpoch, HasLearningRate, JavaValue):
+
+class DLEstimator(Estimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasBatchSize,
+                  HasMaxEpoch, HasLearningRate, JavaValue):
     """
     .. note:: Deprecated in 0.5.0. `DLEstimator` has been migrated to package
      `bigdl.dlframes`. This will be removed in BigDL 0.6.
 
     """
-    def __init__(self,  model, criterion, feature_size, label_size, jvalue=None, bigdl_type="float"):
+
+    def __init__(self, model, criterion, feature_size, label_size, jvalue=None, bigdl_type="float"):
         super(DLEstimator, self).__init__()
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, self.jvm_class_constructor(), model, criterion, feature_size, label_size)
@@ -124,7 +130,7 @@ class DLEstimator(Estimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasB
         self.featureSize = feature_size
 
     def _fit(self, dataset):
-        #self._transfer_params_to_java()
+        # self._transfer_params_to_java()
         jmodel = callBigDlFunc(self.bigdl_type, "fitEstimator", self.value, dataset)
         model = DLModel.of(jmodel, self.featureSize, self.bigdl_type)
         return model
@@ -136,7 +142,8 @@ class DLModel(Model, HasFeaturesCol, HasPredictionCol, HasBatchSize, HasFeatureS
      `bigdl.dlframes`. This will be removed in BigDL 0.6.
 
     """
-    def __init__(self,  model, featureSize, jvalue=None, bigdl_type="float"):
+
+    def __init__(self, model, featureSize, jvalue=None, bigdl_type="float"):
         super(DLModel, self).__init__()
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, self.jvm_class_constructor(), model, featureSize)
@@ -158,7 +165,8 @@ class DLClassifier(DLEstimator):
      `bigdl.dlframes`. This will be removed in BigDL 0.6.
 
     """
-    def __init__(self,  model, criterion, feature_size,  bigdl_type="float"):
+
+    def __init__(self, model, criterion, feature_size, bigdl_type="float"):
         super(DLClassifier, self).__init__(model, criterion, feature_size, [1], None, bigdl_type)
 
     def _fit(self, dataset):
@@ -173,7 +181,8 @@ class DLClassifierModel(DLModel):
      `bigdl.dlframes`. This will be removed in BigDL 0.6.
 
     """
-    def __init__(self,  model, featureSize, jvalue=None, bigdl_type="float"):
+
+    def __init__(self, model, featureSize, jvalue=None, bigdl_type="float"):
         super(DLClassifierModel, self).__init__(model, featureSize, jvalue, bigdl_type)
 
     def _transform(self, dataset):
@@ -181,5 +190,6 @@ class DLClassifierModel(DLModel):
 
     @classmethod
     def of(self, jvalue, feature_size=None, bigdl_type="float"):
-        model = DLClassifierModel(model=None, featureSize=feature_size, jvalue=jvalue, bigdl_type=bigdl_type)
+        model = DLClassifierModel(model=None, featureSize=feature_size, jvalue=jvalue,
+                                  bigdl_type=bigdl_type)
         return model

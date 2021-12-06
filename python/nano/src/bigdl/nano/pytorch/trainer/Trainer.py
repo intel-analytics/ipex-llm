@@ -21,6 +21,7 @@ import warnings
 
 import pytorch_lightning as pl
 import torch
+from torchmetrics.metric import Metric
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from torch import nn
 from torch.nn.modules.loss import _Loss
@@ -116,6 +117,7 @@ class Trainer(pl.Trainer):
     def compile(model: nn.Module,
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
+                metrics: List[Metric] = None,
                 onnx: bool = False):
         """
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
@@ -127,6 +129,7 @@ class Trainer(pl.Trainer):
                             Should be None if model is instance of pl.LightningModule.
         :param optimizer:   Optimizer to construct pytorch-lightning model Should be None.
                             if model is instance of pl.LightningModule.
+        :param metrics:     A list of torchmetrics to validate/test performance.
         :param onnx:        Indicates if onnxruntime support should be binded to the
                             returned model.
         :return:            A LightningModule object.
@@ -142,7 +145,7 @@ class Trainer(pl.Trainer):
         else:
             assert loss and optimizer, \
                 "Loss and optimizer are required to construct a LightningModule instance."
-            pl_model = LightningModuleFromTorch(model, loss, optimizer)
+            pl_model = LightningModuleFromTorch(model, loss, optimizer, metrics)
 
         if onnx:
             try:

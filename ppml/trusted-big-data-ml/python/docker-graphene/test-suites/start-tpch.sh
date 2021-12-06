@@ -54,4 +54,4 @@ SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
         --driver-memory 10G \
         /ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar \
         /ppml/trusted-big-data-ml/work/zoo-tutorials/tpch-spark/dbgen \
-        hdfs://localhost:9000/dbgen-query" 2>&1 | tee spark.local.tpc.h.sgx.log
+        hdfs://$LOCAL_IP:9000/dbgen-query" 2>&1 | tee spark.local.tpc.h.sgx.log

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.dllib.nn.keras.{Activation => BigDLActivation}
+import com.intel.analytics.bigdl.dllib.nn.internal.{Activation => BigDLActivation}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape

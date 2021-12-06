@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 import com.intel.analytics.bigdl.dllib.nn.abstractnn._
 import com.intel.analytics.bigdl.dllib.nn.VolumetricAveragePooling
 import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
-import com.intel.analytics.bigdl.dllib.nn.keras.GlobalPooling3D
+import com.intel.analytics.bigdl.dllib.nn.internal.GlobalPooling3D
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
