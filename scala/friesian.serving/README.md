@@ -1,29 +1,105 @@
-## Friesian gRPC Recommendation Framework
+## Friesian Serving Recommendation Framework
 
+### Architecture of the serving pipelines
+
+The diagram below demonstrates the components of the friesian serving system, which typically consists of three stages:
+
+- Offline: Preprocess the data to get user/item DNN features and user/item Embedding features. Then use the embedding features and embedding model to get embedding vectors.
+- Nearline: Retrieve user/item profiles and keep them in the Key-Value store. Retrieve item embedding vectors and build the faiss index. Make updates to the profiles from time to time.
+- Online: Trigger the recommendation process whenever a user comes. Recall service generate candidates from millions of items based on embeddings and the deep learning model ranks the candidates for the final recommendation results.
+
+![Architecture](./src/main/resources/images/architecture.png "The Architecture of the Friesian serving pipeline")
+
+### Services and APIs
+The friesian serving system consists of 4 types of services:
+- Ranking Service: performs model inference and returns the results.
+  - `rpc doPredict(Content) returns (Prediction) {}`
+    - Input: The `encodeStr` is a Base64 string encoded from a bigdl [Activity](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/nn/abstractnn/Activity.scala) serialized byte array.
+    ```bash
+    message Content {
+        string encodedStr = 1;
+    }
+    ```
+    - Output: The `predictStr` is a Base64 string encoded from a bigdl [Activity](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/nn/abstractnn/Activity.scala) (the inference result) serialized byte array.
+    ```bash
+    message Prediction {
+        string predictStr = 1;
+    }
+    ```
+- Feature Service: searches user embeddings, user features or item features in Redis, and returns the features.
+  - `rpc getUserFeatures(IDs) returns (Features) {}` and `rpc getItemFeatures(IDs) returns (Features) {}`
+    - Input: The user/item id list for searching.
+    ```bash
+    message IDs {
+        repeated int32 ID = 1;
+    }
+    ```
+    - Output: `colNames` is a string list of the column names. `b64Feature` is a list of Base64 string, each string is encoded from java serialized array of objects. `ID` is a list of ids corresponding `b64Feature`.
+    ```bash
+    message Features {
+        repeated string colNames = 1;
+        repeated string b64Feature = 2;
+        repeated int32 ID = 3;
+    }
+    ```
+- Recall Service: searches item candidates in the built faiss index and returns candidates id list.
+  - `rpc searchCandidates(Query) returns (Candidates) {}`
+    - Input: `userID` is the id of the user to search similar item candidates. `k` is the number of candidates. 
+    ```bash
+    message Query {
+        int32 userID = 1;
+        int32 k = 2;
+    }
+    ```
+    - Output: `candidate` is the list of ids of item candidates.
+    ```bash
+    message Candidates {
+        repeated int32 candidate = 1;
+    }
+    ```
+- Recommender Service: gets candidates from the recall service, calls the feature service to get the user and item candidate's features, then sorts the inference results from ranking service and returns the top recommendNum items.
+  - `rpc getRecommendIDs(RecommendRequest) returns (RecommendIDProbs) {}`
+    - Input: `ID` is a list of user ids to recommend. `recommendNum` is the number of items to recommend. `candidateNum` is the number of generated candidates to inference in ranking service.
+    ```bash
+    message RecommendRequest {
+        int32 recommendNum = 1;
+        int32 candidateNum = 2;
+        repeated int32 ID = 3;
+    }
+    ```
+    - Output: `IDProbList` is a list of results corresponding to user `ID` in input. Each `IDProbs` consists of `ID` and `prob`, `ID` is the list of item ids, and `prob` is the corresponding probability.
+    ```bash
+    message RecommendIDProbs {
+        repeated IDProbs IDProbList = 1;
+    }
+    message IDProbs {
+        repeated int32 ID = 1;
+        repeated float prob = 2;
+    }
+    ```
 
 ### Quick Start
-You can run Friesion gRPC Recommendation Framework using the official Docker images.
+You can run Friesion Serving Recommendation Framework using the official Docker images.
 
 First you can follow the following steps to run the WnD demo.
 
 1. Pull docker image from dockerhub
 ```bash
-The first version will be uploaded soon
+docker pull intelanalytics/friesian-grpc:0.0.2
 ```
 
 2. Run & enter docker container
 ```bash
-docker run -itd --name grpcwnd1 --net=host grpcwnd
-docker exec -it grpcwnd1 bash
+docker run -itd --name friesian --net=host intelanalytics/friesian-grpc:0.0.2
+docker exec -it friesian bash
 ```
 
 3. Add vec_feature_user_prediction.parquet, vec_feature_item_prediction.parquet, wnd model,
-   wnd_item.parquet and wnd_user.parquet
+   wnd_item.parquet and wnd_user.parquet (You can check [the schema of the parquet files](#schema-of-the-parquet-files))
 
 4. Start ranking service
 ```bash
 export OMP_NUM_THREADS=1
-export TF_DISABLE_MKL=1
 java -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPSHOT.jar com.intel.analytics.bigdl.friesian.serving.ranking.RankingServer -c config_ranking.yaml > logs/inf.log 2>&1 &
 ```
 
@@ -63,6 +139,63 @@ java -Dspark.master=local[*] -cp bigdl-friesian-serving-spark_2.4.6-0.14.0-SNAPS
 ps aux|grep friesian (find the service pid)
 kill xxx (pid of the service which should be closed)
 ```
+
+### Schema of the parquet files
+
+#### The schema of the user and item embedding files
+The embedding parquet files should contain at least 2 columns, id column and prediction column.
+The id column should be IntegerType and the column name should be specified in the config files.
+The prediction column should be DenseVector type, and you can transfer your existing embedding vectors using pyspark:
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import udf, col
+from pyspark.ml.linalg import VectorUDT, DenseVector
+
+spark = SparkSession.builder \
+        .master("local[*]") \
+        .config("spark.driver.memory", "2g") \
+        .getOrCreate()
+
+df = spark.read.parquet("data_path")
+
+def trans_densevector(data):
+   return DenseVector(data)
+
+vector_udf = udf(lambda x: trans_densevector(x), VectorUDT())
+# suppose the embedding column (ArrayType(FloatType,true)) is the existing user/item embedding.
+df = df.withColumn("prediction", vector_udf(col("embedding")))
+df.write.parquet("output_file_path", mode="overwrite")
+```
+
+#### The schema of the recommendation model feature files
+The feature parquet files should contain at least 2 columns, the id column and other feature columns.
+The feature columns can be int, float, double, long and array of int, float, double and long.
+Here is an example of the WideAndDeep model feature.
+```bash
++-------------+--------+--------+----------+--------------------------------+---------------------------------+------------+-----------+---------+----------------------+-----------------------------+
+|present_media|language|tweet_id|tweet_type|engaged_with_user_follower_count|engaged_with_user_following_count|len_hashtags|len_domains|len_links|present_media_language|engaged_with_user_is_verified|
++-------------+--------+--------+----------+--------------------------------+---------------------------------+------------+-----------+---------+----------------------+-----------------------------+
+|            9|      43|     924|         2|                               6|                                3|         0.0|        0.1|      0.1|                    45|                            1|
+|            0|       6| 4741724|         2|                               3|                                3|         0.0|        0.0|      0.0|                   527|                            0|
++-------------+--------+--------+----------+--------------------------------+---------------------------------+------------+-----------+---------+----------------------+-----------------------------+
+```
+
+### The data schema in Redis
+The user features, item features and user embedding vectors are saved in Redis.
+The data saved in Redis is a key-value set.
+
+#### Key in Redis
+The key in Redis consists of 3 parts: key prefix, data type, and data id. 
+- Key prefix is `redisKeyPrefix` specified in the feature service config file. 
+- Data type is one of `user` or `item`. 
+- Data id is the value of `userIDColumn` or `itemIDColumn`.
+Here is an example of key: `2tower_user:29`
+
+#### Value in Redis
+A row in the input parquet file will be converted to java array of object, then serialized into byte array, and encoded into Base64 string.
+
+#### Data schema entry
+Every key prefix and data type combination has its data schema entry to save the corresponding column names. The key of the schema entry is `keyPrefix + dataType`, such as `2tower_user`. The value of the schema entry is a string of column names separated by `,`, such as `enaging_user_follower_count,enaging_user_following_count,enaging_user_is_verified`.
 
 ### Config for different service
 You can pass some important information to services using `-c config.yaml`
@@ -111,6 +244,9 @@ loadInitialData: true
 
 # default: "", prefix for redis key
 redisKeyPrefix:
+
+# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
+redisClusterItemSlotType: 2
 
 # default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
 # provided. Only support parquet file
@@ -168,6 +304,9 @@ loadInitialData: true
 # default: ""
 redisKeyPrefix: 2tower_
 
+# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
+redisClusterItemSlotType: 2
+
 # default: null, if loadInitialData=true, initialDataPath must be provided. Only support parquet
 # file
 initialUserDataPath: /home/yina/Documents/data/recsys/preprocess_output/guoqiong/vec_feature_user.parquet
@@ -217,6 +356,9 @@ servicePort: 8084
 # performance using prometheus
 monitorPort: 1238
 
+# default: 128, the dimensionality of the embedding vectors
+indexDim: 50
+
 # default: false, if load saved index, set true
 # loadSavedIndex: true
 
@@ -258,6 +400,9 @@ servicePort: 8084
 # Default: null, open a port for prometheus monitoring tool, if set, user can check the
 # performance using prometheus
 monitorPort: 1238
+
+# default: 128, the dimensionality of the embedding vectors
+# indexDim: 
 
 # default: false, if load saved index, set true
 loadSavedIndex: true
@@ -303,6 +448,9 @@ Config with example:
  
 # default: null, must be provided, column names for inference, order related.
 inferenceColumns: present_media_language, present_media, tweet_type, language, hashtags, present_links, present_domains, tweet_id_engaged_with_user_id, engaged_with_user_follower_count, engaged_with_user_following_count, enaging_user_follower_count, enaging_user_following_count, len_hashtags, len_domains, len_links
+
+ # default: 0, if set, ranking service request will be divided
+inferenceBatch: 0
 
 # default: localhost:8980, recall service target
 recallServiceURL: localhost:8084
