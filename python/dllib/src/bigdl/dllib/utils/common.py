@@ -64,7 +64,7 @@ class GatewayWrapper(SingletonMixin):
 
 
 class JavaCreator(SingletonMixin):
-    __creator_class=[
+    __creator_class = [
         "com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDLKeras",
         "com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDLOnnx",
         "com.intel.analytics.bigdl.dllib.common.PythonZoo",
@@ -128,6 +128,7 @@ class EvaluatedResult():
     """
     A testing result used to benchmark the model quality.
     """
+
     def __init__(self, result, total_num, method):
         """
 
@@ -167,6 +168,7 @@ class JTensor(object):
     >>> np.random.seed(123)
     >>>
     """
+
     def __init__(self, storage, shape, bigdl_type="float", indices=None):
         """
 
@@ -188,7 +190,7 @@ class JTensor(object):
             self.indices = np.frombuffer(indices, dtype=np.int32)
         else:
             assert isinstance(indices, np.ndarray), \
-            "indices should be a np.ndarray, not %s, %s" % (type(a_ndarray), str(indices))
+                "indices should be a np.ndarray, not %s, %s" % (type(a_ndarray), str(indices))
             self.indices = np.array(indices, dtype=np.int32)
         self.bigdl_type = bigdl_type
 
@@ -203,7 +205,8 @@ class JTensor(object):
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
-        >>> expected_storage = np.array([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]])
+        >>> expected_storage = np.array([[0.69646919, 0.28613934, 0.22685145], [0.55131477,
+        ... 0.71946895, 0.42310646]])
         >>> expected_shape = np.array([2, 3])
         >>> np.testing.assert_allclose(result.storage, expected_storage, rtol=1e-6, atol=1e-6)
         >>> np.testing.assert_allclose(result.shape, expected_shape)
@@ -280,7 +283,8 @@ class JTensor(object):
     def to_ndarray(self):
         """
         Transfer JTensor to ndarray.
-        As SparseTensor may generate an very big ndarray, so we don't support this function for SparseTensor.
+        As SparseTensor may generate an very big ndarray, so we don't support this function for
+        SparseTensor.
         :return: a ndarray
         """
         assert self.indices is None, "sparseTensor to ndarray is not supported"
@@ -290,14 +294,16 @@ class JTensor(object):
         if self.indices is None:
             return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type)
         else:
-            return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type, self.indices.tostring())
+            return JTensor, (self.storage.tostring(), self.shape.tostring(), self.bigdl_type,
+                             self.indices.tostring())
 
     def __str__(self):
         return self.__repr__()
 
     def __repr__(self):
         indices = "" if self.indices is None else " ,indices %s" % str(self.indices)
-        return "JTensor: storage: %s, shape: %s%s, %s" % (str(self.storage), str(self.shape), indices, self.bigdl_type)
+        return "JTensor: storage: %s, shape: %s%s, %s" % (
+            str(self.storage), str(self.shape), indices, self.bigdl_type)
 
 
 class Sample(object):
@@ -326,12 +332,15 @@ class Sample(object):
         >>> from bigdl.dllib.utils.common import callBigDlFunc
         >>> from numpy.testing import assert_allclose
         >>> np.random.seed(123)
-        >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))        
-        >>> expected_feature_storage = np.array(([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]]))
+        >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
+        >>> expected_feature_storage = np.array(([[0.69646919, 0.28613934, 0.22685145], [0.55131477,
+        ... 0.71946895, 0.42310646]]))
         >>> expected_feature_shape = np.array([2, 3])
-        >>> expected_label_storage = np.array(([[0.98076421, 0.68482971, 0.48093191], [0.39211753, 0.343178, 0.72904968]]))
+        >>> expected_label_storage = np.array(([[0.98076421, 0.68482971, 0.48093191], [0.39211753,
+        ... 0.343178, 0.72904968]]))
         >>> expected_label_shape = np.array([2, 3])
-        >>> assert_allclose(sample.features[0].storage, expected_feature_storage, rtol=1e-6, atol=1e-6)
+        >>> assert_allclose(sample.features[0].storage, expected_feature_storage, rtol=1e-6,
+        ... atol=1e-6)
         >>> assert_allclose(sample.features[0].shape, expected_feature_shape)
         >>> assert_allclose(sample.labels[0].storage, expected_label_storage, rtol=1e-6, atol=1e-6)
         >>> assert_allclose(sample.labels[0].shape, expected_label_shape)
@@ -395,10 +404,12 @@ class Sample(object):
     def __repr__(self):
         return "Sample: features: %s, labels: %s" % (self.features, self.labels)
 
+
 class RNG():
     """
     generate tensor data with seed
     """
+
     def __init__(self, bigdl_type="float"):
         self.bigdl_type = bigdl_type
 
@@ -406,7 +417,7 @@ class RNG():
         callBigDlFunc(self.bigdl_type, "setModelSeed", seed)
 
     def uniform(self, a, b, size):
-        return callBigDlFunc(self.bigdl_type, "uniform", a, b, size).to_ndarray() # noqa
+        return callBigDlFunc(self.bigdl_type, "uniform", a, b, size).to_ndarray()  # noqa
 
 
 _picklable_classes = [
@@ -428,14 +439,18 @@ def init_engine(bigdl_type="float"):
     # Spark context is supposed to have been created when init_engine is called
     get_spark_context()._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.initialize()
 
+
 def get_bigdl_engine_type(bigdl_type="float"):
     return callBigDlFunc(bigdl_type, "getEngineType")
+
 
 def set_optimizer_version(optimizerVersion, bigdl_type="float"):
     return callBigDlFunc(bigdl_type, "setOptimizerVersion", optimizerVersion)
 
+
 def get_optimizer_version(bigdl_type="float"):
     return callBigDlFunc(bigdl_type, "getOptimizerVersion")
+
 
 def init_executor_gateway(sc, bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initExecutorGateway", sc, sc._gateway._gateway_client.port)
@@ -446,11 +461,12 @@ def get_node_and_core_number(bigdl_type="float"):
     return result[0], result[1]
 
 
-def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
+def redire_spark_logs(bigdl_type="float", log_path=os.getcwd() + "/bigdl.log"):
     """
     Redirect spark logs to the specified path.
     :param bigdl_type: "double" or "float"
-    :param log_path: the file path to be redirected to; the default file is under the current workspace named `bigdl.log`.
+    :param log_path: the file path to be redirected to; the default file is under the current
+     workspace named `bigdl.log`.
     """
     callBigDlFunc(bigdl_type, "redirectSparkLogs", log_path)
 
@@ -473,12 +489,14 @@ def get_bigdl_conf():
 
     for p in sys.path:
         if bigdl_conf_file in p and os.path.isfile(p):
-            with open(p) if sys.version_info < (3,) else open(p, encoding='latin-1') as conf_file: # noqa
+            with open(p) if sys.version_info < (3,) else open(p,
+                                                              encoding='latin-1') as conf_file:
+                # noqa
                 return load_conf(conf_file.read())
         if bigdl_python_wrapper in p and os.path.isfile(p):
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
-                if bigdl_conf_file  in zip_conf.namelist():
+                if bigdl_conf_file in zip_conf.namelist():
                     content = zip_conf.read(bigdl_conf_file)
                     if sys.version_info >= (3,):
                         content = str(content, 'latin-1')
@@ -527,7 +545,8 @@ def create_spark_conf():
     if python_lib:
         existing_py_files = sparkConf.get("spark.submit.pyFiles")
         if existing_py_files:
-            sparkConf.set(key="spark.submit.pyFiles", value="%s,%s" % (python_lib, existing_py_files))
+            sparkConf.set(key="spark.submit.pyFiles",
+                          value="%s,%s" % (python_lib, existing_py_files))
         else:
             sparkConf.set(key="spark.submit.pyFiles", value=python_lib)
 

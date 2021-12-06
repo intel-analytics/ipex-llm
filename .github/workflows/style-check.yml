@@ -38,6 +38,9 @@ jobs:
         run: bash python/nano/test/run-nano-codestyle-test.sh
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Dllib style checking
+        run: bash python/dllib/dev/lint-python
 
       - name: Orca style checking
         run: bash python/orca/dev/test/lint-python

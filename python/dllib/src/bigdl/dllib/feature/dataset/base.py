@@ -46,9 +46,9 @@ class Progbar(object):
     def update(self, current, values=[], force=False):
         '''
 
-            :param current: index of current step
-            :param values: list of tuples (name, value_for_last_step).The progress bar will display averages for these values.
-            :param force: force visual progress update
+            :param current: index of current step :param values: list of tuples (name,
+            value_for_last_step).The progress bar will display averages for these values. :param
+            force: force visual progress update
         '''
         for k, v in values:
             if k not in self.sum_values:
