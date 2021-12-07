@@ -102,7 +102,7 @@ class TestTFEstimator(TestCase):
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.save(os.path.join(temp_dir, "a.model"))
             trainer.load(os.path.join(temp_dir, "a.model"))
-            # res = trainer.predict(df, feature_cols=["feature"]).collect()
+            res = trainer.predict(df, feature_cols=["feature"]).collect()
         finally:
             shutil.rmtree(temp_dir)
 
