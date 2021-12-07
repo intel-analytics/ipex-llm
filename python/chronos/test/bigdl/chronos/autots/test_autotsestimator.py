@@ -499,7 +499,7 @@ class TestAutoTrainer(TestCase):
     def test_autogener_best_cycle_length(self):
         sample_num = 100
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
-                           "value": np.arange(sample_num),
+                           "value": np.sin(np.array((0, 30, 45, 60, 90)*20)*np.pi/180),
                            "id": np.array(['00'] * sample_num)})
 
         train_ts = TSDataset.from_pandas(df,
@@ -520,7 +520,7 @@ class TestAutoTrainer(TestCase):
                            batch_size=hp.choice([16, 32]),
                            validation_data=train_ts)
         config = auto_estimator.get_best_config()
-        assert 16 <= config['past_seq_len'] <= 64
+        assert 3 <= config['past_seq_len'] <= 10
 
 if __name__ == "__main__":
     pytest.main([__file__])
