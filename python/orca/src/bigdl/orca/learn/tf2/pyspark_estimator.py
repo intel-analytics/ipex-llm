@@ -86,7 +86,6 @@ class SparkTFEstimator():
         self.port = find_free_port()
         is_local = sc.master.startswith("local")
         self.need_to_log = (not is_local) and log_to_driver
-        self.need_to_log = True
         if self.need_to_log:
             self.logger_thread = threading.Thread(
                 target=self._print_logs,
