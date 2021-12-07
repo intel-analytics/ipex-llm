@@ -35,13 +35,7 @@ elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
 
-**Note:** You should correctly set HADOOP_HOME, HADOOP_CONF_DIR, HADOOP_HDFS_HOME, LD_LIBRARY_PATH, etc when running on Hadoop YARN cluster.
-```
-source ${HADOOP_HOME}/libexec/hadoop-config.sh
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
-CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob) python tf_lenet_mnist.py --cluster_mode yarn
-```
-View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
+**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details. To use tensorflow_datasets on HDFS, you should correctly set HADOOP_HOME, HADOOP_HDFS_HOME, LD_LIBRARY_PATH, etc. For more details, please refer to TensorFlow documentation [link](https://github.com/tensorflow/docs/blob/r1.11/site/en/deploy/hadoop.md).
 
 ### **Step 2: Define the Model**
 
