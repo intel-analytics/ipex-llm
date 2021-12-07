@@ -79,9 +79,9 @@ The friesian serving system consists of 4 types of services:
     ```
 
 ### Quick Start
-You can run Friesion Serving Recommendation Framework using the official Docker images.
+You can run Friesian Serving Recommendation Framework using the official Docker images.
 
-First you can follow the following steps to run the WnD demo.
+You can follow the following steps to run the WnD demo.
 
 1. Pull docker image from dockerhub
 ```bash
