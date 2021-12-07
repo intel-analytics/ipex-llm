@@ -2,10 +2,24 @@
 ---
 
 **Tutorial:**
+- Seamlessly Scaling out Big Data AI on Ray and Apache Spark, [CVPR 2021](https://cvpr2021.thecvf.com/program) [tutorial](https://jason-dai.github.io/cvpr2021/), June 2021, ([slides](https://jason-dai.github.io/cvpr2021/slides/End-to-End%20Big%20Data%20AI%20Pipeline%20using%20Analytics%20Zoo%20-%20CVPR21.pdf))
+
+- Automated Machine Learning Workflow for Distributed Big Data Using Analytics Zoo,  [CVPR 2020](https://cvpr2020.thecvf.com/program/tutorials) [tutorial](https://jason-dai.github.io/cvpr2020/), June 2020, ([slides](https://jason-dai.github.io/cvpr2020/slides/AIonBigData_cvpr20.pdf))
+
+- Building Deep Learning Applications for Big Data, [AAAI 2019]( https://aaai.org/Conferences/AAAI-19/aaai19tutorials/#sp2) [tutorial](https://jason-dai.github.io/aaai2019/), January 2019, ([slides](https://jason-dai.github.io/aaai2019/slides/AI%20on%20Big%20Data%20(Jason%20Dai).pdf))
 
 - Analytics Zoo: Distributed TensorFlow and Keras on Apache Spark, [AI conference](https://conferences.oreilly.com/artificial-intelligence/ai-ca-2019/public/schedule/detail/77069), Sep 2019, San Jose ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Tutorial%20Analytics%20ZOO.pdf))
 
+- Building Deep Learning Applications on Big Data Platforms, [CVPR 2018](https://cvpr2018.thecvf.com/) [tutorial](https://jason-dai.github.io/cvpr2018/), June 2018, ([slides](https://jason-dai.github.io/cvpr2018/slides/BigData_DL_Jason-CVPR.pdf))
+
 **Talks:**
+- Mobile Order Click-Through Rate (CTR) Recommendation with Ray on Apache Spark at Burger King, [Ray Summit 2021](https://www.anyscale.com/events/2021/06/22/mobile-order-click-through-rate-ctr-recommendation-with-ray-on-apache-spark-at-burger-king), June 2021, ([slides](https://files.speakerdeck.com/presentations/1870110b5adf4bfc8f0c76255a417f09/Kai_Huang_and_Luyang_Wang.pdf))
+
+- Deep Reinforcement Learning Recommenders using RayOnSpark, **Data + AI Summit 2021**, May 2021, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210527DeepReinforcementLearningRecommendersUsingRayOnSpark2.pdf))
+
+- Cluster Serving: Deep Learning Model Serving for Big Data, **Data + AI Summit 2021**, May 2021, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210526Cluster-Serving.pdf))
+
+- Offer Recommendation System with Apache Spark at Burger King, [Data + AI Summit 2021](https://databricks.com/session_na21/offer-recommendation-system-with-apache-spark-at-burger-king), May 2021, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/20210526Offer%20Recommendation.pdf))
 
 - Context-aware Fast Food Recommendation with Ray on Apache Spark at Burger King, [Data + AI Summit Europe 2020](https://databricks.com/session_eu20/context-aware-fast-food-recommendation-with-ray-on-apache-spark-at-burger-king), November 2020, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1118%20Context-aware%20Fast%20Food%20Recommendation%20with%20Ray%20on%20Apache%20Spark%20at%20Burger%20King.pdf))
 

@@ -71,6 +71,16 @@
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-grpc-spark_${spark.version}</artifactId>
             <version>0.14.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_${scala.major.version}</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>
@@ -119,40 +129,21 @@
                  or shade plugin will be executed after assembly plugin. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-<!--                <version>3.2.1</version>-->
-<!--                <configuration>-->
-<!--                    <filters>-->
-<!--                        <filter>-->
-<!--                            <artifact>com.google.protobuf</artifact>-->
-<!--                            <excludes>-->
-<!--                                <exclude>META-INF/maven/com.google.protobuf/protobuf-java/*</exclude>-->
-<!--                            </excludes>-->
-<!--                        </filter>-->
-<!--                    </filters>-->
-<!--                    <relocations>-->
-<!--                        <relocation>-->
-<!--                            <pattern>com.google.protobuf</pattern>-->
-<!--                            <shadedPattern>com.intel.analytics.shaded.protobuf_v_3_5_1</shadedPattern>-->
-<!--                        </relocation>-->
-<!--                    </relocations>-->
-<!--                </configuration>-->
+                <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
                 <executions>
-<!--                    <execution>-->
-<!--                        <id>shade</id>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>shade</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <artifactSet>-->
-<!--                                <includes>-->
-<!--                                    <include>com.google.protobuf</include>-->
-<!--                                </includes>-->
-<!--                            </artifactSet>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
                     <execution>
-                        <id>serving</id>
+                        <id>ppml</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>

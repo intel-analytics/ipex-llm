@@ -141,7 +141,8 @@ class OpenvinoEstimator(SparkEstimator):
             return feature_data
 
         if isinstance(data, DataFrame):
-            from bigdl.orca.learn.utils import dataframe_to_xshards, convert_predict_rdd_to_dataframe
+            from bigdl.orca.learn.utils import dataframe_to_xshards
+            from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,

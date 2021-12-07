@@ -24,13 +24,7 @@ from bigdl.chronos.data.repo_dataset import get_public_dataset
 
 def get_tsdata():
     name = 'network_traffic'
-    path = '~/.chronos/dataset/'
-    tsdata_train, _, \
-        tsdata_test = get_public_dataset(name,
-                                         path,
-                                         redownload=False,
-                                         with_split=True,
-                                         test_ratio=0.1)
+    tsdata_train, _, tsdata_test = get_public_dataset(name, val_ratio=0)
     minmax = MinMaxScaler()
     for tsdata in [tsdata_train, tsdata_test]:
         tsdata.gen_dt_feature(one_hot_features=["HOUR", "WEEK"])\

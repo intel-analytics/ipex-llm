@@ -34,7 +34,7 @@ class TimeSequencePredictor(BasePredictor):
     """
     def __init__(self,
                  name="automl",
-                 logs_dir="~/zoo_automl_logs",
+                 logs_dir="~/bigdl_automl_logs",
                  future_seq_len=1,
                  dt_col="datetime",
                  target_col=["value"],

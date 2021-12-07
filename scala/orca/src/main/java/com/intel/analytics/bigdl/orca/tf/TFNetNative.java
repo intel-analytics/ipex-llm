@@ -86,7 +86,11 @@ public class TFNetNative {
                     System.out.println(resourceName);
                     File shareLibFile = new File(libSharePath(), resourceName);
                     System.out.println(shareLibFile.getPath());
-                    if (shareLibFile.exists()) {
+                    String tfLibsPath = System.getenv("TF_LIBS_PATH");
+                    if (tfLibsPath != null) {
+                        File resourceFile = new File(tfLibsPath, resourceName);
+                        System.load(resourceFile.getPath());
+                    } else if (shareLibFile.exists()) {
                         System.out.println("got shared path");
                         System.load(shareLibFile.getPath());
                     } else {

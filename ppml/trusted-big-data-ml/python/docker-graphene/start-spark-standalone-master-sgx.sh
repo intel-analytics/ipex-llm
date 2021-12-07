@@ -8,7 +8,7 @@ master_webui_port=$SPARK_MASTER_WEBUI_PORT
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
-    -cp "/ppml/trusted-big-data-ml/work/bigdl-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-2.4.6/conf/:/ppml/trusted-big-data-ml/work/spark-2.4.6/jars/*" \
+    -cp "/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*" \
     -Dspark.authenticate=true \
     -Dspark.authenticate.secret=$secure_password \
     -Dspark.network.crypto.enabled=true \

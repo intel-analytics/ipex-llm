@@ -64,7 +64,7 @@ class TorchModel (
          |${getName()} = torch.load(io.BytesIO(by), pickle_module=zoo_pickle_module)
          |import types
          |if isinstance(${getName()}, types.FunctionType) or \\
-         |   isinstance(${getName()}, types.ClassType):
+         |   isinstance(${getName()}, type):
          |    ${getName()} = ${getName()}()
          |""".stripMargin
     PythonInterpreter.exec(loadModelCode)

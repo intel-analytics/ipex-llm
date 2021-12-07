@@ -17,11 +17,11 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
 import com.intel.analytics.bigdl.dllib.keras.autograd.Variable
-import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 

@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.keras.autograd.Parameter
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}
+import com.intel.analytics.bigdl.dllib.keras.Model
+import com.intel.analytics.bigdl.dllib.keras.Sequential
 
 
 class NarrowSpec extends ZooSpecHelper {

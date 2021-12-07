@@ -13,20 +13,30 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.learn.tf.estimator import Estimator
 from bigdl.orca.data import SharedValue
 import bigdl.orca.data.pandas
+import argparse
+
+# define arg parser object
+parser = argparse.ArgumentParser(description='ncf dataframe programming')
+parser.add_argument('--cluster_mode', type=str, default='local', help='Optional values: local, yarn, k8s.')
+parser.add_argument('--master', type=str, default='master', help='In k8s mode, the parameter master must be passed in.')
+parser.add_argument('--image_name_k8s', type=str, default='image_name_k8s', help='In k8s mode, the parameter image_name_k8s must be passed in.')
+
+args = parser.parse_args()
+cluster_mode = args.cluster_mode
+master = args.master
+image_name_k8s = args.image_name_k8s
 
 # recommended to set it to True when running Analytics Zoo in Jupyter notebook
 OrcaContext.log_output = True # (this will display terminal's stdout and stderr in the Jupyter notebook).
-cluster_mode = "local"
 
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=1) # run in local mode
 elif cluster_mode == "yarn":
     init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="6g") # run on Hadoop YARN cluster
-#init_orca_context(cluster_mode="k8s",
-#  master="k8s://https://192.168.0.112::6443",
-#  container_image="10.239.45.10/arda/intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-python-graphene:0.12-k8s-sj",
-#  num_nodes=1, memory="128g",
-#  cores=4) # run in local mode
+elif cluster_mode == "k8s":
+    init_orca_context(cluster_mode="k8s", master=master,
+            container_image=image_name_k8s, num_nodes=1, memory="128g", cores=4) # run in local mode
+
 print("INFO 1 cluster_mode_init_success!")
 
 # Read in the dataset, and do a little preprocessing

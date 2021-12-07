@@ -18,14 +18,15 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.Sum
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
 import com.intel.analytics.bigdl.dllib.keras.autograd.Variable
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
-import com.intel.analytics.bigdl.dllib.keras.models.{Model, Sequential}
+import com.intel.analytics.bigdl.dllib.keras.Model
+import com.intel.analytics.bigdl.dllib.keras.Sequential
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 class TransformerLayerSpec extends ZooSpecHelper {

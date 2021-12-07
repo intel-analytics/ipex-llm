@@ -23,8 +23,8 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, LocalDataSet, M
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.{Container, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras
-import com.intel.analytics.bigdl.dllib.nn.keras._
+import com.intel.analytics.bigdl.dllib.nn.internal
+import com.intel.analytics.bigdl.dllib.nn.internal._
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, Regularizer, ValidationMethod}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -72,12 +72,12 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def createKerasModel(input: JList[ModuleNode[T]],
-      output: JList[ModuleNode[T]]): Model[T] = {
-      keras.Model(input.asScala.toArray, output.asScala.toArray)
+      output: JList[ModuleNode[T]]): internal.Model[T] = {
+      internal.Model(input.asScala.toArray, output.asScala.toArray)
   }
 
-  def createKerasSequential(): keras.Sequential[T] = {
-      keras.Sequential[T]()
+  def createKerasSequential(): internal.Sequential[T] = {
+      internal.Sequential[T]()
   }
 
   def createKerasInput(

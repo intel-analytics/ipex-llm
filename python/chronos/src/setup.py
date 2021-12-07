@@ -47,8 +47,7 @@ def setup_package():
     metadata = dict(
         name='bigdl-chronos',
         version=VERSION,
-        description='An application framework for building large-scale time series analysis '
-                    'applications',
+        description='Scalable time series analysis using AutoML',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
@@ -56,6 +55,7 @@ def setup_package():
         packages=get_bigdl_packages(),
         install_requires=['bigdl-orca=='+VERSION, 'torch>=1.7.1', 'pandas==1.0.3', 'scikit-learn'],
         extras_require={'all': ['tensorflow>=1.15.0,<2.0.0', 'h5py==2.10.0',
+                                'aiohttp==3.7.4', 'aioredis==1.3.1',
                                 'ray[tune]==1.2.0', 'tensorboard', 'scipy==1.5',
                                 'protobuf==3.12.0', 'tsfresh==0.17.0']},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],

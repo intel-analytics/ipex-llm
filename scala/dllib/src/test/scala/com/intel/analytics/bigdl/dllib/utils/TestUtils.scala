@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.utils
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.dllib.nn.Sequential
-import com.intel.analytics.bigdl.dllib.nn.keras.{InputLayer, KerasLayer, Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.internal.{InputLayer, KerasLayer, Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric

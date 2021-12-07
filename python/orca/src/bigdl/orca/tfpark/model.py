@@ -20,8 +20,8 @@ from bigdl.dllib.optim.optimizer import MaxEpoch
 from bigdl.orca.tfpark.utils import evaluate_string_metrics
 from bigdl.dllib.utils.file_utils import enable_multi_fs_save, enable_multi_fs_load
 from bigdl.dllib.nncontext import getOrCreateSparkContext
-from bigdl.orca.tfpark.tf_dataset import TFNdarrayDataset, TFDataset, _standarize_feature_label_dataset, \
-    check_data_compatible
+from bigdl.orca.tfpark.tf_dataset import TFNdarrayDataset, TFDataset, \
+    _standarize_feature_label_dataset, check_data_compatible
 
 from bigdl.orca.tfpark.tf_optimizer import TFOptimizer
 from bigdl.orca.tfpark.tf_predictor import TFPredictor

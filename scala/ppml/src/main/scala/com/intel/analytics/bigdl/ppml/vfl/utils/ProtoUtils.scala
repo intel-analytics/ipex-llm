@@ -55,7 +55,10 @@ object ProtoUtils {
   def toFloatTensor(data: Array[Float]): FloatTensor = {
     toFloatTensor(data, Array(data.length))
   }
-  def uploadModel(client: FLClient, model: Module[Float], flVersion: Int): Unit = {
+  def uploadModel(client: FLClient,
+                  model: Module[Float],
+                  flVersion: Int,
+                  algorithm: String): Unit = {
     val parameterTable = model.getParametersTable()
 
     val metadata = TableMetaData.newBuilder
@@ -74,7 +77,7 @@ object ProtoUtils {
       .putTable("weights", tensor)
       .setMetaData(metadata)
       .build
-    client.nnStub.uploadTrain(metamodel)
+    client.nnStub.uploadTrain(metamodel, algorithm)
   }
 
   def updateModel(model: Module[Float],
@@ -94,12 +97,15 @@ object ProtoUtils {
   }
 
 
-  def downloadTrain(client: FLClient, modelName: String, flVersion: Int): FLProto.Table = {
+  def downloadTrain(client: FLClient,
+                    modelName: String,
+                    flVersion: Int,
+                    algorithm: String): FLProto.Table = {
     var code = 0
     var maxRetry = 20000
     var downloadRes = None: Option[DownloadResponse]
     while (code == 0 && maxRetry > 0) {
-      downloadRes = Some(client.nnStub.downloadTrain(modelName, flVersion))
+      downloadRes = Some(client.nnStub.downloadTrain(modelName, flVersion, algorithm))
       code = downloadRes.get.getCode
       if (code == 0) {
         logger.info("Waiting 10ms for other clients!")

@@ -40,4 +40,4 @@ if __name__ == '__main__':
         df = df.rename(columns={"text_ tokens": "text_tokens"})
         # This is a typo. Other typos include enaging...
         df = df.rename(columns={"retweet_timestampe": "retweet_timestamp"})
-        df.to_parquet(os.path.join(args.output_folder, "spark_parquet/%s" % f))
+        df.to_parquet(os.path.join(args.output_folder, "%s" % f))

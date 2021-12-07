@@ -39,7 +39,7 @@ def _parse_args():
     parser = ArgumentParser()
 
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The cluster mode, such as local, yarn or standalone.')
+                        help='The cluster mode, such as local, yarn, standalone or spark-submit.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
     parser.add_argument('--executor_cores', type=int, default=48,
@@ -80,6 +80,8 @@ if __name__ == "__main__":
                           num_nodes=args.num_executor, memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           conf=conf)
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context("spark-submit")
 
     begin = time.time()
     transaction_tbl = FeatureTable.read_json(args.input_transaction).select(
@@ -125,4 +127,4 @@ if __name__ == "__main__":
 
     end = time.time()
     stop_orca_context()
-    print(f"perf preprocessing time: {(end - begin):.2f}s")
+    print(f"DIEN preprocessing time: {(end - begin):.2f}s")

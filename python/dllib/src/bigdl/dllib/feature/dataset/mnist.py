@@ -23,7 +23,7 @@ import numpy
 from bigdl.dllib.feature.dataset import base
 from bigdl.dllib.feature.dataset.transformer import *
 
-SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
+SOURCE_URL = 'https://ossci-datasets.s3.amazonaws.com/mnist/'
 
 TRAIN_MEAN = 0.13066047740239506 * 255
 TRAIN_STD = 0.3081078 * 255
@@ -84,11 +84,9 @@ def read_data_sets(train_dir, data_type="train"):
 
     :return:
 
-    ```
-    (ndarray, ndarray) representing (features, labels)
-    features is a 4D unit8 numpy array [index, y, x, depth] representing each pixel valued from 0 to 255.
-    labels is 1D unit8 nunpy array representing the label valued from 0 to 9.
-    ```
+    ``` (ndarray, ndarray) representing (features, labels) features is a 4D unit8 numpy array [
+    index, y, x, depth] representing each pixel valued from 0 to 255. labels is 1D unit8 nunpy
+    array representing the label valued from 0 to 9. ```
 
     """
     TRAIN_IMAGES = 'train-images-idx3-ubyte.gz'

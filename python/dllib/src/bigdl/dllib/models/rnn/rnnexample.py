@@ -27,14 +27,16 @@ from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.common import Sample
 
+
 def download_data(dest_dir):
     TINYSHAKESPEARE_URL = 'https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt'  # noqa
     file_name = "input.txt"
     file_abs_path = base.maybe_download(file_name, dest_dir, TINYSHAKESPEARE_URL)
     return file_abs_path
 
+
 def prepare_data(sc, folder, vocabsize, training_split):
-    if not folder.startswith( 'hdfs://' ):
+    if not folder.startswith('hdfs://'):
         file = download_data(folder)
     else:
         file = folder
@@ -51,17 +53,19 @@ def prepare_data(sc, folder, vocabsize, training_split):
     print("max length %s" % train_max_len)
 
     words = train_tokens.flatMap(lambda x: x)
-    print("%s words and %s sentences processed in train data" % (words.count(), train_tokens.count()))
+    print(
+        "%s words and %s sentences processed in train data" % (words.count(), train_tokens.count()))
 
     val_max_len = val_tokens.map(lambda x: len(x)).max()
     print("val max length %s" % val_max_len)
 
     val_words = val_tokens.flatMap(lambda x: x)
-    print("%s words and %s sentences processed in validation data" % (val_words.count(), val_tokens.count()))
+    print("%s words and %s sentences processed in validation data" % (
+        val_words.count(), val_tokens.count()))
 
     sort_words = words.map(lambda w: (w, 1)) \
-                .reduceByKey(lambda a, b: a + b) \
-                .sortBy(lambda w_c: w_c[1])
+        .reduceByKey(lambda a, b: a + b) \
+        .sortBy(lambda w_c: w_c[1])
     vocabulary = np.array(sort_words.map(lambda w: w[0]).collect())
 
     fre_len = vocabulary.size
@@ -69,8 +73,8 @@ def prepare_data(sc, folder, vocabsize, training_split):
         length = fre_len
     else:
         length = vocabsize
-    discard_vocab = vocabulary[: fre_len-length]
-    used_vocab = vocabulary[fre_len-length: fre_len]
+    discard_vocab = vocabulary[: fre_len - length]
+    used_vocab = vocabulary[fre_len - length: fre_len]
     used_vocab_size = used_vocab.size
     index = np.arange(used_vocab_size)
     index2word = dict(enumerate(used_vocab))
@@ -86,7 +90,7 @@ def prepare_data(sc, folder, vocabsize, training_split):
         return data, label
 
     def labeled2onehotformat(labeled_sent):
-        label = [x+1 for x in labeled_sent[1]]
+        label = [x + 1 for x in labeled_sent[1]]
         size = len(labeled_sent[0])
         feature_onehot = np.zeros(size * total_vocab_len, dtype='int').reshape(
             [size, total_vocab_len])
@@ -116,12 +120,13 @@ def prepare_data(sc, folder, vocabsize, training_split):
 
     return sample_rdd, val_sample_rdd, total_vocab_len
 
+
 def build_model(input_size, hidden_size, output_size, model_type):
     # Model Type is simple RNN
     if model_type == "rnn":
         model = Sequential()
         model.add(Recurrent()
-                  .add(RnnCell(input_size, hidden_size, Tanh())))\
+                  .add(RnnCell(input_size, hidden_size, Tanh()))) \
             .add(TimeDistributed(Linear(hidden_size, output_size)))
         model.reset()
 
@@ -133,7 +138,7 @@ def build_model(input_size, hidden_size, output_size, model_type):
     elif model_type == "lstm":
         model = Sequential()
         model.add(Recurrent()
-                  .add(LSTM(input_size, hidden_size)))\
+                  .add(LSTM(input_size, hidden_size))) \
             .add(TimeDistributed(Linear(hidden_size, output_size)))
         model.reset()
 
@@ -146,10 +151,11 @@ def build_model(input_size, hidden_size, output_size, model_type):
 
             # The format index of input or output format can be checked
             # in: ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
-            model.set_input_formats([27]) # Set input format to ntc
-            model.set_output_formats([27]) # Set output format to ntc
+            model.set_input_formats([27])  # Set input format to ntc
+            model.set_output_formats([27])  # Set output format to ntc
 
     return model
+
 
 if __name__ == "__main__":
     parser = OptionParser()

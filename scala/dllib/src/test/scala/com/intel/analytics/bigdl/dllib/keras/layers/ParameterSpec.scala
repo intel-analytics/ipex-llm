@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.{MSECriterion, Module}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.Sequential
+import com.intel.analytics.bigdl.dllib.nn.internal.Sequential
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{Shape, T, Table}
@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Lambda, Parameter, Variable}
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
-import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
 import scala.math.log

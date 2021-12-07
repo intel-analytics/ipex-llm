@@ -31,7 +31,7 @@ class FeatureTransformer(JavaValue):
 
     def __init__(self, bigdl_type="float", *args):
         self.value = callBigDlFunc(
-                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+            bigdl_type, JavaValue.jvm_class_constructor(self), *args)
 
     def transform(self, image_feature, bigdl_type="float"):
         """
@@ -45,8 +45,9 @@ class FeatureTransformer(JavaValue):
         transform ImageFrame
         """
         jframe = callBigDlFunc(bigdl_type,
-                             "transformImageFrame", self.value, image_frame)
+                               "transformImageFrame", self.value, image_frame)
         return ImageFrame(jvalue=jframe)
+
 
 class Pipeline(FeatureTransformer):
     """
@@ -55,9 +56,11 @@ class Pipeline(FeatureTransformer):
 
     def __init__(self, transformers, bigdl_type="float"):
         for transfomer in transformers:
-            assert transfomer.__class__.__bases__[0].__name__ == "FeatureTransformer", "the transformer should be " \
-                                                                                       "subclass of FeatureTransformer"
+            assert transfomer.__class__.__bases__[0].__name__ == "FeatureTransformer", \
+                "the transformer should be " \
+                "subclass of FeatureTransformer"
         super(Pipeline, self).__init__(bigdl_type, transformers)
+
 
 class ImageFeature(JavaValue):
     """
@@ -97,6 +100,7 @@ class ImageFeature(JavaValue):
         """
         return callBigDlFunc(self.bigdl_type, "imageFeatureGetKeys", self.value)
 
+
 class ImageFrame(JavaValue):
     """
     ImageFrame wraps a set of ImageFeature
@@ -109,7 +113,6 @@ class ImageFrame(JavaValue):
             self.image_frame = LocalImageFrame(jvalue=self.value)
         else:
             self.image_frame = DistributedImageFrame(jvalue=self.value)
-
 
     @classmethod
     def read(cls, path, sc=None, min_partitions=1, bigdl_type="float"):
@@ -134,7 +137,7 @@ class ImageFrame(JavaValue):
         return DistributedImageFrame(jvalue=callBigDlFunc(bigdl_type, "readParquet", path, sc))
 
     @classmethod
-    def write_parquet(cls, path, output, sc, partition_num = 1, bigdl_type="float"):
+    def write_parquet(cls, path, output, sc, partition_num=1, bigdl_type="float"):
         """
         write ImageFrame as parquet file
         """
@@ -157,7 +160,7 @@ class ImageFrame(JavaValue):
         transformImageFrame
         """
         self.value = callBigDlFunc(bigdl_type,
-                                 "transformImageFrame", transformer, self.value)
+                                   "transformImageFrame", transformer, self.value)
         return self
 
     def get_image(self, float_key="floats", to_chw=True):
@@ -201,15 +204,17 @@ class ImageFrame(JavaValue):
         """
         Random split imageframes according to weights
         :param weights: weights for each ImageFrame
-        :return: 
+        :return:
         """
-        jvalues =  self.image_frame.random_split(weights)
+        jvalues = self.image_frame.random_split(weights)
         return [ImageFrame(jvalue) for jvalue in jvalues]
+
 
 class LocalImageFrame(ImageFrame):
     """
     LocalImageFrame wraps a list of ImageFeature
     """
+
     def __init__(self, image_list=None, label_list=None, jvalue=None, bigdl_type="float"):
         assert jvalue or image_list, "jvalue and image_list cannot be None in the same time"
         if jvalue:
@@ -217,7 +222,8 @@ class LocalImageFrame(ImageFrame):
         else:
             # init from image ndarray list and label rdd(optional)
             image_tensor_list = map(lambda image: JTensor.from_ndarray(image), image_list)
-            label_tensor_list = map(lambda label: JTensor.from_ndarray(label), label_list) if label_list else None
+            label_tensor_list = map(lambda label: JTensor.from_ndarray(label),
+                                    label_list) if label_list else None
             self.value = callBigDlFunc(bigdl_type, JavaValue.jvm_class_constructor(self),
                                        image_tensor_list, label_tensor_list)
 
@@ -228,7 +234,7 @@ class LocalImageFrame(ImageFrame):
         get image list from ImageFrame
         """
         tensors = callBigDlFunc(self.bigdl_type,
-                                   "localImageFrameToImageTensor", self.value, float_key, to_chw)
+                                "localImageFrameToImageTensor", self.value, float_key, to_chw)
         return map(lambda tensor: tensor.to_ndarray(), tensors)
 
     def get_label(self):
@@ -243,16 +249,18 @@ class LocalImageFrame(ImageFrame):
         get prediction list from ImageFrame
         """
         predicts = callBigDlFunc(self.bigdl_type, "localImageFrameToPredict", self.value, key)
-        return map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (predict[0], None), predicts)
+        return map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (
+            predict[0], None), predicts)
 
-    def get_sample(self,  key="sample"):
+    def get_sample(self, key="sample"):
         return callBigDlFunc(self.bigdl_type, "localImageFrameToSample", self.value, key)
 
-    def get_uri(self, key = "uri"):
+    def get_uri(self, key="uri"):
         return callBigDlFunc(self.bigdl_type, "localImageFrameToUri", self.value, key)
 
     def random_split(self, weights):
         raise "random split not supported in LocalImageFrame"
+
 
 class DistributedImageFrame(ImageFrame):
     """
@@ -266,7 +274,8 @@ class DistributedImageFrame(ImageFrame):
         else:
             # init from image ndarray rdd and label rdd(optional)
             image_tensor_rdd = image_rdd.map(lambda image: JTensor.from_ndarray(image))
-            label_tensor_rdd = label_rdd.map(lambda label: JTensor.from_ndarray(label)) if label_rdd else None
+            label_tensor_rdd = label_rdd.map(
+                lambda label: JTensor.from_ndarray(label)) if label_rdd else None
             self.value = callBigDlFunc(bigdl_type, JavaValue.jvm_class_constructor(self),
                                        image_tensor_rdd, label_tensor_rdd)
 
@@ -277,14 +286,16 @@ class DistributedImageFrame(ImageFrame):
         get image rdd from ImageFrame
         """
         tensor_rdd = callBigDlFunc(self.bigdl_type,
-                               "distributedImageFrameToImageTensorRdd", self.value, float_key, to_chw)
+                                   "distributedImageFrameToImageTensorRdd", self.value, float_key,
+                                   to_chw)
         return tensor_rdd.map(lambda tensor: tensor.to_ndarray())
 
     def get_label(self):
         """
         get label rdd from ImageFrame
         """
-        tensor_rdd = callBigDlFunc(self.bigdl_type, "distributedImageFrameToLabelTensorRdd", self.value)
+        tensor_rdd = callBigDlFunc(self.bigdl_type, "distributedImageFrameToLabelTensorRdd",
+                                   self.value)
         return tensor_rdd.map(lambda tensor: tensor.to_ndarray())
 
     def get_predict(self, key="predict"):
@@ -292,16 +303,20 @@ class DistributedImageFrame(ImageFrame):
         get prediction rdd from ImageFrame
         """
         predicts = callBigDlFunc(self.bigdl_type, "distributedImageFrameToPredict", self.value, key)
-        return predicts.map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (predict[0], None))
+        return predicts.map(
+            lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (
+                predict[0], None))
 
-    def get_sample(self,  key="sample"):
+    def get_sample(self, key="sample"):
         return callBigDlFunc(self.bigdl_type, "distributedImageFrameToSample", self.value, key)
 
-    def get_uri(self, key = "uri"):
+    def get_uri(self, key="uri"):
         return callBigDlFunc(self.bigdl_type, "distributedImageFrameToUri", self.value, key)
 
     def random_split(self, weights):
-        return callBigDlFunc(self.bigdl_type, "distributedImageFrameRandomSplit", self.value, weights)
+        return callBigDlFunc(self.bigdl_type, "distributedImageFrameRandomSplit", self.value,
+                             weights)
+
 
 class HFlip(FeatureTransformer):
     """
@@ -309,7 +324,8 @@ class HFlip(FeatureTransformer):
     """
 
     def __init__(self, bigdl_type="float"):
-            super(HFlip, self).__init__(bigdl_type)
+        super(HFlip, self).__init__(bigdl_type)
+
 
 class Resize(FeatureTransformer):
     """
@@ -324,9 +340,10 @@ class Resize(FeatureTransformer):
     Imgproc.resize(mat, mat, new Size(resizeWH, resizeWH))
     """
 
-    def __init__(self, resize_h, resize_w, resize_mode = 1, use_scale_factor=True,
+    def __init__(self, resize_h, resize_w, resize_mode=1, use_scale_factor=True,
                  bigdl_type="float"):
         super(Resize, self).__init__(bigdl_type, resize_h, resize_w, resize_mode, use_scale_factor)
+
 
 class Brightness(FeatureTransformer):
     """
@@ -338,6 +355,7 @@ class Brightness(FeatureTransformer):
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
         super(Brightness, self).__init__(bigdl_type, delta_low, delta_high)
 
+
 class ChannelOrder(FeatureTransformer):
     """
     random change the channel of an image
@@ -345,6 +363,7 @@ class ChannelOrder(FeatureTransformer):
 
     def __init__(self, bigdl_type="float"):
         super(ChannelOrder, self).__init__(bigdl_type)
+
 
 class Contrast(FeatureTransformer):
     """
@@ -356,6 +375,7 @@ class Contrast(FeatureTransformer):
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
         super(Contrast, self).__init__(bigdl_type, delta_low, delta_high)
 
+
 class Saturation(FeatureTransformer):
     """
     Adjust image saturation
@@ -363,6 +383,7 @@ class Saturation(FeatureTransformer):
 
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
         super(Saturation, self).__init__(bigdl_type, delta_low, delta_high)
+
 
 class Hue(FeatureTransformer):
     """
@@ -374,6 +395,7 @@ class Hue(FeatureTransformer):
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
         super(Hue, self).__init__(bigdl_type, delta_low, delta_high)
 
+
 class ChannelNormalize(FeatureTransformer):
     """
     image channel normalize
@@ -384,16 +406,19 @@ class ChannelNormalize(FeatureTransformer):
     :param std_g std value in G channel
     :param std_b std value in B channel
     """
+
     def __init__(self, mean_r, mean_g, mean_b, std_r=1.0, std_g=1.0, std_b=1.0, bigdl_type="float"):
-        super(ChannelNormalize, self).__init__(bigdl_type, mean_r, mean_g, mean_b, std_r, std_g, std_b)
-        
+        super(ChannelNormalize, self).__init__(bigdl_type, mean_r, mean_g, mean_b, std_r, std_g,
+                                               std_b)
+
+
 class PixelNormalize(FeatureTransformer):
     """
     Pixel level normalizer, data(i) = data(i) - mean(i)
 
     :param means pixel level mean, following H * W * C order
     """
-    
+
     def __init__(self, means, bigdl_type="float"):
         super(PixelNormalize, self).__init__(bigdl_type, means)
 
@@ -402,14 +427,15 @@ class RandomCrop(FeatureTransformer):
     """
     Random crop a `cropWidth` x `cropHeight` patch from an image.
     The patch size should be less than the image size.
-    
+
     :param crop_width width after crop
     :param crop_height height after crop
     :param is_clip whether to clip the roi to image boundaries
     """
-    
+
     def __init__(self, crop_width, crop_height, is_clip=True, bigdl_type="float"):
         super(RandomCrop, self).__init__(bigdl_type, crop_width, crop_height, is_clip)
+
 
 class CenterCrop(FeatureTransformer):
     """
@@ -422,6 +448,7 @@ class CenterCrop(FeatureTransformer):
 
     def __init__(self, crop_width, crop_height, is_clip=True, bigdl_type="float"):
         super(CenterCrop, self).__init__(bigdl_type, crop_width, crop_height, is_clip)
+
 
 class FixedCrop(FeatureTransformer):
     """
@@ -437,6 +464,7 @@ class FixedCrop(FeatureTransformer):
 
     def __init__(self, x1, y1, x2, y2, normalized=True, is_clip=True, bigdl_type="float"):
         super(FixedCrop, self).__init__(bigdl_type, x1, y1, x2, y2, normalized, is_clip)
+
 
 class DetectionCrop(FeatureTransformer):
     """
@@ -466,7 +494,8 @@ class Expand(FeatureTransformer):
                  max_expand_ratio=4.0, bigdl_type="float"):
         super(Expand, self).__init__(bigdl_type, means_r, means_g, means_b,
                                      min_expand_ratio, max_expand_ratio)
-        
+
+
 class Filler(FeatureTransformer):
     """
     Fill part of image with certain pixel value
@@ -476,13 +505,14 @@ class Filler(FeatureTransformer):
     :param end_y end y ratio
     :param value filling value
     """
-    
-    def __init__(self, start_x, start_y, end_x, end_y, value = 255, bigdl_type="float"):
+
+    def __init__(self, start_x, start_y, end_x, end_y, value=255, bigdl_type="float"):
         super(Filler, self).__init__(bigdl_type, start_x,
                                      start_y,
                                      end_x,
                                      end_y,
                                      value)
+
 
 class RandomTransformer(FeatureTransformer):
     """
@@ -511,18 +541,19 @@ class ColorJitter(FeatureTransformer):
     :param random_order_prob random order for different operation
     :param shuffle  shuffle the transformers
     """
-    def __init__(self, brightness_prob = 0.5,
-                 brightness_delta = 32.0,
-                 contrast_prob = 0.5,
-                 contrast_lower = 0.5,
-                 contrast_upper = 1.5,
-                 hue_prob = 0.5,
-                 hue_delta = 18.0,
-                 saturation_prob = 0.5,
-                 saturation_lower = 0.5,
-                 saturation_upper = 1.5,
-                 random_order_prob = 0.0,
-                 shuffle = False,
+
+    def __init__(self, brightness_prob=0.5,
+                 brightness_delta=32.0,
+                 contrast_prob=0.5,
+                 contrast_lower=0.5,
+                 contrast_upper=1.5,
+                 hue_prob=0.5,
+                 hue_delta=18.0,
+                 saturation_prob=0.5,
+                 saturation_lower=0.5,
+                 saturation_upper=1.5,
+                 random_order_prob=0.0,
+                 shuffle=False,
                  bigdl_type="float"):
         super(ColorJitter, self).__init__(bigdl_type, brightness_prob,
                                           brightness_delta,
@@ -537,6 +568,7 @@ class ColorJitter(FeatureTransformer):
                                           random_order_prob,
                                           shuffle)
 
+
 class RandomSampler(FeatureTransformer):
     """
     Random sample a bounding box given some constraints and crop the image
@@ -546,14 +578,17 @@ class RandomSampler(FeatureTransformer):
     def __init__(self):
         super(RandomSampler, self).__init__(bigdl_type)
 
+
 class RoiProject(FeatureTransformer):
     """
     Project gt boxes onto the coordinate system defined by image boundary
-    :param need_meet_center_constraint whether need to meet center constraint, i.e., the center of gt box need be within image boundary
+    :param need_meet_center_constraint whether need to meet center constraint, i.e., the center of
+     gt box need be within image boundary
     """
 
     def __init__(self, need_meet_center_constraint, bigdl_type="float"):
         super(RoiProject, self).__init__(bigdl_type, need_meet_center_constraint)
+
 
 class RoiHFlip(FeatureTransformer):
     """
@@ -563,14 +598,17 @@ class RoiHFlip(FeatureTransformer):
 
     def __init__(self, normalized=True, bigdl_type="float"):
         super(RoiHFlip, self).__init__(bigdl_type, normalized)
-        
+
+
 class RoiResize(FeatureTransformer):
     """
     resize the roi according to scale
     :param normalized whether the roi is normalized, i.e. in range [0, 1]
     """
+
     def __init__(self, normalized=True, bigdl_type="float"):
         super(RoiResize, self).__init__(bigdl_type, normalized)
+
 
 class RoiNormalize(FeatureTransformer):
     """
@@ -579,6 +617,7 @@ class RoiNormalize(FeatureTransformer):
 
     def __init__(self, bigdl_type="float"):
         super(RoiNormalize, self).__init__(bigdl_type)
+
 
 class MatToFloats(FeatureTransformer):
     """
@@ -591,9 +630,10 @@ class MatToFloats(FeatureTransformer):
     """
 
     def __init__(self, valid_height=300, valid_width=300, valid_channel=300,
-                 out_key = "floats", share_buffer=True, bigdl_type="float"):
+                 out_key="floats", share_buffer=True, bigdl_type="float"):
         super(MatToFloats, self).__init__(bigdl_type, valid_height, valid_width, valid_channel,
                                           out_key, share_buffer)
+
 
 class MatToTensor(FeatureTransformer):
     """
@@ -604,6 +644,7 @@ class MatToTensor(FeatureTransformer):
 
     def __init__(self, to_rgb=False, tensor_key="imageTensor", bigdl_type="float"):
         super(MatToTensor, self).__init__(bigdl_type, to_rgb, tensor_key)
+
 
 class AspectScale(FeatureTransformer):
     """
@@ -618,12 +659,13 @@ class AspectScale(FeatureTransformer):
     :aram min_scale control the minimum scale up for image
     """
 
-    def __init__(self, min_size, scale_multiple_of = 1, max_size = 1000,
-                 resize_mode = 1, use_scale_factor=True, min_scale=-1.0,
+    def __init__(self, min_size, scale_multiple_of=1, max_size=1000,
+                 resize_mode=1, use_scale_factor=True, min_scale=-1.0,
                  bigdl_type="float"):
         super(AspectScale, self).__init__(bigdl_type, min_size, scale_multiple_of, max_size,
                                           resize_mode, use_scale_factor, min_scale)
-        
+
+
 class RandomAspectScale(FeatureTransformer):
     """
     resize the image by randomly choosing a scale
@@ -631,16 +673,20 @@ class RandomAspectScale(FeatureTransformer):
     :param scaleMultipleOf Resize test images so that its width and height are multiples of
     :param maxSize Max pixel size of the longest side of a scaled input image
     """
-    def __init__(self, scales, scale_multiple_of = 1, max_size = 1000, bigdl_type="float"):
+
+    def __init__(self, scales, scale_multiple_of=1, max_size=1000, bigdl_type="float"):
         super(RandomAspectScale, self).__init__(bigdl_type, scales, scale_multiple_of, max_size)
+
 
 class BytesToMat(FeatureTransformer):
     """
     Transform byte array(original image file in byte) to OpenCVMat
     :param byte_key key that maps byte array
     """
-    def __init__(self, byte_key = "bytes", bigdl_type="float"):
+
+    def __init__(self, byte_key="bytes", bigdl_type="float"):
         super(BytesToMat, self).__init__(bigdl_type, byte_key)
+
 
 class ImageFrameToSample(FeatureTransformer):
     """
@@ -649,17 +695,21 @@ class ImageFrameToSample(FeatureTransformer):
     :param target_keys keys that maps targets (each target should be a tensor)
     :param sample_key key to store sample
     """
+
     def __init__(self, input_keys=["imageTensor"], target_keys=None,
                  sample_key="sample", bigdl_type="float"):
         super(ImageFrameToSample, self).__init__(bigdl_type, input_keys, target_keys, sample_key)
+
 
 class PixelBytesToMat(FeatureTransformer):
     """
     Transform byte array(pixels in byte) to OpenCVMat
     :param byte_key key that maps byte array
     """
-    def __init__(self, byte_key = "bytes", bigdl_type="float"):
+
+    def __init__(self, byte_key="bytes", bigdl_type="float"):
         super(PixelBytesToMat, self).__init__(bigdl_type, byte_key)
+
 
 class FixExpand(FeatureTransformer):
     """
@@ -668,8 +718,10 @@ class FixExpand(FeatureTransformer):
     :param expand_height height expand to
     :param expand_width width expand to
     """
+
     def __init__(self, expand_height, expand_width, bigdl_type="float"):
         super(FixExpand, self).__init__(bigdl_type, expand_height, expand_width)
+
 
 class ChannelScaledNormalizer(FeatureTransformer):
     """
@@ -679,8 +731,10 @@ class ChannelScaledNormalizer(FeatureTransformer):
     :param mean_b: offset for B channel
     :param scale: scaling factor for all channels
     """
+
     def __init__(self, mean_r, mean_g, mean_b, scale, bigdl_type="float"):
         super(ChannelScaledNormalizer, self).__init__(bigdl_type, mean_r, mean_g, mean_b, scale)
+
 
 class RandomAlterAspect(FeatureTransformer):
     """
@@ -691,6 +745,7 @@ class RandomAlterAspect(FeatureTransformer):
     :param interp_mode   interp mode applied in resize
     :param crop_length final size resized to
     """
+
     def __init__(self, min_area_ratio,
                  max_area_ratio,
                  min_aspect_ratio_change,
@@ -702,6 +757,7 @@ class RandomAlterAspect(FeatureTransformer):
                                                 interp_mode,
                                                 crop_length)
 
+
 class RandomCropper(FeatureTransformer):
     """
     Random cropper on uniform distribution with fixed height & width
@@ -711,8 +767,11 @@ class RandomCropper(FeatureTransformer):
     :param cropper_method crop method
     :param channels total channels
     """
+
     def __init__(self, crop_w, crop_h, mirror, cropper_method, channels, bigdl_type="float"):
-        super(RandomCropper, self).__init__(bigdl_type, crop_w, crop_h, mirror, cropper_method, channels)
+        super(RandomCropper, self).__init__(bigdl_type, crop_w, crop_h, mirror, cropper_method,
+                                            channels)
+
 
 class RandomResize(FeatureTransformer):
     """
@@ -720,8 +779,10 @@ class RandomResize(FeatureTransformer):
     :param min_size min size to resize to
     :param max_size max size to resize to
     """
+
     def __init__(self, min_size, max_size, bigdl_type="float"):
         super(RandomResize, self).__init__(bigdl_type, min_size, max_size)
+
 
 class SeqFileFolder(JavaValue):
 
@@ -746,5 +807,3 @@ class SeqFileFolder(JavaValue):
                                class_num,
                                partition_num)
         return ImageFrame(jvalue=jvalue)
-
-

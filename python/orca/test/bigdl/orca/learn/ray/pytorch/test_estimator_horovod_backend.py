@@ -97,8 +97,8 @@ class TestPyTorchEstimator(TestCase):
         # Verify syncing weights, i.e. the two workers have the same weights after training
         import ray
         import numpy as np
-        remote_workers = estimator.estimator.remote_workers
-        state_dicts = ray.get([worker.state_dict.remote() for worker in remote_workers])
+        remote_workers = estimator.remote_workers
+        state_dicts = ray.get([worker.get_state_dict.remote() for worker in remote_workers])
         weights = [state["models"] for state in state_dicts]
         worker1_weights = weights[0][0]
         worker2_weights = weights[1][0]
@@ -126,13 +126,13 @@ class TestPyTorchEstimator(TestCase):
         def get_size():
             import horovod.torch as hvd
             return hvd.size()
-        results = estimator.estimator.horovod_runner.run(get_size)
+        results = estimator.horovod_runner.run(get_size)
         assert results == [2, 2]
 
         def get_rank():
             import horovod.torch as hvd
             return hvd.rank()
-        results = estimator.estimator.horovod_runner.run(get_rank)
+        results = estimator.horovod_runner.run(get_rank)
         results = sorted(results)
         assert results == [0, 1]
         estimator.shutdown()

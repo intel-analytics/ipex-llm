@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.dllib.nn.keras.{Embedding => BEmbedding}
+import com.intel.analytics.bigdl.dllib.nn.internal.{Embedding => BEmbedding}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape

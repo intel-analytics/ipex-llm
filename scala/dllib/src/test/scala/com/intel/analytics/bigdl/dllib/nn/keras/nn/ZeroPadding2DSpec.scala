@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
-import com.intel.analytics.bigdl.dllib.nn.keras.{ZeroPadding2D, Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.internal.{ZeroPadding2D, Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest

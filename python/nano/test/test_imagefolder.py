@@ -32,33 +32,9 @@ class TestModelsVision(TestCase):
 
     def test_resnet18_quantitrain_image_folder_pngze(self):
         resnet18 = vision.resnet18(
-            pretrained=True, include_top=False, freeze=True)
+            pretrained=False, include_top=False, freeze=True)
         train_torch_lightning(resnet18, root_dir1, batch_size)
         train_torch_lightning(resnet18, root_dir2, batch_size)
-
-    def test_resnet50_quantize(self):
-        resnet50 = vision.resnet50(
-            pretrained=True, include_top=False, freeze=True)
-        train_torch_lightning(resnet50, root_dir1, batch_size)
-        train_torch_lightning(resnet50, root_dir2, batch_size)
-
-    def test_mobilenet_v3_large_quantize(self):
-        mobilenet = vision.mobilenet_v3_large(
-            pretrained=True, include_top=False, freeze=True)
-        train_torch_lightning(mobilenet, root_dir1, batch_size)
-        train_torch_lightning(mobilenet, root_dir2, batch_size)
-
-    def test_mobilenet_v2_quantize(self):
-        mobilenet = vision.mobilenet_v2(
-            pretrained=True, include_top=False, freeze=True)
-        train_torch_lightning(mobilenet, root_dir1, batch_size)
-        train_torch_lightning(mobilenet, root_dir2, batch_size)
-
-    def test_shufflenet_quantize(self):
-        shufflenet = vision.shufflenet_v2_x1_0(
-            pretrained=True, include_top=False, freeze=True)
-        train_torch_lightning(shufflenet, root_dir1, batch_size)
-        train_torch_lightning(shufflenet, root_dir2, batch_size)
 
 
 if __name__ == '__main__':

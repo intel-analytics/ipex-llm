@@ -28,16 +28,6 @@ from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
-from tsfresh.utilities.dataframe_functions import roll_time_series
-from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
-from tsfresh import extract_features
-from tsfresh.feature_extraction import ComprehensiveFCParameters, \
-    MinimalFCParameters, EfficientFCParameters
-
-DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
-                  "minimal": MinimalFCParameters(),
-                  "efficient": EfficientFCParameters()}
-
 _DEFAULT_ID_COL_NAME = "id"
 _DEFAULT_ID_PLACEHOLDER = "0"
 
@@ -287,8 +277,8 @@ class TSDataset:
         :return: the tsdataset instance.
         '''
         assert self._is_pd_datetime,\
-            "The time series data does not have a Pandas datetime format\
-            (you can use pandas.to_datetime to convert a string into a datetime format)."
+            "The time series data does not have a Pandas datetime format "\
+            "(you can use pandas.to_datetime to convert a string into a datetime format)."
         from pandas.api.types import is_numeric_dtype
         type_error_list = [val for val in self.target_col + self.feature_col
                            if not is_numeric_dtype(self.df[val])]
@@ -296,7 +286,7 @@ class TSDataset:
             for val in type_error_list:
                 self.df[val] = self.df[val].astype(np.float32)
         except Exception:
-            raise RuntimeError("All the columns of target_col"
+            raise RuntimeError("All the columns of target_col "
                                "and extra_feature_col should be of numeric type.")
         self.df = self.df.groupby([self.id_col]) \
             .apply(lambda df: resample_timeseries_dataframe(df=df,
@@ -343,8 +333,8 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        assert self._is_pd_datetime, "The time series data does not have a Pandas datetime format\
-                    (you can use pandas.to_datetime to convert a string into a datetime format.)"
+        assert self._is_pd_datetime, "The time series data does not have a Pandas datetime format"\
+            "(you can use pandas.to_datetime to convert a string into a datetime format.)"
         features_generated = []
         self.df = generate_dt_features(input_df=self.df,
                                        dt_col=self.dt_col,
@@ -372,6 +362,14 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        from tsfresh import extract_features
+        from tsfresh.feature_extraction import ComprehensiveFCParameters, \
+            MinimalFCParameters, EfficientFCParameters
+
+        DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
+                          "minimal": MinimalFCParameters(),
+                          "efficient": EfficientFCParameters()}
+
         assert not self._has_generate_agg_feature, \
             "Only one of gen_global_feature and gen_rolling_feature should be called."
         if full_settings is not None:
@@ -386,9 +384,9 @@ class TSDataset:
             return self
 
         if isinstance(settings, str):
-            assert settings in ["comprehensive", "minimal", "efficient"], \
-                f"settings str should be one of \"comprehensive\", \"minimal\", \"efficient\"\
-                    , but found {settings}."
+            assert settings in ['comprehensive', 'minimal', 'efficient'], \
+                "settings str should be one of 'comprehensive', 'minimal', 'efficient'"\
+                f", but found {settings}."
             default_fc_parameters = DEFAULT_PARAMS[settings]
         else:
             default_fc_parameters = settings
@@ -427,18 +425,28 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        from tsfresh.utilities.dataframe_functions import roll_time_series
+        from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
+        from tsfresh import extract_features
+        from tsfresh.feature_extraction import ComprehensiveFCParameters, \
+            MinimalFCParameters, EfficientFCParameters
+
+        DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
+                          "minimal": MinimalFCParameters(),
+                          "efficient": EfficientFCParameters()}
+
         assert not self._has_generate_agg_feature,\
             "Only one of gen_global_feature and gen_rolling_feature should be called."
         if isinstance(settings, str):
-            assert settings in ["comprehensive", "minimal", "efficient"], \
-                f"settings str should be one of \"comprehensive\", \"minimal\", \"efficient\"\
-                    , but found {settings}."
+            assert settings in ['comprehensive', 'minimal', 'efficient'], \
+                "settings str should be one of 'comprehensive', 'minimal', 'efficient'"\
+                f", but found {settings}."
             default_fc_parameters = DEFAULT_PARAMS[settings]
         else:
             default_fc_parameters = settings
 
-        assert window_size < self.df.groupby(self.id_col).size().min() + 1, "gen_rolling_feature \
-            should have a window_size smaller than shortest time series length."
+        assert window_size < self.df.groupby(self.id_col).size().min() + 1, "gen_rolling_feature "\
+            "should have a window_size smaller than shortest time series length."
         df_rolled = roll_time_series(self.df,
                                      column_id=self.id_col,
                                      column_sort=self.dt_col,
@@ -478,7 +486,7 @@ class TSDataset:
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
                if `horizon` is a list, we will sample discretely according
-               to the input list.
+               to the input list. 1 means the timestamp just after the observed data.
                specially, when `horizon` is set to 0, ground truth will be generated as None.
         :param feature_col: str or list, indicates the feature col name. Default to None,
                where we will take all available feature in rolling.
@@ -528,8 +536,8 @@ class TSDataset:
 
         '''
         if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
-            raise AssertionError("The time series data should be\
-                 aligned if id_sensitive is set to True.")
+            raise AssertionError("The time series data should be "
+                                 "aligned if id_sensitive is set to True.")
         feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
             else self.feature_col
         target_col = _to_list(target_col, "target_col") if target_col is not None \
@@ -676,7 +684,7 @@ class TSDataset:
                               shuffle=True)
         else:
             if self.numpy_x is None:
-                raise RuntimeError("Please call \"roll\" method before transforming a TSDataset to "
+                raise RuntimeError("Please call 'roll' method before transforming a TSDataset to "
                                    "torch DataLoader without rolling (default roll=False)!")
             x, y = self.to_numpy()
             return DataLoader(TensorDataset(torch.from_numpy(x).float(),
@@ -692,8 +700,8 @@ class TSDataset:
                  is casted to float32.
         '''
         if self.numpy_x is None:
-            raise RuntimeError("Please call \"roll\" method\
-                    before transform a TSDataset to numpy ndarray!")
+            raise RuntimeError("Please call 'roll' method "
+                               "before transform a TSDataset to numpy ndarray!")
         return self.numpy_x, self.numpy_y
 
     def to_pandas(self):
@@ -739,8 +747,8 @@ class TSDataset:
             try:
                 assert not check_is_fitted(scaler)
             except Exception:
-                raise AssertionError("When calling scale for the first time, \
-                    you need to set fit=True.")
+                raise AssertionError("When calling scale for the first time, "
+                                     "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
                 scaler.transform(self.df[self.target_col + feature_col])
         self.scaler = scaler

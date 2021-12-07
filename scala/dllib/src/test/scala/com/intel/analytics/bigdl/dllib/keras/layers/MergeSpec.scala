@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, T}
 import com.intel.analytics.bigdl.dllib.keras.models._
+import com.intel.analytics.bigdl.dllib.keras.Model
+import com.intel.analytics.bigdl.dllib.keras.Sequential
 import com.intel.analytics.bigdl.dllib.keras.layers.Merge.merge
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 

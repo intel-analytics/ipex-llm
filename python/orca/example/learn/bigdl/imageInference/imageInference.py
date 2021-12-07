@@ -20,6 +20,7 @@ from bigdl.dllib.nn.layer import Model
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import StringType, DoubleType
 
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.nnframes import *
 from bigdl.orca.learn.bigdl.estimator import Estimator
@@ -53,8 +54,8 @@ if __name__ == "__main__":
                       help="training data path.")
     parser.add_option("--b", "--batch_size", type=int, dest="batch_size", default="56",
                       help="The number of samples per gradient update. Default is 56.")
-    parser.add_option('--cluster_mode', type=str, default="local",
-                      help='The mode for the Spark cluster. local or yarn.')
+    parser.add_option('--cluster_mode', type=str, dest="cluster_mode", default="local",
+                      help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -69,10 +70,15 @@ if __name__ == "__main__":
     cluster_mode = options.cluster_mode
     if cluster_mode == "local":
         sc = init_orca_context(memory="3g")
-    elif cluster_mode == "yarn":
-        sc = init_orca_context(cluster_mode="yarn-client", num_nodes=2, memory="3g")
+    elif cluster_mode.startswith("yarn"):
+        if cluster_mode == "yarn-client":
+            sc = init_orca_context(cluster_mode="yarn-client", num_nodes=2, memory="3g")
+        else:
+            sc = init_orca_context(cluster_mode="yarn-cluster", num_nodes=2, memory="3g")
+    elif cluster_mode == "spark-submit":
+        sc = init_orca_context(cluster_mode="spark-submit")
     else:
-        print("init_orca_context failed. cluster_mode should be either 'local' or 'yarn' but got "
+        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
               + cluster_mode)
 
     image_path = options.image_path
@@ -86,3 +92,4 @@ if __name__ == "__main__":
 
     print("finished...")
     stop_orca_context()
+

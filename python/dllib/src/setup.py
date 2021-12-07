@@ -38,6 +38,7 @@ and run sdist.
       python setup.py sdist
       pip install dist/*.tar.gz"""
 
+
 def build_from_source():
     code_path = bigdl_home + "/python/dllib/src/bigdl/dllib/utils/common.py"
     print("Checking: %s to see if build from source" % code_path)
@@ -57,9 +58,11 @@ def init_env():
         if os.path.exists(TEMP_PATH):
             rmtree(TEMP_PATH)
         copytree(dist_source, TEMP_PATH)
-        copyfile(bigdl_home + "/python/dllib/src/bigdl/dllib/nn/__init__.py", TEMP_PATH + "/__init__.py")
+        copyfile(bigdl_home + "/python/dllib/src/bigdl/dllib/nn/__init__.py",
+                 TEMP_PATH + "/__init__.py")
     else:
         print("Do nothing for release installation")
+
 
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__)[:-8]
@@ -73,7 +76,12 @@ def get_bigdl_packages():
     print("================================================================")
     return bigdl_packages
 
+
 def setup_package():
+    SCRIPTS_TARGET = os.path.join("../../../", "scripts/")
+    script_names = ["pyspark-with-dllib", "spark-submit-with-dllib"]
+    scripts = list(map(lambda script: os.path.join(
+        SCRIPTS_TARGET, script), script_names))
     metadata = dict(
         name='bigdl-dllib',
         version=VERSION,
@@ -83,6 +91,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
+        scripts=scripts,
         install_requires=['numpy>=1.7', 'pyspark==2.4.6', 'six>=1.10.0'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
@@ -107,5 +116,4 @@ if __name__ == '__main__':
         raise e
     finally:
         if build_from_source() and os.path.exists(TEMP_PATH):
-             rmtree(TEMP_PATH)
-
+            rmtree(TEMP_PATH)

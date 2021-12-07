@@ -44,6 +44,7 @@ upload=$3
 # it won't change anything in the second run.
 sed -i "s/bigdl-orca==/bigdl-orca-spark3==/g" $FRIESIAN_DIR/src/setup.py
 sed -i "s/name='bigdl-friesian'/name='bigdl-friesian-spark3'/g" $FRIESIAN_DIR/src/setup.py
+sed -i "s/bigdl-orca\[ray\]/bigdl-orca-spark3\[ray\]/g" $FRIESIAN_DIR/src/setup.py
 sed -i "s/dist\/bigdl_friesian-/dist\/bigdl_friesian_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh
 
 bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x

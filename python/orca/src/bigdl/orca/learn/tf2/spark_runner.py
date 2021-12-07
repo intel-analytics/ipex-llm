@@ -51,6 +51,7 @@ def handle_datasets_train(data_creator, validation_data_creator):
             test_dataset = None
         return train_dataset, test_dataset
 
+
 class DatasetHandler:
 
     def __init__(self, rank, size):
@@ -67,7 +68,7 @@ class DatasetHandler:
         config['size'] = self.size
         train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, list) and \
-            all([isinstance(x, dict) for x in train_dataset]):
+           all([isinstance(x, dict) for x in train_dataset]):
             assert steps_per_epoch is not None, "steps_per_epoch must be provided for xshard"
             train_dataset = self._handle_xshards(train_dataset,
                                                  steps=steps_per_epoch * epochs,
@@ -136,8 +137,9 @@ class TFDistributedDatasetHandler(DatasetHandler):
         import tensorflow as tf
 
         data, label = ray_partition_get_data_label(dataset,
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+                                                   allow_tuple=True,
+                                                   allow_list=False)
+
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
             options = tf.data.Options()
@@ -170,8 +172,8 @@ class LocalDatasetHandler(DatasetHandler):
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
         data, label = ray_partition_get_data_label(dataset,
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+                                                   allow_tuple=True,
+                                                   allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
@@ -206,8 +208,7 @@ class SparkRunner:
                  epoch=0,
                  need_to_log=False,
                  driver_ip=None,
-                 driver_port=None,
-                 application_id=None
+                 driver_port=None
                 ):
         """Initializes the runner.
                 Args:
@@ -252,7 +253,6 @@ class SparkRunner:
             self.logger_thread.daemon = True
             self.logger_thread.start()
 
-
     def setup(self):
         import tensorflow as tf
         tf.config.threading.set_inter_op_parallelism_threads(self.inter_op_parallelism)
@@ -286,12 +286,12 @@ class SparkRunner:
                 break
         return global_rank
 
-
     def setup_distributed(self, cluster):
-        """Sets up TensorFLow distributed environment and initializes the model.
+        """
+        Sets up TensorFLow distributed environment and initializes the model.
         """
         self.rank = self._get_rank(cluster)
-        logger.info("cluster is: {}".format(cluster))
+        logger.warning("cluster is: {}".format(cluster))
 
         os.environ["TF_CONFIG"] = json.dumps({
             'cluster': {
@@ -308,14 +308,18 @@ class SparkRunner:
         self.local_model = None
 
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
-             callbacks=None, initial_epoch=0, validation_data_creator=None, class_weight=None,
-             steps_per_epoch=None, validation_steps=None, validation_freq=1):
+                               callbacks=None, initial_epoch=0, validation_data_creator=None,
+                               class_weight=None, steps_per_epoch=None, validation_steps=None,
+                               validation_freq=1):
         """
         Sets up TensorFLow distributed environment, initializes the model,
         runs a training epoch and updates the model parameters
         """
         with self.strategy.scope():
             model = self.model_creator(self.config)
+            if self.model_weights:
+                model.set_weights(self.model_weights.value)
+
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
                 .handle_datasets_train(data_creator=data_creator,
@@ -325,15 +329,15 @@ class SparkRunner:
                                        validation_steps=validation_steps)
 
         history = model.fit(train_dataset,
-                                 epochs=epochs,
-                                 verbose=verbose,
-                                 callbacks=callbacks,
-                                 validation_data=test_dataset,
-                                 class_weight=class_weight,
-                                 initial_epoch=initial_epoch,
-                                 steps_per_epoch=steps_per_epoch,
-                                 validation_steps=validation_steps,
-                                 validation_freq=validation_freq)
+                            epochs=epochs,
+                            verbose=verbose,
+                            callbacks=callbacks,
+                            validation_data=test_dataset,
+                            class_weight=class_weight,
+                            initial_epoch=initial_epoch,
+                            steps_per_epoch=steps_per_epoch,
+                            validation_steps=validation_steps,
+                            validation_freq=validation_freq)
 
         return (model, history)
 
@@ -348,6 +352,7 @@ class SparkRunner:
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
+        val_data_creator = validation_data_creator
 
         model, history = self.distributed_train_func(data_creator,
                                                      config,
@@ -357,7 +362,7 @@ class SparkRunner:
                                                      steps_per_epoch=steps_per_epoch,
                                                      class_weight=class_weight,
                                                      initial_epoch=self.epoch,
-                                                     validation_data_creator=validation_data_creator,
+                                                     validation_data_creator=val_data_creator,
                                                      validation_steps=validation_steps,
                                                      validation_freq=validation_freq
                                                      )
@@ -369,12 +374,12 @@ class SparkRunner:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
             if self.model_dir is not None:
-                model_states = {
+                model_state = {
                     "epoch": self.epoch,
                     "weights": weights,
                     "optimizer_weights": model.optimizer.get_weights()
                 }
-                save_pkl(model_states, os.path.join(self.model_dir, "states.pkl"))
+                save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
             self._stop_log_monitor()
             return [stats]
         else:
@@ -434,7 +439,6 @@ class SparkRunner:
             self._stop_log_monitor()
             return []
 
-
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
         config = self.config.copy()
         if data_config is not None:
@@ -487,4 +491,3 @@ class SparkRunner:
         if hasattr(self, "log_path"):
             if os.path.exists(self.log_path):
                 os.remove(self.log_path)
-

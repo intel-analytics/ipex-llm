@@ -4,10 +4,11 @@ LSTM, TCN and Seq2seq users can easily train their forecasters in a distributed 
 ## Prepare the environment
 We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster:
 ```bash
-conda create -n zoo python=3.7 # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
-pip install --pre --upgrade analytics-zoo[automl]
+conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
+conda activate my_env
+pip install --pre --upgrade bigdl-chronos[all]
 ```
+Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
 
 ## Prepare data
 we use the publicly available `network traffic` data repository maintained by the [WIDE project](http://mawi.wide.ad.jp/mawi/) and in particular, the network traffic traces aggregated every 2 hours (i.e. AverageRate in Mbps/Gbps and Total Bytes) in year 2018 and 2019 at the transit link of WIDE to the upstream ISP ([dataset link](http://mawi.wide.ad.jp/~agurim/dataset/))
@@ -42,8 +43,7 @@ forecaster = Seq2SeqForecaster(past_seq_len=100,
                                workers_per_node=args.workers_per_node,
                                seed=0)
 
-forecaster.fit((x_train, y_train), epochs=args.epochs,
-               batch_size=512//(1 if not forecaster.distributed else args.workers_per_node))
+forecaster.fit((x_train, y_train), epochs=args.epochs, batch_size=512)
 ```
 
 ## Evaluate
@@ -57,7 +57,7 @@ print(f'smape is: {np.mean(smape):.4f}')
 ```
 
 ## Options
-* `--cluster_mode` The mode for the Spark cluster. local or yarn. Default to be `local`. You can refer to OrcaContext documents [here](https://analytics-zoo.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html) for details.
+* `--cluster_mode` The mode for the Spark cluster. local or yarn. Default to be `local`. You can refer to OrcaContext documents [here](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html) for details.
 * `--memory` The memory you want to use on each node. You can change it depending on your own cluster setting. Default to be 32g.
 * `--cores` The number of cpu cores you want to use on each node. You can change it depending on your own cluster setting. Default to be 4.
 * `--epochs` Max number of epochs to train in each trial. Default to be 2.

@@ -104,19 +104,19 @@ wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-labels-idx1-ubyte.gz -P /tmp/mni
 wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P /tmp/mnist
 
 echo "start example test for TFPark tf_optimizer train 1"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/train.py 1 1000
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/train.py --max_epoch 1 --data_num 1000
 
 echo "start example test for TFPark tf_optimizer evaluate 2"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/evaluate.py 1000
+python ${BIGDL_ROOT}/python/orca/example/tfpark/tf_optimizer/evaluate.py --data_num 1000
 
 echo "start example test for TFPark keras keras_dataset 3"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py 5
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_dataset.py
 
 echo "start example test for TFPark keras keras_ndarray 4"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py 5
+python ${BIGDL_ROOT}/python/orca/example/tfpark/keras/keras_ndarray.py
 
 echo "start example test for TFPark estimator estimator_dataset 5"
-python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_dataset.py
+python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_dataset.py 
 
 echo "start example test for TFPark estimator estimator_inception 6"
 python ${BIGDL_ROOT}/python/orca/example/tfpark/estimator/estimator_inception.py \
@@ -181,7 +181,7 @@ time5=$((now - start))
 echo "#6 start test for orca tf transfer_learning"
 #timer
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py
+python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py --download_url $FTP_URI/analytics-zoo-data/cats_and_dogs_filtered.zip --epochs 1
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   echo "orca tf transfer_learning failed"
@@ -211,7 +211,7 @@ start=$(date "+%s")
 sed "s/max_features = 20000/max_features = 200/g;s/max_len = 200/max_len = 20/g;s/hidden_size=128/hidden_size=8/g;s/memory=\"100g\"/memory=\"20g\"/g;s/driver_memory=\"20g\"/driver_memory=\"3g\"/g" \
   ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/transformer.py \
   >${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/tmp.py
-python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/tmp.py
+python ${BIGDL_ROOT}/python/orca/example/learn/bigdl/attention/tmp.py --train_data_size 1000 --test_data_size 1000
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   echo "orca tf bigdl attention failed"
@@ -242,14 +242,12 @@ fi
 now=$(date "+%s")
 time9=$((now - start))
 
-echo "#1 openvino time used: $time2 seconds"
-echo "#2 vnni/openvino time used: $time3 seconds"
-echo "#3 tensorflow time used: $time4 seconds"
-echo "#4 orca data time used:$time5 seconds"
-echo "#5 orca tf imagesegmentation time used:$time6 seconds"
-echo "#6 orca tf transfer_learning time used:$time7 seconds"
-echo "#7 orca tf basic_text_classification time used:$time8 seconds"
-echo "#8 orca bigdl attention time used:$time9 seconds"
-echo "#9 orca bigdl imageInference time used:$time10 seconds"
-
-
+echo "#1 openvino time used: $time1 seconds"
+echo "#2 vnni/openvino time used: $time2 seconds"
+echo "#3 tensorflow time used: $time3 seconds"
+echo "#4 orca data time used:$time4 seconds"
+echo "#5 orca tf imagesegmentation time used:$time5 seconds"
+echo "#6 orca tf transfer_learning time used:$time6 seconds"
+echo "#7 orca tf basic_text_classification time used:$time7 seconds"
+echo "#8 orca bigdl attention time used:$time8 seconds"
+echo "#9 orca bigdl imageInference time used:$time9 seconds"

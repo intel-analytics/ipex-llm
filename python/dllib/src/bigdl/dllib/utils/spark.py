@@ -16,12 +16,14 @@
 
 import os
 import sys
+import random
 import platform
 
 from pyspark import SparkContext
-from bigdl.dllib.nncontext import init_nncontext, init_spark_conf
-from bigdl.dllib.utils.utils import detect_python_location, pack_penv
-from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath, get_zoo_bigdl_classpath_on_driver
+from bigdl.dllib.nncontext import init_internal_nncontext, init_spark_conf
+from bigdl.dllib.utils.utils import detect_python_location, pack_penv, get_node_ip
+from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath
+from bigdl.dllib.utils.utils import get_zoo_bigdl_classpath_on_driver
 from bigdl.dllib.utils.engine import get_bigdl_jars
 
 
@@ -44,8 +46,8 @@ class SparkRunner:
         submit_args = submit_args + " pyspark-shell"
         os.environ["PYSPARK_SUBMIT_ARGS"] = submit_args
         spark_conf = init_spark_conf(conf)
-        sc = init_nncontext(conf=spark_conf, spark_log_level=self.spark_log_level,
-                            redirect_spark_log=self.redirect_spark_log)
+        sc = init_internal_nncontext(conf=spark_conf, spark_log_level=self.spark_log_level,
+                                     redirect_spark_log=self.redirect_spark_log)
         return sc
 
     def init_spark_on_local(self, cores, conf=None, python_location=None):
@@ -55,8 +57,8 @@ class SparkRunner:
                 python_location if python_location else detect_python_location()
         master = "local[{}]".format(cores)
         zoo_conf = init_spark_conf(conf).setMaster(master)
-        sc = init_nncontext(conf=zoo_conf, spark_log_level=self.spark_log_level,
-                            redirect_spark_log=self.redirect_spark_log)
+        sc = init_internal_nncontext(conf=zoo_conf, spark_log_level=self.spark_log_level,
+                                     redirect_spark_log=self.redirect_spark_log)
         print("Successfully got a SparkContext")
         return sc
 
@@ -130,21 +132,21 @@ class SparkRunner:
         return sc
 
     def init_spark_on_yarn_cluster(self,
-                           hadoop_conf,
-                           conda_name,
-                           num_executors,
-                           executor_cores,
-                           executor_memory="2g",
-                           driver_cores=4,
-                           driver_memory="1g",
-                           extra_executor_memory_for_ray=None,
-                           extra_python_lib=None,
-                           penv_archive=None,
-                           additional_archive=None,
-                           hadoop_user_name="root",
-                           spark_yarn_archive=None,
-                           conf=None,
-                           jars=None):
+                                   hadoop_conf,
+                                   conda_name,
+                                   num_executors,
+                                   executor_cores,
+                                   executor_memory="2g",
+                                   driver_cores=4,
+                                   driver_memory="1g",
+                                   extra_executor_memory_for_ray=None,
+                                   extra_python_lib=None,
+                                   penv_archive=None,
+                                   additional_archive=None,
+                                   hadoop_user_name="root",
+                                   spark_yarn_archive=None,
+                                   conf=None,
+                                   jars=None):
         print("Initializing job for yarn-cluster mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -172,7 +174,8 @@ class SparkRunner:
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                          executor_cores, executor_memory,
                                          extra_executor_memory_for_ray)
-            conf["spark.yarn.appMasterEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
+            conf["spark.yarn.appMasterEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(
+                executor_python_env)
             conf["spark.yarn.appMasterEnv.OnAppMaster"] = "True"
             conf["spark.yarn.appMasterEnv.PYTHONHOME"] = executor_python_env
             conf["spark.executorEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
@@ -321,10 +324,10 @@ class SparkRunner:
                           jars=None,
                           python_location=None):
         print("Initializing SparkContext for k8s-client mode")
-        python_env = "/".join(detect_python_location().split("/")[:-2])
         if "PYSPARK_PYTHON" not in os.environ:
             os.environ["PYSPARK_PYTHON"] = \
                 python_location if python_location else detect_python_location()
+        python_env = "/".join(os.environ["PYSPARK_PYTHON"].split("/")[:-2])
 
         submit_args = "--master " + master + " --deploy-mode client"
         submit_args = submit_args + gen_submit_args(
@@ -335,8 +338,7 @@ class SparkRunner:
                                      executor_cores, executor_memory, extra_executor_memory_for_ray)
         py_version = ".".join(platform.python_version().split(".")[0:2])
         preload_so = python_env + "/lib/libpython" + py_version + "m.so"
-        ld_path = python_env + "/lib:" + python_env + "/lib/python" +\
-            py_version + "/lib-dynload"
+        ld_path = python_env + "/lib:" + python_env + "/lib/python" + py_version + "/lib-dynload"
         if "spark.executor.extraLibraryPath" in conf:
             ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
         conf.update({"spark.cores.max": num_executors * executor_cores,
@@ -344,11 +346,14 @@ class SparkRunner:
                      "spark.executor.extraLibraryPath": ld_path,
                      "spark.executorEnv.LD_PRELOAD": preload_so,
                      "spark.kubernetes.container.image": container_image})
-        # Not targeted to use pip install. BIGDL_CLASSPATH is supposed to set.
+        if "spark.driver.host" not in conf:
+            conf["spark.driver.host"] = get_node_ip()
+        if "spark.driver.port" not in conf:
+            conf["spark.driver.port"] = random.randint(10000, 65535)
         if "BIGDL_CLASSPATH" in os.environ:
             zoo_bigdl_jar_path = os.environ["BIGDL_CLASSPATH"]
         else:
-            zoo_bigdl_jar_path = ":".join(list(get_zoo_bigdl_classpath_on_driver()))
+            zoo_bigdl_jar_path = get_zoo_bigdl_classpath_on_driver()
         if "spark.executor.extraClassPath" in conf:
             conf["spark.executor.extraClassPath"] = "{}:{}".format(
                 zoo_bigdl_jar_path, conf["spark.executor.extraClassPath"])

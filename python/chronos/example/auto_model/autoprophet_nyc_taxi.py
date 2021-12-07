@@ -16,6 +16,7 @@
 import numpy as np
 import pandas as pd
 import argparse
+import time
 
 from bigdl.chronos.forecaster.prophet_forecaster import ProphetForecaster
 from bigdl.chronos.autots.model.auto_prophet import AutoProphet
@@ -44,7 +45,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--cpus_per_trial', type=int, default=1,
                         help="Int. Number of cpus for each trial")
-    parser.add_argument('--n_sampling', type=int, default=20,
+    parser.add_argument('--n_sampling', type=int, default=2,
                         help="Number of times to sample from the search_space.")
     parser.add_argument('--datadir', type=str,
                         help="Use local csv file by default.")
@@ -64,14 +65,18 @@ if __name__ == '__main__':
 
     # use prophet forecaster
     prophet = ProphetForecaster()
+    start_time = time.time()
     prophet.fit(df_train, validation_data=df_test)
+    prophet_fit_time = time.time() - start_time
 
     # use autoprophet for HPO
     num_nodes = 1 if args.cluster_mode == "local" else args.num_workers
     init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores,
                       memory=args.memory, num_nodes=num_nodes, init_ray_on_spark=True)
     autoprophet = AutoProphet(cpus_per_trial=args.cpus_per_trial)
-    autoprophet.fit(df_train, n_sampling=args.n_sampling)
+    start_time = time.time()
+    autoprophet.fit(df_train, cross_validation=True, n_sampling=args.n_sampling)
+    autoprophet_fit_time = time.time() - start_time
     stop_orca_context()
 
     # evaluate
@@ -81,3 +86,5 @@ if __name__ == '__main__':
           str(((nonauto_searched_mse - auto_searched_mse)/nonauto_searched_mse)*100), '%')
     print("auto_searched_mse:", auto_searched_mse)
     print("nonauto_searched_mse:", nonauto_searched_mse)
+    print("auto_searched_time:", autoprophet_fit_time)
+    print("nonauto_searched_time:", prophet_fit_time)

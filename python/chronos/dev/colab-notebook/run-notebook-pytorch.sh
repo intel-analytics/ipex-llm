@@ -3,7 +3,7 @@
 # chronos test
 echo "Chronos test start"
 
-dir=${ANALYTICS_ZOO_HOME}/python/chronos/colab-notebook
+dir=${BIGDL_ROOT}/python/chronos/colab-notebook
 pytorchFiles=("chronos_nyc_taxi_tsdataset_forecaster" "chronos_minn_traffic_anomaly_detector" "chronos_autots_nyc_taxi")
 index=1
 
@@ -37,7 +37,7 @@ do
 		wget https://raw.githubusercontent.com/numenta/NAB/master/data/realTraffic/speed_7578.csv
 	fi
 
-	${ANALYTICS_ZOO_HOME}/python/orca/dev/colab-notebook/ipynb2py.sh ${filename}
+	${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${filename}
 	sed -i "s/get_ipython()/#/g"  ${filename}.py
 	sed -i "s/import os/#import os/g" ${filename}.py
 	sed -i "s/import sys/#import sys/g" ${filename}.py

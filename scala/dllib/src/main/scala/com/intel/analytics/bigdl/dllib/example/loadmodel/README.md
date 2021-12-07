@@ -6,6 +6,8 @@ This example demonstrates how to use BigDL to load pre-trained [Torch](http://to
 
 For most CNN models, it's recommended to enable MKL-DNN acceleration by specifying `bigdl.engineType` as `mkldnn` for model validation.
 
+Note that `mkldnn` is not supported on macOS.
+
 ## Preparation
 
 To start with this example, you need prepare your model, dataset.

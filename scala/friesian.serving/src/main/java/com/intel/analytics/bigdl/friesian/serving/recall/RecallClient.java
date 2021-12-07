@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallPr
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage;
 import com.intel.analytics.bigdl.friesian.serving.utils.CMDParser;
+import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
@@ -31,9 +32,8 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import utils.TimerMetrics;
-import utils.TimerMetrics$;
-import utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
 
 import java.util.List;
 import java.util.Set;

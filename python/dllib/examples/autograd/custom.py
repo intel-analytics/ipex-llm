@@ -34,10 +34,31 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("--nb_epoch", dest="nb_epoch", default="5")
     parser.add_option("--batch_size", type=int,dest="batch_size", default=512)
+    parser.add_option("--cluster-mode", dest="clusterMode", default="local")
 
     (options, args) = parser.parse_args(sys.argv)
 
-    sc = init_nncontext("custom example")
+    conf = {}
+    if options.clusterMode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.driver.memory", "4g")
+        spark_conf.setAll(conf)
+
+        if options.clusterMode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    elif options.clusterMode == "local":
+        spark_conf = SparkConf().set("spark.driver.memory", "10g")\
+            .set("spark.driver.cores", 4)
+        sc = init_nncontext(spark_conf, cluster_mode="local")
+    elif options.clusterMode == "spark-submit":
+        sc = init_nncontext(cluster_mode="spark-submit")
 
     data_len = 1000
     X_ = np.random.uniform(0, 1, (1000, 2))

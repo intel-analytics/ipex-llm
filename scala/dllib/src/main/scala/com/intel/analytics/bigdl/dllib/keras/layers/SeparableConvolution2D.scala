@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, SeparableConvolution2D => BigDLSeparableConvolution2D}
+import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, SeparableConvolution2D => BigDLSeparableConvolution2D}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, Xavier}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer

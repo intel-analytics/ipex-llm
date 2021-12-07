@@ -1,6 +1,6 @@
 # Orca PyTorch Super Resolution example on BSDS300 dataset
 
-We demonstrate how to easily run synchronous distributed Pytorch training using Pytorch Estimator of Project Orca in Analytics Zoo. This is an example using the efficient sub-pixel convolution layer to train on [BSDS3000 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), using crops from the 200 training images, and evaluating on crops of the 100 test images. See [here](https://github.com/pytorch/examples/tree/master/super_resolution) for the original single-node version of this example provided by Pytorch. We provide two distributed PyTorch training backends for this example, namely "bigdl" and "torch_distributed". You can run with either backend as you wish.
+We demonstrate how to easily run synchronous distributed Pytorch training using Pytorch Estimator of Project Orca in Analytics Zoo. This is an example using the efficient sub-pixel convolution layer to train on [BSDS3000 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), using crops from the 200 training images, and evaluating on crops of the 100 test images. See [here](https://github.com/pytorch/examples/tree/master/super_resolution) for the original single-node version of this example provided by Pytorch. We provide three distributed PyTorch training backends for this example, namely "bigdl", "torch_distributed" and "spark". You can run with either backend as you wish.
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environment, especially if you want to run on a yarn cluster (yarn-client mode only).
@@ -18,6 +18,9 @@ pip install six cloudpickle
 
 # For torch_distributed backend:
 pip install analytics-zoo[ray]  # 0.10.0.dev3 or above
+
+# For spark backend
+pip install bigdl-orca
 ```
 
 ## Prepare Dataset
@@ -51,6 +54,12 @@ python super_resolution.py --backend bigdl
 - Run with torch_distributed backend:
 ```bash
 python super_resolution.py --backend torch_distributed
+
+
+- Run with spark backend:
+```bash
+python super_resolution.py --backend spark
+
 ```
 
 **Options**
@@ -60,7 +69,8 @@ python super_resolution.py --backend torch_distributed
 * `--lr` Learning Rate. Default is 0.01.
 * `--epochs` The number of epochs to train for. Default is 2.
 * `--cluster_mode` The mode of spark cluster. Either "local" or "yarn". Default is "local".
-* `--backend` The backend of PyTorch Estimator. Either "bigdl" or "torch_distributed". Default is "bigdl".
+* `--backend` The backend of PyTorch Estimator. Either "bigdl", "torch_distributed" or "spark. Default is "bigdl".
+* `--data_dir` The path of datesets. Default is "./dataset".
 
 ## Results
 
@@ -76,7 +86,7 @@ You can find the result for validation as follows:
 ===> Validation Complete: Avg. PSNR: 12.3136 dB, Avg. Loss: 0.0587
 ```
 
-**For "torch_distributed" backend**
+**For "torch_distributed" and "spark" backend**
 
 You can find the result for training as follows:
 ```

@@ -16,6 +16,7 @@
 import shutil
 import tempfile
 from unittest import TestCase
+import time
 
 import time
 import numpy as np
@@ -89,17 +90,19 @@ class TestTFEstimator(TestCase):
                               validation_data=df,
                               validation_steps=1)
 
-            time.sleep(15)
+            time.sleep(20)
 
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
-            trainer.save(os.path.join(temp_dir, "a.model"))
-            trainer.load(os.path.join(temp_dir, "a.model"))
+            trainer.save(os.path.join(temp_dir, "a.ckpt"))
+            trainer.load(os.path.join(temp_dir, "a.ckpt"))
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
             print("validation result: ", res)
+
             res = trainer.predict(df, feature_cols=["feature"]).collect()
+            print("predict result: ", res)
         finally:
             shutil.rmtree(temp_dir)
 

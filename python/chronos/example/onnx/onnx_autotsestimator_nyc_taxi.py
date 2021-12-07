@@ -25,13 +25,7 @@ from bigdl.chronos.data.repo_dataset import get_public_dataset
 
 def get_tsdata():
     name = 'nyc_taxi'
-    path = '~/.chronos/dataset/'
-    tsdata_train, tsdata_val, \
-        tsdata_test = get_public_dataset(name,
-                                         path,
-                                         with_split=True,
-                                         val_ratio=0.1,
-                                         test_ratio=0.1)
+    tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name)
     stand = StandardScaler()
     for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
         tsdata.gen_dt_feature(one_hot_features=['HOUR', 'WEEK'])\

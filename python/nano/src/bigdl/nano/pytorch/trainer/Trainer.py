@@ -16,12 +16,20 @@
 
 
 from logging import warning
-import torch
-import pytorch_lightning as pl
-from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-from bigdl.nano.common import check_avx512
-from pytorch_lightning.plugins.environments import LightningEnvironment
 from typing import Any, List, Optional
+import warnings
+
+import pytorch_lightning as pl
+import torch
+from torchmetrics.metric import Metric
+from pytorch_lightning.plugins.environments import LightningEnvironment
+from torch import nn
+from torch.nn.modules.loss import _Loss
+
+from bigdl.nano.common import check_avx512
+from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
+
 
 distributed_backends = ["spawn", "ray"]
 
@@ -104,3 +112,47 @@ class Trainer(pl.Trainer):
 
             super().__init__(accelerator=accelerator,
                              plugins=[plugin], *args, **kwargs)
+
+    @staticmethod
+    def compile(model: nn.Module,
+                loss: _Loss = None,
+                optimizer: torch.optim.Optimizer = None,
+                metrics: List[Metric] = None,
+                onnx: bool = False):
+        """
+        Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
+        return model. If model is pytorch model, construct a new pytorch-lightning module
+        with model, loss and optimizer.
+
+        :param model:       A model instance.
+        :param loss:        Loss to construct pytorch-lightning model.
+                            Should be None if model is instance of pl.LightningModule.
+        :param optimizer:   Optimizer to construct pytorch-lightning model Should be None.
+                            if model is instance of pl.LightningModule.
+        :param metrics:     A list of torchmetrics to validate/test performance.
+        :param onnx:        Indicates if onnxruntime support should be binded to the
+                            returned model.
+        :return:            A LightningModule object.
+        """
+        assert isinstance(model, nn.Module), \
+            "Model must be instance of nn.Module but got {}".format(model.__class__)
+
+        pl_model = None
+        if isinstance(model, pl.LightningModule):
+            assert not (loss or optimizer), \
+                "Loss and optimizer should be None if model is a pytorch-lightning model."
+            pl_model = model
+        else:
+            assert loss and optimizer, \
+                "Loss and optimizer are required to construct a LightningModule instance."
+            pl_model = LightningModuleFromTorch(model, loss, optimizer, metrics)
+
+        if onnx:
+            try:
+                from bigdl.nano.pytorch.onnx.onnxrt_inference import bind_onnxrt_methods
+                return bind_onnxrt_methods(pl_model)
+            except ImportError:
+                warnings.warn("You should install onnx and onnxruntime to set `onnx=True`")
+                return pl_model
+        else:
+            return pl_model

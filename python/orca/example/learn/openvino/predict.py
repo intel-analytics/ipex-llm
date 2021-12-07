@@ -38,7 +38,7 @@ def crop(img, w, h):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch Tensorboard Example')
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The cluster mode, such as local, yarn.')
+                        help='The cluster mode, such as local, yarn, or spark-submit.')
     parser.add_argument('--model_path', type=str, default="./model.xml",
                         help="Path to the OpenVINO model file")
     parser.add_argument('--image_folder', type=str, default="./",
@@ -55,9 +55,11 @@ if __name__ == "__main__":
 
     if args.cluster_mode == "local":
         init_orca_context(cores=args.core_num, memory=args.memory)
-    elif args.cluster_mode == "yarn":
+    elif args.cluster_mode.startswith("yarn"):
         init_orca_context(cluster_mode=args.cluster_mode, cores=args.core_num,
                           num_nodes=args.executor_num, memory=args.memory)
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode=args.cluster_mode)
 
     images = [cv2.imread(file) for file in
               glob.glob(args.image_folder + "/*.jpg")]

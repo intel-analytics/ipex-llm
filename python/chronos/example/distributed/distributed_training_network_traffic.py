@@ -25,12 +25,7 @@ from bigdl.chronos.data.repo_dataset import get_public_dataset
 
 def get_tsdata():
     name = 'network_traffic'
-    path = '~/.chronos/dataset'
-    tsdata_train, _,\
-        tsdata_test = get_public_dataset(name, path,
-                                         redownload=False,
-                                         with_split=True,
-                                         test_ratio=0.1)
+    tsdata_train, _, tsdata_test = get_public_dataset(name, val_ratio=0)
     minmax = MinMaxScaler()
     for tsdata in [tsdata_train, tsdata_test]:
         tsdata.gen_dt_feature(one_hot_features=['HOUR', 'WEEK'])\
@@ -80,8 +75,7 @@ if __name__ == '__main__':
                                    workers_per_node=args.workers_per_node,
                                    seed=0)
 
-    forecaster.fit((x_train, y_train), epochs=args.epochs,
-                   batch_size=512//(1 if not forecaster.distributed else args.workers_per_node))
+    forecaster.fit((x_train, y_train), epochs=args.epochs, batch_size=512)
 
     yhat = forecaster.predict(x_test)
     unscale_yhat = tsdata_test.unscale_numpy(yhat)

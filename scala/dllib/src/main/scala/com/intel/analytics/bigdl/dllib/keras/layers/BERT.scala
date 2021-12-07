@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.{RandomNormal, StaticGraph}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasLayerSerializable}
+import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, KerasLayerSerializable}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
@@ -28,8 +28,8 @@ import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Variable}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.{GraphRef, KerasUtils}
-import com.intel.analytics.bigdl.dllib.keras.models.Model
-import com.intel.analytics.bigdl.dllib.keras.models.Model.{apply => _, _}
+import com.intel.analytics.bigdl.dllib.keras.Model
+import com.intel.analytics.bigdl.dllib.keras.Model.{apply => _, _}
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer

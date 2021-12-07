@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from optparse import OptionParser
+import argparse
 import tensorflow as tf
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.tfpark import TFDataset, TFPredictor
+from bigdl.dllib.utils.common import *
+
 import numpy as np
 import sys
+import os
 
 from bigdl.dllib.feature.dataset import mnist
 
@@ -27,11 +30,35 @@ from nets import lenet
 
 slim = tf.contrib.slim
 
+parser = argparse.ArgumentParser(description="Run the tfpark keras "
+                                             "dataset example.")
+parser.add_argument('--data_num', type=int, default=10000,
+                help='Set data_num for evaluation, it should be integer.') 
+parser.add_argument("--data_path", type=str, default='/tmp/mnist',
+                help='Assert the data_path for evaluation' )
+parser.add_argument('--cluster_mode', type=str, default="local",
+                help='The mode for the Spark cluster. local, yarn or spark-submit.')
 
-def main(options, data_num):
+def main(data_num):
 
-    data_path = '/tmp/mnist' if not options.data_path else options.data_path
-    sc = init_nncontext()
+    data_path = '/tmp/mnist' if not args.data_path else args.data_path
+    cluster_mode = args.cluster_mode
+    if cluster_mode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                "set the environment variable HADOOP_CONF_DIR"
+        spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
+            .set("spark.executor.cores", 2) \
+            .set("spark.executor.instances", 2) \
+            .set("spark.executorEnv.HTTP_PROXY", "http://child-prc.intel.com:913") \
+            .set("spark.executorEnv.HTTPS_PROXY", "http://child-prc.intel.com:913") \
+            .set("spark.driver.memory", "2g")
+        if cluster_mode == "yarn-client":
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-client", hadoop_conf=hadoop_conf)
+        else:
+            sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
+    else:
+        sc = init_nncontext()
 
     # get data, pre-process and create TFDataset
     (images_data, labels_data) = mnist.read_data_sets(data_path, "test")
@@ -65,13 +92,7 @@ def main(options, data_num):
 
 if __name__ == '__main__':
 
-    data_num = 10000
-
-    if len(sys.argv) > 1:
-        data_num = int(sys.argv[1])
-
-    parser = OptionParser()
-    parser.add_option("--data_path", dest="data_path")
-    (options, args) = parser.parse_args(sys.argv)
-
-    main(options, data_num)
+    args = parser.parse_args()
+    data_num = args.data_num
+    
+    main(data_num)

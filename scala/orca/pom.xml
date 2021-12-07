@@ -502,6 +502,12 @@
                     <artifactId>zoo-core-dist-mac</artifactId>
                     <version>0.14.0-SNAPSHOT</version>
                     <type>pom</type>
+                        <exclusions>
+                        <exclusion>
+                            <groupId>com.intel.analytics.zoo</groupId>
+                            <artifactId>zoo-core-tfnet-mac</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
                 <!--these are not supported right now, added to make the project compiles-->
                 <dependency>

@@ -35,7 +35,7 @@ def roll_timeseries_dataframe(df,
            if `horizon` is an int, we will sample `horizon` step
            continuously after the forecasting point.
            if `horizon` is an list, we will sample discretely according
-           to the input list. 1 means the timestampe just after the observed data.
+           to the input list. 1 means the timestamp just after the observed data.
     :param feature_col: list, indicate the feature col name.
     :param target_col: list, indicate the target col name.
     :return: x, y
@@ -149,7 +149,10 @@ def _roll_timeseries_ndarray(data, window):
         window_idx = np.array(window) - 1
 
     roll_data = np.concatenate([_shift(data, i) for i in range(0, -window_size, -1)], axis=1)
-    roll_data = roll_data[:data.shape[0]-window_size+1, window_idx, :]
+    if data.shape[0] >= window_size:
+        roll_data = roll_data[:data.shape[0]-window_size+1, window_idx, :]
+    else:
+        roll_data = roll_data[:0, window_idx, :]  # no sample will be sampled
     mask = ~np.any(np.isnan(roll_data), axis=(1, 2))
 
     return roll_data, mask
