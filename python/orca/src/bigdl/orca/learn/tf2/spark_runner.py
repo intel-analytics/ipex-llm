@@ -17,10 +17,13 @@ import json
 import logging
 import os
 import sys
+import tempfile
+import subprocess
+
 
 import threading
 
-from pyspark import BarrierTaskContext
+from pyspark import BarrierTaskContext, TaskContext
 from pyspark.context import SparkContext
 import tensorflow as tf
 from numpy import array
@@ -39,7 +42,7 @@ def find_free_port(tc):
         tc.barrier()
         return f"{address}:{s.getsockname()[1]}"
 
-def handle_datasets_train(data_creator, validation_data_creator):   
+def handle_datasets_train(data_creator, validation_data_creator):
         train_dataset = data_creator()
         if validation_data_creator is not None:
             test_dataset = validation_data_creator()
@@ -226,24 +229,37 @@ class SparkRunner:
         self.backend = backend
         self.setup()
         self.cluster = cluster_info
-        self.rank, self.local_rank = self._get_rank(self.cluster)
+        self.partition_id = TaskContext.get().partitionId()
+        # self.rank, self.local_rank = self._get_rank(self.cluster)
         if self.backend == "tf-distributed":
             if mode == "fit" or mode == "evaluate":
-                self.setup_distributed()
+                self.setup_distributed(self.cluster)
         self.model_dir = model_dir
         if need_to_log:
-            if self.local_rank == 0:
-                log_dir = "/"
-                print("log dir is: ", log_dir)
-                # This event is checked regularly by all of the threads so that they
-                # know when to exit.
-                self.threads_stopped = threading.Event()
-                self.logger_thread = threading.Thread(
-                    target=self._start_log_monitor,
-                    args=(driver_ip, driver_port, log_dir, self.threads_stopped, application_id),
-                    name="monitor_logs")
-                self.logger_thread.daemon = True
-                self.logger_thread.start()
+            self.log_path = os.path.join(tempfile.gettempdir(), "{}_runner.log".format(self.partition_id))
+            tee = subprocess.Popen(["tee", self.log_path], stdin=subprocess.PIPE)
+            # Cause tee's stdin to get a copy of our stdin/stdout (as well as that
+            # of any child processes we spawn)
+            os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
+            os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
+
+            # self.so = self.se = open(self.log_path, 'w')
+            #
+            # # re-open stdout without buffering
+            # sys.stdout = os.fdopen(sys.stdout.fileno(), 'w')
+            #
+            # # redirect stdout and stderr to the log file opened above
+            # os.dup2(self.so.fileno(), sys.stdout.fileno())
+            # os.dup2(self.se.fileno(), sys.stderr.fileno())
+            # This event is checked regularly by all of the threads so that they
+            # know when to exit.
+            self.threads_stopped = threading.Event()
+            self.logger_thread = threading.Thread(
+                target=self._start_log_monitor,
+                args=(driver_ip, driver_port, self.log_path, self.threads_stopped, self.partition_id),
+                name="monitor_logs")
+            self.logger_thread.daemon = True
+            self.logger_thread.start()
 
 
     def setup(self):
@@ -277,29 +293,29 @@ class SparkRunner:
             global_rank += 1
             if local_count == local_rank + 1:
                 break
-        return global_rank, local_rank
+        return global_rank
 
 
-    def setup_distributed(self):
+    def setup_distributed(self, cluster):
         """Sets up TensorFLow distributed environment and initializes the model.
         """
-        print("cluster is: ", self.cluster)
+        self.rank = self._get_rank(cluster)
+        print("cluster is: ", cluster)
 
         import os
         os.environ["TF_CONFIG"] = json.dumps({
             'cluster': {
-                'worker': self.cluster
+                'worker': cluster
             },
             'task': {'type': 'worker', 'index': self.rank}
         })
-        ips = set([node.split(":")[0] for node in self.cluster])
+        ips = set([node.split(":")[0] for node in cluster])
         os.environ["no_proxy"] = ",".join(ips)
 
         self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
         # For use in model.evaluate()
         self.local_model = None
-        self.backend = "tf-distributed"
 
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
              callbacks=None, initial_epoch=0, validation_data_creator=None, class_weight=None,
@@ -330,7 +346,7 @@ class SparkRunner:
                                  validation_freq=validation_freq)
 
         return (model, history)
-        
+
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
@@ -374,7 +390,7 @@ class SparkRunner:
         else:
             self._stop_log_monitor()
             return []
-    
+
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):
         """
@@ -412,7 +428,7 @@ class SparkRunner:
             if self.model_weights:
                 local_model = local_model.set_weights(self.model_weights.value)
             results = local_model.evaluate(dataset, **params)
-        
+
         if isinstance(results, list):
             stats = {
                 "validation_" + k: v
@@ -420,7 +436,7 @@ class SparkRunner:
             }
         else:
             stats = {"results": results}
-        
+
         if self.rank == 0:
             self._stop_log_monitor()
             return [stats]
@@ -459,16 +475,16 @@ class SparkRunner:
         self._stop_log_monitor()
         return new_part
 
-    def _start_log_monitor(self, driver_ip, driver_port, logs_dir, threads_stopped, application_id):
+    def _start_log_monitor(self, driver_ip, driver_port, log_path, threads_stopped, partition_id):
         """
         Start a log monitor thread.
 
         """
         log_monitor = LogMonitor(driver_ip=driver_ip,
                                  driver_port=driver_port,
-                                 logs_dir=logs_dir,
+                                 log_path=log_path,
                                  threads_stopped=threads_stopped,
-                                 application_id=application_id)
+                                 partition_id=partition_id)
         log_monitor.run()
 
     def _stop_log_monitor(self):
@@ -478,3 +494,6 @@ class SparkRunner:
             self.logger_thread.join()
         if hasattr(self, "threads_stopped"):
             self.threads_stopped.clear()
+        if os.path.exists(self.log_path):
+            os.remove(self.log_path)
+
