@@ -18,6 +18,8 @@
 package com.intel.analytics.bigdl.ppml.vfl
 
 import com.intel.analytics.bigdl.ppml.FLClient
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
 
 
 /**
@@ -26,6 +28,7 @@ import com.intel.analytics.bigdl.ppml.FLClient
  */
 object VflContext {
   var flClient: FLClient = null
+  var sparkSession: SparkSession = null
   def initContext(target: String = null) = {
     this.synchronized {
       if (flClient == null) {
@@ -42,5 +45,21 @@ object VflContext {
   def getClient(): FLClient = {
     flClient
   }
-
+  def getSparkSession(): SparkSession = {
+    if (sparkSession == null) {
+      createSparkSession()
+    }
+    sparkSession
+  }
+  def createSparkSession(): Unit = {
+    this.synchronized {
+      if (sparkSession == null) {
+        val conf = new SparkConf().setMaster("local[*]")
+        sparkSession = SparkSession
+          .builder()
+          .config(conf)
+          .getOrCreate()
+      }
+    }
+  }
 }

@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.vfl.VflContext
 import com.intel.analytics.bigdl.ppml.example.ExampleUtils
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
+import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import org.apache.log4j.Logger
 import scopt.OptionParser
 
@@ -39,57 +40,26 @@ object VflLogisticRegression {
   val logger = Logger.getLogger(getClass)
 
   def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
-
+    //TODO: we use get intersection to get data and input to model
+    // this do not need to be DataFrame?
     // load data from dataset and preprocess\
     val salt = pSI.getSalt()
-    val sources = Source.fromFile(dataPath, "utf-8").getLines()
-    val headers = sources.next().split(",").map(_.trim)
-    println(headers.mkString(","))
-    val rowKeyIndex = headers.indexOf(rowKeyName)
-    require(rowKeyIndex != -1, s"couldn't find ${rowKeyName} in headers(${headers.mkString(", ")})")
-    val data = sources.toArray.map{line =>
-      val lines = line.split(",").map(_.trim())
-      (lines(rowKeyIndex), (lines.take(rowKeyIndex) ++ lines.drop(rowKeyIndex + 1)).map(_.toFloat))
-    }.toMap
-    val ids = data.keys.toList
+    val spark = VflContext.getSparkSession()
+    import spark.implicits._
+    val df = spark.read.option("header", "true").csv(dataPath)
+    val ids = df.select(rowKeyName).as[String].collect().toList
     pSI.uploadSet(ids, salt)
     val intersections = pSI.downloadIntersection()
-    val dataSet = intersections.asScala.toArray.map{id =>
-      data(id)
-    }
+    val intersectionSet = intersections.toSet
+    val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](0)))
+    // we use same dataset to train and validate in this example
+    (dataSet, dataSet)
 
-    /**
-     * Split data into train and validation set
-     */
-    val samples = if (headers.last == "Outcome") {
-      println("hasLabel")
-      featureNum = headers.length - 2
-      (0 until featureNum).foreach(i => ExampleUtils.minMaxNormalize(dataSet, i))
-      (dataSet.map{d =>
-        val features = Tensor[Float](d.slice(0, featureNum), Array(featureNum))
-        val target = Tensor[Float](Array(d(featureNum)), Array(1))
-        Sample(features, target)
-      })
-    } else {
-      println("no label")
-      featureNum = headers.length - 1
-      (0 until featureNum).foreach(i => ExampleUtils.minMaxNormalize(dataSet, i))
-      (dataSet.map{d =>
-        val features = Tensor[Float](d, Array(featureNum))
-        Sample(features)
-      })
-    }
-    val trainDataset = DataSet.array(samples) ->
-      SampleToMiniBatch(batchSize, parallelizing = false)
-    //TODO: Find a better dataset has val dataset.
-    val valDataSet = DataSet.array(samples) ->
-      SampleToMiniBatch(batchSize, parallelizing = false)
-    (trainDataset, valDataSet)
   }
 
   def main(args: Array[String]): Unit = {
     case class Params(dataPath: String = null,
-                      rowKeyName: String = null,
+                      rowKeyName: String = "ID",
                       learningRate: Float = 0.005f,
                       batchSize: Int = 4)
     val parser: OptionParser[Params] = new OptionParser[Params]("VFL Logistic Regression") {
@@ -100,7 +70,6 @@ object VflLogisticRegression {
       opt[String]('r', "rowKeyName")
         .text("row key name of data")
         .action((x, params) => params.copy(rowKeyName = x))
-        .required()
       opt[String]('l', "learningRate")
         .text("learning rate of training")
         .action((x, params) => params.copy(learningRate = x.toFloat))

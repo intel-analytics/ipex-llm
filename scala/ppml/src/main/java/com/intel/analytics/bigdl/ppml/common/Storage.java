@@ -16,8 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.common;
 
-import com.intel.analytics.bigdl.dllib.nn.Log;
-import com.intel.analytics.bigdl.ppml.generated.FLProto;
+
 import org.apache.log4j.Logger;
 
 import java.util.Map;
