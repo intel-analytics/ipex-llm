@@ -12,7 +12,6 @@
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
-
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
@@ -36,7 +35,13 @@ elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
 
-**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
+**Note:** You should correctly set HADOOP_HOME, HADOOP_CONF_DIR, HADOOP_HDFS_HOME, LD_LIBRARY_PATH, etc when running on Hadoop YARN cluster.
+```
+source ${HADOOP_HOME}/libexec/hadoop-config.sh
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
+CLASSPATH=$(${HADOOP_HOME}/bin/hadoop classpath --glob) python tf_lenet_mnist.py --cluster_mode yarn
+```
+View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
 
 ### **Step 2: Define the Model**
 
