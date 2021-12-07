@@ -367,8 +367,8 @@ class TSDataset:
             MinimalFCParameters, EfficientFCParameters
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
-                  "minimal": MinimalFCParameters(),
-                  "efficient": EfficientFCParameters()}
+                          "minimal": MinimalFCParameters(),
+                          "efficient": EfficientFCParameters()}
 
         assert not self._has_generate_agg_feature, \
             "Only one of gen_global_feature and gen_rolling_feature should be called."
@@ -432,8 +432,8 @@ class TSDataset:
             MinimalFCParameters, EfficientFCParameters
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
-                  "minimal": MinimalFCParameters(),
-                  "efficient": EfficientFCParameters()}
+                          "minimal": MinimalFCParameters(),
+                          "efficient": EfficientFCParameters()}
 
         assert not self._has_generate_agg_feature,\
             "Only one of gen_global_feature and gen_rolling_feature should be called."

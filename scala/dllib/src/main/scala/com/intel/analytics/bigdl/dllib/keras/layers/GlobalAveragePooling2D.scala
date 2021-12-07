@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{SpatialAveragePooling, Sequential => 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.dllib.nn.keras.GlobalPooling2D
+import com.intel.analytics.bigdl.dllib.nn.internal.GlobalPooling2D
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.keras.Net

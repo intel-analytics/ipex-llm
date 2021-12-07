@@ -26,6 +26,7 @@ from math import log10
 from PIL import Image
 import urllib
 import tarfile
+import os
 from os import makedirs, remove, listdir
 from os.path import exists, join, basename
 
@@ -57,23 +58,26 @@ parser.add_argument('--cluster_mode', type=str,
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
                          'bigdl, torch_distributed and spark are supported.')
-parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')                         
+parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
 opt = parser.parse_args()
 
 print(opt)
 
 if opt.cluster_mode == "local":
     init_orca_context()
-elif opt.cluster_mode == "yarn":
+elif opt.cluster_mode.startswith("yarn"):
+    hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+    assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+            "set the environment variable HADOOP_CONF_DIR"
     additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
-    init_orca_context(cluster_mode="yarn-client", cores=4, num_nodes=2,
-                      additional_archive=additional)
+    init_orca_context(cluster_mode=opt.cluster_mode, cores=4, num_nodes=2, hadoop_conf=hadoop_conf,
+                    additional_archive=additional)
 elif opt.cluster_mode == "spark-submit":
-    init_orca_context(cluster_mode="spark-submit")                      
+    init_orca_context(cluster_mode="spark-submit")
 else:
     print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
           + opt.cluster_mode)
-
+          
 
 def download_report(count, block_size, total_size):
     downloaded = count * block_size
@@ -305,3 +309,4 @@ else:
                               "but got {}".format(opt.backend))
 
 stop_orca_context()
+

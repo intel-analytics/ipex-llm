@@ -26,11 +26,15 @@ import com.intel.analytics.bigdl.ppml.FLClient
  */
 object VflContext {
   var flClient: FLClient = null
-  def initContext() = {
+  def initContext(target: String = null) = {
     this.synchronized {
       if (flClient == null) {
         this.synchronized {
           flClient = new FLClient()
+          if (target != null) {
+            flClient.setTarget(target)
+          }
+          flClient.build()
         }
       }
     }
@@ -38,4 +42,5 @@ object VflContext {
   def getClient(): FLClient = {
     flClient
   }
+
 }

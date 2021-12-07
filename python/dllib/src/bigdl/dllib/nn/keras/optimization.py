@@ -103,7 +103,8 @@ class OptimConverter:
                                       decayrate=rho,
                                       epsilon=koptim_method.epsilon)
         elif isinstance(koptim_method, koptimizers.Adadelta):
-            warnings.warn("For Adadelta, we don't support learning rate and learning rate decay for now")
+            warnings.warn("For Adadelta, we don't support learning rate and learning rate decay for"
+                          " now")
             return boptimizer.Adadelta(decayrate=koptim_method.rho,
                                        epsilon=koptim_method.epsilon)
         elif isinstance(koptim_method, koptimizers.Adamax):

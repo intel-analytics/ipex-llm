@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.keras.nn
 
-import com.intel.analytics.bigdl.dllib.nn.keras.{Dense, Input, Model}
+import com.intel.analytics.bigdl.dllib.nn.internal.{Dense, Input, Model}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest

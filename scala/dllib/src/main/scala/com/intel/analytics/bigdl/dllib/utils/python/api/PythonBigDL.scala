@@ -37,7 +37,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.image.{CropCenter, CropRandom, CropperMethod}
 import com.intel.analytics.bigdl.dllib.nn.Graph._
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasModel}
+import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.dllib.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation._

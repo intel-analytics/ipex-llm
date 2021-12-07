@@ -113,6 +113,7 @@ case "$SPARK_K8S_CMD" in
     echo $SGX_ENABLED && \
     echo $SGX_MEM_SIZE && \
     echo $SGX_JVM_MEM_SIZE && \
+    echo $SGX_LOG_LEVEL && \
     echo $SPARK_EXECUTOR_MEMORY && \
     unset PYTHONHOME && \
     unset PYTHONPATH && \

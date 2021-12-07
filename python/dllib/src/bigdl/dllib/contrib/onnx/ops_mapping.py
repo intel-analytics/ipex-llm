@@ -25,7 +25,7 @@ from .ops_converter import unsqueeze, concat
 # defined in the op_translations module.
 _convert_map = {
     # Generator Functions
-    'Constant'          : constant,
+    'Constant': constant,
     # 'RandomUniform'     : random_uniform,
     # 'RandomNormal'      : random_normal,
     # 'RandomUniformLike' : random_uniform,
@@ -38,20 +38,20 @@ _convert_map = {
     # 'Div'               : divide,
     # 'Abs'               : absolute,
     # 'Neg'               : negative,
-    'Sum'               : _sum, #elemwise sum
+    'Sum': _sum,  # elemwise sum
     # #Hyperbolic functions
     # 'Tanh'              : tanh,
     # # Rounding
     # 'Ceil'              : ceil,
     # 'Floor'             : floor,
     # # Joining and spliting
-    'Concat'            : concat,
+    'Concat': concat,
     # # Basic neural network functions
     # 'Sigmoid'           : sigmoid,
-    'Relu'              : relu,
+    'Relu': relu,
     # 'Pad'               : pad,
     # 'MatMul'            : matrix_multiplication, #linalg_gemm2
-    'Conv'              : conv,
+    'Conv': conv,
     # 'ConvTranspose'     : deconv,
     'BatchNormalization': batch_norm,
     # 'SpatialBN'         : batch_norm,
@@ -59,22 +59,22 @@ _convert_map = {
     # 'Elu'               : _elu,
     # 'PRelu'             : _prelu,
     # 'Selu'              : _selu,
-    'Softmax'           : softmax,
+    'Softmax': softmax,
     # 'FC'                : fully_connected,
     # 'GlobalAveragePool' : global_avgpooling,
     # 'GlobalMaxPool'     : global_maxpooling,
     # 'GlobalLpPool'      : global_lppooling,
-    'Gemm'              : gemm,
+    'Gemm': gemm,
     # 'LRN'               : local_response_norm,
     # 'Dropout'           : dropout,
     # # Changing shape and type.
-    'Reshape'           : reshape,
+    'Reshape': reshape,
     # 'Cast'              : cast,
     # 'Split'             : split,
     # 'Slice'             : _slice,
     # 'Transpose'         : transpose,
     # 'Squeeze'           : squeeze,
-    'Unsqueeze'         : unsqueeze,
+    'Unsqueeze': unsqueeze,
     # 'Flatten'           : flatten,
     # 'Identity'          : identity,
     # #Powers
@@ -89,8 +89,8 @@ _convert_map = {
     # 'ReduceMin'         : reduce_min,
     # 'ReduceSum'         : reduce_sum,
     # 'ReduceProd'        : reduce_prod,
-    'AveragePool'       : average_pool,
-    'MaxPool'           : max_pool,
+    'AveragePool': average_pool,
+    'MaxPool': max_pool,
     # # Sorting and Searching
     # 'ArgMax'            : argmax,
     # 'ArgMin'            : argmin,
@@ -121,9 +121,9 @@ _convert_map = {
     # 'Sin'               : _sin,
     # 'Softplus'          : softplus,
     # 'Tan'               : _tan,
-    'Shape'             : shape,
+    'Shape': shape,
     # 'Size'              : size,
-    'Gather'            : gather,
+    'Gather': gather,
     # 'HardSigmoid'       : hardsigmoid,
     # 'LpPool'            : lp_pooling,
     # 'DepthToSpace'      : depthtospace,

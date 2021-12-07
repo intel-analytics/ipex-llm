@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.nn.abstractnn
 
-import com.intel.analytics.bigdl.dllib.nn.keras.{Input => KInput, Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.internal.{Input => KInput, Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.nn.{Input => TInput}
 import com.intel.analytics.bigdl.dllib.utils.Shape
 

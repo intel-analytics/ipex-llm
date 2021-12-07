@@ -114,7 +114,7 @@ def get_analytics_zoo_classpath():
             # check jar path or jars dir path that is ended with "jars/*"
             if not os.path.exists(path) and not os.path.exists(path.split("*")[0]):
                 raise ValueError("Path {} specified BIGDL_CLASSPATH does not exist."
-                                     .format(path))
+                                 .format(path))
         return os.environ["BIGDL_CLASSPATH"]
     jar_dir = os.path.abspath(__file__ + "/../../../")
     jar_paths = glob.glob(os.path.join(jar_dir, "share/orca/lib/*.jar"))

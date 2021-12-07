@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.python
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Node
 import com.intel.analytics.bigdl.dllib.keras.autograd

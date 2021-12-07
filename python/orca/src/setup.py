@@ -59,7 +59,8 @@ def init_env():
         if os.path.exists(TEMP_PATH):
             rmtree(TEMP_PATH)
         copytree(dist_source, TEMP_PATH)
-        copyfile(bigdl_home + "/python/orca/src/bigdl/orca/automl/__init__.py", TEMP_PATH + "/__init__.py")
+        copyfile(bigdl_home + "/python/orca/src/bigdl/orca/automl/__init__.py",
+                 TEMP_PATH + "/__init__.py")
     else:
         print("Do nothing for release installation")
 
@@ -90,7 +91,8 @@ def setup_package():
         url='https://github.com/intel-analytics/analytics-zoo',
         packages=get_bigdl_packages(),
         install_requires=['conda-pack==0.3.1', 'packaging', 'filelock',
-                          'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1', 'bigdl-dllib=='+VERSION],
+                          'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1',
+                          'bigdl-dllib=='+VERSION],
         extras_require={'ray': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
                                 'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1'],
                         'automl': ['aiohttp==3.7.4', 'aioredis==1.3.1',

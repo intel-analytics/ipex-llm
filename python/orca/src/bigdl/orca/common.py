@@ -165,18 +165,18 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     across the cluster if necessary).
 
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "yarn-cluster", "k8s-client" and "standalone". Default to be None and in this case 
+           "yarn-cluster", "k8s-client" and "standalone". Default to be None and in this case
            there is supposed to be an existing SparkContext in your application.
-           
-           For "yarn-client" and "yarn-cluster", you are supposed to use conda environment 
+
+           For "yarn-client" and "yarn-cluster", you are supposed to use conda environment
            and set the environment variable HADOOP_CONF_DIR.
 
-           For "k8s-client", you are supposed to additionally specify the arguments master 
+           For "k8s-client", you are supposed to additionally specify the arguments master
            and container_image.
-           For "k8s-cluster", you are supposed to use spark-submit to submit the application 
+           For "k8s-cluster", you are supposed to use spark-submit to submit the application
            and use the default cluster_mode instead.
            In this case, please set the Spark configurations through command line options or
-           the properties file. 
+           the properties file.
            To make things easier, you are recommended to use the launch scripts we provide:
            https://github.com/intel-analytics/BigDL/tree/branch-2.0/scripts.
 
@@ -190,7 +190,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
            Default to be False and in this case the Ray cluster would be launched lazily when
            Ray is involved in Project Orca.
     :param kwargs: The extra keyword arguments used for creating SparkContext and
-           launching Ray if any. 
+           launching Ray if any.
 
     :return: An instance of SparkContext.
     """
@@ -215,9 +215,9 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     else:
         cluster_mode = "local" if cluster_mode is None else cluster_mode
         if cluster_mode == "local":
-            if num_nodes > 1: 
-                warnings.warn("For Spark local mode, num_nodes should be 1, but got " 
-                + repr(num_nodes) + ", ignored", Warning)
+            if num_nodes > 1:
+                warnings.warn("For Spark local mode, num_nodes should be 1, but got "
+                              + repr(num_nodes) + ", ignored", Warning)
             os.environ["SPARK_DRIVER_MEMORY"] = memory
             if "python_location" in kwargs:
                 spark_args["python_location"] = kwargs["python_location"]
@@ -243,19 +243,21 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
             from bigdl.dllib.nncontext import init_spark_on_yarn, init_spark_on_yarn_cluster
             if cluster_mode == "yarn-cluster":
                 sc = init_spark_on_yarn_cluster(hadoop_conf=hadoop_conf,
-                                    conda_name=conda_env_name,
-                                    num_executors=num_nodes, executor_cores=cores,
-                                    executor_memory=memory, **spark_args)
+                                                conda_name=conda_env_name,
+                                                num_executors=num_nodes,
+                                                executor_cores=cores,
+                                                executor_memory=memory,
+                                                **spark_args)
             else:
                 sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
-                                    conda_name=conda_env_name,
-                                    num_executors=num_nodes, executor_cores=cores,
-                                    executor_memory=memory, **spark_args)
+                                        conda_name=conda_env_name,
+                                        num_executors=num_nodes, executor_cores=cores,
+                                        executor_memory=memory, **spark_args)
         elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
             if cluster_mode == "k8s-cluster":
                 raise ValueError('For k8s-cluster mode, '
-                                'please submit the application via spark-submit'  
-                                'and use the default cluster_mode instead')
+                                 'please submit the application via spark-submit'
+                                 'and use the default cluster_mode instead')
             assert "master" in kwargs, "Please specify master for k8s-client mode"
             assert "container_image" in kwargs, "Please specify container_image for k8s-client mode"
             for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
@@ -269,7 +271,8 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                                    executor_memory=memory, **spark_args)
         elif cluster_mode == "standalone":
             for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
-                        "extra_python_lib", "jars", "master", "python_location", "enable_numa_binding"]:
+                        "extra_python_lib", "jars", "master", "python_location",
+                        "enable_numa_binding"]:
                 if key in kwargs:
                     spark_args[key] = kwargs[key]
             from bigdl.dllib.nncontext import init_spark_standalone
@@ -277,8 +280,8 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                                        executor_memory=memory, **spark_args)
         else:
             raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster,"
-                            "k8s-client or standalone, "
-                            "but got: %s".format(cluster_mode))
+                             "k8s-client or standalone, "
+                             "but got: %s".format(cluster_mode))
     ray_args = {}
     for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
                 "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
