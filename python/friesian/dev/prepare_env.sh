@@ -37,3 +37,6 @@ BIGDL_CLASSPATH="$(find $BIGDL_HOME/dist/lib/ -name "bigdl-orca-*with-dependenci
 BIGDL_CLASSPATH="$(find $BIGDL_HOME/dist/lib/ -name "bigdl-dllib-*with-dependencies.jar" | xargs ):$BIGDL_CLASSPATH"
 export BIGDL_CLASSPATH=$BIGDL_CLASSPATH
 echo "BIGDL_CLASSPATH": $BIGDL_CLASSPATH
+
+export TF_LIBS_PATH=$(python -c 'import site; print(site.getsitepackages()[0])')/bigdl/share/tflibs
+echo "TF_LIBS_PATH: $TF_LIBS_PATH"
