@@ -291,7 +291,7 @@ class SparkRunner:
         Sets up TensorFLow distributed environment and initializes the model.
         """
         self.rank = self._get_rank(cluster)
-        logger.warning("cluster is: {}".format(cluster))
+        logger.info("cluster is: {}".format(cluster))
 
         os.environ["TF_CONFIG"] = json.dumps({
             'cluster': {

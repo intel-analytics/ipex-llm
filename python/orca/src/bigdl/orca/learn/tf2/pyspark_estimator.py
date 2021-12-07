@@ -40,8 +40,6 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
-LOG_FILE_CHANNEL = "SPARK_LOG_CHANNEL"
-
 logger = logging.getLogger(__name__)
 
 
@@ -449,12 +447,3 @@ class SparkTFEstimator():
             message = socket.recv()
             print(message.decode("utf-8"))
             socket.send(b"received")
-
-    def _start_print_log(self):
-        if hasattr(self, "socket"):
-            self.logger_thread = threading.Thread(
-                target=self._print_logs,
-                args=self.socket,
-                name="print_logs")
-            self.logger_thread.daemon = False
-            self.logger_thread.start()
