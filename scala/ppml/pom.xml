@@ -71,6 +71,16 @@
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-grpc-spark_${spark.version}</artifactId>
             <version>0.14.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_${scala.major.version}</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>

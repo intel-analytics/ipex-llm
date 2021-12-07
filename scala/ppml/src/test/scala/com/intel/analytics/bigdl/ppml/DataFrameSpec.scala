@@ -25,7 +25,7 @@ import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
-  "DataFrame to DataSet" should "work" in {
+  "json DataFrame to DataSet" should "work" in {
     val spark = VflContext.getSparkSession()
     import spark.implicits._
     val df = spark.read.json(this.getClass.getClassLoader.getResource("people.json").getPath)
@@ -33,5 +33,14 @@ class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     require(dataSet.isInstanceOf[LocalDataSet[Any]], "transformation type wrong")
     require(dataSet.size() == 3, "size wrong")
   }
-
+  "csv DataFrame to DataSet" should "work" in {
+    val spark = VflContext.getSparkSession()
+    import spark.implicits._
+    val df = spark.read.option("header", "true")
+      .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
+    df.show()
+    val dataSet = DataFrameUtils.dataFrameToSample(df)
+    require(dataSet.isInstanceOf[LocalDataSet[Any]], "transformation type wrong")
+    require(dataSet.size() == 10, "size wrong")
+  }
 }

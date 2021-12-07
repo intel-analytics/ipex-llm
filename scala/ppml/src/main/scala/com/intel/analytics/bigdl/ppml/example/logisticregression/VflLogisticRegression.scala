@@ -40,16 +40,18 @@ object VflLogisticRegression {
   val logger = Logger.getLogger(getClass)
 
   def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
-
+    //TODO: we use get intersection to get data and input to model
+    // this do not need to be DataFrame?
     // load data from dataset and preprocess\
     val salt = pSI.getSalt()
     val spark = VflContext.getSparkSession()
     import spark.implicits._
-    val df = spark.read.csv(dataPath)
+    val df = spark.read.option("header", "true").csv(dataPath)
     val ids = df.select(rowKeyName).as[String].collect().toList
     pSI.uploadSet(ids, salt)
     val intersections = pSI.downloadIntersection()
-    val dataSet = df.select(intersections.head, intersections.tail: _*)
+    val intersectionSet = intersections.toSet
+    val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](0)))
     // we use same dataset to train and validate in this example
     (dataSet, dataSet)
 
@@ -57,7 +59,7 @@ object VflLogisticRegression {
 
   def main(args: Array[String]): Unit = {
     case class Params(dataPath: String = null,
-                      rowKeyName: String = null,
+                      rowKeyName: String = "ID",
                       learningRate: Float = 0.005f,
                       batchSize: Int = 4)
     val parser: OptionParser[Params] = new OptionParser[Params]("VFL Logistic Regression") {
@@ -68,7 +70,6 @@ object VflLogisticRegression {
       opt[String]('r', "rowKeyName")
         .text("row key name of data")
         .action((x, params) => params.copy(rowKeyName = x))
-        .required()
       opt[String]('l', "learningRate")
         .text("learning rate of training")
         .action((x, params) => params.copy(learningRate = x.toFloat))
