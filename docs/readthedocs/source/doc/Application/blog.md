@@ -28,7 +28,7 @@ __July 30, 2019__
 __April 24, 2019__
 <br>[Machine Learning Pipelines for High Energy Physics Using Apache Spark with BigDL and Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl?from=timeline&isappinstalled=0)
 
-__September 10, 2018_
+__September 10, 2018__
 <br>[Analytics Zoo: Unifying Analytics + AI for Apache Spark*](https://www.intel.com/content/www/us/en/developer/articles/technical/analytics-zoo-unifying-analytics-ai-for-apache-spark.html?_ga=2.268623665.1713049974.1561343546-1183969440.1558077243)
 
 __December 4, 2017__
