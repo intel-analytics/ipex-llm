@@ -20,7 +20,6 @@ import sys
 import tempfile
 import subprocess
 
-
 import threading
 
 from pyspark import BarrierTaskContext, TaskContext
@@ -33,6 +32,8 @@ import socket
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.learn.utils import save_pkl
 from bigdl.orca.learn.tf2.log_monitor import LogMonitor
+
+logger = logging.getLogger(__name__)
 
 def find_free_port(tc):
     address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
@@ -203,7 +204,7 @@ class SparkRunner:
                  mode="fit",
                  model_dir=None,
                  epoch=0,
-                 need_to_log=True,
+                 need_to_log=False,
                  driver_ip=None,
                  driver_port=None,
                  application_id=None
@@ -238,19 +239,9 @@ class SparkRunner:
         if need_to_log:
             self.log_path = os.path.join(tempfile.gettempdir(), "{}_runner.log".format(self.partition_id))
             tee = subprocess.Popen(["tee", self.log_path], stdin=subprocess.PIPE)
-            # Cause tee's stdin to get a copy of our stdin/stdout (as well as that
-            # of any child processes we spawn)
             os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
             os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
-            # self.so = self.se = open(self.log_path, 'w')
-            #
-            # # re-open stdout without buffering
-            # sys.stdout = os.fdopen(sys.stdout.fileno(), 'w')
-            #
-            # # redirect stdout and stderr to the log file opened above
-            # os.dup2(self.so.fileno(), sys.stdout.fileno())
-            # os.dup2(self.se.fileno(), sys.stderr.fileno())
             # This event is checked regularly by all of the threads so that they
             # know when to exit.
             self.threads_stopped = threading.Event()
@@ -300,9 +291,8 @@ class SparkRunner:
         """Sets up TensorFLow distributed environment and initializes the model.
         """
         self.rank = self._get_rank(cluster)
-        print("cluster is: ", cluster)
+        logger.info("cluster is: {}".format(cluster))
 
-        import os
         os.environ["TF_CONFIG"] = json.dumps({
             'cluster': {
                 'worker': cluster
@@ -494,6 +484,7 @@ class SparkRunner:
             self.logger_thread.join()
         if hasattr(self, "threads_stopped"):
             self.threads_stopped.clear()
-        if os.path.exists(self.log_path):
-            os.remove(self.log_path)
+        if hasattr(self, "log_path"):
+            if os.path.exists(self.log_path):
+                os.remove(self.log_path)
 

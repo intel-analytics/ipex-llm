@@ -17,8 +17,6 @@
 import logging
 import os
 import threading
-import json
-import random
 
 from pyspark.sql.dataframe import DataFrame
 import numpy as np
@@ -82,14 +80,11 @@ class SparkTFEstimator():
                             " fit/evaluate function of the estimator instead.")
         self.model_dir = model_dir
         self.application_id = sc.applicationId
-
         self.ip = get_node_ip()
         self.port = find_free_port()
         is_local = sc.master.startswith("local")
         self.need_to_log = (not is_local) and log_to_driver
-        self.need_to_log = True
         if self.need_to_log:
-            self.threads_stopped = threading.Event()
             self.logger_thread = threading.Thread(
                 target=self._print_logs,
                 name="print_logs")
@@ -123,8 +118,6 @@ class SparkTFEstimator():
                the model to "pay more attention" to samples from an under-represented class.
         :return:
         """
-        # self._start_print_log()
-
         sc = OrcaContext.get_spark_context()
 
         init_params = dict(
@@ -208,7 +201,6 @@ class SparkTFEstimator():
             finally:
                 shutil.rmtree(temp_dir)
 
-        # self._stop_log_to_driver()
         return res[0]
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
@@ -231,7 +223,6 @@ class SparkTFEstimator():
                the model to "pay more attention" to samples from an under-represented class.
         :return: validation result
         """
-        # self._start_print_log()
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
 
@@ -421,17 +412,14 @@ class SparkTFEstimator():
         self.model_weights = model.get_weights()
 
     def _print_logs(self):
-        """Prints log messages from workers on all of the nodes.
+        """
+        Prints log messages from workers on all of the nodes.
 
-        Args:
-            redis_client: A client to the primary Redis shard.
-            threads_stopped (threading.Event): A threading event used to signal to
-                the thread that it should exit.
         """
         context = zmq.Context()
         socket = context.socket(zmq.REP)
         socket.bind("tcp://{}:{}".format(self.ip, self.port))
-        print("started log server on {}:{}".format(self.ip, self.port))
+        logger.info("started log server on {}:{}".format(self.ip, self.port))
 
         while True:
             message = socket.recv()
@@ -456,12 +444,3 @@ class SparkTFEstimator():
                 name="print_logs")
             self.logger_thread.daemon = False
             self.logger_thread.start()
-
-    def _stop_log_to_driver(self):
-        print("called stop")
-        if hasattr(self, "threads_stopped"):
-            self.threads_stopped.set()
-        if hasattr(self, "logger_thread"):
-            self.logger_thread.join()
-        if hasattr(self, "threads_stopped"):
-            self.threads_stopped.clear()
