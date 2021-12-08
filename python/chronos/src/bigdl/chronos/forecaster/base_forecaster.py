@@ -19,8 +19,6 @@ from bigdl.chronos.forecaster.utils import\
     np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 
-from bigdl.nano.pytorch.trainer import Trainer
-
 import numpy as np
 import warnings
 import torch
@@ -55,6 +53,7 @@ class BasePytorchForecaster(Forecaster):
         else:
             # seed setting
             from pytorch_lightning import seed_everything
+            from bigdl.nano.pytorch.trainer import Trainer
             seed_everything(seed=self.seed)
 
             # Model preparation
@@ -357,6 +356,8 @@ class BasePytorchForecaster(Forecaster):
             self.internal.load(checkpoint_file)
         else:
             from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+            from bigdl.nano.pytorch.trainer import Trainer
+
             model = self.model_creator({**self.model_config, **self.data_config})
             loss = self.loss_creator(self.loss_config)
             optimizer = self.optimizer_creator(model, self.optim_config)
@@ -381,6 +382,8 @@ class BasePytorchForecaster(Forecaster):
 
         :return: a forecaster instance.
         """
+        from bigdl.nano.pytorch.trainer import Trainer
+
         # TODO: optimizer is refreshed, which is not reasonable
         if not self.distributed:
             raise RuntimeError("The forecaster has become local.")

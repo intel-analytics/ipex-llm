@@ -29,4 +29,3 @@ sphinx_markdown_tables
 numpy==1.21.2
 xgboost
 torchmetrics
-bigdl-nano
