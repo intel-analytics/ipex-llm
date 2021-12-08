@@ -30,6 +30,7 @@ import org.scalatest.{FlatSpec, Matchers}
 @com.intel.analytics.bigdl.tags.Serial
 class DNNSoftMaxSpec extends TorchSpec with Matchers {
   "SoftMax forward 4-D" should "work correctly" in {
+    torchCheck()
     // we should test the cases which contain 1
     val tests = List(
       (2, 3, 4, 4),
@@ -77,6 +78,7 @@ class DNNSoftMaxSpec extends TorchSpec with Matchers {
   }
 
   "SoftMax forward 3-D" should "work correctly" in {
+    torchCheck()
     // we should test the cases which contain 1
     val tests = List(
       (3, 4, 4),
@@ -122,6 +124,7 @@ class DNNSoftMaxSpec extends TorchSpec with Matchers {
   }
 
   "SoftMax backward" should "work correctly" in {
+    torchCheck()
     val (batchSize, channel, height, width) = (2, 3, 4, 4)
     val sm = SoftMax()
     sm.setRuntime(new MklDnnRuntime)
@@ -161,6 +164,7 @@ class DNNSoftMaxSpec extends TorchSpec with Matchers {
   }
 
   "SoftMax multi times forward" should "work correctly" in {
+    torchCheck()
     val (batchSize, channel, height, width) = (2, 3, 4, 4)
     val sm = SoftMax()
     sm.setRuntime(new MklDnnRuntime)
