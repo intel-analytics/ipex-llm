@@ -318,10 +318,11 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
   }
 }
 
-class XGBClassifier () {
-  private val model = new XGBoostClassifier()
+class XGBClassifier (private[nnframes] val xgboostParams: Map[String, Any] = Map()) {
+  private val model = new XGBoostClassifier(xgboostParams)
   model.setNthread(Engine.coreNumber())
   model.setMaxBins(256)
+
   def setFeaturesCol(featuresColName: String): this.type = {
     model.setFeaturesCol(featuresColName)
     this
@@ -348,7 +349,7 @@ class XGBClassifier () {
     this
   }
 
-  def setEta(value: Int): this.type = {
+  def setEta(value: Double): this.type = {
     model.setEta(value)
     this
   }
@@ -365,6 +366,25 @@ class XGBClassifier () {
 
   def setMissing(value: Float): this.type = {
     model.setMissing(value)
+    this
+  }
+
+  def setLabelCol(labelColName: String): this.type = {
+    model.setLabelCol(labelColName)
+    this
+  }
+  def setTreeMethod(value: String): this.type = {
+    model.setTreeMethod(value)
+    this
+  }
+
+  def setObjective(value: String): this.type = {
+    model.setObjective(value)
+    this
+  }
+
+  def setNumClass(value: Int): this.type = {
+    model.setNumClass(value)
     this
   }
 
@@ -682,3 +702,4 @@ object XGBRegressorModel {
     new XGBRegressorModel(XGBoostHelper.load(path))
   }
 }
+
