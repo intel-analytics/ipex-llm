@@ -26,7 +26,6 @@ import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import org.apache.log4j.Logger
 import scopt.OptionParser
 
-import scala.io.Source
 import collection.JavaConverters._
 import collection.JavaConversions._
 
@@ -48,10 +47,8 @@ object VflLogisticRegression {
     import spark.implicits._
     val df = spark.read.option("header", "true").csv(dataPath)
     val ids = df.select(rowKeyName).as[String].collect().toList
-    pSI.uploadSet(ids, salt)
-    val intersections = pSI.downloadIntersection()
-    val intersectionSet = intersections.toSet
-    val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](0)))
+    val dataSet = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
+
     // we use same dataset to train and validate in this example
     (dataSet, dataSet)
 
@@ -94,7 +91,7 @@ object VflLogisticRegression {
 
     // create LogisticRegression object to train the model
     val lr = new LogisticRegression(featureNum, learningRate)
-    lr.fit(trainData, valData)
+    lr.fit(trainData, valData = valData)
     lr.evaluate()
   }
 
