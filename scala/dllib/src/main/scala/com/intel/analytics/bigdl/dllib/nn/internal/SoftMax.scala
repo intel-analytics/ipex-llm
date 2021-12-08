@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.dllib.nn.internal
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.dllib.nn.{Transpose, Sequential => TSequential, SoftMax}
+import com.intel.analytics.bigdl.dllib.nn.{Transpose, Sequential => TSequential,
+SoftMax => BSoftMax}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
@@ -36,7 +37,7 @@ class SoftMax[T: ClassTag](
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = SoftMax()
+    val layer = BSoftMax()
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
