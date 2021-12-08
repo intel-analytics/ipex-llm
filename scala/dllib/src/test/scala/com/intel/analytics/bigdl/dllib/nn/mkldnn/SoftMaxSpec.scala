@@ -172,7 +172,7 @@ class SoftMaxSpec extends TorchSpec with Matchers {
       val nnGradInput = internalUpdateGradInput(input, gradOutput)
 
 
-      Tools.dense(output) should be (output)
+      Tools.dense(output) should be (nnOutput)
       Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnGradInput,
         epsilon = 1e-5) should be (true)
     }
