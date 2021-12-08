@@ -86,162 +86,162 @@ class SoftMaxSpec extends TorchSpec with Matchers {
     }
   }
 
-  "SoftMax forward 4-D" should "work correctly" in {
-    // we should test the cases which contain 1
-    val tests = List(
-      (2, 3, 4, 4),
-      (1, 3, 4, 4),
-      (1, 3, 1, 1),
-      (1, 1, 1, 1),
-      (1, 1, 3, 3),
-      (2, 1, 3, 3),
-      (2, 2, 1, 1))
-
-    for ((batchSize, channel, height, width) <- tests) {
-      val sm = SoftMax()
-      sm.setRuntime(new MklDnnRuntime)
-      sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
-        Memory.Format.nchw)), TrainingPhase)
-      sm.initBwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
-        Memory.Format.nchw)), TrainingPhase)
-
-      val input = Tensor(batchSize, channel, height, width).rand()
-
-      val output = sm.forward(input)
-
-//      val nnSm = nn.SoftMax()
-//      val nnOutput = nnSm.forward(input)
+//  "SoftMax forward 4-D" should "work correctly" in {
+//    // we should test the cases which contain 1
+//    val tests = List(
+//      (2, 3, 4, 4),
+//      (1, 3, 4, 4),
+//      (1, 3, 1, 1),
+//      (1, 1, 1, 1),
+//      (1, 1, 3, 3),
+//      (2, 1, 3, 3),
+//      (2, 2, 1, 1))
 //
-//      Tools.dense(output) should be (nnOutput)
-
-      val gradOutput = Tensor[Float]().resizeAs(output.toTensor).rand(-10, 10)
-      sm.backward(input, gradOutput)
-//      nnSm.backward(input, gradOutput)
-
-      val code = "module = nn.SoftMax()\n" +
-        "output = module:forward(input)\n" +
-        "gradInput = module:backward(input,gradOutput)"
-
-      val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
-        Array("output", "gradInput"))
-      val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
-      val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Float]]
-
-      Tools.dense(output) should be (luaOutput)
-      Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, luaGradInput,
-        epsilon = 1e-5) should be (true)
-    }
-  }
-
-  "SoftMax forward 3-D" should "work correctly" in {
-    // we should test the cases which contain 1
-    val tests = List(
-      (3, 4, 4),
-      (3, 4, 4),
-      (3, 1, 1),
-      (1, 1, 1),
-      (1, 3, 3),
-      (1, 3, 3),
-      (2, 1, 1))
-
-    for ((i, j, k) <- tests) {
-      val sm = SoftMax()
-      sm.setRuntime(new MklDnnRuntime)
-      sm.initFwdPrimitives(Array(HeapData(Array(i, j, k), Memory.Format.ncw)), TrainingPhase)
-      sm.initBwdPrimitives(Array(HeapData(Array(i, j, k), Memory.Format.ncw)), TrainingPhase)
-
-      val input = Tensor(i, j, k).rand()
-
-      val output = sm.forward(input)
-
-//      val nnSm = nn.SoftMax()
-//      val nnOutput = nnSm.forward(input)
-
-//      Tools.dense(output) should be (nnOutput)
-
-      val gradOutput = Tensor[Float]().resizeAs(output.toTensor).rand(-10, 10)
-      sm.backward(input, gradOutput)
-//      nnSm.backward(input, gradOutput)
-
-      val code = "module = nn.SoftMax()\n" +
-        "output = module:forward(input)\n" +
-        "gradInput = module:backward(input,gradOutput)"
-
-      val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
-        Array("output", "gradInput"))
-      val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
-      val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Float]]
-
-      Tools.dense(output) should be (luaOutput)
-      Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, luaGradInput,
-        epsilon = 1e-5) should be (true)
-    }
-  }
-
-  "SoftMax backward" should "work correctly" in {
-    val (batchSize, channel, height, width) = (2, 3, 4, 4)
-    val sm = SoftMax()
-    sm.setRuntime(new MklDnnRuntime)
-    sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
-      Memory.Format.nchw)), TrainingPhase)
-    sm.initBwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
-      Memory.Format.nchw)), TrainingPhase)
-
-//    val nnSm = nn.SoftMax()
-
-    val input = Tensor(batchSize, channel, height, width).rand()
-    val gradOutput = Tensor().resizeAs(input).rand(-10, 10)
-
-    sm.forward(input)
-//    nnSm.forward(input)
-
-    sm.backward(input, gradOutput)
-//    nnSm.backward(input, gradOutput)
-
-    val code = "module = nn.SoftMax()\n" +
-      "output = module:forward(input)\n" +
-      "gradInput = module:backward(input,gradOutput)"
-
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
-      Array("output", "gradInput"))
-    val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
-    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Float]]
-
-//    Equivalent.nearequals(Tools.dense(sm.output).toTensor, nnSm.output.toTensor,
+//    for ((batchSize, channel, height, width) <- tests) {
+//      val sm = SoftMax()
+//      sm.setRuntime(new MklDnnRuntime)
+//      sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
+//        Memory.Format.nchw)), TrainingPhase)
+//      sm.initBwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
+//        Memory.Format.nchw)), TrainingPhase)
+//
+//      val input = Tensor(batchSize, channel, height, width).rand()
+//
+//      val output = sm.forward(input)
+//
+////      val nnSm = nn.SoftMax()
+////      val nnOutput = nnSm.forward(input)
+////
+////      Tools.dense(output) should be (nnOutput)
+//
+//      val gradOutput = Tensor[Float]().resizeAs(output.toTensor).rand(-10, 10)
+//      sm.backward(input, gradOutput)
+////      nnSm.backward(input, gradOutput)
+//
+//      val code = "module = nn.SoftMax()\n" +
+//        "output = module:forward(input)\n" +
+//        "gradInput = module:backward(input,gradOutput)"
+//
+//      val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+//        Array("output", "gradInput"))
+//      val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
+//      val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Float]]
+//
+//      Tools.dense(output) should be (luaOutput)
+//      Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, luaGradInput,
+//        epsilon = 1e-5) should be (true)
+//    }
+//  }
+//
+//  "SoftMax forward 3-D" should "work correctly" in {
+//    // we should test the cases which contain 1
+//    val tests = List(
+//      (3, 4, 4),
+//      (3, 4, 4),
+//      (3, 1, 1),
+//      (1, 1, 1),
+//      (1, 3, 3),
+//      (1, 3, 3),
+//      (2, 1, 1))
+//
+//    for ((i, j, k) <- tests) {
+//      val sm = SoftMax()
+//      sm.setRuntime(new MklDnnRuntime)
+//      sm.initFwdPrimitives(Array(HeapData(Array(i, j, k), Memory.Format.ncw)), TrainingPhase)
+//      sm.initBwdPrimitives(Array(HeapData(Array(i, j, k), Memory.Format.ncw)), TrainingPhase)
+//
+//      val input = Tensor(i, j, k).rand()
+//
+//      val output = sm.forward(input)
+//
+////      val nnSm = nn.SoftMax()
+////      val nnOutput = nnSm.forward(input)
+//
+////      Tools.dense(output) should be (nnOutput)
+//
+//      val gradOutput = Tensor[Float]().resizeAs(output.toTensor).rand(-10, 10)
+//      sm.backward(input, gradOutput)
+////      nnSm.backward(input, gradOutput)
+//
+//      val code = "module = nn.SoftMax()\n" +
+//        "output = module:forward(input)\n" +
+//        "gradInput = module:backward(input,gradOutput)"
+//
+//      val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+//        Array("output", "gradInput"))
+//      val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
+//      val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Float]]
+//
+//      Tools.dense(output) should be (luaOutput)
+//      Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, luaGradInput,
+//        epsilon = 1e-5) should be (true)
+//    }
+//  }
+//
+//  "SoftMax backward" should "work correctly" in {
+//    val (batchSize, channel, height, width) = (2, 3, 4, 4)
+//    val sm = SoftMax()
+//    sm.setRuntime(new MklDnnRuntime)
+//    sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
+//      Memory.Format.nchw)), TrainingPhase)
+//    sm.initBwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
+//      Memory.Format.nchw)), TrainingPhase)
+//
+////    val nnSm = nn.SoftMax()
+//
+//    val input = Tensor(batchSize, channel, height, width).rand()
+//    val gradOutput = Tensor().resizeAs(input).rand(-10, 10)
+//
+//    sm.forward(input)
+////    nnSm.forward(input)
+//
+//    sm.backward(input, gradOutput)
+////    nnSm.backward(input, gradOutput)
+//
+//    val code = "module = nn.SoftMax()\n" +
+//      "output = module:forward(input)\n" +
+//      "gradInput = module:backward(input,gradOutput)"
+//
+//    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+//      Array("output", "gradInput"))
+//    val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
+//    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Float]]
+//
+////    Equivalent.nearequals(Tools.dense(sm.output).toTensor, nnSm.output.toTensor,
+////      epsilon = 1e-5) should be (true)
+////    Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
+////      epsilon = 1e-5) should be (true)
+//    Equivalent.nearequals(Tools.dense(sm.output).toTensor, luaOutput,
 //      epsilon = 1e-5) should be (true)
-//    Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
+//    Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, luaGradInput,
 //      epsilon = 1e-5) should be (true)
-    Equivalent.nearequals(Tools.dense(sm.output).toTensor, luaOutput,
-      epsilon = 1e-5) should be (true)
-    Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, luaGradInput,
-      epsilon = 1e-5) should be (true)
-  }
-
-  "SoftMax multi times forward" should "work correctly" in {
-    val (batchSize, channel, height, width) = (2, 3, 4, 4)
-    val sm = SoftMax()
-    sm.setRuntime(new MklDnnRuntime)
-    sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
-      Memory.Format.nchw)), InferencePhase)
-    sm.evaluate()
-
-//    val nnSm = nn.SoftMax()
-
-    (0 until 5).foreach { _ =>
-      val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
-      sm.forward(input)
-//      nnSm.forward(input)
-      val code = "module = nn.SoftMax()\n" +
-        "output = module:forward(input)"
-
-      val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
-        Array("output"))
-      val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
-
-//      Tools.dense(sm.output) should be (nnSm.output)
-      Tools.dense(sm.output) should be (luaOutput)
-    }
-  }
+//  }
+//
+//  "SoftMax multi times forward" should "work correctly" in {
+//    val (batchSize, channel, height, width) = (2, 3, 4, 4)
+//    val sm = SoftMax()
+//    sm.setRuntime(new MklDnnRuntime)
+//    sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
+//      Memory.Format.nchw)), InferencePhase)
+//    sm.evaluate()
+//
+////    val nnSm = nn.SoftMax()
+//
+//    (0 until 5).foreach { _ =>
+//      val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
+//      sm.forward(input)
+////      nnSm.forward(input)
+//      val code = "module = nn.SoftMax()\n" +
+//        "output = module:forward(input)"
+//
+//      val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+//        Array("output"))
+//      val luaOutput = torchResult("output").asInstanceOf[Tensor[Float]]
+//
+////      Tools.dense(sm.output) should be (nnSm.output)
+//      Tools.dense(sm.output) should be (luaOutput)
+//    }
+//  }
 
   "axis" should "work correctly" in {
     val input = Tensor[Float](2, 24564, 21).rand(-1, 1)
