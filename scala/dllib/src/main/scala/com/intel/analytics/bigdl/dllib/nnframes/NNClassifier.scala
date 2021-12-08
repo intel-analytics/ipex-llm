@@ -388,6 +388,10 @@ class XGBClassifier (private[nnframes] val xgboostParams: Map[String, Any] = Map
     this
   }
 
+  def setTimeoutRequestWorkers(value: Long): this.type = {
+    model.setTimeoutRequestWorkers(value)
+    this
+  }
 }
 /**
  * [[XGBClassifierModel]] is a trained XGBoost classification model.
