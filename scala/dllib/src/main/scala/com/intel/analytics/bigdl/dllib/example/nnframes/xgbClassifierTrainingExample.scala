@@ -25,7 +25,7 @@ import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructTy
 object xgbClassifierTrainingExample {
   def main(args: Array[String]): Unit = {
     if (args.length < 3) {
-      println("Usage: program input_path num_workers num_threads")
+      println("Usage: program input_path num_workers num_threads tracker_timeout requestworker_timeout")
       sys.exit(1)
     }
     val sc = NNContext.initNNContext()
@@ -34,6 +34,8 @@ object xgbClassifierTrainingExample {
     val inputPath = args(0)
     val num_workers = args(1).toInt
     val num_threads = args(2).toInt
+    val tracker_timeout = args(3).toInt
+    val requestworker_timeout =args(4).toLong
     val schema = new StructType(Array(
       StructField("sepal length", DoubleType, true),
       StructField("sepal width", DoubleType, true),
@@ -56,7 +58,7 @@ object xgbClassifierTrainingExample {
 
     val Array(train, eval1, eval2, test) = xgbInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
 
-    val xgbParam = Map("tracker_conf" -> TrackerConf(60*2, "scala"),
+    val xgbParam = Map("tracker_conf" -> TrackerConf(tracker_timeout, "scala"),
       "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2))
     val xgbClassifier = new XGBClassifier(xgbParam)
     xgbClassifier.setFeaturesCol("features")
@@ -68,7 +70,7 @@ object xgbClassifierTrainingExample {
     xgbClassifier.setNumRound(100)
     xgbClassifier.setTreeMethod("auto")
     xgbClassifier.setObjective("multi:softprob")
-    xgbClassifier.setTimeoutRequestWorkers(120L)
+    xgbClassifier.setTimeoutRequestWorkers(requestworker_timeout)
     val xgbClassificationModel = xgbClassifier.fit(train)
     val results = xgbClassificationModel.transform(test)
     results.show()
