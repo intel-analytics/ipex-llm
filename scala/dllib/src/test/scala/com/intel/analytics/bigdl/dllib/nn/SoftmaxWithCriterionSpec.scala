@@ -47,7 +47,7 @@ class SoftmaxWithCriterionSpec extends FlatSpec with Matchers {
         normalizeMode = normMode).forward(input, target)
       sum += res
     }
-    assert(abs(actOut - 51.643194557149605828) < 1e-4)
+    assert(abs(actOut - 49.084717) < 1e-4)
     assert(abs(actOut * 4 - sum) < 1e-4)
   }
 
@@ -55,28 +55,25 @@ class SoftmaxWithCriterionSpec extends FlatSpec with Matchers {
     val normMode = NormMode.apply(1)
     val sfmLoss = new SoftmaxWithCriterion[Float](normalizeMode = normMode, ignoreLabel = Some(1))
     val actOut = sfmLoss.forward(input, target)
-    assert(abs(actOut - 10.073171615600585938) < 1e-4)
+    assert(abs(actOut - 8.274073) < 1e-4)
 
     val actGradInput = sfmLoss.backward(input, target)
 
-    val expectedGradInput = Array(9.9112855878047412261e-07,
-      6.813194340793415904e-05, 0.014867544174194335938,
-      0.00021979543089400976896, 0, 9.3838581349814376154e-10,
-      -0.40000000596046447754, 0.051752727478742599487,
-      -0.014917778782546520233, 2.1019214065673766378e-14, 0,
-      -0.40000000596046447754, 0.34149685502052307129,
-      0.18388444185256958008, 3.4804334969606998129e-09,
-      1.0596063475531991571e-06, 0, 0.40000000596046447754,
-      0.058499157428741455078, -0.39999970793724060059,
-      4.9033053073799237609e-05, -0.0002209901867900043726,
-      0, 5.2068160617220955731e-19, 3.0198482363630319014e-06,
-      0.16429440677165985107, 1.1768768217734759673e-06,
-      1.6489701692989910953e-07, 0, 5.6055445173304457315e-19)
+    val expectedGradInput = Array(1.4155314E-7, 2.5500047E-8, 0.19999984,
+      0.19989611, 0.0, 1.46410375E-5,
+      -0.2, 7.4783907E-7, -7.3909763E-7,
+      2.596081E-8, 0.0, -0.045566916,
+      0.19971798, 2.818228E-4, 1.9171863E-7,
+      3.0882305E-8, 0.0, 0.19999996,
+    0.18536577, -0.2, 0.014634231,
+    0.0, 0.0, 4.4687676E-18,
+    0.001109384, 0.15816866, 0.040721968,
+    0.18815985, 0.0, 1.0973286E-11)
 
     assert(expectedGradInput.length == actGradInput.nElement())
     (actGradInput.storage().array() zip expectedGradInput).foreach(x => {
       // because in caffe, they use weight 2 for the loss
-      assert(abs(x._1 - x._2 / 2.0) < 1e-4)
+      assert(abs(x._1 - x._2) < 1e-4)
     })
   }
 }

@@ -51,7 +51,7 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_softmax(self):
-        input_data = np.random.random_sample([2, 3, 5])
+        input_data = np.random.random_sample([3, 5])
         layer = Activation('softmax')
         self.modelTestSingleLayer(input_data, layer)
 
