@@ -49,7 +49,7 @@ class AverageAggregator extends Aggregator[Table] {
         else {
           val shapeListAgg = sumedDataMap.get(tensorName).getShapeList
           val dataListAgg = sumedDataMap.get(tensorName).getTensorList
-          val dataListSum = new java.util.ArrayList[Float]
+          val dataListSum = new java.util.ArrayList[java.lang.Float]()
           for (i <- 0 until dataListAgg.size) {
             val temp = dataList.get(i) + dataListAgg.get(i)
             dataListSum.add(temp)
@@ -66,7 +66,7 @@ class AverageAggregator extends Aggregator[Table] {
     for (tensorName <- sumedDataMap.keySet) {
       val shapeList = sumedDataMap.get(tensorName).getShapeList
       val dataList = sumedDataMap.get(tensorName).getTensorList
-      val averagedDataList = new java.util.ArrayList[Float]
+      val averagedDataList = new java.util.ArrayList[java.lang.Float]
       for (i <- 0 until dataList.size) {
         averagedDataList.add(dataList.get(i) / clientNum)
       }

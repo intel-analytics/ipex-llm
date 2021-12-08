@@ -39,7 +39,7 @@ object VflLogisticRegression {
     pSI.uploadSet(ids, salt)
     val intersections = pSI.downloadIntersection()
     val intersectionSet = intersections.toSet
-    val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](0)))
+    val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](0))) // TODO
     // we use same dataset to train and validate in this example
     (dataSet, dataSet)
   }

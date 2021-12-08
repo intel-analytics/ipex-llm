@@ -24,7 +24,7 @@ class HflNNEstimator(algorithm: String,
     val clientUUID = flClient.getClientUUID()
     val size = trainDataSet.size()
     var iteration = 0
-    (0 until endEpoch).foreach {epoch =>
+    (0 until endEpoch).foreach { epoch =>
       val trainSet = trainDataSet.data(true)
       val valSet = valDataSet.data(false)
       localEstimator.fit(trainSet.toSeq, size.toInt, valSet.toSeq)

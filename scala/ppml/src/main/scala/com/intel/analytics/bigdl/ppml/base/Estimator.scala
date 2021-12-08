@@ -8,5 +8,4 @@ trait Estimator {
             trainDataSet: LocalDataSet[MiniBatch[Float]],
             valDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float]
 
-  def
 }

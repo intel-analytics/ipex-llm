@@ -31,9 +31,9 @@ class FLModel() {
     estimator.train(epoch, _trainData.toLocal(), _valData.toLocal())
   }
   def evaluate() = {
-    estimator.getEvaluateResults().foreach{r =>
-      println(r._1 + ":" + r._2.mkString(","))
-    }
+//    estimator.getEvaluateResults().foreach{r =>
+//      println(r._1 + ":" + r._2.mkString(","))
+//    }
   }
   def predict(data: DataFrame) = {
 
