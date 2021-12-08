@@ -174,8 +174,9 @@ def inference(self,
             batch_size = batch_size if batch_size else sample_num
             batch_num = math.ceil(sample_num / batch_size)
             for batch_id in range(batch_num):
-                yhat_list.append(self(*map(lambda x:x[batch_id * batch_size:
-                                                      (batch_id + 1) * batch_size], input_sample_list)))
+                yhat_list.append(self(*map(lambda x: x[batch_id * batch_size:
+                                                       (batch_id + 1) * batch_size],
+                                           input_sample_list)))
             yhat = torch.cat(yhat_list, axis=0)
             return yhat
 
