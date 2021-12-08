@@ -62,9 +62,30 @@ python ../../example/wnd/train/wnd_train_recsys.py \
 now=$(date "+%s")
 time2=$((now - start))
 
+echo "#3 start example test for deepfm train"
+
+#timer
+start=$(date "+%s")
+if [ -d data/input_2tower ]; then
+  echo "data/input_2tower already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/input_2tower.tar.gz -P data
+  tar -xvzf data/input_2tower.tar.gz -C data
+fi
+
+python ../../example/deep_fm/deepFM_train.py \
+    --executor_cores 4 \
+    --executor_memory 10g \
+    --data_dir ./data/input_2tower \
+    --model_dir ./result 
+
+now=$(date "+%s")
+time1=$((now - start))
+
+
 rm -rf data
 rm -rf result
 
 echo "#1 two tower train time used: $time1 seconds"
 echo "#2 wnd train time used: $time2 seconds"
-
+echo "#3 deep fm train time used: $time3 seconds"
