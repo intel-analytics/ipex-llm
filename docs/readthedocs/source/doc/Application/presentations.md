@@ -13,6 +13,8 @@
 - Building Deep Learning Applications on Big Data Platforms, [CVPR 2018](https://cvpr2018.thecvf.com/) [tutorial](https://jason-dai.github.io/cvpr2018/), June 2018 ([slides](https://jason-dai.github.io/cvpr2018/slides/BigData_DL_Jason-CVPR.pdf))
 
 **Talks:**
+- E2E Smart Transportation CV application in Inspur (using Insight Data-Intelligence platform), [CVPR 2021](https://jason-dai.github.io/cvpr2021/), July 2021 ([slides](https://jason-dai.github.io/cvpr2021/slides/Inspur%20E2E%20Smart%20Transportation%20CV%20application%20-CVPR21.pdf))
+
 - Mobile Order Click-Through Rate (CTR) Recommendation with Ray on Apache Spark at Burger King, [Ray Summit 2021](https://www.anyscale.com/events/2021/06/22/mobile-order-click-through-rate-ctr-recommendation-with-ray-on-apache-spark-at-burger-king), June 2021 ([slides](https://files.speakerdeck.com/presentations/1870110b5adf4bfc8f0c76255a417f09/Kai_Huang_and_Luyang_Wang.pdf))
 
 - Deep Reinforcement Learning Recommenders using RayOnSpark, **Data + AI Summit 2021**, May 2021 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210527DeepReinforcementLearningRecommendersUsingRayOnSpark2.pdf))
