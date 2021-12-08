@@ -32,7 +32,7 @@ class RayContext(object):
             from bigdl.orca.ray.ray_on_spark_context import RayOnSparkContext
             self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
-        
+
         elif cluster_mode == "ray":
             self.is_local = False
             ray_args = kwargs.copy()

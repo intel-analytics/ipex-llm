@@ -218,7 +218,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
         if activate_sc:
             if cluster_mode is not None and cluster_mode != "spark-submit":
                 warnings.warn("Use an existing SparkContext, " +
-                            "cluster_mode is determined by the existing SparkContext", Warning)
+                              "cluster_mode is determined by the existing SparkContext", Warning)
             from bigdl.dllib.nncontext import init_nncontext
             sc = init_nncontext(conf=None, spark_log_level="WARN", redirect_spark_log=True)
         else:
@@ -226,7 +226,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
             if cluster_mode == "local":
                 if num_nodes > 1:
                     warnings.warn("For Spark local mode, num_nodes should be 1, but got "
-                                + repr(num_nodes) + ", ignored", Warning)
+                                  + repr(num_nodes) + ", ignored", Warning)
                 os.environ["SPARK_DRIVER_MEMORY"] = memory
                 if "python_location" in kwargs:
                     spark_args["python_location"] = kwargs["python_location"]
@@ -238,9 +238,10 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
             elif cluster_mode.startswith("yarn"):  # yarn, yarn-client or yarn-cluster
                 hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
                 if not hadoop_conf:
-                    assert "hadoop_conf" in kwargs,\
-                        "Directory path to hadoop conf not found for yarn-client mode. Please either " \
-                        "specify argument hadoop_conf or set the environment variable HADOOP_CONF_DIR"
+                    assert "hadoop_conf" in kwargs, (
+                           "Directory path to hadoop conf not found for yarn-client mode. "
+                           "Please either specify argument hadoop_conf or set the environment"
+                           " variable HADOOP_CONF_DIR")
                     hadoop_conf = kwargs["hadoop_conf"]
                 from bigdl.dllib.utils.utils import detect_conda_env_name
                 conda_env_name = detect_conda_env_name()
@@ -265,19 +266,20 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
             elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
                 if cluster_mode == "k8s-cluster":
                     raise ValueError('For k8s-cluster mode, '
-                                    'please submit the application via spark-submit'
-                                    'and use the default cluster_mode instead')
+                                     'please submit the application via spark-submit'
+                                     'and use the default cluster_mode instead')
                 assert "master" in kwargs, "Please specify master for k8s-client mode"
-                assert "container_image" in kwargs, "Please specify container_image for k8s-client mode"
+                assert "container_image" in kwargs, ("Please specify container_image "
+                                                     "for k8s-client mode")
                 for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                             "extra_python_lib", "jars", "python_location"]:
                     if key in kwargs:
                         spark_args[key] = kwargs[key]
                 from bigdl.dllib.nncontext import init_spark_on_k8s
                 sc = init_spark_on_k8s(master=kwargs["master"],
-                                    container_image=kwargs["container_image"],
-                                    num_executors=num_nodes, executor_cores=cores,
-                                    executor_memory=memory, **spark_args)
+                                       container_image=kwargs["container_image"],
+                                       num_executors=num_nodes, executor_cores=cores,
+                                       executor_memory=memory, **spark_args)
             elif cluster_mode == "standalone":
                 for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                             "extra_python_lib", "jars", "master", "python_location",
@@ -286,11 +288,11 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                         spark_args[key] = kwargs[key]
                 from bigdl.dllib.nncontext import init_spark_standalone
                 sc = init_spark_standalone(num_executors=num_nodes, executor_cores=cores,
-                                        executor_memory=memory, **spark_args)
+                                           executor_memory=memory, **spark_args)
             else:
                 raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster,"
-                                "k8s-client or standalone, "
-                                "but got: %s".format(cluster_mode))
+                                 "k8s-client or standalone, "
+                                 "but got: %s".format(cluster_mode))
         ray_args = {}
         for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
                     "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
