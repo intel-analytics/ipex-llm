@@ -200,7 +200,8 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     if cluster_mode == "ray":
         import ray
         from bigdl.orca.ray import RayContext
-        ray_ctx = RayContext(cluster_mode="ray", **kwargs)
+        ray_ctx = RayContext(cluster_mode="ray", cores=cores, num_nodes=num_nodes,
+                             **kwargs)
         assert "address" in kwargs, "address must be specified if cluster_mode is ray"
         ray_ctx.init()
         return ray_ctx
@@ -296,7 +297,8 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
             if key in kwargs:
                 ray_args[key] = kwargs[key]
         from bigdl.orca.ray import RayContext
-        ray_ctx = RayContext(cluster_mode="ray_on_spark", sc=sc, **ray_args)
+        ray_ctx = RayContext(cluster_mode="ray_on_spark", cores=cores, num_nodes=num_nodes,
+                             sc=sc, **ray_args)
         if init_ray_on_spark:
             driver_cores = 0  # This is the default value.
             ray_ctx.init(driver_cores=driver_cores)
