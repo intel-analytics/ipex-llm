@@ -53,7 +53,7 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
     }
   }
 
-  override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
+  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     initPhase(phase)
     defaultAxis = inputs(0).shape.length match {
       case 1 => 0
@@ -102,7 +102,7 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
     (_inputFormats, _outputFormats)
   }
 
-  override private[bigdl] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
+  override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
     val desc = MklDnnMemory.SoftMaxBackwardDescInit(PropKind.Backward,
       grad(0).getMemoryDescription(), outputFormats()(0).getMemoryDescription(),
       if (axis == -1) defaultAxis else axis)
