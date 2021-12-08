@@ -19,14 +19,13 @@ package com.intel.analytics.bigdl.ppml
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, Sample}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   "json DataFrame to DataSet" should "work" in {
-    val spark = VflContext.getSparkSession()
+    val spark = FLContext.getSparkSession()
     import spark.implicits._
     val df = spark.read.json(this.getClass.getClassLoader.getResource("people.json").getPath)
     val dataSet = DataFrameUtils.dataFrameToSample(df)
@@ -34,7 +33,7 @@ class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     require(dataSet.size() == 3, "size wrong")
   }
   "csv DataFrame to DataSet" should "work" in {
-    val spark = VflContext.getSparkSession()
+    val spark = FLContext.getSparkSession()
     import spark.implicits._
     val df = spark.read.option("header", "true")
       .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)

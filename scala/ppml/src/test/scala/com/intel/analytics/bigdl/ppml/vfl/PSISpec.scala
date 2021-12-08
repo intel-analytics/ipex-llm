@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.vfl
 
-import com.intel.analytics.bigdl.ppml.FLServer
+import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.utils.PortUtils
@@ -41,7 +41,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     flServer.setPort(port)
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initContext()
     val pSI = new PSI()
     val salt = pSI.getSalt()
     flServer.stop()
@@ -52,7 +52,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     flServer.setPort(port)
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initContext()
     val pSI = new PSI()
     val set = List("key1", "key2")
     val salt = pSI.getSalt()
@@ -66,7 +66,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     flServer.setPort(port)
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initContext()
     val pSI1 = new PSI()
     val pSI2 = new PSI()
     val set1 = List("key1", "key2")
@@ -84,7 +84,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     flServer.setPort(port)
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initContext()
     val pSI1 = new PSI()
     val set1 = List("key1", "key2")
     val salt1 = pSI1.getSalt()

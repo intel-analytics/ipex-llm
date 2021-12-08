@@ -20,7 +20,7 @@ import java.util
 import java.util.concurrent.TimeoutException
 
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
-import com.intel.analytics.bigdl.ppml.vfl.utils.FLClientClosable
+import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 import org.apache.log4j.Logger
 
 import scala.util.control.Breaks._

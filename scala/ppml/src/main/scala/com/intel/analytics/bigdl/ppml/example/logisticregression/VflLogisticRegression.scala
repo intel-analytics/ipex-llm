@@ -18,8 +18,8 @@ package com.intel.analytics.bigdl.ppml.vfl.example.logisticregression
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
 import com.intel.analytics.bigdl.ppml.example.ExampleUtils
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
 import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
@@ -44,7 +44,7 @@ object VflLogisticRegression {
     // this do not need to be DataFrame?
     // load data from dataset and preprocess\
     val salt = pSI.getSalt()
-    val spark = VflContext.getSparkSession()
+    val spark = FLContext.getSparkSession()
     import spark.implicits._
     val df = spark.read.option("header", "true").csv(dataPath)
     val ids = df.select(rowKeyName).as[String].collect().toList
@@ -88,7 +88,7 @@ object VflLogisticRegression {
     /**
      * Usage of BigDL PPML starts from here
      */
-    VflContext.initContext()
+    FLContext.initContext()
     val pSI = new PSI()
     val (trainData, valData) = getData(pSI, dataPath, rowKeyName, batchSize)
 

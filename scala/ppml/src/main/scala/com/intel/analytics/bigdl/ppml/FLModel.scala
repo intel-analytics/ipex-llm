@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl
+package com.intel.analytics.bigdl.ppml
 
-import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
-import com.intel.analytics.bigdl.ppml.FLClient
+import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNEstimator
 import org.apache.spark.sql.DataFrame
 
 class FLModel() {
-  val estimator: VflNNEstimator = null
+  val estimator: Estimator = null
   def fit(trainData: DataFrame,
           valData: DataFrame,
           epoch : Int = 1) = {

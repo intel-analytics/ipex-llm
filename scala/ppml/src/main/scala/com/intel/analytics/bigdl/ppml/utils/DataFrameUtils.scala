@@ -19,14 +19,14 @@ package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
 import com.intel.analytics.bigdl
+import com.intel.analytics.bigdl.ppml.FLContext
 import org.apache.spark.sql.types.FloatType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object DataFrameUtils {
   def dataFrameToSample(df: DataFrame, isTrain: Boolean = true, batchSize: Int = 4): bigdl.DataSet[MiniBatch[Float]] = {
-    val spark = VflContext.getSparkSession()
+    val spark = FLContext.getSparkSession()
     import spark.implicits._
     var fDf: DataFrame = df
     df.columns.foreach(colName => {

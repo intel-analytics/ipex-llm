@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.ppml.common.FLPhase._
 import com.intel.analytics.bigdl.ppml.generated.FLProto
 import com.intel.analytics.bigdl.ppml.generated.FLProto.TableMetaData
 import com.intel.analytics.bigdl.ppml.vfl.DLlibAggregator
-import com.intel.analytics.bigdl.ppml.vfl.utils.ProtoUtils.toFloatTensor
+import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.toFloatTensor
 import com.intel.analytics.bigdl.{Criterion, Module}
 import org.apache.log4j.Logger
 

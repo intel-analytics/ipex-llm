@@ -1,4 +1,4 @@
-package com.intel.analytics.bigdl.ppml.vfl.utils
+package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
