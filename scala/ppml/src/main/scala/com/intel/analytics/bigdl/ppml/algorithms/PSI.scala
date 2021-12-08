@@ -65,6 +65,13 @@ class PSI() extends FLClientClosable {
     }
     intersection
   }
+  def getIntersectionSet(df: DataFrame,
+                         rowKeyName: String,
+                         intersection: util.List[String]): DataFrame = {
+    val intersectionSet = intersection.toSet
+    val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](rowKeyName)))
+    dataSet
+  }
   def uploadSetAndDownloadIntersection(df: DataFrame,
                                        salt: String,
                                        rowKeyName: String = "IDS",
@@ -74,9 +81,7 @@ class PSI() extends FLClientClosable {
     import spark.implicits._
     val ids = df.select(rowKeyName).as[String].collect().toList
     uploadSet(ids, salt)
-    val intersections = downloadIntersection(maxTry, retry)
-    val intersectionSet = intersections.toSet
-    val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](rowKeyName)))
-    dataSet
+    val intersection = downloadIntersection(maxTry, retry)
+    getIntersectionSet(df, rowKeyName, intersection)
   }
 }
