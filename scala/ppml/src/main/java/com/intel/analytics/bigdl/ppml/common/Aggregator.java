@@ -71,7 +71,7 @@ public abstract class Aggregator<T> {
     public <T> void putClientData(FLPhase type, String clientUUID, int version, T data)
             throws IllegalArgumentException {
         Storage storage = getServerData(type);
-        storage.put(clientUUID, data);
+        storage.clientData.put(clientUUID, data);
 
         // Aggregate when buffer is full
         if (storage.size() >= clientNum) {

@@ -14,31 +14,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.example.logisticregression
+package com.intel.analytics.bigdl.ppml.vfl.example
 
-import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.dllib.tensor.Tensor
+
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.example.ExampleUtils
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
-import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
-import org.apache.log4j.Logger
 import scopt.OptionParser
 
-import scala.io.Source
 import collection.JavaConverters._
 import collection.JavaConversions._
 
-/**
- * A two process example to simulate 2 nodes Vfl of a Neural Network
- * This example will start a FLServer first, to provide PSI algorithm
- * and store parameters as Parameter Server
- */
-object VflLogisticRegression {
-  var featureNum: Int = _
-  val logger = Logger.getLogger(getClass)
 
+object VflLogisticRegression {
   def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
     //TODO: we use get intersection to get data and input to model
     // this do not need to be DataFrame?
@@ -54,7 +42,6 @@ object VflLogisticRegression {
     val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](0)))
     // we use same dataset to train and validate in this example
     (dataSet, dataSet)
-
   }
 
   def main(args: Array[String]): Unit = {
@@ -93,7 +80,7 @@ object VflLogisticRegression {
     val (trainData, valData) = getData(pSI, dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model
-    val lr = new LogisticRegression(featureNum, learningRate)
+    val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
     lr.fit(trainData, valData)
     lr.evaluate()
   }

@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.ppml
 import com.intel.analytics.bigdl.grpc.GrpcServerBase
 import com.intel.analytics.bigdl.ppml.common.Aggregator
 import com.intel.analytics.bigdl.ppml.psi.PSIServiceImpl
-import com.intel.analytics.bigdl.ppml.vfl.nn.NNServiceImpl
 import com.intel.analytics.bigdl.dllib.nn.BCECriterion
 import com.intel.analytics.bigdl.dllib.nn.Sigmoid
 import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
@@ -27,8 +26,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.{File, IOException}
 
-import com.intel.analytics.bigdl.ppml.vfl.nn.NNServiceImpl
-
+import com.intel.analytics.bigdl.ppml.nn.NNServiceImpl
 
 
 /**

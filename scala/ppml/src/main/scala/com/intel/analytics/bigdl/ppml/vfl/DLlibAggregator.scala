@@ -46,7 +46,7 @@ trait DLlibAggregator extends Aggregator[FLProto.Table] {
   }
   def getInputTableFromStorage(storageType: FLPhase): Table = {
     val storage = getServerData(storageType)
-    val aggData = protoTableMapToTensorIterableMap(storage.localData)
+    val aggData = protoTableMapToTensorIterableMap(storage.clientData)
     target = Tensor[Float]()
     if (aggData.contains("target")) {
       val t = aggData("target").head

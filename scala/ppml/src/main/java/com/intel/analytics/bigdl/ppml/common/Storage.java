@@ -31,14 +31,14 @@ public class Storage<T> {
     public String name;
     public int version;
     public T serverData = null;
-    public Map<String, T> localData;
+    public Map<String, T> clientData;
     Storage (String name) {
         version = 0;
         this.name = name;
-        localData = new ConcurrentHashMap<>();
+        clientData = new ConcurrentHashMap<>();
     }
     public void updateStorage(T data) {
-        localData.clear();
+        clientData.clear();
         serverData = data;
         version += 1;
         logger.info("Storage " + name + " of version:" + version + " aggregated.");
@@ -48,15 +48,8 @@ public class Storage<T> {
      * @return The size of data collection of each local node
      */
     public int size() {
-        return localData.size();
+        return clientData.size();
     }
 
-    /**
-     * Put the local data into this storage
-     * @param key data key
-     * @param value data value
-     */
-    public void put(String key, T value) {
-        localData.put(key, value);
-    }
+   
 }

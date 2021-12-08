@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.ppml.psi.test;
 
 import com.intel.analytics.bigdl.ppml.algorithms.PSI;
-import com.intel.analytics.bigdl.ppml.vfl.FLContext;
+import com.intel.analytics.bigdl.ppml.FLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
