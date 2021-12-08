@@ -27,6 +27,7 @@ class FLModel() {
   val estimator: VflNNEstimator = null
   def fit(trainData: DataFrame,
           valData: DataFrame,
+          featureColumn: Array[String] = null,
           epoch : Int = 1) = {
     val _trainData = DataFrameUtils.dataFrameToSample(trainData)
     val _valData = DataFrameUtils.dataFrameToSample(valData)
@@ -37,7 +38,8 @@ class FLModel() {
       println(r._1 + ":" + r._2.mkString(","))
     }
   }
-  def predict(data: DataFrame) = {
+  def predict(data: DataFrame,
+              featureColumn: Array[String] = null) = {
 
   }
 }

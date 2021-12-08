@@ -25,10 +25,17 @@ import org.apache.spark.sql.types.FloatType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object DataFrameUtils {
-  def dataFrameToSample(df: DataFrame, isTrain: Boolean = true, batchSize: Int = 4): bigdl.DataSet[MiniBatch[Float]] = {
+  def dataFrameToSample(df: DataFrame,
+                        featureColumn: Array[String] = null,
+                        isTrain: Boolean = true,
+                        batchSize: Int = 4): bigdl.DataSet[MiniBatch[Float]] = {
     val spark = VflContext.getSparkSession()
     import spark.implicits._
     var fDf: DataFrame = df
+    if (featureColumn != null) {
+      val featureList = featureColumn.toList
+      fDf = fDf.select(featureList.head, featureList.tail: _*)
+    }
     df.columns.foreach(colName => {
       fDf = fDf.withColumn(colName, df.col(colName).cast(FloatType))
     })
