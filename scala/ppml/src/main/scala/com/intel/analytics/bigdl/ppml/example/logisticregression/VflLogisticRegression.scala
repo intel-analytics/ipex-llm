@@ -44,9 +44,7 @@ object VflLogisticRegression {
     // load data from dataset and preprocess\
     val salt = pSI.getSalt()
     val spark = VflContext.getSparkSession()
-    import spark.implicits._
     val df = spark.read.option("header", "true").csv(dataPath)
-    val ids = df.select(rowKeyName).as[String].collect().toList
     val dataSet = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
 
     // we use same dataset to train and validate in this example
