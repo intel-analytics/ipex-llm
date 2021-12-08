@@ -437,6 +437,11 @@ class XGBClassifierModel private[bigdl](
     }
     output
   }
+
+  def save(path: String): Unit = {
+    model.write.overwrite().save(path)
+  }
+  
 }
 
 object XGBClassifierModel {
@@ -706,4 +711,3 @@ object XGBRegressorModel {
     new XGBRegressorModel(XGBoostHelper.load(path))
   }
 }
-
