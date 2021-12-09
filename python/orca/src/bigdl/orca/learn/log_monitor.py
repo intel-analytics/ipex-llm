@@ -17,7 +17,6 @@
 import logging
 import os
 import time
-import zmq
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +32,7 @@ class LogMonitor:
         self.ip = get_node_ip()
         self.log_path = log_path
         self.partition_id = partition_id
+        import zmq
         context = zmq.Context()
         self.socket = context.socket(zmq.REQ)
         self.socket.connect("tcp://{}:{}".format(driver_ip, driver_port))
@@ -51,7 +51,8 @@ class LogMonitor:
                 self.log_fd = open(self.log_path, "rb")
 
     def check_log_file_and_publish_updates(self):
-        """Get any changes to the log file and push updates to zmq.
+        """
+        Get any changes to the log file and push updates to zmq.
 
         Returns:
             True if anything was published and false otherwise.
@@ -138,4 +139,29 @@ class LogMonitor:
         if os.path.exists(log_path):
             os.remove(log_path)
 
+
+def start_log_server(ip, port):
+    def _print_logs():
+        """
+        Prints log messages from workers on all of the nodes.
+
+        """
+        import zmq
+        context = zmq.Context()
+        socket = context.socket(zmq.REP)
+        socket.bind("tcp://{}:{}".format(ip, port))
+        logger.info("started log server on {}:{}".format(ip, port))
+
+        while True:
+            message = socket.recv()
+            print(message.decode("utf-8"))
+            socket.send(b"received")
+
+    import threading
+    logger_thread = threading.Thread(
+        target=_print_logs,
+        name="print_logs")
+    logger_thread.daemon = True
+    logger_thread.start()
+    return logger_thread
 

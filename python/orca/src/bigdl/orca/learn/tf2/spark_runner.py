@@ -18,20 +18,15 @@ import logging
 import os
 import sys
 import tempfile
-import subprocess
-
-import threading
 
 from pyspark import BarrierTaskContext, TaskContext
-from pyspark.context import SparkContext
 import tensorflow as tf
-from numpy import array
 from contextlib import closing
 import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.learn.utils import save_pkl
-from bigdl.orca.learn.tf2.log_monitor import LogMonitor
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr
+from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
 
@@ -232,26 +227,51 @@ class SparkRunner:
         self.setup()
         self.cluster = cluster_info
         self.partition_id = TaskContext.get().partitionId()
-        # self.rank, self.local_rank = self._get_rank(self.cluster)
+        self.need_to_log = need_to_log
+        if need_to_log:
+            self.log_path = os.path.join(tempfile.gettempdir(), "{}_runner.log".format(self.partition_id))
+            duplicate_stdout_stderr(self.log_path)
+            # tee = subprocess.Popen(["tee", self.log_path], stdin=subprocess.PIPE)
+            # os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
+            # os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
+
+            # This event is checked regularly by thread so it knows when to exit.
+            # self.threads_stopped = threading.Event()
+            # self.logger_thread = threading.Thread(
+            #     target=self._start_log_monitor,
+            #     args=(driver_ip, driver_port, self.log_path, self.threads_stopped, self.partition_id),
+            #     name="monitor_logs")
+            # self.logger_thread.daemon = True
+            # self.logger_thread.start()
+            self.logger_thread, self.thread_stop = LogMonitor.start_log_monitor(driver_ip=driver_ip,
+                                         driver_port=driver_port,
+                                         log_path=self.log_path,
+                                         partition_id=self.partition_id)
+
         if self.backend == "tf-distributed":
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed(self.cluster)
         self.model_dir = model_dir
-        if need_to_log:
-            self.log_path = os.path.join(tempfile.gettempdir(), "{}_runner.log".format(self.partition_id))
-            tee = subprocess.Popen(["tee", self.log_path], stdin=subprocess.PIPE)
-            os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
-            os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
-
-            # This event is checked regularly by all of the threads so that they
-            # know when to exit.
-            self.threads_stopped = threading.Event()
-            self.logger_thread = threading.Thread(
-                target=self._start_log_monitor,
-                args=(driver_ip, driver_port, self.log_path, self.threads_stopped, self.partition_id),
-                name="monitor_logs")
-            self.logger_thread.daemon = True
-            self.logger_thread.start()
+        self.need_to_log = need_to_log
+        # if need_to_log:
+        #     self.log_path = os.path.join(tempfile.gettempdir(), "{}_runner.log".format(self.partition_id))
+        #     duplicate_stdout_stderr(self.log_path)
+        #     # tee = subprocess.Popen(["tee", self.log_path], stdin=subprocess.PIPE)
+        #     # os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
+        #     # os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
+        #
+        #     # This event is checked regularly by thread so it knows when to exit.
+        #     # self.threads_stopped = threading.Event()
+        #     # self.logger_thread = threading.Thread(
+        #     #     target=self._start_log_monitor,
+        #     #     args=(driver_ip, driver_port, self.log_path, self.threads_stopped, self.partition_id),
+        #     #     name="monitor_logs")
+        #     # self.logger_thread.daemon = True
+        #     # self.logger_thread.start()
+        #     self.logger_thread, self.thread_stop = LogMonitor.start_log_monitor(driver_ip=driver_ip,
+        #                                  driver_port=driver_port,
+        #                                  log_path=self.log_path,
+        #                                  partition_id=self.partition_id)
 
     def setup(self):
         import tensorflow as tf
@@ -380,10 +400,13 @@ class SparkRunner:
                     "optimizer_weights": model.optimizer.get_weights()
                 }
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
-            self._stop_log_monitor()
+            if self.need_to_log:
+                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
         else:
-            self._stop_log_monitor()
+            # self._stop_log_monitor()
+            if self.need_to_log:
+                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
@@ -433,10 +456,14 @@ class SparkRunner:
             stats = {"results": results}
 
         if self.rank == 0:
-            self._stop_log_monitor()
+            # self._stop_log_monitor()
+            if self.need_to_log:
+                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
         else:
-            self._stop_log_monitor()
+            # self._stop_log_monitor()
+            if self.need_to_log:
+                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
@@ -466,28 +493,30 @@ class SparkRunner:
 
         new_part = [predict_fn(shard) for shard in partition]
 
-        self._stop_log_monitor()
+        # self._stop_log_monitor()
+        if self.need_to_log:
+            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return new_part
 
-    def _start_log_monitor(self, driver_ip, driver_port, log_path, threads_stopped, partition_id):
-        """
-        Start a log monitor thread.
+    # def _start_log_monitor(self, driver_ip, driver_port, log_path, threads_stopped, partition_id):
+    #     """
+    #     Start a log monitor thread.
+    #
+    #     """
+    #     log_monitor = LogMonitor(driver_ip=driver_ip,
+    #                              driver_port=driver_port,
+    #                              log_path=log_path,
+    #                              threads_stopped=threads_stopped,
+    #                              partition_id=partition_id)
+    #     log_monitor.run()
 
-        """
-        log_monitor = LogMonitor(driver_ip=driver_ip,
-                                 driver_port=driver_port,
-                                 log_path=log_path,
-                                 threads_stopped=threads_stopped,
-                                 partition_id=partition_id)
-        log_monitor.run()
-
-    def _stop_log_monitor(self):
-        if hasattr(self, "threads_stopped"):
-            self.threads_stopped.set()
-        if hasattr(self, "logger_thread"):
-            self.logger_thread.join()
-        if hasattr(self, "threads_stopped"):
-            self.threads_stopped.clear()
-        if hasattr(self, "log_path"):
-            if os.path.exists(self.log_path):
-                os.remove(self.log_path)
+    # def _stop_log_monitor(self):
+    #     if hasattr(self, "threads_stopped"):
+    #         self.threads_stopped.set()
+    #     if hasattr(self, "logger_thread"):
+    #         self.logger_thread.join()
+    #     if hasattr(self, "threads_stopped"):
+    #         self.threads_stopped.clear()
+    #     if hasattr(self, "log_path"):
+    #         if os.path.exists(self.log_path):
+    #             os.remove(self.log_path)

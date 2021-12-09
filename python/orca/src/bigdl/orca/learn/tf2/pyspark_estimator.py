@@ -16,13 +16,10 @@
 
 import logging
 import os
-import threading
 
 from pyspark.sql.dataframe import DataFrame
-import numpy as np
 import tempfile
 import shutil
-import zmq
 
 import pickle
 
@@ -37,6 +34,7 @@ from bigdl.orca.learn.utils import find_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
+from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
@@ -84,12 +82,14 @@ class SparkTFEstimator():
         self.port = find_free_port()
         is_local = sc.master.startswith("local")
         self.need_to_log = (not is_local) and log_to_driver
+        self.need_to_log = True
         if self.need_to_log:
-            self.logger_thread = threading.Thread(
-                target=self._print_logs,
-                name="print_logs")
-            self.logger_thread.daemon = True
-            self.logger_thread.start()
+            start_log_server(self.ip, self.port)
+            # self.logger_thread = threading.Thread(
+            #     target=self._print_logs,
+            #     name="print_logs")
+            # self.logger_thread.daemon = True
+            # self.logger_thread.start()
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
@@ -143,8 +143,8 @@ class SparkTFEstimator():
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
-            need_to_log=self.need_to_log,
             epoch=self.epoch,
+            need_to_log=self.need_to_log,
             driver_ip=self.ip,
             driver_port=self.port
         )
@@ -433,17 +433,17 @@ class SparkTFEstimator():
         model.set_weights(self.model_weights)
         return model
 
-    def _print_logs(self):
-        """
-        Prints log messages from workers on all of the nodes.
-
-        """
-        context = zmq.Context()
-        socket = context.socket(zmq.REP)
-        socket.bind("tcp://{}:{}".format(self.ip, self.port))
-        logger.info("started log server on {}:{}".format(self.ip, self.port))
-
-        while True:
-            message = socket.recv()
-            print(message.decode("utf-8"))
-            socket.send(b"received")
+    # def _print_logs(self):
+    #     """
+    #     Prints log messages from workers on all of the nodes.
+    #
+    #     """
+    #     context = zmq.Context()
+    #     socket = context.socket(zmq.REP)
+    #     socket.bind("tcp://{}:{}".format(self.ip, self.port))
+    #     logger.info("started log server on {}:{}".format(self.ip, self.port))
+    #
+    #     while True:
+    #         message = socket.recv()
+    #         print(message.decode("utf-8"))
+    #         socket.send(b"received")
