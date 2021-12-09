@@ -77,7 +77,7 @@ python ../../example/deep_fm/deepFM_train.py \
     --executor_cores 4 \
     --executor_memory 10g \
     --data_dir ./data/input_2tower \
-    --model_dir ./result \
+    --model_dir ./result/model \
     --frequency_limit 2 
 
 now=$(date "+%s")
