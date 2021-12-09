@@ -153,11 +153,11 @@ def inference(self,
             return ort_outs[0]  # TODO: only support single output
         else:
             yhat_list = []
-            sample_num = input_data[0].shape[0]  # the first dim should be sample_num
+            sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
             batch_num = math.ceil(sample_num / batch_size)
             for batch_id in range(batch_num):
                 ort_inputs = {}
-                for i, ort_input_item in enumerate(input_data):
+                for i, ort_input_item in enumerate(input_sample_list):
                     ort_inputs[self._forward_args[i]] = ort_input_item[batch_id * batch_size:
                                                                        (batch_id + 1) * batch_size]
                 ort_outs = self._ortsess.run(None, ort_inputs)
