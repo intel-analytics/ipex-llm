@@ -29,9 +29,10 @@ import com.intel.analytics.bigdl.ppml.generated.NNServiceGrpc
 import com.intel.analytics.bigdl.ppml.hfl.nn.HflNNAggregator
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNAggregator
 import io.grpc.stub.StreamObserver
+import collection.JavaConverters._
+import collection.JavaConversions._
 
-
-class NNServiceImpl() extends NNServiceGrpc.NNServiceImplBase {
+class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
   private var aggregatorMap: Map[String, Aggregator[Table]] = null
   initAggregatorMap()
 
@@ -43,6 +44,9 @@ class NNServiceImpl() extends NNServiceGrpc.NNServiceImplBase {
     aggregatorMap.put("hfl_linear_regression", VflNNAggregator(1, View[Float](),
       null, MSECriterion[Float](), Array(new Top1Accuracy())))
     aggregatorMap.put("hfl_logistic_regression", new HflNNAggregator())
+    aggregatorMap.asScala.foreach(entry => {
+      entry._2.setClientNum(clientNum)
+    })
   }
 
 

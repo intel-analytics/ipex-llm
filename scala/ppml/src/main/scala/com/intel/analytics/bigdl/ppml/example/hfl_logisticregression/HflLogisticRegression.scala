@@ -17,20 +17,22 @@ package com.intel.analytics.bigdl.ppml.example
 
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.hfl.LogisticRegression
+import org.apache.log4j.{Level, Logger}
 import scopt.OptionParser
 
 import collection.JavaConverters._
 import collection.JavaConversions._
 
 
-object HflLogisticRegression {
+object HflLogisticRegression extends LogManager {
+
   def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
     //TODO: we use get intersection to get data and input to model
     // this do not need to be DataFrame?
     // load data from dataset and preprocess
     val spark = FLContext.getSparkSession()
     import spark.implicits._
-    val df = spark.read.option("header", "true").csv(dataPath)
+    val df = spark.read.csv(dataPath)
 
     (df, df)
   }

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.algorithms.hfl
 
-import com.intel.analytics.bigdl.dllib.nn.{Linear, Sequential, Sigmoid}
+import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, Linear, Sequential, Sigmoid}
 import com.intel.analytics.bigdl.dllib.optim.Adam
 import com.intel.analytics.bigdl.ppml.FLModel
 import com.intel.analytics.bigdl.ppml.hfl.nn.HflNNEstimator
@@ -27,5 +27,5 @@ class LogisticRegression(featureNum: Int,
   val model = Sequential[Float]().add(Linear(featureNum, 1))
     .add(Sigmoid[Float]())
   override val estimator = new HflNNEstimator(
-    "hfl_logistic_regression", model, new Adam(learningRate))
+    "hfl_logistic_regression", model, new Adam(learningRate), new BCECriterion[Float]())
 }
