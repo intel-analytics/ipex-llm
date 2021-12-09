@@ -17,8 +17,10 @@ import "google/protobuf/empty.proto";
 // Interface exported by the server.
 service Ranking {
     rpc doPredict(Content) returns (Prediction) {}
-    rpc addModel(ModelPath) returns (OperationStatus) {}
-    rpc deleteModel(ModelPath) returns (OperationStatus) {}
+    rpc addModel(ModelMeta) returns (Status) {}
+    rpc registerModel(ModelMeta) returns (Status) {}
+    rpc deregisterModel(ModelMeta) returns (Status) {}
+    rpc removeModel(ModelMeta) returns (Status) {}
     rpc getMetrics(google.protobuf.Empty) returns (ServerMessage) {}
     rpc resetMetrics(google.protobuf.Empty) returns (google.protobuf.Empty) {}
 }
@@ -35,10 +37,11 @@ message ServerMessage {
     string str = 1;
 }
 
-message ModelPath {
+message ModelMeta {
     string path = 1;
+    string version = 2;
 }
 
-message OperationStatus {
+message Status {
     bool success = 1;
 }

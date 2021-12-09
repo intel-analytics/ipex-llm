@@ -21,7 +21,7 @@ public final class RecommenderProto {
     /**
      * <code>repeated int32 ID = 1;</code>
      */
-    java.util.List<Integer> getIDList();
+    java.util.List<java.lang.Integer> getIDList();
     /**
      * <code>repeated int32 ID = 1;</code>
      */
@@ -34,7 +34,7 @@ public final class RecommenderProto {
     /**
      * <code>repeated float prob = 2;</code>
      */
-    java.util.List<Float> getProbList();
+    java.util.List<java.lang.Float> getProbList();
     /**
      * <code>repeated float prob = 2;</code>
      */
@@ -61,7 +61,7 @@ public final class RecommenderProto {
       prob_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -91,7 +91,7 @@ public final class RecommenderProto {
             }
             case 8: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                iD_ = new java.util.ArrayList<Integer>();
+                iD_ = new java.util.ArrayList<java.lang.Integer>();
                 mutable_bitField0_ |= 0x00000001;
               }
               iD_.add(input.readInt32());
@@ -101,7 +101,7 @@ public final class RecommenderProto {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
-                iD_ = new java.util.ArrayList<Integer>();
+                iD_ = new java.util.ArrayList<java.lang.Integer>();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
@@ -112,7 +112,7 @@ public final class RecommenderProto {
             }
             case 21: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                prob_ = new java.util.ArrayList<Float>();
+                prob_ = new java.util.ArrayList<java.lang.Float>();
                 mutable_bitField0_ |= 0x00000002;
               }
               prob_.add(input.readFloat());
@@ -122,7 +122,7 @@ public final class RecommenderProto {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
-                prob_ = new java.util.ArrayList<Float>();
+                prob_ = new java.util.ArrayList<java.lang.Float>();
                 mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
@@ -151,22 +151,22 @@ public final class RecommenderProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return RecommenderProto.internal_static_recommender_IDProbs_descriptor;
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_IDProbs_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return RecommenderProto.internal_static_recommender_IDProbs_fieldAccessorTable
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_IDProbs_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              RecommenderProto.IDProbs.class, RecommenderProto.IDProbs.Builder.class);
+              com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder.class);
     }
 
     public static final int ID_FIELD_NUMBER = 1;
-    private java.util.List<Integer> iD_;
+    private java.util.List<java.lang.Integer> iD_;
     /**
      * <code>repeated int32 ID = 1;</code>
      */
-    public java.util.List<Integer>
+    public java.util.List<java.lang.Integer>
         getIDList() {
       return iD_;
     }
@@ -185,11 +185,11 @@ public final class RecommenderProto {
     private int iDMemoizedSerializedSize = -1;
 
     public static final int PROB_FIELD_NUMBER = 2;
-    private java.util.List<Float> prob_;
+    private java.util.List<java.lang.Float> prob_;
     /**
      * <code>repeated float prob = 2;</code>
      */
-    public java.util.List<Float>
+    public java.util.List<java.lang.Float>
         getProbList() {
       return prob_;
     }
@@ -272,15 +272,15 @@ public final class RecommenderProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof RecommenderProto.IDProbs)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs)) {
         return super.equals(obj);
       }
-      RecommenderProto.IDProbs other = (RecommenderProto.IDProbs) obj;
+      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs) obj;
 
       boolean result = true;
       result = result && getIDList()
@@ -291,7 +291,7 @@ public final class RecommenderProto {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -311,69 +311,69 @@ public final class RecommenderProto {
       return hash;
     }
 
-    public static RecommenderProto.IDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.IDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.IDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.IDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.IDProbs parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.IDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.IDProbs parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecommenderProto.IDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecommenderProto.IDProbs parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static RecommenderProto.IDProbs parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecommenderProto.IDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecommenderProto.IDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -385,7 +385,7 @@ public final class RecommenderProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(RecommenderProto.IDProbs prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -393,9 +393,9 @@ public final class RecommenderProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -405,17 +405,17 @@ public final class RecommenderProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:recommender.IDProbs)
-        RecommenderProto.IDProbsOrBuilder {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return RecommenderProto.internal_static_recommender_IDProbs_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_IDProbs_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return RecommenderProto.internal_static_recommender_IDProbs_fieldAccessorTable
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_IDProbs_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                RecommenderProto.IDProbs.class, RecommenderProto.IDProbs.Builder.class);
+                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.newBuilder()
@@ -424,7 +424,7 @@ public final class RecommenderProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -444,23 +444,23 @@ public final class RecommenderProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return RecommenderProto.internal_static_recommender_IDProbs_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_IDProbs_descriptor;
       }
 
-      public RecommenderProto.IDProbs getDefaultInstanceForType() {
-        return RecommenderProto.IDProbs.getDefaultInstance();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.getDefaultInstance();
       }
 
-      public RecommenderProto.IDProbs build() {
-        RecommenderProto.IDProbs result = buildPartial();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs build() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public RecommenderProto.IDProbs buildPartial() {
-        RecommenderProto.IDProbs result = new RecommenderProto.IDProbs(this);
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs buildPartial() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           iD_ = java.util.Collections.unmodifiableList(iD_);
@@ -481,7 +481,7 @@ public final class RecommenderProto {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -494,25 +494,25 @@ public final class RecommenderProto {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof RecommenderProto.IDProbs) {
-          return mergeFrom((RecommenderProto.IDProbs)other);
+        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs) {
+          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(RecommenderProto.IDProbs other) {
-        if (other == RecommenderProto.IDProbs.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs other) {
+        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.getDefaultInstance()) return this;
         if (!other.iD_.isEmpty()) {
           if (iD_.isEmpty()) {
             iD_ = other.iD_;
@@ -546,11 +546,11 @@ public final class RecommenderProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        RecommenderProto.IDProbs parsedMessage = null;
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (RecommenderProto.IDProbs) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -561,17 +561,17 @@ public final class RecommenderProto {
       }
       private int bitField0_;
 
-      private java.util.List<Integer> iD_ = java.util.Collections.emptyList();
+      private java.util.List<java.lang.Integer> iD_ = java.util.Collections.emptyList();
       private void ensureIDIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          iD_ = new java.util.ArrayList<Integer>(iD_);
+          iD_ = new java.util.ArrayList<java.lang.Integer>(iD_);
           bitField0_ |= 0x00000001;
          }
       }
       /**
        * <code>repeated int32 ID = 1;</code>
        */
-      public java.util.List<Integer>
+      public java.util.List<java.lang.Integer>
           getIDList() {
         return java.util.Collections.unmodifiableList(iD_);
       }
@@ -610,7 +610,7 @@ public final class RecommenderProto {
        * <code>repeated int32 ID = 1;</code>
        */
       public Builder addAllID(
-          Iterable<? extends Integer> values) {
+          java.lang.Iterable<? extends java.lang.Integer> values) {
         ensureIDIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, iD_);
@@ -627,17 +627,17 @@ public final class RecommenderProto {
         return this;
       }
 
-      private java.util.List<Float> prob_ = java.util.Collections.emptyList();
+      private java.util.List<java.lang.Float> prob_ = java.util.Collections.emptyList();
       private void ensureProbIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          prob_ = new java.util.ArrayList<Float>(prob_);
+          prob_ = new java.util.ArrayList<java.lang.Float>(prob_);
           bitField0_ |= 0x00000002;
          }
       }
       /**
        * <code>repeated float prob = 2;</code>
        */
-      public java.util.List<Float>
+      public java.util.List<java.lang.Float>
           getProbList() {
         return java.util.Collections.unmodifiableList(prob_);
       }
@@ -676,7 +676,7 @@ public final class RecommenderProto {
        * <code>repeated float prob = 2;</code>
        */
       public Builder addAllProb(
-          Iterable<? extends Float> values) {
+          java.lang.Iterable<? extends java.lang.Float> values) {
         ensureProbIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, prob_);
@@ -707,12 +707,12 @@ public final class RecommenderProto {
     }
 
     // @@protoc_insertion_point(class_scope:recommender.IDProbs)
-    private static final RecommenderProto.IDProbs DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new RecommenderProto.IDProbs();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs();
     }
 
-    public static RecommenderProto.IDProbs getDefaultInstance() {
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -730,12 +730,12 @@ public final class RecommenderProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<IDProbs> getParserForType() {
       return PARSER;
     }
 
-    public RecommenderProto.IDProbs getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -758,7 +758,7 @@ public final class RecommenderProto {
     /**
      * <code>repeated int32 ID = 3;</code>
      */
-    java.util.List<Integer> getIDList();
+    java.util.List<java.lang.Integer> getIDList();
     /**
      * <code>repeated int32 ID = 3;</code>
      */
@@ -786,7 +786,7 @@ public final class RecommenderProto {
       iD_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -826,7 +826,7 @@ public final class RecommenderProto {
             }
             case 24: {
               if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-                iD_ = new java.util.ArrayList<Integer>();
+                iD_ = new java.util.ArrayList<java.lang.Integer>();
                 mutable_bitField0_ |= 0x00000004;
               }
               iD_.add(input.readInt32());
@@ -836,7 +836,7 @@ public final class RecommenderProto {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
-                iD_ = new java.util.ArrayList<Integer>();
+                iD_ = new java.util.ArrayList<java.lang.Integer>();
                 mutable_bitField0_ |= 0x00000004;
               }
               while (input.getBytesUntilLimit() > 0) {
@@ -862,14 +862,14 @@ public final class RecommenderProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return RecommenderProto.internal_static_recommender_RecommendRequest_descriptor;
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return RecommenderProto.internal_static_recommender_RecommendRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              RecommenderProto.RecommendRequest.class, RecommenderProto.RecommendRequest.Builder.class);
+              com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest.Builder.class);
     }
 
     private int bitField0_;
@@ -892,11 +892,11 @@ public final class RecommenderProto {
     }
 
     public static final int ID_FIELD_NUMBER = 3;
-    private java.util.List<Integer> iD_;
+    private java.util.List<java.lang.Integer> iD_;
     /**
      * <code>repeated int32 ID = 3;</code>
      */
-    public java.util.List<Integer>
+    public java.util.List<java.lang.Integer>
         getIDList() {
       return iD_;
     }
@@ -975,15 +975,15 @@ public final class RecommenderProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof RecommenderProto.RecommendRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest)) {
         return super.equals(obj);
       }
-      RecommenderProto.RecommendRequest other = (RecommenderProto.RecommendRequest) obj;
+      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest) obj;
 
       boolean result = true;
       result = result && (getRecommendNum()
@@ -996,7 +996,7 @@ public final class RecommenderProto {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1016,69 +1016,69 @@ public final class RecommenderProto {
       return hash;
     }
 
-    public static RecommenderProto.RecommendRequest parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.RecommendRequest parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.RecommendRequest parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.RecommendRequest parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.RecommendRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.RecommendRequest parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.RecommendRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecommenderProto.RecommendRequest parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecommenderProto.RecommendRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static RecommenderProto.RecommendRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecommenderProto.RecommendRequest parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecommenderProto.RecommendRequest parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1090,7 +1090,7 @@ public final class RecommenderProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(RecommenderProto.RecommendRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1098,9 +1098,9 @@ public final class RecommenderProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1110,17 +1110,17 @@ public final class RecommenderProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:recommender.RecommendRequest)
-        RecommenderProto.RecommendRequestOrBuilder {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return RecommenderProto.internal_static_recommender_RecommendRequest_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return RecommenderProto.internal_static_recommender_RecommendRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                RecommenderProto.RecommendRequest.class, RecommenderProto.RecommendRequest.Builder.class);
+                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest.newBuilder()
@@ -1129,7 +1129,7 @@ public final class RecommenderProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1151,23 +1151,23 @@ public final class RecommenderProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return RecommenderProto.internal_static_recommender_RecommendRequest_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendRequest_descriptor;
       }
 
-      public RecommenderProto.RecommendRequest getDefaultInstanceForType() {
-        return RecommenderProto.RecommendRequest.getDefaultInstance();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest.getDefaultInstance();
       }
 
-      public RecommenderProto.RecommendRequest build() {
-        RecommenderProto.RecommendRequest result = buildPartial();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest build() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public RecommenderProto.RecommendRequest buildPartial() {
-        RecommenderProto.RecommendRequest result = new RecommenderProto.RecommendRequest(this);
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest buildPartial() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.recommendNum_ = recommendNum_;
@@ -1187,7 +1187,7 @@ public final class RecommenderProto {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -1200,25 +1200,25 @@ public final class RecommenderProto {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof RecommenderProto.RecommendRequest) {
-          return mergeFrom((RecommenderProto.RecommendRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(RecommenderProto.RecommendRequest other) {
-        if (other == RecommenderProto.RecommendRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest other) {
+        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest.getDefaultInstance()) return this;
         if (other.getRecommendNum() != 0) {
           setRecommendNum(other.getRecommendNum());
         }
@@ -1248,11 +1248,11 @@ public final class RecommenderProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        RecommenderProto.RecommendRequest parsedMessage = null;
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (RecommenderProto.RecommendRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1274,7 +1274,7 @@ public final class RecommenderProto {
        * <code>int32 recommendNum = 1;</code>
        */
       public Builder setRecommendNum(int value) {
-
+        
         recommendNum_ = value;
         onChanged();
         return this;
@@ -1283,7 +1283,7 @@ public final class RecommenderProto {
        * <code>int32 recommendNum = 1;</code>
        */
       public Builder clearRecommendNum() {
-
+        
         recommendNum_ = 0;
         onChanged();
         return this;
@@ -1300,7 +1300,7 @@ public final class RecommenderProto {
        * <code>int32 candidateNum = 2;</code>
        */
       public Builder setCandidateNum(int value) {
-
+        
         candidateNum_ = value;
         onChanged();
         return this;
@@ -1309,23 +1309,23 @@ public final class RecommenderProto {
        * <code>int32 candidateNum = 2;</code>
        */
       public Builder clearCandidateNum() {
-
+        
         candidateNum_ = 0;
         onChanged();
         return this;
       }
 
-      private java.util.List<Integer> iD_ = java.util.Collections.emptyList();
+      private java.util.List<java.lang.Integer> iD_ = java.util.Collections.emptyList();
       private void ensureIDIsMutable() {
         if (!((bitField0_ & 0x00000004) == 0x00000004)) {
-          iD_ = new java.util.ArrayList<Integer>(iD_);
+          iD_ = new java.util.ArrayList<java.lang.Integer>(iD_);
           bitField0_ |= 0x00000004;
          }
       }
       /**
        * <code>repeated int32 ID = 3;</code>
        */
-      public java.util.List<Integer>
+      public java.util.List<java.lang.Integer>
           getIDList() {
         return java.util.Collections.unmodifiableList(iD_);
       }
@@ -1364,7 +1364,7 @@ public final class RecommenderProto {
        * <code>repeated int32 ID = 3;</code>
        */
       public Builder addAllID(
-          Iterable<? extends Integer> values) {
+          java.lang.Iterable<? extends java.lang.Integer> values) {
         ensureIDIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, iD_);
@@ -1395,12 +1395,12 @@ public final class RecommenderProto {
     }
 
     // @@protoc_insertion_point(class_scope:recommender.RecommendRequest)
-    private static final RecommenderProto.RecommendRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new RecommenderProto.RecommendRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest();
     }
 
-    public static RecommenderProto.RecommendRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1418,12 +1418,12 @@ public final class RecommenderProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<RecommendRequest> getParserForType() {
       return PARSER;
     }
 
-    public RecommenderProto.RecommendRequest getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1436,12 +1436,12 @@ public final class RecommenderProto {
     /**
      * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
      */
-    java.util.List<IDProbs>
+    java.util.List<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs> 
         getIDProbListList();
     /**
      * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
      */
-    RecommenderProto.IDProbs getIDProbList(int index);
+    com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs getIDProbList(int index);
     /**
      * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
      */
@@ -1449,13 +1449,13 @@ public final class RecommenderProto {
     /**
      * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
      */
-    java.util.List<? extends IDProbsOrBuilder>
+    java.util.List<? extends com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder> 
         getIDProbListOrBuilderList();
     /**
      * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
      */
-    RecommenderProto.IDProbsOrBuilder getIDProbListOrBuilder(
-            int index);
+    com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder getIDProbListOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code recommender.RecommendIDProbs}
@@ -1473,7 +1473,7 @@ public final class RecommenderProto {
       iDProbList_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -1503,11 +1503,11 @@ public final class RecommenderProto {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                iDProbList_ = new java.util.ArrayList<IDProbs>();
+                iDProbList_ = new java.util.ArrayList<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs>();
                 mutable_bitField0_ |= 0x00000001;
               }
               iDProbList_.add(
-                  input.readMessage(RecommenderProto.IDProbs.parser(), extensionRegistry));
+                  input.readMessage(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.parser(), extensionRegistry));
               break;
             }
           }
@@ -1527,28 +1527,28 @@ public final class RecommenderProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return RecommenderProto.internal_static_recommender_RecommendIDProbs_descriptor;
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendIDProbs_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return RecommenderProto.internal_static_recommender_RecommendIDProbs_fieldAccessorTable
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendIDProbs_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              RecommenderProto.RecommendIDProbs.class, RecommenderProto.RecommendIDProbs.Builder.class);
+              com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs.Builder.class);
     }
 
     public static final int IDPROBLIST_FIELD_NUMBER = 1;
-    private java.util.List<IDProbs> iDProbList_;
+    private java.util.List<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs> iDProbList_;
     /**
      * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
      */
-    public java.util.List<IDProbs> getIDProbListList() {
+    public java.util.List<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs> getIDProbListList() {
       return iDProbList_;
     }
     /**
      * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
      */
-    public java.util.List<? extends IDProbsOrBuilder>
+    public java.util.List<? extends com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder> 
         getIDProbListOrBuilderList() {
       return iDProbList_;
     }
@@ -1561,13 +1561,13 @@ public final class RecommenderProto {
     /**
      * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
      */
-    public RecommenderProto.IDProbs getIDProbList(int index) {
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs getIDProbList(int index) {
       return iDProbList_.get(index);
     }
     /**
      * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
      */
-    public RecommenderProto.IDProbsOrBuilder getIDProbListOrBuilder(
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder getIDProbListOrBuilder(
         int index) {
       return iDProbList_.get(index);
     }
@@ -1604,15 +1604,15 @@ public final class RecommenderProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof RecommenderProto.RecommendIDProbs)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs)) {
         return super.equals(obj);
       }
-      RecommenderProto.RecommendIDProbs other = (RecommenderProto.RecommendIDProbs) obj;
+      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs) obj;
 
       boolean result = true;
       result = result && getIDProbListList()
@@ -1621,7 +1621,7 @@ public final class RecommenderProto {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1637,69 +1637,69 @@ public final class RecommenderProto {
       return hash;
     }
 
-    public static RecommenderProto.RecommendIDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.RecommendIDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.RecommendIDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.RecommendIDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.RecommendIDProbs parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.RecommendIDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.RecommendIDProbs parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecommenderProto.RecommendIDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecommenderProto.RecommendIDProbs parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static RecommenderProto.RecommendIDProbs parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecommenderProto.RecommendIDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecommenderProto.RecommendIDProbs parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1711,7 +1711,7 @@ public final class RecommenderProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(RecommenderProto.RecommendIDProbs prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1719,9 +1719,9 @@ public final class RecommenderProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1731,17 +1731,17 @@ public final class RecommenderProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:recommender.RecommendIDProbs)
-        RecommenderProto.RecommendIDProbsOrBuilder {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbsOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return RecommenderProto.internal_static_recommender_RecommendIDProbs_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendIDProbs_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return RecommenderProto.internal_static_recommender_RecommendIDProbs_fieldAccessorTable
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendIDProbs_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                RecommenderProto.RecommendIDProbs.class, RecommenderProto.RecommendIDProbs.Builder.class);
+                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs.newBuilder()
@@ -1750,7 +1750,7 @@ public final class RecommenderProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1773,23 +1773,23 @@ public final class RecommenderProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return RecommenderProto.internal_static_recommender_RecommendIDProbs_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_RecommendIDProbs_descriptor;
       }
 
-      public RecommenderProto.RecommendIDProbs getDefaultInstanceForType() {
-        return RecommenderProto.RecommendIDProbs.getDefaultInstance();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs.getDefaultInstance();
       }
 
-      public RecommenderProto.RecommendIDProbs build() {
-        RecommenderProto.RecommendIDProbs result = buildPartial();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs build() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public RecommenderProto.RecommendIDProbs buildPartial() {
-        RecommenderProto.RecommendIDProbs result = new RecommenderProto.RecommendIDProbs(this);
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs buildPartial() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs(this);
         int from_bitField0_ = bitField0_;
         if (iDProbListBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1809,7 +1809,7 @@ public final class RecommenderProto {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -1822,25 +1822,25 @@ public final class RecommenderProto {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof RecommenderProto.RecommendIDProbs) {
-          return mergeFrom((RecommenderProto.RecommendIDProbs)other);
+        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs) {
+          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(RecommenderProto.RecommendIDProbs other) {
-        if (other == RecommenderProto.RecommendIDProbs.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs other) {
+        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs.getDefaultInstance()) return this;
         if (iDProbListBuilder_ == null) {
           if (!other.iDProbList_.isEmpty()) {
             if (iDProbList_.isEmpty()) {
@@ -1859,7 +1859,7 @@ public final class RecommenderProto {
               iDProbListBuilder_ = null;
               iDProbList_ = other.iDProbList_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              iDProbListBuilder_ =
+              iDProbListBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getIDProbListFieldBuilder() : null;
             } else {
@@ -1880,11 +1880,11 @@ public final class RecommenderProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        RecommenderProto.RecommendIDProbs parsedMessage = null;
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (RecommenderProto.RecommendIDProbs) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1895,22 +1895,22 @@ public final class RecommenderProto {
       }
       private int bitField0_;
 
-      private java.util.List<IDProbs> iDProbList_ =
+      private java.util.List<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs> iDProbList_ =
         java.util.Collections.emptyList();
       private void ensureIDProbListIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          iDProbList_ = new java.util.ArrayList<IDProbs>(iDProbList_);
+          iDProbList_ = new java.util.ArrayList<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs>(iDProbList_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          IDProbs, IDProbs.Builder, IDProbsOrBuilder> iDProbListBuilder_;
+          com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder> iDProbListBuilder_;
 
       /**
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
-      public java.util.List<IDProbs> getIDProbListList() {
+      public java.util.List<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs> getIDProbListList() {
         if (iDProbListBuilder_ == null) {
           return java.util.Collections.unmodifiableList(iDProbList_);
         } else {
@@ -1930,7 +1930,7 @@ public final class RecommenderProto {
       /**
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
-      public RecommenderProto.IDProbs getIDProbList(int index) {
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs getIDProbList(int index) {
         if (iDProbListBuilder_ == null) {
           return iDProbList_.get(index);
         } else {
@@ -1941,7 +1941,7 @@ public final class RecommenderProto {
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
       public Builder setIDProbList(
-          int index, RecommenderProto.IDProbs value) {
+          int index, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs value) {
         if (iDProbListBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1958,7 +1958,7 @@ public final class RecommenderProto {
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
       public Builder setIDProbList(
-          int index, RecommenderProto.IDProbs.Builder builderForValue) {
+          int index, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder builderForValue) {
         if (iDProbListBuilder_ == null) {
           ensureIDProbListIsMutable();
           iDProbList_.set(index, builderForValue.build());
@@ -1971,7 +1971,7 @@ public final class RecommenderProto {
       /**
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
-      public Builder addIDProbList(RecommenderProto.IDProbs value) {
+      public Builder addIDProbList(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs value) {
         if (iDProbListBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1988,7 +1988,7 @@ public final class RecommenderProto {
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
       public Builder addIDProbList(
-          int index, RecommenderProto.IDProbs value) {
+          int index, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs value) {
         if (iDProbListBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2005,7 +2005,7 @@ public final class RecommenderProto {
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
       public Builder addIDProbList(
-          RecommenderProto.IDProbs.Builder builderForValue) {
+          com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder builderForValue) {
         if (iDProbListBuilder_ == null) {
           ensureIDProbListIsMutable();
           iDProbList_.add(builderForValue.build());
@@ -2019,7 +2019,7 @@ public final class RecommenderProto {
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
       public Builder addIDProbList(
-          int index, RecommenderProto.IDProbs.Builder builderForValue) {
+          int index, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder builderForValue) {
         if (iDProbListBuilder_ == null) {
           ensureIDProbListIsMutable();
           iDProbList_.add(index, builderForValue.build());
@@ -2033,7 +2033,7 @@ public final class RecommenderProto {
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
       public Builder addAllIDProbList(
-          Iterable<? extends IDProbs> values) {
+          java.lang.Iterable<? extends com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs> values) {
         if (iDProbListBuilder_ == null) {
           ensureIDProbListIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -2073,14 +2073,14 @@ public final class RecommenderProto {
       /**
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
-      public RecommenderProto.IDProbs.Builder getIDProbListBuilder(
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder getIDProbListBuilder(
           int index) {
         return getIDProbListFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
-      public RecommenderProto.IDProbsOrBuilder getIDProbListOrBuilder(
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder getIDProbListOrBuilder(
           int index) {
         if (iDProbListBuilder_ == null) {
           return iDProbList_.get(index);  } else {
@@ -2090,7 +2090,7 @@ public final class RecommenderProto {
       /**
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
-      public java.util.List<? extends IDProbsOrBuilder>
+      public java.util.List<? extends com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder> 
            getIDProbListOrBuilderList() {
         if (iDProbListBuilder_ != null) {
           return iDProbListBuilder_.getMessageOrBuilderList();
@@ -2101,31 +2101,31 @@ public final class RecommenderProto {
       /**
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
-      public RecommenderProto.IDProbs.Builder addIDProbListBuilder() {
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder addIDProbListBuilder() {
         return getIDProbListFieldBuilder().addBuilder(
-            RecommenderProto.IDProbs.getDefaultInstance());
+            com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.getDefaultInstance());
       }
       /**
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
-      public RecommenderProto.IDProbs.Builder addIDProbListBuilder(
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder addIDProbListBuilder(
           int index) {
         return getIDProbListFieldBuilder().addBuilder(
-            index, RecommenderProto.IDProbs.getDefaultInstance());
+            index, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.getDefaultInstance());
       }
       /**
        * <code>repeated .recommender.IDProbs IDProbList = 1;</code>
        */
-      public java.util.List<IDProbs.Builder>
+      public java.util.List<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder> 
            getIDProbListBuilderList() {
         return getIDProbListFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          IDProbs, IDProbs.Builder, IDProbsOrBuilder>
+          com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder> 
           getIDProbListFieldBuilder() {
         if (iDProbListBuilder_ == null) {
           iDProbListBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              IDProbs, IDProbs.Builder, IDProbsOrBuilder>(
+              com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbs.Builder, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.IDProbsOrBuilder>(
                   iDProbList_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
@@ -2149,12 +2149,12 @@ public final class RecommenderProto {
     }
 
     // @@protoc_insertion_point(class_scope:recommender.RecommendIDProbs)
-    private static final RecommenderProto.RecommendIDProbs DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new RecommenderProto.RecommendIDProbs();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs();
     }
 
-    public static RecommenderProto.RecommendIDProbs getDefaultInstance() {
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2172,12 +2172,12 @@ public final class RecommenderProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<RecommendIDProbs> getParserForType() {
       return PARSER;
     }
 
-    public RecommenderProto.RecommendIDProbs getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2190,7 +2190,7 @@ public final class RecommenderProto {
     /**
      * <code>string str = 1;</code>
      */
-    String getStr();
+    java.lang.String getStr();
     /**
      * <code>string str = 1;</code>
      */
@@ -2213,7 +2213,7 @@ public final class RecommenderProto {
       str_ = "";
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -2242,7 +2242,7 @@ public final class RecommenderProto {
               break;
             }
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               str_ = s;
               break;
@@ -2261,29 +2261,29 @@ public final class RecommenderProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return RecommenderProto.internal_static_recommender_ServerMessage_descriptor;
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_ServerMessage_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return RecommenderProto.internal_static_recommender_ServerMessage_fieldAccessorTable
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_ServerMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              RecommenderProto.ServerMessage.class, RecommenderProto.ServerMessage.Builder.class);
+              com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.Builder.class);
     }
 
     public static final int STR_FIELD_NUMBER = 1;
-    private volatile Object str_;
+    private volatile java.lang.Object str_;
     /**
      * <code>string str = 1;</code>
      */
-    public String getStr() {
-      Object ref = str_;
-      if (ref instanceof String) {
-        return (String) ref;
+    public java.lang.String getStr() {
+      java.lang.Object ref = str_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         str_ = s;
         return s;
       }
@@ -2293,11 +2293,11 @@ public final class RecommenderProto {
      */
     public com.google.protobuf.ByteString
         getStrBytes() {
-      Object ref = str_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+      java.lang.Object ref = str_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         str_ = b;
         return b;
       } else {
@@ -2336,15 +2336,15 @@ public final class RecommenderProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof RecommenderProto.ServerMessage)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage)) {
         return super.equals(obj);
       }
-      RecommenderProto.ServerMessage other = (RecommenderProto.ServerMessage) obj;
+      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage) obj;
 
       boolean result = true;
       result = result && getStr()
@@ -2353,7 +2353,7 @@ public final class RecommenderProto {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -2367,69 +2367,69 @@ public final class RecommenderProto {
       return hash;
     }
 
-    public static RecommenderProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.ServerMessage parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecommenderProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecommenderProto.ServerMessage parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecommenderProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecommenderProto.ServerMessage parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static RecommenderProto.ServerMessage parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecommenderProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecommenderProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2441,7 +2441,7 @@ public final class RecommenderProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(RecommenderProto.ServerMessage prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -2449,9 +2449,9 @@ public final class RecommenderProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2461,17 +2461,17 @@ public final class RecommenderProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:recommender.ServerMessage)
-        RecommenderProto.ServerMessageOrBuilder {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return RecommenderProto.internal_static_recommender_ServerMessage_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_ServerMessage_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return RecommenderProto.internal_static_recommender_ServerMessage_fieldAccessorTable
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_ServerMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                RecommenderProto.ServerMessage.class, RecommenderProto.ServerMessage.Builder.class);
+                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.newBuilder()
@@ -2480,7 +2480,7 @@ public final class RecommenderProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2498,23 +2498,23 @@ public final class RecommenderProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return RecommenderProto.internal_static_recommender_ServerMessage_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.internal_static_recommender_ServerMessage_descriptor;
       }
 
-      public RecommenderProto.ServerMessage getDefaultInstanceForType() {
-        return RecommenderProto.ServerMessage.getDefaultInstance();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.getDefaultInstance();
       }
 
-      public RecommenderProto.ServerMessage build() {
-        RecommenderProto.ServerMessage result = buildPartial();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage build() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public RecommenderProto.ServerMessage buildPartial() {
-        RecommenderProto.ServerMessage result = new RecommenderProto.ServerMessage(this);
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage buildPartial() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage(this);
         result.str_ = str_;
         onBuilt();
         return result;
@@ -2525,7 +2525,7 @@ public final class RecommenderProto {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -2538,25 +2538,25 @@ public final class RecommenderProto {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof RecommenderProto.ServerMessage) {
-          return mergeFrom((RecommenderProto.ServerMessage)other);
+        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage) {
+          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(RecommenderProto.ServerMessage other) {
-        if (other == RecommenderProto.ServerMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage other) {
+        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.getDefaultInstance()) return this;
         if (!other.getStr().isEmpty()) {
           str_ = other.str_;
           onChanged();
@@ -2574,11 +2574,11 @@ public final class RecommenderProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        RecommenderProto.ServerMessage parsedMessage = null;
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (RecommenderProto.ServerMessage) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2588,20 +2588,20 @@ public final class RecommenderProto {
         return this;
       }
 
-      private Object str_ = "";
+      private java.lang.Object str_ = "";
       /**
        * <code>string str = 1;</code>
        */
-      public String getStr() {
-        Object ref = str_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getStr() {
+        java.lang.Object ref = str_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           str_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -2609,11 +2609,11 @@ public final class RecommenderProto {
        */
       public com.google.protobuf.ByteString
           getStrBytes() {
-        Object ref = str_;
+        java.lang.Object ref = str_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           str_ = b;
           return b;
         } else {
@@ -2624,11 +2624,11 @@ public final class RecommenderProto {
        * <code>string str = 1;</code>
        */
       public Builder setStr(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         str_ = value;
         onChanged();
         return this;
@@ -2637,7 +2637,7 @@ public final class RecommenderProto {
        * <code>string str = 1;</code>
        */
       public Builder clearStr() {
-
+        
         str_ = getDefaultInstance().getStr();
         onChanged();
         return this;
@@ -2651,7 +2651,7 @@ public final class RecommenderProto {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         str_ = value;
         onChanged();
         return this;
@@ -2671,12 +2671,12 @@ public final class RecommenderProto {
     }
 
     // @@protoc_insertion_point(class_scope:recommender.ServerMessage)
-    private static final RecommenderProto.ServerMessage DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new RecommenderProto.ServerMessage();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage();
     }
 
-    public static RecommenderProto.ServerMessage getDefaultInstance() {
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2694,12 +2694,12 @@ public final class RecommenderProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<ServerMessage> getParserForType() {
       return PARSER;
     }
 
-    public RecommenderProto.ServerMessage getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2707,22 +2707,22 @@ public final class RecommenderProto {
 
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_recommender_IDProbs_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_recommender_IDProbs_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_recommender_RecommendRequest_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_recommender_RecommendRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_recommender_RecommendIDProbs_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_recommender_RecommendIDProbs_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_recommender_ServerMessage_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_recommender_ServerMessage_fieldAccessorTable;
 
@@ -2733,7 +2733,7 @@ public final class RecommenderProto {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    String[] descriptorData = {
+    java.lang.String[] descriptorData = {
       "\n\021recommender.proto\022\013recommender\032\033google" +
       "/protobuf/empty.proto\"#\n\007IDProbs\022\n\n\002ID\030\001" +
       " \003(\005\022\014\n\004prob\030\002 \003(\002\"J\n\020RecommendRequest\022\024" +
@@ -2770,25 +2770,25 @@ public final class RecommenderProto {
     internal_static_recommender_IDProbs_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_recommender_IDProbs_descriptor,
-        new String[] { "ID", "Prob", });
+        new java.lang.String[] { "ID", "Prob", });
     internal_static_recommender_RecommendRequest_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_recommender_RecommendRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_recommender_RecommendRequest_descriptor,
-        new String[] { "RecommendNum", "CandidateNum", "ID", });
+        new java.lang.String[] { "RecommendNum", "CandidateNum", "ID", });
     internal_static_recommender_RecommendIDProbs_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_recommender_RecommendIDProbs_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_recommender_RecommendIDProbs_descriptor,
-        new String[] { "IDProbList", });
+        new java.lang.String[] { "IDProbList", });
     internal_static_recommender_ServerMessage_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_recommender_ServerMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_recommender_ServerMessage_descriptor,
-        new String[] { "Str", });
+        new java.lang.String[] { "Str", });
     com.google.protobuf.EmptyProto.getDescriptor();
   }
 

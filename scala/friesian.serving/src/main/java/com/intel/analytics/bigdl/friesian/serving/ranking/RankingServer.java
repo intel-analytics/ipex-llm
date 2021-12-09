@@ -20,6 +20,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity;
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.*;
 import com.intel.analytics.bigdl.friesian.serving.utils.*;
@@ -33,6 +34,7 @@ import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 import java.util.*;
@@ -89,6 +91,8 @@ public class RankingServer extends GrpcServerBase {
     private static class RankingService extends RankingGrpc.RankingImplBase {
         private Map<String, InferenceModel> modelRegistry = new HashMap<String, InferenceModel>();
         private MetricRegistry metrics = new MetricRegistry();
+        private RedisUtils redis;
+        private Jedis jedis;
         Timer overallTimer = metrics.timer("ranking.overall");
         Timer decodeTimer = metrics.timer("ranking.decode");
         Timer inferenceTimer = metrics.timer("ranking.inference");
@@ -96,9 +100,15 @@ public class RankingServer extends GrpcServerBase {
 
         RankingService() {
             gRPCHelper helper = Utils.helper();
-            InferenceModel model = helper.loadInferenceModel(helper.modelParallelism(), helper.modelPath(),
+            redis = RedisUtils.getInstance(Utils.helper().getRedisPoolMaxTotal());
+            String modelPath = helper.modelPath();
+            InferenceModel model = helper.loadInferenceModel(helper.modelParallelism(), modelPath,
                     helper.savedModelInputsArr());
             modelRegistry.put(helper.modelPath(), model);
+            redis.Mset("wnd", "v1", modelPath);
+            jedis = redis.getRedisClient();
+//            List<String> res = jedis.mget("v1");
+//            jedis.keys("wnd:*");
         }
 
         @Override
@@ -109,25 +119,47 @@ public class RankingServer extends GrpcServerBase {
         }
 
         @Override
-        public void addModel(ModelPath request,
-                             StreamObserver<OperationStatus> responseObserver) {
-            responseObserver.onNext(modelAdd(request));
+        public void addModel(ModelMeta request,
+                             StreamObserver<Status> responseObserver) {
+            responseObserver.onNext(doAdd(request));
             responseObserver.onCompleted();
         }
 
-        private OperationStatus modelAdd(ModelPath msg) {
+        private Status doAdd(ModelMeta msg) {
             String path = msg.getPath();
-            System.out.println(path);
+            System.out.println("Loading model: " + path);
             try {
                 gRPCHelper helper = Utils.helper();
+                // TODO: share parallelism for multiple models?
                 InferenceModel model = helper.loadInferenceModel(helper.modelParallelism(), path,
                         helper.savedModelInputsArr());
                 modelRegistry.put(path, model);
-                return OperationStatus.newBuilder().setSuccess(true).build();
+                return Status.newBuilder().setSuccess(true).build();
             } catch (Exception e) {
                 e.printStackTrace();
                 logger.warn(e.getMessage());
-                return OperationStatus.newBuilder().setSuccess(false).build();
+                return Status.newBuilder().setSuccess(false).build();
+            }
+        }
+
+        @Override
+        public void registerModel(ModelMeta request,
+                                  StreamObserver<Status> responseObserver) {
+            responseObserver.onNext(doRegister(request));
+            responseObserver.onCompleted();
+        }
+
+        private Status doRegister(ModelMeta msg) {
+            String path = msg.getPath();
+            String version = msg.getVersion();
+            System.out.println("Registering model online: " + path + " with version " + version);
+            try {
+                redis.Mset("wnd", version, path);
+                return Status.newBuilder().setSuccess(true).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                return Status.newBuilder().setSuccess(false).build();
             }
         }
 
@@ -138,18 +170,19 @@ public class RankingServer extends GrpcServerBase {
             byte[] bytes1 = Base64.getDecoder().decode(encodedStr);
             Activity input = (Activity) EncodeUtils.bytesToObj(bytes1);
             decodeContext.stop();
-            Set<String> models = modelRegistry.keySet();
+            Set<String> models = jedis.keys("wnd:*");
             int id = new Random().nextInt(models.size());
-            String targetModel = "";
+            String targetVersion = "";
             int k = 0;
             for (String model: models) {
                 if (k == id) {
-                    targetModel = model;
+                    targetVersion = model;
                     break;
                 }
                 k += 1;
             }
-            System.out.println("Using model: " + targetModel);
+            String targetModel = jedis.mget(targetVersion).get(0);
+            System.out.println("Using model: " + targetModel + " with version " + targetVersion);
             Timer.Context inferenceContext = inferenceTimer.time();
             Activity predictResult = modelRegistry.get(targetModel).doPredict(input);
             inferenceContext.stop();

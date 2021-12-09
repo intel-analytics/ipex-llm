@@ -45,7 +45,7 @@ public final class RecallProto {
       k_ = 0;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -97,14 +97,14 @@ public final class RecallProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return RecallProto.internal_static_recall_Query_descriptor;
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Query_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return RecallProto.internal_static_recall_Query_fieldAccessorTable
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Query_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              RecallProto.Query.class, RecallProto.Query.Builder.class);
+              com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query.Builder.class);
     }
 
     public static final int USERID_FIELD_NUMBER = 1;
@@ -164,15 +164,15 @@ public final class RecallProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof RecallProto.Query)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query)) {
         return super.equals(obj);
       }
-      RecallProto.Query other = (RecallProto.Query) obj;
+      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query) obj;
 
       boolean result = true;
       result = result && (getUserID()
@@ -183,7 +183,7 @@ public final class RecallProto {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -199,69 +199,69 @@ public final class RecallProto {
       return hash;
     }
 
-    public static RecallProto.Query parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.Query parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.Query parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.Query parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.Query parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.Query parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.Query parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecallProto.Query parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecallProto.Query parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static RecallProto.Query parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecallProto.Query parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecallProto.Query parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -273,7 +273,7 @@ public final class RecallProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(RecallProto.Query prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -281,9 +281,9 @@ public final class RecallProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -293,17 +293,17 @@ public final class RecallProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:recall.Query)
-        RecallProto.QueryOrBuilder {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.QueryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return RecallProto.internal_static_recall_Query_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Query_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return RecallProto.internal_static_recall_Query_fieldAccessorTable
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Query_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                RecallProto.Query.class, RecallProto.Query.Builder.class);
+                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query.newBuilder()
@@ -312,7 +312,7 @@ public final class RecallProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -332,23 +332,23 @@ public final class RecallProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return RecallProto.internal_static_recall_Query_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Query_descriptor;
       }
 
-      public RecallProto.Query getDefaultInstanceForType() {
-        return RecallProto.Query.getDefaultInstance();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query.getDefaultInstance();
       }
 
-      public RecallProto.Query build() {
-        RecallProto.Query result = buildPartial();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query build() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public RecallProto.Query buildPartial() {
-        RecallProto.Query result = new RecallProto.Query(this);
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query buildPartial() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query(this);
         result.userID_ = userID_;
         result.k_ = k_;
         onBuilt();
@@ -360,7 +360,7 @@ public final class RecallProto {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -373,25 +373,25 @@ public final class RecallProto {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof RecallProto.Query) {
-          return mergeFrom((RecallProto.Query)other);
+        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query) {
+          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(RecallProto.Query other) {
-        if (other == RecallProto.Query.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query other) {
+        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query.getDefaultInstance()) return this;
         if (other.getUserID() != 0) {
           setUserID(other.getUserID());
         }
@@ -411,11 +411,11 @@ public final class RecallProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        RecallProto.Query parsedMessage = null;
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (RecallProto.Query) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -436,7 +436,7 @@ public final class RecallProto {
        * <code>int32 userID = 1;</code>
        */
       public Builder setUserID(int value) {
-
+        
         userID_ = value;
         onChanged();
         return this;
@@ -445,7 +445,7 @@ public final class RecallProto {
        * <code>int32 userID = 1;</code>
        */
       public Builder clearUserID() {
-
+        
         userID_ = 0;
         onChanged();
         return this;
@@ -462,7 +462,7 @@ public final class RecallProto {
        * <code>int32 k = 2;</code>
        */
       public Builder setK(int value) {
-
+        
         k_ = value;
         onChanged();
         return this;
@@ -471,7 +471,7 @@ public final class RecallProto {
        * <code>int32 k = 2;</code>
        */
       public Builder clearK() {
-
+        
         k_ = 0;
         onChanged();
         return this;
@@ -491,12 +491,12 @@ public final class RecallProto {
     }
 
     // @@protoc_insertion_point(class_scope:recall.Query)
-    private static final RecallProto.Query DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new RecallProto.Query();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query();
     }
 
-    public static RecallProto.Query getDefaultInstance() {
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -514,12 +514,12 @@ public final class RecallProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<Query> getParserForType() {
       return PARSER;
     }
 
-    public RecallProto.Query getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -532,7 +532,7 @@ public final class RecallProto {
     /**
      * <code>repeated int32 candidate = 1;</code>
      */
-    java.util.List<Integer> getCandidateList();
+    java.util.List<java.lang.Integer> getCandidateList();
     /**
      * <code>repeated int32 candidate = 1;</code>
      */
@@ -558,7 +558,7 @@ public final class RecallProto {
       candidate_ = java.util.Collections.emptyList();
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -588,7 +588,7 @@ public final class RecallProto {
             }
             case 8: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                candidate_ = new java.util.ArrayList<Integer>();
+                candidate_ = new java.util.ArrayList<java.lang.Integer>();
                 mutable_bitField0_ |= 0x00000001;
               }
               candidate_.add(input.readInt32());
@@ -598,7 +598,7 @@ public final class RecallProto {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
-                candidate_ = new java.util.ArrayList<Integer>();
+                candidate_ = new java.util.ArrayList<java.lang.Integer>();
                 mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
@@ -624,22 +624,22 @@ public final class RecallProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return RecallProto.internal_static_recall_Candidates_descriptor;
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Candidates_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return RecallProto.internal_static_recall_Candidates_fieldAccessorTable
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Candidates_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              RecallProto.Candidates.class, RecallProto.Candidates.Builder.class);
+              com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates.Builder.class);
     }
 
     public static final int CANDIDATE_FIELD_NUMBER = 1;
-    private java.util.List<Integer> candidate_;
+    private java.util.List<java.lang.Integer> candidate_;
     /**
      * <code>repeated int32 candidate = 1;</code>
      */
-    public java.util.List<Integer>
+    public java.util.List<java.lang.Integer>
         getCandidateList() {
       return candidate_;
     }
@@ -704,15 +704,15 @@ public final class RecallProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof RecallProto.Candidates)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates)) {
         return super.equals(obj);
       }
-      RecallProto.Candidates other = (RecallProto.Candidates) obj;
+      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates) obj;
 
       boolean result = true;
       result = result && getCandidateList()
@@ -721,7 +721,7 @@ public final class RecallProto {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -737,69 +737,69 @@ public final class RecallProto {
       return hash;
     }
 
-    public static RecallProto.Candidates parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.Candidates parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.Candidates parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.Candidates parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.Candidates parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.Candidates parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.Candidates parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecallProto.Candidates parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecallProto.Candidates parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static RecallProto.Candidates parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecallProto.Candidates parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecallProto.Candidates parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -811,7 +811,7 @@ public final class RecallProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(RecallProto.Candidates prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -819,9 +819,9 @@ public final class RecallProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -831,17 +831,17 @@ public final class RecallProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:recall.Candidates)
-        RecallProto.CandidatesOrBuilder {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.CandidatesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return RecallProto.internal_static_recall_Candidates_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Candidates_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return RecallProto.internal_static_recall_Candidates_fieldAccessorTable
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Candidates_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                RecallProto.Candidates.class, RecallProto.Candidates.Builder.class);
+                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates.newBuilder()
@@ -850,7 +850,7 @@ public final class RecallProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -868,23 +868,23 @@ public final class RecallProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return RecallProto.internal_static_recall_Candidates_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Candidates_descriptor;
       }
 
-      public RecallProto.Candidates getDefaultInstanceForType() {
-        return RecallProto.Candidates.getDefaultInstance();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates.getDefaultInstance();
       }
 
-      public RecallProto.Candidates build() {
-        RecallProto.Candidates result = buildPartial();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates build() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public RecallProto.Candidates buildPartial() {
-        RecallProto.Candidates result = new RecallProto.Candidates(this);
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates buildPartial() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           candidate_ = java.util.Collections.unmodifiableList(candidate_);
@@ -900,7 +900,7 @@ public final class RecallProto {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -913,25 +913,25 @@ public final class RecallProto {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof RecallProto.Candidates) {
-          return mergeFrom((RecallProto.Candidates)other);
+        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates) {
+          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(RecallProto.Candidates other) {
-        if (other == RecallProto.Candidates.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates other) {
+        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates.getDefaultInstance()) return this;
         if (!other.candidate_.isEmpty()) {
           if (candidate_.isEmpty()) {
             candidate_ = other.candidate_;
@@ -955,11 +955,11 @@ public final class RecallProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        RecallProto.Candidates parsedMessage = null;
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (RecallProto.Candidates) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -970,17 +970,17 @@ public final class RecallProto {
       }
       private int bitField0_;
 
-      private java.util.List<Integer> candidate_ = java.util.Collections.emptyList();
+      private java.util.List<java.lang.Integer> candidate_ = java.util.Collections.emptyList();
       private void ensureCandidateIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          candidate_ = new java.util.ArrayList<Integer>(candidate_);
+          candidate_ = new java.util.ArrayList<java.lang.Integer>(candidate_);
           bitField0_ |= 0x00000001;
          }
       }
       /**
        * <code>repeated int32 candidate = 1;</code>
        */
-      public java.util.List<Integer>
+      public java.util.List<java.lang.Integer>
           getCandidateList() {
         return java.util.Collections.unmodifiableList(candidate_);
       }
@@ -1019,7 +1019,7 @@ public final class RecallProto {
        * <code>repeated int32 candidate = 1;</code>
        */
       public Builder addAllCandidate(
-          Iterable<? extends Integer> values) {
+          java.lang.Iterable<? extends java.lang.Integer> values) {
         ensureCandidateIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, candidate_);
@@ -1050,12 +1050,12 @@ public final class RecallProto {
     }
 
     // @@protoc_insertion_point(class_scope:recall.Candidates)
-    private static final RecallProto.Candidates DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new RecallProto.Candidates();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates();
     }
 
-    public static RecallProto.Candidates getDefaultInstance() {
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1073,12 +1073,12 @@ public final class RecallProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<Candidates> getParserForType() {
       return PARSER;
     }
 
-    public RecallProto.Candidates getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1109,7 +1109,7 @@ public final class RecallProto {
       itemID_ = 0;
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -1156,14 +1156,14 @@ public final class RecallProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return RecallProto.internal_static_recall_Item_descriptor;
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Item_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return RecallProto.internal_static_recall_Item_fieldAccessorTable
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Item_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              RecallProto.Item.class, RecallProto.Item.Builder.class);
+              com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item.Builder.class);
     }
 
     public static final int ITEMID_FIELD_NUMBER = 1;
@@ -1207,15 +1207,15 @@ public final class RecallProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof RecallProto.Item)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item)) {
         return super.equals(obj);
       }
-      RecallProto.Item other = (RecallProto.Item) obj;
+      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item) obj;
 
       boolean result = true;
       result = result && (getItemID()
@@ -1224,7 +1224,7 @@ public final class RecallProto {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1238,69 +1238,69 @@ public final class RecallProto {
       return hash;
     }
 
-    public static RecallProto.Item parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.Item parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.Item parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.Item parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.Item parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.Item parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.Item parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecallProto.Item parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecallProto.Item parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static RecallProto.Item parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecallProto.Item parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecallProto.Item parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1312,7 +1312,7 @@ public final class RecallProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(RecallProto.Item prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1320,9 +1320,9 @@ public final class RecallProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1332,17 +1332,17 @@ public final class RecallProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:recall.Item)
-        RecallProto.ItemOrBuilder {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ItemOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return RecallProto.internal_static_recall_Item_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Item_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return RecallProto.internal_static_recall_Item_fieldAccessorTable
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Item_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                RecallProto.Item.class, RecallProto.Item.Builder.class);
+                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item.newBuilder()
@@ -1351,7 +1351,7 @@ public final class RecallProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1369,23 +1369,23 @@ public final class RecallProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return RecallProto.internal_static_recall_Item_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_Item_descriptor;
       }
 
-      public RecallProto.Item getDefaultInstanceForType() {
-        return RecallProto.Item.getDefaultInstance();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item.getDefaultInstance();
       }
 
-      public RecallProto.Item build() {
-        RecallProto.Item result = buildPartial();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item build() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public RecallProto.Item buildPartial() {
-        RecallProto.Item result = new RecallProto.Item(this);
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item buildPartial() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item(this);
         result.itemID_ = itemID_;
         onBuilt();
         return result;
@@ -1396,7 +1396,7 @@ public final class RecallProto {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -1409,25 +1409,25 @@ public final class RecallProto {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof RecallProto.Item) {
-          return mergeFrom((RecallProto.Item)other);
+        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item) {
+          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(RecallProto.Item other) {
-        if (other == RecallProto.Item.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item other) {
+        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item.getDefaultInstance()) return this;
         if (other.getItemID() != 0) {
           setItemID(other.getItemID());
         }
@@ -1444,11 +1444,11 @@ public final class RecallProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        RecallProto.Item parsedMessage = null;
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (RecallProto.Item) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1469,7 +1469,7 @@ public final class RecallProto {
        * <code>int32 itemID = 1;</code>
        */
       public Builder setItemID(int value) {
-
+        
         itemID_ = value;
         onChanged();
         return this;
@@ -1478,7 +1478,7 @@ public final class RecallProto {
        * <code>int32 itemID = 1;</code>
        */
       public Builder clearItemID() {
-
+        
         itemID_ = 0;
         onChanged();
         return this;
@@ -1498,12 +1498,12 @@ public final class RecallProto {
     }
 
     // @@protoc_insertion_point(class_scope:recall.Item)
-    private static final RecallProto.Item DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new RecallProto.Item();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item();
     }
 
-    public static RecallProto.Item getDefaultInstance() {
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1521,12 +1521,12 @@ public final class RecallProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<Item> getParserForType() {
       return PARSER;
     }
 
-    public RecallProto.Item getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1539,7 +1539,7 @@ public final class RecallProto {
     /**
      * <code>string str = 1;</code>
      */
-    String getStr();
+    java.lang.String getStr();
     /**
      * <code>string str = 1;</code>
      */
@@ -1562,7 +1562,7 @@ public final class RecallProto {
       str_ = "";
     }
 
-    @Override
+    @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -1591,7 +1591,7 @@ public final class RecallProto {
               break;
             }
             case 10: {
-              String s = input.readStringRequireUtf8();
+              java.lang.String s = input.readStringRequireUtf8();
 
               str_ = s;
               break;
@@ -1610,29 +1610,29 @@ public final class RecallProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return RecallProto.internal_static_recall_ServerMessage_descriptor;
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_ServerMessage_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return RecallProto.internal_static_recall_ServerMessage_fieldAccessorTable
+      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_ServerMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              RecallProto.ServerMessage.class, RecallProto.ServerMessage.Builder.class);
+              com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage.Builder.class);
     }
 
     public static final int STR_FIELD_NUMBER = 1;
-    private volatile Object str_;
+    private volatile java.lang.Object str_;
     /**
      * <code>string str = 1;</code>
      */
-    public String getStr() {
-      Object ref = str_;
-      if (ref instanceof String) {
-        return (String) ref;
+    public java.lang.String getStr() {
+      java.lang.Object ref = str_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
       } else {
-        com.google.protobuf.ByteString bs =
+        com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
+        java.lang.String s = bs.toStringUtf8();
         str_ = s;
         return s;
       }
@@ -1642,11 +1642,11 @@ public final class RecallProto {
      */
     public com.google.protobuf.ByteString
         getStrBytes() {
-      Object ref = str_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b =
+      java.lang.Object ref = str_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
+                (java.lang.String) ref);
         str_ = b;
         return b;
       } else {
@@ -1685,15 +1685,15 @@ public final class RecallProto {
       return size;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof RecallProto.ServerMessage)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage)) {
         return super.equals(obj);
       }
-      RecallProto.ServerMessage other = (RecallProto.ServerMessage) obj;
+      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage) obj;
 
       boolean result = true;
       result = result && getStr()
@@ -1702,7 +1702,7 @@ public final class RecallProto {
       return result;
     }
 
-    @Override
+    @java.lang.Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1716,69 +1716,69 @@ public final class RecallProto {
       return hash;
     }
 
-    public static RecallProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.ServerMessage parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static RecallProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static RecallProto.ServerMessage parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecallProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecallProto.ServerMessage parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static RecallProto.ServerMessage parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static RecallProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static RecallProto.ServerMessage parseFrom(
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1790,7 +1790,7 @@ public final class RecallProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(RecallProto.ServerMessage prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1798,9 +1798,9 @@ public final class RecallProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @Override
+    @java.lang.Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1810,17 +1810,17 @@ public final class RecallProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:recall.ServerMessage)
-        RecallProto.ServerMessageOrBuilder {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return RecallProto.internal_static_recall_ServerMessage_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_ServerMessage_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return RecallProto.internal_static_recall_ServerMessage_fieldAccessorTable
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_ServerMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                RecallProto.ServerMessage.class, RecallProto.ServerMessage.Builder.class);
+                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage.newBuilder()
@@ -1829,7 +1829,7 @@ public final class RecallProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1847,23 +1847,23 @@ public final class RecallProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return RecallProto.internal_static_recall_ServerMessage_descriptor;
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.internal_static_recall_ServerMessage_descriptor;
       }
 
-      public RecallProto.ServerMessage getDefaultInstanceForType() {
-        return RecallProto.ServerMessage.getDefaultInstance();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage.getDefaultInstance();
       }
 
-      public RecallProto.ServerMessage build() {
-        RecallProto.ServerMessage result = buildPartial();
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage build() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public RecallProto.ServerMessage buildPartial() {
-        RecallProto.ServerMessage result = new RecallProto.ServerMessage(this);
+      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage buildPartial() {
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage(this);
         result.str_ = str_;
         onBuilt();
         return result;
@@ -1874,7 +1874,7 @@ public final class RecallProto {
       }
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
       public Builder clearField(
@@ -1887,25 +1887,25 @@ public final class RecallProto {
       }
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof RecallProto.ServerMessage) {
-          return mergeFrom((RecallProto.ServerMessage)other);
+        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage) {
+          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(RecallProto.ServerMessage other) {
-        if (other == RecallProto.ServerMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage other) {
+        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage.getDefaultInstance()) return this;
         if (!other.getStr().isEmpty()) {
           str_ = other.str_;
           onChanged();
@@ -1923,11 +1923,11 @@ public final class RecallProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        RecallProto.ServerMessage parsedMessage = null;
+        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (RecallProto.ServerMessage) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1937,20 +1937,20 @@ public final class RecallProto {
         return this;
       }
 
-      private Object str_ = "";
+      private java.lang.Object str_ = "";
       /**
        * <code>string str = 1;</code>
        */
-      public String getStr() {
-        Object ref = str_;
-        if (!(ref instanceof String)) {
+      public java.lang.String getStr() {
+        java.lang.Object ref = str_;
+        if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          String s = bs.toStringUtf8();
+          java.lang.String s = bs.toStringUtf8();
           str_ = s;
           return s;
         } else {
-          return (String) ref;
+          return (java.lang.String) ref;
         }
       }
       /**
@@ -1958,11 +1958,11 @@ public final class RecallProto {
        */
       public com.google.protobuf.ByteString
           getStrBytes() {
-        Object ref = str_;
+        java.lang.Object ref = str_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b =
+          com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (String) ref);
+                  (java.lang.String) ref);
           str_ = b;
           return b;
         } else {
@@ -1973,11 +1973,11 @@ public final class RecallProto {
        * <code>string str = 1;</code>
        */
       public Builder setStr(
-          String value) {
+          java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-
+  
         str_ = value;
         onChanged();
         return this;
@@ -1986,7 +1986,7 @@ public final class RecallProto {
        * <code>string str = 1;</code>
        */
       public Builder clearStr() {
-
+        
         str_ = getDefaultInstance().getStr();
         onChanged();
         return this;
@@ -2000,7 +2000,7 @@ public final class RecallProto {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-
+        
         str_ = value;
         onChanged();
         return this;
@@ -2020,12 +2020,12 @@ public final class RecallProto {
     }
 
     // @@protoc_insertion_point(class_scope:recall.ServerMessage)
-    private static final RecallProto.ServerMessage DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new RecallProto.ServerMessage();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage();
     }
 
-    public static RecallProto.ServerMessage getDefaultInstance() {
+    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2043,12 +2043,12 @@ public final class RecallProto {
       return PARSER;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Parser<ServerMessage> getParserForType() {
       return PARSER;
     }
 
-    public RecallProto.ServerMessage getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2056,22 +2056,22 @@ public final class RecallProto {
 
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_recall_Query_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_recall_Query_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_recall_Candidates_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_recall_Candidates_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_recall_Item_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_recall_Item_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_recall_ServerMessage_descriptor;
-  private static final
+  private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_recall_ServerMessage_fieldAccessorTable;
 
@@ -2082,7 +2082,7 @@ public final class RecallProto {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    String[] descriptorData = {
+    java.lang.String[] descriptorData = {
       "\n\014recall.proto\022\006recall\032\033google/protobuf/" +
       "empty.proto\"\"\n\005Query\022\016\n\006userID\030\001 \001(\005\022\t\n\001" +
       "k\030\002 \001(\005\"\037\n\nCandidates\022\021\n\tcandidate\030\001 \003(\005" +
@@ -2115,25 +2115,25 @@ public final class RecallProto {
     internal_static_recall_Query_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_recall_Query_descriptor,
-        new String[] { "UserID", "K", });
+        new java.lang.String[] { "UserID", "K", });
     internal_static_recall_Candidates_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_recall_Candidates_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_recall_Candidates_descriptor,
-        new String[] { "Candidate", });
+        new java.lang.String[] { "Candidate", });
     internal_static_recall_Item_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_recall_Item_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_recall_Item_descriptor,
-        new String[] { "ItemID", });
+        new java.lang.String[] { "ItemID", });
     internal_static_recall_ServerMessage_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_recall_ServerMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_recall_ServerMessage_descriptor,
-        new String[] { "Str", });
+        new java.lang.String[] { "Str", });
     com.google.protobuf.EmptyProto.getDescriptor();
   }
 
