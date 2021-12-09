@@ -81,7 +81,7 @@ python ../../example/deep_fm/deepFM_train.py \
     --frequency_limit 2 
 
 now=$(date "+%s")
-time1=$((now - start))
+time3=$((now - start))
 
 
 rm -rf data
