@@ -26,18 +26,25 @@ import org.apache.spark.sql.DataFrame
 class FLModel() {
   val estimator: VflNNEstimator = null
   def fit(trainData: DataFrame,
-          valData: DataFrame,
-          epoch : Int = 1) = {
+          epoch: Int = 1,
+          batchSize: Int = 4,
+          featureColumn: Array[String] = null,
+          labelColumn: Array[String] = null,
+          valData: DataFrame = null) = {
     val _trainData = DataFrameUtils.dataFrameToSample(trainData)
     val _valData = DataFrameUtils.dataFrameToSample(valData)
     estimator.train(epoch, _trainData.toLocal(), _valData.toLocal())
   }
-  def evaluate() = {
+  def evaluate(data: DataFrame = null,
+               batchSize: Int = 4,
+               featureColumn: Array[String] = null) = {
     estimator.getEvaluateResults().foreach{r =>
       println(r._1 + ":" + r._2.mkString(","))
     }
   }
-  def predict(data: DataFrame) = {
+  def predict(data: DataFrame,
+              batchSize: Int = 4,
+              featureColumn: Array[String] = null) = {
 
   }
 }

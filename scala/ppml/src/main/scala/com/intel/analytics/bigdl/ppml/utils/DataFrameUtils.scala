@@ -21,23 +21,57 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Samp
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.vfl.VflContext
 import com.intel.analytics.bigdl
-import org.apache.spark.sql.types.FloatType
+import org.apache.spark.sql.types.{ArrayType, DataType, FloatType, MapType, StringType, StructType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import collection.JavaConverters._
+import collection.JavaConversions._
 
 object DataFrameUtils {
-  def dataFrameToSample(df: DataFrame, isTrain: Boolean = true, batchSize: Int = 4): bigdl.DataSet[MiniBatch[Float]] = {
+  def dataFrameToSample(df: DataFrame,
+                        featureColumn: Array[String] = null,
+                        labelColumn: Array[String] = null,
+                        isTrain: Boolean = true,
+                        batchSize: Int = 4): bigdl.DataSet[MiniBatch[Float]] = {
     val spark = VflContext.getSparkSession()
     import spark.implicits._
     var fDf: DataFrame = df
+    if (featureColumn != null) {
+      val featureList = featureColumn.toList
+      fDf = fDf.select(featureList.head, featureList.tail: _*)
+    }
     df.columns.foreach(colName => {
-      fDf = fDf.withColumn(colName, df.col(colName).cast(FloatType))
+      val dataType = getGenericType(df.schema(colName).dataType)
+      fDf = dataType match {
+        case "scalar" => fDf.withColumn(colName, df.col(colName).cast(FloatType))
+        case "complex" => throw new Error("not implemented")
+      }
+
     })
     val samples = fDf.rdd.map(r => {
-      val arr = (0 until r.size).map(i => r.getAs[Float](i)).toArray
+      var featureNum: Int = 0
+      var labelMum: Int = 0
+      val inputList = new java.util.ArrayList[Float]()
+      val arr = if (featureColumn != null || labelColumn != null) {
+        require(featureColumn != null && labelColumn != null,
+          "You must provide both featureColumn and labelColumn or neither," +
+          "if neither, the last would be used as label and the rest are the features")
+        featureColumn.foreach(f => inputList.add(r.getAs[Float](f)))
+        labelColumn.foreach(f => inputList.add(r.getAs[Float](f)))
+        featureNum = featureColumn.length
+        labelMum = labelColumn.length
+        inputList.toArray[Float]
+      } else {
+        featureNum = r.size - 1
+        labelMum = 1
+        (0 until r.size).map(i => r.getAs[Float](i)).toArray
+      }
+
+
+
       if (isTrain) {
-        val featureNum = r.size - 1
+        require(featureNum + labelMum == r.size, "size mismatch")
         val features = Tensor[Float](arr.slice(0, featureNum), Array(featureNum))
-        val target = Tensor[Float](Array(arr(featureNum)), Array(1))
+        val target = Tensor[Float](arr.slice(featureNum, r.size), Array(labelMum))
         Sample(features, target)
       } else {
         val featureNum = r.size
@@ -47,5 +81,12 @@ object DataFrameUtils {
     })
     DataSet.array(samples.collect()) ->
       SampleToMiniBatch(batchSize, parallelizing = false)
+  }
+  def getGenericType(dataType: DataType): String = {
+    dataType match {
+      case d =>
+        if (d != ArrayType && d != StructType && d != MapType) "scalar"
+        else "complex"
+    }
   }
 }
