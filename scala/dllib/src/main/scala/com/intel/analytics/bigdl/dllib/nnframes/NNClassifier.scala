@@ -448,6 +448,11 @@ object XGBClassifierModel {
   def load(path: String, numClass: Int): XGBClassifierModel = {
     new XGBClassifierModel(XGBoostHelper.load(path, numClass))
   }
+
+  def load(path: String): XGBClassifierModel = {
+    new XGBClassifierModel(XGBoostClassificationModel.load(path))
+  }
+
 }
 
 /**
