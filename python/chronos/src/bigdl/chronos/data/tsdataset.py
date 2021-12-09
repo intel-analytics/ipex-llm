@@ -483,8 +483,7 @@ class TSDataset:
         Sampling by rolling for machine learning/deep learning models.
 
         :param lookback: int, lookback value. Default to 'auto',
-               if 'auto', we will calculate a cycle, this cycle is
-               the most distributed cycle in the dataset.
+               if 'auto', the mode of time series' cycle length will be taken as the lookback.
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
@@ -624,8 +623,7 @@ class TSDataset:
                If True, you must also specify lookback and horizon for rolling. If False, you must
                have called tsdataset.roll() before calling to_torch_data_loader(). Default to False.
         :param lookback: int, lookback value. Default to 'auto',
-               if 'auto', we will calculate a cycle, this cycle is
-               the most distributed cycle in the dataset.
+               the mode of time series' cycle length will be taken as the lookback.
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
@@ -826,12 +824,13 @@ class TSDataset:
 
         Args:
             top_k (int): The freq with top top_k power after fft will be
-                used to check the autocorrelation.
+                used to check the autocorrelation. Higher top_k might be time-consuming.
+                The value is default to 3.
             aggregate (str): Select the mode of calculation time period,
                 We only support 'min', 'max', 'mode', 'median', 'mean'.
 
         Returns:
-            A best cycle length.
+            Describe the value of the time period distribution.
         """
         assert isinstance(top_k, int),\
             f"top_k type must be int, but found {type(top_k)}."
@@ -840,11 +839,18 @@ class TSDataset:
         assert aggregate.lower().strip() in ['min', 'max', 'mode', 'median', 'mean'], \
             f"We Only support 'min' 'max' 'mode' 'median' 'mean', but found {aggregate}."
 
-        res = self.df.groupby(self.id_col).apply(lambda x: [cycle_length_est(x[col].values, top_k)
-                                                 for col in self.target_col][0])
+        if len(self.target_col) == 1:
+            res = self.df.groupby(self.id_col)\
+                         .apply(lambda x: (cycle_length_est(x[self.target_col[0]].values, top_k)))
+        else:
+            res = self.df.groupby(self.id_col)\
+                         .apply(lambda x: pd.DataFrame({'cycle_length':
+                                [cycle_length_est(x[col].values,
+                                                  top_k)for col in self.target_col]}))
+            res = res.cycle_length
 
         if aggregate.lower().strip() == 'mode':
-            self.best_cycle_length = int(res.unique()[0])
+            self.best_cycle_length = int(res.value_counts().index[0])
         elif aggregate.lower().strip() == 'mean':
             self.best_cycle_length = int(res.mean())
         elif aggregate.lower().strip() == 'median':
