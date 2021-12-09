@@ -59,7 +59,7 @@ object DataFrameUtils {
         labelColumn.foreach(f => inputList.add(r.getAs[Float](f)))
         featureNum = featureColumn.length
         labelMum = labelColumn.length
-        inputList.toArray[Float]
+        inputList.asScala.toArray[Float]
       } else {
         featureNum = r.size - 1
         labelMum = 1
