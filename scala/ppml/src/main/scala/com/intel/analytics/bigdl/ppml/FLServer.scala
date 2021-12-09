@@ -29,6 +29,8 @@ import org.apache.log4j.{Level, Logger}
 /**
  * FLServer is BigDL PPML gRPC server used for FL based on GrpcServerBase
  * FLServer starts all the services, e.g. PSIServiceImpl, NNServiceImpl once server starts
+
+ * Supports: PSI, HFL/VFL Logistic Regression / Linear Regression
  */
 object FLServer {
 

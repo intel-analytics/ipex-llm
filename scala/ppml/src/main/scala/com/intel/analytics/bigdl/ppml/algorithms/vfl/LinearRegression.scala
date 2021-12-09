@@ -22,6 +22,11 @@ import com.intel.analytics.bigdl.ppml.FLModel
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNEstimator
 import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 
+/**
+ * VFL Linear Regression
+ * @param featureNum
+ * @param learningRate
+ */
 class LinearRegression(featureNum: Int,
                        learningRate: Float = 0.005f) extends FLModel with FLClientClosable {
   val model = Sequential[Float]().add(Linear(featureNum, 1))
