@@ -15,8 +15,6 @@
 #
 
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
-from bigdl.chronos.forecaster.utils import set_pytorch_seed
-from bigdl.chronos.model.tcn import TCNPytorch
 from bigdl.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
 
 
@@ -34,7 +32,7 @@ class TCNForecaster(BasePytorchForecaster):
             >>> test_pred = forecaster.predict(x_test)
             >>> test_eval = forecaster.evaluate((x_test, y_test))
             >>> forecaster.save({ckpt_name})
-            >>> forecaster.restore({ckpt_name})
+            >>> forecaster.load({ckpt_name})
     """
     def __init__(self,
                  past_seq_len,
@@ -81,9 +79,8 @@ class TCNForecaster(BasePytorchForecaster):
         :param lr: Specify the learning rate. This value defaults to 0.001.
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
-               distributed forecaster. You may choose from "mse", "me", "mae",
-               "mse","rmse","msle","r2", "mpe", "mape", "mspe", "smape", "mdape"
-               and "smdape" for a non-distributed forecaster.
+               distributed forecaster. You may choose from "mse", "mae",
+               "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.
@@ -102,18 +99,21 @@ class TCNForecaster(BasePytorchForecaster):
             "input_feature_num": input_feature_num,
             "output_feature_num": output_feature_num
         }
-        self.config = {
-            "lr": lr,
-            "loss": loss,
+        self.model_config = {
             "num_channels": num_channels,
             "kernel_size": kernel_size,
             "repo_initialization": repo_initialization,
-            "optim": optimizer,
             "dropout": dropout
+        }
+        self.loss_config = {
+            "loss": loss
+        }
+        self.optim_config = {
+            "lr": lr,
+            "optim": optimizer
         }
 
         # model creator settings
-        self.local_model = TCNPytorch
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
@@ -127,5 +127,10 @@ class TCNForecaster(BasePytorchForecaster):
         self.lr = lr
         self.metrics = metrics
         self.seed = seed
+
+        # nano setting
+        self.num_processes = 1  # currently TCN can't be distributed training
+        self.use_ipex = False  # TCN has worse performance on ipex
+        self.onnx_available = True
 
         super().__init__()

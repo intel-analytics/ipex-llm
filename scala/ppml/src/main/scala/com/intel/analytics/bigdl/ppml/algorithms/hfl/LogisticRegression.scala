@@ -26,6 +26,7 @@ class LogisticRegression(featureNum: Int,
                          learningRate: Float = 0.005f) extends FLModel() with FLClientClosable {
   val model = Sequential[Float]().add(Linear(featureNum, 1))
     .add(Sigmoid[Float]())
+
   override val estimator = new HflNNEstimator(
     "hfl_logistic_regression", model, new Adam(learningRate), new BCECriterion[Float]())
 }

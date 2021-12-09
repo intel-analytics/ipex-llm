@@ -32,14 +32,11 @@ object VflLogisticRegression {
     // this do not need to be DataFrame?
     // load data from dataset and preprocess\
     val salt = pSI.getSalt()
+
     val spark = FLContext.getSparkSession()
-    import spark.implicits._
     val df = spark.read.option("header", "true").csv(dataPath)
-    val ids = df.select(rowKeyName).as[String].collect().toList
-    pSI.uploadSet(ids, salt)
-    val intersections = pSI.downloadIntersection()
-    val intersectionSet = intersections.toSet
-    val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](0))) // TODO
+    val dataSet = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
+
     // we use same dataset to train and validate in this example
     (dataSet, dataSet)
   }
@@ -80,8 +77,9 @@ object VflLogisticRegression {
     val (trainData, valData) = getData(pSI, dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model
+
     val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData)
+    lr.fit(trainData, valData = valData)
     lr.evaluate()
   }
 

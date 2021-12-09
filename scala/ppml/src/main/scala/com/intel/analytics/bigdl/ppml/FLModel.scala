@@ -16,13 +16,15 @@
 
 package com.intel.analytics.bigdl.ppml
 
+import com.intel.analytics.bigdl.dllib.nn.Sequential
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNEstimator
 import org.apache.spark.sql.DataFrame
 
-class FLModel() {
-  val estimator: Estimator = null
+abstract class FLModel() {
+  val model: Sequential[Float]
+  val estimator: Estimator
   def fit(trainData: DataFrame,
           valData: DataFrame,
           epoch : Int = 1) = {
