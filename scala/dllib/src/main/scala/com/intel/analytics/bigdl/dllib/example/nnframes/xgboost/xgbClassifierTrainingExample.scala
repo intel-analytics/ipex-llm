@@ -32,11 +32,11 @@ object xgbClassifierTrainingExample {
     }
     val sc = NNContext.initNNContext()
     val spark = SQLContext.getOrCreate(sc)
-
-    val inputPath = args(0)
+    
+    val input_path = args(0) // path to iris.data
     val num_threads = args(1).toInt
     val num_round = args(2).toInt
-    val modelsave_path= args(3)
+    val modelsave_path= args(3) // save model to this path
 
     val schema = new StructType(Array(
       StructField("sepal length", DoubleType, true),
@@ -44,13 +44,13 @@ object xgbClassifierTrainingExample {
       StructField("petal length", DoubleType, true),
       StructField("petal width", DoubleType, true),
       StructField("class", StringType, true)))
-    val rawInput = spark.read.schema(schema).csv(inputPath)
+    val df = spark.read.schema(schema).csv(input_path)
 
     val stringIndexer = new StringIndexer()
       .setInputCol("class")
       .setOutputCol("classIndex")
-      .fit(rawInput)
-    val labelTransformed = stringIndexer.transform(rawInput).drop("class")
+      .fit(df)
+    val labelTransformed = stringIndexer.transform(df).drop("class")
     // compose all feature columns as vector
     val vectorAssembler = new VectorAssembler().
       setInputCols(Array("sepal length", "sepal width", "petal length", "petal width")).
@@ -62,6 +62,7 @@ object xgbClassifierTrainingExample {
 
     val xgbParam = Map("tracker_conf" -> TrackerConf(60*60, "scala"),
       "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2))
+
     val xgbClassifier = new XGBClassifier(xgbParam)
     xgbClassifier.setFeaturesCol("features")
     xgbClassifier.setLabelCol("classIndex")
@@ -77,5 +78,6 @@ object xgbClassifierTrainingExample {
     val xgbClassificationModel = xgbClassifier.fit(train)
     xgbClassificationModel.save(modelsave_path)
 
+    sc.stop()
   }
 }

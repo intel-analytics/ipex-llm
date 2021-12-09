@@ -318,7 +318,7 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
   }
 }
 
-class XGBClassifier (private[nnframes] val xgboostParams: Map[String, Any] = Map()) {
+class XGBClassifier (private val xgboostParams: Map[String, Any] = Map()) {
   private val model = new XGBoostClassifier(xgboostParams)
   model.setNthread(Engine.coreNumber())
   model.setMaxBins(256)

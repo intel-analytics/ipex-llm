@@ -1,37 +1,22 @@
 # XGBoostClassifier Train Example
 
 ## Environment
-- spark 2.4.6
+- Spark 2.4
 - BigDL 2.0 
+
 ## Data Prepare
 
-### Build BigDL/scala
-run :
-```
-bash /path/to/BigDL/scala/make-dist.sh
-```
+### BigDL nightly build
 
-You will get jars include `bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar`
+You can download [here](https://bigdl.readthedocs.io/en/latest/doc/release.html).
+You will get jar `bigdl-dllib-spark_2.4.6-0.14.0-build_time-jar-with-dependencies.jar`.
 
-### Get iris.csv
+### UCI iris.data
 
-run python command:
-```
-from sklearn.datasets import load_iris
-import numpy as np
-import pandas
-
-X, y = load_iris(return_X_y=True)
-y = y.astype(np.int)
-df = pandas.DataFrame(data=X, columns=['sepal length', 'sepal width', 'petal length', 'petal width'])
-class_id_to_name = {0:'Iris-setosa', 1:'Iris-versicolor', 2:'Iris-virginica'}
-df['class'] = np.vectorize(class_id_to_name.get)(y)
-df.to_csv('./iris.csv', float_format='%.1f', header=False, index=False)
-```
-
-You will get file `iris.csv` in current path.
+You can download iris.data [here](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data).
 
 ## Run:
+
 command:
 ```
 spark-submit \
@@ -39,7 +24,7 @@ spark-submit \
   --conf spark.task.cpus=2  \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExample \
   /path/to/BigDL/scala/dllib/target/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  /path/to/iris.csv 2 100 /path/to/model/saved
+  /path/to/iris.data 2 100 /path/to/model/saved
 ```
 
 You will get output like:
@@ -56,7 +41,7 @@ And tree of folder `/path/to/model/saved` :
     └── _SUCCESS
 ```
 parameters:
-- path_to_iris.csv : String
+- path_to_iris.data : String
 - num_threads : Int
 - num_round : Int 
 - path_to_model_saved : String
