@@ -32,5 +32,6 @@ Blog
 
 **2017**
 - [Accelerating Deep-Learning Training with BigDL and Drizzle on Apache Spark](https://rise.cs.berkeley.edu/blog/accelerating-deep-learning-training-with-bigdl-and-drizzle-on-apache-spark)
+- [Using BigDL to Build Image Similarity-Based House Recommendations](https://www.intel.com/content/www/us/en/developer/articles/technical/using-bigdl-to-build-image-similarity-based-house-recommendations.html)
 - [Building Large-Scale Image Feature Extraction with BigDL at JD.com](https://www.intel.com/content/www/us/en/developer/articles/technical/building-large-scale-image-feature-extraction-with-bigdl-at-jdcom.html)
 - [BigDL: Distributed Deep Learning on Apache Spark](https://www.intel.com/content/www/us/en/developer/articles/technical/bigdl-distributed-deep-learning-on-apache-spark.html)
