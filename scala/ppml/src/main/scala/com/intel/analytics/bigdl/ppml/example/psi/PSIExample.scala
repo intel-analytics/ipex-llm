@@ -39,7 +39,7 @@ object PSIExample {
     // Create a communication channel to the server,  known as a Channel. Channels are thread-safe
     // and reusable. It is common to create channels at the beginning of your application and reuse
     // them until the application shuts down.
-    FLContext.initContext()
+    FLContext.initFLContext()
     val pSI = new PSI()
     try {
       // Get salt from Server

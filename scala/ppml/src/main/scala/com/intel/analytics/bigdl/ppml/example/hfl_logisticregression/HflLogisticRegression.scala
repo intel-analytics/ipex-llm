@@ -66,7 +66,7 @@ object HflLogisticRegression {
     /**
      * Usage of BigDL PPML starts from here
      */
-    FLContext.initContext()
+    FLContext.initFLContext()
     val (trainData, valData) = getData(dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model

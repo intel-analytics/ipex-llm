@@ -75,7 +75,7 @@ object VflLogisticRegression {
     /**
      * Usage of BigDL PPML starts from here
      */
-    FLContext.initContext()
+    FLContext.initFLContext()
     val pSI = new PSI()
     val (trainData, valData) = getData(pSI, dataPath, rowKeyName, batchSize)
 

@@ -35,7 +35,7 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val flServer = new FLServer()
     flServer.build()
     flServer.start()
-    FLContext.initContext()
+    FLContext.initFLContext()
     val logisticRegression = new LogisticRegression(featureNum = 1)
     val linearRegression = new LinearRegression(featureNum = 1)
     flServer.stop()

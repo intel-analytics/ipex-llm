@@ -10,7 +10,7 @@ import org.apache.spark.sql.SparkSession
 object FLContext {
   var flClient: FLClient = null
   var sparkSession: SparkSession = null
-  def initContext(target: String = null) = {
+  def initFLContext(target: String = null) = {
     this.synchronized {
       if (flClient == null) {
         this.synchronized {
