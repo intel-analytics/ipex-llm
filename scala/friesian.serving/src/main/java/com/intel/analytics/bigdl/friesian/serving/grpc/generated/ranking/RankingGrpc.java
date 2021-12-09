@@ -17,29 +17,29 @@ public final class RankingGrpc {
   public static final String SERVICE_NAME = "ranking.Ranking";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction> getDoPredictMethod;
+  private static volatile io.grpc.MethodDescriptor<RankingProto.Content,
+      RankingProto.Prediction> getDoPredictMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "doPredict",
-      requestType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content.class,
-      responseType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction.class,
+      requestType = RankingProto.Content.class,
+      responseType = RankingProto.Prediction.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction> getDoPredictMethod() {
-    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction> getDoPredictMethod;
+  public static io.grpc.MethodDescriptor<RankingProto.Content,
+      RankingProto.Prediction> getDoPredictMethod() {
+    io.grpc.MethodDescriptor<RankingProto.Content, RankingProto.Prediction> getDoPredictMethod;
     if ((getDoPredictMethod = RankingGrpc.getDoPredictMethod) == null) {
       synchronized (RankingGrpc.class) {
         if ((getDoPredictMethod = RankingGrpc.getDoPredictMethod) == null) {
           RankingGrpc.getDoPredictMethod = getDoPredictMethod =
-              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction>newBuilder()
+              io.grpc.MethodDescriptor.<RankingProto.Content, RankingProto.Prediction>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "doPredict"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content.getDefaultInstance()))
+                  RankingProto.Content.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction.getDefaultInstance()))
+                  RankingProto.Prediction.getDefaultInstance()))
               .setSchemaDescriptor(new RankingMethodDescriptorSupplier("doPredict"))
               .build();
         }
@@ -48,29 +48,91 @@ public final class RankingGrpc {
     return getDoPredictMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<RankingProto.ModelPath,
+      RankingProto.OperationStatus> getAddModelMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "addModel",
+      requestType = RankingProto.ModelPath.class,
+      responseType = RankingProto.OperationStatus.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<RankingProto.ModelPath,
+      RankingProto.OperationStatus> getAddModelMethod() {
+    io.grpc.MethodDescriptor<RankingProto.ModelPath, RankingProto.OperationStatus> getAddModelMethod;
+    if ((getAddModelMethod = RankingGrpc.getAddModelMethod) == null) {
+      synchronized (RankingGrpc.class) {
+        if ((getAddModelMethod = RankingGrpc.getAddModelMethod) == null) {
+          RankingGrpc.getAddModelMethod = getAddModelMethod =
+              io.grpc.MethodDescriptor.<RankingProto.ModelPath, RankingProto.OperationStatus>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "addModel"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  RankingProto.ModelPath.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  RankingProto.OperationStatus.getDefaultInstance()))
+              .setSchemaDescriptor(new RankingMethodDescriptorSupplier("addModel"))
+              .build();
+        }
+      }
+    }
+    return getAddModelMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<RankingProto.ModelPath,
+      RankingProto.OperationStatus> getDeleteModelMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "deleteModel",
+      requestType = RankingProto.ModelPath.class,
+      responseType = RankingProto.OperationStatus.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<RankingProto.ModelPath,
+      RankingProto.OperationStatus> getDeleteModelMethod() {
+    io.grpc.MethodDescriptor<RankingProto.ModelPath, RankingProto.OperationStatus> getDeleteModelMethod;
+    if ((getDeleteModelMethod = RankingGrpc.getDeleteModelMethod) == null) {
+      synchronized (RankingGrpc.class) {
+        if ((getDeleteModelMethod = RankingGrpc.getDeleteModelMethod) == null) {
+          RankingGrpc.getDeleteModelMethod = getDeleteModelMethod =
+              io.grpc.MethodDescriptor.<RankingProto.ModelPath, RankingProto.OperationStatus>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "deleteModel"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  RankingProto.ModelPath.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  RankingProto.OperationStatus.getDefaultInstance()))
+              .setSchemaDescriptor(new RankingMethodDescriptorSupplier("deleteModel"))
+              .build();
+        }
+      }
+    }
+    return getDeleteModelMethod;
+  }
+
   private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage> getGetMetricsMethod;
+      RankingProto.ServerMessage> getGetMetricsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "getMetrics",
       requestType = com.google.protobuf.Empty.class,
-      responseType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage.class,
+      responseType = RankingProto.ServerMessage.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage> getGetMetricsMethod() {
-    io.grpc.MethodDescriptor<com.google.protobuf.Empty, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage> getGetMetricsMethod;
+      RankingProto.ServerMessage> getGetMetricsMethod() {
+    io.grpc.MethodDescriptor<com.google.protobuf.Empty, RankingProto.ServerMessage> getGetMetricsMethod;
     if ((getGetMetricsMethod = RankingGrpc.getGetMetricsMethod) == null) {
       synchronized (RankingGrpc.class) {
         if ((getGetMetricsMethod = RankingGrpc.getGetMetricsMethod) == null) {
           RankingGrpc.getGetMetricsMethod = getGetMetricsMethod =
-              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage>newBuilder()
+              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, RankingProto.ServerMessage>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "getMetrics"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage.getDefaultInstance()))
+                  RankingProto.ServerMessage.getDefaultInstance()))
               .setSchemaDescriptor(new RankingMethodDescriptorSupplier("getMetrics"))
               .build();
         }
@@ -163,15 +225,29 @@ public final class RankingGrpc {
 
     /**
      */
-    public void doPredict(com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction> responseObserver) {
+    public void doPredict(RankingProto.Content request,
+        io.grpc.stub.StreamObserver<RankingProto.Prediction> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDoPredictMethod(), responseObserver);
     }
 
     /**
      */
+    public void addModel(RankingProto.ModelPath request,
+        io.grpc.stub.StreamObserver<RankingProto.OperationStatus> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getAddModelMethod(), responseObserver);
+    }
+
+    /**
+     */
+    public void deleteModel(RankingProto.ModelPath request,
+        io.grpc.stub.StreamObserver<RankingProto.OperationStatus> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDeleteModelMethod(), responseObserver);
+    }
+
+    /**
+     */
     public void getMetrics(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage> responseObserver) {
+        io.grpc.stub.StreamObserver<RankingProto.ServerMessage> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetMetricsMethod(), responseObserver);
     }
 
@@ -188,15 +264,29 @@ public final class RankingGrpc {
             getDoPredictMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content,
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction>(
+                RankingProto.Content,
+                RankingProto.Prediction>(
                   this, METHODID_DO_PREDICT)))
+          .addMethod(
+            getAddModelMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                RankingProto.ModelPath,
+                RankingProto.OperationStatus>(
+                  this, METHODID_ADD_MODEL)))
+          .addMethod(
+            getDeleteModelMethod(),
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
+              new MethodHandlers<
+                RankingProto.ModelPath,
+                RankingProto.OperationStatus>(
+                  this, METHODID_DELETE_MODEL)))
           .addMethod(
             getGetMetricsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 com.google.protobuf.Empty,
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage>(
+                RankingProto.ServerMessage>(
                   this, METHODID_GET_METRICS)))
           .addMethod(
             getResetMetricsMethod(),
@@ -228,16 +318,32 @@ public final class RankingGrpc {
 
     /**
      */
-    public void doPredict(com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction> responseObserver) {
+    public void doPredict(RankingProto.Content request,
+        io.grpc.stub.StreamObserver<RankingProto.Prediction> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDoPredictMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
+    public void addModel(RankingProto.ModelPath request,
+        io.grpc.stub.StreamObserver<RankingProto.OperationStatus> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getAddModelMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void deleteModel(RankingProto.ModelPath request,
+        io.grpc.stub.StreamObserver<RankingProto.OperationStatus> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getDeleteModelMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
     public void getMetrics(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage> responseObserver) {
+        io.grpc.stub.StreamObserver<RankingProto.ServerMessage> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetMetricsMethod(), getCallOptions()), request, responseObserver);
     }
@@ -270,14 +376,28 @@ public final class RankingGrpc {
 
     /**
      */
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction doPredict(com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content request) {
+    public RankingProto.Prediction doPredict(RankingProto.Content request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getDoPredictMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage getMetrics(com.google.protobuf.Empty request) {
+    public RankingProto.OperationStatus addModel(RankingProto.ModelPath request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getAddModelMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public RankingProto.OperationStatus deleteModel(RankingProto.ModelPath request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDeleteModelMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public RankingProto.ServerMessage getMetrics(com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetMetricsMethod(), getCallOptions(), request);
     }
@@ -309,15 +429,31 @@ public final class RankingGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction> doPredict(
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content request) {
+    public com.google.common.util.concurrent.ListenableFuture<RankingProto.Prediction> doPredict(
+        RankingProto.Content request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDoPredictMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage> getMetrics(
+    public com.google.common.util.concurrent.ListenableFuture<RankingProto.OperationStatus> addModel(
+        RankingProto.ModelPath request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getAddModelMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<RankingProto.OperationStatus> deleteModel(
+        RankingProto.ModelPath request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getDeleteModelMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<RankingProto.ServerMessage> getMetrics(
         com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetMetricsMethod(), getCallOptions()), request);
@@ -333,8 +469,10 @@ public final class RankingGrpc {
   }
 
   private static final int METHODID_DO_PREDICT = 0;
-  private static final int METHODID_GET_METRICS = 1;
-  private static final int METHODID_RESET_METRICS = 2;
+  private static final int METHODID_ADD_MODEL = 1;
+  private static final int METHODID_DELETE_MODEL = 2;
+  private static final int METHODID_GET_METRICS = 3;
+  private static final int METHODID_RESET_METRICS = 4;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -354,12 +492,20 @@ public final class RankingGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_DO_PREDICT:
-          serviceImpl.doPredict((com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content) request,
-              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction>) responseObserver);
+          serviceImpl.doPredict((RankingProto.Content) request,
+              (io.grpc.stub.StreamObserver<RankingProto.Prediction>) responseObserver);
+          break;
+        case METHODID_ADD_MODEL:
+          serviceImpl.addModel((RankingProto.ModelPath) request,
+              (io.grpc.stub.StreamObserver<RankingProto.OperationStatus>) responseObserver);
+          break;
+        case METHODID_DELETE_MODEL:
+          serviceImpl.deleteModel((RankingProto.ModelPath) request,
+              (io.grpc.stub.StreamObserver<RankingProto.OperationStatus>) responseObserver);
           break;
         case METHODID_GET_METRICS:
           serviceImpl.getMetrics((com.google.protobuf.Empty) request,
-              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage>) responseObserver);
+              (io.grpc.stub.StreamObserver<RankingProto.ServerMessage>) responseObserver);
           break;
         case METHODID_RESET_METRICS:
           serviceImpl.resetMetrics((com.google.protobuf.Empty) request,
@@ -387,7 +533,7 @@ public final class RankingGrpc {
 
     @Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.getDescriptor();
+      return RankingProto.getDescriptor();
     }
 
     @Override
@@ -427,6 +573,8 @@ public final class RankingGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new RankingFileDescriptorSupplier())
               .addMethod(getDoPredictMethod())
+              .addMethod(getAddModelMethod())
+              .addMethod(getDeleteModelMethod())
               .addMethod(getGetMetricsMethod())
               .addMethod(getResetMetricsMethod())
               .build();

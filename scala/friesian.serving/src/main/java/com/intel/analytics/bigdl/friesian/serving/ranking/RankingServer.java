@@ -35,9 +35,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RankingServer extends GrpcServerBase {
@@ -89,7 +87,7 @@ public class RankingServer extends GrpcServerBase {
     }
 
     private static class RankingService extends RankingGrpc.RankingImplBase {
-        private final InferenceModel model;
+        private Map<String, InferenceModel> modelRegistry = new HashMap<String, InferenceModel>();
         private MetricRegistry metrics = new MetricRegistry();
         Timer overallTimer = metrics.timer("ranking.overall");
         Timer decodeTimer = metrics.timer("ranking.decode");
@@ -98,8 +96,9 @@ public class RankingServer extends GrpcServerBase {
 
         RankingService() {
             gRPCHelper helper = Utils.helper();
-            this.model = helper.loadInferenceModel(helper.modelParallelism(), helper.modelPath(),
+            InferenceModel model = helper.loadInferenceModel(helper.modelParallelism(), helper.modelPath(),
                     helper.savedModelInputsArr());
+            modelRegistry.put(helper.modelPath(), model);
         }
 
         @Override
@@ -109,6 +108,29 @@ public class RankingServer extends GrpcServerBase {
             responseObserver.onCompleted();
         }
 
+        @Override
+        public void addModel(ModelPath request,
+                             StreamObserver<OperationStatus> responseObserver) {
+            responseObserver.onNext(modelAdd(request));
+            responseObserver.onCompleted();
+        }
+
+        private OperationStatus modelAdd(ModelPath msg) {
+            String path = msg.getPath();
+            System.out.println(path);
+            try {
+                gRPCHelper helper = Utils.helper();
+                InferenceModel model = helper.loadInferenceModel(helper.modelParallelism(), path,
+                        helper.savedModelInputsArr());
+                modelRegistry.put(path, model);
+                return OperationStatus.newBuilder().setSuccess(true).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                return OperationStatus.newBuilder().setSuccess(false).build();
+            }
+        }
+
         private Prediction predict(Content msg) {
             Timer.Context overallContext = overallTimer.time();
             String encodedStr = msg.getEncodedStr();
@@ -116,8 +138,20 @@ public class RankingServer extends GrpcServerBase {
             byte[] bytes1 = Base64.getDecoder().decode(encodedStr);
             Activity input = (Activity) EncodeUtils.bytesToObj(bytes1);
             decodeContext.stop();
+            Set<String> models = modelRegistry.keySet();
+            int id = new Random().nextInt(models.size());
+            String targetModel = "";
+            int k = 0;
+            for (String model: models) {
+                if (k == id) {
+                    targetModel = model;
+                    break;
+                }
+                k += 1;
+            }
+            System.out.println("Using model: " + targetModel);
             Timer.Context inferenceContext = inferenceTimer.time();
-            Activity predictResult = model.doPredict(input);
+            Activity predictResult = modelRegistry.get(targetModel).doPredict(input);
             inferenceContext.stop();
             Timer.Context encodeContext = encodeTimer.time();
             String res = Base64.getEncoder().encodeToString(EncodeUtils.objToBytes(predictResult));

@@ -17,29 +17,29 @@ public final class RecommenderGrpc {
   public static final String SERVICE_NAME = "recommender.Recommender";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs> getGetRecommendIDsMethod;
+  private static volatile io.grpc.MethodDescriptor<RecommenderProto.RecommendRequest,
+      RecommenderProto.RecommendIDProbs> getGetRecommendIDsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "getRecommendIDs",
-      requestType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest.class,
-      responseType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs.class,
+      requestType = RecommenderProto.RecommendRequest.class,
+      responseType = RecommenderProto.RecommendIDProbs.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs> getGetRecommendIDsMethod() {
-    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs> getGetRecommendIDsMethod;
+  public static io.grpc.MethodDescriptor<RecommenderProto.RecommendRequest,
+      RecommenderProto.RecommendIDProbs> getGetRecommendIDsMethod() {
+    io.grpc.MethodDescriptor<RecommenderProto.RecommendRequest, RecommenderProto.RecommendIDProbs> getGetRecommendIDsMethod;
     if ((getGetRecommendIDsMethod = RecommenderGrpc.getGetRecommendIDsMethod) == null) {
       synchronized (RecommenderGrpc.class) {
         if ((getGetRecommendIDsMethod = RecommenderGrpc.getGetRecommendIDsMethod) == null) {
           RecommenderGrpc.getGetRecommendIDsMethod = getGetRecommendIDsMethod =
-              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs>newBuilder()
+              io.grpc.MethodDescriptor.<RecommenderProto.RecommendRequest, RecommenderProto.RecommendIDProbs>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "getRecommendIDs"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest.getDefaultInstance()))
+                  RecommenderProto.RecommendRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs.getDefaultInstance()))
+                  RecommenderProto.RecommendIDProbs.getDefaultInstance()))
               .setSchemaDescriptor(new RecommenderMethodDescriptorSupplier("getRecommendIDs"))
               .build();
         }
@@ -49,28 +49,28 @@ public final class RecommenderGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> getGetMetricsMethod;
+      RecommenderProto.ServerMessage> getGetMetricsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "getMetrics",
       requestType = com.google.protobuf.Empty.class,
-      responseType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.class,
+      responseType = RecommenderProto.ServerMessage.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> getGetMetricsMethod() {
-    io.grpc.MethodDescriptor<com.google.protobuf.Empty, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> getGetMetricsMethod;
+      RecommenderProto.ServerMessage> getGetMetricsMethod() {
+    io.grpc.MethodDescriptor<com.google.protobuf.Empty, RecommenderProto.ServerMessage> getGetMetricsMethod;
     if ((getGetMetricsMethod = RecommenderGrpc.getGetMetricsMethod) == null) {
       synchronized (RecommenderGrpc.class) {
         if ((getGetMetricsMethod = RecommenderGrpc.getGetMetricsMethod) == null) {
           RecommenderGrpc.getGetMetricsMethod = getGetMetricsMethod =
-              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage>newBuilder()
+              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, RecommenderProto.ServerMessage>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "getMetrics"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.getDefaultInstance()))
+                  RecommenderProto.ServerMessage.getDefaultInstance()))
               .setSchemaDescriptor(new RecommenderMethodDescriptorSupplier("getMetrics"))
               .build();
         }
@@ -111,28 +111,28 @@ public final class RecommenderGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> getGetClientMetricsMethod;
+      RecommenderProto.ServerMessage> getGetClientMetricsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "getClientMetrics",
       requestType = com.google.protobuf.Empty.class,
-      responseType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.class,
+      responseType = RecommenderProto.ServerMessage.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> getGetClientMetricsMethod() {
-    io.grpc.MethodDescriptor<com.google.protobuf.Empty, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> getGetClientMetricsMethod;
+      RecommenderProto.ServerMessage> getGetClientMetricsMethod() {
+    io.grpc.MethodDescriptor<com.google.protobuf.Empty, RecommenderProto.ServerMessage> getGetClientMetricsMethod;
     if ((getGetClientMetricsMethod = RecommenderGrpc.getGetClientMetricsMethod) == null) {
       synchronized (RecommenderGrpc.class) {
         if ((getGetClientMetricsMethod = RecommenderGrpc.getGetClientMetricsMethod) == null) {
           RecommenderGrpc.getGetClientMetricsMethod = getGetClientMetricsMethod =
-              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage>newBuilder()
+              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, RecommenderProto.ServerMessage>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "getClientMetrics"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage.getDefaultInstance()))
+                  RecommenderProto.ServerMessage.getDefaultInstance()))
               .setSchemaDescriptor(new RecommenderMethodDescriptorSupplier("getClientMetrics"))
               .build();
         }
@@ -147,7 +147,7 @@ public final class RecommenderGrpc {
   public static RecommenderStub newStub(io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<RecommenderStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<RecommenderStub>() {
-        @java.lang.Override
+        @Override
         public RecommenderStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new RecommenderStub(channel, callOptions);
         }
@@ -162,7 +162,7 @@ public final class RecommenderGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<RecommenderBlockingStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<RecommenderBlockingStub>() {
-        @java.lang.Override
+        @Override
         public RecommenderBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new RecommenderBlockingStub(channel, callOptions);
         }
@@ -177,7 +177,7 @@ public final class RecommenderGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<RecommenderFutureStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<RecommenderFutureStub>() {
-        @java.lang.Override
+        @Override
         public RecommenderFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new RecommenderFutureStub(channel, callOptions);
         }
@@ -194,15 +194,15 @@ public final class RecommenderGrpc {
 
     /**
      */
-    public void getRecommendIDs(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs> responseObserver) {
+    public void getRecommendIDs(RecommenderProto.RecommendRequest request,
+        io.grpc.stub.StreamObserver<RecommenderProto.RecommendIDProbs> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetRecommendIDsMethod(), responseObserver);
     }
 
     /**
      */
     public void getMetrics(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> responseObserver) {
+        io.grpc.stub.StreamObserver<RecommenderProto.ServerMessage> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetMetricsMethod(), responseObserver);
     }
 
@@ -216,25 +216,25 @@ public final class RecommenderGrpc {
     /**
      */
     public void getClientMetrics(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> responseObserver) {
+        io.grpc.stub.StreamObserver<RecommenderProto.ServerMessage> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetClientMetricsMethod(), responseObserver);
     }
 
-    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+    @Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getGetRecommendIDsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest,
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs>(
+                RecommenderProto.RecommendRequest,
+                RecommenderProto.RecommendIDProbs>(
                   this, METHODID_GET_RECOMMEND_IDS)))
           .addMethod(
             getGetMetricsMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 com.google.protobuf.Empty,
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage>(
+                RecommenderProto.ServerMessage>(
                   this, METHODID_GET_METRICS)))
           .addMethod(
             getResetMetricsMethod(),
@@ -248,7 +248,7 @@ public final class RecommenderGrpc {
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 com.google.protobuf.Empty,
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage>(
+                RecommenderProto.ServerMessage>(
                   this, METHODID_GET_CLIENT_METRICS)))
           .build();
     }
@@ -265,7 +265,7 @@ public final class RecommenderGrpc {
       super(channel, callOptions);
     }
 
-    @java.lang.Override
+    @Override
     protected RecommenderStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new RecommenderStub(channel, callOptions);
@@ -273,8 +273,8 @@ public final class RecommenderGrpc {
 
     /**
      */
-    public void getRecommendIDs(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs> responseObserver) {
+    public void getRecommendIDs(RecommenderProto.RecommendRequest request,
+        io.grpc.stub.StreamObserver<RecommenderProto.RecommendIDProbs> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetRecommendIDsMethod(), getCallOptions()), request, responseObserver);
     }
@@ -282,7 +282,7 @@ public final class RecommenderGrpc {
     /**
      */
     public void getMetrics(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> responseObserver) {
+        io.grpc.stub.StreamObserver<RecommenderProto.ServerMessage> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetMetricsMethod(), getCallOptions()), request, responseObserver);
     }
@@ -298,7 +298,7 @@ public final class RecommenderGrpc {
     /**
      */
     public void getClientMetrics(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> responseObserver) {
+        io.grpc.stub.StreamObserver<RecommenderProto.ServerMessage> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetClientMetricsMethod(), getCallOptions()), request, responseObserver);
     }
@@ -315,7 +315,7 @@ public final class RecommenderGrpc {
       super(channel, callOptions);
     }
 
-    @java.lang.Override
+    @Override
     protected RecommenderBlockingStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new RecommenderBlockingStub(channel, callOptions);
@@ -323,14 +323,14 @@ public final class RecommenderGrpc {
 
     /**
      */
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs getRecommendIDs(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest request) {
+    public RecommenderProto.RecommendIDProbs getRecommendIDs(RecommenderProto.RecommendRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetRecommendIDsMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage getMetrics(com.google.protobuf.Empty request) {
+    public RecommenderProto.ServerMessage getMetrics(com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetMetricsMethod(), getCallOptions(), request);
     }
@@ -344,7 +344,7 @@ public final class RecommenderGrpc {
 
     /**
      */
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage getClientMetrics(com.google.protobuf.Empty request) {
+    public RecommenderProto.ServerMessage getClientMetrics(com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetClientMetricsMethod(), getCallOptions(), request);
     }
@@ -361,7 +361,7 @@ public final class RecommenderGrpc {
       super(channel, callOptions);
     }
 
-    @java.lang.Override
+    @Override
     protected RecommenderFutureStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new RecommenderFutureStub(channel, callOptions);
@@ -369,15 +369,15 @@ public final class RecommenderGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs> getRecommendIDs(
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<RecommenderProto.RecommendIDProbs> getRecommendIDs(
+        RecommenderProto.RecommendRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetRecommendIDsMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> getMetrics(
+    public com.google.common.util.concurrent.ListenableFuture<RecommenderProto.ServerMessage> getMetrics(
         com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetMetricsMethod(), getCallOptions()), request);
@@ -393,7 +393,7 @@ public final class RecommenderGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage> getClientMetrics(
+    public com.google.common.util.concurrent.ListenableFuture<RecommenderProto.ServerMessage> getClientMetrics(
         com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetClientMetricsMethod(), getCallOptions()), request);
@@ -418,17 +418,17 @@ public final class RecommenderGrpc {
       this.methodId = methodId;
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_GET_RECOMMEND_IDS:
-          serviceImpl.getRecommendIDs((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendRequest) request,
-              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.RecommendIDProbs>) responseObserver);
+          serviceImpl.getRecommendIDs((RecommenderProto.RecommendRequest) request,
+              (io.grpc.stub.StreamObserver<RecommenderProto.RecommendIDProbs>) responseObserver);
           break;
         case METHODID_GET_METRICS:
           serviceImpl.getMetrics((com.google.protobuf.Empty) request,
-              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage>) responseObserver);
+              (io.grpc.stub.StreamObserver<RecommenderProto.ServerMessage>) responseObserver);
           break;
         case METHODID_RESET_METRICS:
           serviceImpl.resetMetrics((com.google.protobuf.Empty) request,
@@ -436,15 +436,15 @@ public final class RecommenderGrpc {
           break;
         case METHODID_GET_CLIENT_METRICS:
           serviceImpl.getClientMetrics((com.google.protobuf.Empty) request,
-              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.ServerMessage>) responseObserver);
+              (io.grpc.stub.StreamObserver<RecommenderProto.ServerMessage>) responseObserver);
           break;
         default:
           throw new AssertionError();
       }
     }
 
-    @java.lang.Override
-    @java.lang.SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
@@ -458,12 +458,12 @@ public final class RecommenderGrpc {
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     RecommenderBaseDescriptorSupplier() {}
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recommender.RecommenderProto.getDescriptor();
+      return RecommenderProto.getDescriptor();
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {
       return getFileDescriptor().findServiceByName("Recommender");
     }
@@ -483,7 +483,7 @@ public final class RecommenderGrpc {
       this.methodName = methodName;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {
       return getServiceDescriptor().findMethodByName(methodName);
     }

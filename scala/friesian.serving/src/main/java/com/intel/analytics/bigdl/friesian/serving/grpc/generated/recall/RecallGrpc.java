@@ -17,29 +17,29 @@ public final class RecallGrpc {
   public static final String SERVICE_NAME = "recall.Recall";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates> getSearchCandidatesMethod;
+  private static volatile io.grpc.MethodDescriptor<RecallProto.Query,
+      RecallProto.Candidates> getSearchCandidatesMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "searchCandidates",
-      requestType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query.class,
-      responseType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates.class,
+      requestType = RecallProto.Query.class,
+      responseType = RecallProto.Candidates.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates> getSearchCandidatesMethod() {
-    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates> getSearchCandidatesMethod;
+  public static io.grpc.MethodDescriptor<RecallProto.Query,
+      RecallProto.Candidates> getSearchCandidatesMethod() {
+    io.grpc.MethodDescriptor<RecallProto.Query, RecallProto.Candidates> getSearchCandidatesMethod;
     if ((getSearchCandidatesMethod = RecallGrpc.getSearchCandidatesMethod) == null) {
       synchronized (RecallGrpc.class) {
         if ((getSearchCandidatesMethod = RecallGrpc.getSearchCandidatesMethod) == null) {
           RecallGrpc.getSearchCandidatesMethod = getSearchCandidatesMethod =
-              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates>newBuilder()
+              io.grpc.MethodDescriptor.<RecallProto.Query, RecallProto.Candidates>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "searchCandidates"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query.getDefaultInstance()))
+                  RecallProto.Query.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates.getDefaultInstance()))
+                  RecallProto.Candidates.getDefaultInstance()))
               .setSchemaDescriptor(new RecallMethodDescriptorSupplier("searchCandidates"))
               .build();
         }
@@ -48,27 +48,27 @@ public final class RecallGrpc {
     return getSearchCandidatesMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item,
+  private static volatile io.grpc.MethodDescriptor<RecallProto.Item,
       com.google.protobuf.Empty> getAddItemMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "addItem",
-      requestType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item.class,
+      requestType = RecallProto.Item.class,
       responseType = com.google.protobuf.Empty.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item,
+  public static io.grpc.MethodDescriptor<RecallProto.Item,
       com.google.protobuf.Empty> getAddItemMethod() {
-    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item, com.google.protobuf.Empty> getAddItemMethod;
+    io.grpc.MethodDescriptor<RecallProto.Item, com.google.protobuf.Empty> getAddItemMethod;
     if ((getAddItemMethod = RecallGrpc.getAddItemMethod) == null) {
       synchronized (RecallGrpc.class) {
         if ((getAddItemMethod = RecallGrpc.getAddItemMethod) == null) {
           RecallGrpc.getAddItemMethod = getAddItemMethod =
-              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item, com.google.protobuf.Empty>newBuilder()
+              io.grpc.MethodDescriptor.<RecallProto.Item, com.google.protobuf.Empty>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "addItem"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item.getDefaultInstance()))
+                  RecallProto.Item.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setSchemaDescriptor(new RecallMethodDescriptorSupplier("addItem"))
@@ -80,28 +80,28 @@ public final class RecallGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage> getGetMetricsMethod;
+      RecallProto.ServerMessage> getGetMetricsMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "getMetrics",
       requestType = com.google.protobuf.Empty.class,
-      responseType = com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage.class,
+      responseType = RecallProto.ServerMessage.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
   public static io.grpc.MethodDescriptor<com.google.protobuf.Empty,
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage> getGetMetricsMethod() {
-    io.grpc.MethodDescriptor<com.google.protobuf.Empty, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage> getGetMetricsMethod;
+      RecallProto.ServerMessage> getGetMetricsMethod() {
+    io.grpc.MethodDescriptor<com.google.protobuf.Empty, RecallProto.ServerMessage> getGetMetricsMethod;
     if ((getGetMetricsMethod = RecallGrpc.getGetMetricsMethod) == null) {
       synchronized (RecallGrpc.class) {
         if ((getGetMetricsMethod = RecallGrpc.getGetMetricsMethod) == null) {
           RecallGrpc.getGetMetricsMethod = getGetMetricsMethod =
-              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage>newBuilder()
+              io.grpc.MethodDescriptor.<com.google.protobuf.Empty, RecallProto.ServerMessage>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "getMetrics"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   com.google.protobuf.Empty.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage.getDefaultInstance()))
+                  RecallProto.ServerMessage.getDefaultInstance()))
               .setSchemaDescriptor(new RecallMethodDescriptorSupplier("getMetrics"))
               .build();
         }
@@ -194,14 +194,14 @@ public final class RecallGrpc {
 
     /**
      */
-    public void searchCandidates(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates> responseObserver) {
+    public void searchCandidates(RecallProto.Query request,
+        io.grpc.stub.StreamObserver<RecallProto.Candidates> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSearchCandidatesMethod(), responseObserver);
     }
 
     /**
      */
-    public void addItem(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item request,
+    public void addItem(RecallProto.Item request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getAddItemMethod(), responseObserver);
     }
@@ -209,7 +209,7 @@ public final class RecallGrpc {
     /**
      */
     public void getMetrics(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage> responseObserver) {
+        io.grpc.stub.StreamObserver<RecallProto.ServerMessage> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetMetricsMethod(), responseObserver);
     }
 
@@ -226,14 +226,14 @@ public final class RecallGrpc {
             getSearchCandidatesMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query,
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates>(
+                RecallProto.Query,
+                RecallProto.Candidates>(
                   this, METHODID_SEARCH_CANDIDATES)))
           .addMethod(
             getAddItemMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item,
+                RecallProto.Item,
                 com.google.protobuf.Empty>(
                   this, METHODID_ADD_ITEM)))
           .addMethod(
@@ -241,7 +241,7 @@ public final class RecallGrpc {
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 com.google.protobuf.Empty,
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage>(
+                RecallProto.ServerMessage>(
                   this, METHODID_GET_METRICS)))
           .addMethod(
             getResetMetricsMethod(),
@@ -273,15 +273,15 @@ public final class RecallGrpc {
 
     /**
      */
-    public void searchCandidates(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates> responseObserver) {
+    public void searchCandidates(RecallProto.Query request,
+        io.grpc.stub.StreamObserver<RecallProto.Candidates> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getSearchCandidatesMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void addItem(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item request,
+    public void addItem(RecallProto.Item request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getAddItemMethod(), getCallOptions()), request, responseObserver);
@@ -290,7 +290,7 @@ public final class RecallGrpc {
     /**
      */
     public void getMetrics(com.google.protobuf.Empty request,
-        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage> responseObserver) {
+        io.grpc.stub.StreamObserver<RecallProto.ServerMessage> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetMetricsMethod(), getCallOptions()), request, responseObserver);
     }
@@ -323,21 +323,21 @@ public final class RecallGrpc {
 
     /**
      */
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates searchCandidates(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query request) {
+    public RecallProto.Candidates searchCandidates(RecallProto.Query request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getSearchCandidatesMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public com.google.protobuf.Empty addItem(com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item request) {
+    public com.google.protobuf.Empty addItem(RecallProto.Item request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getAddItemMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage getMetrics(com.google.protobuf.Empty request) {
+    public RecallProto.ServerMessage getMetrics(com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetMetricsMethod(), getCallOptions(), request);
     }
@@ -369,8 +369,8 @@ public final class RecallGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates> searchCandidates(
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query request) {
+    public com.google.common.util.concurrent.ListenableFuture<RecallProto.Candidates> searchCandidates(
+        RecallProto.Query request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getSearchCandidatesMethod(), getCallOptions()), request);
     }
@@ -378,14 +378,14 @@ public final class RecallGrpc {
     /**
      */
     public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> addItem(
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item request) {
+        RecallProto.Item request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getAddItemMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage> getMetrics(
+    public com.google.common.util.concurrent.ListenableFuture<RecallProto.ServerMessage> getMetrics(
         com.google.protobuf.Empty request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetMetricsMethod(), getCallOptions()), request);
@@ -423,16 +423,16 @@ public final class RecallGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_SEARCH_CANDIDATES:
-          serviceImpl.searchCandidates((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Query) request,
-              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Candidates>) responseObserver);
+          serviceImpl.searchCandidates((RecallProto.Query) request,
+              (io.grpc.stub.StreamObserver<RecallProto.Candidates>) responseObserver);
           break;
         case METHODID_ADD_ITEM:
-          serviceImpl.addItem((com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.Item) request,
+          serviceImpl.addItem((RecallProto.Item) request,
               (io.grpc.stub.StreamObserver<com.google.protobuf.Empty>) responseObserver);
           break;
         case METHODID_GET_METRICS:
           serviceImpl.getMetrics((com.google.protobuf.Empty) request,
-              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.ServerMessage>) responseObserver);
+              (io.grpc.stub.StreamObserver<RecallProto.ServerMessage>) responseObserver);
           break;
         case METHODID_RESET_METRICS:
           serviceImpl.resetMetrics((com.google.protobuf.Empty) request,
@@ -460,7 +460,7 @@ public final class RecallGrpc {
 
     @Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.getDescriptor();
+      return RecallProto.getDescriptor();
     }
 
     @Override

@@ -20,12 +20,10 @@ public final class RankingProto {
 
     /**
      * <code>string encodedStr = 1;</code>
-     * @return The encodedStr.
      */
-    java.lang.String getEncodedStr();
+    String getEncodedStr();
     /**
      * <code>string encodedStr = 1;</code>
-     * @return The bytes for encodedStr.
      */
     com.google.protobuf.ByteString
         getEncodedStrBytes();
@@ -46,14 +44,7 @@ public final class RankingProto {
       encodedStr_ = "";
     }
 
-    @java.lang.Override
-    @SuppressWarnings({"unused"})
-    protected java.lang.Object newInstance(
-        UnusedPrivateParameter unused) {
-      return new Content();
-    }
-
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -63,9 +54,7 @@ public final class RankingProto {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
+      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -76,17 +65,17 @@ public final class RankingProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              encodedStr_ = s;
-              break;
-            }
             default: {
-              if (!parseUnknownField(
+              if (!parseUnknownFieldProto3(
                   input, unknownFields, extensionRegistry, tag)) {
                 done = true;
               }
+              break;
+            }
+            case 10: {
+              String s = input.readStringRequireUtf8();
+
+              encodedStr_ = s;
               break;
             }
           }
@@ -103,46 +92,43 @@ public final class RankingProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Content_descriptor;
+      return RankingProto.internal_static_ranking_Content_descriptor;
     }
 
-    @java.lang.Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Content_fieldAccessorTable
+      return RankingProto.internal_static_ranking_Content_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content.Builder.class);
+              RankingProto.Content.class, RankingProto.Content.Builder.class);
     }
 
     public static final int ENCODEDSTR_FIELD_NUMBER = 1;
-    private volatile java.lang.Object encodedStr_;
+    private volatile Object encodedStr_;
     /**
      * <code>string encodedStr = 1;</code>
-     * @return The encodedStr.
      */
-    public java.lang.String getEncodedStr() {
-      java.lang.Object ref = encodedStr_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getEncodedStr() {
+      Object ref = encodedStr_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         encodedStr_ = s;
         return s;
       }
     }
     /**
      * <code>string encodedStr = 1;</code>
-     * @return The bytes for encodedStr.
      */
     public com.google.protobuf.ByteString
         getEncodedStrBytes() {
-      java.lang.Object ref = encodedStr_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+      Object ref = encodedStr_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         encodedStr_ = b;
         return b;
       } else {
@@ -151,7 +137,6 @@ public final class RankingProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -161,7 +146,6 @@ public final class RankingProto {
       return true;
     }
 
-    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getEncodedStrBytes().isEmpty()) {
@@ -170,7 +154,6 @@ public final class RankingProto {
       unknownFields.writeTo(output);
     }
 
-    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -184,23 +167,24 @@ public final class RankingProto {
       return size;
     }
 
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content)) {
+      if (!(obj instanceof RankingProto.Content)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content) obj;
+      RankingProto.Content other = (RankingProto.Content) obj;
 
-      if (!getEncodedStr()
-          .equals(other.getEncodedStr())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
-      return true;
+      boolean result = true;
+      result = result && getEncodedStr()
+          .equals(other.getEncodedStr());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -214,69 +198,69 @@ public final class RankingProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(
+    public static RankingProto.Content parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(
+    public static RankingProto.Content parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(
+    public static RankingProto.Content parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(
+    public static RankingProto.Content parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(byte[] data)
+    public static RankingProto.Content parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(
+    public static RankingProto.Content parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(java.io.InputStream input)
+    public static RankingProto.Content parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(
+    public static RankingProto.Content parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseDelimitedFrom(java.io.InputStream input)
+    public static RankingProto.Content parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseDelimitedFrom(
+    public static RankingProto.Content parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(
+    public static RankingProto.Content parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parseFrom(
+    public static RankingProto.Content parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -284,23 +268,21 @@ public final class RankingProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content prototype) {
+    public static Builder newBuilder(RankingProto.Content prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -310,18 +292,17 @@ public final class RankingProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:ranking.Content)
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ContentOrBuilder {
+        RankingProto.ContentOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Content_descriptor;
+        return RankingProto.internal_static_ranking_Content_descriptor;
       }
 
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Content_fieldAccessorTable
+        return RankingProto.internal_static_ranking_Content_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content.Builder.class);
+                RankingProto.Content.class, RankingProto.Content.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content.newBuilder()
@@ -330,7 +311,7 @@ public final class RankingProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -339,7 +320,6 @@ public final class RankingProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @java.lang.Override
       public Builder clear() {
         super.clear();
         encodedStr_ = "";
@@ -347,78 +327,67 @@ public final class RankingProto {
         return this;
       }
 
-      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Content_descriptor;
+        return RankingProto.internal_static_ranking_Content_descriptor;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content.getDefaultInstance();
+      public RankingProto.Content getDefaultInstanceForType() {
+        return RankingProto.Content.getDefaultInstance();
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content build() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content result = buildPartial();
+      public RankingProto.Content build() {
+        RankingProto.Content result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content buildPartial() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content(this);
+      public RankingProto.Content buildPartial() {
+        RankingProto.Content result = new RankingProto.Content(this);
         result.encodedStr_ = encodedStr_;
         onBuilt();
         return result;
       }
 
-      @java.lang.Override
       public Builder clone() {
-        return super.clone();
+        return (Builder) super.clone();
       }
-      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.setField(field, value);
+          Object value) {
+        return (Builder) super.setField(field, value);
       }
-      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return super.clearField(field);
+        return (Builder) super.clearField(field);
       }
-      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return super.clearOneof(oneof);
+        return (Builder) super.clearOneof(oneof);
       }
-      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
-        return super.setRepeatedField(field, index, value);
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
       }
-      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.addRepeatedField(field, value);
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
       }
-      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content) {
-          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content)other);
+        if (other instanceof RankingProto.Content) {
+          return mergeFrom((RankingProto.Content)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content other) {
-        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content.getDefaultInstance()) return this;
+      public Builder mergeFrom(RankingProto.Content other) {
+        if (other == RankingProto.Content.getDefaultInstance()) return this;
         if (!other.getEncodedStr().isEmpty()) {
           encodedStr_ = other.encodedStr_;
           onChanged();
@@ -428,21 +397,19 @@ public final class RankingProto {
         return this;
       }
 
-      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content parsedMessage = null;
+        RankingProto.Content parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content) e.getUnfinishedMessage();
+          parsedMessage = (RankingProto.Content) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -452,34 +419,32 @@ public final class RankingProto {
         return this;
       }
 
-      private java.lang.Object encodedStr_ = "";
+      private Object encodedStr_ = "";
       /**
        * <code>string encodedStr = 1;</code>
-       * @return The encodedStr.
        */
-      public java.lang.String getEncodedStr() {
-        java.lang.Object ref = encodedStr_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getEncodedStr() {
+        Object ref = encodedStr_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           encodedStr_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
        * <code>string encodedStr = 1;</code>
-       * @return The bytes for encodedStr.
        */
       public com.google.protobuf.ByteString
           getEncodedStrBytes() {
-        java.lang.Object ref = encodedStr_;
+        Object ref = encodedStr_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           encodedStr_ = b;
           return b;
         } else {
@@ -488,33 +453,28 @@ public final class RankingProto {
       }
       /**
        * <code>string encodedStr = 1;</code>
-       * @param value The encodedStr to set.
-       * @return This builder for chaining.
        */
       public Builder setEncodedStr(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         encodedStr_ = value;
         onChanged();
         return this;
       }
       /**
        * <code>string encodedStr = 1;</code>
-       * @return This builder for chaining.
        */
       public Builder clearEncodedStr() {
-        
+
         encodedStr_ = getDefaultInstance().getEncodedStr();
         onChanged();
         return this;
       }
       /**
        * <code>string encodedStr = 1;</code>
-       * @param value The bytes for encodedStr to set.
-       * @return This builder for chaining.
        */
       public Builder setEncodedStrBytes(
           com.google.protobuf.ByteString value) {
@@ -522,18 +482,16 @@ public final class RankingProto {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
+
         encodedStr_ = value;
         onChanged();
         return this;
       }
-      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.setUnknownFields(unknownFields);
+        return super.setUnknownFieldsProto3(unknownFields);
       }
 
-      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -544,23 +502,22 @@ public final class RankingProto {
     }
 
     // @@protoc_insertion_point(class_scope:ranking.Content)
-    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content DEFAULT_INSTANCE;
+    private static final RankingProto.Content DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content();
+      DEFAULT_INSTANCE = new RankingProto.Content();
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content getDefaultInstance() {
+    public static RankingProto.Content getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<Content>
         PARSER = new com.google.protobuf.AbstractParser<Content>() {
-      @java.lang.Override
       public Content parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Content(input, extensionRegistry);
+          return new Content(input, extensionRegistry);
       }
     };
 
@@ -568,13 +525,12 @@ public final class RankingProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<Content> getParserForType() {
       return PARSER;
     }
 
-    @java.lang.Override
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Content getDefaultInstanceForType() {
+    public RankingProto.Content getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -586,12 +542,10 @@ public final class RankingProto {
 
     /**
      * <code>string predictStr = 1;</code>
-     * @return The predictStr.
      */
-    java.lang.String getPredictStr();
+    String getPredictStr();
     /**
      * <code>string predictStr = 1;</code>
-     * @return The bytes for predictStr.
      */
     com.google.protobuf.ByteString
         getPredictStrBytes();
@@ -612,14 +566,7 @@ public final class RankingProto {
       predictStr_ = "";
     }
 
-    @java.lang.Override
-    @SuppressWarnings({"unused"})
-    protected java.lang.Object newInstance(
-        UnusedPrivateParameter unused) {
-      return new Prediction();
-    }
-
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -629,9 +576,7 @@ public final class RankingProto {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
+      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -642,17 +587,17 @@ public final class RankingProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              predictStr_ = s;
-              break;
-            }
             default: {
-              if (!parseUnknownField(
+              if (!parseUnknownFieldProto3(
                   input, unknownFields, extensionRegistry, tag)) {
                 done = true;
               }
+              break;
+            }
+            case 10: {
+              String s = input.readStringRequireUtf8();
+
+              predictStr_ = s;
               break;
             }
           }
@@ -669,46 +614,43 @@ public final class RankingProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Prediction_descriptor;
+      return RankingProto.internal_static_ranking_Prediction_descriptor;
     }
 
-    @java.lang.Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Prediction_fieldAccessorTable
+      return RankingProto.internal_static_ranking_Prediction_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction.Builder.class);
+              RankingProto.Prediction.class, RankingProto.Prediction.Builder.class);
     }
 
     public static final int PREDICTSTR_FIELD_NUMBER = 1;
-    private volatile java.lang.Object predictStr_;
+    private volatile Object predictStr_;
     /**
      * <code>string predictStr = 1;</code>
-     * @return The predictStr.
      */
-    public java.lang.String getPredictStr() {
-      java.lang.Object ref = predictStr_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getPredictStr() {
+      Object ref = predictStr_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         predictStr_ = s;
         return s;
       }
     }
     /**
      * <code>string predictStr = 1;</code>
-     * @return The bytes for predictStr.
      */
     public com.google.protobuf.ByteString
         getPredictStrBytes() {
-      java.lang.Object ref = predictStr_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+      Object ref = predictStr_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         predictStr_ = b;
         return b;
       } else {
@@ -717,7 +659,6 @@ public final class RankingProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -727,7 +668,6 @@ public final class RankingProto {
       return true;
     }
 
-    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getPredictStrBytes().isEmpty()) {
@@ -736,7 +676,6 @@ public final class RankingProto {
       unknownFields.writeTo(output);
     }
 
-    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -750,23 +689,24 @@ public final class RankingProto {
       return size;
     }
 
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction)) {
+      if (!(obj instanceof RankingProto.Prediction)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction) obj;
+      RankingProto.Prediction other = (RankingProto.Prediction) obj;
 
-      if (!getPredictStr()
-          .equals(other.getPredictStr())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
-      return true;
+      boolean result = true;
+      result = result && getPredictStr()
+          .equals(other.getPredictStr());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -780,69 +720,69 @@ public final class RankingProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(
+    public static RankingProto.Prediction parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(
+    public static RankingProto.Prediction parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(
+    public static RankingProto.Prediction parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(
+    public static RankingProto.Prediction parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(byte[] data)
+    public static RankingProto.Prediction parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(
+    public static RankingProto.Prediction parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(java.io.InputStream input)
+    public static RankingProto.Prediction parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(
+    public static RankingProto.Prediction parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseDelimitedFrom(java.io.InputStream input)
+    public static RankingProto.Prediction parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseDelimitedFrom(
+    public static RankingProto.Prediction parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(
+    public static RankingProto.Prediction parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parseFrom(
+    public static RankingProto.Prediction parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -850,23 +790,21 @@ public final class RankingProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction prototype) {
+    public static Builder newBuilder(RankingProto.Prediction prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -876,18 +814,17 @@ public final class RankingProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:ranking.Prediction)
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.PredictionOrBuilder {
+        RankingProto.PredictionOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Prediction_descriptor;
+        return RankingProto.internal_static_ranking_Prediction_descriptor;
       }
 
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Prediction_fieldAccessorTable
+        return RankingProto.internal_static_ranking_Prediction_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction.Builder.class);
+                RankingProto.Prediction.class, RankingProto.Prediction.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction.newBuilder()
@@ -896,7 +833,7 @@ public final class RankingProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -905,7 +842,6 @@ public final class RankingProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @java.lang.Override
       public Builder clear() {
         super.clear();
         predictStr_ = "";
@@ -913,78 +849,67 @@ public final class RankingProto {
         return this;
       }
 
-      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_Prediction_descriptor;
+        return RankingProto.internal_static_ranking_Prediction_descriptor;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction.getDefaultInstance();
+      public RankingProto.Prediction getDefaultInstanceForType() {
+        return RankingProto.Prediction.getDefaultInstance();
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction build() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction result = buildPartial();
+      public RankingProto.Prediction build() {
+        RankingProto.Prediction result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction buildPartial() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction(this);
+      public RankingProto.Prediction buildPartial() {
+        RankingProto.Prediction result = new RankingProto.Prediction(this);
         result.predictStr_ = predictStr_;
         onBuilt();
         return result;
       }
 
-      @java.lang.Override
       public Builder clone() {
-        return super.clone();
+        return (Builder) super.clone();
       }
-      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.setField(field, value);
+          Object value) {
+        return (Builder) super.setField(field, value);
       }
-      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return super.clearField(field);
+        return (Builder) super.clearField(field);
       }
-      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return super.clearOneof(oneof);
+        return (Builder) super.clearOneof(oneof);
       }
-      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
-        return super.setRepeatedField(field, index, value);
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
       }
-      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.addRepeatedField(field, value);
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
       }
-      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction) {
-          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction)other);
+        if (other instanceof RankingProto.Prediction) {
+          return mergeFrom((RankingProto.Prediction)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction other) {
-        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction.getDefaultInstance()) return this;
+      public Builder mergeFrom(RankingProto.Prediction other) {
+        if (other == RankingProto.Prediction.getDefaultInstance()) return this;
         if (!other.getPredictStr().isEmpty()) {
           predictStr_ = other.predictStr_;
           onChanged();
@@ -994,21 +919,19 @@ public final class RankingProto {
         return this;
       }
 
-      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction parsedMessage = null;
+        RankingProto.Prediction parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction) e.getUnfinishedMessage();
+          parsedMessage = (RankingProto.Prediction) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1018,34 +941,32 @@ public final class RankingProto {
         return this;
       }
 
-      private java.lang.Object predictStr_ = "";
+      private Object predictStr_ = "";
       /**
        * <code>string predictStr = 1;</code>
-       * @return The predictStr.
        */
-      public java.lang.String getPredictStr() {
-        java.lang.Object ref = predictStr_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getPredictStr() {
+        Object ref = predictStr_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           predictStr_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
        * <code>string predictStr = 1;</code>
-       * @return The bytes for predictStr.
        */
       public com.google.protobuf.ByteString
           getPredictStrBytes() {
-        java.lang.Object ref = predictStr_;
+        Object ref = predictStr_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           predictStr_ = b;
           return b;
         } else {
@@ -1054,33 +975,28 @@ public final class RankingProto {
       }
       /**
        * <code>string predictStr = 1;</code>
-       * @param value The predictStr to set.
-       * @return This builder for chaining.
        */
       public Builder setPredictStr(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         predictStr_ = value;
         onChanged();
         return this;
       }
       /**
        * <code>string predictStr = 1;</code>
-       * @return This builder for chaining.
        */
       public Builder clearPredictStr() {
-        
+
         predictStr_ = getDefaultInstance().getPredictStr();
         onChanged();
         return this;
       }
       /**
        * <code>string predictStr = 1;</code>
-       * @param value The bytes for predictStr to set.
-       * @return This builder for chaining.
        */
       public Builder setPredictStrBytes(
           com.google.protobuf.ByteString value) {
@@ -1088,18 +1004,16 @@ public final class RankingProto {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
+
         predictStr_ = value;
         onChanged();
         return this;
       }
-      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.setUnknownFields(unknownFields);
+        return super.setUnknownFieldsProto3(unknownFields);
       }
 
-      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1110,23 +1024,22 @@ public final class RankingProto {
     }
 
     // @@protoc_insertion_point(class_scope:ranking.Prediction)
-    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction DEFAULT_INSTANCE;
+    private static final RankingProto.Prediction DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction();
+      DEFAULT_INSTANCE = new RankingProto.Prediction();
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction getDefaultInstance() {
+    public static RankingProto.Prediction getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<Prediction>
         PARSER = new com.google.protobuf.AbstractParser<Prediction>() {
-      @java.lang.Override
       public Prediction parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new Prediction(input, extensionRegistry);
+          return new Prediction(input, extensionRegistry);
       }
     };
 
@@ -1134,13 +1047,12 @@ public final class RankingProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<Prediction> getParserForType() {
       return PARSER;
     }
 
-    @java.lang.Override
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.Prediction getDefaultInstanceForType() {
+    public RankingProto.Prediction getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1152,12 +1064,10 @@ public final class RankingProto {
 
     /**
      * <code>string str = 1;</code>
-     * @return The str.
      */
-    java.lang.String getStr();
+    String getStr();
     /**
      * <code>string str = 1;</code>
-     * @return The bytes for str.
      */
     com.google.protobuf.ByteString
         getStrBytes();
@@ -1178,14 +1088,7 @@ public final class RankingProto {
       str_ = "";
     }
 
-    @java.lang.Override
-    @SuppressWarnings({"unused"})
-    protected java.lang.Object newInstance(
-        UnusedPrivateParameter unused) {
-      return new ServerMessage();
-    }
-
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return this.unknownFields;
@@ -1195,9 +1098,7 @@ public final class RankingProto {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
+      int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -1208,17 +1109,17 @@ public final class RankingProto {
             case 0:
               done = true;
               break;
-            case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              str_ = s;
-              break;
-            }
             default: {
-              if (!parseUnknownField(
+              if (!parseUnknownFieldProto3(
                   input, unknownFields, extensionRegistry, tag)) {
                 done = true;
               }
+              break;
+            }
+            case 10: {
+              String s = input.readStringRequireUtf8();
+
+              str_ = s;
               break;
             }
           }
@@ -1235,46 +1136,43 @@ public final class RankingProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_ServerMessage_descriptor;
+      return RankingProto.internal_static_ranking_ServerMessage_descriptor;
     }
 
-    @java.lang.Override
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_ServerMessage_fieldAccessorTable
+      return RankingProto.internal_static_ranking_ServerMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage.Builder.class);
+              RankingProto.ServerMessage.class, RankingProto.ServerMessage.Builder.class);
     }
 
     public static final int STR_FIELD_NUMBER = 1;
-    private volatile java.lang.Object str_;
+    private volatile Object str_;
     /**
      * <code>string str = 1;</code>
-     * @return The str.
      */
-    public java.lang.String getStr() {
-      java.lang.Object ref = str_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getStr() {
+      Object ref = str_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
-        com.google.protobuf.ByteString bs = 
+        com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         str_ = s;
         return s;
       }
     }
     /**
      * <code>string str = 1;</code>
-     * @return The bytes for str.
      */
     public com.google.protobuf.ByteString
         getStrBytes() {
-      java.lang.Object ref = str_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
+      Object ref = str_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         str_ = b;
         return b;
       } else {
@@ -1283,7 +1181,6 @@ public final class RankingProto {
     }
 
     private byte memoizedIsInitialized = -1;
-    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1293,7 +1190,6 @@ public final class RankingProto {
       return true;
     }
 
-    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getStrBytes().isEmpty()) {
@@ -1302,7 +1198,6 @@ public final class RankingProto {
       unknownFields.writeTo(output);
     }
 
-    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1316,23 +1211,24 @@ public final class RankingProto {
       return size;
     }
 
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage)) {
+      if (!(obj instanceof RankingProto.ServerMessage)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage other = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage) obj;
+      RankingProto.ServerMessage other = (RankingProto.ServerMessage) obj;
 
-      if (!getStr()
-          .equals(other.getStr())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
-      return true;
+      boolean result = true;
+      result = result && getStr()
+          .equals(other.getStr());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1346,69 +1242,69 @@ public final class RankingProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(
+    public static RankingProto.ServerMessage parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(
+    public static RankingProto.ServerMessage parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(
+    public static RankingProto.ServerMessage parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(
+    public static RankingProto.ServerMessage parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(byte[] data)
+    public static RankingProto.ServerMessage parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(
+    public static RankingProto.ServerMessage parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(java.io.InputStream input)
+    public static RankingProto.ServerMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(
+    public static RankingProto.ServerMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseDelimitedFrom(java.io.InputStream input)
+    public static RankingProto.ServerMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseDelimitedFrom(
+    public static RankingProto.ServerMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(
+    public static RankingProto.ServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parseFrom(
+    public static RankingProto.ServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1416,23 +1312,21 @@ public final class RankingProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage prototype) {
+    public static Builder newBuilder(RankingProto.ServerMessage prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
-    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1442,18 +1336,17 @@ public final class RankingProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:ranking.ServerMessage)
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessageOrBuilder {
+        RankingProto.ServerMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_ServerMessage_descriptor;
+        return RankingProto.internal_static_ranking_ServerMessage_descriptor;
       }
 
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_ServerMessage_fieldAccessorTable
+        return RankingProto.internal_static_ranking_ServerMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage.class, com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage.Builder.class);
+                RankingProto.ServerMessage.class, RankingProto.ServerMessage.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage.newBuilder()
@@ -1462,7 +1355,7 @@ public final class RankingProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1471,7 +1364,6 @@ public final class RankingProto {
                 .alwaysUseFieldBuilders) {
         }
       }
-      @java.lang.Override
       public Builder clear() {
         super.clear();
         str_ = "";
@@ -1479,78 +1371,67 @@ public final class RankingProto {
         return this;
       }
 
-      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.internal_static_ranking_ServerMessage_descriptor;
+        return RankingProto.internal_static_ranking_ServerMessage_descriptor;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage.getDefaultInstance();
+      public RankingProto.ServerMessage getDefaultInstanceForType() {
+        return RankingProto.ServerMessage.getDefaultInstance();
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage build() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage result = buildPartial();
+      public RankingProto.ServerMessage build() {
+        RankingProto.ServerMessage result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      @java.lang.Override
-      public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage buildPartial() {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage result = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage(this);
+      public RankingProto.ServerMessage buildPartial() {
+        RankingProto.ServerMessage result = new RankingProto.ServerMessage(this);
         result.str_ = str_;
         onBuilt();
         return result;
       }
 
-      @java.lang.Override
       public Builder clone() {
-        return super.clone();
+        return (Builder) super.clone();
       }
-      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.setField(field, value);
+          Object value) {
+        return (Builder) super.setField(field, value);
       }
-      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return super.clearField(field);
+        return (Builder) super.clearField(field);
       }
-      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return super.clearOneof(oneof);
+        return (Builder) super.clearOneof(oneof);
       }
-      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, java.lang.Object value) {
-        return super.setRepeatedField(field, index, value);
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
       }
-      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          java.lang.Object value) {
-        return super.addRepeatedField(field, value);
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
       }
-      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage) {
-          return mergeFrom((com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage)other);
+        if (other instanceof RankingProto.ServerMessage) {
+          return mergeFrom((RankingProto.ServerMessage)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage other) {
-        if (other == com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(RankingProto.ServerMessage other) {
+        if (other == RankingProto.ServerMessage.getDefaultInstance()) return this;
         if (!other.getStr().isEmpty()) {
           str_ = other.str_;
           onChanged();
@@ -1560,21 +1441,19 @@ public final class RankingProto {
         return this;
       }
 
-      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
-      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage parsedMessage = null;
+        RankingProto.ServerMessage parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage) e.getUnfinishedMessage();
+          parsedMessage = (RankingProto.ServerMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1584,34 +1463,32 @@ public final class RankingProto {
         return this;
       }
 
-      private java.lang.Object str_ = "";
+      private Object str_ = "";
       /**
        * <code>string str = 1;</code>
-       * @return The str.
        */
-      public java.lang.String getStr() {
-        java.lang.Object ref = str_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getStr() {
+        Object ref = str_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           str_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
        * <code>string str = 1;</code>
-       * @return The bytes for str.
        */
       public com.google.protobuf.ByteString
           getStrBytes() {
-        java.lang.Object ref = str_;
+        Object ref = str_;
         if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString b =
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           str_ = b;
           return b;
         } else {
@@ -1620,33 +1497,28 @@ public final class RankingProto {
       }
       /**
        * <code>string str = 1;</code>
-       * @param value The str to set.
-       * @return This builder for chaining.
        */
       public Builder setStr(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
-  
+
         str_ = value;
         onChanged();
         return this;
       }
       /**
        * <code>string str = 1;</code>
-       * @return This builder for chaining.
        */
       public Builder clearStr() {
-        
+
         str_ = getDefaultInstance().getStr();
         onChanged();
         return this;
       }
       /**
        * <code>string str = 1;</code>
-       * @param value The bytes for str to set.
-       * @return This builder for chaining.
        */
       public Builder setStrBytes(
           com.google.protobuf.ByteString value) {
@@ -1654,18 +1526,16 @@ public final class RankingProto {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
-        
+
         str_ = value;
         onChanged();
         return this;
       }
-      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return super.setUnknownFields(unknownFields);
+        return super.setUnknownFieldsProto3(unknownFields);
       }
 
-      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1676,23 +1546,22 @@ public final class RankingProto {
     }
 
     // @@protoc_insertion_point(class_scope:ranking.ServerMessage)
-    private static final com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage DEFAULT_INSTANCE;
+    private static final RankingProto.ServerMessage DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage();
+      DEFAULT_INSTANCE = new RankingProto.ServerMessage();
     }
 
-    public static com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage getDefaultInstance() {
+    public static RankingProto.ServerMessage getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
     private static final com.google.protobuf.Parser<ServerMessage>
         PARSER = new com.google.protobuf.AbstractParser<ServerMessage>() {
-      @java.lang.Override
       public ServerMessage parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ServerMessage(input, extensionRegistry);
+          return new ServerMessage(input, extensionRegistry);
       }
     };
 
@@ -1700,13 +1569,983 @@ public final class RankingProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<ServerMessage> getParserForType() {
       return PARSER;
     }
 
-    @java.lang.Override
-    public com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ServerMessage getDefaultInstanceForType() {
+    public RankingProto.ServerMessage getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ModelPathOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:ranking.ModelPath)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>string path = 1;</code>
+     */
+    String getPath();
+    /**
+     * <code>string path = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getPathBytes();
+  }
+  /**
+   * Protobuf type {@code ranking.ModelPath}
+   */
+  public  static final class ModelPath extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:ranking.ModelPath)
+      ModelPathOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use ModelPath.newBuilder() to construct.
+    private ModelPath(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ModelPath() {
+      path_ = "";
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ModelPath(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownFieldProto3(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              String s = input.readStringRequireUtf8();
+
+              path_ = s;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RankingProto.internal_static_ranking_ModelPath_descriptor;
+    }
+
+    protected FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RankingProto.internal_static_ranking_ModelPath_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RankingProto.ModelPath.class, RankingProto.ModelPath.Builder.class);
+    }
+
+    public static final int PATH_FIELD_NUMBER = 1;
+    private volatile Object path_;
+    /**
+     * <code>string path = 1;</code>
+     */
+    public String getPath() {
+      Object ref = path_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        path_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>string path = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getPathBytes() {
+      Object ref = path_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b =
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        path_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!getPathBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, path_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!getPathBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, path_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RankingProto.ModelPath)) {
+        return super.equals(obj);
+      }
+      RankingProto.ModelPath other = (RankingProto.ModelPath) obj;
+
+      boolean result = true;
+      result = result && getPath()
+          .equals(other.getPath());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + PATH_FIELD_NUMBER;
+      hash = (53 * hash) + getPath().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RankingProto.ModelPath parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RankingProto.ModelPath parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RankingProto.ModelPath parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RankingProto.ModelPath parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RankingProto.ModelPath parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RankingProto.ModelPath parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RankingProto.ModelPath parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RankingProto.ModelPath parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RankingProto.ModelPath parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RankingProto.ModelPath parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RankingProto.ModelPath parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RankingProto.ModelPath parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RankingProto.ModelPath prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @Override
+    protected Builder newBuilderForType(
+        BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code ranking.ModelPath}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:ranking.ModelPath)
+        RankingProto.ModelPathOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RankingProto.internal_static_ranking_ModelPath_descriptor;
+      }
+
+      protected FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RankingProto.internal_static_ranking_ModelPath_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RankingProto.ModelPath.class, RankingProto.ModelPath.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.ModelPath.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        path_ = "";
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RankingProto.internal_static_ranking_ModelPath_descriptor;
+      }
+
+      public RankingProto.ModelPath getDefaultInstanceForType() {
+        return RankingProto.ModelPath.getDefaultInstance();
+      }
+
+      public RankingProto.ModelPath build() {
+        RankingProto.ModelPath result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RankingProto.ModelPath buildPartial() {
+        RankingProto.ModelPath result = new RankingProto.ModelPath(this);
+        result.path_ = path_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RankingProto.ModelPath) {
+          return mergeFrom((RankingProto.ModelPath)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RankingProto.ModelPath other) {
+        if (other == RankingProto.ModelPath.getDefaultInstance()) return this;
+        if (!other.getPath().isEmpty()) {
+          path_ = other.path_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RankingProto.ModelPath parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RankingProto.ModelPath) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private Object path_ = "";
+      /**
+       * <code>string path = 1;</code>
+       */
+      public String getPath() {
+        Object ref = path_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          path_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <code>string path = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getPathBytes() {
+        Object ref = path_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b =
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          path_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>string path = 1;</code>
+       */
+      public Builder setPath(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+
+        path_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string path = 1;</code>
+       */
+      public Builder clearPath() {
+
+        path_ = getDefaultInstance().getPath();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>string path = 1;</code>
+       */
+      public Builder setPathBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+
+        path_ = value;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFieldsProto3(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:ranking.ModelPath)
+    }
+
+    // @@protoc_insertion_point(class_scope:ranking.ModelPath)
+    private static final RankingProto.ModelPath DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RankingProto.ModelPath();
+    }
+
+    public static RankingProto.ModelPath getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<ModelPath>
+        PARSER = new com.google.protobuf.AbstractParser<ModelPath>() {
+      public ModelPath parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ModelPath(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ModelPath> parser() {
+      return PARSER;
+    }
+
+    @Override
+    public com.google.protobuf.Parser<ModelPath> getParserForType() {
+      return PARSER;
+    }
+
+    public RankingProto.ModelPath getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface OperationStatusOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:ranking.OperationStatus)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>bool success = 1;</code>
+     */
+    boolean getSuccess();
+  }
+  /**
+   * Protobuf type {@code ranking.OperationStatus}
+   */
+  public  static final class OperationStatus extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:ranking.OperationStatus)
+      OperationStatusOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use OperationStatus.newBuilder() to construct.
+    private OperationStatus(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private OperationStatus() {
+      success_ = false;
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private OperationStatus(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownFieldProto3(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+
+              success_ = input.readBool();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RankingProto.internal_static_ranking_OperationStatus_descriptor;
+    }
+
+    protected FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RankingProto.internal_static_ranking_OperationStatus_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RankingProto.OperationStatus.class, RankingProto.OperationStatus.Builder.class);
+    }
+
+    public static final int SUCCESS_FIELD_NUMBER = 1;
+    private boolean success_;
+    /**
+     * <code>bool success = 1;</code>
+     */
+    public boolean getSuccess() {
+      return success_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (success_ != false) {
+        output.writeBool(1, success_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (success_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, success_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RankingProto.OperationStatus)) {
+        return super.equals(obj);
+      }
+      RankingProto.OperationStatus other = (RankingProto.OperationStatus) obj;
+
+      boolean result = true;
+      result = result && (getSuccess()
+          == other.getSuccess());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + SUCCESS_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getSuccess());
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RankingProto.OperationStatus parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RankingProto.OperationStatus parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RankingProto.OperationStatus parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RankingProto.OperationStatus parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RankingProto.OperationStatus parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RankingProto.OperationStatus parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RankingProto.OperationStatus parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RankingProto.OperationStatus parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RankingProto.OperationStatus parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RankingProto.OperationStatus parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RankingProto.OperationStatus parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RankingProto.OperationStatus parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RankingProto.OperationStatus prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @Override
+    protected Builder newBuilderForType(
+        BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code ranking.OperationStatus}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:ranking.OperationStatus)
+        RankingProto.OperationStatusOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RankingProto.internal_static_ranking_OperationStatus_descriptor;
+      }
+
+      protected FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RankingProto.internal_static_ranking_OperationStatus_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RankingProto.OperationStatus.class, RankingProto.OperationStatus.Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.OperationStatus.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        success_ = false;
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RankingProto.internal_static_ranking_OperationStatus_descriptor;
+      }
+
+      public RankingProto.OperationStatus getDefaultInstanceForType() {
+        return RankingProto.OperationStatus.getDefaultInstance();
+      }
+
+      public RankingProto.OperationStatus build() {
+        RankingProto.OperationStatus result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RankingProto.OperationStatus buildPartial() {
+        RankingProto.OperationStatus result = new RankingProto.OperationStatus(this);
+        result.success_ = success_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RankingProto.OperationStatus) {
+          return mergeFrom((RankingProto.OperationStatus)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RankingProto.OperationStatus other) {
+        if (other == RankingProto.OperationStatus.getDefaultInstance()) return this;
+        if (other.getSuccess() != false) {
+          setSuccess(other.getSuccess());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RankingProto.OperationStatus parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RankingProto.OperationStatus) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private boolean success_ ;
+      /**
+       * <code>bool success = 1;</code>
+       */
+      public boolean getSuccess() {
+        return success_;
+      }
+      /**
+       * <code>bool success = 1;</code>
+       */
+      public Builder setSuccess(boolean value) {
+
+        success_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool success = 1;</code>
+       */
+      public Builder clearSuccess() {
+
+        success_ = false;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFieldsProto3(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:ranking.OperationStatus)
+    }
+
+    // @@protoc_insertion_point(class_scope:ranking.OperationStatus)
+    private static final RankingProto.OperationStatus DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RankingProto.OperationStatus();
+    }
+
+    public static RankingProto.OperationStatus getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<OperationStatus>
+        PARSER = new com.google.protobuf.AbstractParser<OperationStatus>() {
+      public OperationStatus parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new OperationStatus(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<OperationStatus> parser() {
+      return PARSER;
+    }
+
+    @Override
+    public com.google.protobuf.Parser<OperationStatus> getParserForType() {
+      return PARSER;
+    }
+
+    public RankingProto.OperationStatus getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1714,19 +2553,29 @@ public final class RankingProto {
 
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_ranking_Content_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_ranking_Content_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_ranking_Prediction_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_ranking_Prediction_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_ranking_ServerMessage_descriptor;
-  private static final 
+  private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_ranking_ServerMessage_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_ranking_ModelPath_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_ranking_ModelPath_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_ranking_OperationStatus_descriptor;
+  private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_ranking_OperationStatus_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1735,43 +2584,67 @@ public final class RankingProto {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n\rranking.proto\022\007ranking\032\033google/protobu" +
       "f/empty.proto\"\035\n\007Content\022\022\n\nencodedStr\030\001" +
       " \001(\t\" \n\nPrediction\022\022\n\npredictStr\030\001 \001(\t\"\034" +
-      "\n\rServerMessage\022\013\n\003str\030\001 \001(\t2\301\001\n\007Ranking" +
-      "\0224\n\tdoPredict\022\020.ranking.Content\032\023.rankin" +
-      "g.Prediction\"\000\022>\n\ngetMetrics\022\026.google.pr" +
-      "otobuf.Empty\032\026.ranking.ServerMessage\"\000\022@" +
-      "\n\014resetMetrics\022\026.google.protobuf.Empty\032\026" +
-      ".google.protobuf.Empty\"\000BW\nAcom.intel.an" +
-      "alytics.bigdl.friesian.serving.grpc.gene" +
-      "rated.rankingB\014RankingProto\242\002\003RTGb\006proto" +
-      "3"
+      "\n\rServerMessage\022\013\n\003str\030\001 \001(\t\"\031\n\tModelPat" +
+      "h\022\014\n\004path\030\001 \001(\t\"\"\n\017OperationStatus\022\017\n\007su" +
+      "ccess\030\001 \001(\0102\274\002\n\007Ranking\0224\n\tdoPredict\022\020.r" +
+      "anking.Content\032\023.ranking.Prediction\"\000\022:\n" +
+      "\010addModel\022\022.ranking.ModelPath\032\030.ranking." +
+      "OperationStatus\"\000\022=\n\013deleteModel\022\022.ranki" +
+      "ng.ModelPath\032\030.ranking.OperationStatus\"\000",
+      "\022>\n\ngetMetrics\022\026.google.protobuf.Empty\032\026" +
+      ".ranking.ServerMessage\"\000\022@\n\014resetMetrics" +
+      "\022\026.google.protobuf.Empty\032\026.google.protob" +
+      "uf.Empty\"\000BW\nAcom.intel.analytics.bigdl." +
+      "friesian.serving.grpc.generated.rankingB" +
+      "\014RankingProto\242\002\003RTGb\006proto3"
     };
-    descriptor = com.google.protobuf.Descriptors.FileDescriptor
+    com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
+        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          public com.google.protobuf.ExtensionRegistry assignDescriptors(
+              com.google.protobuf.Descriptors.FileDescriptor root) {
+            descriptor = root;
+            return null;
+          }
+        };
+    com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           com.google.protobuf.EmptyProto.getDescriptor(),
-        });
+        }, assigner);
     internal_static_ranking_Content_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_ranking_Content_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ranking_Content_descriptor,
-        new java.lang.String[] { "EncodedStr", });
+        new String[] { "EncodedStr", });
     internal_static_ranking_Prediction_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_ranking_Prediction_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ranking_Prediction_descriptor,
-        new java.lang.String[] { "PredictStr", });
+        new String[] { "PredictStr", });
     internal_static_ranking_ServerMessage_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_ranking_ServerMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ranking_ServerMessage_descriptor,
-        new java.lang.String[] { "Str", });
+        new String[] { "Str", });
+    internal_static_ranking_ModelPath_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_ranking_ModelPath_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_ranking_ModelPath_descriptor,
+        new String[] { "Path", });
+    internal_static_ranking_OperationStatus_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_ranking_OperationStatus_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_ranking_OperationStatus_descriptor,
+        new String[] { "Success", });
     com.google.protobuf.EmptyProto.getDescriptor();
   }
 
