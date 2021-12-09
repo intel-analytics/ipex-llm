@@ -25,20 +25,46 @@ import org.apache.spark.sql.DataFrame
 abstract class FLModel() {
   val model: Sequential[Float]
   val estimator: Estimator
+
+  /**
+   *
+   * @param trainData DataFrame of training data
+   * @param epoch training epoch
+   * @param batchSize training batchsize
+   * @param featureColumn Array of String, specifying feature columns
+   * @param labelColumn Array of String, specifying label columns
+   * @param valData DataFrame of validation data
+   * @return
+   */
   def fit(trainData: DataFrame,
-          valData: DataFrame,
-          epoch : Int = 1) = {
-    val _trainData = DataFrameUtils.dataFrameToSample(trainData)
-    val _valData = DataFrameUtils.dataFrameToSample(valData)
+          epoch: Int = 1,
+          batchSize: Int = 4,
+          featureColumn: Array[String] = null,
+          labelColumn: Array[String] = null,
+          valData: DataFrame = null) = {
+    val _trainData = DataFrameUtils.dataFrameToMiniBatch(trainData, featureColumn, labelColumn,
+      isTrain = true, batchSize = batchSize)
+    val _valData = DataFrameUtils.dataFrameToMiniBatch(valData)
     estimator.train(epoch, _trainData.toLocal(), _valData.toLocal())
   }
-  def evaluate() = {
-//    estimator.getEvaluateResults().foreach{r =>
-//      println(r._1 + ":" + r._2.mkString(","))
-//    }
-  }
-  def predict(data: DataFrame) = {
+  def evaluate(data: DataFrame = null,
+               batchSize: Int = 4,
+               featureColumn: Array[String] = null) = {
+    if (data == null) {
+      estimator.getEvaluateResults().foreach{r =>
+        println(r._1 + ":" + r._2.mkString(","))
+      }
+    } else {
+      throw new Error("Not implemented.")
+    }
 
+  }
+  def predict(data: DataFrame,
+              batchSize: Int = 4,
+              featureColumn: Array[String] = null) = {
+    val _data = DataFrameUtils.dataFrameToSampleRDD(
+      data, featureColumn, hasLabel = false, batchSize = batchSize)
+    model.predict(_data).collect()
   }
 }
 

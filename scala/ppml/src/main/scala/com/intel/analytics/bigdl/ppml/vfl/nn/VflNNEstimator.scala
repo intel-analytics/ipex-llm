@@ -47,9 +47,7 @@ class VflNNEstimator(algorithm: String,
 
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
 
-  def getEvaluateResults(): Map[String, Array[Float]] = {
-    evaluateResults.map(v => (v._1, v._2.toArray)).toMap
-  }
+
 
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]],

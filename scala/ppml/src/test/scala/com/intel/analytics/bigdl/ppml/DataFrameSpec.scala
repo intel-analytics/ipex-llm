@@ -28,7 +28,7 @@ class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val spark = FLContext.getSparkSession()
     import spark.implicits._
     val df = spark.read.json(this.getClass.getClassLoader.getResource("people.json").getPath)
-    val dataSet = DataFrameUtils.dataFrameToSample(df)
+    val dataSet = DataFrameUtils.dataFrameToMiniBatch(df)
     require(dataSet.isInstanceOf[LocalDataSet[Any]], "transformation type wrong")
     require(dataSet.size() == 3, "size wrong")
   }
@@ -38,7 +38,7 @@ class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val df = spark.read.option("header", "true")
       .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
     df.show()
-    val dataSet = DataFrameUtils.dataFrameToSample(df)
+    val dataSet = DataFrameUtils.dataFrameToMiniBatch(df)
     require(dataSet.isInstanceOf[LocalDataSet[Any]], "transformation type wrong")
     require(dataSet.size() == 10, "size wrong")
   }

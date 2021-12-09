@@ -69,11 +69,12 @@ object HflLogisticRegression extends LogManager {
      * Usage of BigDL PPML starts from here
      */
     FLContext.initFLContext()
-    val (trainData, valData) = getData(dataPath, rowKeyName, batchSize)
+    val (trainData, testData) = getData(dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model
     val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData)
+    lr.fit(trainData, valData = testData)
     lr.evaluate()
+    lr.predict(testData)
   }
 }

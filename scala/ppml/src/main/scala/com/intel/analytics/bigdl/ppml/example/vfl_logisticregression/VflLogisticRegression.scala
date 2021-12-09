@@ -74,13 +74,14 @@ object VflLogisticRegression {
      */
     FLContext.initFLContext()
     val pSI = new PSI()
-    val (trainData, valData) = getData(pSI, dataPath, rowKeyName, batchSize)
+    val (trainData, testData) = getData(pSI, dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model
 
     val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData = valData)
+    lr.fit(trainData, valData = testData)
     lr.evaluate()
+    lr.predict(testData)
   }
 
 }
