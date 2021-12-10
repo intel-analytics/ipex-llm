@@ -81,8 +81,8 @@ class SparkTFEstimator():
         self.ip = get_node_ip()
         self.port = find_free_port()
         is_local = sc.master.startswith("local")
-        self.need_to_log = (not is_local) and log_to_driver
-        if self.need_to_log:
+        self.need_to_log_to_driver = (not is_local) and log_to_driver
+        if self.need_to_log_to_driver:
             start_log_server(self.ip, self.port)
 
     def _get_cluster_info(self, sc):
@@ -138,7 +138,7 @@ class SparkTFEstimator():
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
             epoch=self.epoch,
-            need_to_log=self.need_to_log,
+            need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port
         )
@@ -249,7 +249,7 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc),
-            need_to_log=self.need_to_log,
+            need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port
         )
@@ -316,7 +316,7 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="predict",
             cluster_info=self._get_cluster_info(sc),
-            need_to_log=self.need_to_log,
+            need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port
         )

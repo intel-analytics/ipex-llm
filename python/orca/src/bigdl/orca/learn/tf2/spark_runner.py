@@ -201,7 +201,7 @@ class SparkRunner:
                  mode="fit",
                  model_dir=None,
                  epoch=0,
-                 need_to_log=False,
+                 need_to_log_to_driver=False,
                  driver_ip=None,
                  driver_port=None
                 ):
@@ -227,8 +227,8 @@ class SparkRunner:
         self.setup()
         self.cluster = cluster_info
         self.partition_id = TaskContext.get().partitionId()
-        self.need_to_log = need_to_log
-        if need_to_log:
+        self.need_to_log_to_driver = need_to_log_to_driver
+        if need_to_log_to_driver:
             self.log_path = os.path.join(tempfile.gettempdir(), "{}_runner.log".format(self.partition_id))
             duplicate_stdout_stderr(self.log_path)
             self.logger_thread, self.thread_stop = LogMonitor.start_log_monitor(driver_ip=driver_ip,
@@ -368,11 +368,11 @@ class SparkRunner:
                     "optimizer_weights": model.optimizer.get_weights()
                 }
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
-            if self.need_to_log:
+            if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
         else:
-            if self.need_to_log:
+            if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
@@ -423,11 +423,11 @@ class SparkRunner:
             stats = {"results": results}
 
         if self.rank == 0:
-            if self.need_to_log:
+            if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
         else:
-            if self.need_to_log:
+            if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
@@ -458,6 +458,6 @@ class SparkRunner:
 
         new_part = [predict_fn(shard) for shard in partition]
 
-        if self.need_to_log:
+        if self.need_to_log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return new_part
