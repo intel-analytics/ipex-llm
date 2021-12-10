@@ -437,29 +437,3 @@ def duplicate_stdout_stderr(log_path):
     tee = subprocess.Popen(["tee", log_path], stdin=subprocess.PIPE)
     os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
     os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
-
-# def start_log_server(ip, port):
-#     def _print_logs():
-#         """
-#         Prints log messages from workers on all of the nodes.
-#
-#         """
-#         import zmq
-#         context = zmq.Context()
-#         socket = context.socket(zmq.REP)
-#         socket.bind("tcp://{}:{}".format(ip, port))
-#         # logger.info("started log server on {}:{}".format(ip, port))
-#
-#         while True:
-#             message = socket.recv()
-#             print(message.decode("utf-8"))
-#             socket.send(b"received")
-#
-#     import threading
-#     logger_thread = threading.Thread(
-#         target=_print_logs,
-#         name="print_logs")
-#     logger_thread.daemon = True
-#     logger_thread.start()
-#     return logger_thread
-

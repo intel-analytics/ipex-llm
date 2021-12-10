@@ -62,7 +62,7 @@ class LogMonitor:
             assert not self.log_fd.closed
 
             lines_to_publish = []
-            max_num_lines_to_read = 100
+            max_num_lines_to_read = 50
             for _ in range(max_num_lines_to_read):
                 try:
                     next_line = self.log_fd.readline()

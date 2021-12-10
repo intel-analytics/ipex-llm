@@ -84,11 +84,6 @@ class SparkTFEstimator():
         self.need_to_log = (not is_local) and log_to_driver
         if self.need_to_log:
             start_log_server(self.ip, self.port)
-            # self.logger_thread = threading.Thread(
-            #     target=self._print_logs,
-            #     name="print_logs")
-            # self.logger_thread.daemon = True
-            # self.logger_thread.start()
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
@@ -431,18 +426,3 @@ class SparkTFEstimator():
         model = self.model_creator(self.config)
         model.set_weights(self.model_weights)
         return model
-
-    # def _print_logs(self):
-    #     """
-    #     Prints log messages from workers on all of the nodes.
-    #
-    #     """
-    #     context = zmq.Context()
-    #     socket = context.socket(zmq.REP)
-    #     socket.bind("tcp://{}:{}".format(self.ip, self.port))
-    #     logger.info("started log server on {}:{}".format(self.ip, self.port))
-    #
-    #     while True:
-    #         message = socket.recv()
-    #         print(message.decode("utf-8"))
-    #         socket.send(b"received")
