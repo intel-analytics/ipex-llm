@@ -102,13 +102,11 @@ public class RankingServer extends GrpcServerBase {
             gRPCHelper helper = Utils.helper();
             redis = RedisUtils.getInstance(Utils.helper().getRedisPoolMaxTotal());
             String modelPath = helper.modelPath();
-            InferenceModel model = helper.loadInferenceModel(helper.modelParallelism(), modelPath,
-                    helper.savedModelInputsArr());
-            modelRegistry.put(helper.modelPath(), model);
+            modelRegistry.put(helper.modelPath(),
+                    helper.loadInferenceModel(helper.modelParallelism(), modelPath, helper.savedModelInputsArr()));
             redis.Mset("wnd", "v1", modelPath);
             jedis = redis.getRedisClient();
-//            List<String> res = jedis.mget("v1");
-//            jedis.keys("wnd:*");
+            jedis.keys("*");
         }
 
         @Override
@@ -127,13 +125,16 @@ public class RankingServer extends GrpcServerBase {
 
         private Status doAdd(ModelMeta msg) {
             String path = msg.getPath();
+            if (modelRegistry.containsKey(path)) {
+                System.out.println("Model already exists: " + path);
+                return Status.newBuilder().setSuccess(true).build();
+            }
             System.out.println("Loading model: " + path);
             try {
                 gRPCHelper helper = Utils.helper();
                 // TODO: share parallelism for multiple models?
-                InferenceModel model = helper.loadInferenceModel(helper.modelParallelism(), path,
-                        helper.savedModelInputsArr());
-                modelRegistry.put(path, model);
+                modelRegistry.put(path,
+                        helper.loadInferenceModel(helper.modelParallelism(), path, helper.savedModelInputsArr()));
                 return Status.newBuilder().setSuccess(true).build();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -152,9 +153,63 @@ public class RankingServer extends GrpcServerBase {
         private Status doRegister(ModelMeta msg) {
             String path = msg.getPath();
             String version = msg.getVersion();
+            if (jedis.exists("wnd:"+version)) {
+                System.out.println("Model version already registered: " + version);
+                return Status.newBuilder().setSuccess(true).build();
+            }
             System.out.println("Registering model online: " + path + " with version " + version);
             try {
                 redis.Mset("wnd", version, path);
+                return Status.newBuilder().setSuccess(true).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                return Status.newBuilder().setSuccess(false).build();
+            }
+        }
+
+        @Override
+        public void deregisterModel(ModelMeta request,
+                                    StreamObserver<Status> responseObserver) {
+            responseObserver.onNext(doDeregister(request));
+            responseObserver.onCompleted();
+        }
+
+        private Status doDeregister(ModelMeta msg) {
+            String path = msg.getPath();
+            String version = msg.getVersion();
+            String key = "wnd:" + version;
+            if (! jedis.exists(key)) {
+                System.out.println("Model version already offline: " + version);
+                return Status.newBuilder().setSuccess(true).build();
+            }
+            System.out.println("Model will be offline: " + path + " with version " + version);
+            try {
+                jedis.del(key);
+                return Status.newBuilder().setSuccess(true).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                return Status.newBuilder().setSuccess(false).build();
+            }
+        }
+
+        @Override
+        public void removeModel(ModelMeta request,
+                                StreamObserver<Status> responseObserver) {
+            responseObserver.onNext(doRemove(request));
+            responseObserver.onCompleted();
+        }
+
+        private Status doRemove(ModelMeta msg) {
+            String path = msg.getPath();
+            if (! modelRegistry.containsKey(path)) {
+                System.out.println("Model already removed: " + path);
+                return Status.newBuilder().setSuccess(true).build();
+            }
+            System.out.println("Model will be removed: " + path);
+            try {
+                modelRegistry.remove(path);
                 return Status.newBuilder().setSuccess(true).build();
             } catch (Exception e) {
                 e.printStackTrace();
