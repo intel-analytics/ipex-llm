@@ -433,7 +433,7 @@ def find_free_port():
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
 
-def duplicate_stdout_stderr(log_path):
+def duplicate_stdout_stderr_to_file(log_path):
     tee = subprocess.Popen(["tee", log_path], stdin=subprocess.PIPE)
     os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
     os.dup2(tee.stdin.fileno(), sys.stderr.fileno())

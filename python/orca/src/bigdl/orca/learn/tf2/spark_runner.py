@@ -25,7 +25,7 @@ from contextlib import closing
 import socket
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
@@ -230,7 +230,7 @@ class SparkRunner:
         self.need_to_log_to_driver = need_to_log_to_driver
         if need_to_log_to_driver:
             self.log_path = os.path.join(tempfile.gettempdir(), "{}_runner.log".format(self.partition_id))
-            duplicate_stdout_stderr(self.log_path)
+            duplicate_stdout_stderr_to_file(self.log_path)
             self.logger_thread, self.thread_stop = LogMonitor.start_log_monitor(driver_ip=driver_ip,
                                          driver_port=driver_port,
                                          log_path=self.log_path,
