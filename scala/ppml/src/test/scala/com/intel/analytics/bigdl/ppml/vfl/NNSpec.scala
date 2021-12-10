@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.vfl
 
-import com.intel.analytics.bigdl.ppml.FLServer
+import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.{LinearRegression, LogisticRegression}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -35,7 +35,7 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val flServer = new FLServer()
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initFLContext()
     val logisticRegression = new LogisticRegression(featureNum = 1)
     val linearRegression = new LinearRegression(featureNum = 1)
     flServer.stop()

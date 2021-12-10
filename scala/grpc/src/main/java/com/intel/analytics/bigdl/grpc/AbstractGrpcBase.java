@@ -54,14 +54,14 @@ public abstract class AbstractGrpcBase {
             try {
                 return ConfigParser.loadConfigFromPath(configPath, valueType);
             } catch (IOException e) {
-                logger.info("Config is not provided, using default");
-                return valueType.newInstance();
+                logger.info("Config file does not exist in path, using default");
+                return null;
             }
 
         }
         else {
-            logger.info("Config is not provided, using default");
-            return valueType.newInstance();
+            logger.info("Config path is not provided, using default");
+            return null;
         }
     }
 

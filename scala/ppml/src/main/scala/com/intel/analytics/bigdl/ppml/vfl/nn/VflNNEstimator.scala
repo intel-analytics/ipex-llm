@@ -22,10 +22,10 @@ import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil
 import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil.getParametersFromModel
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.OptimMethod
-import com.intel.analytics.bigdl.ppml.FLClient
+import com.intel.analytics.bigdl.ppml.base.Estimator
+import com.intel.analytics.bigdl.ppml.{FLClient, FLContext}
 import com.intel.analytics.bigdl.ppml.generated.FLProto.{EvaluateResponse, TableMetaData}
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
-import com.intel.analytics.bigdl.ppml.vfl.utils.ProtoUtils._
+import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConverters._
@@ -34,9 +34,10 @@ import scala.collection.mutable.ArrayBuffer
 
 class VflNNEstimator(algorithm: String,
                      model: Module[Float],
-                     optimMethod: OptimMethod[Float]){
+                     optimMethod: OptimMethod[Float],
+                     threadNum: Int = 1) extends Estimator {
   val logger = Logger.getLogger(getClass)
-  val flClient = VflContext.getClient()
+  val flClient = FLContext.getClient()
   val (weight, grad) = getParametersFromModel(model)
 
   def train(endEpoch: Int,
@@ -46,9 +47,7 @@ class VflNNEstimator(algorithm: String,
 
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
 
-  def getEvaluateResults(): Map[String, Array[Float]] = {
-    evaluateResults.map(v => (v._1, v._2.toArray)).toMap
-  }
+
 
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]],

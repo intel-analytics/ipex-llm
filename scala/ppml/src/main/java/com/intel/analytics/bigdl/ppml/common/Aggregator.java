@@ -71,14 +71,23 @@ public abstract class Aggregator<T> {
     public <T> void putClientData(FLPhase type, String clientUUID, int version, T data)
             throws IllegalArgumentException {
         Storage storage = getServerData(type);
-        storage.put(clientUUID, data);
-
+        checkVersion(storage.version, version);
+        storage.clientData.put(clientUUID, data);
+        logger.debug("Client data uploaded to server");
         // Aggregate when buffer is full
+        logger.debug("Server received data " + storage.size() + "/" + clientNum);
         if (storage.size() >= clientNum) {
+            logger.debug("Server received all client data, start aggregate.");
             aggregate(type);
         }
     }
-
+    protected void checkVersion(int serverVersion, int clientVersion)
+            throws IllegalArgumentException {
+        if (serverVersion != clientVersion) {
+            throw new IllegalArgumentException("Version miss match, got server version: " +
+                    serverVersion + ", client version: " + clientVersion);
+        }
+    }
 
 
 }

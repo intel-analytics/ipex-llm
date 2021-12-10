@@ -17,14 +17,12 @@
 package com.intel.analytics.bigdl.ppml.psi.test;
 
 import com.intel.analytics.bigdl.ppml.algorithms.PSI;
-import com.intel.analytics.bigdl.ppml.vfl.VflContext;
+import com.intel.analytics.bigdl.ppml.FLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -65,7 +63,7 @@ public class BenchmarkClient {
         logger.info("### Time of producing data: " + (etproduce - stproduce) + " ms ###");
         List<String> hashedIdArray;
         String salt;
-        VflContext.initContext(null);
+        FLContext.initFLContext(null);
         PSI psi = new PSI();
         try {
             // Get salt from Server

@@ -14,38 +14,57 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl
+package com.intel.analytics.bigdl.ppml
 
-import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
-import com.intel.analytics.bigdl.ppml.FLClient
+import com.intel.analytics.bigdl.dllib.nn.Sequential
+import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNEstimator
 import org.apache.spark.sql.DataFrame
 
-class FLModel() {
-  val estimator: VflNNEstimator = null
+abstract class FLModel() {
+  val model: Sequential[Float]
+  val estimator: Estimator
+
+  /**
+   *
+   * @param trainData DataFrame of training data
+   * @param epoch training epoch
+   * @param batchSize training batchsize
+   * @param featureColumn Array of String, specifying feature columns
+   * @param labelColumn Array of String, specifying label columns
+   * @param valData DataFrame of validation data
+   * @return
+   */
   def fit(trainData: DataFrame,
           epoch: Int = 1,
           batchSize: Int = 4,
           featureColumn: Array[String] = null,
           labelColumn: Array[String] = null,
           valData: DataFrame = null) = {
-    val _trainData = DataFrameUtils.dataFrameToSample(trainData)
-    val _valData = DataFrameUtils.dataFrameToSample(valData)
+    val _trainData = DataFrameUtils.dataFrameToMiniBatch(trainData, featureColumn, labelColumn,
+      isTrain = true, batchSize = batchSize)
+    val _valData = DataFrameUtils.dataFrameToMiniBatch(valData)
     estimator.train(epoch, _trainData.toLocal(), _valData.toLocal())
   }
   def evaluate(data: DataFrame = null,
                batchSize: Int = 4,
                featureColumn: Array[String] = null) = {
-    estimator.getEvaluateResults().foreach{r =>
-      println(r._1 + ":" + r._2.mkString(","))
+    if (data == null) {
+      estimator.getEvaluateResults().foreach{r =>
+        println(r._1 + ":" + r._2.mkString(","))
+      }
+    } else {
+      throw new Error("Not implemented.")
     }
+
   }
   def predict(data: DataFrame,
               batchSize: Int = 4,
               featureColumn: Array[String] = null) = {
-
+    val _data = DataFrameUtils.dataFrameToSampleRDD(
+      data, featureColumn, hasLabel = false, batchSize = batchSize)
+    model.predict(_data).collect()
   }
 }
 

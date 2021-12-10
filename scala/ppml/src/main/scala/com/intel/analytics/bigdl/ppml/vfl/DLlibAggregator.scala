@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLPhase, Storage}
 import com.intel.analytics.bigdl.ppml.generated.FLProto
 import com.intel.analytics.bigdl.ppml.generated.FLProto.TableMetaData
-import com.intel.analytics.bigdl.ppml.vfl.utils.ProtoUtils.toFloatTensor
+import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.toFloatTensor
 import org.apache.log4j.Logger
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
 import scala.collection.JavaConverters._
@@ -46,7 +46,7 @@ trait DLlibAggregator extends Aggregator[FLProto.Table] {
   }
   def getInputTableFromStorage(storageType: FLPhase): Table = {
     val storage = getServerData(storageType)
-    val aggData = protoTableMapToTensorIterableMap(storage.localData)
+    val aggData = protoTableMapToTensorIterableMap(storage.clientData)
     target = Tensor[Float]()
     if (aggData.contains("target")) {
       val t = aggData("target").head

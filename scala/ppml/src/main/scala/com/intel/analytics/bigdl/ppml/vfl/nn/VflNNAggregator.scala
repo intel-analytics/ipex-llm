@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.ppml.vfl.nn
 
-import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.{CAddTable, Sequential}
 import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -26,17 +25,25 @@ import com.intel.analytics.bigdl.ppml.common.FLPhase._
 import com.intel.analytics.bigdl.ppml.generated.FLProto
 import com.intel.analytics.bigdl.ppml.generated.FLProto.TableMetaData
 import com.intel.analytics.bigdl.ppml.vfl.DLlibAggregator
-import com.intel.analytics.bigdl.ppml.vfl.utils.ProtoUtils.toFloatTensor
+import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.toFloatTensor
 import com.intel.analytics.bigdl.{Criterion, Module}
 import org.apache.log4j.Logger
 
-class VflNNAggregator(classifier: Module[Float],
+
+/**
+ *
+ * @param model
+ * @param optimMethod
+ * @param criterion loss function, HFL takes loss at estimator, VFL takes loss at aggregator
+ * @param validationMethods
+ */
+class VflNNAggregator(model: Module[Float],
                       optimMethod: OptimMethod[Float],
                       criterion: Criterion[Float],
                       validationMethods: Array[ValidationMethod[Float]]) extends DLlibAggregator{
   module = Sequential[Float]().add(CAddTable[Float]())
-  if (classifier != null) {
-    module.add(classifier)
+  if (model != null) {
+    module.add(model)
   }
 
   override def aggregate(aggType: FLPhase): Unit = {

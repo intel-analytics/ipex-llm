@@ -19,24 +19,22 @@ package com.intel.analytics.bigdl.ppml
 import com.intel.analytics.bigdl.grpc.GrpcServerBase
 import com.intel.analytics.bigdl.ppml.common.Aggregator
 import com.intel.analytics.bigdl.ppml.psi.PSIServiceImpl
-import com.intel.analytics.bigdl.ppml.vfl.nn.NNServiceImpl
-import com.intel.analytics.bigdl.dllib.nn.BCECriterion
-import com.intel.analytics.bigdl.dllib.nn.Sigmoid
-import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
 import java.io.{File, IOException}
 
-import com.intel.analytics.bigdl.ppml.vfl.nn.NNServiceImpl
-
+import com.intel.analytics.bigdl.ppml.nn.NNServiceImpl
+import org.apache.log4j.{Level, Logger}
 
 
 /**
  * FLServer is BigDL PPML gRPC server used for FL based on GrpcServerBase
  * FLServer starts all the services, e.g. PSIServiceImpl, NNServiceImpl once server starts
+
+ * Supports: PSI, HFL/VFL Logistic Regression / Linear Regression
  */
 object FLServer {
-  private val logger = LoggerFactory.getLogger(classOf[FLServer])
+
+  Logger.getLogger("com.intel.analytics.bigdl.ppml").setLevel(Level.DEBUG)
   @throws[Exception]
   def main(args: Array[String]): Unit = {
     val flServer = new FLServer(args)
@@ -48,19 +46,21 @@ object FLServer {
 }
 
 class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServerBase(_args) {
+  private val logger = Logger.getLogger(classOf[FLServer])
   configPath = "ppml-conf.yaml"
-
+  var clientNum: Int = 1
   @throws[IOException]
   override def parseConfig(): Unit = {
-    val f = new File(configPath)
-    if (f.exists()) {
-      val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
+    val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
+    if (flHelper != null) {
       port = flHelper.serverPort
+      clientNum = flHelper.clientNum
     }
+
     // start all services without providing service list
     // start all services without providing service list
     serverServices.add(new PSIServiceImpl)
-    serverServices.add(new NNServiceImpl)
+    serverServices.add(new NNServiceImpl(clientNum))
 
 
 

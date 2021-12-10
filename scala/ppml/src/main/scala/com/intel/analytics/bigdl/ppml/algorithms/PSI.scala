@@ -19,14 +19,14 @@ package com.intel.analytics.bigdl.ppml.algorithms
 import java.util
 import java.util.concurrent.TimeoutException
 
+import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
-import com.intel.analytics.bigdl.ppml.vfl.utils.FLClientClosable
+import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 import org.apache.log4j.Logger
 import org.apache.spark.sql.DataFrame
+
 import collection.JavaConverters._
 import collection.JavaConversions._
-
 import scala.util.control.Breaks._
 
 class PSI() extends FLClientClosable {
@@ -45,7 +45,7 @@ class PSI() extends FLClientClosable {
   }
 
 
-  def downloadIntersection(maxTry: Int = 5, retry: Long = 3000): util.List[String] = {
+  def downloadIntersection(maxTry: Int = 100, retry: Long = 3000): util.List[String] = {
     var intersection: util.List[String] = null
     breakable {
       for (i <- 0 until maxTry) {
@@ -75,9 +75,9 @@ class PSI() extends FLClientClosable {
   def uploadSetAndDownloadIntersection(df: DataFrame,
                                        salt: String,
                                        rowKeyName: String = "IDS",
-                                       maxTry: Int = 5,
+                                       maxTry: Int = 100,
                                        retry: Long = 3000): DataFrame = {
-    val spark = VflContext.getSparkSession()
+    val spark = FLContext.getSparkSession()
     import spark.implicits._
     val ids = df.select(rowKeyName).as[String].collect().toList
     uploadSet(ids, salt)

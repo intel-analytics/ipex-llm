@@ -15,31 +15,38 @@
  */
 
 
-package com.intel.analytics.bigdl.ppml.vfl.nn
+package com.intel.analytics.bigdl.ppml.nn
 
 import java.util
 import java.util.Map
 
 import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, MSECriterion, Sigmoid, View}
 import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
-import com.intel.analytics.bigdl.ppml.common.Aggregator
+import com.intel.analytics.bigdl.ppml.common.{Aggregator, AverageAggregator}
 import com.intel.analytics.bigdl.ppml.common.FLPhase.TRAIN
 import com.intel.analytics.bigdl.ppml.generated.FLProto._
 import com.intel.analytics.bigdl.ppml.generated.NNServiceGrpc
+import com.intel.analytics.bigdl.ppml.hfl.nn.HflNNAggregator
+import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNAggregator
 import io.grpc.stub.StreamObserver
+import collection.JavaConverters._
+import collection.JavaConversions._
 
-
-class NNServiceImpl() extends NNServiceGrpc.NNServiceImplBase {
+class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
   private var aggregatorMap: Map[String, Aggregator[Table]] = null
   initAggregatorMap()
 
 
   private def initAggregatorMap(): Unit = {
     aggregatorMap = new util.HashMap[String, Aggregator[Table]]
-    aggregatorMap.put("logistic_regression", VflNNAggregator(1, Sigmoid[Float](),
+    aggregatorMap.put("vfl_logistic_regression", VflNNAggregator(1, Sigmoid[Float](),
       null, BCECriterion[Float](), Array(new Top1Accuracy())))
-    aggregatorMap.put("linear_regression", VflNNAggregator(1, View[Float](),
+    aggregatorMap.put("hfl_linear_regression", VflNNAggregator(1, View[Float](),
       null, MSECriterion[Float](), Array(new Top1Accuracy())))
+    aggregatorMap.put("hfl_logistic_regression", new HflNNAggregator())
+    aggregatorMap.asScala.foreach(entry => {
+      entry._2.setClientNum(clientNum)
+    })
   }
 
 

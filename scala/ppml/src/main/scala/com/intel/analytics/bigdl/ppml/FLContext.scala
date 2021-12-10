@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
+package com.intel.analytics.bigdl.ppml
 
-package com.intel.analytics.bigdl.ppml.vfl
-
-import com.intel.analytics.bigdl.ppml.FLClient
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-
 
 /**
  * VflContext is a singleton object holding a FLClient object
  * For multiple vfl usage of an application, only one FLClient exists thus avoiding Channel cost
  */
-object VflContext {
+object FLContext {
   var flClient: FLClient = null
   var sparkSession: SparkSession = null
-  def initContext(target: String = null) = {
+  def initFLContext(target: String = null) = {
     this.synchronized {
       if (flClient == null) {
         this.synchronized {
