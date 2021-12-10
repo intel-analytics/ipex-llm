@@ -20,13 +20,14 @@ package com.intel.analytics.bigdl.ppml.vfl.example
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
+import com.intel.analytics.bigdl.ppml.example.LogManager
 import scopt.OptionParser
 
 import collection.JavaConverters._
 import collection.JavaConversions._
 
 
-object VflLogisticRegression {
+object VflLogisticRegression extends LogManager{
   def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
     //TODO: we use get intersection to get data and input to model
     // this do not need to be DataFrame?

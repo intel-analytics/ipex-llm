@@ -45,7 +45,7 @@ class PSI() extends FLClientClosable {
   }
 
 
-  def downloadIntersection(maxTry: Int = 5, retry: Long = 3000): util.List[String] = {
+  def downloadIntersection(maxTry: Int = 100, retry: Long = 3000): util.List[String] = {
     var intersection: util.List[String] = null
     breakable {
       for (i <- 0 until maxTry) {
@@ -75,7 +75,7 @@ class PSI() extends FLClientClosable {
   def uploadSetAndDownloadIntersection(df: DataFrame,
                                        salt: String,
                                        rowKeyName: String = "IDS",
-                                       maxTry: Int = 5,
+                                       maxTry: Int = 100,
                                        retry: Long = 3000): DataFrame = {
     val spark = FLContext.getSparkSession()
     import spark.implicits._

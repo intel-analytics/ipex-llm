@@ -9,6 +9,9 @@ import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
 import org.apache.log4j.Logger
 
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
+
 
 /**
  * @param algorithm algorithm of NN, supported:
@@ -27,6 +30,9 @@ class HflNNEstimator(algorithm: String,
   val flClient = FLContext.getClient()
   val localEstimator = LocalEstimator(
     model = model, criterion = criterion, optmizeMethod = optimMethod, null, threadNum)
+  protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
+
+
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]],
             valDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float] = {
