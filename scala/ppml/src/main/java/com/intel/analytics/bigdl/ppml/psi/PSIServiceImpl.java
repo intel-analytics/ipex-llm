@@ -15,8 +15,9 @@
  */
 package com.intel.analytics.bigdl.ppml.psi;
 
-import com.intel.analytics.bigdl.ppml.generated.FLProto.*;
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
 import com.intel.analytics.bigdl.ppml.generated.PSIServiceGrpc;
+import com.intel.analytics.bigdl.ppml.generated.PSIServiceProto.*;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

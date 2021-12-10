@@ -16,8 +16,10 @@
 
 package com.intel.analytics.bigdl.ppml.psi;
 
-import com.intel.analytics.bigdl.ppml.generated.FLProto;
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
 import com.intel.analytics.bigdl.ppml.generated.PSIServiceGrpc;
+import com.intel.analytics.bigdl.ppml.generated.PSIServiceProto.*;
+
 import io.grpc.Channel;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
@@ -56,11 +58,11 @@ public class PSIStub {
      */
     public String getSalt(String name, int clientNum, String secureCode) {
         logger.info("Processing task with taskID: " + name + " ...");
-        FLProto.SaltRequest request = FLProto.SaltRequest.newBuilder()
+        SaltRequest request = SaltRequest.newBuilder()
                 .setTaskId(name)
                 .setClientNum(clientNum)
                 .setSecureCode(secureCode).build();
-        FLProto.SaltReply response;
+        SaltReply response;
         try {
             response = stub.getSalt(request);
         } catch (StatusRuntimeException e) {
@@ -82,7 +84,7 @@ public class PSIStub {
         int split = 0;
         while (split < numSplit) {
             List<String> splitArray = Utils.getSplit(hashedIdArray, split, numSplit, splitSize);
-            FLProto.UploadSetRequest request = FLProto.UploadSetRequest.newBuilder()
+            UploadSetRequest request = UploadSetRequest.newBuilder()
                     .setTaskId(taskID)
                     .setSplit(split)
                     .setNumSplit(numSplit)
@@ -109,22 +111,22 @@ public class PSIStub {
         List<String> result = new ArrayList<String>();
         try {
             logger.info("Downloading 0th intersection");
-            FLProto.DownloadIntersectionRequest request = FLProto.DownloadIntersectionRequest.newBuilder()
+            DownloadIntersectionRequest request = DownloadIntersectionRequest.newBuilder()
                     .setTaskId(taskID)
                     .setSplit(0)
                     .build();
-            FLProto.DownloadIntersectionResponse response = stub.downloadIntersection(request);
-            if (response.getStatus() == FLProto.SIGNAL.ERROR) {
+            DownloadIntersectionResponse response = stub.downloadIntersection(request);
+            if (response.getStatus() == SIGNAL.ERROR) {
                 throw new Exception("Task ID does not exist on server, please upload set first.");
             }
-            if (response.getStatus() == FLProto.SIGNAL.EMPTY_INPUT) {
+            if (response.getStatus() == SIGNAL.EMPTY_INPUT) {
                 // empty intersection, just return
                 return null;
             }
             logger.info("Downloaded 0th intersection");
             result.addAll(response.getIntersectionList());
             for (int i = 1; i < response.getNumSplit(); i++) {
-                request = FLProto.DownloadIntersectionRequest.newBuilder()
+                request = DownloadIntersectionRequest.newBuilder()
                         .setTaskId(taskID)
                         .setSplit(i)
                         .build();

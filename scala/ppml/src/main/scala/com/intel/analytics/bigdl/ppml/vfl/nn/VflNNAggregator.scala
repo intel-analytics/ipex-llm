@@ -22,8 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.ppml.common.FLPhase
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
-import com.intel.analytics.bigdl.ppml.generated.FLProto
-import com.intel.analytics.bigdl.ppml.generated.FLProto.TableMetaData
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.vfl.DLlibAggregator
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.toFloatTensor
 import com.intel.analytics.bigdl.{Criterion, Module}
@@ -52,27 +51,27 @@ class VflNNAggregator(model: Module[Float],
     val output = module.forward(inputTable)
 
     val metaBuilder = TableMetaData.newBuilder()
-    var aggregatedTable: FLProto.Table = null
+    var aggregatedTable: Table = null
     if (aggType == FLPhase.TRAIN) {
       val loss = criterion.forward(output, target)
       val gradOutputLayer = criterion.backward(output, target)
       val grad = module.backward(inputTable, gradOutputLayer)
       val meta = metaBuilder.setName("gradInput").setVersion(trainStorage.version).build()
 
-      aggregatedTable = FLProto.Table.newBuilder()
+      aggregatedTable = Table.newBuilder()
         .setMetaData(meta)
         .putTable("gradInput", toFloatTensor(Tensor[Float](grad.toTable)))
         .putTable("loss", toFloatTensor(Tensor[Float](T(loss))))
         .build()
     } else if (aggType == EVAL) {
       val meta = metaBuilder.setName("evaluateResult").setVersion(evalStorage.version).build()
-      aggregatedTable = FLProto.Table.newBuilder()
+      aggregatedTable = Table.newBuilder()
         .setMetaData(meta)
         .putTable("evaluateOutput", toFloatTensor(Tensor[Float](output.toTable)))
         .build()
     } else if (aggType == PREDICT) {
       val meta = metaBuilder.setName("predictResult").setVersion(predictStorage.version).build()
-      aggregatedTable = FLProto.Table.newBuilder()
+      aggregatedTable = Table.newBuilder()
         .setMetaData(meta)
         .putTable("predictOutput", toFloatTensor(Tensor[Float](output.toTable)))
         .build()

@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.grpc.GrpcClientBase
-import com.intel.analytics.bigdl.ppml.generated.FLProto
 import com.intel.analytics.bigdl.ppml.psi.PSIStub
 import com.intel.analytics.bigdl.ppml.vfl.NNStub
 import java.io.{File, IOException}

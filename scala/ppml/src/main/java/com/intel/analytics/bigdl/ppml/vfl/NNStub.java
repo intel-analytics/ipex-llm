@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.vfl;
 
-import com.intel.analytics.bigdl.ppml.generated.FLProto;
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
+import com.intel.analytics.bigdl.ppml.generated.NNServiceProto.*;
 import com.intel.analytics.bigdl.ppml.generated.NNServiceGrpc;
 import io.grpc.Channel;
 import org.slf4j.Logger;
@@ -30,42 +31,46 @@ public class NNStub {
         this.clientID = clientID;
         stub = NNServiceGrpc.newBlockingStub(channel);
     }
-    public FLProto.DownloadResponse downloadTrain(String modelName, int flVersion, String algorithm) {
-        logger.info("Download the following data:");
-        FLProto.TableMetaData metadata = FLProto.TableMetaData.newBuilder()
-                .setName(modelName).setVersion(flVersion + 1).build();
-        FLProto.DownloadRequest downloadRequest = FLProto.DownloadRequest
-                .newBuilder().setMetaData(metadata).setAlgorithm(algorithm).build();
-        return stub.downloadTrain(downloadRequest);
-    }
 
-    public FLProto.UploadResponse uploadTrain(FLProto.Table data, String algorithm) {
-
-        FLProto.UploadRequest uploadRequest = FLProto.UploadRequest
+    public TrainResponse train(Table data, String algorithm) {
+        TrainRequest trainRequest = TrainRequest
                 .newBuilder()
                 .setData(data)
                 .setClientuuid(clientID)
                 .setAlgorithm(algorithm)
                 .build();
-
-        logger.info("Upload the following data:");
-        logger.info("Upload Data Name:" + data.getMetaData().getName());
-        logger.info("Upload Data Version:" + data.getMetaData().getVersion());
-        logger.debug("Upload Data" + data.getTableMap());
-//        logger.info("Upload" + data.getTableMap().get("weights").getTensorList().subList(0, 5));
-
-        FLProto.UploadResponse uploadResponse = stub.uploadTrain(uploadRequest);
-        return uploadResponse;
+        logDebugMessage(data);
+        return stub.train(trainRequest);
     }
 
-    public FLProto.EvaluateResponse evaluate(FLProto.Table data, boolean lastBatch) {
-        FLProto.EvaluateRequest eRequest = FLProto.EvaluateRequest
+
+    public EvaluateResponse evaluate(Table data, String algorithm) {
+        EvaluateRequest evaluateRequest = EvaluateRequest
                 .newBuilder()
                 .setData(data)
                 .setClientuuid(clientID)
-                .setLast(lastBatch)
+                .setAlgorithm(algorithm)
                 .build();
+        logDebugMessage(data);
+        return stub.evaluate(evaluateRequest);
+    }
 
-        return stub.uploadEvaluate(eRequest);
+    public PredictResponse predict(Table data, String algorithm) {
+        PredictRequest predictRequest = PredictRequest
+                .newBuilder()
+                .setData(data)
+                .setClientuuid(clientID)
+                .setAlgorithm(algorithm)
+                .build();
+        logDebugMessage(data);
+        return stub.predict(predictRequest);
+    }
+
+    private void logDebugMessage(Table data) {
+        logger.debug("Upload the following data:");
+        logger.debug("Upload Data Name:" + data.getMetaData().getName());
+        logger.debug("Upload Data Version:" + data.getMetaData().getVersion());
+        logger.debug("Upload Data" + data.getTableMap());
+        ;
     }
 }

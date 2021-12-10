@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl
+package com.intel.analytics.bigdl.ppml
 
-import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.utils.PortUtils
 import org.apache.log4j.Logger
-
-import scala.collection.JavaConverters._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.TimeoutException
 
 class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
@@ -90,7 +87,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     val salt1 = pSI1.getSalt()
     pSI1.uploadSet(set1.asJava, salt1)
     try {
-      val intersection = pSI1.downloadIntersection()
+      val intersection = pSI1.downloadIntersection(maxTry = 2)
     } catch {
       case _: TimeoutException => println("Test pass")
       case _ => throw new Error("Test fail")

@@ -41,7 +41,7 @@ public class Storage<T> {
         clientData.clear();
         serverData = data;
         version += 1;
-        logger.info("Storage " + name + " of version:" + version + " aggregated.");
+        logger.info("Storage " + name + " of version: " + version + " aggregated.");
     }
     /**
      *
