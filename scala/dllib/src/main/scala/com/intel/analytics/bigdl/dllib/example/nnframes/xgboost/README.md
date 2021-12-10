@@ -9,7 +9,7 @@
 ### BigDL nightly build
 
 You can download [here](https://bigdl.readthedocs.io/en/latest/doc/release.html).
-For spark 2.4 you need `bigdl-dllib-spark_2.4.6-0.14.0-build_time-jar-with-dependencies.jar` or `bigdl-dllib-spark_3.1.2-0.14.0-build_time-jar-with-dependencies.jar` for spark 3.1  . 
+For spark 2.4 you need `bigdl-dllib-spark_2.4.6-0.14.0-build_time-jar-with-dependencies.jar` or `bigdl-dllib-spark_3.1.2-0.14.0-build_time-jar-with-dependencies.jar` for spark 3.1 . 
 
 
 ### UCI iris.data
@@ -22,18 +22,18 @@ You can download iris.data [here](https://archive.ics.uci.edu/ml/machine-learnin
 command:
 ```
 spark-submit \
-  --master local[2] \
+  --master local[4] \
   --conf spark.task.cpus=2 \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExample \
   /path/to/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  /path/to/iris.data 2 100 /path/to/model/saved
+  /path/to/iris.data 2 100 /path/to/model_to_be_saved
 ```
 
 You will get output like:
 ```
 [INFO] [12/08/2021 16:05:41.989] [RabitTracker-akka.actor.default-dispatcher-22] [akka://RabitTracker/user/Handler] [591298]    train-merror:0.000000   eval1-merror:0.000000     eval2-merror:0.125000
 ```
-And tree of folder `/path/to/model/saved` :
+And tree of folder `/path/to/model_to_be_saved` :
 ```
 .
 ├── data
@@ -46,7 +46,7 @@ parameters:
 - path_to_iris.data : String
 - num_threads : Int
 - num_round : Int 
-- path_to_model_saved : String
+- path_to_model_to_be_saved : String
 
 **note: make sure num_threads is larger than spark.task.cpus.**
 
@@ -58,7 +58,7 @@ spark-submit \
   --conf spark.task.cpus=2 \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierPredictExample \
   /path/to/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  /path/to/iris.data 2 100 /path/to/model/saved
+  /path/to/iris.data /path/to/model/saved
 ```
 You will get output like:
 ```
@@ -88,3 +88,6 @@ You will get output like:
 +------------+-----------+------------+-----------+-----------+--------------------+--------------------+----------+
 only showing top 20 rows
 ```
+parameters:
+- path_to_iris.data : String
+- path_to_model_saved : String
