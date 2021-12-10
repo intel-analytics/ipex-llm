@@ -74,6 +74,8 @@ public abstract class Aggregator<T> {
         Storage storage = getServerData(type);
         checkVersion(storage.version, version);
         logger.debug(clientUUID + " version check pass, version: " + version);
+
+
         synchronized (this) {
             storage.clientData.put(clientUUID, data);
             logger.debug(clientUUID + " client data uploaded to server");
@@ -81,6 +83,9 @@ public abstract class Aggregator<T> {
             if (storage.size() >= clientNum) {
                 logger.debug("Server received all client data, start aggregate.");
                 aggregate(type);
+                notifyAll();
+            } else {
+                wait();
             }
         }
 

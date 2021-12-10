@@ -53,7 +53,7 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   }
 
   override def loadServices(): Unit = {
-    psiStub = new PSIStub(channel, taskID)
+    psiStub = new PSIStub(channel)
     nnStub = new NNStub(channel, clientUUID)
   }
 

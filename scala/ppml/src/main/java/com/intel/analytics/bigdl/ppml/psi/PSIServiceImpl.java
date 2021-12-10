@@ -30,41 +30,42 @@ import java.util.concurrent.ExecutionException;
 public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
     private static final Logger logger = LoggerFactory.getLogger(PSIServiceImpl.class);
     // TODO Thread safe
-    protected Map<String, PsiIntersection> psiTasks = new ConcurrentHashMap<>();
+    protected PsiIntersection psiTask;
     // This psiCollections is
     //            TaskId,   ClientId, UploadRequest
-    protected Map<String, Map<String, String[]>> psiCollections = new ConcurrentHashMap<>();
-    ConcurrentHashMap<String, Integer> clientNum = new ConcurrentHashMap<>();
-    ConcurrentHashMap<String, String> clientSalt = new ConcurrentHashMap<>();
-    ConcurrentHashMap<String, String> clientSecret = new ConcurrentHashMap<>();
+    protected Map<String, String[]> psiCollections = new ConcurrentHashMap<>();
+    int clientNum;
+    String clientSalt;
+    String clientSecret;
     // Stores the seed used in shuffling for each taskId
-    ConcurrentHashMap<String, Integer> clientShuffleSeed = new ConcurrentHashMap<>();
+    int clientShuffleSeed = 0;
     protected int splitSize = 1000000;
 
+    public PSIServiceImpl(int clientNum) {
+        this.clientNum = clientNum;
+    }
     @Override
     public void getSalt(SaltRequest req, StreamObserver<SaltReply> responseObserver) {
         String salt;
         // Store salt
         String taskId = req.getTaskId();
-        if (clientSalt.containsKey(taskId)) {
-            salt = clientSalt.get(taskId);
+        if (clientSalt != null) {
+            salt = clientSalt;
         } else {
             salt = Utils.getRandomUUID();
-            clientSalt.put(taskId, salt);
+            clientSalt = salt;
         }
-        // Store clientNum
-        if (req.getClientNum() != 0 && !clientNum.containsKey(taskId)) {
-            clientNum.put(taskId, req.getClientNum());
-        }
+
         // Store secure
-        if (!clientSecret.containsKey(taskId)) {
-            clientSecret.put(taskId, req.getSecureCode());
-        } else if (!clientSecret.get(taskId).equals(req.getSecureCode())) {
+        if (clientSecret == null) {
+            clientSecret = req.getSecureCode();
+        } else if (!clientSecret.equals(req.getSecureCode())) {
             // TODO Reply empty
+            salt = "";
         }
         // Store random seed for shuffling
-        if (!clientShuffleSeed.containsKey(taskId)) {
-            clientShuffleSeed.put(taskId, Utils.getRandomInt());
+        if (clientShuffleSeed == 0) {
+            clientShuffleSeed = Utils.getRandomInt();
         }
         SaltReply reply = SaltReply.newBuilder().setSaltReply(salt).build();
         responseObserver.onNext(reply);
@@ -74,69 +75,60 @@ public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
     @Override
     public void uploadSet(UploadSetRequest request,
                           StreamObserver<UploadSetResponse> responseObserver) {
-        String taskId = request.getTaskId();
         SIGNAL signal;
-        if (!clientNum.containsKey(taskId)) {
-            signal= SIGNAL.ERROR;
-            logger.error("TaskId not found in server, please get salt first. " +
-                    "TaskID:" + taskId + ", ClientID:" + request.getClientId());
-        } else {
-            signal= SIGNAL.SUCCESS;
-            String clientId = request.getClientId();
-            int numSplit = request.getNumSplit();
-            int splitLength = request.getSplitLength();
-            int totalLength = request.getTotalLength();
-            if(!psiCollections.containsKey(taskId)){
-                psiCollections.put(taskId, new ConcurrentHashMap<String, String[]>());
+
+        signal= SIGNAL.SUCCESS;
+        String clientId = request.getClientId();
+        int numSplit = request.getNumSplit();
+        int splitLength = request.getSplitLength();
+        int totalLength = request.getTotalLength();
+
+        if(!psiCollections.containsKey(clientId)){
+            if(psiCollections.size() >= clientNum) {
+                logger.error("Too many clients, already has " +
+                        psiCollections.keySet() +
+                        ". The new one is " + clientId);
             }
-            if(!psiCollections.get(taskId).containsKey(clientId)){
-                if(psiCollections.get(taskId).size() >= clientNum.get(taskId)) {
-                    logger.error("Too many clients, already has " +
-                            psiCollections.get(taskId).keySet() +
-                            ". The new one is " + clientId);
-                }
-                psiCollections.get(taskId).put(clientId, new String[totalLength]);
-            }
-            String[] collectionStorage = psiCollections.get(taskId).get(clientId);
-            String[] ids = request.getHashedIDList().toArray(new String[request.getHashedIDList().size()]);
-            int split = request.getSplit();
-            // TODO: verify requests' splits are unique.
-            System.arraycopy(ids, 0, collectionStorage, split * splitLength, ids.length);
-            logger.info("ClientId" + clientId + ",split: " + split + ", numSplit: " + numSplit + ".");
-            if (split == numSplit - 1) {
-                synchronized (psiTasks) {
-                    try {
-                        if (psiTasks.containsKey(taskId)) {
-                            logger.info("Adding " + (psiTasks.get(taskId).numCollection() + 1) +
-                                    "th collections to " + taskId + ".");
-                            long st = System.currentTimeMillis();
-                            psiTasks.get(taskId).addCollection(collectionStorage);
-                            logger.info("Added " + (psiTasks.get(taskId).numCollection()) +
-                                    "th collections to " + taskId + ". Find Intersection time cost: " + (System.currentTimeMillis()-st) + " ms");
-                        } else {
-                            logger.info("Adding 1th collections.");
-                            PsiIntersection pi = new PsiIntersection(clientNum.get(taskId),
-                                    clientShuffleSeed.get(taskId));
-                            pi.addCollection(collectionStorage);
-                            psiTasks.put(taskId, pi);
-                            logger.info("Added 1th collections.");
-                        }
-                        psiCollections.get(taskId).remove(clientId);
-                    } catch (InterruptedException | ExecutionException e){
-                        logger.error(e.getMessage());
-                        signal= SIGNAL.ERROR;
-                    } catch (IllegalArgumentException iae) {
-                        logger.error("TaskId " + taskId + ": Too many collections from client.");
-                        logger.error("Current client ids are " + psiCollections.get(taskId).keySet());
-                        logger.error(iae.getMessage());
-                        throw iae;
+            psiCollections.put(clientId, new String[totalLength]);
+        }
+        String[] collectionStorage = psiCollections.get(clientId);
+        String[] ids = request.getHashedIDList().toArray(new String[request.getHashedIDList().size()]);
+        int split = request.getSplit();
+        // TODO: verify requests' splits are unique.
+        System.arraycopy(ids, 0, collectionStorage, split * splitLength, ids.length);
+        logger.info("ClientId" + clientId + ",split: " + split + ", numSplit: " + numSplit + ".");
+        if (split == numSplit - 1) {
+            synchronized (this) {
+                try {
+                    if (psiTask != null) {
+                        logger.info("Adding " + (psiTask.numCollection() + 1) +
+                                "th collections");
+                        long st = System.currentTimeMillis();
+                        psiTask.addCollection(collectionStorage);
+                        logger.info("Added " + (psiTask.numCollection()) +
+                                "th collections. Find Intersection time cost: " + (System.currentTimeMillis()-st) + " ms");
+                    } else {
+                        logger.info("Adding 1th collections.");
+                        PsiIntersection pi = new PsiIntersection(clientNum,
+                                clientShuffleSeed);
+                        pi.addCollection(collectionStorage);
+                        psiTask = pi;
+                        logger.info("Added 1th collections.");
                     }
+                    psiCollections.remove(clientId);
+                } catch (InterruptedException | ExecutionException e){
+                    logger.error(e.getMessage());
+                    signal= SIGNAL.ERROR;
+                } catch (IllegalArgumentException iae) {
+                    logger.error("Current client ids are " + psiCollections.keySet());
+                    logger.error(iae.getMessage());
+                    throw iae;
                 }
             }
         }
 
+
         UploadSetResponse response = UploadSetResponse.newBuilder()
-                .setTaskId(taskId)
                 .setStatus(signal)
                 .build();
         responseObserver.onNext(response);
@@ -146,14 +138,12 @@ public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
     @Override
     public void downloadIntersection(DownloadIntersectionRequest request,
                                      StreamObserver<DownloadIntersectionResponse> responseObserver) {
-        String taskId = request.getTaskId();
         SIGNAL signal = SIGNAL.SUCCESS;
-        if (psiTasks.containsKey(taskId)) {
+        if (psiTask != null) {
             try {
-                List<String> intersection = psiTasks.get(taskId).getIntersection();
+                List<String> intersection = psiTask.getIntersection();
                 if (intersection == null) {
                     DownloadIntersectionResponse response = DownloadIntersectionResponse.newBuilder()
-                            .setTaskId(taskId)
                             .setStatus(SIGNAL.EMPTY_INPUT).build();
                     responseObserver.onNext(response);
                     responseObserver.onCompleted();
@@ -163,7 +153,6 @@ public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
                 int numSplit = Utils.getTotalSplitNum(intersection, splitSize);
                 List<String> splitIntersection = Utils.getSplit(intersection, split, numSplit, splitSize);
                 DownloadIntersectionResponse response = DownloadIntersectionResponse.newBuilder()
-                        .setTaskId(taskId)
                         .setStatus(signal)
                         .setSplit(split)
                         .setNumSplit(numSplit)
@@ -176,14 +165,12 @@ public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
                 logger.error(e.getMessage());
                 signal = SIGNAL.ERROR;
                 DownloadIntersectionResponse response = DownloadIntersectionResponse.newBuilder()
-                        .setTaskId(taskId)
                         .setStatus(signal).build();
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
             }
         } else {
             DownloadIntersectionResponse response = DownloadIntersectionResponse.newBuilder()
-                    .setTaskId(taskId)
                     .setStatus(SIGNAL.ERROR).build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
