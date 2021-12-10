@@ -17,7 +17,7 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#1 Total time cost ${time} seconds"
 
-echo "#2 start test for dllib inception"
+# echo "#2 start test for dllib inception"
 
 #timer
 start=$(date "+%s")
@@ -86,14 +86,14 @@ time=$((now - start))
 echo "#5 Total time cost ${time} seconds"
 
 
-echo "#6 start test for dllib nnframes_imageInference"
+# echo "#6 start test for dllib nnframes_imageInference"
 
-if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-else
-  wget $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-    -P analytics-zoo-models
-fi
+# if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+#   echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+# else
+#   wget $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+#     -P analytics-zoo-models
+# fi
 
 #timer
 start=$(date "+%s")
