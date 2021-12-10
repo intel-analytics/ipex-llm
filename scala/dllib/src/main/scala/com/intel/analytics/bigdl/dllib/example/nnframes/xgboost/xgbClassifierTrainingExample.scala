@@ -32,11 +32,11 @@ object xgbClassifierTrainingExample {
     }
     val sc = NNContext.initNNContext()
     val spark = SQLContext.getOrCreate(sc)
-    
+
     val input_path = args(0) // path to iris.data
     val num_threads = args(1).toInt
     val num_round = args(2).toInt
-    val modelsave_path= args(3) // save model to this path
+    val modelsave_path = args(3) // save model to this path
 
     val schema = new StructType(Array(
       StructField("sepal length", DoubleType, true),
