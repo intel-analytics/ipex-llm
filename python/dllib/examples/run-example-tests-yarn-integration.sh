@@ -7,7 +7,7 @@ start=$(date "+%s")
 rm -rf /tmp/mnist
 ${HADOOP_HOME}/bin/hadoop fs -get ${HDFS_URI}/mnist /tmp/mnist
 ls /tmp/mnist
-python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/models/lenet/lenet5.py --on-yarn -n 1
+python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/models/lenet/lenet5.py --cluster-mode yarn-client -n 1
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
