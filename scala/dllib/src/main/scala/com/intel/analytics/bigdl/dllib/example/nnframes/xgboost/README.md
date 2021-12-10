@@ -1,7 +1,7 @@
 # Prepare
 
 ## Environment
-- Spark 2.4
+- Spark 2.4 or Spark 3.1
 - BigDL 2.0 
 
 ## Data Prepare
@@ -9,7 +9,8 @@
 ### BigDL nightly build
 
 You can download [here](https://bigdl.readthedocs.io/en/latest/doc/release.html).
-You will get jar `bigdl-dllib-spark_2.4.6-0.14.0-build_time-jar-with-dependencies.jar`.
+For spark 2.4 you need `bigdl-dllib-spark_2.4.6-0.14.0-build_time-jar-with-dependencies.jar` or `bigdl-dllib-spark_3.1.2-0.14.0-build_time-jar-with-dependencies.jar` for spark 3.1  . 
+
 
 ### UCI iris.data
 
@@ -24,7 +25,7 @@ spark-submit \
   --master local[2] \
   --conf spark.task.cpus=2 \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExample \
-  /path/to/BigDL/scala/dllib/target/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
+  /path/to/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
   /path/to/iris.data 2 100 /path/to/model/saved
 ```
 
@@ -47,7 +48,7 @@ parameters:
 - num_round : Int 
 - path_to_model_saved : String
 
-note: make sure num_threads is larger than spark.task.cpus.
+**note: make sure num_threads is larger than spark.task.cpus.**
 
 # XGBoostClassifier Predict Example
 ## Run:
@@ -56,7 +57,7 @@ spark-submit \
   --master local[4] \
   --conf spark.task.cpus=2 \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierPredictExample \
-  /path/to/BigDL/scala/dllib/target/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
+  /path/to/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
   /path/to/iris.data 2 100 /path/to/model/saved
 ```
 You will get output like:

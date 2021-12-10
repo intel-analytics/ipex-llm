@@ -189,8 +189,15 @@
 # echo "#App[Model-inference-example] Test 5.1: model-inference-flink: Image Classification time used:$time8 seconds"
 
 # ./flink-1.7.2/bin/stop-cluster.sh
-
-wget $FTP_URI/analytics-zoo-data/iris.data -P tmp/data
+echo "#####################"
+cat /etc/hostname
+ls
+pwd
+cd /
+echo "#######################"
+find -name bigdl-dllib-spark*jar-with-dependencies.jar
+mkdir /tmp/data
+wget $FTP_URI/analytics-zoo-data/iris.data -P /tmp/data
 echo "# Test 6.1 dllib nnframes: XGBoostClassifierTrainExample"
 #timer
 start=$(date "+%s")
@@ -199,7 +206,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.task.cpus=2  \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExample \
   ${BIGDL_ROOT}/scala/dllib/target/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  tmp/data/iris.data 2 100 tmp/data/xgboost_model
+  /tmp/data/iris.data 2 100 /tmp/data/xgboost_model
 now=$(date "+%s")
 time9=$((now-start))
 echo "#App[Model-inference-example] Test 6.1: dllib nnframes: XGBoostClassifierTrainExample time used:$time9 seconds"
@@ -212,7 +219,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.task.cpus=2  \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierPredictExample \
   ${BIGDL_ROOT}/scala/dllib/target/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  tmp/data/iris.data  tmp/data/xgboost_model
+  /tmp/data/iris.data  /tmp/data/xgboost_model
 now=$(date "+%s")
 time10=$((now-start))
 echo "#App[Model-inference-example] Test 6.2: dllib nnframes: XGBoostClassifierPredictExample time used:$time10 seconds"
