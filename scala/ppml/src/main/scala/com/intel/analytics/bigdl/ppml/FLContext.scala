@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml
 
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
@@ -27,6 +28,7 @@ object FLContext {
   var flClient: FLClient = null
   var sparkSession: SparkSession = null
   def initFLContext(target: String = null) = {
+    Engine.init
     this.synchronized {
       if (flClient == null) {
         this.synchronized {

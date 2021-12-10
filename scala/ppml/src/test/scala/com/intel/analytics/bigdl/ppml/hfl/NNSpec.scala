@@ -35,6 +35,8 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with LogManager 
     FLContext.initFLContext()
     val lr = new LogisticRegression(df.columns.size - 1)
     lr.fit(df, valData = df)
+    lr.evaluate(df)
+    lr.predict(df)
   }
   "Linear Regression" should "work" in {
 
