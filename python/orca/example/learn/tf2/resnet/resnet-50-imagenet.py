@@ -23,9 +23,13 @@ _DEFAULT_IMAGE_SIZE = 224
 _NUM_CHANNELS = 3
 _NUM_CLASSES = 1001
 
+# _NUM_IMAGES = {
+#     'train': 1281167,
+#     'validation': 50000,
+# }
 _NUM_IMAGES = {
-    'train': 1281167,
-    'validation': 50000,
+    'train': 1281,
+    'validation': 50,
 }
 
 _NUM_TRAIN_FILES = 128 #1024
