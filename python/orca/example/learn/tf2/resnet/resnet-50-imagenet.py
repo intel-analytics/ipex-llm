@@ -28,8 +28,8 @@ _NUM_IMAGES = {
     'validation': 50000,
 }
 
-_NUM_TRAIN_FILES = 1024
-_NUM_VAL_FILES = 128
+_NUM_TRAIN_FILES = 128 #1024
+_NUM_VAL_FILES = 16 #128
 _SHUFFLE_BUFFER = 1500
 
 _NUM_EXAMPLES_NAME = "num_examples"
@@ -415,7 +415,7 @@ if __name__ == "__main__":
         )
     else:
         epoch = 0
-        for i in range(5):
+        for i in range(1): #5
             dummy = args.use_dummy_data
 
             results = trainer.fit(
