@@ -420,12 +420,12 @@ if __name__ == "__main__":
 
             results = trainer.fit(
                 data=train_data_creator if not dummy else dummy_data_creator,
-                epochs=18,
+                epochs=2,
                 batch_size=global_batch_size,
                 validation_data=val_data_creator if not dummy else dummy_data_creator,
                 steps_per_epoch=_NUM_IMAGES['train'] // global_batch_size,
                 callbacks=callbacks,
                 validation_steps=_NUM_IMAGES['validation'] // global_batch_size,
             )
-            epoch += 18
+            epoch += 2
         trainer.save(os.path.join(args.log_dir, f"model-{epoch}.pkl"))
