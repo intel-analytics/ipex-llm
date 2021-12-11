@@ -156,6 +156,6 @@ if [ $exit_status -ne 0 ]; then
   echo "dllib nnframes_imageTransfer learning failed"
   exit $exit_status
 fi
-now=$(date "+%s")
-time=$((now - start))
+now==$(date "+%s")
+time==$((now - start))
 echo "#9 Total time cost ${time} seconds"
