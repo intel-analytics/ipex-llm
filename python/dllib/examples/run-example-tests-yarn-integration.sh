@@ -147,7 +147,7 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py  \
   --worker_num 2 \
-  --cores 16 \
+  --cores 32 \
   --memory "20g" \
   --data_dir /data/imagenettfrecord/train \
   --cluster_mode yarn-client
