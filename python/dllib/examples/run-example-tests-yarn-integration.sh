@@ -141,7 +141,6 @@ echo "#6 Total time cost ${time} seconds"
 # time=$((now - start))
 # echo "#8 Total time cost ${time} seconds"
 
-ls /data
 echo "#9 start test for orca learn tf2 resnet"
 #timer
 start=$(date "+%s")
