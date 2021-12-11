@@ -47,7 +47,7 @@ from bigdl.orca.learn.tf.estimator import Estimator
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The mode for the Spark cluster. local, yarn or spark-submit.')
+                    help='The mode for the Spark cluster. local, yarn-client, yarn-cluster or spark-submit.')
 parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
@@ -68,7 +68,6 @@ base_dir, _ = os.path.splitext(zip_file)
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
 elif cluster_mode.startswith("yarn"):
-  if cluster_mode == "yarn-client":
     init_orca_context(cluster_mode=cluster_mode, num_nodes=2, cores=2, driver_memory="3g")
 elif cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")                      
