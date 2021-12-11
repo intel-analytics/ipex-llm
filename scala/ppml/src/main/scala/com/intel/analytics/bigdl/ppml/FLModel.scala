@@ -62,20 +62,16 @@ abstract class FLModel() {
     } else {
       val _data = DataFrameUtils.dataFrameToMiniBatch(data, featureColumn, labelColumn,
         hasLabel = true, batchSize = batchSize)
-      val evaluatedResult = model.evaluate(_data.toLocal(), Array(new BinaryAccuracy[Float]()))
-      evaluatedResult
+      estimator.evaluate(_data.toLocal())
     }
 
   }
   def predict(data: DataFrame,
               batchSize: Int = 4,
               featureColumn: Array[String] = null) = {
-    if (predictor == null) {
-      predictor = LocalPredictor[Float](model)
-    }
     val _data = DataFrameUtils.dataFrameToMiniBatch(data, featureColumn,
       hasLabel = false, batchSize = batchSize)
-    predictor.predict(_data.toLocal())
+    estimator.predict(_data.toLocal())
   }
 }
 

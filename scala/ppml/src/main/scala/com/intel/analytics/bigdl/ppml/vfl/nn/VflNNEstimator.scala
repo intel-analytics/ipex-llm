@@ -85,30 +85,33 @@ class VflNNEstimator(algorithm: String,
         iteration += 1
         count += miniBatch.size()
       }
-      model.evaluate()
-      val valIterator = valDataSet.data(false)
-      var evaluateResponse: EvaluateResponse = null;
-      while(valIterator.hasNext) {
-        val miniBatch = valIterator.next()
-        val input = miniBatch.getInput()
-        val target = miniBatch.getTarget()
-        val output = model.forward(input)
-        val metadata = TableMetaData.newBuilder
-              .setName(s"${model.getName()}_output").setVersion(iteration).build
+      if (valDataSet != null) {
+        model.evaluate()
+        val valIterator = valDataSet.data(false)
+        var evaluateResponse: EvaluateResponse = null;
+        while(valIterator.hasNext) {
+          val miniBatch = valIterator.next()
+          val input = miniBatch.getInput()
+          val target = miniBatch.getTarget()
+          val output = model.forward(input)
+          val metadata = TableMetaData.newBuilder
+            .setName(s"${model.getName()}_output").setVersion(iteration).build
 
-            // TODO: support table output and table target
-        val tableProto = outputTargetToTableProto(model.output, target, metadata)
-        evaluateResponse = flClient.nnStub.evaluate(tableProto, algorithm)
-      }
-      logger.info(evaluateResponse.getResponse)
-      val dataMap = evaluateResponse.getData.getTableMap.asScala
-      dataMap.foreach{v =>
-        if (evaluateResults.contains(v._1)) {
-          evaluateResults(v._1).append(v._2.getTensor(0))
-        } else {
-          evaluateResults(v._1) = ArrayBuffer(v._2.getTensor(0))
+          // TODO: support table output and table target
+          val tableProto = outputTargetToTableProto(model.output, target, metadata)
+          evaluateResponse = flClient.nnStub.evaluate(tableProto, algorithm)
+        }
+        logger.info(evaluateResponse.getResponse)
+        val dataMap = evaluateResponse.getData.getTableMap.asScala
+        dataMap.foreach{v =>
+          if (evaluateResults.contains(v._1)) {
+            evaluateResults(v._1).append(v._2.getTensor(0))
+          } else {
+            evaluateResults(v._1) = ArrayBuffer(v._2.getTensor(0))
+          }
         }
       }
+
     }
 
     model

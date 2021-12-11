@@ -3,7 +3,7 @@ package com.intel.analytics.bigdl.ppml.hfl.nn
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.estimator.LocalEstimator
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
-import com.intel.analytics.bigdl.dllib.optim.OptimMethod
+import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, Metrics, OptimMethod}
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
@@ -25,11 +25,13 @@ class HflNNEstimator(algorithm: String,
                      model: Module[Float],
                      optimMethod: OptimMethod[Float],
                      criterion: Criterion[Float],
+                     metrics: Array[Metrics] = null,
                      threadNum: Int = 1) extends Estimator{
   val logger = Logger.getLogger(getClass)
   val flClient = FLContext.getClient()
   val localEstimator = LocalEstimator(
     model = model, criterion = criterion, optmizeMethod = optimMethod, null, threadNum)
+  val localPredictor = LocalPredictor[Float](model)
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
 
 
@@ -55,5 +57,11 @@ class HflNNEstimator(algorithm: String,
     }
 
     model
+  }
+  def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]) = {
+    model.evaluate(dataSet, metrics)
+  }
+  def predict(dataSet: LocalDataSet[MiniBatch[Float]]) = {
+    localPredictor.predict(dataSet)
   }
 }

@@ -29,14 +29,14 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with LogManager 
     flServer.start()
     val spark = FLContext.getSparkSession()
     import spark.implicits._
-    val df = spark.read.option("header", "true")
+    val trainDf = spark.read.option("header", "true")
       .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
-
+    val testDf = trainDf.drop("Outcome")
     FLContext.initFLContext()
-    val lr = new LogisticRegression(df.columns.size - 1)
-    lr.fit(df, valData = df)
-    lr.evaluate(df)
-    lr.predict(df)
+    val lr = new LogisticRegression(trainDf.columns.size - 1)
+    lr.fit(trainDf, valData = trainDf)
+    lr.evaluate(trainDf)
+    lr.predict(testDf)
   }
   "Linear Regression" should "work" in {
 

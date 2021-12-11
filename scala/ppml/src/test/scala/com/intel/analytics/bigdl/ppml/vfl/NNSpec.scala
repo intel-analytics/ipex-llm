@@ -53,11 +53,12 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with LogManager 
     FLContext.initFLContext()
     val psi = new PSI()
     val salt = psi.getSalt()
-    val intersectionDf = psi.uploadSetAndDownloadIntersection(df, salt)
+    val trainDf = psi.uploadSetAndDownloadIntersection(df, salt)
+    val testDf = trainDf.drop("Outcome")
     val lr = new LogisticRegression(df.columns.size - 1)
-    lr.fit(intersectionDf, valData = intersectionDf)
-    lr.evaluate(intersectionDf)
-    lr.predict(intersectionDf)
+    lr.fit(trainDf, valData = trainDf)
+    lr.evaluate(trainDf)
+    lr.predict(testDf)
   }
   "Linear Regression" should "work" in {
 
