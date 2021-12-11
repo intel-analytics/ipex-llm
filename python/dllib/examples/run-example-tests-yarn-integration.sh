@@ -141,13 +141,14 @@ echo "#6 Total time cost ${time} seconds"
 # time=$((now - start))
 # echo "#8 Total time cost ${time} seconds"
 
+ls /data
 echo "#9 start test for orca learn tf2 resnet"
 #timer
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py  \
   --worker_num 2 \
-  --cores 32 \
+  --cores 16 \
   --memory "20g" \
   --data_dir /data/imagenettfrecord/train \
   --cluster_mode yarn-client
