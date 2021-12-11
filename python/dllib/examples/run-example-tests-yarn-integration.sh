@@ -151,7 +151,7 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py 
   --memory "20g" \
   --data_dir /data/imagenettfrecord/train \
   --cluster_mode yarn-client \
-  --use_dummy_data True
+  --use_dummy_data
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   echo "dllib nnframes_imageTransfer learning failed"
