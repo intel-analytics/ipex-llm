@@ -23,16 +23,20 @@ import java.util.Map
 import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, MSECriterion, Sigmoid, View}
 import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, AverageAggregator}
-import com.intel.analytics.bigdl.ppml.common.FLPhase.TRAIN
-import com.intel.analytics.bigdl.ppml.generated.FLProto._
+import com.intel.analytics.bigdl.ppml.common.FLPhase._
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.generated.NNServiceGrpc
+import com.intel.analytics.bigdl.ppml.generated.NNServiceProto._
 import com.intel.analytics.bigdl.ppml.hfl.nn.HflNNAggregator
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNAggregator
 import io.grpc.stub.StreamObserver
+import org.apache.log4j.Logger
+
 import collection.JavaConverters._
 import collection.JavaConversions._
 
 class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
+  private val logger = Logger.getLogger(getClass)
   private var aggregatorMap: Map[String, Aggregator[Table]] = null
   initAggregatorMap()
 
@@ -49,42 +53,88 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     })
   }
 
-
-  override def downloadTrain(request: DownloadRequest, responseObserver: StreamObserver[DownloadResponse]): Unit = {
-    val version = request.getMetaData.getVersion
+  override def train(request: TrainRequest, responseObserver: StreamObserver[TrainResponse]): Unit = {
+    val clientUUID = request.getClientuuid
+    logger.debug("Server get train request from client: " + clientUUID)
+    val data = request.getData
+    val version = data.getMetaData.getVersion
     val aggregator = aggregatorMap.get(request.getAlgorithm)
-    val data = aggregator.getServerData(TRAIN).serverData
-    if (data == null) {
-      val response = "Your required data doesn't exist"
-      responseObserver.onNext(DownloadResponse.newBuilder.setResponse(response).setCode(0).build)
-    }
-    else {
-      val response = "Download data successfully"
-      responseObserver.onNext(DownloadResponse.newBuilder.setResponse(response).setData(data).setCode(1).build)
-    }
-    responseObserver.onCompleted()
-  }
+    try {
+      aggregator.putClientData(TRAIN, clientUUID, version, data)
+      logger.debug(s"$clientUUID getting server new data to update local")
+      val responseData = aggregator.getServerData(TRAIN).serverData
+      if (responseData == null) {
+        val response = "Data requested doesn't exist"
+        responseObserver.onNext(TrainResponse.newBuilder.setResponse(response).setCode(0).build)
+      }
+      else {
+        val response = "Download data successfully"
+        responseObserver.onNext(TrainResponse.newBuilder.setResponse(response).setData(responseData).setCode(1).build)
+      }
+      responseObserver.onCompleted()
+    } catch {
+      case e: Exception =>
+        logger.debug(e.getMessage)
+        val response = TrainResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    } finally {
 
-  override def uploadTrain(request: UploadRequest,
-                           responseObserver: StreamObserver[UploadResponse]): Unit = {
-    // check data version, drop all the unmatched version
+    }
+
+  }
+  override def evaluate(request: EvaluateRequest, responseObserver: StreamObserver[EvaluateResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val data = request.getData
     val version = data.getMetaData.getVersion
     val aggregator = aggregatorMap.get(request.getAlgorithm)
     try {
       aggregator.putClientData(TRAIN, clientUUID, version, data)
-      val response = UploadResponse.newBuilder.setResponse("Data received").setCode(0).build
-      responseObserver.onNext(response)
+      val responseData = aggregator.getServerData(TRAIN).serverData
+      if (responseData == null) {
+        val response = "Data requested doesn't exist"
+        responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(0).build)
+      }
+      else {
+        val response = "Download data successfully"
+        responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setData(responseData).setCode(1).build)
+      }
       responseObserver.onCompleted()
     } catch {
       case e: Exception =>
-        val response = UploadResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        val response = EvaluateResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {
 
     }
   }
+  override def predict(request: PredictRequest, responseObserver: StreamObserver[PredictResponse]): Unit = {
+    val clientUUID = request.getClientuuid
+    val data = request.getData
+    val version = data.getMetaData.getVersion
+    val aggregator = aggregatorMap.get(request.getAlgorithm)
+    try {
+      aggregator.putClientData(EVAL, clientUUID, version, data)
+      val responseData = aggregator.getServerData(TRAIN).serverData
+      if (responseData == null) {
+        val response = "Data requested doesn't exist"
+        responseObserver.onNext(PredictResponse.newBuilder.setResponse(response).setCode(0).build)
+      }
+      else {
+        val response = "Download data successfully"
+        responseObserver.onNext(PredictResponse.newBuilder.setResponse(response).setData(responseData).setCode(1).build)
+      }
+      responseObserver.onCompleted()
+    } catch {
+      case e: Exception =>
+        val response = PredictResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    } finally {
+
+    }
+  }
+
 }
 

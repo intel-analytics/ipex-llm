@@ -3,7 +3,7 @@ package com.intel.analytics.bigdl.ppml.hfl.nn
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.estimator.LocalEstimator
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
-import com.intel.analytics.bigdl.dllib.optim.OptimMethod
+import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, Metrics, OptimMethod, ValidationMethod}
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
@@ -25,11 +25,13 @@ class HflNNEstimator(algorithm: String,
                      model: Module[Float],
                      optimMethod: OptimMethod[Float],
                      criterion: Criterion[Float],
+                     metrics: Array[ValidationMethod[Float]] = null,
                      threadNum: Int = 1) extends Estimator{
   val logger = Logger.getLogger(getClass)
   val flClient = FLContext.getClient()
   val localEstimator = LocalEstimator(
     model = model, criterion = criterion, optmizeMethod = optimMethod, null, threadNum)
+  val localPredictor = LocalPredictor[Float](model)
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
 
 
@@ -43,18 +45,23 @@ class HflNNEstimator(algorithm: String,
       val trainSet = trainDataSet.data(true)
       val valSet = valDataSet.data(false)
       localEstimator.fit(trainSet.toSeq, size.toInt, valSet.toSeq)
-      logger.debug(s"Local train step ends, uploading version: $iteration to server.")
-      uploadModel(flClient, model, iteration, algorithm)
-      // Download average model
-      logger.debug(s"Local tensor uploaded, downloading aggregated tensor from server.")
-      val newModel = downloadTrain(flClient, "test", iteration, algorithm)
+      logger.debug(s"Local train step ends, syncing version: $iteration with server.")
+      val weights = getModelWeightTable(model, iteration)
+      val serverWeights = flClient.nnStub.train(weights, algorithm).getData
+
       // model replace
-      updateModel(model, newModel)
+      updateModel(model, serverWeights)
       logger.debug(s"Local tensor updated from server version.")
       iteration += 1
 
     }
 
     model
+  }
+  def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]) = {
+    model.evaluate(dataSet, metrics)
+  }
+  def predict(dataSet: LocalDataSet[MiniBatch[Float]]) = {
+    localPredictor.predict(dataSet)
   }
 }

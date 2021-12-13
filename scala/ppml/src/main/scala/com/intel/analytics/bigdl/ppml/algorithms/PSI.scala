@@ -31,12 +31,8 @@ import scala.util.control.Breaks._
 
 class PSI() extends FLClientClosable {
   val logger = Logger.getLogger(getClass)
-
-  def getSalt(): String = {
-    flClient.psiStub.getSalt()
-  }
-  def getSalt(name: String, clientNum: Int, secureCode: String): String = {
-    flClient.psiStub.getSalt(name, clientNum, secureCode)
+  def getSalt(secureCode: String = ""): String = {
+    flClient.psiStub.getSalt(secureCode)
   }
 
   def uploadSet(ids: util.List[String], salt: String): Unit = {
@@ -74,7 +70,7 @@ class PSI() extends FLClientClosable {
   }
   def uploadSetAndDownloadIntersection(df: DataFrame,
                                        salt: String,
-                                       rowKeyName: String = "IDS",
+                                       rowKeyName: String = "ID",
                                        maxTry: Int = 100,
                                        retry: Long = 3000): DataFrame = {
     val spark = FLContext.getSparkSession()

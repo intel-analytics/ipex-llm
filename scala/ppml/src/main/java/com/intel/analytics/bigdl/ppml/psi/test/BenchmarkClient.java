@@ -67,7 +67,7 @@ public class BenchmarkClient {
         PSI psi = new PSI();
         try {
             // Get salt from Server
-            salt = psi.getSalt();
+            salt = psi.getSalt("");
             logger.info("Client get Slat=" + salt);
             // Hash(IDs, salt) into hashed IDs
 

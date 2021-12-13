@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.ppml
 
+import com.intel.analytics.bigdl.dllib.keras.metrics.{Accuracy, BinaryAccuracy}
 import com.intel.analytics.bigdl.dllib.nn.Sequential
+import com.intel.analytics.bigdl.dllib.optim.LocalPredictor
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNEstimator
@@ -25,6 +27,8 @@ import org.apache.spark.sql.DataFrame
 abstract class FLModel() {
   val model: Sequential[Float]
   val estimator: Estimator
+  var predictor: LocalPredictor[Float] = null
+
 
   /**
    *
@@ -43,28 +47,31 @@ abstract class FLModel() {
           labelColumn: Array[String] = null,
           valData: DataFrame = null) = {
     val _trainData = DataFrameUtils.dataFrameToMiniBatch(trainData, featureColumn, labelColumn,
-      isTrain = true, batchSize = batchSize)
+      hasLabel = true, batchSize = batchSize)
     val _valData = DataFrameUtils.dataFrameToMiniBatch(valData)
     estimator.train(epoch, _trainData.toLocal(), _valData.toLocal())
   }
   def evaluate(data: DataFrame = null,
                batchSize: Int = 4,
-               featureColumn: Array[String] = null) = {
+               featureColumn: Array[String] = null,
+               labelColumn: Array[String] = null) = {
     if (data == null) {
       estimator.getEvaluateResults().foreach{r =>
         println(r._1 + ":" + r._2.mkString(","))
       }
     } else {
-      throw new Error("Not implemented.")
+      val _data = DataFrameUtils.dataFrameToMiniBatch(data, featureColumn, labelColumn,
+        hasLabel = true, batchSize = batchSize)
+      estimator.evaluate(_data.toLocal())
     }
 
   }
   def predict(data: DataFrame,
               batchSize: Int = 4,
               featureColumn: Array[String] = null) = {
-    val _data = DataFrameUtils.dataFrameToSampleRDD(
-      data, featureColumn, hasLabel = false, batchSize = batchSize)
-    model.predict(_data).collect()
+    val _data = DataFrameUtils.dataFrameToMiniBatch(data, featureColumn,
+      hasLabel = false, batchSize = batchSize)
+    estimator.predict(_data.toLocal())
   }
 }
 

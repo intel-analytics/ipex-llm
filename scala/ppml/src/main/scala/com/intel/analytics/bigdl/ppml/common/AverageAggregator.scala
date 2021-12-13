@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.ppml.common
 
-import com.intel.analytics.bigdl.ppml.generated.FLProto._
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._

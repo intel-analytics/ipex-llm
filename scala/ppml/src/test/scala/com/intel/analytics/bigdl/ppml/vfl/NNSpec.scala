@@ -19,14 +19,46 @@ package com.intel.analytics.bigdl.ppml.vfl
 import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.{LinearRegression, LogisticRegression}
+import com.intel.analytics.bigdl.ppml.example.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
 
-
-class NNSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class MockAnotherParty(algorithm: String, clientID: String = "mock") extends Thread {
+  override def run(): Unit = {
+    algorithm match {
+      case "logistic_regression" => runLogisticRegression()
+      case _ => throw new NotImplementedError()
+    }
+  }
+  def runLogisticRegression(): Unit = {
+    val spark = FLContext.getSparkSession()
+    import spark.implicits._
+    val df = spark.read.option("header", "true")
+      .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
+    val lr = new LogisticRegression(df.columns.size - 1)
+    lr.fit(df, valData = df)
+  }
+}
+class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with LogManager {
   "Logistic Regression" should "work" in {
-    // TODO: tests would be added after API changed to Spark local DataFrame
+    val flServer = new FLServer()
+    flServer.build()
+    flServer.start()
+    val spark = FLContext.getSparkSession()
+    import spark.implicits._
+    val df = spark.read.option("header", "true")
+      .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
+
+    FLContext.initFLContext()
+    val psi = new PSI()
+    val salt = psi.getSalt()
+    val trainDf = psi.uploadSetAndDownloadIntersection(df, salt)
+    val testDf = trainDf.drop("Outcome")
+    val lr = new LogisticRegression(df.columns.size - 1)
+    lr.fit(trainDf, valData = trainDf)
+    lr.evaluate(trainDf)
+    lr.predict(testDf)
   }
   "Linear Regression" should "work" in {
 
