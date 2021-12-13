@@ -19,10 +19,11 @@ import os
 import sys
 import tempfile
 
-from pyspark import BarrierTaskContext, TaskContext
 import tensorflow as tf
 from contextlib import closing
 import socket
+
+from pyspark import BarrierTaskContext, TaskContext
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file

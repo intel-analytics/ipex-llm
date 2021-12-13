@@ -77,6 +77,7 @@ class TestChronosModelTCNForecaster(TestCase):
         test_pred = forecaster.predict(test_data[0])
         assert test_pred.shape == test_data[1].shape
         test_mse = forecaster.evaluate(test_data)
+        assert test_mse[0].shape == test_data[1].shape[1:]
 
     def test_s2s_forecaster_fit_loader(self):
         train_loader, _, _ = create_data(loader=True)

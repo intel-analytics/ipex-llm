@@ -119,6 +119,7 @@ case "$SPARK_K8S_CMD" in
     unset PYTHONPATH && \
     if [ "$SGX_ENABLED" == "false" ]; then
       /opt/jdk8/bin/java \
+        "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
         -Xms$SPARK_EXECUTOR_MEMORY \
         -Xmx$SPARK_EXECUTOR_MEMORY \
         -cp "$SPARK_CLASSPATH" \
@@ -133,6 +134,7 @@ case "$SPARK_K8S_CMD" in
       ./init.sh && \
       SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
         /opt/jdk8/bin/java \
+          "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
           -Xms$SGX_JVM_MEM_SIZE \
           -Xmx$SGX_JVM_MEM_SIZE \
           -cp "$SPARK_CLASSPATH" \

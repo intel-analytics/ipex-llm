@@ -14,47 +14,32 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.example.logisticregression
+package com.intel.analytics.bigdl.ppml.vfl.example
 
-import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.dllib.tensor.Tensor
+
+import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
-import com.intel.analytics.bigdl.ppml.example.ExampleUtils
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
-import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
-import org.apache.log4j.Logger
+import com.intel.analytics.bigdl.ppml.example.LogManager
 import scopt.OptionParser
 
-import scala.io.Source
 import collection.JavaConverters._
 import collection.JavaConversions._
 
-/**
- * A two process example to simulate 2 nodes Vfl of a Neural Network
- * This example will start a FLServer first, to provide PSI algorithm
- * and store parameters as Parameter Server
- */
-object VflLogisticRegression {
-  var featureNum: Int = _
-  val logger = Logger.getLogger(getClass)
 
+object VflLogisticRegression extends LogManager{
   def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
     //TODO: we use get intersection to get data and input to model
     // this do not need to be DataFrame?
     // load data from dataset and preprocess\
     val salt = pSI.getSalt()
-    val spark = VflContext.getSparkSession()
-    import spark.implicits._
+
+    val spark = FLContext.getSparkSession()
     val df = spark.read.option("header", "true").csv(dataPath)
-    val ids = df.select(rowKeyName).as[String].collect().toList
-    pSI.uploadSet(ids, salt)
-    val intersections = pSI.downloadIntersection()
-    val intersectionSet = intersections.toSet
-    val dataSet = df.filter(r => intersectionSet.contains(r.getAs[String](0)))
+    val dataSet = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
+
     // we use same dataset to train and validate in this example
     (dataSet, dataSet)
-
   }
 
   def main(args: Array[String]): Unit = {
@@ -88,14 +73,16 @@ object VflLogisticRegression {
     /**
      * Usage of BigDL PPML starts from here
      */
-    VflContext.initContext()
+    FLContext.initFLContext()
     val pSI = new PSI()
-    val (trainData, valData) = getData(pSI, dataPath, rowKeyName, batchSize)
+    val (trainData, testData) = getData(pSI, dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model
-    val lr = new LogisticRegression(featureNum, learningRate)
-    lr.fit(trainData, valData)
+
+    val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
+    lr.fit(trainData, valData = testData)
     lr.evaluate()
+    lr.predict(testData)
   }
 
 }

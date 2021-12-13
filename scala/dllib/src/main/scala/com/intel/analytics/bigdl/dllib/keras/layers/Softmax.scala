@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, IdentityOutputShape}
 import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.{SoftMax => BSoftMax}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.keras.Net
-import com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalSoftMax
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -39,7 +39,8 @@ class SoftMax[T: ClassTag](val inputShape: Shape = null)(implicit ev: TensorNume
     with IdentityOutputShape with Net {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = InternalSoftMax()
+    val layer = BSoftMax()
+
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

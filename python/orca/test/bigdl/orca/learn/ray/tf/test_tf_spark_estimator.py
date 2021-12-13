@@ -90,8 +90,6 @@ class TestTFEstimator(TestCase):
                               validation_data=df,
                               validation_steps=1)
 
-            time.sleep(20)
-
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
