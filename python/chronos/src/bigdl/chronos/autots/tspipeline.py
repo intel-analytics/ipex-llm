@@ -204,7 +204,7 @@ class TSPipeline:
             lookback = self._best_config["past_seq_len"]
             horizon = 0 if is_predict else self._best_config["future_seq_len"]
             selected_features = self._best_config["selected_features"]
-            data.roll(lookback, horizon, feature_col=selected_features)
+            data.roll(lookback=lookback, horizon=horizon, feature_col=selected_features)
             x, y = data.to_numpy()
         else:
             raise NotImplementedError("Data creator has not been supported now.")
