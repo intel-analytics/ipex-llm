@@ -18,7 +18,9 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.keras.metrics.{Accuracy, BinaryAccuracy}
 import com.intel.analytics.bigdl.dllib.nn.Sequential
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.LocalPredictor
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNEstimator
@@ -68,7 +70,7 @@ abstract class FLModel() {
   }
   def predict(data: DataFrame,
               batchSize: Int = 4,
-              featureColumn: Array[String] = null) = {
+              featureColumn: Array[String] = null): Array[Activity] = {
     val _data = DataFrameUtils.dataFrameToMiniBatch(data, featureColumn,
       hasLabel = false, batchSize = batchSize)
     estimator.predict(_data.toLocal())

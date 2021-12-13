@@ -28,6 +28,7 @@ object FLContext {
   var flClient: FLClient = null
   var sparkSession: SparkSession = null
   def initFLContext(target: String = null) = {
+    createSparkSession()
     Engine.init
     this.synchronized {
       if (flClient == null) {

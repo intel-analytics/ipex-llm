@@ -32,6 +32,7 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with LogManager 
     val trainDf = spark.read.option("header", "true")
       .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
     val testDf = trainDf.drop("Outcome")
+    trainDf.show()
     FLContext.initFLContext()
     val lr = new LogisticRegression(trainDf.columns.size - 1)
     lr.fit(trainDf, valData = trainDf)

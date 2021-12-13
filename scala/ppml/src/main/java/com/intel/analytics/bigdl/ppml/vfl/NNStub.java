@@ -44,10 +44,11 @@ public class NNStub {
     }
 
 
-    public EvaluateResponse evaluate(Table data, String algorithm) {
+    public EvaluateResponse evaluate(Table data, String algorithm, Boolean hasReturn) {
         EvaluateRequest evaluateRequest = EvaluateRequest
                 .newBuilder()
                 .setData(data)
+                .setReturn(hasReturn)
                 .setClientuuid(clientID)
                 .setAlgorithm(algorithm)
                 .build();

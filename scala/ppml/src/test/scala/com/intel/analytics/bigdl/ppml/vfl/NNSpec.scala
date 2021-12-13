@@ -55,6 +55,7 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with LogManager 
     val salt = psi.getSalt()
     val trainDf = psi.uploadSetAndDownloadIntersection(df, salt)
     val testDf = trainDf.drop("Outcome")
+    trainDf.show()
     val lr = new LogisticRegression(df.columns.size - 1)
     lr.fit(trainDf, valData = trainDf)
     lr.evaluate(trainDf)

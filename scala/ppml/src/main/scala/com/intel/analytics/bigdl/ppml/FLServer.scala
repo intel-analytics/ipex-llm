@@ -49,6 +49,10 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   private val logger = Logger.getLogger(classOf[FLServer])
   configPath = "ppml-conf.yaml"
   var clientNum: Int = 1
+
+  def setClientNum(clientNum: Int) = {
+    this.clientNum = clientNum
+  }
   @throws[IOException]
   override def parseConfig(): Unit = {
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
