@@ -55,7 +55,7 @@ def setup_package():
         packages=get_bigdl_packages(),
         install_requires=['bigdl-orca=='+VERSION, 'bigdl-nano[pytorch]',
                           'pandas==1.0.3', 'scikit-learn'],
-        extras_require={'all': ['tensorflow>=1.15.0,<2.0.0', 'h5py==2.10.0',
+        extras_require={'all': ['h5py==2.10.0',
                                 'aiohttp==3.7.4', 'aioredis==1.3.1',
                                 'ray[tune]==1.2.0', 'tensorboard', 'scipy==1.5',
                                 'protobuf==3.12.0', 'tsfresh==0.17.0']},
