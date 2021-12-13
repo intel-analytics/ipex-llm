@@ -50,12 +50,14 @@ class Estimator(object):
                the backend="horovod". This function takes in the `config` dict and returns a
                dictionary like {"optimizer": tf.keras.optimizers.SGD(lr), "loss":
                "mean_squared_error", "metrics": ["mean_squared_error"]}
-        :param backend: (string) You can choose "horovod", "tf2" or "spark" as backend. Default: `tf2`.
+        :param backend: (string) You can choose "horovod", "tf2" or "spark" as backend.
+         Default: `tf2`.
         :param cpu_binding: (bool) Whether to binds threads to specific CPUs. Default: False
         :param log_to_driver: (bool) Whether display executor log on driver in cluster mode.
          Default: True. This option is only for "spark" backend.
-        :param model_dir: (str) The directory to save model states. It is required for "spark" backend.
-        For cluster mode, it should be a share filesystem path which can be accessed by executors.
+        :param model_dir: (str) The directory to save model states. It is required for "spark"
+        backend. For cluster mode, it should be a share filesystem path which can be accessed
+        by executors.
         """
         if backend in {"tf2", "horovod"}:
             from bigdl.orca.learn.tf2.ray_estimator import TensorFlow2Estimator

@@ -40,6 +40,7 @@ def find_free_port(tc):
         tc.barrier()
         return f"{address}:{s.getsockname()[1]}"
 
+
 def handle_datasets_train(data_creator, validation_data_creator):
         train_dataset = data_creator()
         if validation_data_creator is not None:
@@ -191,6 +192,7 @@ def find_ip_and_port(pre_iter):
     tc = BarrierTaskContext().get()
     free_port = find_free_port(tc)
     return [free_port]
+
 
 class SparkRunner:
     def __init__(self, model_creator, compile_args_creator,
