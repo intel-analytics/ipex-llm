@@ -88,7 +88,7 @@ object RecommenderUtils {
           case _: Int => Tensor[Float](features.map(_.toString.toFloat), dim)
           case _: Float => Tensor[Float](features.map(_.toString.toFloat), dim)
           case _: Long => Tensor[Float](features.map(_.toString.toFloat), dim)
-          case _:Double => Tensor[Float](features.map(_.toString.toFloat), dim)
+          case _: Double => Tensor[Float](features.map(_.toString.toFloat), dim)
           case _: mutable.WrappedArray[Any] =>
             val arr2d = features.map(a =>
               a.asInstanceOf[mutable.WrappedArray[Any]].array.map(_.toString.toFloat))
