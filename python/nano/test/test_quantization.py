@@ -15,19 +15,16 @@
 #
 
 
-import pytest
 import os
 from unittest import TestCase
 
 import torch
 import torchmetrics
+from test._train_torch_lightning import create_data_loader, data_transform
 from torch import nn
 
-from test._train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
-
-from bigdl.nano.quantization import QuantizationINC
 
 batch_size = 256
 num_workers = 0
@@ -55,24 +52,13 @@ train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transf
 
 
 class TestQuantizationINC(TestCase):
-    def test_quantize_pytorch_ptq(self):
-        quantizer = QuantizationINC(
-            framework='pytorch_fx',
-            approach='ptsq',
-            accuracy_criterion={'relative': 0.99},
+    def test_trainer_quantize_ptq(self):
+        quantized_model = trainer.quantize(
+            pl_model, train_loader, train_loader, metric='F1',
+            framework='pytorch_fx', approach='ptsq',
+            accuracy_criterion={'relative':         0.99,
+                                'higher_is_better': True}
         )
-        quantized_model = quantizer(pl_model, train_loader, train_loader, trainer, metric='F1')
-        if quantized_model:
-            trainer.validate(quantized_model, train_loader)
-            trainer.test(quantized_model, train_loader)
-
-    def test_quantize_pytorch_qat(self):
-        quantizer = QuantizationINC(
-            framework='pytorch_fx',
-            approach='qat',
-            accuracy_criterion={'relative': 0.99},
-        )
-        quantized_model = quantizer(pl_model, train_loader, train_loader, trainer, metric='F1')
         if quantized_model:
             trainer.validate(quantized_model, train_loader)
             trainer.test(quantized_model, train_loader)
