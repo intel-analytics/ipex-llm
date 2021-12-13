@@ -427,11 +427,13 @@ def save_pkl(data, path):
         with open(path, 'wb') as f:
             pickle.dump(data, f)
 
+
 def find_free_port():
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(("", 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
+
 
 def duplicate_stdout_stderr_to_file(log_path):
     tee = subprocess.Popen(["tee", log_path], stdin=subprocess.PIPE)

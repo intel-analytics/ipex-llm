@@ -20,6 +20,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
+
 class LogMonitor:
     """
     A monitor process for monitoring worker log files.
@@ -72,13 +73,11 @@ class LogMonitor:
                     if next_line[-1] == "\n":
                         next_line = next_line[:-1]
                     new_line = "[partition = {}, ip = {}] ".format(self.partition_id, self.ip) \
-                                   + next_line
+                               + next_line
                     lines_to_publish.append(new_line)
                 except Exception:
-                    logger.error("Error: Reading file: {}, position: {} "
-                                     "failed.".format(
-                            self.log_path,
-                            self.log_fd.tell()))
+                    logger.error("Error: Reading file: {} at position: {} failed."
+                                 .format(self.log_path, self.log_fd.tell()))
                     raise
 
             if len(lines_to_publish) > 0:
@@ -89,7 +88,6 @@ class LogMonitor:
                     anything_published = True
 
         return anything_published
-
 
     def run(self):
         try:
@@ -164,4 +162,3 @@ def start_log_server(ip, port):
     logger_thread.daemon = True
     logger_thread.start()
     return logger_thread
-
