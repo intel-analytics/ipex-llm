@@ -86,7 +86,7 @@ class VflNNAggregator(model: Module[Float],
       val meta = metaBuilder.setName("predictResult").setVersion(predictStorage.version).build()
       aggregatedTable = Table.newBuilder()
         .setMetaData(meta)
-        .putTable("predictOutput", toFloatTensor(Tensor[Float](output.toTable)))
+        .putTable("predictOutput", toFloatTensor(output.toTensor[Float]))
         .build()
     }
     aggregateTypeMap.get(aggType).updateStorage(aggregatedTable)

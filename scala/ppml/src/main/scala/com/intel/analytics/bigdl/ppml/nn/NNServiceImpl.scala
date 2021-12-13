@@ -127,8 +127,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     val version = data.getMetaData.getVersion
     val aggregator = aggregatorMap.get(request.getAlgorithm)
     try {
-      aggregator.putClientData(EVAL, clientUUID, version, data)
-      val responseData = aggregator.getServerData(TRAIN).serverData
+      aggregator.putClientData(PREDICT, clientUUID, version, data)
+      val responseData = aggregator.getServerData(PREDICT).serverData
       if (responseData == null) {
         val response = "Data requested doesn't exist"
         responseObserver.onNext(PredictResponse.newBuilder.setResponse(response).setCode(0).build)

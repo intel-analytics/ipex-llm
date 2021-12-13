@@ -135,7 +135,7 @@ class VflNNEstimator(algorithm: String,
     var iteration = 0
     var evaluateResult = ""
     while (count < dataSize) {
-      logger.debug(s"training next batch, progress: $count/$dataSize")
+      logger.debug(s"evaluating next batch, progress: $count/$dataSize")
       model.evaluate()
       val miniBatch = data.next()
       val input = miniBatch.getInput()
@@ -170,7 +170,7 @@ class VflNNEstimator(algorithm: String,
         .setName(s"${model.getName()}_output").setVersion(iteration).build
       val tableProto = outputTargetToTableProto(model.output, target, metadata)
       val hasReturn = if (!data.hasNext) true else false
-      val result = flClient.nnStub.evaluate(tableProto, algorithm, hasReturn).getData
+      val result = flClient.nnStub.predict(tableProto, algorithm).getData
       resultSeq = resultSeq :+ getTensor("predictOutput", result)
       iteration += 1
       count += miniBatch.size()
