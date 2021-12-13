@@ -13,23 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import copy
+import warnings
 from logging import warning
 from typing import Any, List, Optional
-import warnings
 
 import pytorch_lightning as pl
 import torch
-from torchmetrics.metric import Metric
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from torch import nn
 from torch.nn.modules.loss import _Loss
+from torchmetrics.metric import Metric
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-
 
 distributed_backends = ["spawn", "ray"]
 
@@ -156,3 +154,39 @@ class Trainer(pl.Trainer):
                 return pl_model
         else:
             return pl_model
+
+    def quantize(self, model, calib_dataloader, val_dataloader, metric: str = None, backend='inc',
+                 conf=None, framework='pytorch_fx', approach='ptsq', strategy='bayesian',
+                 accuracy_criterion=None, timeout=0, max_trials=1):
+        if backend == 'inc':
+            from bigdl.nano.quantization import QuantizationINC
+            quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
+                                        strategy=strategy, accuracy_criterion=accuracy_criterion,
+                                        timeout=timeout, max_trials=max_trials)
+            q_litmodel = copy.deepcopy(model)
+            quantizer.model = q_litmodel.model
+            q_approach = quantizer.cfg['quantization']['approach']
+            assert val_dataloader, "val_dataloader must be specified when tune=True."
+
+            def eval_func(model_to_eval):
+                q_litmodel.model = model_to_eval
+                val_outputs = self.validate(q_litmodel, val_dataloader)
+                return val_outputs[0][f'val/{metric}']
+
+            quantizer.eval_func = eval_func
+
+            if q_approach == 'quant_aware_training':
+                def q_func(model_to_train):
+                    q_litmodel.model = model_to_train
+                    self.fit(q_litmodel, train_dataloaders=calib_dataloader)
+
+                quantizer.q_func = q_func
+            else:
+                quantizer.calib_dataloader = calib_dataloader
+            quantized = quantizer()
+            if quantized:
+                q_litmodel.model = quantized.model
+                return q_litmodel
+            return None
+        else:
+            raise NotImplementedError("Backend {} is not implemented.".format(backend))
