@@ -189,6 +189,7 @@ class SparkRunner:
                          "spark.executorEnv.PYTHONHOME": executor_python_env,
                          "spark.executor.extraLibraryPath": ld_path,
                          "spark.executorEnv.LD_PRELOAD": preload_so})
+            conf["spark.yarn.appMasterEnv.LD_PRELOAD"] = preload_so
             if spark_yarn_archive:
                 conf["spark.yarn.archive"] = spark_yarn_archive
             zoo_bigdl_path_on_executor = ":".join(
