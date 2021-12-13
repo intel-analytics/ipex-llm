@@ -10,7 +10,6 @@ ls /tmp/mnist
 python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/models/lenet/lenet5.py --cluster-mode yarn-client -n 1
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
   echo "dllib lenet5 failed"
   exit $exit_status
 fi
@@ -34,7 +33,6 @@ python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/models/inception/inception.py 
         -i 20
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
   echo "dllib inception failed"
   exit $exit_status
 fi
@@ -52,7 +50,6 @@ ls /tmp/news20
 python ${BIGDL_ROOT}/python/dllib/src/bigdl/dllib/models/textclassifier/textclassifier.py --on-yarn --max_epoch 3 --model cnn
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  clear_up
   echo "dllib textclassifier failed"
   exit $exit_status
 fi
@@ -67,7 +64,6 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/dllib/examples/autograd/custom.py --cluster-mode "yarn-client"
 if [ $exit_status -ne 0 ]; then
-  clear_up
   echo "dllib autograd custom failed"
   exit $exit_status
 fi
@@ -82,7 +78,6 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/dllib/examples/autograd/customloss.py --cluster-mode "yarn-client"
 if [ $exit_status -ne 0 ]; then
-  clear_up
   echo "dllib autograd customloss failed"
   exit $exit_status
 fi
@@ -107,7 +102,6 @@ python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageInference/ImageInferenc
   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f ${HDFS_URI}/kaggle/train_100 --cluster-mode "yarn-client"
 if [ $exit_status -ne 0 ]; then
-  clear_up
   echo "dllib nnframes_imageInference failed"
   exit $exit_status
 fi
@@ -124,7 +118,6 @@ python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageTransferLearning/ImageT
   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
   -f ${HDFS_URI}/dogs_cats/samples --nb_epoch 2 --cluster-mode "yarn-client"
 if [ $exit_status -ne 0 ]; then
-  clear_up
   echo "dllib nnframes_imageTransfer learning failed"
   exit $exit_status
 fi
