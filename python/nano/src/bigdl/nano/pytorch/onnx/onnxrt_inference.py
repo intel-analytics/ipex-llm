@@ -211,10 +211,12 @@ def eval_onnx(self, input_sample=None, file_path="model.onnx", sess_options=None
     # get input_sample
     if input_sample is None and self.example_input_array:
         input_sample = self.example_input_array
+    if input_sample is None and self.trainer is None:
+        raise RuntimeError("You must state an input_sample or fit on the model to use `eval_onnx`.")
     if input_sample is None and self.trainer.train_dataloader:
-        input_sample = list(next(iter(self.trainer.train_dataloader))[:-1])
+        input_sample = tuple(next(iter(self.trainer.train_dataloader))[:-1])
     if input_sample is None and self.trainer.datamodule:
-        input_sample = list(next(iter(self.trainer.datamodule.train_dataloader()))[:-1])
+        input_sample = tuple(next(iter(self.trainer.datamodule.train_dataloader()))[:-1])
     assert input_sample is not None,\
         "You must state an input_sample or fit on the model to use `eval_onnx`."
 
