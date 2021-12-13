@@ -71,8 +71,8 @@ args = parser.parse_args()
 cluster_mode = args.cluster_mode
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
-elif cluster_mode == "yarn":
-    init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g")
+elif cluster_mode.startswith("yarn"):
+    init_orca_context(cluster_mode=cluster_mode, num_nodes=2, cores=2, driver_memory="3g")
 elif cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 else:
@@ -154,4 +154,3 @@ est.fit(data=train_dataset,
 results = est.evaluate(validation_dataset)
 print(results)
 stop_orca_context()
-
