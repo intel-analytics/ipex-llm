@@ -3,7 +3,7 @@ package com.intel.analytics.bigdl.ppml.hfl.nn
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.estimator.LocalEstimator
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
-import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, Metrics, OptimMethod}
+import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, Metrics, OptimMethod, ValidationMethod}
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
@@ -25,7 +25,7 @@ class HflNNEstimator(algorithm: String,
                      model: Module[Float],
                      optimMethod: OptimMethod[Float],
                      criterion: Criterion[Float],
-                     metrics: Array[Metrics] = null,
+                     metrics: Array[ValidationMethod[Float]] = null,
                      threadNum: Int = 1) extends Estimator{
   val logger = Logger.getLogger(getClass)
   val flClient = FLContext.getClient()

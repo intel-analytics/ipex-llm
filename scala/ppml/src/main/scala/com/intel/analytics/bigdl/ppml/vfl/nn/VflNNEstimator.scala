@@ -117,6 +117,15 @@ class VflNNEstimator(algorithm: String,
     model
   }
 
+  override def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]): Unit = {
+
+
+  }
+
+  override def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Unit = {
+
+  }
+
   def close(): Unit = {
     flClient.shutdown()
   }
