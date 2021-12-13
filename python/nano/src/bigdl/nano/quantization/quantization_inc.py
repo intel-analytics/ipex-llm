@@ -1,5 +1,3 @@
-import copy
-
 from neural_compressor.conf.config import Quantization_Conf
 from neural_compressor.experimental import Quantization
 
@@ -10,11 +8,11 @@ APPROACH_MAP = {
 }
 
 
-class QuantizationINC:
+class QuantizationINC(Quantization):
     def __init__(self,
                  framework,
                  conf=None,
-                 approach='post_training_static_quant',
+                 approach='ptsq',
                  strategy='bayesian',
                  accuracy_criterion=None,
                  timeout=0,
@@ -63,42 +61,6 @@ class QuantizationINC:
                 cfg.tuning.accuracy_criterion = accuracy_criterion
             cfg.tuning.exit_policy.timeout = timeout
             cfg.tuning.exit_policy.max_trials = max_trials
-            if inputs:
-                cfg.model.inputs = inputs
-            if outputs:
-                cfg.model.outputs = outputs
-        self.quantizer = Quantization(qconf)
-
-    def quantize_torch(self, model, calib_dataloader, val_dataloader, trainer,
-                       metric: str):
-        q_litmodel = copy.deepcopy(model)
-        quantizer = self.quantizer
-        quantizer.model = q_litmodel.model
-        q_approach = quantizer.cfg['quantization']['approach']
-        assert val_dataloader, "val_dataloader must be specified when tune=True."
-
-        def eval_func(model_to_eval):
-            q_litmodel.model = model_to_eval
-            val_outputs = trainer.validate(q_litmodel, val_dataloader)
-            return val_outputs[0][metric]
-        quantizer.eval_func = eval_func
-
-        if q_approach == 'quant_aware_training':
-            def q_func(model_to_train):
-                q_litmodel.model = model_to_train
-                trainer.fit(q_litmodel, train_dataloaders=calib_dataloader)
-            quantizer.q_func = q_func
-        else:
-            quantizer.calib_dataloader = calib_dataloader
-        quantized = quantizer()
-        if quantized:
-            q_litmodel.model = quantized.model
-            return q_litmodel
-        return None
-
-    def __call__(self, model, calib_dataloader, val_dataloader, *args, **kwargs):
-        framework = self.quantizer.cfg.model.framework
-        if 'pytorch' in framework:
-            return self.quantize_torch(model, calib_dataloader, val_dataloader, *args, **kwargs)
-        else:
-            raise NotImplementedError("Only support pytorch for now.")
+            cfg.model.inputs = inputs
+            cfg.model.outputs = outputs
+        super().__init__(qconf)
