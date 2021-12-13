@@ -17,16 +17,12 @@ import json
 import logging
 import os
 
-from re import VERBOSE
-from subprocess import call
-from sys import version
-
-from pyspark import BarrierTaskContext
-from pyspark.context import SparkContext
 import tensorflow as tf
 from numpy import array
 from contextlib import closing
 import socket
+
+from pyspark import BarrierTaskContext
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.learn.utils import save_pkl
