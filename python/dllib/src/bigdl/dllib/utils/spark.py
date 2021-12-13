@@ -155,6 +155,7 @@ class SparkRunner:
         pack_env = False
         assert penv_archive or conda_name, \
             "You should either specify penv_archive or conda_name explicitly"
+        return_value = 1
         try:
 
             if not penv_archive:
@@ -208,11 +209,11 @@ class SparkRunner:
             print(sys_args)
             submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
             print(submit_commnad)
-            return os.system(submit_commnad)
+            return_value = os.system(submit_commnad)
         finally:
             if conda_name and penv_archive and pack_env:
                 os.remove(penv_archive)
-            return 1
+            return return_value
 
     def init_spark_standalone(self,
                               num_executors,
