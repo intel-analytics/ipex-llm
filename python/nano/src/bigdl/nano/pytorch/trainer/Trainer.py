@@ -165,15 +165,17 @@ class Trainer(pl.Trainer):
                                         timeout=timeout, max_trials=max_trials)
             q_litmodel = copy.deepcopy(model)
             quantizer.model = q_litmodel.model
-            q_approach = quantizer.cfg['quantization']['approach']
+            q_approach = quantizer.cfg.quantization.approach
 
             def eval_func(model_to_eval):
-                q_litmodel.model = model_to_eval
-                val_outputs = self.validate(q_litmodel, val_dataloader)
-                return val_outputs[0][f'val/{metric}']
+                if val_dataloader:
+                    q_litmodel.model = model_to_eval
+                    val_outputs = self.validate(q_litmodel, val_dataloader)
+                    return val_outputs[0][f'val/{metric}']
+                else:
+                    return 0
 
-            if val_dataloader:
-                quantizer.eval_func = eval_func
+            quantizer.eval_func = eval_func
 
             if q_approach == 'quant_aware_training':
                 def q_func(model_to_train):
