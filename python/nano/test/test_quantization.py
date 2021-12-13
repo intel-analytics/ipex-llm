@@ -53,12 +53,10 @@ train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transf
 
 class TestQuantizationINC(TestCase):
     def test_trainer_quantize_ptq(self):
-        quantized_model = trainer.quantize(
-            pl_model, train_loader, train_loader, metric='F1',
-            framework='pytorch_fx', approach='ptsq',
-            accuracy_criterion={'relative':         0.99,
-                                'higher_is_better': True}
-        )
+        quantized_model = trainer.quantize(pl_model, train_loader, metric='F1',
+                                           framework='pytorch_fx', approach='ptsq',
+                                           accuracy_criterion={'relative':         0.99,
+                                                               'higher_is_better': True})
         if quantized_model:
             trainer.validate(quantized_model, train_loader)
             trainer.test(quantized_model, train_loader)

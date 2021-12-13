@@ -155,9 +155,9 @@ class Trainer(pl.Trainer):
         else:
             return pl_model
 
-    def quantize(self, model, calib_dataloader, val_dataloader, metric: str = None, backend='inc',
-                 conf=None, framework='pytorch_fx', approach='ptsq', strategy='bayesian',
-                 accuracy_criterion=None, timeout=0, max_trials=1):
+    def quantize(self, model, calib_dataloader, val_dataloader=None, metric: str = None,
+                 backend='inc', conf=None, framework='pytorch_fx', approach='ptsq',
+                 strategy='bayesian', accuracy_criterion=None, timeout=0, max_trials=1):
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
@@ -166,14 +166,14 @@ class Trainer(pl.Trainer):
             q_litmodel = copy.deepcopy(model)
             quantizer.model = q_litmodel.model
             q_approach = quantizer.cfg['quantization']['approach']
-            assert val_dataloader, "val_dataloader must be specified when tune=True."
 
             def eval_func(model_to_eval):
                 q_litmodel.model = model_to_eval
                 val_outputs = self.validate(q_litmodel, val_dataloader)
                 return val_outputs[0][f'val/{metric}']
 
-            quantizer.eval_func = eval_func
+            if val_dataloader:
+                quantizer.eval_func = eval_func
 
             if q_approach == 'quant_aware_training':
                 def q_func(model_to_train):
