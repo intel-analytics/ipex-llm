@@ -7,8 +7,9 @@ Blog
 - [Better Together: Privacy-Preserving Machine Learning](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/alibaba-privacy-preserving-machine-learning.html)
 
 **2020**
+- [SK Telecom, Intel Build AI Pipeline to Improve Network Quality](https://networkbuilders.intel.com/solutionslibrary/sk-telecom-intel-build-ai-pipeline-to-improve-network-quality)
 - [Build End-to-End AI Pipelines Using Ray and Apache Spark](https://medium.com/distributed-computing-with-ray/build-end-to-end-ai-pipeline-using-ray-and-apache-spark-23f70f36115e)
-- [Tencent* Cloud Leverages Analytics Zoo to Improve Performance of TI-ONE* ML Platform](https://www.intel.com/content/www/us/en/developer/articles/technical/tencent-cloud-leverages-analytics-zoo-to-improve-performance-of-ti-one-ml-platform.html?wapkw=Using%20Distributed%20TensorFlow*%20on%20Analytics%20Zoo)
+- [Tencent Cloud Leverages Analytics Zoo to Improve Performance of TI-ONE ML Platform](https://www.intel.com/content/www/us/en/developer/articles/technical/tencent-cloud-leverages-analytics-zoo-to-improve-performance-of-ti-one-ml-platform.html?wapkw=Using%20Distributed%20TensorFlow*%20on%20Analytics%20Zoo)
 - [Scaling Giant Model With Google’s GShard](https://medium.com/swlh/scaling-giant-model-with-googles-gshard-72651916d7a7)
 - [Context-Aware Fast Food Recommendation at Burger King with RayOnSpark](https://medium.com/riselab/context-aware-fast-food-recommendation-at-burger-king-with-rayonspark-2e7a6009dd2d)
 - [Seamlessly Scaling AI for Distributed Big Data](https://medium.com/swlh/seamlessly-scaling-ai-for-distributed-big-data-5b589ead2434)
