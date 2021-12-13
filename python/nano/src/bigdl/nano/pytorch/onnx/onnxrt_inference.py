@@ -184,6 +184,51 @@ def inference(self,
 # on_fit_start (LightningModule method overwrite)
 def on_fit_start(self):
     self._ortsess_up_to_date = False
+    self.exit_onnx()
+
+
+def _forward_onnx(self, *args):
+    ort_inputs = {}
+    for i, ort_input_item in enumerate(args):
+        ort_inputs[self._forward_args[i]] = ort_input_item.numpy()
+    ort_outs = self._ortsess.run(None, ort_inputs)
+    return torch.from_numpy(ort_outs[0])
+
+
+def eval_onnx(self, input_sample=None, file_path="model.onnx", sess_options=None, **kwargs):
+    '''
+    This method change the `forward` method to an onnxruntime backed forwarding.
+
+    >>> model.eval_onnx()
+    >>> pred = model(x)  # onnxruntime forwarding
+    >>> model.exit_onnx()
+
+    :param input_sample: (optional) torch.Tensor or a list of them for the model tracing.
+    :param file_path: (optional) The path to save onnx model file.
+    :param sess_options: (optional) ortsess options in ort.SessionOptions type.
+    :param **kwargs: (optional) will be passed to torch.onnx.export function.
+    '''
+    # get input_sample
+    if input_sample is None and self.example_input_array:
+        input_sample = self.example_input_array
+    if input_sample is None and self.trainer.train_dataloader:
+        input_sample = list(next(iter(self.trainer.train_dataloader))[:-1])
+    if input_sample is None and self.trainer.datamodule:
+        input_sample = list(next(iter(self.trainer.datamodule.train_dataloader()))[:-1])
+    assert input_sample is not None,\
+        "You must state an input_sample or fit on the model to use `eval_onnx`."
+
+    # build ortsess
+    self._build_ortsess(input_sample=input_sample,
+                        file_path=file_path,
+                        sess_options=sess_options,
+                        **kwargs)
+
+    self.forward = self._forward_onnx
+
+
+def exit_onnx(self):
+    self.forward = self._torch_forward
 
 
 def bind_onnxrt_methods(pl_model: LightningModule):
@@ -208,5 +253,9 @@ def bind_onnxrt_methods(pl_model: LightningModule):
     pl_model.update_ortsess = partial(update_ortsess, pl_model)
     pl_model.on_fit_start = partial(on_fit_start, pl_model)
     pl_model.inference = partial(inference, pl_model)
+    pl_model.eval_onnx = partial(eval_onnx, pl_model)
+    pl_model._forward_onnx = partial(_forward_onnx, pl_model)
+    pl_model.exit_onnx = partial(exit_onnx, pl_model)
+    pl_model._torch_forward = pl_model.forward
 
     return pl_model
