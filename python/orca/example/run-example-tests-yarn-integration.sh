@@ -14,20 +14,20 @@
 #time=$((now - start))
 #echo "#11 Total time cost ${time} seconds"
 
-#echo "#12 start test for pytorch cifar10"
-##timer  
-#start=$(date "+%s")
-##run the example
-#python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-cluster' --epochs 1  --batch_size 256 --data_dir /data/cifar10_data --download False
-#exit_status=$?
-#if [ $exit_status -ne 0 ]; then
-#  clear_up
-#  echo "orca pytorch cifar10 failed"
-#  exit $exit_status
-#fi
-#now=$(date "+%s")
-#time=$((now - start))
-#echo "#12 Total time cost ${time} seconds"
+echo "#12 start test for pytorch cifar10"
+#timer  
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --cluster_mode 'yarn-cluster' --epochs 1  --batch_size 256 --data_dir /data/cifar10_data --download False
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  clear_up
+  echo "orca pytorch cifar10 failed"
+  exit $exit_status
+fi
+now=$(date "+%s")
+time=$((now - start))
+echo "#12 Total time cost ${time} seconds"
 
 #echo "#13 start test for pytorch fashion_mnist"
 ##timer 
