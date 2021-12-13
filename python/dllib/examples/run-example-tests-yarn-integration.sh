@@ -205,7 +205,7 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/yoloV3.py  \
   --weights /data/yolov3/yolov3.weights \
   --class_num 20 \
   --names /bigdl2.0/data/yolov3/voc2012.names \
-  --epochs 1 ---cluster_mode yarn-client
+  --epochs 1 --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
