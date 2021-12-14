@@ -16,16 +16,20 @@
 import json
 import logging
 import os
+import sys
+import tempfile
 
 import tensorflow as tf
-from numpy import array
 from contextlib import closing
 import socket
 
-from pyspark import BarrierTaskContext
+from pyspark import BarrierTaskContext, TaskContext
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.learn.utils import save_pkl
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file
+from bigdl.orca.learn.log_monitor import LogMonitor
+
+logger = logging.getLogger(__name__)
 
 
 def find_free_port(tc):
@@ -200,7 +204,10 @@ class SparkRunner:
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
-                 epoch=0
+                 epoch=0,
+                 need_to_log_to_driver=False,
+                 driver_ip=None,
+                 driver_port=None
                  ):
         """Initializes the runner.
                 Args:
@@ -222,10 +229,25 @@ class SparkRunner:
         self.mode = mode
         self.backend = backend
         self.setup()
-        self.cluster_info = cluster_info
+        self.cluster = cluster_info
+        if TaskContext.get():
+            self.partition_id = TaskContext.get().partitionId()
+        else:
+            self.partition_id = BarrierTaskContext.get().partitionId()
+        self.need_to_log_to_driver = need_to_log_to_driver
+        if need_to_log_to_driver:
+            self.log_path = os.path.join(tempfile.gettempdir(),
+                                         "{}_runner.log".format(self.partition_id))
+            duplicate_stdout_stderr_to_file(self.log_path)
+            self.logger_thread, self.thread_stop = \
+                LogMonitor.start_log_monitor(driver_ip=driver_ip,
+                                             driver_port=driver_port,
+                                             log_path=self.log_path,
+                                             partition_id=self.partition_id)
+
         if self.backend == "tf-distributed":
             if mode == "fit" or mode == "evaluate":
-                self.setup_distributed(self.mode, self.cluster_info)
+                self.setup_distributed(self.cluster)
         self.model_dir = model_dir
 
     def setup(self):
@@ -235,7 +257,7 @@ class SparkRunner:
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
-    def _get_rank(self, cluster_info, tc):
+    def _get_rank(self, cluster_info):
         # As task placement may not be identical between two different jobs,
         # we cannot simply index cluster_info using partitionId to get current
         # ip and port.
@@ -261,19 +283,13 @@ class SparkRunner:
                 break
         return global_rank
 
-    def setup_distributed(self, mode, cluster):
-        """Sets up TensorFLow distributed environment and initializes the model.
-        Args:
-            urls (str): the URLs that each node uses to connect.
-            world_rank (int): the index of the runner.
-            world_size (int): the total number of runners.
+    def setup_distributed(self, cluster):
         """
-        self.cluster = cluster
-        tc = BarrierTaskContext().get()
-        self.rank = self._get_rank(cluster, tc)
-        print("cluster is: ", cluster)
+        Sets up TensorFLow distributed environment and initializes the model.
+        """
+        self.rank = self._get_rank(cluster)
+        logger.info("cluster is: {}".format(cluster))
 
-        import os
         os.environ["TF_CONFIG"] = json.dumps({
             'cluster': {
                 'worker': cluster
@@ -287,8 +303,6 @@ class SparkRunner:
 
         # For use in model.evaluate()
         self.local_model = None
-        self.backend = "tf-distributed"
-        # self.size = size
 
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
                                callbacks=None, initial_epoch=0, validation_data_creator=None,
@@ -363,8 +377,12 @@ class SparkRunner:
                     "optimizer_weights": model.optimizer.get_weights()
                 }
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
+            if self.need_to_log_to_driver:
+                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
         else:
+            if self.need_to_log_to_driver:
+                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
@@ -414,8 +432,12 @@ class SparkRunner:
             stats = {"results": results}
 
         if self.rank == 0:
+            if self.need_to_log_to_driver:
+                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
         else:
+            if self.need_to_log_to_driver:
+                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
@@ -445,4 +467,6 @@ class SparkRunner:
 
         new_part = [predict_fn(shard) for shard in partition]
 
+        if self.need_to_log_to_driver:
+            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return new_part
