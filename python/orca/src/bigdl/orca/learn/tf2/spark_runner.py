@@ -230,7 +230,10 @@ class SparkRunner:
         self.backend = backend
         self.setup()
         self.cluster = cluster_info
-        self.partition_id = TaskContext.get().partitionId()
+        if BarrierTaskContext().get():
+            self.partition_id = BarrierTaskContext.get().partitionId()
+        else:
+            self.partition_id = TaskContext.get().partitionId()
         self.need_to_log_to_driver = need_to_log_to_driver
         if need_to_log_to_driver:
             self.log_path = os.path.join(tempfile.gettempdir(),
