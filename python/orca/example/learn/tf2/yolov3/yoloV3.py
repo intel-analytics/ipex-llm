@@ -634,6 +634,10 @@ def main():
     voc_train_path = os.path.join(options.output_data, "train_dataset")
     voc_val_path = os.path.join(options.output_data, "val_dataset")
 
+    print(voc_train_path)
+    for filepath,dirnames,filenames in os.walk(voc_train_path):
+        for filename in filenames:
+            print(os.path.join(filepath,filename))
     write_parquet(format="voc", voc_root_path=dataset_path, output_path="file://" + voc_train_path,
                   splits_names=[(options.data_year, options.split_name_train)], classes=class_map)
     write_parquet(format="voc", voc_root_path=dataset_path, output_path="file://" + voc_val_path,
