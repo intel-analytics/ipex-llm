@@ -290,14 +290,15 @@ def init_spark_on_k8s(master,
                       conf=None,
                       python_location=None):
     """
-    Create a SparkContext with Analytics Zoo configurations on Kubernetes cluster for k8s client
-    mode. You are recommended to use the Docker image intelanalytics/hyperzoo:latest.
-    You can refer to https://github.com/intel-analytics/analytics-zoo/tree/master/docker/hyperzoo
+    Create a SparkContext with BigDL configurations on Kubernetes cluster for k8s client
+    mode. You are recommended to use the Docker image intelanalytics/bigdl-k8s:latest.
+    You can refer to https://github.com/intel-analytics/BigDL/tree/branch-2.0/docker/bigdl-k8s
     to build your own Docker image.
 
     :param master: The master address of your k8s cluster.
     :param container_image: The name of the docker container image for Spark executors.
-           For example, intelanalytics/hyperzoo:latest
+           For example, intelanalytics/bigdl-k8s:latest
+    :param conda_name: The name of the conda environment.
     :param num_executors: The number of Spark executors.
     :param executor_cores: The number of cores for each executor.
     :param executor_memory: The memory for each executor. Default to be '2g'.
@@ -305,6 +306,9 @@ def init_spark_on_k8s(master,
     :param driver_memory: The memory for the Spark driver. Default to be '1g'.
     :param extra_executor_memory_for_ray: The extra memory for Ray services. Default to be None.
     :param extra_python_lib: Extra python files or packages needed for distribution.
+           Default to be None.
+    :param penv_archive: Ideally, the program would auto-pack the conda environment specified by
+           'conda_name', but you can also pass the path to a packed file in "tar.gz" format here.
            Default to be None.
     :param spark_log_level: The log level for Spark. Default to be 'WARN'.
     :param redirect_spark_log: Whether to redirect the Spark log to local file. Default to be True.
