@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import time
 import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
@@ -66,7 +67,7 @@ def build_model(num_users, num_items, layers=[20, 10], include_mf=True, mf_embed
 # cluster_mode = "local"
 cluster_mode = "k8s"
 if cluster_mode == "local":
-    sc = init_orca_context(memory="20g")
+    sc = init_orca_context(memory="2g")
 elif cluster_mode == "standalone":
     sc = init_orca_context("standalone", master="spark://...", cores=8, num_nodes=4, memory="10g")
 elif cluster_mode == "yarn":
@@ -84,9 +85,10 @@ elif cluster_mode == "spark-submit":  # To test k8s using spark-submit
 
 # data_path = "/home/kai/Downloads"
 data_path = "/bigdl2.0/data"
-# data_type = "ml-latest-small"
-data_type = "ml-25m"
+data_type = "ml-latest-small"
+# data_type = "ml-25m"
 # Need spark3 to support delimiter with more than one character.
+start = time.time()
 full_data = read_csv("{}/{}/ratings.csv".format(data_path, data_type), sep=",",
                      usecols=[0, 1, 2], dtype={0: np.int32, 1: np.int32, 2: np.int32})
 user_set = set(full_data["userId"].unique())
@@ -112,10 +114,15 @@ model.compile(optimizer=optimizer, loss="mean_squared_error")
 estimator = Estimator.from_keras(model)
 estimator.fit(train_data,
               batch_size=800,
-              epochs=5,
+              epochs=2,
               feature_cols=["userId", "movieId"],
               label_cols=["rating"],
               validation_data=test_data)
-tf.saved_model.save(estimator.get_model(), "./model")
+model = estimator.get_model()
+tf.saved_model.save(model, "./model")
+# print(model.get_weights())
+
+end = time.time()
+print("Time used: ", end - start)
 
 stop_orca_context()
