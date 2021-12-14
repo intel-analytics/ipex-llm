@@ -33,6 +33,7 @@ batch_size = 256
 num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 
+
 class ResNet18(nn.Module):
     def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
         super().__init__()
@@ -46,6 +47,10 @@ class ResNet18(nn.Module):
 
 
 class TestTrainer(TestCase):
+    model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+    loss = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
 
     def test_resnet18_ipex(self):
         resnet18 = vision.resnet18(
@@ -55,13 +60,29 @@ class TestTrainer(TestCase):
             use_orca_lite_trainer=True)
 
     def test_trainer_compile(self):
-        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        loss = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
-        pl_model = Trainer.compile(model, loss, optimizer)
-        train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
-        trainer.fit(pl_model, train_loader)
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+        trainer.fit(pl_model, self.train_loader)
+
+    def test_trainer_quantize_ptq(self):
+        trainer = Trainer(max_epochs=1)
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+
+        # Case 1: Default
+        quantized_model = trainer.quantize(pl_model, self.train_loader)
+        if quantized_model:
+            trainer.validate(quantized_model, self.train_loader)
+            trainer.test(quantized_model, self.train_loader)
+
+        # Case 2: Override by arguments
+        quantized_model = trainer.quantize(pl_model, self.train_loader, self.train_loader,
+                                           metric='F1', framework='pytorch_fx', approach='ptsq',
+                                           accuracy_criterion={'relative':         0.99,
+                                                               'higher_is_better': True})
+        if quantized_model:
+            trainer.validate(quantized_model, self.train_loader)
+            trainer.test(quantized_model, self.train_loader)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
