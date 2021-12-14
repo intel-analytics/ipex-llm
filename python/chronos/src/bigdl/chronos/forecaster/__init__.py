@@ -28,9 +28,10 @@ except:
     warnings.warn("Please install `torch` to use full collection of forecasters.")
 try:
     import tensorflow as tf
+    assert tf.__version__ < "2.0.0"
     tf_available = True
 except:
-    warnings.warn("Please install `tensorflow` to use full collection of forecasters.")
+    warnings.warn("Please install `tensorflow<2.0.0` to use full collection of forecasters.")
 try:
     import prophet
     prophet_available = True
