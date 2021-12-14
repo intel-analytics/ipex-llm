@@ -32,9 +32,9 @@ object HflLogisticRegression extends LogManager {
     // load data from dataset and preprocess
     val spark = FLContext.getSparkSession()
     import spark.implicits._
-    val df = spark.read.csv(dataPath)
-
-    (df, df)
+    val trainDf = spark.read.csv(dataPath)
+    val testDf = trainDf.drop("Outcome")
+    (trainDf, testDf)
   }
 
   def main(args: Array[String]): Unit = {

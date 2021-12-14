@@ -36,10 +36,10 @@ object VflLogisticRegression extends LogManager{
 
     val spark = FLContext.getSparkSession()
     val df = spark.read.option("header", "true").csv(dataPath)
-    val dataSet = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
+    val trainDf = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
 
-    // we use same dataset to train and validate in this example
-    (dataSet, dataSet)
+    val testDf = trainDf.drop("Outcome")
+    (trainDf, testDf)
   }
 
   def main(args: Array[String]): Unit = {
