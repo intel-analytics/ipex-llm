@@ -119,8 +119,6 @@ class LSTMForecaster(BasePytorchForecaster):
 
         # nano setting
         self.num_processes = 1
-        # ipex only available for lstm layer without dropout
-        dropout_sum = sum(dropout) if isinstance(dropout, list) else dropout
         self.use_ipex = False
         self.onnx_available = True
 
