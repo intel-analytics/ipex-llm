@@ -4,6 +4,7 @@ from abc import abstractmethod
 class Callback(object):
     def __init__(self):
         self.model = None
+        self.params = None
 
     @abstractmethod
     def on_batch_begin(self, batch, logs=None):
@@ -55,5 +56,5 @@ class Callback(object):
         self.model = model
 
     @abstractmethod
-    def set_param(self):
-        pass
+    def set_param(self, param):
+        self.params = param
