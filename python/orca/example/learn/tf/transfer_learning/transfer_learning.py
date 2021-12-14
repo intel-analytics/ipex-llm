@@ -48,11 +48,12 @@ from bigdl.orca.learn.tf.estimator import Estimator
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn-client, yarn-cluster or spark-submit.')
-parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
+parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets where includes folder cats_and_dogs_filtered')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--download_url', type=str, default="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
                     help="The url of cats_and_dogs_filtered.zip.")
+parser.add_argument('--download', type=bool, default=True, help='download dataset or not')
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
@@ -60,10 +61,13 @@ dataset_dir = args.data_dir
 download_url = args.download_url
 if not exists(dataset_dir):
     makedirs(dataset_dir)
-zip_file = tf.keras.utils.get_file(
-    origin=download_url,
-    fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
-base_dir, _ = os.path.splitext(zip_file)
+if args.download:
+    zip_file = tf.keras.utils.get_file(
+        origin=download_url,
+        fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
+    base_dir, _ = os.path.splitext(zip_file)
+else:
+    base_dir = args.data_dir + "cats_and_dogs_filtered"
 
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
