@@ -33,7 +33,9 @@ object HflLogisticRegression extends LogManager {
     val spark = FLContext.getSparkSession()
     import spark.implicits._
     val trainDf = spark.read.csv(dataPath)
-    val testDf = trainDf.drop("Outcome")
+    val testDf = trainDf.drop("_c8") // totally 9 columns: _c0 to _c8, _c8 is the label column
+    trainDf.show()
+    testDf.show()
     (trainDf, testDf)
   }
 
@@ -70,11 +72,10 @@ object HflLogisticRegression extends LogManager {
      */
     FLContext.initFLContext()
     val (trainData, testData) = getData(dataPath, rowKeyName, batchSize)
-
     // create LogisticRegression object to train the model
     val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData = testData)
-    lr.evaluate()
+    lr.fit(trainData, valData = trainData)
+    lr.evaluate(trainData)
     lr.predict(testData)
   }
 }

@@ -64,23 +64,29 @@ object DataFrameUtils {
       var labelMum: Int = 0
       val inputList = new java.util.ArrayList[Float]()
       val arr = if (featureColumn != null || labelColumn != null) {
+        featureColumn.foreach(f => inputList.add(r.getAs[Float](f)))
         if (hasLabel) {
           require(featureColumn != null && labelColumn != null,
             "You must provide both featureColumn and labelColumn " +
               "or neither in training or evaluation.\n" +
               "If neither, the last would be used as label and the rest are the features")
+          labelColumn.foreach(f => inputList.add(r.getAs[Float](f)))
+
         } else {
-          require(featureNum != null, "You must provide featureColumn in predict")
+          require(featureColumn != null, "You must provide featureColumn in predict")
         }
 
-        featureColumn.foreach(f => inputList.add(r.getAs[Float](f)))
-        labelColumn.foreach(f => inputList.add(r.getAs[Float](f)))
         featureNum = featureColumn.length
         labelMum = labelColumn.length
         inputList.asScala.toArray[Float]
       } else {
-        featureNum = r.size - 1
-        labelMum = 1
+        if (hasLabel) {
+          featureNum = r.size - 1
+          labelMum = 1
+        } else {
+          featureNum = r.size
+        }
+
         (0 until r.size).map(i => r.getAs[Float](i)).toArray
       }
 

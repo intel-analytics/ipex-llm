@@ -47,23 +47,26 @@ abstract class FLModel() {
           batchSize: Int = 4,
           featureColumn: Array[String] = null,
           labelColumn: Array[String] = null,
-          valData: DataFrame = null) = {
+          valData: DataFrame = null,
+          hasLabel: Boolean = true) = {
     val _trainData = DataFrameUtils.dataFrameToMiniBatch(trainData, featureColumn, labelColumn,
-      hasLabel = true, batchSize = batchSize)
-    val _valData = DataFrameUtils.dataFrameToMiniBatch(valData)
+      hasLabel = hasLabel, batchSize = batchSize)
+    val _valData = DataFrameUtils.dataFrameToMiniBatch(valData, featureColumn, labelColumn,
+      hasLabel = hasLabel, batchSize = batchSize)
     estimator.train(epoch, _trainData.toLocal(), _valData.toLocal())
   }
   def evaluate(data: DataFrame = null,
                batchSize: Int = 4,
                featureColumn: Array[String] = null,
-               labelColumn: Array[String] = null) = {
+               labelColumn: Array[String] = null,
+               hasLabel: Boolean = true) = {
     if (data == null) {
       estimator.getEvaluateResults().foreach{r =>
         println(r._1 + ":" + r._2.mkString(","))
       }
     } else {
       val _data = DataFrameUtils.dataFrameToMiniBatch(data, featureColumn, labelColumn,
-        hasLabel = true, batchSize = batchSize)
+        hasLabel = hasLabel, batchSize = batchSize)
       estimator.evaluate(_data.toLocal())
     }
 

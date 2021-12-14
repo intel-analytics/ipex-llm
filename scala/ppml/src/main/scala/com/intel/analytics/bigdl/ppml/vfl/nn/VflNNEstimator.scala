@@ -58,6 +58,7 @@ class VflNNEstimator(algorithm: String,
     (0 until endEpoch).foreach { epoch =>
       val dataSet = trainDataSet.data(true)
       var count = 0
+      var hasLabel = true
       while (count < size) {
         logger.debug(s"training next batch, progress: $count/$size, epoch: $epoch/$endEpoch")
         val miniBatch = dataSet.next()
@@ -68,6 +69,7 @@ class VflNNEstimator(algorithm: String,
           .update("neval", iteration + 1)
         val input = miniBatch.getInput()
         val target = miniBatch.getTarget()
+        if (target == null) hasLabel = false
         model.training()
         val output = model.forward(input)
 
@@ -169,7 +171,6 @@ class VflNNEstimator(algorithm: String,
       val metadata = TableMetaData.newBuilder
         .setName(s"${model.getName()}_output").setVersion(iteration).build
       val tableProto = outputTargetToTableProto(model.output, target, metadata)
-      val hasReturn = if (!data.hasNext) true else false
       val result = flClient.nnStub.predict(tableProto, algorithm).getData
       resultSeq = resultSeq :+ getTensor("predictOutput", result)
       iteration += 1

@@ -112,7 +112,6 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
   def predict(dataSet: LocalDataSet[MiniBatch[T]]): Array[Activity] = {
     val dataIter = dataSet.data(train = false)
     dataIter.map(batch => {
-      println("Enter map")
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber

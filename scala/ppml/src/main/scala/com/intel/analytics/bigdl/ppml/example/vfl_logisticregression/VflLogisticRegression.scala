@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.example
+package com.intel.analytics.bigdl.ppml.example
 
 
 import com.intel.analytics.bigdl.ppml.FLContext
@@ -39,12 +39,15 @@ object VflLogisticRegression extends LogManager{
     val trainDf = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
 
     val testDf = trainDf.drop("Outcome")
+    trainDf.show()
+    testDf.show()
     (trainDf, testDf)
   }
 
   def main(args: Array[String]): Unit = {
     case class Params(dataPath: String = null,
                       rowKeyName: String = "ID",
+                      hasLabel: Boolean = true,
                       learningRate: Float = 0.005f,
                       batchSize: Int = 4)
     val parser: OptionParser[Params] = new OptionParser[Params]("VFL Logistic Regression") {
@@ -55,6 +58,9 @@ object VflLogisticRegression extends LogManager{
       opt[String]('r', "rowKeyName")
         .text("row key name of data")
         .action((x, params) => params.copy(rowKeyName = x))
+      opt[Boolean]('y', "hasLabel")
+        .text("this party has label or not")
+        .action((x, params) => params.copy(hasLabel = x))
       opt[String]('l', "learningRate")
         .text("learning rate of training")
         .action((x, params) => params.copy(learningRate = x.toFloat))
@@ -78,10 +84,10 @@ object VflLogisticRegression extends LogManager{
     val (trainData, testData) = getData(pSI, dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model
-
-    val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData = testData)
-    lr.evaluate()
+    val featureNum = if (argv.hasLabel) trainData.columns.size - 1 else trainData.columns.size
+    val lr = new LogisticRegression(featureNum, learningRate)
+    lr.fit(trainData, valData = trainData, hasLabel = argv.hasLabel)
+    lr.evaluate(trainData, hasLabel = argv.hasLabel)
     lr.predict(testData)
   }
 
