@@ -2,6 +2,7 @@
 # set -x
 
 occlum_glibc=/opt/occlum/glibc/lib/
+HOST_IP=`cat /etc/hosts | grep $HOSTNAME | awk '{print $1}'`
 init_instance() {
     # Init Occlum instance
     cd /opt
@@ -34,7 +35,8 @@ build_flink() {
     cp -rf /opt/flink-${FLINK_VERSION}/conf image/opt/
     cp -rf /etc/java-11-openjdk image/etc/
     cp -rf /etc/hosts image/etc/
-    echo "127.0.0.1 occlum-node" >> image/etc/hosts
+    echo "$HOST_IP occlum-node" >> image/etc/hosts
+    # cat image/etc/hosts
     cp -rf /etc/hostname image/etc/
     # build occlum
     occlum build
