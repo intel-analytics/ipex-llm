@@ -635,7 +635,7 @@ def main():
     voc_val_path = os.path.join(options.output_data, "val_dataset")
 
     print(voc_train_path)
-    for filepath,dirnames,filenames in os.walk(voc_train_path):
+    for filepath,dirnames,filenames in os.walk(options.data_dir):
         for filename in filenames:
             print(os.path.join(filepath,filename))
     write_parquet(format="voc", voc_root_path=dataset_path, output_path="file://" + voc_train_path,
