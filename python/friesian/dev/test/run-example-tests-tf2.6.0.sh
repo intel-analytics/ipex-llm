@@ -83,6 +83,15 @@ python ../../example/deep_fm/deepFM_train.py \
 now=$(date "+%s")
 time3=$((now - start))
 
+echo "#4 start example test for ncf train"
+
+start=$(date "+%s")
+
+python ../../example/ncf/ncf_train.py
+
+now=$(date "+%s")
+time4=$((now - start))
+
 
 rm -rf data
 rm -rf result
@@ -90,3 +99,4 @@ rm -rf result
 echo "#1 two tower train time used: $time1 seconds"
 echo "#2 wnd train time used: $time2 seconds"
 echo "#3 deep fm train time used: $time3 seconds"
+echo "#4 ncf train time used: $time4 seconds"
