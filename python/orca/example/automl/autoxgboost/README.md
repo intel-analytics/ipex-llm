@@ -1,9 +1,11 @@
-## AutoXgboost example
+## AutoXGBoost example
 This example illustrates how to use autoxgboost to do classification and regression.
 
 ### Run steps
-#### 1. Install or download Analytics Zoo
-Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
+#### 1. Install or download BigDL
+Follow the instructions in [install guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/distributed-tuning.html#install) to install BigDL Orca.
+
+Besides, you need to install xgboost with `pip install xgboost`.
 
 #### 2. Prepare dataset
 
@@ -29,7 +31,6 @@ You can easily use the following commands to run this example:
 ```bash
 python path/to/AutoXGBoostClassifier.py --path ${data_path}
 ```
-See [here](https://analytics-zoo.github.io/master/#PythonUserGuide/run/#run-after-pip-install) for more running guidance after pip install.
 
 #### 4. Run the AutoXGBoostRegressor example after pip install
 
