@@ -225,7 +225,7 @@ start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/yoloV3.py  \
   --data_dir /data/yolov3 \
-  --output_data /tmp \
+  --output_data /data/yolov3/parquet \
   --weights /data/yolov3/yolov3.weights \
   --class_num 20 \
   --names /bigdl2.0/data/yolov3/voc2012.names \
