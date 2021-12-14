@@ -46,6 +46,7 @@ case "$SPARK_K8S_CMD" in
     echo "SGX Mem $SGX_MEM_SIZE"
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
+    DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
     CMD=(
         /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
         -Divy.home="/tmp/.ivy" \
@@ -68,6 +69,7 @@ case "$SPARK_K8S_CMD" in
     echo "SGX Mem $SGX_MEM_SIZE"
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
+    DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
     CMD=(
         /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
         "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
