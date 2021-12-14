@@ -17,6 +17,7 @@
 #
 
 import os
+from re import A
 import sys
 from shutil import copyfile, copytree, rmtree
 import fnmatch
@@ -27,6 +28,10 @@ bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
+
+RAY_DEP = ['ray[default]==1.9.0', 'aiohttp==3.8.1', 'async-timeout==4.0.1', 'aioredis==1.3.1',
+           'hiredis==2.0.0', 'setproctitle', 'psutil']
+AUTOML_DEP = RAY_DEP + ['ray[tune]==1.9.0', 'scikit-learn', 'tensorboard']
 
 building_error_msg = """
 If you are packing python API from BigDL source, you must build BigDL first
@@ -79,7 +84,6 @@ def get_bigdl_packages():
             print("including", package)
     return bigdl_packages
 
-
 def setup_package():
     metadata = dict(
         name='bigdl-orca',
@@ -93,10 +97,8 @@ def setup_package():
         install_requires=['conda-pack==0.3.1', 'packaging', 'filelock',
                           'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1',
                           'bigdl-dllib=='+VERSION, 'pyzmq'],
-        extras_require={'ray': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
-                                'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1'],
-                        'automl': ['aiohttp==3.7.4', 'aioredis==1.3.1',
-                                   'ray[tune]==1.2.0', 'scikit-learn', 'tensorboard']
+        extras_require={'ray': RAY_DEP,
+                        'automl': AUTOML_DEP,
                         },
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
