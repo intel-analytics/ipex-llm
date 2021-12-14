@@ -29,8 +29,8 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with LogManager 
     flServer.start()
     val spark = FLContext.getSparkSession()
     import spark.implicits._
-    val trainDf = spark.read.option("header", "true")
-      .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
+    val trainDf = spark.read.option("header", "true").format("csv")
+      .load(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
     FLContext.initFLContext()

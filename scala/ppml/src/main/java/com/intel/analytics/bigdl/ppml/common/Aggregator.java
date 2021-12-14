@@ -87,7 +87,7 @@ public abstract class Aggregator<T> {
     }
     public <T> void putClientData(FLPhase type, String clientUUID, int version, T data)
             throws IllegalArgumentException, InterruptedException {
-        logger.debug(clientUUID + "getting data to update from server: " + type.toString());
+        logger.debug(clientUUID + " getting data to update from server: " + type.toString());
         Storage storage = getServerData(type);
         checkVersion(storage.version, version);
         logger.debug(clientUUID + " version check pass, version: " + version);

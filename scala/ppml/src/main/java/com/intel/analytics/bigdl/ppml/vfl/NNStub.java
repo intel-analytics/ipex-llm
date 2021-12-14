@@ -71,7 +71,7 @@ public class NNStub {
         logger.debug("Upload the following data:");
         logger.debug("Upload Data Name:" + data.getMetaData().getName());
         logger.debug("Upload Data Version:" + data.getMetaData().getVersion());
-        logger.debug("Upload Data" + data.getTableMap());
-        ;
+        logger.debug("Upload Data:");
+        logger.debug(data.getTableMap().toString());
     }
 }
