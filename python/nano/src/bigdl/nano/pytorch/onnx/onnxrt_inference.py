@@ -188,6 +188,11 @@ def on_fit_start(self):
 
 
 def _forward_onnx(self, *args):
+    # if self.train() is called without calling self.exit_onnx()
+    if self.training:
+        self.exit_onnx()
+        return self.forward(*args)
+
     ort_inputs = {}
     for i, ort_input_item in enumerate(args):
         ort_inputs[self._forward_args[i]] = ort_input_item.numpy()
@@ -208,6 +213,9 @@ def eval_onnx(self, input_sample=None, file_path="model.onnx", sess_options=None
     :param sess_options: (optional) ortsess options in ort.SessionOptions type.
     :param **kwargs: (optional) will be passed to torch.onnx.export function.
     '''
+    # change to eval mode
+    self.eval()
+
     # get input_sample
     if input_sample is None and self.example_input_array:
         input_sample = self.example_input_array
