@@ -58,9 +58,6 @@ import tensorflow as tf
 
 from tensorflow import keras
 
-import numpy as np
-from keras.utils.data_utils import get_file
-
 import argparse
 
 from bigdl.orca import init_orca_context, stop_orca_context
