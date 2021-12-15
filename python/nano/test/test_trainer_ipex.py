@@ -64,7 +64,7 @@ class TestTrainer(TestCase):
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         trainer.fit(pl_model, self.train_loader)
 
-    def test_trainer_quantize_ptq(self):
+    def test_trainer_quantize_inc_ptq(self):
         trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
 
