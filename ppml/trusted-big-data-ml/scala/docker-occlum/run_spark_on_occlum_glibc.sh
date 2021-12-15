@@ -4,6 +4,7 @@ set -x
 BLUE='\033[1;34m'
 NC='\033[0m'
 occlum_glibc=/opt/occlum/glibc/lib
+# occlum-node IP
 HOST_IP=`cat /etc/hosts | grep $HOSTNAME | awk '{print $1}'`
 
 init_instance() {
@@ -19,14 +20,14 @@ init_instance() {
         .resource_limits.kernel_space_heap_size="1024MB" |
         .process.default_mmap_size = "18000MB" |
         .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
-	.env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL" ] |
+        .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL" ] |
         .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
-    if [[ -z $SGX_MEM_SIZE ]]; then
-        sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
-    else
+    if [[ -z "$SGX_MEM_SIZE" ]]; then
         sed -i "s/SGX_MEM_SIZE/20GB/g" Occlum.json
+    else
+        sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
     fi
 }
 
@@ -56,7 +57,6 @@ build_spark() {
     cp -rf $SPARK_HOME/* image/opt/spark/
     # Copy etc files
     cp -rf /etc/hosts image/etc/
-    echo "127.0.0.1 occlum-node" >> image/etc/hosts
     echo "$HOST_IP occlum-node" >> image/etc/hosts
     # cat image/etc/hosts
 
