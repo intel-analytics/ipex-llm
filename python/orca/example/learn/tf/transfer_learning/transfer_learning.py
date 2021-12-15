@@ -53,18 +53,18 @@ parser.add_argument('--batch_size', type=int, default=64, help='The training bat
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--download_url', type=str, default="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
                     help="The url of cats_and_dogs_filtered.zip.")
-parser.add_argument('--download', type=bool, default=True, help='download dataset or not')
+parser.add_argument('--download', type=bool, default=False, help='download dataset or not')
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
-for filepath,dirnames,filenames in os.walk("/data"):
-    print(dirnames)
+print(" command ######################################")
+print(" python/orca/example/learn/tf/transfer_learning/transfer_learning.py --data_dir /data --cluster_mode yarn-cluster --download False")
 
 dataset_dir = args.data_dir
 download_url = args.download_url
 if not exists(dataset_dir):
     makedirs(dataset_dir)
-if args.download:
+if args.download == True:
     zip_file = tf.keras.utils.get_file(
         origin=download_url,
         fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)

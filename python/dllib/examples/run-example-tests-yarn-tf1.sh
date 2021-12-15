@@ -231,7 +231,7 @@ exit_status=$?
 if [ $exit_status -ne 0 ]; then
 #   clear_up
   echo "orca learning transfer_learning failed"
-  exit $exit_status
+#  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -246,7 +246,7 @@ exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
   echo "orca basic_text_classification failed"
-  exit $exit_status
+#  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -264,7 +264,7 @@ exit_status=$?
 if [ $exit_status -ne 0 ]; then
   #clear_up
   echo "orca image_segmentation failed"
-  exit $exit_status
+#  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -281,7 +281,7 @@ exit_status=$?
 if [ $exit_status -ne 0 ]; then
   clear_up
   echo "orca inception failed"
-  exit $exit_status
+#  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
