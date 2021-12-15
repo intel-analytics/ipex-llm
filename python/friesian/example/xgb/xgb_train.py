@@ -57,12 +57,9 @@ if __name__ == '__main__':
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
-    parser.add_argument('--epochs', default=1, type=int, help='train epoch')
-    parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
     parser.add_argument('--data_dir', type=str, help='data directory')
-    parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
@@ -71,8 +68,7 @@ if __name__ == '__main__':
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executor, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf, object_store_memory="40g", init_ray_on_spark=True,
-                               extra_python_lib="evaluation.py")
+                               conf=spark_conf, object_store_memory="40g", init_ray_on_spark=True)
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit", object_store_memory="40g")
 
