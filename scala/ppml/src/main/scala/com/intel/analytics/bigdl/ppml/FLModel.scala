@@ -29,17 +29,17 @@ import org.apache.spark.sql.DataFrame
 abstract class FLModel() {
   val model: Sequential[Float]
   val estimator: Estimator
-  var predictor: LocalPredictor[Float] = null
-
 
   /**
    *
    * @param trainData DataFrame of training data
    * @param epoch training epoch
-   * @param batchSize training batchsize
+   * @param batchSize training batch size
    * @param featureColumn Array of String, specifying feature columns
    * @param labelColumn Array of String, specifying label columns
    * @param valData DataFrame of validation data
+   * @param hasLabel whether dataset has label, dataset always has label in common machine learning
+   *                 and HFL cases, while dataset of some parties in VFL cases does not has label
    * @return
    */
   def fit(trainData: DataFrame,
@@ -55,6 +55,16 @@ abstract class FLModel() {
       hasLabel = hasLabel, batchSize = batchSize)
     estimator.train(epoch, _trainData.toLocal(), _valData.toLocal())
   }
+
+  /**
+   *
+   * @param data DataFrame of evaluation data
+   * @param batchSize evaluation batch size
+   * @param featureColumn Array of String, specifying feature columns
+   * @param labelColumn Array of String, specifying label columns
+   * @param hasLabel whether dataset has label, dataset always has label in common machine learning
+   *                 and HFL cases, while dataset of some parties in VFL cases does not has label
+   */
   def evaluate(data: DataFrame = null,
                batchSize: Int = 4,
                featureColumn: Array[String] = null,
@@ -69,8 +79,15 @@ abstract class FLModel() {
         hasLabel = hasLabel, batchSize = batchSize)
       estimator.evaluate(_data.toLocal())
     }
-
   }
+
+  /**
+   *
+   * @param data DataFrame of prediction data
+   * @param batchSize prediction batch size
+   * @param featureColumn Array of String, specifying feature columns
+   * @return
+   */
   def predict(data: DataFrame,
               batchSize: Int = 4,
               featureColumn: Array[String] = null): Array[Activity] = {

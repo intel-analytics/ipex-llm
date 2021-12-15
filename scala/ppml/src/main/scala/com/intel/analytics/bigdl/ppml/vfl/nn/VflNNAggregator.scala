@@ -46,6 +46,10 @@ class VflNNAggregator(model: Module[Float],
   }
   var validationResult = List[Array[ValidationResult]]()
 
+  /**
+   * Aggregate the clients data to update server data by aggType
+   * @param aggType FLPhase enum type, one of TRAIN, EVAL, PREDICT
+   */
   override def aggregate(aggType: FLPhase): Unit = {
     val storage = getServerData(aggType)
     val (inputTable, target) = ProtoUtils.tableProtoToOutputTarget(storage)

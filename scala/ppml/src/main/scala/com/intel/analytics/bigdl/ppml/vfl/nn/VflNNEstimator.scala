@@ -42,13 +42,17 @@ class VflNNEstimator(algorithm: String,
   val flClient = FLContext.getClient()
   val (weight, grad) = getParametersFromModel(model)
 
-  def train(endEpoch: Int,
-            trainDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float] = {
-    train(endEpoch, trainDataSet, null)
-  }
-
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
 
+  /**
+   * Train VFL model
+   * For each batch, client estimator upload output tensor to server aggregator,
+   * the server return the loss to client, and client use the loss to do backward propagation
+   * @param endEpoch epoch of training
+   * @param trainDataSet
+   * @param valDataSet
+   * @return
+   */
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]],
             valDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float] = {
@@ -93,29 +97,6 @@ class VflNNEstimator(algorithm: String,
       if (valDataSet != null) {
         model.evaluate()
         evaluate(valDataSet)
-//        val valIterator = valDataSet.data(false)
-//        var evaluateResponse: EvaluateResponse = null;
-//        while(valIterator.hasNext) {
-//          val miniBatch = valIterator.next()
-//          val input = miniBatch.getInput()
-//          val target = miniBatch.getTarget()
-//          val output = model.forward(input)
-//          val metadata = TableMetaData.newBuilder
-//            .setName(s"${model.getName()}_output").setVersion(iteration).build
-//
-//          // TODO: support table output and table target
-//          val tableProto = outputTargetToTableProto(output, target, metadata)
-//          evaluateResponse = flClient.nnStub.evaluate(tableProto, algorithm, false)
-//        }
-//        logger.info(evaluateResponse.getResponse)
-//        val dataMap = evaluateResponse.getData.getTableMap.asScala
-//        dataMap.foreach{v =>
-//          if (evaluateResults.contains(v._1)) {
-//            evaluateResults(v._1).append(v._2.getTensor(0))
-//          } else {
-//            evaluateResults(v._1) = ArrayBuffer(v._2.getTensor(0))
-//          }
-//        }
       }
 
     }
@@ -155,6 +136,14 @@ class VflNNEstimator(algorithm: String,
     println(s"Evaluation result: $evaluateResult")
   }
 
+  /**
+  *n Predict VFL model
+   * For each batch, client estimator upload output tensor to server aggregator,
+   * the server return the output to client, and client store the output and finally return
+   * all the output of input dataset
+   * @param dataSet the data to predict
+   * @return
+   */
   override def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Array[Activity] = {
     val dataSize = dataSet.size()
     val data = dataSet.data(false)
