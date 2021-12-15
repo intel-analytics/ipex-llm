@@ -90,6 +90,7 @@ if download == True:
     (train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=10000)
 else:
     import numpy as np
+    import os
     from tensorflow.keras.utils import get_file
     path = os.path.join(args.data_dir, 'imdb.npz')
     num_words=None
