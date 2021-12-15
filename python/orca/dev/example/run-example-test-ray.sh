@@ -57,7 +57,7 @@ time5=$((now-start))
 
 echo "#6 Start async_parameter example"
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
+#python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
 now=$(date "+%s")
 time6=$((now-start))
 
