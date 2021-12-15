@@ -67,7 +67,7 @@ def build_model(num_users, num_items, layers=[20, 10], include_mf=True, mf_embed
 # cluster_mode = "local"
 cluster_mode = "k8s"
 if cluster_mode == "local":
-    sc = init_orca_context(memory="2g")
+    sc = init_orca_context(memory="20g")
 elif cluster_mode == "standalone":
     sc = init_orca_context("standalone", master="spark://...", cores=8, num_nodes=4, memory="10g")
 elif cluster_mode == "yarn":
