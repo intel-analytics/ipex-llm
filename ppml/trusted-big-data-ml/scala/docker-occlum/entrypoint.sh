@@ -55,8 +55,8 @@ case "$SPARK_K8S_CMD" in
         -XX:MaxMetaspaceSize=256m \
         -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
-        -Xms5g \
-        -Xmx5g \
+        -Xms8g \
+        -Xmx8g \
         -XX:ActiveProcessorCount=4 \
         -Dio.netty.availableProcessors=64 \
         org.apache.spark.deploy.SparkSubmit \
