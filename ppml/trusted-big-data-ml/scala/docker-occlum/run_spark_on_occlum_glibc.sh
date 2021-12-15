@@ -112,7 +112,7 @@ run_spark_lenet_mnist(){
                 --class com.intel.analytics.bigdl.dllib.models.lenet.Train \
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
-                -f /opt/data \
+                -f /host/data \
                 $* | tee spark.local.sgx.log
 }
 
@@ -140,7 +140,7 @@ run_spark_resnet_cifar(){
                 --class com.intel.analytics.bigdl.dllib.models.resnet.TrainCIFAR10 \
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
-                -f /opt/data \
+                -f /host/data \
                 $* | tee spark.local.sgx.log
 }
 

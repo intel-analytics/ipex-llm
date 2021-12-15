@@ -48,7 +48,7 @@ Pi is roughly 3.1436957184785923
 
 To train a model with PPML in BigDL, you need to prepare the data first. You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). There are 5 files in total. `train-images-idx3-ubyte` contains train images; `train-labels-idx1-ubyte` is the train label file; `t10k-images-idx3-ubyte` has validation images; `t10k-labels-idx1-ubyte` contains validation labels. Unzip all the files and put them in a new directory `data`.
 
-**By default, `data` dir will be mounted to `/opt/data` in container. You can change data path in `start-spark-local.sh`.**
+**By default, `data` dir will be mounted to `/opt/occlum_spark/data` in container. You can change data path in `start-spark-local.sh`.**
 
 To run BigDL Lenet Mnist example, start the docker container with:
 
