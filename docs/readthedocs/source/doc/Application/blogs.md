@@ -22,9 +22,11 @@ Blogs
 - [Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://www.intel.com/content/www/us/en/developer/articles/technical/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on.html?wapkw=Using%20Distributed%20TensorFlow*%20on%20Analytics%20Zoo)
 - [Machine Learning Pipelines for High Energy Physics Using Apache Spark with BigDL and Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
 - [Deep Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://www.intel.com/content/www/us/en/developer/articles/technical/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service.html)
+- [Using Intel Analytics Zoo to Inject AI into Customer Service Platform (Part II)](https://www.infoq.com/articles/analytics-zoo-qa-module/)
 - [Talroo Uses Analytics Zoo and AWS to Leverage Deep Learning for Job Recommendations](https://www.intel.com/content/www/us/en/developer/articles/technical/talroo-uses-analytics-zoo-and-aws-to-leverage-deep-learning-for-job-recommendations.html)
 
 **2018**
+- [Analytics Zoo: Unified Analytics + AI Platform for Distributed Tensorflow, and BigDL on Apache Spark](https://www.infoq.com/articles/analytics-zoo/)
 - [Industrial Inspection Platform in Midea and KUKA: Using Distributed TensorFlow on Analytics Zoo](https://www.intel.com/content/www/us/en/developer/articles/technical/industrial-inspection-platform-in-midea-and-kuka-using-distributed-tensorflow-on-analytics.html)
 - [Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure](https://www.intel.com/content/www/us/en/developer/articles/technical/use-analytics-zoo-to-inject-ai-into-customer-service-platforms-on-microsoft-azure-part-1.html)
 - [LSTM-Based Time Series Anomaly Detection Using Analytics Zoo for Apache Spark and BigDL at Baosight](https://www.intel.com/content/www/us/en/developer/articles/technical/lstm-based-time-series-anomaly-detection-using-analytics-zoo-for-apache-spark-and-bigdl.html)
