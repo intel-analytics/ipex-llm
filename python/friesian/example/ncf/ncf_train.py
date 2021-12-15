@@ -20,7 +20,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
 
-from bigdl.dllib.feature.dataset.movielens import read_data_sets
+from bigdl.dllib.feature.dataset import movielens 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.friesian.feature import FeatureTable
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     
-    movielens_data = read_data_sets(args.data_dir)[:,0:3]
+    movielens_data = movielens.get_id_ratings("./movielens/")
     pddf = pd.DataFrame(movielens_data, columns=["user", "item", "label"])
     num_users, num_items = pddf["user"].max() + 1, pddf["item"].max() + 1
 

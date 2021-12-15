@@ -93,13 +93,11 @@ else
   tar -xvzf data/movielens.tar.gz -C data
 fi
 
-
 python ../../example/ncf/ncf_train.py\
     --executor_cores 4 \
     --executor_memory 10g \
     --data_dir ./data/movielens \
     --model_dir ./result/model
-
 
 now=$(date "+%s")
 time4=$((now - start))
