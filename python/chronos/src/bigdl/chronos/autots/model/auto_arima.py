@@ -20,6 +20,7 @@ from bigdl.chronos.model.arima import ARIMABuilder, ARIMAModel
 
 # -
 
+
 class AutoARIMA:
 
     def __init__(self,
@@ -90,11 +91,11 @@ class AutoARIMA:
             self.metric = metric
             model_builder = ARIMABuilder()
             self.auto_est = AutoEstimator(model_builder=model_builder,
-                                        logs_dir=logs_dir,
-                                        resources_per_trial={
-                                            "cpu": cpus_per_trial},
-                                        remote_dir=remote_dir,
-                                        name=name)
+                                          logs_dir=logs_dir,
+                                          resources_per_trial={
+                                              "cpu": cpus_per_trial},
+                                          remote_dir=remote_dir,
+                                          name=name)
 
     def fit(self,
             data,

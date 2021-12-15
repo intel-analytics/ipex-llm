@@ -128,7 +128,8 @@ class ProphetModel:
             raise Exception("Needs to call fit_eval or restore first before calling evaluate")
 
         target_pred = self.model.predict(target)
-        return Evaluator.evaluate(metrics, target.y.values, target_pred.yhat.values, aggregate="mean")
+        return Evaluator.evaluate(metrics, target.y.values,
+                                  target_pred.yhat.values, aggregate="mean")
 
     def save(self, checkpoint):
         if self.model is None:

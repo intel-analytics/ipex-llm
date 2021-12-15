@@ -78,16 +78,21 @@ class AutoProphet:
             from bigdl.orca.automl.auto_estimator import AutoEstimator
             import bigdl.orca.automl.hp as hp
             self.search_space = {
-                "changepoint_prior_scale": hp.grid_search([0.005, 0.05, 0.1, 0.5])\
-                    if changepoint_prior_scale is None else changepoint_prior_scale,
-                "seasonality_prior_scale": hp.grid_search([0.01, 0.1, 1.0, 10.0])\
-                    if seasonality_prior_scale is None else seasonality_prior_scale,
-                "holidays_prior_scale": hp.loguniform(0.01, 10)\
-                    if holidays_prior_scale is None else holidays_prior_scale,
-                "seasonality_mode": hp.choice(['additive', 'multiplicative'])\
-                    if seasonality_mode is None else seasonality_mode,
-                "changepoint_range": hp.uniform(0.8, 0.95)\
-                    if changepoint_range is None else changepoint_range
+                "changepoint_prior_scale": hp.grid_search([0.005, 0.05, 0.1, 0.5])
+                if changepoint_prior_scale is None
+                else changepoint_prior_scale,
+                "seasonality_prior_scale": hp.grid_search([0.01, 0.1, 1.0, 10.0])
+                if seasonality_prior_scale is None
+                else seasonality_prior_scale,
+                "holidays_prior_scale": hp.loguniform(0.01, 10)
+                if holidays_prior_scale is None
+                else holidays_prior_scale,
+                "seasonality_mode": hp.choice(['additive', 'multiplicative'])
+                if seasonality_mode is None
+                else seasonality_mode,
+                "changepoint_range": hp.uniform(0.8, 0.95)
+                if changepoint_range is None
+                else changepoint_range
             }
             self.search_space.update(prophet_config)  # update other configs
             self.metric = metric
