@@ -93,12 +93,12 @@ class TrainingOperator:
         assert isinstance(
             models,
             collections.Iterable), ("Components need to be iterable. Got: {}".format(
-            type(models)))
+                type(models)))
         self._optimizers = optimizers  # List of optimizers
         assert isinstance(
             optimizers,
             collections.Iterable), ("Components need to be iterable. Got: {}".format(
-            type(optimizers)))
+                type(optimizers)))
         self._world_rank = world_rank
         self._criterion = criterion
         self._schedulers = schedulers
@@ -106,7 +106,7 @@ class TrainingOperator:
             assert isinstance(
                 schedulers,
                 collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                type(schedulers)))
+                    type(schedulers)))
         self._config = config
         self._use_fp16 = use_fp16
         if tqdm is None and use_tqdm:
