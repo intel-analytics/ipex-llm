@@ -199,7 +199,7 @@ class Trainer(pl.Trainer):
             }
             approach = approach_map.get(approach)
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
-                                        tuning_strategy=tuning_strategy, 
+                                        tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
             q_litmodel = copy.deepcopy(model)
