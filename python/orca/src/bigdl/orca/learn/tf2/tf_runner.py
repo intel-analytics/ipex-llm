@@ -334,6 +334,10 @@ class TFRunner:
         self.layer_trainable = {layer.name: layer.trainable for layer in self.model.layers}
         print(self.layer_trainable)
 
+    def recompile(self):
+        # Need to recompile the model after changing the trainable flag of a layer
+        self.model.compile(self.model.optimizer, self.model.loss, self.model.compiled_metrics._metrics)
+
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
@@ -379,8 +383,7 @@ class TFRunner:
                         layer.trainable = False
                 else:
                     print("Layer {} not found in the model, ignored.".format(top_layer_name))
-            # Need to recompile the model after changing the trainable flag of a layer
-            self.model.compile(self.model.optimizer, self.model.loss, self.model.metrics)
+            self.recompile()
         history = self.model.fit(train_dataset,
                                  epochs=self.epoch + epochs,
                                  verbose=verbose,
@@ -401,7 +404,7 @@ class TFRunner:
         if tops is not None:
             for layer in self.layers:
                 layer.trainable = self.layer_trainable[layer.name]
-            self.model.compile(self.model.optimizer, self.model.loss, self.model.metrics)
+            self.recompile()
         return [stats]
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
