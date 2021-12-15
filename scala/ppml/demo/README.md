@@ -21,16 +21,16 @@ java -cp com.intel.analytics.bigdl.ppml.FLServer
 ## HFL Logistic Regression
 ```bash
 # client 1
-java -cp com.intel.analytics.bigdl.ppml.example.hfl_logistic_regression.HflLogisticRegression -data/diabetes-hfl-1.csv
+java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -data/diabetes-hfl-1.csv
 
 # client 2
-java -cp com.intel.analytics.bigdl.ppml.example.hfl_logistic_regression.HflLogisticRegression -data/diabetes-hfl-2.csv
+java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -data/diabetes-hfl-2.csv
 ```
 ## VFL Logistic Regression
 ```bash
 # client 1
-java -cp com.intel.analytics.bigdl.ppml.example.vfl_logistic_regression.VflLogisticRegression -data/diabetes-vfl-1.csv
+java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -data/diabetes-vfl-1.csv
 
 # client 2
-java -cp com.intel.analytics.bigdl.ppml.example.vfl_logistic_regression.VflLogisticRegression -data/diabetes-vfl-2.csv
+java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -data/diabetes-vfl-2.csv
 ```
