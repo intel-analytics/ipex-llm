@@ -86,6 +86,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
+    parser.add_argument('--data_dir', type=str, default="./movielens", help='data directory')
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
@@ -105,7 +106,7 @@ if __name__ == '__main__':
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
 
-    movielens_data = movielens.get_id_ratings("/tmp/movielens/")
+    movielens_data = read_data_sets(args.data_dir)
     pddf = pd.DataFrame(movielens_data, columns=["user", "item", "label"])
     num_users, num_items = pddf["user"].max() + 1, pddf["item"].max() + 1
 

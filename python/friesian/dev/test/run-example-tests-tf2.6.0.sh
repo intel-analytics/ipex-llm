@@ -86,8 +86,20 @@ time3=$((now - start))
 echo "#4 start example test for ncf train"
 
 start=$(date "+%s")
+if [ -d data/movielens ]; then
+  echo "data/movielens already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/movielens.tar.gz -P data
+  tar -xvzf data/movielens.tar.gz -C data
+fi
 
-python ../../example/ncf/ncf_train.py
+
+python ../../example/ncf/ncf_train.py\
+    --executor_cores 4 \
+    --executor_memory 10g \
+    --data_dir ./data/movielens \
+    --model_dir ./result/model
+
 
 now=$(date "+%s")
 time4=$((now - start))
@@ -98,5 +110,5 @@ rm -rf result
 
 echo "#1 two tower train time used: $time1 seconds"
 echo "#2 wnd train time used: $time2 seconds"
-echo "#3 deep fm train time used: $time3 seconds"
+echo "#3 deepfm train time used: $time3 seconds"
 echo "#4 ncf train time used: $time4 seconds"
