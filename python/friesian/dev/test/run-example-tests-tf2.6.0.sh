@@ -97,7 +97,7 @@ python ../../example/ncf/ncf_train.py\
     --executor_cores 4 \
     --executor_memory 10g \
     --data_dir ./data/movielens \
-    --model_dir ./result/model
+    --model_dir ./result/model/new
 
 now=$(date "+%s")
 time4=$((now - start))
