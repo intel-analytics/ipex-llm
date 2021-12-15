@@ -9,17 +9,19 @@ class Callback(object):
     @abstractmethod
     def on_batch_begin(self, batch, logs=None):
         """
-        A backwards compatibility alias for `on_train_batch_begin`.
+        Called at the beginning of a training batch in `fit` methods.
+        Subclasses should override for any actions to run.
         @param batch: Integer, index of batch within the current epoch.
-        @param logs:  Dict. Currently, saved stats in last batch has been passed to this argument
-        for this method but may change in the future.
+        @param logs: Dict. Currently, metrics_meters is passed to this argument for this method
+          but that may change in the future.
         """
         pass
 
     @abstractmethod
     def on_batch_end(self, batch, logs=None):
         """
-        A backwards compatibility alias for `on_train_batch_end`.
+        Called at the end of a training batch in `fit` methods.
+        Subclasses should override for any actions to run.
         @param batch: Integer, index of batch within the current epoch.
         @param logs:  Dict. Aggregated metric results up until this batch.
         """
@@ -49,29 +51,6 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_train_batch_begin(self, batch, logs=None):
-        """
-        Called at the beginning of a training batch in `fit` methods.
-        Subclasses should override for any actions to run.
-        @param batch: Integer, index of batch within the current epoch.
-        @param logs: Dict. Currently, no data is passed to this argument for this method
-          but that may change in the future.
-        """
-        pass
-
-    @abstractmethod
-    def on_train_batch_end(self, batch, logs=None):
-        """
-        Called at the end of a training batch in `fit` methods.
-        Subclasses should override for any actions to run.
-        @param batch: Integer, index of batch within the current epoch.
-        @param logs:  Dict. Aggregated metric results up until this batch.
-        """
-        # For backwards compatibility.
-        self.on_batch_end(batch, logs=logs)
-        pass
-
-    @abstractmethod
     def on_train_begin(self, logs=None):
         """
         Called at the beginning of training.
@@ -86,16 +65,14 @@ class Callback(object):
         """
         Called at the end of training.
         Subclasses should override for any actions to run.
-        @param: Dict. Currently, the output of the last call to `on_epoch_end()`
+        @param: Dict. Currently, the output of the last call to `train_epoch()`
           is passed to this argument for this method but that may change in
           the future.
         """
         pass
 
-    @abstractmethod
     def set_model(self, model):
         self.model = model
 
-    @abstractmethod
     def set_param(self, param):
         self.params = param

@@ -124,8 +124,7 @@ class TorchRunner:
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
         self.sync_stats = sync_stats
-        self.epochs_stats = None
-        self.epoch_stats = None
+        self.epochs_stats = None  # The state saved in every epoch
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -260,7 +259,7 @@ class TorchRunner:
         stats_list = list()
         for i in range(epochs):
             for callback in callbacks:
-                callback.on_epoch_begin(epoch=self.epochs, logs=stats_list[-1])
+                callback.on_epoch_begin(epoch=self.epochs, logs=self.epochs_stats)
             stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks)
             if self.rank == 0:
                 if self.sync_stats:
@@ -274,7 +273,7 @@ class TorchRunner:
             for callback in callbacks:
                 callback.on_epoch_end(epoch=self.epochs, logs=stats)
         for callback in callbacks:
-            callback.on_train_end()
+            callback.on_train_end(stats_list[-1])
         return stats_list
 
     def train_epoch(self,
@@ -287,9 +286,7 @@ class TorchRunner:
                 self.train_loader.sampler, "set_epoch"):
             self.train_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
-        for callback in callbacks:
-            # TODO: train_stats
-            callback.on_batch_begin(self.epochs, logs=self.epoch_stats)
+
         info = info or {}
         self._toggle_profiling(profile=profile)
 
@@ -298,17 +295,14 @@ class TorchRunner:
         })
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
-            train_stats = self.training_operator.train_epoch(data_loader, info)
+            train_stats = self.training_operator.train_epoch(data_loader, info, callbacks)
         self.epochs += 1
         # This is so that `epochs` is first in ordering.
         stats = dict(epoch=self.epochs, **train_stats)
 
         if profile:
             stats.update(profile=self.timers.stats())
-        self.epoch_stats = stats
 
-        for callback in callbacks:
-            callback.on_batch_end(self.epochs, stats)
         return stats
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,

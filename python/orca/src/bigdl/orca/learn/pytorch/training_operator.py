@@ -93,12 +93,12 @@ class TrainingOperator:
         assert isinstance(
             models,
             collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                type(models)))
+            type(models)))
         self._optimizers = optimizers  # List of optimizers
         assert isinstance(
             optimizers,
             collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                type(optimizers)))
+            type(optimizers)))
         self._world_rank = world_rank
         self._criterion = criterion
         self._schedulers = schedulers
@@ -106,7 +106,7 @@ class TrainingOperator:
             assert isinstance(
                 schedulers,
                 collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                    type(schedulers)))
+                type(schedulers)))
         self._config = config
         self._use_fp16 = use_fp16
         if tqdm is None and use_tqdm:
@@ -125,6 +125,7 @@ class TrainingOperator:
                         "multi-model or multi-optimizer training/validation.")
         self.timers = TimerCollection()
         self.setup(config)
+        self.batch_metric = None
 
     def _set_timers(self, timers):
         """Passes in the timers from the Runner."""
@@ -139,7 +140,7 @@ class TrainingOperator:
         """
         pass
 
-    def train_epoch(self, iterator, info):
+    def train_epoch(self, iterator, info, callbacks=None):
         """Runs one standard training pass over the training dataloader.
 
         By default, this method will iterate over the given iterator and
@@ -199,9 +200,9 @@ class TrainingOperator:
         self.model.train()
         if isinstance(self.model, DDP):
             with self.model.join():
-                self._train_loop(iterator, info, _progress_bar, metric_meters)
+                self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
         else:
-            self._train_loop(iterator, info, _progress_bar, metric_meters)
+            self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
 
         if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
             self.scheduler.step()
@@ -209,15 +210,16 @@ class TrainingOperator:
         return metric_meters.summary(sync_stats=self.sync_stats,
                                      dist_backend=self.dist_backend)
 
-    def _train_loop(self, iterator, info, _progress_bar, metric_meters):
+    def _train_loop(self, iterator, info, _progress_bar, metric_meters, callbacks):
         for batch_idx, batch in enumerate(iterator):
             batch_info = {
                 "batch_idx": batch_idx,
                 "global_step": self.global_step
             }
             batch_info.update(info)
+            for callback in callbacks:
+                callback.on_batch_begin(batch_idx, logs=metric_meters)
             metrics = self.train_batch(batch, batch_info=batch_info)
-
             if self.use_tqdm and self.world_rank == 0:
                 _progress_bar.n = batch_idx + 1
                 postfix = {}
@@ -231,6 +233,8 @@ class TrainingOperator:
 
             metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
             self.global_step += 1
+            for callback in callbacks:
+                callback.on_batch_end(batch_idx, logs=metric_meters)
 
     def train_batch(self, batch, batch_info):
         """Computes loss and updates the model over one batch.
