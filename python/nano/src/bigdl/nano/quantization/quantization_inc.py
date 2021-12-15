@@ -1,12 +1,6 @@
 from neural_compressor.conf.config import Quantization_Conf
 from neural_compressor.experimental import Quantization
 
-APPROACH_MAP = {
-    'ptsq': 'post_training_static_quant',
-    'ptdq': 'post_training_dynamic_quant',
-    'qat': 'quant_aware_training'
-}
-
 
 class QuantizationINC(Quantization):
     def __init__(self,
@@ -30,10 +24,8 @@ class QuantizationINC(Quantization):
                             Quantization.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, use default config.
-        :param approach:    ptsq, ptdq or qat.
-                            ptsq: post_training_static_quant,
-                            ptdq: post_training_dynamic_quant,
-                            qat: quant_aware_training.
+        :param approach:    post_training_static_quant, post_training_dynamic_quant,
+                            quant_aware_training.
                             Default: post_training_static_quant.
         :param tuning_strategy:    bayesian, basic, mse, sigopt. Default: bayesian.
         :param accuracy_criterion:  Tolerable accuracy drop.
@@ -55,7 +47,7 @@ class QuantizationINC(Quantization):
             cfg = qconf.usr_cfg
             # Override default config
             cfg.model.framework = framework
-            cfg.quantization.approach = APPROACH_MAP[approach]
+            cfg.quantization.approach = approach
             cfg.tuning.strategy.name = tuning_strategy
             if accuracy_criterion:
                 cfg.tuning.accuracy_criterion = accuracy_criterion

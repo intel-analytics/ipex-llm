@@ -156,7 +156,7 @@ class Trainer(pl.Trainer):
             return pl_model
 
     def quantize(self, model, calib_dataloader, val_dataloader=None, metric: str = None,
-                 backend='inc', conf=None, framework='pytorch_fx', approach='ptsq',
+                 backend='inc', conf=None, framework='pytorch_fx', approach='static',
                  tuning_strategy='bayesian', accuracy_criterion=None, timeout=0, max_trials=1):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
@@ -193,11 +193,17 @@ class Trainer(pl.Trainer):
         """
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
+            approach_map = {
+                'static': 'post_training_static_quant',
+                'dynamic': 'post_training_dynamic_quant'
+            }
+            approach = approach_map.get(approach)
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
-                                        tuning_strategy=tuning_strategy, accuracy_criterion=accuracy_criterion,
+                                        tuning_strategy=tuning_strategy, 
+                                        accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
             q_litmodel = copy.deepcopy(model)
-            quantizer.model = model
+            quantizer.model = q_litmodel.model
 
             def eval_func(model_to_eval):
                 if val_dataloader:
