@@ -255,11 +255,11 @@ class TorchRunner:
 
         for callback in callbacks:
             callback.set_model(self.models)
-            callback.on_train_begin(logs=self.epochs_stats)
+            callback.on_train_begin()
         stats_list = list()
         for i in range(epochs):
             for callback in callbacks:
-                callback.on_epoch_begin(epoch=self.epochs, logs=self.epochs_stats)
+                callback.on_epoch_begin(epoch=self.epochs)
             stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks)
             if self.rank == 0:
                 if self.sync_stats:
@@ -271,9 +271,9 @@ class TorchRunner:
             stats_list.append(stats)
             self.epochs_stats = stats
             for callback in callbacks:
-                callback.on_epoch_end(epoch=self.epochs, logs=stats)
+                callback.on_epoch_end(epoch=self.epochs)
         for callback in callbacks:
-            callback.on_train_end(stats_list[-1])
+            callback.on_train_end()
         return stats_list
 
     def train_epoch(self,

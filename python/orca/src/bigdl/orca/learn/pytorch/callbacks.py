@@ -7,28 +7,25 @@ class Callback(object):
         self.params = None
 
     @abstractmethod
-    def on_batch_begin(self, batch, logs=None):
+    def on_batch_begin(self, batch):
         """
         Called at the beginning of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
         @param batch: Integer, index of batch within the current epoch.
-        @param logs: Dict. Currently, metrics_meters is passed to this argument for this method
-          but that may change in the future.
         """
         pass
 
     @abstractmethod
-    def on_batch_end(self, batch, logs=None):
+    def on_batch_end(self, batch):
         """
         Called at the end of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
         @param batch: Integer, index of batch within the current epoch.
-        @param logs:  Dict. Aggregated metric results up until this batch.
         """
         pass
 
     @abstractmethod
-    def on_epoch_begin(self, epoch, logs=None):
+    def on_epoch_begin(self, epoch):
         """
         Called at the start of an epoch.
         Subclasses should override for any actions to run. This function should only
@@ -40,18 +37,17 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch):
         """
         Called at the end of an epoch.
         Subclasses should override for any actions to run. This function should only
         be called during TRAIN mode.
         @param epoch:  Integer, index of epoch.
-        @param logs: Dict, metric results for this training epoch.
         """
         pass
 
     @abstractmethod
-    def on_train_begin(self, logs=None):
+    def on_train_begin(self):
         """
         Called at the beginning of training.
         Subclasses should override for any actions to run.
@@ -61,13 +57,10 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_train_end(self, logs=None):
+    def on_train_end(self):
         """
         Called at the end of training.
         Subclasses should override for any actions to run.
-        @param: Dict. Currently, the output of the last call to `train_epoch()`
-          is passed to this argument for this method but that may change in
-          the future.
         """
         pass
 
