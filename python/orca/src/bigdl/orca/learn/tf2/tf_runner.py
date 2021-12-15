@@ -319,6 +319,7 @@ class TFRunner:
         logger.debug("Creating model with MultiWorkerMirroredStrategy")
         with self.strategy.scope():
             self.model = self.model_creator(self.config)
+            self.setup_model_meta()
 
         # For use in model.evaluate()
         self.local_model = None
@@ -326,10 +327,17 @@ class TFRunner:
         self.size = world_size
         self.rank = world_rank
 
+    def setup_model_meta(self):
+        self.layers = self.model.layers
+        self.layer_names = [layer.name for layer in self.layers]
+        print(self.layer_names)
+        self.layer_trainable = {layer.name: layer.trainable for layer in self.model.layers}
+        print(self.layer_trainable)
+
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
              steps_per_epoch=None, validation_steps=None, validation_freq=1,
-             data_config=None):
+             data_config=None, tops=None):
         """Runs a training epoch and updates the model parameters."""
         config = self.config.copy()
         if data_config is not None:
@@ -360,6 +368,19 @@ class TFRunner:
             if self.strategy.cluster_resolver.task_id != 0:
                 verbose = 0
 
+        if tops is not None:
+            if not isinstance(tops, list):
+                tops = [tops]
+            # Referred to the dummy pipeline; but the logic may not be totally correct for complicated graph models.
+            for top_layer_name in tops:
+                if top_layer_name in self.layer_names:
+                    top_layer_idx = self.layer_names.index(top_layer_name)
+                    for layer in self.layers[:top_layer_idx]:
+                        layer.trainable = False
+                else:
+                    print("Layer {} not found in the model, ignored.".format(top_layer_name))
+            # Need to recompile the model after changing the trainable flag of a layer
+            self.model.compile(self.model.optimizer, self.model.loss, self.model.metrics)
         history = self.model.fit(train_dataset,
                                  epochs=self.epoch + epochs,
                                  verbose=verbose,
@@ -376,6 +397,11 @@ class TFRunner:
             stats = {"train_" + k: v[-1] for k, v in history.history.items()}
 
         self.epoch += epochs
+        # Set back the default trainable flags of the original model
+        if tops is not None:
+            for layer in self.layers:
+                layer.trainable = self.layer_trainable[layer.name]
+            self.model.compile(self.model.optimizer, self.model.loss, self.model.metrics)
         return [stats]
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
