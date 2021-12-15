@@ -67,7 +67,7 @@ if args.download:
         fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
     base_dir, _ = os.path.splitext(zip_file)
 else:
-    base_dir = os.path.join(dataset_dir, 'cats_and_dogs_filtered')
+    base_dir = os.path.join(dataset_dir, 'datasets/cats_and_dogs_filtered')
 
 if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
@@ -123,6 +123,9 @@ base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
 
 base_model.trainable = False
 base_model.summary()
+for filepath,dirnames,filenames in os.walk(train_dogs_dir):
+    for filename in filenames:
+        print(filename)
 
 model = tf.keras.Sequential([
     base_model,
