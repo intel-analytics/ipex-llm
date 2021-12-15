@@ -57,14 +57,12 @@ parser.add_argument('--download', type=bool, default=False, help='download datas
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
-print(" command ######################################")
-print(" python/orca/example/learn/tf/transfer_learning/transfer_learning.py --data_dir /data --cluster_mode yarn-cluster --download False")
-
 dataset_dir = args.data_dir
 download_url = args.download_url
+download = args.download
 if not exists(dataset_dir):
     makedirs(dataset_dir)
-if args.download == True:
+if download == True:
     zip_file = tf.keras.utils.get_file(
         origin=download_url,
         fname="cats_and_dogs_filtered.zip", extract=True, cache_dir=dataset_dir)
