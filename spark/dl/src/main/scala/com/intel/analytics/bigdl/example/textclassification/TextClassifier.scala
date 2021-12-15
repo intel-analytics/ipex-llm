@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.example.textclassification
 import com.intel.analytics.bigdl.example.utils._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
-import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
+import org.apache.logging.log4j.{Level => Levle4j, Logger => Logger4j}
+import org.apache.logging.log4j.core.config.Configurator
 import org.slf4j.{Logger, LoggerFactory}
 import scopt.OptionParser
 
@@ -29,7 +30,7 @@ import scala.language.existentials
 object TextClassifier {
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   LoggerFilter.redirectSparkInfoLogs()
-  Logger4j.getLogger("com.intel.analytics.bigdl.optim").setLevel(Levle4j.INFO)
+  Configurator.setLevel("com.intel.analytics.bigdl.optim", Levle4j.INFO)
 
   def main(args: Array[String]): Unit = {
     val localParser = new OptionParser[TextClassificationParams]("BigDL Example") {

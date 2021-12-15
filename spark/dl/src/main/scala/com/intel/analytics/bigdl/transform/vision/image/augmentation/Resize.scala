@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 

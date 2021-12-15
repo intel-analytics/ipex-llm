@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.transform.vision.image.util
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 object BboxUtil {
   val logger = Logger.getLogger(getClass)

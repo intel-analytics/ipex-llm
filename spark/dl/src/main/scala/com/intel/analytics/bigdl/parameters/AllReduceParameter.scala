@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.Engine
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.commons.lang.exception.ExceptionUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.TaskContext
 import org.apache.spark.sparkExtension.SparkExtension
 import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
@@ -31,7 +31,7 @@ import scala.reflect._
 object AllReduceParameter {
   private val syncPoolSize: Int = System.getProperty("bigdl.Parameter.syncPoolSize", "4").toInt
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   val syncPool: ExecutorService = Executors.newFixedThreadPool(syncPoolSize, new ThreadFactory {
     override def newThread(r: Runnable): Thread = {
       val t = Executors.defaultThreadFactory().newThread(r)

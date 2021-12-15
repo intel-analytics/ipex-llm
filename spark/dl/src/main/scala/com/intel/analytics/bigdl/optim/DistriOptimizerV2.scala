@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Module, _}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkContext, TaskContext}
 
@@ -56,7 +56,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     parameterProcessers: Array[ParameterProcessor] = null) extends DistriOptimizer.Cache[T]
 
   import Optimizer._
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   private[optim] def optimize[T: ClassTag](
     cacheOfMaster: MasterCache[T],

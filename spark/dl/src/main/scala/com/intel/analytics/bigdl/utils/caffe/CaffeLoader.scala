@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{FileReader, Table}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable

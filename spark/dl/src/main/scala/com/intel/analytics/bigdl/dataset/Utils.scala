@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.utils.Engine
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 object Utils {
   private val logger = Logger.getLogger(getClass)

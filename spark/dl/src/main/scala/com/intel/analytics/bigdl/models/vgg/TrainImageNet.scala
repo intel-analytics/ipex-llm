@@ -16,19 +16,22 @@
 
 package com.intel.analytics.bigdl.models.vgg
 
+import java.util.logging.LogManager
+
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, SoftmaxWithCriterion}
 import com.intel.analytics.bigdl.optim.SGD.{Poly, SequentialSchedule, Warmup}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, MklBlas, MklDnn, OptimizerV1, OptimizerV2}
 import com.intel.analytics.bigdl.visualization.TrainSummary
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 
 object TrainImageNet {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-  val logger = Logger.getLogger(getClass)
+  Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
+  val logger = LogManager.getLogger(getClass)
 
   import Utils._
 

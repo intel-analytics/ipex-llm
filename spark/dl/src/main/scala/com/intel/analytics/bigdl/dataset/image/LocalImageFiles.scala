@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dataset.image
 import java.awt.color.ColorSpace
 import java.nio.file.{Files, Path}
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 object LocalImageFiles {
   Class.forName("javax.imageio.ImageIO")

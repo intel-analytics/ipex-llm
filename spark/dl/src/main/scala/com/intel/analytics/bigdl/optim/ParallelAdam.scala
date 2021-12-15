@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.math._
 import scala.reflect.ClassTag

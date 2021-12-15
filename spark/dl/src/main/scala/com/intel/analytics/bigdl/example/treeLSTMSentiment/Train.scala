@@ -24,7 +24,8 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, OptimizerV1, OptimizerV2, T}
-import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
+import org.apache.logging.log4j.{Level => Levle4j, Logger => Logger4j, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -33,7 +34,7 @@ import scala.language.existentials
 object Train {
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   LoggerFilter.redirectSparkInfoLogs()
-  Logger4j.getLogger("com.intel.analytics.bigdl.optim").setLevel(Levle4j.INFO)
+  Configurator.setLevel("com.intel.analytics.bigdl.optim", Levle4j.INFO)
 
   def main(args: Array[String]): Unit = {
     val params = paramParser.parse(args, TreeLSTMSentimentParam()).get

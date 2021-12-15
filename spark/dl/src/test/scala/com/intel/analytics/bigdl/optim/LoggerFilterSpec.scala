@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.optim
 import java.io.StringWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
+import java.util.logging.LogManager
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToMiniBatch}
@@ -26,7 +27,10 @@ import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, TestUtils}
-import org.apache.log4j.{Level, Logger, PatternLayout, WriterAppender}
+import org.apache.logging.log4j.{Level, Logger, LogManager}
+import org.apache.logging.log4j.core.layout.PatternLayout
+import org.apache.logging.log4j.core.appender.WriterAppender
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -66,7 +70,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Files.deleteIfExists(Paths.get(logFile))
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger(optimClz).setLevel(Level.INFO)
+    Configurator.setLevel("optimClz", Level.INFO)
 
     val layer = Linear(10, 1)
     val model = Sequential()
@@ -137,9 +141,9 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val optimClz = "com.intel.analytics.bigdl.optim"
 
     Files.deleteIfExists(Paths.get(logFile))
-    Logger.getLogger("org").setLevel(Level.INFO)
+    Configurator.setLevel("org", Level.INFO)
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger(optimClz).setLevel(Level.INFO)
+    Configurator.setLevel(optimClz, Level.INFO)
 
     sc = new SparkContext(
       Engine.init(1, 1, true).get
@@ -197,13 +201,13 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Files.deleteIfExists(Paths.get(defaultFile))
 
-    Logger.getLogger("org").setLevel(Level.INFO)
+    Configurator.setLevel("org", Level.INFO)
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger(optimClz).setLevel(Level.INFO)
+    Configurator.setLevel(optimClz, Level.INFO)
 
     val (writerAppender, writer) = writerAndAppender
 
-    val logger = Logger.getLogger(getClass)
+    val logger = LogManager.getLogger(getClass)
     logger.setLevel(Level.INFO)
     logger.addAppender(writerAppender)
 

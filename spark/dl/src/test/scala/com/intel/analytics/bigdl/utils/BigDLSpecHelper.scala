@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.utils
 
 import java.io.{File => JFile}
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer

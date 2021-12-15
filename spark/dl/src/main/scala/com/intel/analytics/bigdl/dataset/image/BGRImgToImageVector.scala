@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dataset.image
 
 import com.intel.analytics.bigdl.dataset.Transformer
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.mllib.linalg.DenseVector
 
 import scala.collection.Iterator

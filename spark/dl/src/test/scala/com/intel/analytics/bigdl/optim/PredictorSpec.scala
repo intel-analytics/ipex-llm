@@ -29,7 +29,8 @@ import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, Table, T}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.SparkContextLifeCycle
 import org.apache.commons.lang3.SerializationUtils
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -254,7 +255,7 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
   "model predict should have no memory leak" should "be correct" in {
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageFrame = ImageFrame.read(resource.getFile, sc) ->

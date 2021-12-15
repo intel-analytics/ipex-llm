@@ -20,7 +20,8 @@ import com.intel.analytics.bigdl.nn.MSECriterion
 import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import java.io.{File => JFile}
@@ -31,8 +32,8 @@ import org.tensorflow.framework.AttrValue
 import scala.collection.JavaConverters._
 
 class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  Logger.getLogger("org").setLevel(Level.WARN)
-  Logger.getLogger("akka").setLevel(Level.WARN)
+  Configurator.setLevel("org", Level.WARN)
+  Configurator.setLevel("akka", Level.WARN)
 
 
   var sc: SparkContext = null

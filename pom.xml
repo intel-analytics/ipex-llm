@@ -160,7 +160,7 @@
         <thrift.path>thrift</thrift.path>
         <thrift.version>0.9.2</thrift.version>
         <slf4j.version>1.7.7</slf4j.version>
-        <log4j.version>2.15.0</log4j.version>
+        <log4j.version>2.16.0</log4j.version>
         <jetty.version>6.1.26</jetty.version>
         <jetty.jspapi.version>6.1.14</jetty.jspapi.version>
         <commons-cli.version>1.2</commons-cli.version>

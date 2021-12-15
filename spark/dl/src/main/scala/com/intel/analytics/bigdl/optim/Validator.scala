@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  * [[Validator]] is an abstract class which is used to test a model automatically

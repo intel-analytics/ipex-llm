@@ -30,7 +30,8 @@ import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.{DenseTensor, DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.TrainSummary
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -128,8 +129,8 @@ class DistriOptimizerV2Spec extends FlatSpec with Matchers with BeforeAndAfter {
   import DistriOptimizerV2Spec._
   import DistriOptimizerV2SpecModel._
 
-  Logger.getLogger("org").setLevel(Level.WARN)
-  Logger.getLogger("akka").setLevel(Level.WARN)
+  Configurator.setLevel("org", Level.WARN)
+  Configurator.setLevel("akka", Level.WARN)
 
   private var sc: SparkContext = _
 
@@ -587,8 +588,8 @@ class DistriOptimizerV2Spec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Train with Plateau" should "work properly" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl", Level.INFO)
 
     RandomGenerator.RNG.setSeed(10)
     val logdir = com.google.common.io.Files.createTempDir()
@@ -616,8 +617,8 @@ class DistriOptimizerV2Spec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Train with Plateau Score" should "work properly" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl", Level.INFO)
 
     RandomGenerator.RNG.setSeed(10)
     val logdir = com.google.common.io.Files.createTempDir()
@@ -647,8 +648,8 @@ class DistriOptimizerV2Spec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Train with L1Regularization" should "work properly in DistriOptimizer" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl", Level.INFO)
 
     RandomGenerator.RNG.setSeed(10)
     val logdir = com.google.common.io.Files.createTempDir()
@@ -797,8 +798,8 @@ class DistriOptimizerV2Spec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "optimMethod state" should "be updated correctly after optimize" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl", Level.INFO)
 
     val mm = Sequential[Double]().add(Linear(4, 1))
       .add(Sigmoid())
@@ -845,8 +846,8 @@ class DistriOptimizerV2Spec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "reserve optimMethod for each worker" should "be correct" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl", Level.INFO)
 
     val mm = Sequential[Double]().add(Linear(4, 1))
       .add(Sigmoid())

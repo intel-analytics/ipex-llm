@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.SparkContext
 import scopt.OptionParser
 

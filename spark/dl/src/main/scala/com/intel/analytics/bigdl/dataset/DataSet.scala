@@ -31,7 +31,7 @@ import java.awt.image.{BufferedImage, DataBufferByte}
 import java.io.ByteArrayInputStream
 import javax.imageio.ImageIO
 import org.apache.hadoop.io.{BytesWritable, Text}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import scala.reflect._

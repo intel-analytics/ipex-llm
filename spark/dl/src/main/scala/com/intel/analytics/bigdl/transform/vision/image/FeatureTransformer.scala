@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.transform.vision.image
 import com.intel.analytics.bigdl.dataset.{ChainedTransformer, Transformer}
 import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  * FeatureTransformer is a transformer that transform ImageFeature

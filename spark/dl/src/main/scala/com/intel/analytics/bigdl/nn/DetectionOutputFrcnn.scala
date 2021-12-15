@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
 import com.intel.analytics.bigdl.utils.Table
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable.ArrayBuffer
 

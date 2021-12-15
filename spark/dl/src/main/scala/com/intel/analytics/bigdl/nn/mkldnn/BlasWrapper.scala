@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine._
 import com.intel.analytics.bigdl.utils.{Util => NNUtils, _}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  * wrap blas module to dnn module,

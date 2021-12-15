@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable
 import scala.reflect.ClassTag

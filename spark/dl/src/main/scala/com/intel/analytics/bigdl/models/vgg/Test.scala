@@ -22,13 +22,14 @@ import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 
 object Test {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
 
 
   import Utils._

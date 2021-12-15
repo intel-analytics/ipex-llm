@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dataset.image
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, Transformer}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.Iterator
 

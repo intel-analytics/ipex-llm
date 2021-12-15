@@ -34,7 +34,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 /**
  * A utility to convert BigDL model into caffe format and persist into local/hdfs file system
  *

@@ -20,15 +20,16 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, MSECriterion}
 import com.intel.analytics.bigdl.optim.DistriOptimizerSpecModel.mse
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.logging.log4j.core.config.Configurator
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
 class ParallelOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
-  Logger.getLogger("org").setLevel(Level.WARN)
-  Logger.getLogger("akka").setLevel(Level.WARN)
+  Configurator.setLevel("org", Level.WARN)
+  Configurator.setLevel("akka", Level.WARN)
 
   private var sc: SparkContext = _
 

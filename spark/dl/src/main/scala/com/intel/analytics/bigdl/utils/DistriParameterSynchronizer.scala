@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.parameters.{CompressedTensor, FP16CompressedTen
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.commons.lang.exception.ExceptionUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sparkExtension.SparkExtension
 import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
 
@@ -454,7 +454,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
 }
 
 object BlockManagerParameterSynchronizer {
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   def apply[T: ClassTag](partitionID: Int, totalPartition: Int)
     (implicit ev: TensorNumeric[T]): BlockManagerParameterSynchronizer[T]
     = new BlockManagerParameterSynchronizer[T](partitionID, totalPartition)
