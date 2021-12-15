@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import copy
 import warnings
 from logging import warning
 from typing import Any, List, Optional
@@ -22,6 +21,8 @@ import pytorch_lightning as pl
 import torch
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from torch import nn
+from torch.fx import GraphModule
+from torch.fx.proxy import TraceError
 from torch.nn.modules.loss import _Loss
 from torchmetrics.metric import Metric
 
@@ -155,13 +156,14 @@ class Trainer(pl.Trainer):
         else:
             return pl_model
 
-    def quantize(self, model, calib_dataloader, val_dataloader=None, metric: str = None,
+    def quantize(self, pl_model, calib_dataloader, val_dataloader=None, metric: str = None,
                  backend='inc', conf=None, framework='pytorch_fx', approach='static',
-                 tuning_strategy='bayesian', accuracy_criterion=None, timeout=0, max_trials=1):
+                 tuning_strategy='bayesian', accuracy_criterion=None, timeout=0,
+                 max_trials=1) -> GraphModule or None:
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
-        :param model:       A Pytorch-Lightning model to be quantized.
+        :param pl_model:       A Pytorch-Lightning model to be quantized.
         :param calib_dataloader:    Iterable dataloader for calibration.
         :param val_dataloader:      Iterable dataloader for evaluation.
         :param metric:              Eetric for evaluation.
@@ -190,11 +192,12 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
+        :return             A GraphModule. If there is no model found, return None.
         """
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
             approach_map = {
-                'static': 'post_training_static_quant',
+                'static':  'post_training_static_quant',
                 'dynamic': 'post_training_dynamic_quant'
             }
             approach = approach_map.get(approach)
@@ -202,23 +205,24 @@ class Trainer(pl.Trainer):
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
-            q_litmodel = copy.deepcopy(model)
-            quantizer.model = q_litmodel.model
+            if isinstance(pl_model, LightningModuleFromTorch):
+                # LightningModuleFromTorch.forward fails to trace in FX, so replace it temporarily
+                model = pl_model.model
+            else:
+                model = pl_model
+            quantizer.model = model
 
             def eval_func(model_to_eval):
                 if val_dataloader:
-                    q_litmodel.model = model_to_eval
-                    val_outputs = self.validate(q_litmodel, val_dataloader)
+                    pl_model.model = model_to_eval
+                    val_outputs = self.validate(pl_model, val_dataloader)
                     return val_outputs[0][f'val/{metric}']
                 else:
-                    return 1             # Fake Evaluation
+                    return 1  # Fake Evaluation
 
             quantizer.eval_func = eval_func
             quantizer.calib_dataloader = calib_dataloader
             quantized = quantizer()
-            if quantized:
-                q_litmodel.model = quantized.model
-                return q_litmodel
-            return None
+            return quantized.model if quantized else None
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
