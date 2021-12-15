@@ -158,7 +158,13 @@ print(train_data[0])
 len(train_data[0]), len(train_data[1])
 
 # A dictionary mapping words to an integer index
-word_index = imdb.get_word_index()
+if download == True:
+    word_index = imdb.get_word_index()
+else:
+    import json
+    path = os.path.join(args.data_dir, 'imdb_word_index.json')
+    with open(path) as f:
+        word_index = json.load(f)
 
 # The first indices are reserved
 word_index = {k: (v + 3) for k, v in word_index.items()}
