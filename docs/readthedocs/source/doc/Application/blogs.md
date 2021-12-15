@@ -19,7 +19,7 @@ Blogs
 - [BigDL: A Distributed Deep-Learning Framework for Big Data](https://arxiv.org/abs/1804.05839)
 - [Scalable AutoML for Time-Series Prediction Using Ray and BigDL & Analytics Zoo](https://medium.com/riselab/scalable-automl-for-time-series-prediction-using-ray-and-analytics-zoo-b79a6fd08139)
 - [RayOnSpark: Run Emerging AI Applications on Big Data Clusters with Ray and BigDL & Analytics Zoo](https://medium.com/riselab/rayonspark-running-emerging-ai-applications-on-big-data-clusters-with-ray-and-analytics-zoo-923e0136ed6a)
-- [Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://www.intel.com/content/www/us/en/developer/articles/technical/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on.html?wapkw=Using%20Distributed%20TensorFlow*%20on%20Analytics%20Zoo)
+- [Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://www.intel.com/content/www/us/en/developer/articles/technical/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on.html)
 - [Machine Learning Pipelines for High Energy Physics Using Apache Spark with BigDL and Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
 - [Deep Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://www.intel.com/content/www/us/en/developer/articles/technical/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service.html)
 - [Using Intel Analytics Zoo to Inject AI into Customer Service Platform (Part II)](https://www.infoq.com/articles/analytics-zoo-qa-module/)
