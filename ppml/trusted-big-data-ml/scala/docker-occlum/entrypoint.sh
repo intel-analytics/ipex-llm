@@ -31,7 +31,7 @@ case "$SPARK_K8S_CMD" in
       ;;
 esac
 
-SPARK_CLASSPATH="$SPARK_CLASSPATH:/opt/spark/jars/*"
+SPARK_CLASSPATH="$SPARK_CLASSPATH:/bin/jars/*:/opt/spark/jars/*"
 env | grep SPARK_JAVA_OPT_ | sort -t_ -k4 -n | sed 's/[^=]*=\(.*\)/\1/g' > /tmp/java_opts.txt
 readarray -t SPARK_EXECUTOR_JAVA_OPTS < /tmp/java_opts.txt
 
