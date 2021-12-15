@@ -20,10 +20,9 @@ from pmdarima.arima import ndiffs
 from pmdarima.arima import nsdiffs
 
 from bigdl.orca.automl.metrics import Evaluator
-from bigdl.orca.automl.model.abstract import BaseModel, ModelBuilder
 
 
-class ARIMAModel(BaseModel):
+class ARIMAModel:
 
     def __init__(self):
         """
@@ -152,7 +151,7 @@ class ARIMAModel(BaseModel):
         self.model_init = True
 
 
-class ARIMABuilder(ModelBuilder):
+class ARIMABuilder:
 
     def __init__(self, **arima_config):
         """

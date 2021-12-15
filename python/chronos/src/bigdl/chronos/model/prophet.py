@@ -20,11 +20,10 @@ from prophet.serialize import model_to_json, model_from_json
 from prophet.diagnostics import performance_metrics
 from prophet.diagnostics import cross_validation
 
-from bigdl.orca.automl.metrics import Evaluator
-from bigdl.orca.automl.model.abstract import BaseModel, ModelBuilder
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 
-class ProphetModel(BaseModel):
+class ProphetModel:
 
     def __init__(self):
         """
@@ -129,7 +128,7 @@ class ProphetModel(BaseModel):
             raise Exception("Needs to call fit_eval or restore first before calling evaluate")
 
         target_pred = self.model.predict(target)
-        return [Evaluator.evaluate(m, target.y.values, target_pred.yhat.values) for m in metrics]
+        return Evaluator.evaluate(metrics, target.y.values, target_pred.yhat.values, aggregate="mean")
 
     def save(self, checkpoint):
         if self.model is None:
@@ -143,7 +142,7 @@ class ProphetModel(BaseModel):
         self.model_init = True
 
 
-class ProphetBuilder(ModelBuilder):
+class ProphetBuilder:
 
     def __init__(self, **prophet_config):
         """
