@@ -3,8 +3,8 @@
 
 package com.intel.analytics.bigdl.ppml.generated;
 
-public final class GBDTServiceProto {
-  private GBDTServiceProto() {}
+public final class FGBoostServiceProto {
+  private FGBoostServiceProto() {}
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistryLite registry) {
   }
@@ -163,12 +163,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_TreeLeaves_descriptor;
+      return FGBoostServiceProto.internal_static_TreeLeaves_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_TreeLeaves_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_TreeLeaves_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               TreeLeaves.class, Builder.class);
     }
@@ -452,17 +452,17 @@ public final class GBDTServiceProto {
         TreeLeavesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_TreeLeaves_descriptor;
+        return FGBoostServiceProto.internal_static_TreeLeaves_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_TreeLeaves_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_TreeLeaves_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 TreeLeaves.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.TreeLeaves.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -490,7 +490,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_TreeLeaves_descriptor;
+        return FGBoostServiceProto.internal_static_TreeLeaves_descriptor;
       }
 
       public TreeLeaves getDefaultInstanceForType() {
@@ -961,12 +961,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_UploadTreeLeavesRequest_descriptor;
+      return FGBoostServiceProto.internal_static_UploadTreeLeavesRequest_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_UploadTreeLeavesRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_UploadTreeLeavesRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               UploadTreeLeavesRequest.class, Builder.class);
     }
@@ -1188,17 +1188,17 @@ public final class GBDTServiceProto {
         UploadTreeLeavesRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_UploadTreeLeavesRequest_descriptor;
+        return FGBoostServiceProto.internal_static_UploadTreeLeavesRequest_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_UploadTreeLeavesRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_UploadTreeLeavesRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 UploadTreeLeavesRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.UploadTreeLeavesRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1228,7 +1228,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_UploadTreeLeavesRequest_descriptor;
+        return FGBoostServiceProto.internal_static_UploadTreeLeavesRequest_descriptor;
       }
 
       public UploadTreeLeavesRequest getDefaultInstanceForType() {
@@ -1748,12 +1748,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_DataSplit_descriptor;
+      return FGBoostServiceProto.internal_static_DataSplit_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_DataSplit_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_DataSplit_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               DataSplit.class, Builder.class);
     }
@@ -2164,17 +2164,17 @@ public final class GBDTServiceProto {
         DataSplitOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_DataSplit_descriptor;
+        return FGBoostServiceProto.internal_static_DataSplit_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_DataSplit_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_DataSplit_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 DataSplit.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.DataSplit.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2212,7 +2212,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_DataSplit_descriptor;
+        return FGBoostServiceProto.internal_static_DataSplit_descriptor;
       }
 
       public DataSplit getDefaultInstanceForType() {
@@ -2855,12 +2855,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_UploadResponse_descriptor;
+      return FGBoostServiceProto.internal_static_UploadResponse_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_UploadResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_UploadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               UploadResponse.class, Builder.class);
     }
@@ -3065,17 +3065,17 @@ public final class GBDTServiceProto {
         UploadResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_UploadResponse_descriptor;
+        return FGBoostServiceProto.internal_static_UploadResponse_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_UploadResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_UploadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 UploadResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.UploadResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3101,7 +3101,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_UploadResponse_descriptor;
+        return FGBoostServiceProto.internal_static_UploadResponse_descriptor;
       }
 
       public UploadResponse getDefaultInstanceForType() {
@@ -3448,12 +3448,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_TreePredict_descriptor;
+      return FGBoostServiceProto.internal_static_TreePredict_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_TreePredict_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_TreePredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               TreePredict.class, Builder.class);
     }
@@ -3687,17 +3687,17 @@ public final class GBDTServiceProto {
         TreePredictOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_TreePredict_descriptor;
+        return FGBoostServiceProto.internal_static_TreePredict_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_TreePredict_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_TreePredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 TreePredict.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.TreePredict.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3723,7 +3723,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_TreePredict_descriptor;
+        return FGBoostServiceProto.internal_static_TreePredict_descriptor;
       }
 
       public TreePredict getDefaultInstanceForType() {
@@ -4107,12 +4107,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_BoostPredict_descriptor;
+      return FGBoostServiceProto.internal_static_BoostPredict_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_BoostPredict_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_BoostPredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               BoostPredict.class, Builder.class);
     }
@@ -4301,17 +4301,17 @@ public final class GBDTServiceProto {
         BoostPredictOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_BoostPredict_descriptor;
+        return FGBoostServiceProto.internal_static_BoostPredict_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_BoostPredict_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_BoostPredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 BoostPredict.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.BoostPredict.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -4340,7 +4340,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_BoostPredict_descriptor;
+        return FGBoostServiceProto.internal_static_BoostPredict_descriptor;
       }
 
       public BoostPredict getDefaultInstanceForType() {
@@ -4842,12 +4842,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_BoostEval_descriptor;
+      return FGBoostServiceProto.internal_static_BoostEval_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_BoostEval_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_BoostEval_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               BoostEval.class, Builder.class);
     }
@@ -5036,17 +5036,17 @@ public final class GBDTServiceProto {
         BoostEvalOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_BoostEval_descriptor;
+        return FGBoostServiceProto.internal_static_BoostEval_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_BoostEval_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_BoostEval_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 BoostEval.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.BoostEval.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -5075,7 +5075,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_BoostEval_descriptor;
+        return FGBoostServiceProto.internal_static_BoostEval_descriptor;
       }
 
       public BoostEval getDefaultInstanceForType() {
@@ -5574,12 +5574,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_RegisterRequest_descriptor;
+      return FGBoostServiceProto.internal_static_RegisterRequest_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_RegisterRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_RegisterRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               RegisterRequest.class, Builder.class);
     }
@@ -5808,17 +5808,17 @@ public final class GBDTServiceProto {
         RegisterRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_RegisterRequest_descriptor;
+        return FGBoostServiceProto.internal_static_RegisterRequest_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_RegisterRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_RegisterRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 RegisterRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.RegisterRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -5844,7 +5844,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_RegisterRequest_descriptor;
+        return FGBoostServiceProto.internal_static_RegisterRequest_descriptor;
       }
 
       public RegisterRequest getDefaultInstanceForType() {
@@ -6208,12 +6208,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_RegisterResponse_descriptor;
+      return FGBoostServiceProto.internal_static_RegisterResponse_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_RegisterResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_RegisterResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               RegisterResponse.class, Builder.class);
     }
@@ -6418,17 +6418,17 @@ public final class GBDTServiceProto {
         RegisterResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_RegisterResponse_descriptor;
+        return FGBoostServiceProto.internal_static_RegisterResponse_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_RegisterResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_RegisterResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 RegisterResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.RegisterResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -6454,7 +6454,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_RegisterResponse_descriptor;
+        return FGBoostServiceProto.internal_static_RegisterResponse_descriptor;
       }
 
       public RegisterResponse getDefaultInstanceForType() {
@@ -6811,12 +6811,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_UploadTreeEvalRequest_descriptor;
+      return FGBoostServiceProto.internal_static_UploadTreeEvalRequest_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_UploadTreeEvalRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_UploadTreeEvalRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               UploadTreeEvalRequest.class, Builder.class);
     }
@@ -7070,17 +7070,17 @@ public final class GBDTServiceProto {
         UploadTreeEvalRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_UploadTreeEvalRequest_descriptor;
+        return FGBoostServiceProto.internal_static_UploadTreeEvalRequest_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_UploadTreeEvalRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_UploadTreeEvalRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 UploadTreeEvalRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.UploadTreeEvalRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -7113,7 +7113,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_UploadTreeEvalRequest_descriptor;
+        return FGBoostServiceProto.internal_static_UploadTreeEvalRequest_descriptor;
       }
 
       public UploadTreeEvalRequest getDefaultInstanceForType() {
@@ -7727,12 +7727,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_UploadSplitRequest_descriptor;
+      return FGBoostServiceProto.internal_static_UploadSplitRequest_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_UploadSplitRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_UploadSplitRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               UploadSplitRequest.class, Builder.class);
     }
@@ -7954,17 +7954,17 @@ public final class GBDTServiceProto {
         UploadSplitRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_UploadSplitRequest_descriptor;
+        return FGBoostServiceProto.internal_static_UploadSplitRequest_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_UploadSplitRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_UploadSplitRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 UploadSplitRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.UploadSplitRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadSplitRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -7994,7 +7994,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_UploadSplitRequest_descriptor;
+        return FGBoostServiceProto.internal_static_UploadSplitRequest_descriptor;
       }
 
       public UploadSplitRequest getDefaultInstanceForType() {
@@ -8446,12 +8446,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_PredictTreeRequest_descriptor;
+      return FGBoostServiceProto.internal_static_PredictTreeRequest_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_PredictTreeRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_PredictTreeRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               PredictTreeRequest.class, Builder.class);
     }
@@ -8705,17 +8705,17 @@ public final class GBDTServiceProto {
         PredictTreeRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_PredictTreeRequest_descriptor;
+        return FGBoostServiceProto.internal_static_PredictTreeRequest_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_PredictTreeRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_PredictTreeRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 PredictTreeRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.PredictTreeRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictTreeRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -8748,7 +8748,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_PredictTreeRequest_descriptor;
+        return FGBoostServiceProto.internal_static_PredictTreeRequest_descriptor;
       }
 
       public PredictTreeRequest getDefaultInstanceForType() {
@@ -9345,12 +9345,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_PredictTreeResponse_descriptor;
+      return FGBoostServiceProto.internal_static_PredictTreeResponse_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_PredictTreeResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_PredictTreeResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               PredictTreeResponse.class, Builder.class);
     }
@@ -9528,17 +9528,17 @@ public final class GBDTServiceProto {
         PredictTreeResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_PredictTreeResponse_descriptor;
+        return FGBoostServiceProto.internal_static_PredictTreeResponse_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_PredictTreeResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_PredictTreeResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 PredictTreeResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.PredictTreeResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictTreeResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -9566,7 +9566,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_PredictTreeResponse_descriptor;
+        return FGBoostServiceProto.internal_static_PredictTreeResponse_descriptor;
       }
 
       public PredictTreeResponse getDefaultInstanceForType() {
@@ -9930,12 +9930,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_DownloadSplitRequest_descriptor;
+      return FGBoostServiceProto.internal_static_DownloadSplitRequest_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_DownloadSplitRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_DownloadSplitRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               DownloadSplitRequest.class, Builder.class);
     }
@@ -10208,17 +10208,17 @@ public final class GBDTServiceProto {
         DownloadSplitRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_DownloadSplitRequest_descriptor;
+        return FGBoostServiceProto.internal_static_DownloadSplitRequest_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_DownloadSplitRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_DownloadSplitRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 DownloadSplitRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.DownloadSplitRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadSplitRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -10246,7 +10246,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_DownloadSplitRequest_descriptor;
+        return FGBoostServiceProto.internal_static_DownloadSplitRequest_descriptor;
       }
 
       public DownloadSplitRequest getDefaultInstanceForType() {
@@ -10710,12 +10710,12 @@ public final class GBDTServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return GBDTServiceProto.internal_static_DownloadSplitResponse_descriptor;
+      return FGBoostServiceProto.internal_static_DownloadSplitResponse_descriptor;
     }
 
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return GBDTServiceProto.internal_static_DownloadSplitResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_DownloadSplitResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               DownloadSplitResponse.class, Builder.class);
     }
@@ -10957,17 +10957,17 @@ public final class GBDTServiceProto {
         DownloadSplitResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return GBDTServiceProto.internal_static_DownloadSplitResponse_descriptor;
+        return FGBoostServiceProto.internal_static_DownloadSplitResponse_descriptor;
       }
 
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return GBDTServiceProto.internal_static_DownloadSplitResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_DownloadSplitResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 DownloadSplitResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.GBDTServiceProto.DownloadSplitResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadSplitResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -10999,7 +10999,7 @@ public final class GBDTServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return GBDTServiceProto.internal_static_DownloadSplitResponse_descriptor;
+        return FGBoostServiceProto.internal_static_DownloadSplitResponse_descriptor;
       }
 
       public DownloadSplitResponse getDefaultInstanceForType() {
@@ -11471,18 +11471,18 @@ public final class GBDTServiceProto {
       "\022\022\n\nclientuuid\030\001 \001(\t\022\016\n\006treeID\030\002 \001(\t\022\016\n\006" +
       "nodeID\030\003 \001(\t\"R\n\025DownloadSplitResponse\022\031\n" +
       "\005split\030\001 \001(\0132\n.DataSplit\022\020\n\010response\030\002 \001" +
-      "(\t\022\014\n\004code\030\003 \001(\0052\375\002\n\013GBDTService\022:\n\020Uplo" +
-      "adSplitTrain\022\023.UploadSplitRequest\032\017.Uplo" +
-      "adResponse\"\000\022E\n\022DownloadSplitTrain\022\025.Dow",
-      "nloadSplitRequest\032\026.DownloadSplitRespons" +
-      "e\"\000\0221\n\010Register\022\020.RegisterRequest\032\021.Regi" +
-      "sterResponse\"\000\022;\n\016UploadTreeEval\022\026.Uploa" +
-      "dTreeEvalRequest\032\017.UploadResponse\"\000\022?\n\020U" +
-      "ploadTreeLeaves\022\030.UploadTreeLeavesReques" +
-      "t\032\017.UploadResponse\"\000\022:\n\013PredictTree\022\023.Pr" +
-      "edictTreeRequest\032\024.PredictTreeResponse\"\000" +
-      "B<\n(com.intel.analytics.bigdl.ppml.gener" +
-      "atedB\020GBDTServiceProtob\006proto3"
+      "(\t\022\014\n\004code\030\003 \001(\0052\200\003\n\016FGBoostService\022:\n\020U" +
+      "ploadSplitTrain\022\023.UploadSplitRequest\032\017.U" +
+      "ploadResponse\"\000\022E\n\022DownloadSplitTrain\022\025.",
+      "DownloadSplitRequest\032\026.DownloadSplitResp" +
+      "onse\"\000\0221\n\010Register\022\020.RegisterRequest\032\021.R" +
+      "egisterResponse\"\000\022;\n\016UploadTreeEval\022\026.Up" +
+      "loadTreeEvalRequest\032\017.UploadResponse\"\000\022?" +
+      "\n\020UploadTreeLeaves\022\030.UploadTreeLeavesReq" +
+      "uest\032\017.UploadResponse\"\000\022:\n\013PredictTree\022\023" +
+      ".PredictTreeRequest\032\024.PredictTreeRespons" +
+      "e\"\000B?\n(com.intel.analytics.bigdl.ppml.ge" +
+      "neratedB\023FGBoostServiceProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
