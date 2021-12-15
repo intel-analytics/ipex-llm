@@ -17,13 +17,13 @@
 package com.intel.analytics.bigdl.dllib.keras.models
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.dllib.nn.MSECriterion
-import com.intel.analytics.bigdl.dllib.optim.{SGD, Top1Accuracy}
+import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, MSECriterion}
+import com.intel.analytics.bigdl.dllib.optim.{Loss, SGD, Top1Accuracy, Top5Accuracy}
 import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape}
 import com.intel.analytics.bigdl.dllib.NNContext
@@ -33,11 +33,16 @@ import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers._
 import com.intel.analytics.bigdl.dllib.keras.models.Sequential
 import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.keras.objectives.ZooClassNLLCriterion
 import com.intel.analytics.bigdl.dllib.keras.python.PythonZooKeras
+import com.intel.analytics.bigdl.dllib.nnframes.{NNEstimatorSpec, NNImageReader}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import org.apache.commons.io.FileUtils
+import org.apache.hadoop.fs.Path
+import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 
 import scala.reflect.ClassTag
 
@@ -253,6 +258,19 @@ class TrainingSpec extends ZooSpecHelper {
       dir.deleteRecursively()
     }
     valArr
+  }
+
+  "Keras model" should "support dataframe" in {
+    val smallData = NNEstimatorSpec.generateTestInput(
+      100, Array(1.0, 2.0, 3.0, 4.0, 5.0, 6.0), -1.0, 42L)
+    val sqlContext = new SQLContext(sc)
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    val model = Sequential[Float]()
+    model.add(Dense[Float](2, activation = "sigmoid", inputShape = Shape(6)))
+    model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
+
+    model.fit(df, batchSize = 4, nbEpoch = 1, featureCol = "features", labelCol = "label")
   }
 }
 
