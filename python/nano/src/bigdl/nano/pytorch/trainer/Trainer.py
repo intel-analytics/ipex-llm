@@ -158,13 +158,46 @@ class Trainer(pl.Trainer):
     def quantize(self, model, calib_dataloader, val_dataloader=None, metric: str = None,
                  backend='inc', conf=None, framework='pytorch_fx', approach='ptsq',
                  strategy='bayesian', accuracy_criterion=None, timeout=0, max_trials=1):
+        """
+        Calibrate a Pytorch-Lightning model for post-training quantization.
+
+        :param model:       A Pytorch-Lightning model to be quantized.
+        :param calib_dataloader:    Iterable dataloader for calibration.
+        :param val_dataloader:      Iterable dataloader for evaluation.
+        :param metric:              Eetric for evaluation.
+        :param backend:             inc or nncf(nncf is not supported yet). Default: inc
+        :param conf:        A path to conf yaml file for quantization.
+                            Default: None, use default config.
+        :param framework:   Supported values are tensorflow, pytorch, pytorch_fx, pytorch_ipex,
+                            onnxrt_integer, onnxrt_qlinear or mxnet; allow new framework backend
+                            extension. Default: pytorch_fx. Consistent with Intel Neural Compressor
+                            Quantization.
+
+        :param approach:    ptsq, ptdq or qat.
+                            ptsq: post_training_static_quant,
+                            ptdq: post_training_dynamic_quant,
+                            qat: quant_aware_training.
+                            Default: post_training_static_quant.
+        :param strategy:    bayesian, basic, mse, sigopt. Default: bayesian.
+        :param accuracy_criterion:  Tolerable accuracy drop.
+                                    accuracy_criterion = {'relative': 0.1, higher_is_better=True}
+                                    allows relative accuracy loss: 1%. accuracy_criterion =
+                                    {'absolute': 0.99, higher_is_better=Flase} means accuracy < 0.99
+                                     must be satisfied.
+        :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
+                            Combine with max_trials field to decide when to exit.
+        :param max_trials:  Max tune times. Default: 1.
+                            Combine with timeout field to decide when to exit.
+                            "timeout=0, max_trials=1" means it will try quantization only once and
+                            return satisfying best model.
+        """
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
                                         strategy=strategy, accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
             q_litmodel = copy.deepcopy(model)
-            quantizer.model = q_litmodel.model
+            quantizer.model = model
 
             def eval_func(model_to_eval):
                 if val_dataloader:
