@@ -125,7 +125,6 @@ class TrainingOperator:
                         "multi-model or multi-optimizer training/validation.")
         self.timers = TimerCollection()
         self.setup(config)
-        self.batch_metric = None
 
     def _set_timers(self, timers):
         """Passes in the timers from the Runner."""
