@@ -93,7 +93,7 @@ else:
     import os
     from tensorflow.keras.utils import get_file
     path = os.path.join(args.data_dir, 'imdb.npz')
-    num_words=None
+    num_words=10000
     skip_top=0
     maxlen=None
     seed=113
