@@ -5,7 +5,7 @@
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
 * Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT`
 
-Pull image from Dockerhub
+1. Pull image from Dockerhub
 
 ```bash
 docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT
@@ -18,13 +18,13 @@ cd ..
 bash build-docker-image.sh
 ```
 
+2. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`. Or set `SPARK_HOME` in `run_spark_pi.sh`.
+3. Modify `${kubernetes_master_url}` to your k8s master url in the `run_spark_pi.sh `
+4. Modify `executor.yaml` for your need
+
 ## Run Spark executor in Occlum:
 
 ### Run SparkPi example
-
-1. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`. Or set `SPARK_HOME` in `run_spark_pi.sh`.
-2. Modify `${kubernetes_master_url}` to your k8s master url in the `run_spark_pi.sh `
-3. Modify `executor.yaml` for your need
 
 ```bash
 ./run_spark_pi.sh
@@ -32,19 +32,11 @@ bash build-docker-image.sh
 
 ### Run Spark ML LogisticRegression example
 
-1. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`. Or set `SPARK_HOME` in `run_spark_lr.sh`.
-2. Modify `${kubernetes_master_url}` to your k8s master url in the `run_spark_lr.sh `
-3. Modify `executor.yaml` for your need
-
 ```bash
 ./run_spark_lr.sh
 ```
 
 ### Run Spark ML GradientBoostedTreeClassifier example
-
-1. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`. Or set `SPARK_HOME` in `run_spark_gbt.sh`.
-2. Modify `${kubernetes_master_url}` to your k8s master url in the `run_spark_gbt.sh `
-3. Modify `executor.yaml` for your need
 
 ```bash
 ./run_spark_gbt.sh
@@ -52,19 +44,13 @@ bash build-docker-image.sh
 
 ### Run Spark SQL SparkSQL example
 
-1. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`. Or set `SPARK_HOME` in `run_spark_sql.sh`.
-2. Modify `${kubernetes_master_url}` to your k8s master url in the `run_spark_sql.sh `
-3. Modify `executor.yaml` for your need
-
 ```bash
 ./run_spark_sql.sh
 ```
 
 ### Run Spark XGBoost example
 
-1. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`. Or set `SPARK_HOME` in `run_spark_xgboost.sh`.
-2. Modify `${kubernetes_master_url}` to your k8s master url in the `run_spark_xgboost.sh `
-3. Prepare UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data) and put this file in folder `/tmp`. You can change the path to iris.data via change mount path `data-exchange` in `executor.yaml`.
+Prepare UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data) and put this file in folder `/tmp`. You can change the path to iris.data via change mount path `data-exchange` in `executor.yaml`.
 ```bash
 ./run_spark_xgboost.sh
 ```
