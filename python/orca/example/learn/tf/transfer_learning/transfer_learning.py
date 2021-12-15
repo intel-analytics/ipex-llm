@@ -57,6 +57,9 @@ parser.add_argument('--download', type=bool, default=True, help='download datase
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
+for filepath,dirnames,filenames in os.walk("/data"):
+    print(dirnames)
+
 dataset_dir = args.data_dir
 download_url = args.download_url
 if not exists(dataset_dir):
@@ -123,9 +126,6 @@ base_model = tf.keras.applications.MobileNetV2(input_shape=IMG_SHAPE,
 
 base_model.trainable = False
 base_model.summary()
-for filepath,dirnames,filenames in os.walk(train_dogs_dir):
-    for filename in filenames:
-        print(filename)
 
 model = tf.keras.Sequential([
     base_model,
