@@ -31,7 +31,7 @@ case "$SPARK_K8S_CMD" in
       ;;
 esac
 
-SPARK_CLASSPATH="$SPARK_CLASSPATH:/opt/spark/jars/*"
+SPARK_CLASSPATH="$SPARK_CLASSPATH:/bin/jars/*:/opt/spark/jars/*"
 env | grep SPARK_JAVA_OPT_ | sort -t_ -k4 -n | sed 's/[^=]*=\(.*\)/\1/g' > /tmp/java_opts.txt
 readarray -t SPARK_EXECUTOR_JAVA_OPTS < /tmp/java_opts.txt
 
@@ -55,8 +55,8 @@ case "$SPARK_K8S_CMD" in
         -XX:MaxMetaspaceSize=256m \
         -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
-        -Xms5g \
-        -Xmx5g \
+        -Xms8g \
+        -Xmx8g \
         -XX:ActiveProcessorCount=4 \
         -Dio.netty.availableProcessors=64 \
         org.apache.spark.deploy.SparkSubmit \
