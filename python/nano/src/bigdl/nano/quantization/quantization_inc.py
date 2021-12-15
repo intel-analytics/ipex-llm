@@ -13,7 +13,7 @@ class QuantizationINC(Quantization):
                  framework,
                  conf=None,
                  approach='ptsq',
-                 strategy='bayesian',
+                 tuning_strategy='bayesian',
                  accuracy_criterion=None,
                  timeout=0,
                  max_trials=1,
@@ -35,7 +35,7 @@ class QuantizationINC(Quantization):
                             ptdq: post_training_dynamic_quant,
                             qat: quant_aware_training.
                             Default: post_training_static_quant.
-        :param strategy:    bayesian, basic, mse, sigopt. Default: bayesian.
+        :param tuning_strategy:    bayesian, basic, mse, sigopt. Default: bayesian.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, higher_is_better=True}
                                      allows relative
@@ -56,7 +56,7 @@ class QuantizationINC(Quantization):
             # Override default config
             cfg.model.framework = framework
             cfg.quantization.approach = APPROACH_MAP[approach]
-            cfg.tuning.strategy.name = strategy
+            cfg.tuning.strategy.name = tuning_strategy
             if accuracy_criterion:
                 cfg.tuning.accuracy_criterion = accuracy_criterion
             cfg.tuning.exit_policy.timeout = timeout

@@ -157,7 +157,7 @@ class Trainer(pl.Trainer):
 
     def quantize(self, model, calib_dataloader, val_dataloader=None, metric: str = None,
                  backend='inc', conf=None, framework='pytorch_fx', approach='ptsq',
-                 strategy='bayesian', accuracy_criterion=None, timeout=0, max_trials=1):
+                 tuning_strategy='bayesian', accuracy_criterion=None, timeout=0, max_trials=1):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
@@ -178,7 +178,7 @@ class Trainer(pl.Trainer):
                             ptdq: post_training_dynamic_quant,
                             qat: quant_aware_training.
                             Default: post_training_static_quant.
-        :param strategy:    bayesian, basic, mse, sigopt. Default: bayesian.
+        :param tuning_strategy:    bayesian, basic, mse, sigopt. Default: bayesian.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, higher_is_better=True}
                                     allows relative accuracy loss: 1%. accuracy_criterion =
@@ -194,7 +194,7 @@ class Trainer(pl.Trainer):
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
-                                        strategy=strategy, accuracy_criterion=accuracy_criterion,
+                                        tuning_strategy=tuning_strategy, accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
             q_litmodel = copy.deepcopy(model)
             quantizer.model = model
