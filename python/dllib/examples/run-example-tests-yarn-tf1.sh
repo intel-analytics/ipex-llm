@@ -208,7 +208,7 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py 
   --memory "20g" \
   --data_dir /data/imagenettfrecord/train \
   --num_images_train 1281 \
-  --num_images_validation 50000 \
+  --num_images_validation 50 \
   --epochs 2 \
   --cluster_mode yarn-client
 exit_status=$?
@@ -299,7 +299,7 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py 
   --memory "20g" \
   --data_dir /data/imagenettfrecord/train \
   --num_images_train 1281 \
-  --num_images_validation 50000 \
+  --num_images_validation 50 \
   --epochs 2 \
   --cluster_mode yarn-cluster
 exit_status=$?
