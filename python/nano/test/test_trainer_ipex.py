@@ -18,6 +18,7 @@
 import os
 from unittest import TestCase
 
+from pytorch_lightning import LightningModule
 import pytest
 import torch
 import torchmetrics
@@ -45,11 +46,24 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
+class LitResNet18(LightningModule):
+    def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+        super().__init__()
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+        output_size = backbone.get_output_size()
+        head = nn.Linear(output_size, num_classes)
+        self.modules = nn.Sequential(backbone, head)
+
+    def forward(self, *args):
+        return self.modules(args[0])
+
+
 class TestTrainer(TestCase):
     model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+    user_defined_pl_model = Trainer.compile(model, loss, optimizer)
 
     def test_resnet18_ipex(self):
         resnet18 = vision.resnet18(
@@ -63,10 +77,11 @@ class TestTrainer(TestCase):
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         trainer.fit(pl_model, self.train_loader)
 
-    def test_trainer_quantize_inc_ptq(self):
+    def test_trainer_quantize_inc_ptq_compiled(self):
+        # Test if a Lightning Module compiled by nano works
         train_loader_iter = iter(self.train_loader)
         trainer = Trainer(max_epochs=1)
-        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+        pl_model = LitResNet18(self.model)
 
         # Case 1: Default
         qmodel = trainer.quantize(pl_model, self.train_loader)
@@ -82,6 +97,16 @@ class TestTrainer(TestCase):
                                   accuracy_criterion={'relative':         0.99,
                                                       'higher_is_better': True})
 
+        assert qmodel
+        out = qmodel(next(train_loader_iter)[0])
+        assert out.shape == torch.Size([256, 10])
+
+    def test_trainer_quantize_inc_ptq_customized(self):
+        # Test if a Lightning Module not compiled by nano works
+        train_loader_iter = iter(self.train_loader)
+        trainer = Trainer(max_epochs=1)
+
+        qmodel = trainer.quantize(self.user_defined_pl_model, self.train_loader)
         assert qmodel
         out = qmodel(next(train_loader_iter)[0])
         assert out.shape == torch.Size([256, 10])
