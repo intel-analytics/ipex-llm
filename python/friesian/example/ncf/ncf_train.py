@@ -106,7 +106,7 @@ if __name__ == '__main__':
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     
-    movielens_data = movielens.get_id_ratings("./movielens/")
+    movielens_data = movielens.get_id_ratings(args.data_dir)
     pddf = pd.DataFrame(movielens_data, columns=["user", "item", "label"])
     num_users, num_items = pddf["user"].max() + 1, pddf["item"].max() + 1
 
