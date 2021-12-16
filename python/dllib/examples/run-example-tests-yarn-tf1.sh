@@ -221,20 +221,20 @@ echo "#8 Total time cost ${time} seconds"
 
 ###################### cluster
 
-echo "#8 start test for orca learn transfer_learning"
-#timer 
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py --data_dir /data --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-#   clear_up
-  echo "orca learning transfer_learning failed"
-#  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#8 Total time cost ${time} seconds"
+# echo "#8 start test for orca learn transfer_learning"
+# #timer 
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py --data_dir /data --cluster_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+# #   clear_up
+#   echo "orca learning transfer_learning failed"
+# #  #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#8 Total time cost ${time} seconds"
 
 # echo "#20 start test for orca tf basic_text_classification basic_text_classification"
 # #timer
@@ -333,5 +333,3 @@ echo "#22 Total time cost ${time} seconds"
 # now=$(date "+%s")
 # time=$((now - start))
 # echo "#23 Total time cost ${time} seconds"
-
-
