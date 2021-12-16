@@ -269,22 +269,22 @@ echo "#8 Total time cost ${time} seconds"
 # time=$((now - start))
 # echo "#21 Total time cost ${time} seconds"
 
-echo "#22 start test for orca inception inception"
-#timer ModuleNotFoundError: No module named 'inception_preprocessing'
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
-  --imagenet /data/imagenettfrecord \
-  -b 128 --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "orca inception failed"
-#  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#22 Total time cost ${time} seconds"
+# echo "#22 start test for orca inception inception"
+# #timer ModuleNotFoundError: No module named 'inception_preprocessing'
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
+#   --imagenet /data/imagenettfrecord \
+#   -b 128 --cluster_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "orca inception failed"
+# #  exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#22 Total time cost ${time} seconds"
 
 # echo "#9 start test for orca learn tf2 resnet"
 # #timer  success
