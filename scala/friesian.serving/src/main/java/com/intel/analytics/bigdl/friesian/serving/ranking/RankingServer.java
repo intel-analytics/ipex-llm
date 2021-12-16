@@ -20,6 +20,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity;
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.*;
 import com.intel.analytics.bigdl.friesian.serving.utils.*;
@@ -33,11 +34,10 @@ import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RankingServer extends GrpcServerBase {
@@ -89,8 +89,10 @@ public class RankingServer extends GrpcServerBase {
     }
 
     private static class RankingService extends RankingGrpc.RankingImplBase {
-        private final InferenceModel model;
+        private Map<String, InferenceModel> modelRegistry = new HashMap<String, InferenceModel>();
         private MetricRegistry metrics = new MetricRegistry();
+        private RedisUtils redis;
+        private Jedis jedis;
         Timer overallTimer = metrics.timer("ranking.overall");
         Timer decodeTimer = metrics.timer("ranking.decode");
         Timer inferenceTimer = metrics.timer("ranking.inference");
@@ -98,8 +100,13 @@ public class RankingServer extends GrpcServerBase {
 
         RankingService() {
             gRPCHelper helper = Utils.helper();
-            this.model = helper.loadInferenceModel(helper.modelParallelism(), helper.modelPath(),
-                    helper.savedModelInputsArr());
+            redis = RedisUtils.getInstance(Utils.helper().getRedisPoolMaxTotal());
+            String modelPath = helper.modelPath();
+            modelRegistry.put(helper.modelPath(),
+                    helper.loadInferenceModel(helper.modelParallelism(), modelPath, helper.savedModelInputsArr()));
+            redis.Mset("wnd", "v1", modelPath);
+            jedis = redis.getRedisClient();
+            jedis.keys("*");
         }
 
         @Override
@@ -109,6 +116,108 @@ public class RankingServer extends GrpcServerBase {
             responseObserver.onCompleted();
         }
 
+        @Override
+        public void addModel(ModelMeta request,
+                             StreamObserver<Status> responseObserver) {
+            responseObserver.onNext(doAdd(request));
+            responseObserver.onCompleted();
+        }
+
+        private Status doAdd(ModelMeta msg) {
+            String path = msg.getPath();
+            if (modelRegistry.containsKey(path)) {
+                System.out.println("Model already exists: " + path);
+                return Status.newBuilder().setSuccess(true).build();
+            }
+            System.out.println("Loading model: " + path);
+            try {
+                gRPCHelper helper = Utils.helper();
+                // TODO: share parallelism for multiple models?
+                modelRegistry.put(path,
+                        helper.loadInferenceModel(helper.modelParallelism(), path, helper.savedModelInputsArr()));
+                return Status.newBuilder().setSuccess(true).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                return Status.newBuilder().setSuccess(false).build();
+            }
+        }
+
+        @Override
+        public void registerModel(ModelMeta request,
+                                  StreamObserver<Status> responseObserver) {
+            responseObserver.onNext(doRegister(request));
+            responseObserver.onCompleted();
+        }
+
+        private Status doRegister(ModelMeta msg) {
+            String path = msg.getPath();
+            String version = msg.getVersion();
+            if (jedis.exists("wnd:"+version)) {
+                System.out.println("Model version already registered: " + version);
+                return Status.newBuilder().setSuccess(true).build();
+            }
+            System.out.println("Registering model online: " + path + " with version " + version);
+            try {
+                redis.Mset("wnd", version, path);
+                return Status.newBuilder().setSuccess(true).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                return Status.newBuilder().setSuccess(false).build();
+            }
+        }
+
+        @Override
+        public void deregisterModel(ModelMeta request,
+                                    StreamObserver<Status> responseObserver) {
+            responseObserver.onNext(doDeregister(request));
+            responseObserver.onCompleted();
+        }
+
+        private Status doDeregister(ModelMeta msg) {
+            String path = msg.getPath();
+            String version = msg.getVersion();
+            String key = "wnd:" + version;
+            if (! jedis.exists(key)) {
+                System.out.println("Model version already offline: " + version);
+                return Status.newBuilder().setSuccess(true).build();
+            }
+            System.out.println("Model will be offline: " + path + " with version " + version);
+            try {
+                jedis.del(key);
+                return Status.newBuilder().setSuccess(true).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                return Status.newBuilder().setSuccess(false).build();
+            }
+        }
+
+        @Override
+        public void removeModel(ModelMeta request,
+                                StreamObserver<Status> responseObserver) {
+            responseObserver.onNext(doRemove(request));
+            responseObserver.onCompleted();
+        }
+
+        private Status doRemove(ModelMeta msg) {
+            String path = msg.getPath();
+            if (! modelRegistry.containsKey(path)) {
+                System.out.println("Model already removed: " + path);
+                return Status.newBuilder().setSuccess(true).build();
+            }
+            System.out.println("Model will be removed: " + path);
+            try {
+                modelRegistry.remove(path);
+                return Status.newBuilder().setSuccess(true).build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                return Status.newBuilder().setSuccess(false).build();
+            }
+        }
+
         private Prediction predict(Content msg) {
             Timer.Context overallContext = overallTimer.time();
             String encodedStr = msg.getEncodedStr();
@@ -116,8 +225,21 @@ public class RankingServer extends GrpcServerBase {
             byte[] bytes1 = Base64.getDecoder().decode(encodedStr);
             Activity input = (Activity) EncodeUtils.bytesToObj(bytes1);
             decodeContext.stop();
+            Set<String> models = jedis.keys("wnd:*");
+            int id = new Random().nextInt(models.size());
+            String targetVersion = "";
+            int k = 0;
+            for (String model: models) {
+                if (k == id) {
+                    targetVersion = model;
+                    break;
+                }
+                k += 1;
+            }
+            String targetModel = jedis.mget(targetVersion).get(0);
+            System.out.println("Using model: " + targetModel + " with version " + targetVersion);
             Timer.Context inferenceContext = inferenceTimer.time();
-            Activity predictResult = model.doPredict(input);
+            Activity predictResult = modelRegistry.get(targetModel).doPredict(input);
             inferenceContext.stop();
             Timer.Context encodeContext = encodeTimer.time();
             String res = Base64.getEncoder().encodeToString(EncodeUtils.objToBytes(predictResult));

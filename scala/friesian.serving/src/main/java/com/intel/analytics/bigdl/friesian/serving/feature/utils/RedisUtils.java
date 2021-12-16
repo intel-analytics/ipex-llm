@@ -76,7 +76,21 @@ public class RedisUtils {
         return jedis;
     }
 
-    public void Mset(String keyPrefix, List<String>[] dataArray) {
+    public void Mset(String keyPrefix, List<List<String>> dataArray) {
+        if (cluster == null) {
+            jedisMset(keyPrefix, dataArray);
+        } else {
+            clusterSet(keyPrefix, dataArray);
+        }
+    }
+
+    public void Mset(String keyPrefix, String id, String value) {
+        List<String> valueArray = new ArrayList<>(2);
+        valueArray.add(id);
+        valueArray.add(value);
+        List<List<String>> dataArray = new ArrayList<>(1);
+        // TODO: refactor the set logic from features.
+        dataArray.add(valueArray);
         if (cluster == null) {
             jedisMset(keyPrefix, dataArray);
         } else {
@@ -120,7 +134,7 @@ public class RedisUtils {
         }
     }
 
-    public void clusterSet(String keyPrefix, List<String>[] dataArray) {
+    public void clusterSet(String keyPrefix, List<List<String>> dataArray) {
         if (keyPrefix.equals("user") ||
                 (keyPrefix.equals("item") && Utils.helper().itemSlotType() == 0)) {
             int cnt = 0;
@@ -178,7 +192,7 @@ public class RedisUtils {
         logger.info(cnt + " valid records written to redis.");
     }
 
-    public void jedisMset(String keyPrefix, List<String>[] dataArray) {
+    public void jedisMset(String keyPrefix, List<List<String>> dataArray) {
         Jedis jedis = getRedisClient();
         keyPrefix = Utils.helper().getRedisKeyPrefix() + keyPrefix;
         String[] keyValues = buildKeyValuesArray(keyPrefix, dataArray);
@@ -187,8 +201,8 @@ public class RedisUtils {
         logger.info(keyValues.length / 2 + " valid records written to redis.");
     }
 
-    private String[] buildKeyValuesArray(String keyPrefix, List<String>[] dataArray) {
-        int cnt = dataArray.length;
+    private String[] buildKeyValuesArray(String keyPrefix, List<List<String>> dataArray) {
+        int cnt = dataArray.size();
         ArrayList<String> keyValues = new ArrayList<>(cnt * 2);
         for(List<String> data: dataArray) {
             if(data.size() != 2) {
@@ -203,7 +217,7 @@ public class RedisUtils {
     }
 
     private Collection<ArrayList<String>> buildAndDivideKeyValues(String keyPrefix,
-                                                                  List<String>[] dataArray) {
+                                                                  List<List<String>> dataArray) {
         keyPrefix = "{" + Utils.helper().getRedisKeyPrefix() + keyPrefix;
         HashMap<Character, ArrayList<String>> keyValueSlots = new HashMap<>();
         for(List<String> data: dataArray) {

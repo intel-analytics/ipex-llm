@@ -147,7 +147,7 @@ public final class RecallGrpc {
   public static RecallStub newStub(io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<RecallStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<RecallStub>() {
-        @Override
+        @java.lang.Override
         public RecallStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new RecallStub(channel, callOptions);
         }
@@ -162,7 +162,7 @@ public final class RecallGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<RecallBlockingStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<RecallBlockingStub>() {
-        @Override
+        @java.lang.Override
         public RecallBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new RecallBlockingStub(channel, callOptions);
         }
@@ -177,7 +177,7 @@ public final class RecallGrpc {
       io.grpc.Channel channel) {
     io.grpc.stub.AbstractStub.StubFactory<RecallFutureStub> factory =
       new io.grpc.stub.AbstractStub.StubFactory<RecallFutureStub>() {
-        @Override
+        @java.lang.Override
         public RecallFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
           return new RecallFutureStub(channel, callOptions);
         }
@@ -220,7 +220,7 @@ public final class RecallGrpc {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getResetMetricsMethod(), responseObserver);
     }
 
-    @Override public final io.grpc.ServerServiceDefinition bindService() {
+    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getSearchCandidatesMethod(),
@@ -265,7 +265,7 @@ public final class RecallGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected RecallStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new RecallStub(channel, callOptions);
@@ -315,7 +315,7 @@ public final class RecallGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected RecallBlockingStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new RecallBlockingStub(channel, callOptions);
@@ -361,7 +361,7 @@ public final class RecallGrpc {
       super(channel, callOptions);
     }
 
-    @Override
+    @java.lang.Override
     protected RecallFutureStub build(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new RecallFutureStub(channel, callOptions);
@@ -418,8 +418,8 @@ public final class RecallGrpc {
       this.methodId = methodId;
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
+    @java.lang.Override
+    @java.lang.SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_SEARCH_CANDIDATES:
@@ -443,8 +443,8 @@ public final class RecallGrpc {
       }
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
+    @java.lang.Override
+    @java.lang.SuppressWarnings("unchecked")
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
@@ -458,12 +458,12 @@ public final class RecallGrpc {
       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
     RecallBaseDescriptorSupplier() {}
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
       return com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.getDescriptor();
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {
       return getFileDescriptor().findServiceByName("Recall");
     }
@@ -483,7 +483,7 @@ public final class RecallGrpc {
       this.methodName = methodName;
     }
 
-    @Override
+    @java.lang.Override
     public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {
       return getServiceDescriptor().findMethodByName(methodName);
     }
