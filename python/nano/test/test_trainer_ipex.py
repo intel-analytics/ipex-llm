@@ -81,7 +81,7 @@ class TestTrainer(TestCase):
         # Test if a Lightning Module compiled by nano works
         train_loader_iter = iter(self.train_loader)
         trainer = Trainer(max_epochs=1)
-        pl_model = LitResNet18(self.model)
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
 
         # Case 1: Default
         qmodel = trainer.quantize(pl_model, self.train_loader)
