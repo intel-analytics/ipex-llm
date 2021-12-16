@@ -21,7 +21,7 @@ import torch
 import torchmetrics
 from torch import nn
 
-from _train_torch_lightning import create_data_loader, data_transform
+from test._train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
