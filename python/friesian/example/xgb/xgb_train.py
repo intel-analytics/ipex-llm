@@ -68,9 +68,9 @@ if __name__ == '__main__':
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executor, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf, object_store_memory="40g", init_ray_on_spark=True)
+                               conf=spark_conf)
     elif args.cluster_mode == "spark-submit":
-        sc = init_orca_context("spark-submit", object_store_memory="40g")
+        sc = init_orca_context("spark-submit")
 
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
