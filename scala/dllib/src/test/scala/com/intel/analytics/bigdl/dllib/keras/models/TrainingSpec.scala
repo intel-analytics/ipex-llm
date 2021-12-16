@@ -266,11 +266,13 @@ class TrainingSpec extends ZooSpecHelper {
     val sqlContext = new SQLContext(sc)
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
+//    val (trainDF, testDF) = df.randomSplit(Array(0.8, 0.2))
     val model = Sequential[Float]()
     model.add(Dense[Float](2, activation = "sigmoid", inputShape = Shape(6)))
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
-
     model.fit(df, batchSize = 4, nbEpoch = 1, featureCol = "features", labelCol = "label")
+    val predDf = model.predict(df, predictionCol = "predict")
+    predDf.show()
   }
 }
 

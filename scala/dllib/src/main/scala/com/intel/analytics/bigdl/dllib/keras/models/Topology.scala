@@ -53,7 +53,7 @@ import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.net.NetUtils
 import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
-import com.intel.analytics.bigdl.dllib.feature.common.{FeatureLabelPreprocessing, Preprocessing, ScalarToTensor, SeqToTensor}
+import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.nnframes.NNImageSchema
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
@@ -72,7 +72,7 @@ import scala.reflect.ClassTag
 import scala.language.implicitConversions
 
 abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: TensorNumeric[T])
-  extends KerasLayer[Activity, Activity, T] with Net with Predictable[T] with VectorCompatibility {
+  extends KerasLayer[Activity, Activity, T] with Net with Predictable[T] {
 
   protected val module: Module[T] = this
 
@@ -473,23 +473,13 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     this.fit(x, batchSize, nbEpoch, null)
   }
 
-  def unwrapVectorAsNecessary(colType: DataType): (Row, Int) => Any = {
-    // to support both ML Vector and MLlib Vector
-    if (colType.typeName.contains("vector")) {
-      (row: Row, index: Int) => getVectorSeq(row, colType, index)
-    } else {
-      (row: Row, index: Int) => row.get(index)
-    }
-  }
-
   private def getDataSet(
       dataFrame: DataFrame,
       batchSize: Int,
       featureCol: String,
-      labelCol: String): FeatureSet[MiniBatch[T]] = {
+      labelCol: String,
+      preprocessing: Preprocessing[(Any, Option[Any]), Sample[T]]): FeatureSet[MiniBatch[T]] = {
 
-    val sp = FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
-      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
     val featureColIndex = dataFrame.schema.fieldIndex(featureCol)
     val featureType = dataFrame.schema(featureCol).dataType
     val featureFunc = unwrapVectorAsNecessary(featureType)
@@ -508,7 +498,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       (features, labels)
     }
 
-    val initialDataSet = FeatureSet.rdd(featureAndLabel).transform(sp)
+    val initialDataSet = FeatureSet.rdd(featureAndLabel).transform(preprocessing)
 
     initialDataSet.transform(SampleToMiniBatch[T](batchSize))
   }
@@ -520,12 +510,20 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       featureCol: String,
       labelCol: String,
       valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    val trainingData = getDataSet(x, batchSize, featureCol, labelCol).toDataSet()
+    this.featureCol = featureCol
+    val preprocessing =
+      FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
+        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
+
+    val trainingData = getDataSet(x, batchSize, featureCol, labelCol, preprocessing).toDataSet()
     val valData = if (valX != null) {
-      getDataSet(valX, batchSize, featureCol, labelCol).toDataSet()
+      getDataSet(valX, batchSize, featureCol, labelCol, preprocessing).toDataSet()
     } else null
 
     this.fit(trainingData, nbEpoch, valData)
+
+    predictTransformer = ToTuple() -> preprocessing
+      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]].clonePreprocessing()
   }
 
   def fit(
@@ -534,6 +532,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       nbEpoch: Int,
       featureCol: String,
       labelCol: String)(implicit ev: TensorNumeric[T]): Unit = {
+    this.featureCol = featureCol
     this.fit(x, batchSize, nbEpoch, featureCol, labelCol, null)
   }
 
