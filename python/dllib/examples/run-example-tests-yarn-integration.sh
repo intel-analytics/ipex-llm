@@ -1,5 +1,5 @@
 #!/bin/bash
-# echo "#1 start test for dllib lenet5"
+echo "#1 start test for dllib lenet5"
 
 #timer
 start=$(date "+%s")
@@ -17,7 +17,7 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#1 Total time cost ${time} seconds"
 
-# echo "#2 start test for dllib inception"
+echo "#2 start test for dllib inception"
 
 #timer
 start=$(date "+%s")
@@ -86,14 +86,14 @@ time=$((now - start))
 echo "#5 Total time cost ${time} seconds"
 
 
-# echo "#6 start test for dllib nnframes_imageInference"
+echo "#6 start test for dllib nnframes_imageInference"
 
-# if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
-#   echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
-# else
-#   wget $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
-#     -P analytics-zoo-models
-# fi
+if [ -f analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model ]; then
+  echo "analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model already exists."
+else
+  wget $FTP_URI/analytics-zoo-models/image-classification/bigdl_inception-v1_imagenet_0.4.0.model \
+    -P analytics-zoo-models
+fi
 
 #timer
 start=$(date "+%s")
@@ -110,108 +110,17 @@ time=$((now - start))
 echo "#6 Total time cost ${time} seconds"
 
 
-# echo "#7 start test for dllib nnframes_imageTransfer learning"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
-#   -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
-#   -f ${HDFS_URI}/dogs_cats/samples --nb_epoch 2 --cluster-mode "yarn-client"
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "dllib nnframes_imageTransfer learning failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#7 Total time cost ${time} seconds"
-
-# echo "#8 start test for orca learn transfer_learning"
-# #timer 
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py --data_dir /data --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-# #   clear_up
-#   echo "orca learning transfer_learning failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#8 Total time cost ${time} seconds"
-
-echo "#9 start test for orca learn tf2 resnet"
+echo "#7 start test for dllib nnframes_imageTransfer learning"
 #timer
 start=$(date "+%s")
 #run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py  \
-  --worker_num 2 \
-  --cores 32 \
-  --memory "20g" \
-  --data_dir /data/imagenettfrecord/train \
-  --cluster_mode yarn-client
-exit_status=$?
+python ${BIGDL_ROOT}/python/dllib/examples/nnframes/imageTransferLearning/ImageTransferLearningExample.py \
+  -m analytics-zoo-models/bigdl_inception-v1_imagenet_0.4.0.model \
+  -f ${HDFS_URI}/dogs_cats/samples --nb_epoch 2 --cluster-mode "yarn-client"
 if [ $exit_status -ne 0 ]; then
   echo "dllib nnframes_imageTransfer learning failed"
   exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#21 Total time cost ${time} seconds"
-
-# echo "#21 start test for orca tf image_segmentation image_segmentation.py"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segmentation.py \
-#   --batch_size 64 \
-#   --file_path /data/carvana \
-#   --non_interactive --epochs 1 --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   #clear_up
-#   echo "orca image_segmentation failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#21 Total time cost ${time} seconds"
-
-# echo "#22 start test for orca inception inception"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
-#   --imagenet ${HDFS_URI}/imagenettfrecord \
-#   -b 128 --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   clear_up
-#   echo "orca inception failed"
-#   exit $exit_status
-# fi
-# now=$(date "+%s")
-# time=$((now - start))
-# echo "#22 Total time cost ${time} seconds"
-
-echo "#23 start test for orca yolov3 yoloV3"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/yoloV3.py  \
-  --data_dir /data/yolov3 \
-  --output_data /tmp \
-  --weights /data/yolov3/yolov3.weights \
-  --class_num 20 \
-  --names /bigdl2.0/data/yolov3/voc2012.names \
-  --epochs 1 --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  clear_up
-  echo "orca yolov3 failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#23 Total time cost ${time} seconds"
+echo "#7 Total time cost ${time} seconds"
