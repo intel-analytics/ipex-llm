@@ -21,8 +21,7 @@ import pytorch_lightning as pl
 import torch
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from torch import nn
-from torch.fx import GraphModule
-from torch.fx.proxy import TraceError
+from torch.fx.graph_module import GraphModule
 from torch.nn.modules.loss import _Loss
 from torchmetrics.metric import Metric
 
@@ -159,7 +158,7 @@ class Trainer(pl.Trainer):
     def quantize(self, pl_model, calib_dataloader, val_dataloader=None, metric: Metric = None,
                  backend='inc', conf=None, framework='pytorch_fx', approach='static',
                  tuning_strategy='bayesian', accuracy_criterion=None, timeout=0,
-                 max_trials=1) -> GraphModule or None:
+                 max_trials=1) -> Optional[GraphModule]:
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
@@ -191,7 +190,7 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :return             A GraphModule. If there is no model found, return None.
+        :return:             A GraphModule. If there is no model found, return None.:
         """
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
