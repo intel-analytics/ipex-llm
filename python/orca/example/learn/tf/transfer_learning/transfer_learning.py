@@ -35,7 +35,6 @@
 
 import os
 os.environ['NO_GCE_CHECK'] = "True"
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 from os.path import exists
 from os import makedirs
 import argparse
