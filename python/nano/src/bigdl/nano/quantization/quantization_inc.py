@@ -56,3 +56,28 @@ class QuantizationINC(Quantization):
             cfg.model.inputs = inputs
             cfg.model.outputs = outputs
         super().__init__(qconf)
+
+
+class TorchMetricForINC:
+    def __init__(self, metric):
+        self.metric = metric
+        self.pred_list = []
+        self.label_list = []
+
+    def update(self, preds, labels):
+        # add preds and labels to storage
+        self.pred_list.extend(preds)
+        self.label_list.extend(labels)
+
+    def reset(self):
+        """clear preds and labels storage"""
+        self.pred_list = []
+        self.label_list = []
+
+    def result(self):
+        import torch
+        # calculate accuracy
+        preds = torch.stack(self.pred_list)
+        labels = torch.stack(self.label_list)
+        accuracy = self.metric(preds, labels)
+        return accuracy.item()
