@@ -166,7 +166,7 @@ class Trainer(pl.Trainer):
         :param pl_model:       A Pytorch-Lightning model to be quantized.
         :param calib_dataloader:    Iterable dataloader for calibration.
         :param val_dataloader:      Iterable dataloader for evaluation.
-        :param metric:              Eetric for evaluation.
+        :param metric:              Metric for evaluation.
         :param backend:             inc or nncf(nncf is not supported yet). Default: inc
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, use default config.
@@ -207,10 +207,9 @@ class Trainer(pl.Trainer):
                                         timeout=timeout, max_trials=max_trials)
             if isinstance(pl_model, LightningModuleFromTorch):
                 # LightningModuleFromTorch.forward fails to trace in FX, so replace it temporarily
-                model = pl_model.model
+                quantizer.model = pl_model.model
             else:
-                model = pl_model
-            quantizer.model = model
+                quantizer.model = pl_model
 
             def eval_func(model_to_eval):
                 if val_dataloader:
