@@ -605,9 +605,7 @@ def main():
     # convert yolov3 weights
     yolo = YoloV3(classes=80)
     load_darknet_weights(yolo, options.weights)
-    print("###################success load weights")
     yolo.save_weights(options.checkpoint)
-    print("###################success save weights")
 
     def model_creator(config):
         model = YoloV3(DEFAULT_IMAGE_SIZE, training=True, classes=options.class_num)
@@ -636,14 +634,10 @@ def main():
     voc_train_path = os.path.join(options.output_data, "train_dataset")
     voc_val_path = os.path.join(options.output_data, "val_dataset")
 
-    # for filepath,dirnames,filenames in os.walk("/data"):
-    #     for filename in filenames:
-    #         tmp = filename
     write_parquet(format="voc", voc_root_path=dataset_path, output_path="file://" + voc_train_path,
                   splits_names=[(options.data_year, options.split_name_train)], classes=class_map)
     write_parquet(format="voc", voc_root_path=dataset_path, output_path="file://" + voc_val_path,
                   splits_names=[(options.data_year, options.split_name_test)], classes=class_map)
-    print("###################success write")
     output_types = {"image": tf.string, "label": tf.float32, "image_id": tf.string}
     output_shapes = {"image": (), "label": (None, 5), "image_id": ()}
 

@@ -149,7 +149,6 @@ else:
     x_train, y_train = np.array(xs[:idx], dtype='object'), labels[:idx]
     x_test, y_test = np.array(xs[idx:], dtype='object'), labels[idx:]
     (train_data, train_labels), (test_data, test_labels) = (x_train, y_train), (x_test, y_test)
-    print(type(test_data))
 
 print("Training entries: {}, labels: {}".format(len(train_data), len(train_labels)))
 
