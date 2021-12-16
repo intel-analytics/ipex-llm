@@ -23,11 +23,6 @@ _DEFAULT_IMAGE_SIZE = 224
 _NUM_CHANNELS = 3
 _NUM_CLASSES = 1001
 
-_NUM_IMAGES = {
-    'train': 1281,
-    'validation': 50,
-}
-
 _NUM_TRAIN_FILES = 1024
 _NUM_VAL_FILES = 128
 _SHUFFLE_BUFFER = 1500
@@ -361,7 +356,9 @@ parser.add_argument("--use_dummy_data", action='store_true', default=False,
                     help="Whether to use dummy data")
 parser.add_argument("--benchmark", action='store_true', default=False)
 parser.add_argument("--enable_numa_binding", action='store_true', default=False)
-
+parser.add_argument("--num_images_train", type=int, default=1281167, help="the num of training images")
+parser.add_argument("--num_images_validation", type=int, default=50000, help="the num of validation images")
+parser.add_argument("--epochs", type=int, default=18, help=" epochs.")
 if __name__ == "__main__":
 
     args = parser.parse_args()
@@ -415,17 +412,17 @@ if __name__ == "__main__":
         )
     else:
         epoch = 0
-        for i in range(2):
+        for i in range(5):
             dummy = args.use_dummy_data
 
             results = trainer.fit(
                 data=train_data_creator if not dummy else dummy_data_creator,
-                epochs=2,
+                epochs=args.epochs,
                 batch_size=global_batch_size,
                 validation_data=val_data_creator if not dummy else dummy_data_creator,
-                steps_per_epoch=_NUM_IMAGES['train'] // global_batch_size,
+                steps_per_epoch=args.num_images_train // global_batch_size,
                 callbacks=callbacks,
-                validation_steps=_NUM_IMAGES['validation'] // global_batch_size,
+                validation_steps=args.num_images_validation // global_batch_size,
             )
-            epoch += 2
+            epoch += args.epochs
         trainer.save(os.path.join(args.log_dir, f"model-{epoch}.pkl"))

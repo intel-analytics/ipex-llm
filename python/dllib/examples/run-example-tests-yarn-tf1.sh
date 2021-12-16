@@ -198,25 +198,28 @@
 # time=$((now - start))
 # echo "#22 Total time cost ${time} seconds"
 
-# echo "#9 start test for orca learn tf2 resnet"
-# #timer
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py  \
-#   --worker_num 2 \
-#   --cores 32 \
-#   --memory "20g" \
-#   --data_dir /data/imagenettfrecord/train \
-#   --cluster_mode yarn-client
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   #clear_up
-#   echo "orca learning learn tf2 resnet failed"
-#   #exit $exit_status
-# fi
-# now==$(date "+%s")
-# time==$((now - start))
-# echo "#9 Total time cost ${time} seconds"
+echo "#9 start test for orca learn tf2 resnet"
+#timer
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py  \
+  --worker_num 2 \
+  --cores 32 \
+  --memory "20g" \
+  --data_dir /data/imagenettfrecord/train \
+  --num_images_train 1281 \
+  --num_images_validation 50000 \
+  --epochs 2 \
+  --cluster_mode yarn-client
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  #clear_up
+  echo "orca learning learn tf2 resnet failed"
+  #exit $exit_status
+fi
+now==$(date "+%s")
+time==$((now - start))
+echo "#9 Total time cost ${time} seconds"
 
 
 ###################### cluster
@@ -286,25 +289,28 @@
 # time=$((now - start))
 # echo "#22 Total time cost ${time} seconds"
 
-# echo "#9 start test for orca learn tf2 resnet"
-# #timer  success
-# start=$(date "+%s")
-# #run the example
-# python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py  \
-#   --worker_num 2 \
-#   --cores 32 \
-#   --memory "20g" \
-#   --data_dir /data/imagenettfrecord/train \
-#   --cluster_mode yarn-cluster
-# exit_status=$?
-# if [ $exit_status -ne 0 ]; then
-#   #clear_up
-#   echo "orca learning learn tf2 resnet failed"
-#   #exit $exit_status
-# fi
-# now==$(date "+%s")
-# time==$((now - start))
-# echo "#9 Total time cost ${time} seconds"
+echo "#9 start test for orca learn tf2 resnet"
+#timer  success
+start=$(date "+%s")
+#run the example
+python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py  \
+  --worker_num 2 \
+  --cores 32 \
+  --memory "20g" \
+  --data_dir /data/imagenettfrecord/train \
+  --num_images_train 1281 \
+  --num_images_validation 50000 \
+  --epochs 2 \
+  --cluster_mode yarn-cluster
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  #clear_up
+  echo "orca learning learn tf2 resnet failed"
+  #exit $exit_status
+fi
+now==$(date "+%s")
+time==$((now - start))
+echo "#9 Total time cost ${time} seconds"
 
 echo "#23 start test for orca yolov3 yoloV3"
 #timer
