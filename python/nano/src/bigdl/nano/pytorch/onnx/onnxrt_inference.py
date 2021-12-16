@@ -15,6 +15,8 @@
 #
 
 from pytorch_lightning import LightningModule
+import torch
+from torch.utils.data import DataLoader
 import onnxruntime as ort
 from functools import partial
 import warnings
@@ -29,6 +31,9 @@ ONNXRT_BINDED_COMPONENTS = ['_ortsess_up_to_date',
                             '_build_ortsess',
                             'update_ortsess',
                             'on_fit_start',
+                            '_forward_onnx',
+                            '_torch_forward',
+                            '_train_mode',
                             'inference']
 
 
@@ -112,10 +117,11 @@ def inference(self,
     or out-of-date.
 
     :param input_data: input data for prediction. If backend is set to "onnx",
-            the data type should be a numpy ndarray, where the first dim should be batch size.
+            the data type should be a numpy ndarray/torch tensor, where the first dim
+            should be batch size.
             If backend is NOT set to "onnx", a torch tensor is needed and the pytorch
-            forwarding method will be called. If there are multiple input, input_data
-            should be a list.
+            forwarding method will be called.
+            If there are multiple input, input_data should be a list.
     :param batch_size: int, inferencing batch_size. This value should not affect the
             final inferencing result but will affect resources cost(e.g. memory and time).
             Default to None, which takes all input_data in one batch.
@@ -125,6 +131,9 @@ def inference(self,
             the pytorch forwarding method.
     :param **kwargs: any other keywords that will be passed to onnx session's building.
     '''
+    # change to eval mode
+    self.eval()
+
     if isinstance(input_data, list):
         input_sample_list = input_data
     else:
@@ -146,28 +155,22 @@ def inference(self,
         # generate ort_inputs
         if batch_size is None:
             # this branch is only to speed up the inferencing when batch_size is set to None.
-            ort_inputs = {}
-            for i, ort_input_item in enumerate(input_sample_list):
-                ort_inputs[self._forward_args[i]] = ort_input_item
-            ort_outs = self._ortsess.run(None, ort_inputs)
-            return ort_outs[0]  # TODO: only support single output
+            return self._forward_onnx(*input_sample_list)
         else:
             yhat_list = []
             sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
             batch_num = math.ceil(sample_num / batch_size)
             for batch_id in range(batch_num):
-                ort_inputs = {}
-                for i, ort_input_item in enumerate(input_sample_list):
-                    ort_inputs[self._forward_args[i]] = ort_input_item[batch_id * batch_size:
-                                                                       (batch_id + 1) * batch_size]
-                ort_outs = self._ortsess.run(None, ort_inputs)
-                yhat_list.append(ort_outs[0])  # TODO: only support single output
+                yhat_list.append(self._forward_onnx(*tuple(map(lambda x:x[batch_id * batch_size:
+                                                                          (batch_id + 1) * batch_size],
+                                                               input_sample_list))))
             # this operation may cause performance degradation
             yhat = np.concatenate(yhat_list, axis=0)
             return yhat
     else:
         # inference w/o onnxruntime (fallback to pytorch native forward)
         self.eval()
+        self.exit_onnx()
         with torch.no_grad():
             yhat_list = []
             sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
@@ -187,15 +190,17 @@ def on_fit_start(self):
     self.exit_onnx()
 
 
-def _forward_onnx(self, *args):
-    # if self.train() is called without calling self.exit_onnx()
-    if self.training:
-        self.exit_onnx()
-        return self.forward(*args)
+def train(self, mode=True):
+    self.exit_onnx()
+    self._train_mode(mode)
 
+
+def _forward_onnx(self, *args):
     ort_inputs = {}
     for i, ort_input_item in enumerate(args):
-        ort_inputs[self._forward_args[i]] = ort_input_item.numpy()
+        if isinstance(ort_input_item, torch.Tensor):
+            ort_input_item = ort_input_item.numpy()
+        ort_inputs[self._forward_args[i]] = ort_input_item
     ort_outs = self._ortsess.run(None, ort_inputs)
     return torch.from_numpy(ort_outs[0])
 
@@ -208,7 +213,8 @@ def eval_onnx(self, input_sample=None, file_path="model.onnx", sess_options=None
     >>> pred = model(x)  # onnxruntime forwarding
     >>> model.exit_onnx()
 
-    :param input_sample: (optional) torch.Tensor or a list of them for the model tracing.
+    :param input_sample: (optional) a torch dataloader, torch.Tensor or a
+           list of them for the model tracing.
     :param file_path: (optional) The path to save onnx model file.
     :param sess_options: (optional) ortsess options in ort.SessionOptions type.
     :param **kwargs: (optional) will be passed to torch.onnx.export function.
@@ -217,6 +223,8 @@ def eval_onnx(self, input_sample=None, file_path="model.onnx", sess_options=None
     self.eval()
 
     # get input_sample
+    if isinstance(input_sample, DataLoader):
+        input_sample = tuple(next(iter(input_sample))[:-1])
     if input_sample is None and self.example_input_array:
         input_sample = self.example_input_array
     if input_sample is None and self.trainer is None:
@@ -267,5 +275,7 @@ def bind_onnxrt_methods(pl_model: LightningModule):
     pl_model._forward_onnx = partial(_forward_onnx, pl_model)
     pl_model.exit_onnx = partial(exit_onnx, pl_model)
     pl_model._torch_forward = pl_model.forward
+    pl_model._train_mode = pl_model.train
+    pl_model.train = partial(train, pl_model)
 
     return pl_model

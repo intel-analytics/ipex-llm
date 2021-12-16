@@ -143,8 +143,6 @@ class Trainer(pl.Trainer):
                 "Loss and optimizer should be None if model is a pytorch-lightning model."
             pl_model = model
         else:
-            assert loss and optimizer, \
-                "Loss and optimizer are required to construct a LightningModule instance."
             pl_model = LightningModuleFromTorch(model, loss, optimizer, metrics)
 
         if onnx:
