@@ -53,20 +53,21 @@ If deploying PPML on cluster, need to overwrite config `./ppml-conf.yaml`. Defau
 java -cp com.intel.analytics.bigdl.ppml.FLServer
 ```
 ### HFL Logistic Regression
+We provide an example demo in `BigDL/scala/ppml/demo`
 ```bash
 # client 1
-java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -data/diabetes-hfl-1.csv
+java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-1.csv
 
 # client 2
-java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -data/diabetes-hfl-2.csv
+java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-2.csv
 ```
 ### VFL Logistic Regression
 ```bash
 # client 1
-java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -data/diabetes-vfl-1.csv
+java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-1.csv
 
 # client 2
-java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -data/diabetes-vfl-2.csv
+java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-2.csv
 ```
 ## References
 
