@@ -161,9 +161,10 @@ def inference(self,
             sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
             batch_num = math.ceil(sample_num / batch_size)
             for batch_id in range(batch_num):
-                yhat_list.append(self._forward_onnx(*tuple(map(lambda x:x[batch_id * batch_size:
-                                                                          (batch_id + 1) * batch_size],
-                                                               input_sample_list))))
+                yhat_list.append(self._forward_onnx(
+                    *tuple(map(lambda x: x[batch_id * batch_size:
+                                           (batch_id + 1) * batch_size],
+                               input_sample_list))))
             # this operation may cause performance degradation
             yhat = np.concatenate(yhat_list, axis=0)
             return yhat
