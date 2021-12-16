@@ -58,6 +58,8 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/yoloV3.py  \
   --epochs 1 --cluster_mode yarn-client \
   --memory 20g \
   --object_store_memory 10g \
+  --batch_size 64 \
+  --cores 8 \
   --checkpoint /data/checkpoints/yolov3.tf \
   --checkpoint_folder /data/checkpoints
 exit_status=$?
@@ -82,6 +84,8 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/yoloV3.py  \
   --epochs 1 --cluster_mode yarn-cluster \
   --memory 20g \
   --object_store_memory 10g \
+  --batch_size 64 \
+  --cores 8 \
   --checkpoint /data/checkpoints/yolov3.tf \
   --checkpoint_folder /data/checkpoints
 exit_status=$?
