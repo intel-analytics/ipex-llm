@@ -65,6 +65,7 @@ import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.ml.VectorCompatibility
+import org.apache.spark.ml.feature.VectorAssembler
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
@@ -485,24 +486,35 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   private def getDataSet(
       dataFrame: DataFrame,
       batchSize: Int,
-      featureCol: String,
+      featureCols: Array[String],
       labelCol: String): FeatureSet[MiniBatch[T]] = {
 
     val sp = FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
       .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
-    val featureColIndex = dataFrame.schema.fieldIndex(featureCol)
-    val featureType = dataFrame.schema(featureCol).dataType
+
+    val df = if (featureCols.size > 1) {
+      val assembler = new VectorAssembler()
+        .setInputCols(featureCols)
+        .setOutputCol("features")
+      assembler.transform(dataFrame)
+    } else {
+      dataFrame.withColumnRenamed(featureCols.head, "features")
+    }
+
+    val featureCol = "features"
+    val featureColIndex = df.schema.fieldIndex(featureCol)
+    val featureType = df.schema(featureCol).dataType
     val featureFunc = unwrapVectorAsNecessary(featureType)
 
-    val labelFunc: (Row) => Option[Any] = if (dataFrame.columns.contains(labelCol)) {
-      val lci = dataFrame.schema.fieldIndex(labelCol)
-      val labelFunc = unwrapVectorAsNecessary(dataFrame.schema(labelCol).dataType)
+    val labelFunc: (Row) => Option[Any] = if (df.columns.contains(labelCol)) {
+      val lci = df.schema.fieldIndex(labelCol)
+      val labelFunc = unwrapVectorAsNecessary(df.schema(labelCol).dataType)
       (row: Row) => Some(labelFunc(row, lci))
     } else {
       (row: Row) => None
     }
 
-    val featureAndLabel = dataFrame.rdd.map { row =>
+    val featureAndLabel = df.rdd.map { row =>
       val features = featureFunc(row, featureColIndex)
       val labels = labelFunc(row)
       (features, labels)
@@ -517,12 +529,13 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: DataFrame,
       batchSize: Int,
       nbEpoch: Int,
-      featureCol: String,
-      labelCol: String,
+      featureCols: Array[String],
+      labelCol: Array[String],
       valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    val trainingData = getDataSet(x, batchSize, featureCol, labelCol).toDataSet()
+    require(labelCol.size == 1, "currently only suport set one column label")
+    val trainingData = getDataSet(x, batchSize, featureCols, labelCol.head).toDataSet()
     val valData = if (valX != null) {
-      getDataSet(valX, batchSize, featureCol, labelCol).toDataSet()
+      getDataSet(valX, batchSize, featureCols, labelCol.head).toDataSet()
     } else null
 
     this.fit(trainingData, nbEpoch, valData)
@@ -532,9 +545,9 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: DataFrame,
       batchSize: Int,
       nbEpoch: Int,
-      featureCol: String,
-      labelCol: String)(implicit ev: TensorNumeric[T]): Unit = {
-    this.fit(x, batchSize, nbEpoch, featureCol, labelCol, null)
+      featureCols: Array[String],
+      labelCol: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
+    this.fit(x, batchSize, nbEpoch, featureCols, labelCol, null)
   }
 
   /**

@@ -270,7 +270,8 @@ class TrainingSpec extends ZooSpecHelper {
     model.add(Dense[Float](2, activation = "sigmoid", inputShape = Shape(6)))
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
 
-    model.fit(df, batchSize = 4, nbEpoch = 1, featureCol = "features", labelCol = "label")
+    model.fit(df, batchSize = 4, nbEpoch = 1, featureCols = Array("features"),
+      labelCol = Array("label"), valX = null)
   }
 }
 
