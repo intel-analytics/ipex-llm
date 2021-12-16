@@ -71,9 +71,9 @@ class TestTrainer(TestCase):
 
         # Case 1: Default
         qmodel = trainer.quantize(pl_model, self.train_loader)
-        if qmodel:
-            out = qmodel(next(train_loader_iter)[0])
-            assert out.shape == torch.Size([256, 10])
+        assert qmodel
+        out = qmodel(next(train_loader_iter)[0])
+        assert out.shape == torch.Size([256, 10])
 
         # Case 2: Override by arguments
         qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
@@ -82,9 +82,9 @@ class TestTrainer(TestCase):
                                   accuracy_criterion={'relative':         0.99,
                                                       'higher_is_better': True})
 
-        if qmodel:
-            out = qmodel(next(train_loader_iter)[0])
-            assert out.shape == torch.Size([256, 10])
+        assert qmodel
+        out = qmodel(next(train_loader_iter)[0])
+        assert out.shape == torch.Size([256, 10])
 
 
 if __name__ == '__main__':
