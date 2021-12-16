@@ -59,14 +59,7 @@ public abstract class Aggregator<T> {
     public abstract void aggregate(FLPhase flPhase);
 
     public Storage<T> getServerData(FLPhase type) {
-        Storage<T> storage = null;
-        switch (type) {
-            case TRAIN: storage = trainStorage; break;
-            case EVAL: storage = evalStorage; break;
-            case PREDICT: storage = predictStorage; break;
-            default: break;
-        }
-        return storage;
+        return aggregateTypeMap.get(type);
     }
     public <T> void putClientData(FLPhase type, String clientUUID, int version, T data)
             throws IllegalArgumentException, InterruptedException {
