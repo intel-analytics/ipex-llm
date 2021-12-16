@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.dllib.visualization
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.visualization.tensorboard.{FileWriter}
+import com.intel.analytics.bigdl.dllib.visualization.tensorboard.FileWriter
+import org.apache.log4j.Logger
 import org.tensorflow
 
 import scala.reflect.ClassTag
@@ -33,6 +34,11 @@ abstract class Summary(
                         logDir: String,
                         appName: String) {
   protected val writer: FileWriter
+
+  if (logDir.startsWith("dbfs:/")) {
+    Summary.logger.warn(s"The logDir starting with dbfs:/ is not supported." +
+      s" Please use /dbfs instead \n")
+  }
 
   /**
    * Add a scalar summary.
@@ -85,6 +91,8 @@ abstract class Summary(
 }
 
 object Summary {
+
+  val logger = Logger.getLogger(getClass)
 
   /**
    * Create a scalar summary.
