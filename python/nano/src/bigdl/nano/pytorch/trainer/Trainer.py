@@ -175,11 +175,10 @@ class Trainer(pl.Trainer):
                             extension. Default: pytorch_fx. Consistent with Intel Neural Compressor
                             Quantization.
 
-        :param approach:    ptsq, ptdq or qat.
-                            ptsq: post_training_static_quant,
-                            ptdq: post_training_dynamic_quant,
-                            qat: quant_aware_training.
-                            Default: post_training_static_quant.
+        :param approach:    static or dynamic.
+                            static: post_training_static_quant,
+                            dynamic: post_training_dynamic_quant,
+                            Default: static.
         :param tuning_strategy:    bayesian, basic, mse, sigopt. Default: bayesian.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, higher_is_better=True}
