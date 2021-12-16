@@ -197,7 +197,7 @@ class Trainer(pl.Trainer):
             from bigdl.nano.quantization import QuantizationINC
             from neural_compressor.experimental import common
             approach_map = {
-                'static':  'post_training_static_quant',
+                'static': 'post_training_static_quant',
                 'dynamic': 'post_training_dynamic_quant'
             }
             approach = approach_map.get(approach)
