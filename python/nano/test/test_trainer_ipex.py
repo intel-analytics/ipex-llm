@@ -15,20 +15,18 @@
 #
 
 
-import pytest
 import os
 from unittest import TestCase
 
+import pytest
 import torch
 import torchmetrics
+from test._train_torch_lightning import create_data_loader, data_transform
+from test._train_torch_lightning import train_with_linear_top_layer
 from torch import nn
 
-import numpy as np
-
-from test._train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
-from test._train_torch_lightning import train_with_linear_top_layer
 
 batch_size = 256
 num_workers = 0
@@ -66,26 +64,27 @@ class TestTrainer(TestCase):
         trainer.fit(pl_model, self.train_loader)
 
     def test_trainer_quantize_inc_ptq(self):
+        train_loader_iter = iter(self.train_loader)
         trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer,
                                    metrics=[torchmetrics.F1(10)])
 
         # Case 1: Default
-        quantized_model = trainer.quantize(pl_model, self.train_loader)
-        if quantized_model:
-            trainer.validate(quantized_model, self.train_loader)
-            trainer.test(quantized_model, self.train_loader)
+        qmodel = trainer.quantize(pl_model, self.train_loader)
+        if qmodel:
+            out = qmodel(next(train_loader_iter)[0])
+            assert out.shape == torch.Size([256, 10])
 
         # Case 2: Override by arguments
-        quantized_model = trainer.quantize(pl_model, self.train_loader, self.train_loader,
-                                           metric='F1', framework='pytorch_fx', approach='static',
-                                           tuning_strategy='basic',
-                                           accuracy_criterion={'relative':         0.99,
-                                                               'higher_is_better': True})
+        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
+                                  metric='F1', framework='pytorch_fx', approach='static',
+                                  tuning_strategy='basic',
+                                  accuracy_criterion={'relative':         0.99,
+                                                      'higher_is_better': True})
 
-        if quantized_model:
-            trainer.validate(quantized_model, self.train_loader)
-            trainer.test(quantized_model, self.train_loader)
+        if qmodel:
+            out = qmodel(next(train_loader_iter)[0])
+            assert out.shape == torch.Size([256, 10])
 
 
 if __name__ == '__main__':
