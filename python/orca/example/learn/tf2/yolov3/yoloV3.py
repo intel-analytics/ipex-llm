@@ -638,6 +638,7 @@ def main():
                   splits_names=[(options.data_year, options.split_name_train)], classes=class_map)
     write_parquet(format="voc", voc_root_path=dataset_path, output_path="file://" + voc_val_path,
                   splits_names=[(options.data_year, options.split_name_test)], classes=class_map)
+
     output_types = {"image": tf.string, "label": tf.float32, "image_id": tf.string}
     output_shapes = {"image": (), "label": (None, 5), "image_id": ()}
 
