@@ -93,7 +93,7 @@ fi
 
 python ../../example/ncf/ncf_train.py\
     --data_dir ./data/movielens \
-    --model_dir ./result/model/new
+    --model_dir ./result
 
 now=$(date "+%s")
 time4=$((now - start))
