@@ -181,22 +181,22 @@
 # time=$((now - start))
 # echo "#21 Total time cost ${time} seconds"
 
-echo "#22 start test for orca inception inception"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
-  --imagenet /data/imagenettfrecord \
-  -b 128 --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  #clear_up
-  echo "orca inception failed"
-  #exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#22 Total time cost ${time} seconds"
+# echo "#22 start test for orca inception inception"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
+#   --imagenet /data/imagenettfrecord \
+#   -b 128 --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   #clear_up
+#   echo "orca inception failed"
+#   #exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#22 Total time cost ${time} seconds"
 
 # echo "#9 start test for orca learn tf2 resnet"
 # #timer
@@ -322,8 +322,8 @@ echo "#22 Total time cost ${time} seconds"
 #   --epochs 1 --cluster_mode yarn-client \
 #   --memory 20g \
 #   --object_store_memory 10g \
-#   --checkpoint ${HDFS_URI}/data/checkpoints/yolov3.tf \
-#   --checkpoint_folder ${HDFS_URI}/data/checkpoints
+#   --checkpoint /data/checkpoints/yolov3.tf \
+#   --checkpoint_folder /data/checkpoints
 # exit_status=$?
 # if [ $exit_status -ne 0 ]; then
 #   #clear_up
