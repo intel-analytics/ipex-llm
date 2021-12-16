@@ -156,7 +156,7 @@ class Trainer(pl.Trainer):
         else:
             return pl_model
 
-    def quantize(self, pl_model, calib_dataloader, val_dataloader=None, metric: str = None,
+    def quantize(self, pl_model, calib_dataloader, val_dataloader=None, metric: Metric = None,
                  backend='inc', conf=None, framework='pytorch_fx', approach='static',
                  tuning_strategy='bayesian', accuracy_criterion=None, timeout=0,
                  max_trials=1) -> GraphModule or None:
@@ -195,6 +195,7 @@ class Trainer(pl.Trainer):
         """
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
+            from neural_compressor.experimental import common
             approach_map = {
                 'static':  'post_training_static_quant',
                 'dynamic': 'post_training_dynamic_quant'
@@ -210,15 +211,10 @@ class Trainer(pl.Trainer):
             else:
                 quantizer.model = pl_model
 
-            def eval_func(model_to_eval):
-                if val_dataloader:
-                    pl_model.model = model_to_eval
-                    val_outputs = self.validate(pl_model, val_dataloader)
-                    return val_outputs[0][f'val/{metric}']
-                else:
-                    return 1  # Fake Evaluation
-
-            quantizer.eval_func = eval_func
+            if val_dataloader and metric:
+                from bigdl.nano.quantization.quantization_inc import TorchMetricForINC
+                quantizer.eval_dataloader = val_dataloader
+                quantizer.metric = common.Metric(TorchMetricForINC, metric=metric)
             quantizer.calib_dataloader = calib_dataloader
             quantized = quantizer()
             return quantized.model if quantized else None
