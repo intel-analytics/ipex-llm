@@ -7,7 +7,7 @@ import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, Metrics, OptimMeth
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -27,7 +27,7 @@ class HflNNEstimator(algorithm: String,
                      criterion: Criterion[Float],
                      metrics: Array[ValidationMethod[Float]] = null,
                      threadNum: Int = 1) extends Estimator{
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   val flClient = FLContext.getClient()
   val localEstimator = LocalEstimator(
     model = model, criterion = criterion, optmizeMethod = optimMethod, null, threadNum)

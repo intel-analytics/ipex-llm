@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.utils.PortUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
@@ -27,7 +27,7 @@ import scala.concurrent.TimeoutException
 class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
   var port: Int = 8980
   var target: String = "localhost:8980"
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   before {
     port = PortUtils.findNextPortAvailable(port)
     target = "localhost:" + port

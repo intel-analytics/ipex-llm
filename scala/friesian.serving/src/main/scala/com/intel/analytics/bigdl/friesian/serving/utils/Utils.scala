@@ -22,13 +22,14 @@ import com.codahale.metrics.Timer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.sql.SparkSession
+
 import scala.math._
 
 object Utils {
   var helper: gRPCHelper = _
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
 
   def timing[T](name: String)(timers: Timer*)(f: => T): T = {
     val begin = System.nanoTime()

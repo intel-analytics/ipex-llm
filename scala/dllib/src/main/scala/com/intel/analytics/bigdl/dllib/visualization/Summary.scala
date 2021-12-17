@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.visualization
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.visualization.tensorboard.FileWriter
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.tensorflow
 
 import scala.reflect.ClassTag
@@ -92,7 +92,7 @@ abstract class Summary(
 
 object Summary {
 
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   /**
    * Create a scalar summary.

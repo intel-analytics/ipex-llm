@@ -26,7 +26,6 @@ import com.intel.analytics.bigdl.dllib.feature.text.TruncMode.TruncMode
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.util.StringUtils
-import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -34,6 +33,7 @@ import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
+import org.apache.logging.log4j.{LogManager, Logger}
 // import com.intel.analytics.bigdl.dllib.feature.pmem.{DRAM, MemoryType}
 import org.apache.spark.sql.SQLContext
 
@@ -246,7 +246,7 @@ abstract class TextSet {
 
 object TextSet {
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
 
   /**
    * Create a LocalTextSet from array of TextFeature.

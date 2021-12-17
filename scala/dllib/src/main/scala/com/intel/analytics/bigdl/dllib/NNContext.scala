@@ -21,7 +21,7 @@ import java.io.InputStream
 import java.util.Properties
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.{SPARK_VERSION, SparkConf, SparkContext, SparkException}
 
 import sys.env
@@ -32,7 +32,7 @@ import sys.env
  */
 object NNContext {
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   private[bigdl] def checkSparkVersion(reportWarning: Boolean = false) = {
     checkVersion(SPARK_VERSION, ZooBuildInfo.spark_version, "Spark", reportWarning)

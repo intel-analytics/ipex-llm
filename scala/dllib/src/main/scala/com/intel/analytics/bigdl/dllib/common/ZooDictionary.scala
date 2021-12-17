@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.common
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.text.Dictionary
 import com.intel.analytics.bigdl.dllib.utils._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
@@ -32,7 +32,7 @@ class ZooDictionary() extends Dictionary {
   private var _vocabulary: Seq[String] = null
   private var _discardVocab: Seq[String] = null
   @transient
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
   @transient
   private val rng = RandomGenerator.RNG
 

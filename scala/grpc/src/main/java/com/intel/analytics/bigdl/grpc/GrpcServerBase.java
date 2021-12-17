@@ -25,7 +25,8 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.ClientAuth;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.SSLException;
 import java.io.File;
@@ -39,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  * This class could also be directly used for start a single service
  */
 public abstract class GrpcServerBase extends AbstractGrpcBase {
-    protected static final Logger logger = Logger.getLogger(GrpcServerBase.class.getName());
+    protected static final Logger logger = LogManager.getLogger(GrpcServerBase.class.getName());
     protected int port = 8980;
     protected Server server;
     protected LinkedList<BindableService> serverServices = new LinkedList<BindableService>();
