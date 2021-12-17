@@ -68,7 +68,7 @@ parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
 parser.add_argument('--epochs', type=int, default=2, help='number of epochs to train for')
 parser.add_argument('--download', type=bool, default=False, help='download dataset or not')
-parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets where includes imdb.npz if download ')
+parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets where includes imdb.npz.')
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 download = args.download
