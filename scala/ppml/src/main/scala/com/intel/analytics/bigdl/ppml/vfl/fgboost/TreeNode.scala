@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.vfl.fgboost
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.immutable.HashSet
 
@@ -29,7 +29,7 @@ class TreeNode (
                  var depth: Int = 0
                ) extends Serializable {
 
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
   var isLeaf = false
   var splitInfo: Split = null
 

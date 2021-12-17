@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.ppml.vfl.fgboost
 
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.util
 
 
@@ -29,7 +29,7 @@ class Split (
               val gain: Float,
               val itemSet: util.List[Integer]
             ) extends Serializable {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   protected var clientID = "";
 

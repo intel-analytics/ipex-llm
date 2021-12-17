@@ -6,7 +6,7 @@ import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLPhase}
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -14,7 +14,7 @@ import scala.collection.mutable.ArrayBuffer
 
 class VflGBoostAggregator extends Aggregator[Table] {
 
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   var obj: TreeObjective = new RMSEObjective
   var nLabel = 1

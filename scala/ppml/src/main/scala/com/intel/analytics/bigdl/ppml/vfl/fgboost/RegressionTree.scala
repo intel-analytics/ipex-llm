@@ -1,5 +1,5 @@
 package com.intel.analytics.bigdl.ppml.vfl.fgboost
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.util
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -23,7 +23,7 @@ class RegressionTree(
                     ) extends Serializable {
 
 
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   var learningRate: Float = 0.3f
 

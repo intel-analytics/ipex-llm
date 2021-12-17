@@ -43,11 +43,12 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
 
   @throws[IOException]
   override protected def parseConfig(): Unit = {
-    val f = new File(configPath)
-    if (f.exists()) {
-      val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
+    val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
+    if (flHelper != null) {
       target = flHelper.clientTarget
+      logger.debug(s"Loading target: $target")
       taskID = flHelper.taskID
+      logger.debug(s"Loading taskID: $taskID")
     }
     super.parseConfig()
   }
