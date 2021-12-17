@@ -32,9 +32,9 @@ import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 import org.apache.spark.ml.VectorCompatibility
 import org.apache.spark.ml.adapter.SchemaUtils
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{ArrayType, DataType, DoubleType => sqlDoubleType,
-FloatType => sqlFloatType}
+import org.apache.spark.sql.types.{ArrayType, DataType, DoubleType => sqlDoubleType, FloatType => sqlFloatType}
 import org.apache.spark.sql.{DataFrame, Row}
 
 import scala.collection.Iterator
@@ -367,7 +367,8 @@ trait Predictable[T] extends VectorCompatibility{
     }
   }
 
-  var featureCol: String = null
+  var featureCols: Array[String] = null
+  var internalFeatureCol: String = null
   var predictTransformer: Preprocessing[Any, Sample[T]] = null
 
   def outputToPrediction(output: Tensor[T]): Any = {
@@ -378,8 +379,18 @@ trait Predictable[T] extends VectorCompatibility{
               predictionCol: String,
               batchPerThread: Int): DataFrame = {
     require(predictTransformer!=null, "Must train the model before call predcition")
-    val featureColIndex = x.schema.fieldIndex(this.featureCol)
-    val featureType = x.schema(this.featureCol).dataType
+
+    val df = if (featureCols.size > 1) {
+      val assembler = new VectorAssembler()
+        .setInputCols(featureCols)
+        .setOutputCol(internalFeatureCol)
+      assembler.transform(x)
+    } else {
+      x.withColumnRenamed(featureCols.head, internalFeatureCol)
+    }
+
+    val featureColIndex = df.schema.fieldIndex(internalFeatureCol)
+    val featureType = df.schema(internalFeatureCol).dataType
     val featureFunc = unwrapVectorAsNecessary(featureType)
 
     val sc = x.sqlContext.sparkContext
@@ -389,7 +400,7 @@ trait Predictable[T] extends VectorCompatibility{
     val toBatchBC = sc.broadcast(SampleToMiniBatch[T](batchPerThread, partitionNum = Some(1)))
 
     // concat the prediction and other columns in DF. avoid zip between RDD
-    val resultRDD = x.rdd.mapPartitions { rowIter =>
+    val resultRDD = df.rdd.mapPartitions { rowIter =>
       val localModel = modelBroadCast.value()
       localModel.evaluate()
       val featureSteps = featureTransformersBC.value.cloneTransformer()
@@ -418,9 +429,9 @@ trait Predictable[T] extends VectorCompatibility{
     val resultSchema =
       ev.getType() match {
       case DoubleType =>
-        SchemaUtils.appendColumn(x.schema, predictionCol, ArrayType(sqlDoubleType, false))
+        SchemaUtils.appendColumn(df.schema, predictionCol, ArrayType(sqlDoubleType, false))
       case FloatType =>
-        SchemaUtils.appendColumn(x.schema, predictionCol, ArrayType(sqlFloatType, false))
+        SchemaUtils.appendColumn(df.schema, predictionCol, ArrayType(sqlFloatType, false))
       case _ => throw new Exception("Only support Double and Float for now")
     }
 

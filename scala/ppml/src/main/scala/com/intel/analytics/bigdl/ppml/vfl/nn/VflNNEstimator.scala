@@ -20,12 +20,12 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil
 import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil.getParametersFromModel
-import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.OptimMethod
-import com.intel.analytics.bigdl.ppml.FLClient
-import com.intel.analytics.bigdl.ppml.generated.FLProto.{EvaluateResponse, TableMetaData}
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
-import com.intel.analytics.bigdl.ppml.vfl.utils.ProtoUtils._
+import com.intel.analytics.bigdl.ppml.base.Estimator
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.generated.NNServiceProto.EvaluateResponse
+import com.intel.analytics.bigdl.ppml.{FLClient, FLContext}
+import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConverters._
@@ -34,9 +34,10 @@ import scala.collection.mutable.ArrayBuffer
 
 class VflNNEstimator(algorithm: String,
                      model: Module[Float],
-                     optimMethod: OptimMethod[Float]){
+                     optimMethod: OptimMethod[Float],
+                     threadNum: Int = 1) extends Estimator {
   val logger = Logger.getLogger(getClass)
-  val flClient = VflContext.getClient()
+  val flClient = FLContext.getClient()
   val (weight, grad) = getParametersFromModel(model)
 
   def train(endEpoch: Int,
@@ -45,10 +46,6 @@ class VflNNEstimator(algorithm: String,
   }
 
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
-
-  def getEvaluateResults(): Map[String, Array[Float]] = {
-    evaluateResults.map(v => (v._1, v._2.toArray)).toMap
-  }
 
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]],
@@ -72,10 +69,12 @@ class VflNNEstimator(algorithm: String,
         val output = model.forward(input)
 
         // Upload to PS
-        uploadOutput(model, iteration, target)
+        val metadata = TableMetaData.newBuilder
+              .setName(s"${model.getName()}_output").setVersion(iteration).build
+        val tableProto = outputTargetToTableProto(model.output, target, metadata)
         model.zeroGradParameters()
-        // Download average model
-        val gradInput = downloadTrain(flClient, "gradInput", iteration, algorithm)
+        val gradInput = flClient.nnStub.train(tableProto, algorithm).getData
+
         // model replace
         val errors = getTensor("gradInput", gradInput)
         val loss = getTensor("loss", gradInput).value()
@@ -86,53 +85,49 @@ class VflNNEstimator(algorithm: String,
         iteration += 1
         count += miniBatch.size()
       }
-      model.evaluate()
-      val valIterator = valDataSet.data(false)
-      var evaluateResponse: EvaluateResponse = null;
-      while(valIterator.hasNext) {
-        val miniBatch = valIterator.next()
-        val input = miniBatch.getInput()
-        val target = miniBatch.getTarget()
-        val output = model.forward(input)
-        evaluateResponse = evaluateOutput(model, epoch + 1, target, !valIterator.hasNext)
-      }
-      logger.info(evaluateResponse.getResponse)
-      val dataMap = evaluateResponse.getData.getTableMap.asScala
-      dataMap.foreach{v =>
-        if (evaluateResults.contains(v._1)) {
-          evaluateResults(v._1).append(v._2.getTensor(0))
-        } else {
-          evaluateResults(v._1) = ArrayBuffer(v._2.getTensor(0))
+      if (valDataSet != null) {
+        model.evaluate()
+        val valIterator = valDataSet.data(false)
+        var evaluateResponse: EvaluateResponse = null;
+        while(valIterator.hasNext) {
+          val miniBatch = valIterator.next()
+          val input = miniBatch.getInput()
+          val target = miniBatch.getTarget()
+          val output = model.forward(input)
+          val metadata = TableMetaData.newBuilder
+            .setName(s"${model.getName()}_output").setVersion(iteration).build
+
+          // TODO: support table output and table target
+          val tableProto = outputTargetToTableProto(model.output, target, metadata)
+          evaluateResponse = flClient.nnStub.evaluate(tableProto, algorithm)
+        }
+        logger.info(evaluateResponse.getResponse)
+        val dataMap = evaluateResponse.getData.getTableMap.asScala
+        dataMap.foreach{v =>
+          if (evaluateResults.contains(v._1)) {
+            evaluateResults(v._1).append(v._2.getTensor(0))
+          } else {
+            evaluateResults(v._1) = ArrayBuffer(v._2.getTensor(0))
+          }
         }
       }
+
     }
 
     model
   }
 
+  override def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]): Unit = {
+
+
+  }
+
+  override def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Unit = {
+
+  }
+
   def close(): Unit = {
     flClient.shutdown()
   }
-  def uploadOutput(model: Module[Float], flVersion: Int, target: Activity = null): Unit = {
-    val metadata = TableMetaData.newBuilder
-      .setName(s"${model.getName()}_output").setVersion(flVersion).build
-
-    // TODO: support table output and table target
-    val tableProto = outputTargetToTableProto(model.output, target, metadata)
-    flClient.nnStub.uploadTrain(tableProto, algorithm)
-  }
-
-  def evaluateOutput(model: Module[Float],
-                     flVersion: Int,
-                     target: Activity,
-                     lastBatch: Boolean): EvaluateResponse = {
-    val metadata = TableMetaData.newBuilder
-      .setName(s"${model.getName()}_output").setVersion(flVersion).build
-
-    // TODO: support table output and table target
-    val tableProto = outputTargetToTableProto(model.output, target, metadata)
-    flClient.nnStub.evaluate(tableProto, lastBatch)
-  }
 
 }
-

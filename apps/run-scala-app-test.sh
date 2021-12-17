@@ -190,6 +190,34 @@ echo "#App[Model-inference-example] Test 5.1: model-inference-flink: Image Class
 
 ./flink-1.7.2/bin/stop-cluster.sh
 
+echo "# Test 6.1 dllib nnframes: XGBoostClassifierTrainExample"
+#timer
+mkdir /tmp/data
+wget $FTP_URI/analytics-zoo-data/iris.data -P /tmp/data
+start=$(date "+%s")
+${SPARK_HOME}/bin/spark-submit \
+  --master local[4] \
+  --conf spark.task.cpus=2  \
+  --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExample \
+  ${BIGDL_ROOT}/scala/dllib/target/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
+  /tmp/data/iris.data 2 200 /tmp/data/xgboost_model
+now=$(date "+%s")
+time9=$((now-start))
+echo "#App[Model-inference-example] Test 6.1: dllib nnframes: XGBoostClassifierTrainExample time used:$time9 seconds"
+
+echo "# Test 6.2 dllib nnframes: XGBoostClassifierPredictExample"
+#timer
+start=$(date "+%s")
+${SPARK_HOME}/bin/spark-submit \
+  --master local[4] \
+  --conf spark.task.cpus=2  \
+  --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierPredictExample \
+  ${BIGDL_ROOT}/scala/dllib/target/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
+  /tmp/data/iris.data  /tmp/data/xgboost_model
+now=$(date "+%s")
+time10=$((now-start))
+echo "#App[Model-inference-example] Test 6.2: dllib nnframes: XGBoostClassifierPredictExample time used:$time10 seconds"
+
 echo "#2 text-classification-training time used:$time2 seconds"
 echo "#3.1 text-classification-inference:SimpleDriver time used:$time3 seconds"
 #echo "#3.2 text-classification-inference:WebServiceDriver time used:$time4 seconds"
@@ -197,3 +225,5 @@ echo "#4.1 recommendation-inference:SimpleScalaDriver time used:$time5 seconds"
 echo "#4.2 recommendation-inference:SimpleDriver time used:$time6 seconds"
 echo "#5.1 model-inference-flink:Text Classification time used:$time7 seconds"
 echo "#5.2 model-inference-flink:Image Classification time used:$time8 seconds"
+echo "#6.1: dllib nnframes: XGBoostClassifierTrainExample time used:$time9 seconds"
+echo "#6.2: dllib nnframes: XGBoostClassifierPredictExample time used:$time10 seconds"
