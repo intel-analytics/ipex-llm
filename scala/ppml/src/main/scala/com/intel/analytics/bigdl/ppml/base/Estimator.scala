@@ -14,7 +14,7 @@ trait Estimator {
   }
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]],
-            valDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float]
+            valDataSet: LocalDataSet[MiniBatch[Float]]): Any
 
   def evaluate(dataSet: LocalDataSet[MiniBatch[Float]])
 

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.ppml.vfl;
 
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceGrpc;
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.*;
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
 import io.grpc.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,32 +34,41 @@ public class FGBoostStub {
         this.clientID = clientID;
         stub = FGBoostServiceGrpc.newBlockingStub(channel);
     }
-    public UploadResponse uploadSplit(DataSplit ds) {
-        UploadSplitRequest uploadRequest = UploadSplitRequest
+    public DownloadResponse downloadTable(String modelName, int flVersion) {
+        logger.info("Download the following data:");
+        TableMetaData metadata = TableMetaData.newBuilder()
+                .setName(modelName).setVersion(flVersion + 1).build();
+        DownloadTableRequest downloadRequest = DownloadTableRequest.newBuilder().setMetaData(metadata).build();
+        return stub.downloadTable(downloadRequest);
+    }
+
+    public UploadResponse uploadTable(Table data) {
+
+        UploadTableRequest uploadRequest = UploadTableRequest
+                .newBuilder()
+                .setData(data)
+                .setClientuuid(clientID)
+                .build();
+
+        logger.info("Upload the following data:");
+        logger.info("Upload Data Name:" + data.getMetaData().getName());
+        logger.info("Upload Data Version:" + data.getMetaData().getVersion());
+        logger.debug("Upload Data" + data.getTableMap());
+//        logger.info("Upload" + data.getTableMap().get("weights").getTensorList().subList(0, 5));
+
+        UploadResponse uploadResponse = stub.uploadTable(uploadRequest);
+        return uploadResponse;
+    }
+    public SplitResponse split(DataSplit ds) {
+        SplitRequest uploadRequest = SplitRequest
                 .newBuilder()
                 .setSplit(ds)
                 .setClientuuid(clientID)
                 .build();
 
-        return stub.uploadSplitTrain(uploadRequest);
+        return stub.split(uploadRequest);
     }
 
-    /***
-     * XGBoost download aggregated best split
-     * @param treeID
-     * @return
-     */
-    public DownloadSplitResponse downloadSplit(
-            String treeID,
-            String nodeID) {
-        DownloadSplitRequest downloadRequest = DownloadSplitRequest
-                .newBuilder()
-                .setTreeID(treeID)
-                .setNodeID(nodeID)
-                .setClientuuid(clientID)
-                .build();
-        return stub.downloadSplitTrain(downloadRequest);
-    }
 
     public UploadResponse uploadTreeEval(
             List<BoostEval> boostEval) {
@@ -71,15 +81,15 @@ public class FGBoostStub {
         return stub.uploadTreeEval(uploadTreeEvalRequest);
     }
 
-    public PredictTreeResponse uploadTreePred(
+    public PredictResponse uploadTreePred(
             List<BoostEval> boostEval) {
-        PredictTreeRequest request = PredictTreeRequest
+        PredictRequest request = PredictRequest
                 .newBuilder()
                 .setClientuuid(clientID)
                 .addAllTreeEval(boostEval)
                 .build();
 
-        return stub.predictTree(request);
+        return stub.predict(request);
     }
 
 
@@ -99,6 +109,6 @@ public class FGBoostStub {
                 .setClientuuid(clientID)
                 .setTreeLeaves(treeLeaves)
                 .build();
-        return  stub.uploadTreeLeaves(uploadTreeLeavesRequest);
+        return stub.uploadTreeLeaves(uploadTreeLeavesRequest);
     }
 }

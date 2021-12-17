@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.grpc.GrpcClientBase
 import com.intel.analytics.bigdl.ppml.psi.PSIStub
-import com.intel.analytics.bigdl.ppml.vfl.NNStub
+import com.intel.analytics.bigdl.ppml.vfl.{FGBoostStub, NNStub}
 import java.io.{File, IOException}
 import java.util
 import java.util.concurrent.TimeUnit
@@ -36,7 +36,7 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   protected var taskID: String = "taskID"
   var psiStub: PSIStub = null
   var nnStub: NNStub = null
-
+  var fgbostStub: FGBoostStub = null
   def this() {
     this(null)
   }
@@ -55,6 +55,7 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   override def loadServices(): Unit = {
     psiStub = new PSIStub(channel)
     nnStub = new NNStub(channel, clientUUID)
+    fgbostStub = new FGBoostStub(channel, clientUUID)
   }
 
   override def shutdown(): Unit = {
