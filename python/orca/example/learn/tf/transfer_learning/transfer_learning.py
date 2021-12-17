@@ -34,7 +34,6 @@
 # https://github.com/tensorflow/docs/blob/master/site/en/r1/tutorials/images/transfer_learning.ipynb
 
 import os
-os.environ['NO_GCE_CHECK'] = "True"
 from os.path import exists
 from os import makedirs
 import argparse

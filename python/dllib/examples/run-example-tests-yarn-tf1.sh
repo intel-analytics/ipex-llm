@@ -1,7 +1,5 @@
 #!/bin/bash
 
-############################ client
-
 echo "#1 start test for orca tf basic_text_classification basic_text_classification"
 #timer
 start=$(date "+%s")
@@ -9,9 +7,8 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/basic_text_classification/basic_text_classification.py --cluster_mode yarn-client --data_dir /data/imdb
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca basic_text_classification failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -27,9 +24,8 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segme
   --non_interactive --epochs 1 --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca image_segmentation failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -44,9 +40,8 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
   -b 128 --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca inception failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -59,15 +54,12 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py --data_dir /data --cluster_mode yarn-client --download False
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca learning transfer_learning failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#4 Total time cost ${time} seconds"
-
-##################### cluster
 
 echo "#5 start test for orca tf basic_text_classification basic_text_classification"
 #timer
@@ -76,16 +68,15 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/basic_text_classification/basic_text_classification.py --cluster_mode yarn-cluster --data_dir /data/imdb
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca basic_text_classification failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#5 Total time cost ${time} seconds"
 
 echo "#6 start test for orca tf image_segmentation image_segmentation.py"
-#timer success
+#timer
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segmentation.py \
@@ -94,16 +85,15 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf/image_segmentation/image_segme
   --non_interactive --epochs 1 --cluster_mode yarn-cluster
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca image_segmentation failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
 echo "#6 Total time cost ${time} seconds"
 
 echo "#7 start test for orca inception inception"
-#timer ModuleNotFoundError: No module named 'inception_preprocessing'
+#timer
 start=$(date "+%s")
 #run the example
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
@@ -111,9 +101,8 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
   -b 128 --cluster_mode yarn-cluster
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca inception failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
@@ -126,9 +115,8 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/tf/transfer_learning/transfer_learning.py --data_dir /data --cluster_mode yarn-cluster
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca learning transfer_learning failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))

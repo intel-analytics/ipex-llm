@@ -15,15 +15,14 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py 
   --cluster_mode yarn-client
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca learning learn tf2 resnet failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now==$(date "+%s")
 time==$((now - start))
 echo "#9 Total time cost ${time} seconds"
 
-echo "#9 start test for orca learn tf2 resnet"
+echo "#10 start test for orca learn tf2 resnet"
 #timer
 start=$(date "+%s")
 #run the example
@@ -38,15 +37,14 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/resnet/resnet-50-imagenet.py 
   --cluster_mode yarn-cluster
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca learning learn tf2 resnet failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now==$(date "+%s")
 time==$((now - start))
-echo "#9 Total time cost ${time} seconds"
+echo "#10 Total time cost ${time} seconds"
 
-echo "#23 start test for orca yolov3 yoloV3"
+echo "#11 start test for orca yolov3 yoloV3"
 #timer
 start=$(date "+%s")
 #run the example
@@ -65,15 +63,14 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/yoloV3.py  \
   --checkpoint_folder /data/checkpoints
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca yolov3 failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#23 Total time cost ${time} seconds"
+echo "#11 Total time cost ${time} seconds"
 
-echo "#23 start test for orca yolov3 yoloV3"
+echo "#12 start test for orca yolov3 yoloV3"
 #timer
 start=$(date "+%s")
 #run the example
@@ -92,10 +89,9 @@ python ${BIGDL_ROOT}/python/orca/example/learn/tf2/yolov3/yoloV3.py  \
   --checkpoint_folder /data/checkpoints
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  #clear_up
   echo "orca yolov3 failed"
-  #exit $exit_status
+  exit $exit_status
 fi
 now=$(date "+%s")
 time=$((now - start))
-echo "#23 Total time cost ${time} seconds"
+echo "#12 Total time cost ${time} seconds"
