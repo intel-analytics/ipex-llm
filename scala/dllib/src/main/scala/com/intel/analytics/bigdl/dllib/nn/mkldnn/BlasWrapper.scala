@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.{Util => NNUtils, _}
 import com.intel.analytics.bigdl.dllib.utils._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  * wrap blas module to dnn module,
@@ -62,7 +62,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   }
 
   private[mkldnn] var needOutputFormats: Boolean = true
-  @transient private lazy val logger = Logger.getLogger(getClass)
+  @transient private lazy val logger = LogManager.getLogger(getClass)
 
   @transient private var subModels: Array[Module[Float]] = _
   @transient private var subModelNumber : Int = 1

@@ -17,7 +17,6 @@ package com.intel.analytics.bigdl.ppml.example
 
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.hfl.LogisticRegression
-import org.apache.log4j.{Level, Logger}
 import scopt.OptionParser
 
 import collection.JavaConverters._

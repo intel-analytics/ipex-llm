@@ -17,10 +17,11 @@
 package com.intel.analytics.bigdl.friesian.serving.utils
 
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
-import org.apache.log4j.Logger
+
 
 import java.nio.file.Files
 import scala.beans.BeanProperty
+import org.apache.logging.log4j.{LogManager, Logger}
 
 class gRPCHelper extends Serializable {
   // BeanProperty store attributes read from config file
@@ -83,7 +84,7 @@ class gRPCHelper extends Serializable {
   var itemModel: InferenceModel = _
   var itemSlotType: Int = 0
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
 
   def parseConfigStrings(): Unit = {
     redisUrl.split("\\s*,\\s*").foreach(url => {

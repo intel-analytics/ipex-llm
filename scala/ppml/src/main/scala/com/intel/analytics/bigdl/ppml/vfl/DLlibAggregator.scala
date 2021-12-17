@@ -22,14 +22,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLPhase, Storage}
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.toFloatTensor
-import org.apache.log4j.Logger
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
 
 trait DLlibAggregator extends Aggregator[FlBaseProto.Table] {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
   var module: Sequential[Float] = null
   var target: Tensor[Float] = null
   def protoTableMapToTensorIterableMap(inputMap: java.util.Map[String, FlBaseProto.Table]):

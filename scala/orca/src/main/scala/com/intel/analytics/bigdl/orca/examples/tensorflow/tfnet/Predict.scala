@@ -21,18 +21,19 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.Nu
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.image.{ImageMatToTensor, ImageResize, ImageSet, ImageSetToSample}
 import com.intel.analytics.bigdl.orca.net.TFNet
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
 import scopt.OptionParser
 
 
 object Predict {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.zoo").setLevel(Level.INFO)
-  Logger.getLogger("com.intel.analytics.zoo.feature.image").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
+  Configurator.setLevel("com.intel.analytics.zoo", Level.INFO)
+  Configurator.setLevel("com.intel.analytics.zoo.feature.image", Level.ERROR)
 
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   case class PredictParam(image: String = "/tmp/datasets/cat_dog/train_sampled",
                           model: String = "/tmp/models/ssd_mobilenet_v1_coco_2018_01_28" +

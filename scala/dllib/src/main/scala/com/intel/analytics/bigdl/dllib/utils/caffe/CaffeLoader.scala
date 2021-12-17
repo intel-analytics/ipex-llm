@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{FileReader, Table}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -59,7 +59,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   customizedConverters: mutable.HashMap[String, Customizable[T]] = null
 )(implicit ev: TensorNumeric[T]) {
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   private var netparam: Caffe.NetParameter = _
   private var name2LayerV1: Map[String, V1LayerParameter] = Map[String, V1LayerParameter]()

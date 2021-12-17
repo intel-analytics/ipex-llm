@@ -34,7 +34,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 /**
  * A utility to convert BigDL model into caffe format and persist into local/hdfs file system
  *
@@ -48,7 +48,7 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
       val modelPath: String, val module : AbstractModule[Activity, Activity, T],
       useV2 : Boolean = true, overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) {
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   private val hdfsPrefix: String = "hdfs:"
 

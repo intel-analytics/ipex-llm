@@ -30,13 +30,13 @@ import com.intel.analytics.bigdl.ppml.generated.NNServiceProto._
 import com.intel.analytics.bigdl.ppml.hfl.nn.HflNNAggregator
 import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNAggregator
 import io.grpc.stub.StreamObserver
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import collection.JavaConverters._
 import collection.JavaConversions._
 
 class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
   private var aggregatorMap: Map[String, Aggregator[Table]] = null
   initAggregatorMap()
 

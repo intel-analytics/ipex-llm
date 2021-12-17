@@ -6,7 +6,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil.getParametersFromModel
 import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -15,7 +15,7 @@ import scala.collection.JavaConverters._
 
 
 object ProtoUtils {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
   def outputTargetToTableProto(output: Activity,
                                target: Activity,
                                meta: TableMetaData = null): Table = {

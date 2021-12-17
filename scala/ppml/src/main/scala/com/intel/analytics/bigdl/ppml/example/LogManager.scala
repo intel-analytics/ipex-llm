@@ -1,8 +1,10 @@
 package com.intel.analytics.bigdl.ppml.example
 
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
+
 
 trait LogManager {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.ppml").setLevel(Level.DEBUG)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("com.intel.analytics.bigdl.ppml", Level.DEBUG)
 }

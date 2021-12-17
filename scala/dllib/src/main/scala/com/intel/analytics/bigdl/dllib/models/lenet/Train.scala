@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils._
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Train {

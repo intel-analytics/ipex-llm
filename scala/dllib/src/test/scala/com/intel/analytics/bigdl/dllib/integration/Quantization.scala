@@ -25,9 +25,10 @@ import com.intel.analytics.bigdl.dllib.models.resnet.{Utils => ResNetUtils}
 import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim.{Top1Accuracy, Top5Accuracy, ValidationMethod, ValidationResult}
-import com.intel.analytics.bigdl.dllib.utils.{Engine}
+import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -84,7 +85,7 @@ class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
+  Configurator.setLevel("com.intel.analytics.bigdl.dllib.optim", Level.INFO)
 
   "Quantize LeNet5" should "generate the same top1 accuracy" in {
     val lenetFP32Model = System.getenv("lenetfp32model")
