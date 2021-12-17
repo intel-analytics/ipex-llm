@@ -2,6 +2,7 @@ package com.intel.analytics.bigdl.ppml.example.vfl_gboost_regression
 
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.hfl.LogisticRegression
+import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.example.LogManager
 import scopt.OptionParser
 
@@ -48,9 +49,9 @@ object VflGBoostRegression extends LogManager {
     val (trainData, testData) = getData(dataPath, rowKeyName)
 
     // create LogisticRegression object to train the model
-    val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData = testData)
-    lr.evaluate()
-    lr.predict(testData)
+    val fGBoostRegression = new FGBoostRegression()
+    fGBoostRegression.fit(trainData, valData = testData)
+    fGBoostRegression.evaluate()
+    fGBoostRegression.predict(testData)
   }
 }
