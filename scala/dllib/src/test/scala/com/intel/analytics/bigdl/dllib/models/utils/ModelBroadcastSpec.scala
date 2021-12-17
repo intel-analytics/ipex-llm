@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.apache.commons.lang3.SerializationUtils
 import com.intel.analytics.bigdl.dllib.utils.SparkContextLifeCycle
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -35,8 +36,8 @@ class ModelBroadcastSpec extends SparkContextLifeCycle with Matchers {
     System.clearProperty("bigdl.ModelBroadcastFactory")
   }
 
-  Logger.getLogger("org").setLevel(Level.WARN)
-  Logger.getLogger("akka").setLevel(Level.WARN)
+  Configurator.setLevel("org", Level.WARN)
+  Configurator.setLevel("akka", Level.WARN)
 
   "model broadcast" should "work properly" in {
     val model = LeNet5(10)

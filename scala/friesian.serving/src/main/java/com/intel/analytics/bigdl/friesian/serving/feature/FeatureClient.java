@@ -28,15 +28,17 @@ import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class FeatureClient {
-    private static final Logger logger = Logger.getLogger(FeatureClient.class.getName());
+    private static final Logger logger = LogManager.getLogger(FeatureClient.class.getName());
     private FeatureGrpc.FeatureBlockingStub blockingStub;
 
     public FeatureClient(Channel channel) {
@@ -118,7 +120,7 @@ public class FeatureClient {
 
     /** Issues several different requests and then exits. */
     public static void main(String[] args) throws InterruptedException {
-        Logger.getLogger("org").setLevel(Level.ERROR);
+        Configurator.setLevel("org", Level.ERROR);
 
         CMDParser cmdParser = new CMDParser();
         cmdParser.addOption("target", "The server to connect to.", "localhost:8980");

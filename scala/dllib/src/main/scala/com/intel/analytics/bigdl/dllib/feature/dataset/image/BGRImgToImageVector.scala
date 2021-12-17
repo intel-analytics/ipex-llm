@@ -17,13 +17,13 @@
 package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.mllib.linalg.DenseVector
 
 import scala.collection.Iterator
 
 object BGRImgToImageVector {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply(): BGRImgToImageVector = {
     new BGRImgToImageVector()

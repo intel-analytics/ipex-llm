@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import org.opencv.imgcodecs.Imgcodecs
-import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
 import com.intel.analytics.bigdl.orca.inference.{EncryptSupportive, InferenceSupportive}
@@ -30,6 +29,7 @@ import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper}
 import com.intel.analytics.bigdl.serving.http.Instances
 import com.intel.analytics.bigdl.serving.serialization.{JsonInputDeserializer, StreamSerializer}
 import com.intel.analytics.bigdl.serving.utils.{Conventions, RedisUtils}
+import org.apache.logging.log4j.LogManager
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 
@@ -38,7 +38,7 @@ import redis.clients.jedis.Jedis
 
 class PreProcessing()
   extends EncryptSupportive with InferenceSupportive {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   if (ClusterServing.helper == null) {
     ClusterServing.helper = new ClusterServingHelper
   }

@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.FeatureTransformer._
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.feature.image.{ImageProcessing, ImageSet}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 private[bigdl] abstract class ImageProcessing3D extends ImageProcessing {
 
@@ -92,5 +92,5 @@ private[bigdl] abstract class ImageProcessing3D extends ImageProcessing {
 }
 
 object ImageProcessing3D {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 }

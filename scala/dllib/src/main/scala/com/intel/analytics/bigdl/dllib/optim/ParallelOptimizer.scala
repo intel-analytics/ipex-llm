@@ -31,9 +31,11 @@ import com.intel.analytics.bigdl.{Module, _}
 import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import org.apache.log4j.Logger
+
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
+
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -43,7 +45,7 @@ object ParallelOptimizer extends AbstractOptimizer {
 
   import Optimizer._
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
 
   /**
    * Train the model.

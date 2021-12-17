@@ -16,14 +16,14 @@
 
 package com.intel.analytics.bigdl.serving.utils
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import redis.clients.jedis.exceptions.JedisConnectionException
 import redis.clients.jedis.{Jedis, JedisPool, Pipeline, StreamEntryID}
 
 import scala.collection.JavaConverters._
 
 object RedisUtils {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   def createRedisGroupIfNotExist(jedis: Jedis, streamName: String): Unit = {
     try {
       jedis.xgroupCreate(streamName,
