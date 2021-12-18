@@ -79,6 +79,10 @@ if __name__ == '__main__':
     autoprophet_fit_time = time.time() - start_time
     stop_orca_context()
 
+    # save and load
+    autoprophet.save("autoprophet.ckpt")
+    autoprophet = AutoProphet(load_dir="autoprophet.ckpt")
+
     # evaluate
     auto_searched_mse = autoprophet.evaluate(df_test, metrics=['mse'])[0]
     nonauto_searched_mse = prophet.evaluate(df_test, metrics=['mse'])[0]
