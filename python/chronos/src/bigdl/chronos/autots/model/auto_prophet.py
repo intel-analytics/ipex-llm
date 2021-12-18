@@ -17,6 +17,7 @@
 #
 
 import pandas as pd
+import warnings
 from bigdl.chronos.model.prophet import ProphetBuilder, ProphetModel
 
 
@@ -68,13 +69,14 @@ class AutoProphet:
         :param remote_dir: String. Remote directory to sync training results and checkpoints. It
             defaults to None and doesn't take effects while running in local. While running in
             cluster, it defaults to "hdfs:///tmp/{name}".
+        :param load_dir: Load the ckpt from load_dir. The value defaults to None.
 
         :param prophet_config: Other Prophet hyperparameters.
         """
         if load_dir:
             self.best_model = ProphetModel()
             self.best_model.restore(load_dir)
-        else:
+        try:
             from bigdl.orca.automl.auto_estimator import AutoEstimator
             import bigdl.orca.automl.hp as hp
             self.search_space = {
@@ -102,6 +104,8 @@ class AutoProphet:
                                           resources_per_trial={"cpu": cpus_per_trial},
                                           remote_dir=remote_dir,
                                           name=name)
+        except ImportError:
+            warnings.warn("You need to install `bigdl-orca[automl]` to use `fit` function.")
 
     def fit(self,
             data,

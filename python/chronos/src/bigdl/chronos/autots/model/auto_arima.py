@@ -16,6 +16,7 @@
 # limitations under the License.
 #
 
+import warnings
 from bigdl.chronos.model.arima import ARIMABuilder, ARIMAModel
 
 # -
@@ -78,7 +79,7 @@ class AutoARIMA:
         if load_dir:
             self.best_model = ARIMAModel()
             self.best_model.restore(load_dir)
-        else:
+        try:
             from bigdl.orca.automl.auto_estimator import AutoEstimator
             self.search_space = {
                 "p": p,
@@ -96,6 +97,8 @@ class AutoARIMA:
                                               "cpu": cpus_per_trial},
                                           remote_dir=remote_dir,
                                           name=name)
+        except ImportError:
+            warnings.warn("You need to install `bigdl-orca[automl]` to use `fit` function.")
 
     def fit(self,
             data,
