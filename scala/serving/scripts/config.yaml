@@ -1,0 +1,64 @@
+## Analytics-zoo Cluster Serving Config
+
+
+# model path must be provided
+# modelPath: /path/to/model
+
+# name, default is serving_stream, you need to specify if running multiple servings
+# jobName:
+
+# default, None
+# postProcessing:
+
+# default, false, if input is already batched NdArray, set true
+# inputAlreadyBatched:
+
+######## Performance Configuration
+# default, number of cores per machine
+# if you set coreNumberPerMachine, Cluster Serving will auto config modelParallelism and threadPerModel
+# if you need to set modelParallelism and threadPerModel manually, do not set coreNumberPerMachine
+# coreNumberPerMachine:
+
+# default: number of models used in serving
+# modelParallelism:
+
+# default: number of cores (or threads) used per model in serving
+# threadPerModel
+
+# default: OFF
+# performance_mode:
+
+
+######## Specific Configuration
+# default: localhost:8081
+# flinkRestUrl:
+
+# default: redis, support: redis, kafka
+# queueUsed:
+
+# default: localhost:6379
+# redisUrl:
+# default: localhost:9092
+# kafkaUrl:
+
+# default: 8g
+# redisMaxmemory:
+
+# default: 5000
+# redisTimeout:
+
+######## Secure Configuration
+# default: false
+# redisSecureEnabled:
+
+# default:
+# redisSecureTrustStorePath:
+
+# default:
+# redisSecureTrustStorePassword:
+
+# default: false
+# modelEncrypted:
+
+# default: false
+# recordEncrypted:

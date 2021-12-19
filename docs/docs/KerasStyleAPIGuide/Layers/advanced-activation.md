@@ -1,3 +1,73 @@
+## **PReLU**
+Applies parametric ReLU, where parameter varies the slope of the negative part.
+
+It follows: f(x) = max(0, x) + a * min(0, x)
+
+**Scala:**
+```scala
+PReLU(nOutputPlane = 0, inputShape = null)
+```
+**Python:**
+```python
+PReLU(nOutputPlane=0, input_shape=None)
+```
+
+**Parameters:**
+
+* `nOutputPlane`: Input map number. Default is 0,
+                  which means using PReLU in shared version and has only one parameter.
+* `inputShape`:  A Single Shape, does not include the batch dimension.
+
+**Scala example:**
+```scala
+import com.intel.analytics.zoo.pipeline.api.keras.layers.PReLU
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val model = Sequential[Float]()
+model.add(PReLU[Float](inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+-0.9026888      -1.0402212      1.3878769
+-0.17167428     0.08202032      1.2682742
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+-0.2256722      -0.2600553      1.3878769
+-0.04291857     0.08202032      1.2682742
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from zoo.pipeline.api.keras.models import Sequential
+from zoo.pipeline.api.keras.layers import PReLU
+
+model = Sequential()
+model.add(PReLU(input_shape=(3, )))
+input = np.random.random([2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[0.61639702 0.08877075 0.93652509]
+ [0.38800821 0.76286851 0.95777973]]
+```
+Output is
+```python
+[[0.616397   0.08877075 0.9365251 ]
+ [0.3880082  0.7628685  0.9577797 ]]
+```
+
+---
 ## **ELU**
 Exponential Linear Unit.
 
@@ -19,12 +89,13 @@ ELU(alpha=1.0, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, ELU}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.ELU
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
-model.add(ELU(inputShape = Shape(3)))
+model.add(ELU[Float](inputShape = Shape(3)))
 val input = Tensor[Float](2, 3).randn()
 val output = model.forward(input)
 ```
@@ -46,8 +117,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import ELU
+from zoo.pipeline.api.keras.layers import ELU
+from zoo.pipeline.api.keras.models import Sequential
 
 model = Sequential()
 model.add(ELU(input_shape=(3, )))
@@ -63,74 +134,6 @@ Output is
 ```python
 [[0.9040492  0.23530924 0.49711093]
  [0.43009162 0.22446032 0.9014477 ]]
-```
-
----
-## **LeakyReLU**
-Leaky version of a Rectified Linear Unit.
-
-It allows a small gradient when the unit is not active: f(x) = alpha * x for x < 0, f(x) = x for x >= 0.
-
-**Scala:**
-```scala
-LeakyReLU(alpha = 0.3, inputShape = null)
-```
-**Python:**
-```python
-LeakyReLU(alpha=0.3, input_shape=None, name=None)
-```
-
-**Parameters:**
-
-* `alpha`: Negative slope coefficient. Default is 0.3.
-* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, LeakyReLU}
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor.Tensor
-
-val model = Sequential[Float]()
-model.add(LeakyReLU(inputShape = Shape(3)))
-val input = Tensor[Float](2, 3).randn()
-val output = model.forward(input)
-```
-Input is:
-```scala
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-0.8846715	 -0.5720033	 -0.8220917
--0.51755846	 1.099684	 2.6011446
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
-```
-Output is:
-```scala
-output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
-0.8846715	    -0.005720033   -0.008220917
--0.0051755845   1.099684	   2.6011446
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
-```
-
-**Python example:**
-```python
-import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import LeakyReLU
-
-model = Sequential()
-model.add(LeakyReLU(input_shape=(3, )))
-input = np.random.random([2, 3])
-output = model.forward(input)
-```
-Input is:
-```python
-[[0.14422043 0.38066946 0.55092494]
- [0.60075682 0.53505094 0.78330962]]
-```
-Output is
-```python
-[[0.14422044 0.38066944 0.55092496]
- [0.6007568  0.5350509  0.78330964]]
 ```
 
 ---
@@ -160,12 +163,13 @@ For example, if the incoming feature maps are from a 2D convolution with output 
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, SReLU}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.SReLU
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
-model.add(SReLU(inputShape = Shape(2, 3)))
+model.add(SReLU[Float](inputShape = Shape(2, 3)))
 val input = Tensor[Float](2, 2, 3).randn()
 val output = model.forward(input)
 ```
@@ -199,8 +203,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import SReLU
+from zoo.pipeline.api.keras.layers import SReLU
+from zoo.pipeline.api.keras.models import Sequential
 
 model = Sequential()
 model.add(SReLU(input_shape=(2, 3)))
@@ -246,12 +250,13 @@ ThresholdedReLU(theta=1.0, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, ThresholdedReLU}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.ThresholdedReLU
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
-model.add(ThresholdedReLU(inputShape = Shape(3)))
+model.add(ThresholdedReLU[Float](inputShape = Shape(3)))
 val input = Tensor[Float](2, 3).randn()
 val output = model.forward(input)
 ```
@@ -273,8 +278,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import ThresholdedReLU
+from zoo.pipeline.api.keras.layers import ThresholdedReLU
+from zoo.pipeline.api.keras.models import Sequential
 
 model = Sequential()
 model.add(ThresholdedReLU(input_shape=(3, )))

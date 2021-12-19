@@ -1,96 +1,105 @@
-site_name: BigDL Project
+site_name: BigDL
 theme: null
 extra_css: [extra.css]
 theme_dir: mkdocs_windmill 
 repo_name: 'Fork on GitHub '
 repo_url: 'https://github.com/intel-analytics/BigDL'
-google_analytics: ['UA-60548202-2', 'bigdl-project.github.io']
+google_analytics: ['UA-125166209-1', 'analytics-zoo.github.io']
 extra:
     version: latest
     article_nav_top: false
     article_nav_bottom: false
 
-
 pages:
-- Overview: index.md
+- Overview: index.md 
+- Getting Started: gettingstarted.md
 - Releases: 
   - Download: release-download.md 
   - Documentation: release-docs.md
-- Getting Started: getting-started.md
-- Scala User Guide: 
-  - Install: 
-    - Use Pre-built Libs: ScalaUserGuide/install-pre-built.md
-    - Build from Source Code: ScalaUserGuide/install-build-src.md 
-    - Build BigDL-core: ScalaUserGuide/build-bigdl-core.md 
-  - Run: ScalaUserGuide/run.md
-  - Configuration: ScalaUserGuide/configuration.md
-  - Examples: ScalaUserGuide/examples.md
-  - More Resources: ScalaUserGuide/resources.md
-- Python User Guide: 
-  - Install:
-    - From pip: PythonUserGuide/install-from-pip.md
-    - Without pip: PythonUserGuide/install-without-pip.md
-  - Run:
-    - After pip install: PythonUserGuide/run-from-pip.md
-    - Without pip install: PythonUserGuide/run-without-pip.md
+- User Guide:
+  - Docker User Guide: DockerUserGuide/index.md
+  - Python:
+    - Install: PythonUserGuide/install.md
+    - Run: PythonUserGuide/run.md
+    - Develop: DeveloperGuide/python.md
+    - Library version: PythonUserGuide/python-lib-version.md
     - FAQ: PythonUserGuide/python-faq.md
-  - Examples: PythonUserGuide/python-examples.md
-  - More Examples and Tutorials: PythonUserGuide/python-resources.md
-- Programming Guide:
-  - Define a Model:
-    - Using Sequential API: ProgrammingGuide/Model/Sequential.md
-    - Using Functional API: ProgrammingGuide/Model/Functional.md
-  - Optimization: ProgrammingGuide/optimization.md
+  - Scala: 
+    - Install: ScalaUserGuide/install.md
+    - Run: ScalaUserGuide/run.md
+  - Examples: examples.md
+- Programming Guide: 
+  - Pipeline APIs:
+    - DataFrame and ML Pipeline: ProgrammingGuide/nnframes.md
+    - Autograd: ProgrammingGuide/autograd.md
+    - Transfer Learning: ProgrammingGuide/transferlearning.md
+    - Model Serving: ProgrammingGuide/inference.md
+  - TFPark:
+    - TFPark Overview: ProgrammingGuide/TFPark/tensorflow.md
+    - How To Import Data: ProgrammingGuide/TFPark/how-to-import-data.md
+    - Text Models: ProgrammingGuide/TFPark/text-models.md
+    - BERT Classifier: ProgrammingGuide/TFPark/bert-classifier.md
+  - PyTorch: ProgrammingGuide/pytorch.md
+  - RayOnSpark: ProgrammingGuide/rayonspark.md
+  - Cluster Serving: ClusterServingGuide/ProgrammingGuide.md
+  - AutoML:
+    - Overview: ProgrammingGuide/AutoML/overview.md
+    - Time Series Forecasting: ProgrammingGuide/AutoML/forecasting.md
+    - Visualization: ProgrammingGuide/AutoML/visualization.md
+  - Feature Engineering:
+    - Working with Images: ProgrammingGuide/workingwithimages.md
+    - Working with Texts: ProgrammingGuide/workingwithtexts.md
+  - Built-in Models:
+    - Object Detection API: ProgrammingGuide/object-detection.md
+    - Image Classification API: ProgrammingGuide/image-classification.md
+    - Text Classification API: ProgrammingGuide/text-classification.md
+    - Recommendation API: ProgrammingGuide/recommendation.md
+    - Anomaly Detection API: ProgrammingGuide/anomaly-detection.md
+    - Text Matching API: ProgrammingGuide/text-matching.md
+    - Sequence to Sequence API: ProgrammingGuide/seq2seq.md
   - Visualization: ProgrammingGuide/visualization.md
-  - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md
+  - Reference Use Cases: ProgrammingGuide/usercases-overview.md
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
-  - Run on Kubernetes: ProgrammingGuide/run-on-k8s.md
-  - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
-  - Caffe Support: ProgrammingGuide/caffe-support.md
-  - Keras Support: ProgrammingGuide/keras-support.md
-  - Quantization Support: ProgrammingGuide/quantization-support.md
-  - Define Customized Layer/Criterion:
-    - Define New Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
-    - Implement Customized Serializer: ProgrammingGuide/Model/Serialization.md
-  - Build Image Application: ProgrammingGuide/image-support.md
+  - Run on Google Colab: ProgrammingGuide/run-notebook-colab.md
+  - Run on Databricks: ProgrammingGuide/AnalyticsZoo-on-Databricks.md
+  - Run on Kubernetes cluster: ProgrammingGuide/k8s.md
+- White Paper:
+  - BigDL: wp-bigdl.md
 - API Guide:
-  - Engine: APIGuide/Engine.md
-  - Data: APIGuide/Data.md
-  - Transformer: APIGuide/Transformer.md
-  - Model: APIGuide/Module.md
-  - Layers:
-    - Containers:  APIGuide/Layers/Containers.md
-    - Simple Layers: APIGuide/Layers/Simple-Layers.md
-    - Convolution Layers: APIGuide/Layers/Convolution-Layers.md
-    - Pooling Layers:  APIGuide/Layers/Pooling-Layers.md
-    - Activations: APIGuide/Layers/Activations.md
-    - Embedding Layers: APIGuide/Layers/Embedding-Layers.md
-    - Merge/Split Layers: APIGuide/Layers/MergeSplit-Layers.md
-    - Math Layers: APIGuide/Layers/Math-Layers.md
-    - Padding Layers: APIGuide/Layers/Padding-Layers.md
-    - Normalization Layers:  APIGuide/Layers/Normalization-Layers.md
-    - Dropout Layers: APIGuide/Layers/Dropout-Layers.md
-    - Distance Layers: APIGuide/Layers/Distance-Layers.md
-    - Recurrent Layers:  APIGuide/Layers/Recurrent-Layers.md
-    - Recursive Layers:  APIGuide/Layers/Recursive-Layers.md
-    - Sparse Layers:  APIGuide/Layers/Sparse-Layers.md
-    - Utilities: APIGuide/Layers/Utilities.md
-  - Losses: APIGuide/Losses.md
-  - Initalizers: APIGuide/Initializers.md
-  - Regularizers: APIGuide/Regularizers.md
-  - Optimizer: APIGuide/Optimizers/Optimizer.md
-  - Optim Methods:
-    - OptimMethod: APIGuide/Optimizers/OptimMethod.md 
-    - Optimization Algorithms: APIGuide/Optimizers/Optim-Methods.md
-    - LearningRate Scheduler: APIGuide/Optimizers/Learningrate-Scheduler.md
-  - Triggers: APIGuide/Triggers.md
-  - Metrics:  APIGuide/Metrics.md
-  - Supported Caffe Layers: APIGuide/caffe_layer_list.md
-  - Supported Tensorflow Operations: APIGuide/tensorflow_ops_list.md
-  - Keras Issues: APIGuide/keras-issues.md
-  - Full API docs:
-    - Scala Docs: APIGuide/scaladoc.md
-    - Python API Docs: APIGuide/python-api-doc.md
+  - Pipeline APIs:
+    - NNFrames: APIGuide/PipelineAPI/nnframes.md
+    - Autograd-Math: APIGuide/PipelineAPI/math.md
+    - Autograd-Variable: APIGuide/PipelineAPI/variable.md
+    - Net: APIGuide/PipelineAPI/net.md
+    - Inference: APIGuide/PipelineAPI/inference.md
+    - Estimator: APIGuide/PipelineAPI/estimator.md
+  - TFPark API:
+    - KerasModel: APIGuide/TFPark/model.md
+    - TFEstimator: APIGuide/TFPark/estimator.md
+    - TFOptimizer: APIGuide/TFPark/tf-optimizer.md
+    - TFPredictor: APIGuide/TFPark/tf-pred.md
+    - TFDataset: APIGuide/TFPark/tf-dataset.md
+    - GANEstimator: APIGuide/TFPark/gan-estimator.md
+    - Text Models: APIGuide/TFPark/text-models.md
+    - BERT Classifier: APIGuide/TFPark/bert-classifier.md
+  - Cluster Serving: ClusterServingGuide/APIGuide.md
+  - AutoML:
+    - TimeSequencePredictor: APIGuide/AutoML/time-sequence-predictor.md
+    - Recipe: APIGuide/AutoML/recipe.md
+    - TimeSequencePipeline: APIGuide/AutoML/time-sequence-pipeline.md
+  - Feature Engineering:
+    - FeatureSet: APIGuide/FeatureEngineering/featureset.md
+    - Relation: APIGuide/FeatureEngineering/relation.md
+    - Image: APIGuide/FeatureEngineering/image.md
+    - Text: APIGuide/FeatureEngineering/text.md
+  - Models:
+    - Object Detection: APIGuide/Models/object-detection.md
+    - Image Classification: APIGuide/Models/image-classification.md
+    - Text Classification: APIGuide/Models/text-classification.md
+    - Recommendation: APIGuide/Models/recommendation.md
+    - Anomaly Detection: APIGuide/Models/anomaly-detection.md
+    - Text Matching: APIGuide/Models/text-matching.md
+    - Sequence to Sequence: APIGuide/Models/seq2seq.md
 - Keras-Style API Guide:
   - Python Guide: KerasStyleAPIGuide/keras-api-python.md
   - Scala Guide: KerasStyleAPIGuide/keras-api-scala.md
@@ -106,10 +115,64 @@ pages:
     - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
     - Advanced Activations: KerasStyleAPIGuide/Layers/advanced-activation.md
     - Layer Wrappers: KerasStyleAPIGuide/Layers/wrappers.md
+    - Self Attention Layers: KerasStyleAPIGuide/Layers/self-attention.md
   - Optimization:
     - Train, evaluate or predict a model: KerasStyleAPIGuide/Optimization/training.md
-    - Optimizers: KerasStyleAPIGuide/Optimization/optimizer.md
-    - Losses: KerasStyleAPIGuide/Optimization/loss.md
+    - Optimizers: KerasStyleAPIGuide/Optimization/optimizers.md
+    - Objectives: KerasStyleAPIGuide/Optimization/objectives.md
+#- Keras2-Style API Guide:
+#  - Python Guide: Keras2StyleAPIGuide/keras-api-python.md
+#  - Scala Guide: Keras2StyleAPIGuide/keras-api-scala.md
+#  - Layers:
+#    - Activation: Keras2StyleAPIGuide/Layers/activation.md
+#    - Initialization: Keras2StyleAPIGuide/Layers/initialization.md
+#    - Core Layers: Keras2StyleAPIGuide/Layers/core.md
+#    - Convolutional Layers: Keras2StyleAPIGuide/Layers/convolutional.md
+#    - Pooling Layers: Keras2StyleAPIGuide/Layers/pooling.md
+#    - Merge Layers: Keras2StyleAPIGuide/Layers/merge.md
+#    - Recurrent Layers: Keras2StyleAPIGuide/Layers/recurrent.md
+#    - Normalization Layers: Keras2StyleAPIGuide/Layers/normalization.md
+#    - Embedding Layers: Keras2StyleAPIGuide/Layers/embedding.md
+#    - Dropout Layers: Keras2StyleAPIGuide/Layers/dropout.md
+#    - Advanced Activations: Keras2StyleAPIGuide/Layers/advanced-activation.md
+#    - Layer Wrappers: Keras2StyleAPIGuide/Layers/wrappers.md
+#  - Optimization:
+#    - Train, evaluate or predict a model: Keras2StyleAPIGuide/Optimization/training.md
+#    - Optimizers: Keras2StyleAPIGuide/Optimization/optimizer.md
+#    - Losses: Keras2StyleAPIGuide/Optimization/loss.md
+- Project Chronos:
+  - Overview: Chronos/overview.md
+  - Reference Use Cases:
+    - Network Traffic: Chronos/UseCase/network-traffic.md
+  - Tutorials:
+    - Built-in Models:
+      - LSTMForecaster and MTNetForecaster: Chronos/tutorials/LSTMForecasterAndMTNetForecaster.md
+      - TCMFForecaster: Chronos/tutorials/TCMFForecaster.md
+    - AutoTS: Chronos/tutorials/Autots.md
+  - Algorithms:
+    - MTNet: Chronos/Algorithm/MTNetAlgorithm.md
+    - LSTM: Chronos/Algorithm/LSTMAlgorithm.md
+  - API:
+    - Built-in Models:
+      - LSTMForecaster: Chronos/API/LSTMForecaster.md
+      - MTNetForecaster: Chronos/API/MTNetForecaster.md
+      - TCMFForecaster: Chronos/API/TCMFForecaster.md
+      - TCNForecaster: Chronos/API/TCNForecaster.md
+    - AutoTS:
+      - AutoTSTrainer: Chronos/API/AutoTSTrainer.md
+      - TSPipeline: Chronos/API/TSPipeline.md
+- Project Orca:
+  - Overview: Orca/overview.md
+#- OrcaContext: Orca/Overview/orca-context.md
+  - Data: Orca/data.md
+  - TensorFlow Quickstart: Orca/orca-tf-quickstart.md
+  - TensorFlow Keras Quickstart: Orca/orca-keras-quickstart.md
+  - TensorFlow Estimator: Orca/orca-tf-estimator.md
+  - PyTorch Quickstart: Orca/orca-pytorch-quickstart.md
+  - PyTorch Estimator: Orca/orca-pytorch-estimator.md
+  - OpenVINO Estimator: Orca/orca-openvino-estimator.md
+  - BigDL Estimator: Orca/orca-bigdl-estimator.md
 - Powered by: powered-by.md
-- Known Issues: known-issues.md
 - Presentations: presentations.md
+- Meetup & Webinar: meetup.md
+- FAQ and Known Issues: known-issues.md

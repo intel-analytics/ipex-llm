@@ -131,6 +131,47 @@ Test result: 0.0, total_num: 10, method: Top5Accuracy
 ```
 
 ---
+## Recall ##
+In some cases, recall metric is very useful because it offers how many of your predicted documents are relevant. The class for which we need to calculate the Recall must be included as parameter.
+
+**Scala:**
+```scala
+scala> val recall = new Recall[Float](1.0F)
+model.evaluate(dataSet, Array(recall))
+recall: com.intel.analytics.bigdl.optim.Recall[Float] = RECALL
+res6: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analytics.bigdl.optim.ValidationMethod[Float])] = Array((Recall for class 1.0: 0.0,RECALL))
+```
+
+For multiclass scenarios this metric is evaluated like **TP_For_A_Class / TP_For_A_Class  + FN_For_A_Class**
+
+---
+## Precision ##
+Precision offers the fraction of retrieved results which are relevant.
+
+**Scala:**
+```scala
+scala> val precision = new Precision[Float](1.0F)
+model.evaluate(dataSet, Array(precision))
+precision: com.intel.analytics.bigdl.optim.Precision[Float] = PRECISION
+res7: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analytics.bigdl.optim.ValidationMethod[Float])] = Array((Precision for class 1.0: 0.0,PRECISION))
+```
+
+As with the Recall, Precision in a multiclass scenario is calculated like **TP_For_A_Class / Total_Predictions_For_A_Class**
+
+---
+## F1Score ##
+Harmonic average of the precision and recall.
+
+**Scala:**
+```scala
+scala> val precision = new Precision[Float](1.0F)
+scala> val f1score = new F1Score[Float](2)
+f1score: com.intel.analytics.bigdl.optim.F1Score[Float] = F1Score
+scala> model.evaluate(dataSet, Array(f1score))
+res23: Array[(com.intel.analytics.bigdl.optim.ValidationResult, com.intel.analytics.bigdl.optim.ValidationMethod[Float])] = Array((F1Score for class 2.0: 0.3333333,F1Score))
+```
+
+---
 ## HitRatio ##
 
 Hit Ratio(HR) used in recommandation application. HR intuitively measures whether the test item is present on the top-k list.  

@@ -1,8 +1,8 @@
 # Compile products
 *.pyc
 *.class
-target/
-/dist/
+*.crc
+*.o
 
 # SBT, Maven specific
 .cache
@@ -24,14 +24,26 @@ dependency-reduced-pom.xml
 .DS_Store
 
 # data files
-*.csv
 model*.[0-9]*
 state*.[0-9]*
 
 # other
 nohup.out
 *.log
+*.lock
 *.un~
+*.idx
 .ipynb_checkpoints/
-pyspark/dist/
-pyspark/build/
+.project
+.settings/
+*/.cache-main
+*/.cache-tests
+*/.classpath
+*/.project
+*/.settings/
+*.so
+__pycache__
+*.egg-info
+target
+build
+dist

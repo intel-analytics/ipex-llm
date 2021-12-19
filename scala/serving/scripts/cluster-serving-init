@@ -1,0 +1,24 @@
+#!/bin/bash
+
+
+# try call py script
+# pip install will add following script to path, but no pip would not
+cluster-serving-py-setup.py &&
+
+if [ -f config.yaml ]; then
+  echo "Cluster Serving config file prepared."
+else
+  echo "Failed to find config file. Initialization failed."
+fi
+
+BIGDL_SERVING_JAR_PATH=$(find . -maxdepth 1 -name 'bigdl-serving-*.jar')
+
+
+if [ -n "${BIGDL_SERVING_JAR_PATH}" ]; then
+  echo "BigDL Cluster Serving Jar found at "$BIGDL_SERVING_JAR_PATH", environment already set up. Initialization success."
+else
+  echo "Failed to find bigdl-serving jar in current directory, will download it... "
+  download-serving-jar.sh
+fi
+
+

@@ -1,10 +1,11 @@
 ## **Introduction**
-We hereby introduce a new set of __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in BigDL for the sake of user-friendliness. Users, especially those familiar with Keras, are recommended to use the new API to create a BigDL model and train, evaluate or tune it in a distributed fashion.
+We provide __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in Analytics Zoo for the sake of user-friendliness. Users, especially those familiar with Keras, can easily use our API to create an Analytics Zoo model and train, evaluate or tune it in a distributed fashion.
 
 To define a model in Scala using the Keras-Style API, now one just need to import the following packages:
 
 ```scala
-import com.intel.analytics.bigdl.nn.keras._
+import com.intel.analytics.zoo.pipeline.api.keras.layers._
+import com.intel.analytics.zoo.pipeline.api.keras.models._
 import com.intel.analytics.bigdl.utils.Shape
 ```
 
@@ -44,8 +45,6 @@ setName(name)
 ```
 * Set the name of the model.
 
-See [here](Optimization/training/) on how to train, predict or evaluate a defined model.
-
 ---
 ## **Sequential API**
 The model is described as a linear stack of layers in the Sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
@@ -57,12 +56,13 @@ Sequential()
 
 Example code to create a sequential model:
 ```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, Dense, Activation}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Activation}
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 import com.intel.analytics.bigdl.utils.Shape
 
 val model = Sequential[Float]()
-model.add(Dense(32, inputShape = Shape(128)))
-model.add(Activation("relu"))
+model.add(Dense[Float](32, inputShape = Shape(128)))
+model.add(Activation[Float]("relu"))
 ```
 
 ---
@@ -89,7 +89,7 @@ Parameters:
 
 To merge a list of input __nodes__ (__NOT__ layers), following some merge mode in the Functional API:
 ```scala
-import com.intel.analytics.bigdl.nn.keras.Merge.merge
+import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
 
 merge(inputs, mode = "sum", concatAxis = -1) // This will return an output NODE.
 ```
@@ -102,9 +102,10 @@ Parameters:
 
 Example code to create a graph model:
 ```scala
-import com.intel.analytics.bigdl.nn.keras.{Input, Dense, Model}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Input}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
+import com.intel.analytics.zoo.pipeline.api.keras.models.Model
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.nn.keras.Merge.merge
 
 // instantiate input nodes
 val input1 = Input[Float](inputShape = Shape(8))
@@ -120,7 +121,7 @@ val model = Model[Float](Array(input1, input2), output)
 
 ---
 ## **Layers**
-See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
+See [here](Layers/core.md) for all the available layers for the Keras-Style API.
 
 To set the name of a layer, call the method `setName(name)` of the layer.
 
@@ -130,7 +131,8 @@ Here we adopt our Keras-Style API to define a LeNet CNN model to be trained on t
 
 ```scala
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.nn.keras._
+import com.intel.analytics.zoo.pipeline.api.keras.layers._
+import com.intel.analytics.zoo.pipeline.api.keras.models._
 import com.intel.analytics.bigdl.utils.Shape
 
 val model = Sequential()
@@ -146,4 +148,3 @@ model.add(Dense(10, activation = "softmax").setName("fc2"))
 model.getInputShape().toSingle().toArray // Array(-1, 28, 28, 1)
 model.getOutputShape().toSingle().toArray // Array(-1, 10)
 ```
-See [here](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/keras) for detailed introduction of LeNet, the full example code and running instructions.

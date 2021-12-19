@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: redisport
+    port: 6379
+  selector:
+    app: bigdl-ppml-trusted-realtime-ml-graphene
+    component: master

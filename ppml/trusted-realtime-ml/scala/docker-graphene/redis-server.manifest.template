@@ -1,0 +1,66 @@
+loader.preload = "file:$(GRAPHENEDIR)/Runtime/libsysdb.so"
+libos.entrypoint = "file:redis-server"
+
+loader.log_level = "$(GRAPHENE_LOG_LEVEL)"
+
+loader.insecure__use_cmdline_argv = 1
+
+loader.env.LD_LIBRARY_PATH = "/lib:$(ARCH_LIBDIR):/usr/$(ARCH_LIBDIR)"
+
+fs.mount.lib.type = "chroot"
+fs.mount.lib.path = "/lib"
+fs.mount.lib.uri = "file:$(GRAPHENEDIR)/Runtime"
+
+fs.mount.lib2.type = "chroot"
+fs.mount.lib2.path = "$(ARCH_LIBDIR)"
+fs.mount.lib2.uri = "file:$(ARCH_LIBDIR)"
+
+fs.mount.lib3.type = "chroot"
+fs.mount.lib3.path = "/usr/$(ARCH_LIBDIR)"
+fs.mount.lib3.uri = "file:/usr/$(ARCH_LIBDIR)"
+
+fs.mount.etc.type = "chroot"
+fs.mount.etc.path = "/etc"
+fs.mount.etc.uri = "file:/etc"
+
+fs.mount.work.type = "chroot"
+fs.mount.work.path = "/ppml/trusted-realtime-ml/redis/work"
+fs.mount.work.uri = "file:/ppml/trusted-realtime-ml/redis/work"
+
+sgx.enclave_size = "$(G_SGX_SIZE)"
+sgx.thread_num = 128
+sgx.nonpie_binary = 1
+
+sgx.trusted_files.redis-server = "file:redis-server"
+
+sgx.trusted_files.ld = "file:$(GRAPHENEDIR)/Runtime/ld-linux-x86-64.so.2"
+sgx.trusted_files.libc = "file:$(GRAPHENEDIR)/Runtime/libc.so.6"
+sgx.trusted_files.libm = "file:$(GRAPHENEDIR)/Runtime/libm.so.6"
+sgx.trusted_files.libdl = "file:$(GRAPHENEDIR)/Runtime/libdl.so.2"
+sgx.trusted_files.librt = "file:$(GRAPHENEDIR)/Runtime/librt.so.1"
+sgx.trusted_files.libpthread = "file:$(GRAPHENEDIR)/Runtime/libpthread.so.0"
+
+sgx.trusted_files.libnsscompat = "file:$(ARCH_LIBDIR)/libnss_compat.so.2"
+sgx.trusted_files.libnssfiles = "file:$(ARCH_LIBDIR)/libnss_files.so.2"
+sgx.trusted_files.libnssnis = "file:$(ARCH_LIBDIR)/libnss_nis.so.2"
+
+sgx.trusted_files.libnsl = "file:$(ARCH_LIBDIR)/libnsl.so.1"
+
+sgx.trusted_files.libsystemd = "file:$(ARCH_LIBDIR)/libsystemd.so.0"
+sgx.trusted_files.liblzma = "file:$(ARCH_LIBDIR)/liblzma.so.5"
+sgx.trusted_files.libgcrypt = "file:$(ARCH_LIBDIR)/libgcrypt.so.20"
+sgx.trusted_files.libgpgerror = "file:$(ARCH_LIBDIR)/libgpg-error.so.0"
+sgx.trusted_files.liblz4 = "file:/usr/$(ARCH_LIBDIR)/liblz4.so.1"
+
+sgx.allowed_files.nsswitch = "file:/etc/nsswitch.conf"
+sgx.allowed_files.ethers = "file:/etc/ethers"
+sgx.allowed_files.hosts = "file:/etc/hosts"
+sgx.allowed_files.group = "file:/etc/group"
+sgx.allowed_files.passwd = "file:/etc/passwd"
+
+sgx.allowed_files.gaiconf = "file:/etc/gai.conf"
+sgx.trusted_files.libssl = "file:/usr/$(ARCH_LIBDIR)/libssl.so.1.1"
+sgx.trusted_files.libcrypto = "file:/usr/$(ARCH_LIBDIR)/libcrypto.so.1.1"
+sgx.allowed_files.conf = "file:/ppml/trusted-realtime-ml/redis/redis.conf"
+
+sgx.allowed_files.work = "file:/ppml/trusted-realtime-ml/redis/work"

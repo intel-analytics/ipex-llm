@@ -1,0 +1,17 @@
+#!/bin/bash
+
+chmod a+x ./*
+
+export ANALYTICS_ZOO_HOME=$(pwd)/../../../../..
+export BPATH=$ANALYTICS_ZOO_HOME/scripts/cluster-serving
+export PYTHONPATH=$PYTHONPATH:$ANALYTICS_ZOO_HOME/pyzoo
+
+$BPATH/cluster-serving-start &
+sleep 20
+
+python3 ./cluster-serving-enqueue-test.py
+
+sleep 180
+$BPATH/cluster-serving-stop
+
+echo "Benchmark test end, please check at flink Dashboard"

@@ -1,0 +1,2 @@
+include bigdl/share/dllib/lib/bigdl-dllib*.jar
+include bigdl/share/dllib/conf/*

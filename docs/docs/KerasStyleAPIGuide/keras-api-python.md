@@ -1,14 +1,14 @@
 ## **Introduction**
-We hereby introduce a new set of __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in BigDL for the sake of user-friendliness. Users, especially those familiar with Keras, are recommended to use the new API to create a BigDL model and train, evaluate or tune it in a distributed fashion.
+We provide __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in Analytics Zoo for the sake of user-friendliness. Users, especially those familiar with Keras, can easily use our API to create an Analytics Zoo model and train, evaluate or tune it in a distributed fashion.
 
 To define a model in Python using the Keras-Style API, now one just need to import the following packages:
 
 ```python
-from bigdl.nn.keras.topology import *
-from bigdl.nn.keras.layer import *
+from zoo.pipeline.api.keras.layers import *
+from zoo.pipeline.api.keras.models import *
 ```
 
-One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a shape tuple __excluding__ batch dimension, for example, `input_shape=(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
+One of the highlighted features with regard to the Keras-Style API is __shape inference__. Users only need to specify the input shape (a shape tuple __excluding__ batch dimension, for example, `input_shape=(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 
 ---
 ## **Define a model**
@@ -29,8 +29,6 @@ set_name(name)
 ```
 * Set the name of the model. Can alternatively specify the argument `name` in the constructor when creating a model.
 
-See [here](Optimization/training/) on how to train, predict or evaluate a defined model.
-
 ---
 ## **Sequential API**
 The model is described as a linear stack of layers in the Sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
@@ -42,8 +40,8 @@ Sequential()
 
 Example code to create a sequential model:
 ```python
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import Dense, Activation
+from zoo.pipeline.api.keras.models import Sequential
+from zoo.pipeline.api.keras.layers import Dense, Activation
 
 model = Sequential()
 model.add(Dense(32, input_shape=(128, )))
@@ -85,8 +83,8 @@ Parameters:
 
 Example code to create a graph model:
 ```python
-from bigdl.nn.keras.topology import Model
-from bigdl.nn.keras.layer import Input, Dense, merge
+from zoo.pipeline.api.keras.models import Model
+from zoo.pipeline.api.keras.layers import Input, Dense, merge
 
 # instantiate input nodes
 input1 = Input(shape=(8, )) 
@@ -102,7 +100,7 @@ model = Model([input1, input2], output)
 
 ---
 ## **Layers**
-See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
+See [here](Layers/core.md) for all the available layers for the Keras-Style API.
 
 To set the name of a layer, you can either call `set_name(name)` or alternatively specify the argument `name` in the constructor when creating a layer.
 
@@ -111,8 +109,8 @@ To set the name of a layer, you can either call `set_name(name)` or alternativel
 Here we adopt our Keras-Style API to define a LeNet CNN model to be trained on the MNIST dataset:
 
 ```python
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import *
+from zoo.pipeline.api.keras.models import Sequential
+from zoo.pipeline.api.keras.layers import *
 
 model = Sequential()
 model.add(Reshape((1, 28, 28), input_shape=(28, 28, 1)))
@@ -127,27 +125,26 @@ model.add(Dense(10, activation="softmax", name="fc2"))
 model.get_input_shape() # (None, 28, 28, 1)
 model.get_output_shape() # (None, 10)
 ```
-See [here](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/examples/lenet) for detailed introduction of LeNet, the full example code and running instructions.
 
 ---
 ## **Keras Code Support**
-If you have an existing piece of Keras code for a model definition, without installing Keras, you can directly migrate the code to construct a BigDL model by just replacing Keras import lines with:
+If you have an existing piece of Keras code for a model definition, without installing Keras, you can directly migrate the code to construct an Analytics Zoo model by just replacing Keras import lines with:
 
 ```python
-from bigdl.nn.keras.topology import *
-from bigdl.nn.keras.layer import *
+from zoo.pipeline.api.keras.models import *
+from zoo.pipeline.api.keras.layers import *
 ```
 
 and making modifications subject to the following limitations:
 
 1. The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend.
 
-2. There exist some arguments supported in Keras layers but not supported in BigDL for now. See [here](../../APIGuide/keras-issues/#unsupported-layer-arguments) for the full list of unsupported layer arguments. Also, currently we haven't supported self-defined Keras layers or [`Lambda`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#lambda) layers.
+2. There exist some arguments supported in Keras layers but not supported in Analytics Zoo for now. See [here](https://bigdl-project.github.io/master/#APIGuide/keras-issues/#unsupported-layer-arguments) for the full list of unsupported layer arguments. 
 
-3. The default dim_ordering in BigDL is `th` (Channel First, channel_axis=1).
+3. The default dim_ordering in Analytics Zoo is `th` (Channel First, channel_axis=1).
 
 4. Keras [backend](https://faroit.github.io/keras-docs/1.2.2/backend/) related code needs to be deleted or refactored appropriately.
 
 5. Code involving Keras utility functions or loading weights from HDF5 files should be removed.
 
-__Remark:__ We have tested for migrating Keras code definition of [VGG16](https://faroit.github.io/keras-docs/1.2.2/applications/#vgg16), [VGG19](https://faroit.github.io/keras-docs/1.2.2/applications/#vgg19), [ResNet50](https://faroit.github.io/keras-docs/1.2.2/applications/#resnet50) and [InceptionV3](https://faroit.github.io/keras-docs/1.2.2/applications/#inceptionv3) into BigDL.
+__Remark:__ We have tested for migrating Keras code definition of [VGG16](https://faroit.github.io/keras-docs/1.2.2/applications/#vgg16), [VGG19](https://faroit.github.io/keras-docs/1.2.2/applications/#vgg19), [ResNet50](https://faroit.github.io/keras-docs/1.2.2/applications/#resnet50) and [InceptionV3](https://faroit.github.io/keras-docs/1.2.2/applications/#inceptionv3) into Analytics Zoo.
