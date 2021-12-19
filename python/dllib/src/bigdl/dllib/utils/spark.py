@@ -107,7 +107,7 @@ class SparkRunner:
                                          extra_executor_memory_for_ray)
             py_version = ".".join(platform.python_version().split(".")[0:2])
             preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
-            ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
+            ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" +\
                       py_version + "/lib-dynload"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
@@ -181,8 +181,8 @@ class SparkRunner:
             conf["spark.executorEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
             py_version = ".".join(platform.python_version().split(".")[0:2])
             preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
-            ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" +\
-                py_version + "/lib-dynload"
+            ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
+                      py_version + "/lib-dynload"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
             conf.update({"spark.scheduler.minRegisteredResourcesRatio": "1.0",
