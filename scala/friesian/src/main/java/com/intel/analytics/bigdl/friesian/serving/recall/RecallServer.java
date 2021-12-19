@@ -37,26 +37,28 @@ import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils;
 import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 import com.intel.analytics.bigdl.friesian.serving.utils.recall.RecallUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class RecallServer extends GrpcServerBase {
-    private static final Logger logger = Logger.getLogger(RecallServer.class.getName());
+    private static final Logger logger = LogManager.getLogger(RecallServer.class.getName());
 
     public RecallServer(String[] args) {
         super(args);
         configPath = "config_recall.yaml";
-        Logger.getLogger("org").setLevel(Level.ERROR);
+        Configurator.setLevel("org", Level.ERROR);
     }
 
     @Override

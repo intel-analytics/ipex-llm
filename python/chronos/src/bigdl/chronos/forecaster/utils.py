@@ -19,7 +19,6 @@ import random
 import numpy
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
-from bigdl.orca.data import XShards
 
 
 def loader_to_creator(loader):
@@ -65,6 +64,7 @@ def xshard_to_np(shard, mode="fit", expand_dim=None):
 
 
 def np_to_xshard(x, prefix="x"):
+    from bigdl.orca.data import XShards
     x = XShards.partition(x)
 
     def transform_to_dict(train_data):

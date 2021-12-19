@@ -19,9 +19,9 @@ package com.intel.analytics.bigdl.ppml.example.psi
 import org.slf4j.LoggerFactory
 import java.util
 
+import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
 
 
 object PSIExample {
@@ -39,7 +39,7 @@ object PSIExample {
     // Create a communication channel to the server,  known as a Channel. Channels are thread-safe
     // and reusable. It is common to create channels at the beginning of your application and reuse
     // them until the application shuts down.
-    VflContext.initContext()
+    FLContext.initFLContext()
     val pSI = new PSI()
     try {
       // Get salt from Server

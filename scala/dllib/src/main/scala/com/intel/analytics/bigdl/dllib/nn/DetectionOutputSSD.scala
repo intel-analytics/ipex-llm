@@ -25,8 +25,8 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BboxUtil
 import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.Shape
-import org.apache.log4j.Logger
 import DetectionOutputSSD.logger
+import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 
@@ -286,7 +286,7 @@ class DetectionOutputSSD[T: ClassTag](val nClasses: Int = 21,
 }
 
 object DetectionOutputSSD {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply[@specialized(Float) T: ClassTag]
   (param: DetectionOutputParam, postProcess: Boolean = true)

@@ -17,13 +17,13 @@ package com.intel.analytics.bigdl.dllib.utils
 
 import java.io.{File => JFile}
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
 abstract class BigDLSpecHelper extends FlatSpec with Matchers with BeforeAndAfter {
-  protected val logger = Logger.getLogger(getClass)
+  protected val logger = LogManager.getLogger(getClass)
 
   private val tmpFiles : ArrayBuffer[JFile] = new ArrayBuffer[JFile]()
 

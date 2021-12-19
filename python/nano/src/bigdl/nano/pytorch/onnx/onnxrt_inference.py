@@ -21,6 +21,7 @@ import warnings
 import torch
 import math
 import numpy as np
+import inspect
 
 
 ONNXRT_BINDED_COMPONENTS = ['_ortsess_up_to_date',
@@ -40,7 +41,7 @@ def _build_ortsess(self,
     '''
     Internal function to build a ortsess and bind to the lightningmodule.
 
-    :param input_sample: torch.Tensor for the model tracing.
+    :param input_sample: torch.Tensor or a list for the model tracing.
     :param file_path: The path to save onnx model file.
     :param sess_options: ortsess options in ort.SessionOptions type
     :param **kwargs: will be passed to torch.onnx.export function.
@@ -54,18 +55,23 @@ def _build_ortsess(self,
     assert input_sample is not None,\
         'You should set either input_sample or self.example_input_array'
 
+    dynamic_axes = {}
+    for forward_arg in self._forward_args:
+        dynamic_axes[forward_arg] = {0: 'batch_size'}  # set all dim0 to be dynamic
+    dynamic_axes['output'] = {0: 'batch_size'}
+
     default_onnx_export_args = {'export_params': True,
-                                'opset_version': 10,
+                                'opset_version': 10,  # version = 10 by default
                                 'do_constant_folding': True,
-                                'input_names': ['input'],
-                                'output_names': ['output'],
-                                'dynamic_axes': {'input': {0: 'batch_size'},
-                                                 'output': {0: 'batch_size'}}}
+                                'input_names': self._forward_args,
+                                'output_names': ['output'],  # TODO: only support single output
+                                'dynamic_axes': dynamic_axes}
     default_onnx_export_args.update(kwargs)
 
-    self.to_onnx(file_path,
-                 input_sample,
-                 **default_onnx_export_args)
+    torch.onnx.export(self,
+                      input_sample,
+                      file_path,
+                      **default_onnx_export_args)
 
     self._ortsess = ort.InferenceSession(file_path, sess_options=sess_options)
     self._ortsess_up_to_date = True
@@ -108,7 +114,8 @@ def inference(self,
     :param input_data: input data for prediction. If backend is set to "onnx",
             the data type should be a numpy ndarray, where the first dim should be batch size.
             If backend is NOT set to "onnx", a torch tensor is needed and the pytorch
-            forwarding method will be called.
+            forwarding method will be called. If there are multiple input, input_data
+            should be a list.
     :param batch_size: int, inferencing batch_size. This value should not affect the
             final inferencing result but will affect resources cost(e.g. memory and time).
             Default to None, which takes all input_data in one batch.
@@ -118,31 +125,43 @@ def inference(self,
             the pytorch forwarding method.
     :param **kwargs: any other keywords that will be passed to onnx session's building.
     '''
+    if isinstance(input_data, list):
+        input_sample_list = input_data
+    else:
+        input_sample_list = [input_data]
 
     if backend == "onnx":
         if not self._ortsess_up_to_date:
             warnings.warn("Onnxruntime session will be built implicitly,"
                           " this may harm your inference latency.")
-            input_sample = torch.Tensor(input_data)
-            self._build_ortsess(input_sample=input_sample,
+            # generate input_sample for ortsess building
+            # defaultly set all input to a Tensor(TODO: might be an issue)
+            input_sample = []
+            for input_sample_item in input_sample_list:
+                input_sample.append(torch.Tensor(input_sample_item))
+            self._build_ortsess(input_sample=tuple(input_sample),
                                 file_path="model.onnx",
                                 sess_options=sess_options,
                                 **kwargs)
-        input_name = self._ortsess.get_inputs()[0].name
+        # generate ort_inputs
         if batch_size is None:
             # this branch is only to speed up the inferencing when batch_size is set to None.
-            ort_inputs = {input_name: input_data}
+            ort_inputs = {}
+            for i, ort_input_item in enumerate(input_sample_list):
+                ort_inputs[self._forward_args[i]] = ort_input_item
             ort_outs = self._ortsess.run(None, ort_inputs)
-            return ort_outs[0]
+            return ort_outs[0]  # TODO: only support single output
         else:
             yhat_list = []
-            sample_num = input_data.shape[0]  # the first dim should be sample_num
+            sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
             batch_num = math.ceil(sample_num / batch_size)
             for batch_id in range(batch_num):
-                ort_inputs = {input_name: input_data[batch_id * batch_size:
-                                                     (batch_id + 1) * batch_size]}
+                ort_inputs = {}
+                for i, ort_input_item in enumerate(input_sample_list):
+                    ort_inputs[self._forward_args[i]] = ort_input_item[batch_id * batch_size:
+                                                                       (batch_id + 1) * batch_size]
                 ort_outs = self._ortsess.run(None, ort_inputs)
-                yhat_list.append(ort_outs[0])
+                yhat_list.append(ort_outs[0])  # TODO: only support single output
             # this operation may cause performance degradation
             yhat = np.concatenate(yhat_list, axis=0)
             return yhat
@@ -151,12 +170,13 @@ def inference(self,
         self.eval()
         with torch.no_grad():
             yhat_list = []
-            sample_num = input_data.shape[0]  # the first dim should be sample_num
+            sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
             batch_size = batch_size if batch_size else sample_num
             batch_num = math.ceil(sample_num / batch_size)
             for batch_id in range(batch_num):
-                yhat_list.append(self(input_data[batch_id * batch_size:
-                                                 (batch_id + 1) * batch_size]))
+                yhat_list.append(self(*map(lambda x: x[batch_id * batch_size:
+                                                       (batch_id + 1) * batch_size],
+                                           input_sample_list)))
             yhat = torch.cat(yhat_list, axis=0)
             return yhat
 
@@ -179,6 +199,9 @@ def bind_onnxrt_methods(pl_model: LightningModule):
     # additional attributes
     pl_model._ortsess_up_to_date = False  # indicate if we need to build ortsess again
     pl_model._ortsess = None  # ortsess instance
+    pl_model._forward_args = inspect.getfullargspec(pl_model.forward).args[1:]  # forward param list
+    if len(pl_model._forward_args) == 0:  # forward param list for compiled model
+        pl_model._forward_args = inspect.getfullargspec(pl_model.model.forward).args[1:]
 
     # additional methods
     pl_model._build_ortsess = partial(_build_ortsess, pl_model)

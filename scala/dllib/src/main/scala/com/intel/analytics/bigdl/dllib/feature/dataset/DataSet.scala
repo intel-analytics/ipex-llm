@@ -19,23 +19,26 @@ package com.intel.analytics.bigdl.dllib.feature.dataset
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
+
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.image.{LabeledBGRImage, _}
 import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.{COCODataset, COCODeserializer}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, RoiImageInfo}
-import com.intel.analytics.bigdl.dllib.utils.{T}
+import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.io.ByteArrayInputStream
+
 import javax.imageio.ImageIO
 import org.apache.hadoop.io.{BytesWritable, Text}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
 import scala.reflect._
 
 /**
@@ -329,7 +332,7 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
  * Common used DataSet builder.
  */
 object DataSet {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   /**
    * Wrap an array as a DataSet.
@@ -490,7 +493,7 @@ object DataSet {
    * Create a DataSet from a Hadoop sequence file folder.
    */
   object SeqFileFolder {
-    val logger = Logger.getLogger(getClass)
+    val logger = LogManager.getLogger(getClass)
 
     /**
      * Extract all hadoop sequence file paths from a local file folder.

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper}
 import com.intel.analytics.bigdl.serving.utils.{Conventions, RedisUtils}
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.source.{RichParallelSourceFunction, RichSourceFunction, SourceFunction}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import redis.clients.jedis.{Jedis, JedisPool, JedisPoolConfig, StreamEntryID}
 
 import scala.collection.JavaConverters._
@@ -35,7 +35,7 @@ class FlinkRedisSource()
   var logger: Logger = null
   var helper: ClusterServingHelper = null
   override def open(parameters: Configuration): Unit = {
-    logger = Logger.getLogger(getClass)
+    logger = LogManager.getLogger(getClass)
     helper = ClusterServing.helper
     ClusterServing.initializeRedis()
     jedis = RedisUtils.getRedisClient(ClusterServing.jedisPool)

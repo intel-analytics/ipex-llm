@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.Ranking
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.ranking.RankingProto.{Content, Prediction}
 import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils
 import io.grpc.StatusRuntimeException
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.SparkSession
 
@@ -35,7 +35,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 object RecommenderUtils {
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
 
   def featuresToRankingInputSet(userFeatures: Features, itemFeatures: Features, batchSize: Int)
   : (Array[Int], Array[Table]) = {
@@ -88,7 +88,7 @@ object RecommenderUtils {
           case _: Int => Tensor[Float](features.map(_.toString.toFloat), dim)
           case _: Float => Tensor[Float](features.map(_.toString.toFloat), dim)
           case _: Long => Tensor[Float](features.map(_.toString.toFloat), dim)
-          case _:Double => Tensor[Float](features.map(_.toString.toFloat), dim)
+          case _: Double => Tensor[Float](features.map(_.toString.toFloat), dim)
           case _: mutable.WrappedArray[Any] =>
             val arr2d = features.map(a =>
               a.asInstanceOf[mutable.WrappedArray[Any]].array.map(_.toString.toFloat))

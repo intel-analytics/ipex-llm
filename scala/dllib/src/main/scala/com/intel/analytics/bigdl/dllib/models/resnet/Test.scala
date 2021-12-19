@@ -22,13 +22,14 @@ import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.models.resnet.Utils._
 import com.intel.analytics.bigdl.dllib.optim.{Top1Accuracy, ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BGRImgNormalizer, BGRImgToSample, BytesToBGRImg}
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 
 object Test {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
 
   def main(args: Array[String]): Unit = {
     testParser.parse(args, TestParams()).foreach { param =>

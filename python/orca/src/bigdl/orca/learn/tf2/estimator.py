@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import itertools
+
 import logging
-import pickle
 
 import numpy as np
 
@@ -32,7 +31,9 @@ class Estimator(object):
                    compile_args_creator=None,
                    backend="tf2",
                    cpu_binding=False,
-                   model_dir=None
+                   log_to_driver=True,
+                   model_dir=None,
+                   **kwargs
                    ):
         """
         Create an Estimator for tensorflow 2.
@@ -49,8 +50,14 @@ class Estimator(object):
                the backend="horovod". This function takes in the `config` dict and returns a
                dictionary like {"optimizer": tf.keras.optimizers.SGD(lr), "loss":
                "mean_squared_error", "metrics": ["mean_squared_error"]}
-        :param backend: (string) You can choose "horovod" or "tf2" as backend. Default: `tf2`.
+        :param backend: (string) You can choose "horovod", "tf2" or "spark" as backend.
+         Default: `tf2`.
         :param cpu_binding: (bool) Whether to binds threads to specific CPUs. Default: False
+        :param log_to_driver: (bool) Whether display executor log on driver in cluster mode.
+         Default: True. This option is only for "spark" backend.
+        :param model_dir: (str) The directory to save model states. It is required for "spark"
+        backend. For cluster mode, it should be a share filesystem path which can be accessed
+        by executors.
         """
         if backend in {"tf2", "horovod"}:
             from bigdl.orca.learn.tf2.ray_estimator import TensorFlow2Estimator
@@ -68,7 +75,9 @@ class Estimator(object):
                                     config=config, verbose=verbose,
                                     compile_args_creator=compile_args_creator,
                                     workers_per_node=workers_per_node,
-                                    model_dir=model_dir)
+                                    log_to_driver=log_to_driver,
+                                    model_dir=model_dir,
+                                    **kwargs)
         else:
             raise ValueError("Only horovod, tf2 and spark backends are supported"
                              f" for now, got backend: {backend}")

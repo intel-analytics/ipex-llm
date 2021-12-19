@@ -53,7 +53,7 @@ class TestThresholdDetector(ZooTestCase):
             X.append(data[i: (i + look_back)])
             # Y.append(dataset.iloc[i + look_back, target_col_indexes])
             Y.append(data[i + look_back][target_col_indexes])
-        return np.array(X), np.array(Y)
+        return np.array(X).astype(np.float32), np.array(Y).astype(np.float32)
 
     def test_fit_score(self):
         look_back = 4
