@@ -23,7 +23,7 @@ import collection.JavaConverters._
 import collection.JavaConversions._
 
 
-object HflLogisticRegression extends LogManager {
+object HflLogisticRegression extends DebugLogger {
 
   def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
     //TODO: we use get intersection to get data and input to model
@@ -31,11 +31,12 @@ object HflLogisticRegression extends LogManager {
     // load data from dataset and preprocess
     val spark = FLContext.getSparkSession()
     import spark.implicits._
-    val trainDf = spark.read.csv(dataPath)
+    val df = spark.read.csv(dataPath)
+    val (trainDf, valDf) = ExampleUtils.splitDataFrameToTrainVal(df)
     val testDf = trainDf.drop("_c8") // totally 9 columns: _c0 to _c8, _c8 is the label column
     trainDf.show()
     testDf.show()
-    (trainDf, testDf)
+    (trainDf, valDf, testDf)
   }
 
   def main(args: Array[String]): Unit = {
@@ -70,11 +71,11 @@ object HflLogisticRegression extends LogManager {
      * Usage of BigDL PPML starts from here
      */
     FLContext.initFLContext()
-    val (trainData, testData) = getData(dataPath, rowKeyName, batchSize)
+    val (trainData, valData, testData) = getData(dataPath, rowKeyName, batchSize)
     // create LogisticRegression object to train the model
     val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData = trainData)
-    lr.evaluate(trainData)
+    lr.fit(trainData, valData = valData)
+    lr.evaluate(valData)
     lr.predict(testData)
   }
 }

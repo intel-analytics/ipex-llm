@@ -20,14 +20,14 @@ package com.intel.analytics.bigdl.ppml.example
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
-import com.intel.analytics.bigdl.ppml.example.LogManager
+import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import scopt.OptionParser
 
 import collection.JavaConverters._
 import collection.JavaConversions._
 
 
-object VflLogisticRegression extends LogManager{
+object VflLogisticRegression extends DebugLogger{
   def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
     //TODO: we use get intersection to get data and input to model
     // this do not need to be DataFrame?
@@ -36,12 +36,12 @@ object VflLogisticRegression extends LogManager{
 
     val spark = FLContext.getSparkSession()
     val df = spark.read.option("header", "true").csv(dataPath)
-    val trainDf = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
-
+    val intersectionDf = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
+    val (trainDf, valDf) = ExampleUtils.splitDataFrameToTrainVal(intersectionDf)
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
     testDf.show()
-    (trainDf, testDf)
+    (trainDf, valDf, testDf)
   }
 
   def main(args: Array[String]): Unit = {
@@ -81,13 +81,13 @@ object VflLogisticRegression extends LogManager{
      */
     FLContext.initFLContext()
     val pSI = new PSI()
-    val (trainData, testData) = getData(pSI, dataPath, rowKeyName, batchSize)
+    val (trainData, valData, testData) = getData(pSI, dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model
     val featureNum = if (argv.hasLabel) trainData.columns.size - 1 else trainData.columns.size
     val lr = new LogisticRegression(featureNum, learningRate)
-    lr.fit(trainData, valData = trainData, hasLabel = argv.hasLabel)
-    lr.evaluate(trainData, hasLabel = argv.hasLabel)
+    lr.fit(trainData, valData = valData, hasLabel = argv.hasLabel)
+    lr.evaluate(valData, hasLabel = argv.hasLabel)
     lr.predict(testData)
   }
 

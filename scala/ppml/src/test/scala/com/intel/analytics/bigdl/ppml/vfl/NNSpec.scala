@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.vfl
 import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.{LinearRegression, LogisticRegression}
-import com.intel.analytics.bigdl.ppml.example.LogManager
+import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
@@ -40,7 +40,7 @@ class MockAnotherParty(algorithm: String, clientID: String = "mock") extends Thr
     lr.fit(df, valData = df)
   }
 }
-class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with LogManager {
+class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   "Logistic Regression" should "work" in {
     val flServer = new FLServer()
     flServer.build()
