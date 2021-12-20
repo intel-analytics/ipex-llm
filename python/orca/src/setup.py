@@ -82,7 +82,7 @@ def get_bigdl_packages():
 
 def setup_package():
     metadata = dict(
-        name='bigdl-orca',
+        name='bigdl-orca-spark3',
         version=VERSION,
         description='Seamlessly scale out TensorFlow and PyTorch for Big Data (using Spark & Ray)',
         author='BigDL Authors',
@@ -92,7 +92,7 @@ def setup_package():
         packages=get_bigdl_packages(),
         install_requires=['conda-pack==0.3.1', 'packaging', 'filelock',
                           'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1',
-                          'bigdl-dllib=='+VERSION],
+                          'bigdl-dllib-spark3=='+VERSION],
         extras_require={'ray': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
                                 'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1'],
                         'automl': ['aiohttp==3.7.4', 'aioredis==1.3.1',

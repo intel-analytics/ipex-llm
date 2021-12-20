@@ -18,8 +18,8 @@ from deepctr_torch.inputs import SparseFeat, DenseFeat, get_feature_names
 from deepctr_torch.models.deepfm import *
 from deepctr_torch.models.basemodel import *
 from evaluation import uAUC
-from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 
