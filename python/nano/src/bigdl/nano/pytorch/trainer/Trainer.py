@@ -19,10 +19,12 @@ from typing import Any, List, Optional
 
 import pytorch_lightning as pl
 import torch
+from pytorch_lightning import LightningModule
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from torch import nn
 from torch.fx.graph_module import GraphModule
 from torch.nn.modules.loss import _Loss
+from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 
 from bigdl.nano.common import check_avx512
@@ -155,10 +157,19 @@ class Trainer(pl.Trainer):
         else:
             return pl_model
 
-    def quantize(self, pl_model, calib_dataloader, val_dataloader=None, metric: Metric = None,
-                 backend='inc', conf=None, framework='pytorch_fx', approach='static',
-                 tuning_strategy='bayesian', accuracy_criterion=None, timeout=0,
-                 max_trials=1) -> Optional[GraphModule]:
+    def quantize(self, pl_model: LightningModule,
+                 calib_dataloader: DataLoader,
+                 val_dataloader: DataLoader = None,
+                 metric: Metric = None,
+                 backend='inc',
+                 conf='',
+                 framework='pytorch_fx',
+                 approach='static',
+                 tuning_strategy='bayesian',
+                 accuracy_criterion: dict = None,
+                 timeout=0,
+                 max_trials=1
+                 ) -> Optional[GraphModule]:
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 

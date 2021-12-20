@@ -9,11 +9,11 @@ except ImportError:
 
 class QuantizationINC(Quantization):
     def __init__(self,
-                 framework,
-                 conf=None,
+                 framework: str,
+                 conf='',
                  approach='post_training_static_quant',
                  tuning_strategy='bayesian',
-                 accuracy_criterion=None,
+                 accuracy_criterion: dict = None,
                  timeout=0,
                  max_trials=1,
                  inputs=None,
