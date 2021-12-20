@@ -6,7 +6,7 @@ class QuantizationINC(Quantization):
     def __init__(self,
                  framework,
                  conf=None,
-                 approach='ptsq',
+                 approach='post_training_static_quant',
                  tuning_strategy='bayesian',
                  accuracy_criterion=None,
                  timeout=0,
