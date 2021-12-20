@@ -205,7 +205,7 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
 
   "OpenVINO face_detection_0100" should "work" in {
-    ("wget --no-check-certificate -O /tmp/openvino_face_detection_0100.tar " + 
+    ("wget --no-check-certificate -O /tmp/openvino_face_detection_0100.tar " +
      "https://sourceforge.net/" +
 "projects/analytics-zoo/files/analytics-zoo-data/openvino_face_detection_0100.tar").!
     "tar -xvf /tmp/openvino_face_detection_0100.tar -C /tmp/".!
