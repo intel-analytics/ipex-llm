@@ -17,8 +17,9 @@
 from pytorch_lightning import LightningModule
 import torch
 from torch.utils.data import DataLoader
+from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import onnxruntime as ort
-from functools import partial
+from functools import partial, wraps
 import warnings
 import torch
 import math
@@ -33,7 +34,6 @@ ONNXRT_BINDED_COMPONENTS = ['_ortsess_up_to_date',
                             'on_fit_start',
                             '_forward_onnx',
                             '_torch_forward',
-                            '_train_mode',
                             'inference']
 
 
@@ -188,12 +188,13 @@ def inference(self,
 # on_fit_start (LightningModule method overwrite)
 def on_fit_start(self):
     self._ortsess_up_to_date = False
-    self.exit_onnx()
+    return self._on_fit_start_old()
 
 
 def train(self, mode=True):
     self.exit_onnx()
-    self._train_mode(mode)
+    self._ortsess_up_to_date = False
+    return self._train_old(mode)
 
 
 def _forward_onnx(self, *args):
@@ -229,7 +230,8 @@ def eval_onnx(self, input_sample=None, file_path="model.onnx", sess_options=None
     if input_sample is None and self.example_input_array:
         input_sample = self.example_input_array
     if input_sample is None and self.trainer is None:
-        raise RuntimeError("You must state an input_sample or fit on the model to use `eval_onnx`.")
+        raise RuntimeError("You must specify an input_sample or call `Trainer.fit` "
+                           "on the model first to use `eval_onnx`")
     if input_sample is None and self.trainer.train_dataloader:
         input_sample = tuple(next(iter(self.trainer.train_dataloader))[:-1])
     if input_sample is None and self.trainer.datamodule:
@@ -263,20 +265,22 @@ def bind_onnxrt_methods(pl_model: LightningModule):
     # additional attributes
     pl_model._ortsess_up_to_date = False  # indicate if we need to build ortsess again
     pl_model._ortsess = None  # ortsess instance
-    pl_model._forward_args = inspect.getfullargspec(pl_model.forward).args[1:]  # forward param list
-    if len(pl_model._forward_args) == 0:  # forward param list for compiled model
+    if isinstance(pl_model, LightningModuleFromTorch):  # forward param list for compiled model
         pl_model._forward_args = inspect.getfullargspec(pl_model.model.forward).args[1:]
+    else:  # forward param list
+        pl_model._forward_args = inspect.getfullargspec(pl_model.forward).args[1:]
 
     # additional methods
     pl_model._build_ortsess = partial(_build_ortsess, pl_model)
     pl_model.update_ortsess = partial(update_ortsess, pl_model)
+    pl_model._on_fit_start_old = pl_model.on_fit_start
     pl_model.on_fit_start = partial(on_fit_start, pl_model)
     pl_model.inference = partial(inference, pl_model)
     pl_model.eval_onnx = partial(eval_onnx, pl_model)
     pl_model._forward_onnx = partial(_forward_onnx, pl_model)
     pl_model.exit_onnx = partial(exit_onnx, pl_model)
     pl_model._torch_forward = pl_model.forward
-    pl_model._train_mode = pl_model.train
+    pl_model._train_old = pl_model.train
     pl_model.train = partial(train, pl_model)
 
     return pl_model
