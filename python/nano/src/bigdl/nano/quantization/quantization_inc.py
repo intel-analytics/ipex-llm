@@ -1,5 +1,10 @@
-from neural_compressor.conf.config import Quantization_Conf
-from neural_compressor.experimental import Quantization
+try:
+    from neural_compressor.conf.config import Quantization_Conf
+    from neural_compressor.experimental import Quantization
+except ImportError:
+    raise ImportError(
+        "Module neural_compressor is not installed. Please install it by command: \"pip install "
+        "neural-compressor\"")
 
 
 class QuantizationINC(Quantization):
