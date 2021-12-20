@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.generated.NNServiceProto.EvaluateResponse
 import com.intel.analytics.bigdl.ppml.{FLClient, FLContext}
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -38,7 +38,7 @@ class VflNNEstimator(algorithm: String,
                      model: Module[Float],
                      optimMethod: OptimMethod[Float],
                      threadNum: Int = 1) extends Estimator {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   val flClient = FLContext.getClient()
   val (weight, grad) = getParametersFromModel(model)
 

@@ -23,7 +23,7 @@ import java.io.{File, IOException}
 import java.util
 import java.util.concurrent.TimeUnit
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 
 /**
@@ -31,7 +31,7 @@ import org.apache.log4j.Logger
  * @param _args
  */
 class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   configPath = "ppml-conf.yaml"
   protected var taskID: String = "taskID"
   var psiStub: PSIStub = null

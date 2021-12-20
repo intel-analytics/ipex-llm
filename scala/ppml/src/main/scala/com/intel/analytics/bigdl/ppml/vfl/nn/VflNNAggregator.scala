@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.toFloatTensor
 import com.intel.analytics.bigdl.{Criterion, Module}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 
 /**
@@ -99,7 +99,7 @@ class VflNNAggregator(model: Module[Float],
 }
 
 object VflNNAggregator {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   def apply(clientNum: Int,
             classifier: Module[Float],

@@ -42,7 +42,6 @@ import warnings
 
 import torch
 import torch.nn as nn
-from torch.nn.utils import weight_norm
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 
 
@@ -59,20 +58,22 @@ class TemporalBlock(nn.Module):
     def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2,
                  repo_initialization=True):
         super(TemporalBlock, self).__init__()
-        self.conv1 = weight_norm(nn.Conv1d(n_inputs, n_outputs, kernel_size,
-                                           stride=stride, padding=padding, dilation=dilation))
+        self.conv1 = nn.Conv1d(n_inputs, n_outputs, kernel_size,
+                               stride=stride, padding=padding, dilation=dilation)
+        self.bn1 = nn.BatchNorm1d(n_outputs)
         self.chomp1 = Chomp1d(padding)
         self.relu1 = nn.ReLU()
         self.dropout1 = nn.Dropout(dropout)
 
-        self.conv2 = weight_norm(nn.Conv1d(n_outputs, n_outputs, kernel_size,
-                                           stride=stride, padding=padding, dilation=dilation))
+        self.conv2 = nn.Conv1d(n_outputs, n_outputs, kernel_size,
+                               stride=stride, padding=padding, dilation=dilation)
+        self.bn2 = nn.BatchNorm1d(n_outputs)
         self.chomp2 = Chomp1d(padding)
         self.relu2 = nn.ReLU()
         self.dropout2 = nn.Dropout(dropout)
 
-        self.net = nn.Sequential(self.conv1, self.chomp1, self.relu1, self.dropout1,
-                                 self.conv2, self.chomp2, self.relu2, self.dropout2)
+        self.net = nn.Sequential(self.conv1, self.bn1, self.relu1, self.dropout1, self.chomp1,
+                                 self.conv2, self.bn2, self.relu2, self.dropout2, self.chomp2)
         self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
         self.relu = nn.ReLU()
         if repo_initialization:

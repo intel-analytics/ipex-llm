@@ -17,13 +17,14 @@
 package com.intel.analytics.bigdl.friesian.serving.utils;
 
 import org.apache.commons.cli.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class CMDParser {
-    private static final Logger logger = Logger.getLogger(CMDParser.class.getName());
+    private static final Logger logger = LogManager.getLogger(CMDParser.class.getName());
     private Options options;
     private Map<String, String> defaultValueMap;
     private CommandLine cmd;

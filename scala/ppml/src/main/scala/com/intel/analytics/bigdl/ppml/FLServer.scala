@@ -19,11 +19,11 @@ package com.intel.analytics.bigdl.ppml
 import com.intel.analytics.bigdl.grpc.GrpcServerBase
 import com.intel.analytics.bigdl.ppml.common.Aggregator
 import com.intel.analytics.bigdl.ppml.psi.PSIServiceImpl
-
 import java.io.{File, IOException}
 
 import com.intel.analytics.bigdl.ppml.nn.NNServiceImpl
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
 
 
 /**
@@ -34,7 +34,8 @@ import org.apache.log4j.{Level, Logger}
  */
 object FLServer {
 
-  Logger.getLogger("com.intel.analytics.bigdl.ppml").setLevel(Level.DEBUG)
+  Configurator.setLevel("com.intel.analytics.bigdl.ppml", Level.DEBUG)
+
   @throws[Exception]
   def main(args: Array[String]): Unit = {
     val flServer = new FLServer(args)
@@ -46,7 +47,7 @@ object FLServer {
 }
 
 class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServerBase(_args) {
-  private val logger = Logger.getLogger(classOf[FLServer])
+  private val logger = LogManager.getLogger(classOf[FLServer])
   configPath = "ppml-conf.yaml"
   var clientNum: Int = 1
 

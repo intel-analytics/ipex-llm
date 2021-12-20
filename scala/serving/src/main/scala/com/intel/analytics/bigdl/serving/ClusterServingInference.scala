@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.serving.postprocessing.PostProcessing
 import com.intel.analytics.bigdl.serving.preprocessing.PreProcessing
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  *
@@ -29,7 +29,7 @@ import org.apache.log4j.Logger
  *                 If not sharing, modelKey should be null
  */
 class ClusterServingInference(modelKey: String = null) {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   val helper = ClusterServing.helper
   val preProcessing = new PreProcessing()
 

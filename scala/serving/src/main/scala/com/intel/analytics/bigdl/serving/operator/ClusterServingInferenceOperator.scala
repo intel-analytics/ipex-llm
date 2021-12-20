@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper, 
 import com.intel.analytics.bigdl.serving.utils.Conventions
 import org.apache.flink.api.common.functions.RichMapFunction
 import org.apache.flink.configuration.Configuration
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 
 
 class ClusterServingInferenceOperator(var params: ClusterServingParams = new ClusterServingParams())
@@ -31,7 +31,7 @@ class ClusterServingInferenceOperator(var params: ClusterServingParams = new Clu
   ClusterServing.helper = new ClusterServingHelper()
 
   override def open(parameters: Configuration): Unit = {
-    logger = Logger.getLogger(getClass)
+    logger = LogManager.getLogger(getClass)
     if (params == null) {
       params = new ClusterServingParams()
     }

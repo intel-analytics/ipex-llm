@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.ppml.common;
 
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ public abstract class Aggregator<T> {
      * aggregateTypeMap is a map to map to simplify the operations of the storage
      * it maps the enum type: TRAIN, EVAL, PREDICT to corresponded storage
      */
-    private Logger logger = Logger.getLogger(getClass());
+    private Logger logger = LogManager.getLogger(getClass());
     public Map<FLPhase, Storage<T>> aggregateTypeMap;
     protected Boolean hasReturn = false;
     protected String returnMessage = "";

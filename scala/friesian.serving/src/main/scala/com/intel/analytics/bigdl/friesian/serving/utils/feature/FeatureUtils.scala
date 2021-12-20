@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.friesian.serving.utils.{EncodeUtils, Utils}
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto._
 import EncodeUtils.objToBytes
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Row, SparkSession}
 
@@ -33,7 +33,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 object FeatureUtils {
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
 
   def loadUserItemFeaturesRDD(spark: SparkSession): Unit = {
     assert(Utils.helper.initialUserDataPath != null ||

@@ -73,7 +73,7 @@ object xgbClassifierTrainingExample {
     xgbClassifier.setNumRound(num_round)
     xgbClassifier.setTreeMethod("auto")
     xgbClassifier.setObjective("multi:softprob")
-    xgbClassifier.setTimeoutRequestWorkers(3600L)
+    xgbClassifier.setTimeoutRequestWorkers(180000L)
 
     val xgbClassificationModel = xgbClassifier.fit(train)
     xgbClassificationModel.save(modelsave_path)

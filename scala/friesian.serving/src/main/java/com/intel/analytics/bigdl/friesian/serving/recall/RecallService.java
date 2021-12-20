@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.friesian.serving.recall;
 import com.google.common.base.Preconditions;
 import com.intel.analytics.bigdl.friesian.serving.recall.faiss.swighnswlib.*;
 import com.intel.analytics.bigdl.friesian.serving.recall.faiss.utils.JniFaissInitializer;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ import static com.intel.analytics.bigdl.friesian.serving.recall.faiss.utils.Inde
 
 public class RecallService {
     private Index index;
-    private static final Logger logger = Logger.getLogger(RecallService.class.getName());
+    private static final Logger logger = LogManager.getLogger(RecallService.class.getName());
     private static final int efConstruction = 40;
     private static final int efSearch = 256;
 

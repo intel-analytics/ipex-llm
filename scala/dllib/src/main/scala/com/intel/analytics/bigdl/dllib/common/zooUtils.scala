@@ -26,7 +26,7 @@ import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
@@ -34,7 +34,7 @@ import scala.collection.mutable.ArrayBuffer
 
 private[bigdl] object zooUtils {
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   @inline
   def timeIt[T](name: String)(f: => T): T = {

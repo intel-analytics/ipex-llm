@@ -22,7 +22,7 @@ import java.util.concurrent.TimeoutException
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 
 import collection.JavaConverters._
@@ -30,8 +30,9 @@ import collection.JavaConversions._
 import scala.util.control.Breaks._
 
 class PSI() extends FLClientClosable {
-  val logger = Logger.getLogger(getClass)
   private var hashIdToId: Map[String, String] = Map[String, String]()
+  val logger = LogManager.getLogger(getClass)
+
   def getSalt(secureCode: String = ""): String = {
     flClient.psiStub.getSalt(secureCode)
   }

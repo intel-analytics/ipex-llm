@@ -9,8 +9,10 @@ import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.common.{FLPhase, Storage}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+
 import com.intel.analytics.bigdl.dllib.utils.{Table => DllibTable}
-import org.apache.log4j.Logger
+
+import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -19,7 +21,7 @@ import scala.collection.JavaConverters._
 
 
 object ProtoUtils {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
   def outputTargetToTableProto(output: Activity,
                                target: Activity,
                                meta: TableMetaData = null): Table = {
