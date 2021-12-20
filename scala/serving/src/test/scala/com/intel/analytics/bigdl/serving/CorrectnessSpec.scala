@@ -85,7 +85,7 @@ class CorrectnessSpec extends FlatSpec with Matchers {
     DeprecatedUtils.loadConfig(helper)
 //    helper.dataShape = Array(Array(3, 224, 224))
     val model = helper.loadInferenceModel()
-    val imagePath = "/tmp/serving_val"
+    val imagePath = "/tmp/imagenet_1k"
     val lsCmd = "ls " + imagePath
 
     val totalNum = (lsCmd #| "wc").!!.split(" +").filter(_ != "").head.toInt
