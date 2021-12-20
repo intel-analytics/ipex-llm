@@ -79,11 +79,6 @@ class TestChronosForecastMetrics(TestCase):
         assert_almost_equal(Evaluator.evaluate('smape', y_true, y_pred, aggregate=None)[0],
                             [0.33*2, 0.33+0.25], 2)
 
-        # 4-dim
-        y_true = np.arange(1, 21).reshape(5, 2, 2, 1)
-        y_pred = np.arange(0, 20).reshape(5, 2, 2, 1)
-        assert Evaluator.evaluate('mse', y_true, y_pred, aggregate='mean')[0] == 1
-
         # multi metrics
         y_true = np.array([[[3, -0.5], [2, 7]], [[3, -0.5], [2, 7]], [[3, -0.5], [2, 7]]])
         y_pred = np.array([[[2.5, -0.3], [2, 8]], [[2.5, -0.3], [2, 8]], [[2.5, -0.3], [2, 8]]])

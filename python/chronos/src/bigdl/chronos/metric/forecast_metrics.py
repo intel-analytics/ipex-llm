@@ -43,11 +43,10 @@ def _standard_input(metrics, y_true, y_pred):
     assert all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),\
         f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()}, "\
         f"but get {metrics}."
-    assert type(y_true) is type(y_pred) and isinstance(y_pred, (ndarray, torch.Tensor)),\
-        "y_pred and y_true type must be numpy.ndarray or torch.Tensor, "\
-        f"but found {type(y_true), type(y_pred)}."
-    if isinstance(y_pred, ndarray) and isinstance(y_true, ndarray):
-        y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
+    assert type(y_true) is type(y_pred) and isinstance(y_pred, ndarray),\
+        "y_pred and y_true type must be numpy.ndarray, "\
+        f"but found {type(y_true)} and {type(y_pred)}."
+    y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
     assert y_true.shape == y_pred.shape,\
         "y_true and y_pred should have the same shape, "\
         f"but get {y_true.shape} and {y_pred.shape}."
