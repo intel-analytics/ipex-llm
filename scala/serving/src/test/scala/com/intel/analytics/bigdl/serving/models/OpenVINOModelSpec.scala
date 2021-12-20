@@ -27,6 +27,7 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
   "OpenVINO Inception_v1" should "work" in {
     ("wget --no-check-certificate -O /tmp/openvino_inception_v1.tar https://sourceforge.net/" +
 "projects/analytics-zoo/files/analytics-zoo-data/openvino_inception_v1.tar").!
+
     "tar -xvf /tmp/openvino_inception_v1.tar -C /tmp/".!
     val resource = getClass().getClassLoader().getResource("serving")
     val dataPath = resource.getPath + "/image-3_224_224-arrow-base64"
