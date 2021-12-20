@@ -185,7 +185,8 @@ def config_option_parser():
     parser.add_option("--memory", type=str, default="10g",
                       help="The memory you want to use on each node. "
                            "You can change it depending on your own cluster setting.")
-
+    parser.add_option('--py_files', type=str, default=None,
+                      help='The pyfiles you need.')
     return parser
 
 
@@ -203,7 +204,7 @@ if __name__ == "__main__":
 
     num_nodes = 1 if options.cluster_mode == "local" else options.worker_num
     init_orca_context(cluster_mode=options.cluster_mode, cores=options.cores, num_nodes=num_nodes,
-                      memory=options.memory)
+                      memory=options.memory, py_files=options.py_files)
 
     images = tf.placeholder(dtype=tf.float32, shape=(None, 224, 224, 3))
     labels = tf.placeholder(dtype=tf.int32, shape=(None))
