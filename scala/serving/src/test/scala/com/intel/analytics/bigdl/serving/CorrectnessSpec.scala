@@ -76,8 +76,8 @@ class CorrectnessSpec extends FlatSpec with Matchers {
 //  }
   "Cluster Serving result" should "be correct" in {
 
-    ("wget --no-check-certificate -O /tmp/serving_val.tar https://sourceforge.net/projects/" +
-      "analytics-zoo/files/analytics-zoo-data/serving_val.tar").!
+    ("wget --no-check-certificate -O /tmp/serving_val.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/serving_val.tar").!
     "tar -xvf /tmp/serving_val.tar -C /tmp/".!
     ClusterServing.helper = new ClusterServingHelper()
     val helper = ClusterServing.helper
@@ -148,8 +148,8 @@ class CorrectnessSpec extends FlatSpec with Matchers {
 
   "Cluster Serving batch inference result" should "be correct" in {
 
-    ("wget --no-check-certificate -O /tmp/serving_val.tar https://sourceforge.net/projects/" +
-"analytics-zoo/files/analytics-zoo-data/serving_val.tar").!
+    ("wget --no-check-certificate -O /tmp/serving_val.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/serving_val.tar").!
     "tar -xvf /tmp/serving_val.tar -C /tmp/".!
     ClusterServing.helper = new ClusterServingHelper()
 val helper = ClusterServing.helper
