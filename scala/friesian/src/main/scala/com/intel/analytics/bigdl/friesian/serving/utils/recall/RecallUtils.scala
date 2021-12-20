@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The BigDL Authors.
+ * Copyright 2016 The BigDL Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import scala.collection.mutable.ArrayBuffer
 object RecallUtils {
   private val logger: Logger = LogManager.getLogger(classOf[RecallService].getName)
 
-  def loadItemData(indexService: RecallService, dataDir: String, model:InferenceModel,
+  def loadItemData(indexService: RecallService, dataDir: String, model: InferenceModel,
                    batchSize: Int = 0): Unit = {
     val spark = SparkSession.builder.getOrCreate
     assert(Utils.helper.itemIDColumn != null, "itemIdColumn should be provided if " +
@@ -50,7 +50,7 @@ object RecallUtils {
       assert(Utils.helper.itemFeatureColArr != null, "itemFeatureColumns should be provided " +
         "if loadSavedIndex=false and itemModelPath != null")
       val itemFeatureColumns = Utils.helper.itemIDColumn +: Utils.helper.itemFeatureColArr
-      df = df.select(itemFeatureColumns.map(col):_*).distinct()
+      df = df.select(itemFeatureColumns.map(col): _*).distinct()
       val result = df.rdd.mapPartitions(rows => {
         val rowArray = rows.toArray
         val idList = rowArray.map(row => {
@@ -118,7 +118,7 @@ object RecallUtils {
       case d: Int => d.toFloat
       case d: Double => d.toFloat
       case d: Float => d
-      case d  =>
+      case d =>
         throw new IllegalArgumentException(s"Only numeric values are supported, but got ${d}")
     }))
   }
