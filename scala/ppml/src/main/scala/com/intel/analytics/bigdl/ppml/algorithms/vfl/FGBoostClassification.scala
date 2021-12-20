@@ -21,10 +21,12 @@ import com.intel.analytics.bigdl.ppml.FLModel
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.vfl.fgboost.VflGBoostEstimator
 
-class FGBoostRegression(learningRate: Float = 0.005f,
-                        maxDepth: Int = 6,
-                        minChildSize: Int = 1) extends FLModel {
+class FGBoostClassification(nLabel: Int = 1,
+                            learningRate: Float = 0.005f,
+                            maxDepth: Int = 6,
+                            minChildSize: Int = 1) extends FLModel {
   override val model: Sequential[Float] = null
   override val estimator: Estimator = new VflGBoostEstimator(
-    continuous = true, nLabel = 1, learningRate, maxDepth, minChildSize)
+    continuous = false, nLabel = nLabel, learningRate, maxDepth, minChildSize)
 }
+
