@@ -69,7 +69,8 @@ def init_spark_on_yarn(hadoop_conf,
                        spark_log_level="WARN",
                        redirect_spark_log=True,
                        jars=None,
-                       conf=None):
+                       conf=None,
+                       py_files=None):
     """
     Create a SparkContext with Analytics Zoo configurations on Yarn cluster for yarn-client mode.
     You only need to create a conda environment and install the python dependencies in that
@@ -122,7 +123,8 @@ def init_spark_on_yarn(hadoop_conf,
         hadoop_user_name=hadoop_user_name,
         spark_yarn_archive=spark_yarn_archive,
         jars=jars,
-        conf=conf)
+        conf=conf,
+        py_files=py_files)
     return sc
 
 
