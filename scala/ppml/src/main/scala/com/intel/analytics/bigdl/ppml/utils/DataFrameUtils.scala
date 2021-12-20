@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLContext
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{ArrayType, DataType, FloatType, MapType, StringType, StructType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -29,7 +30,7 @@ import collection.JavaConverters._
 import collection.JavaConversions._
 
 object DataFrameUtils {
-
+  val logger = LogManager.getLogger(getClass)
   def dataFrameToMiniBatch(df: DataFrame,
                            featureColumn: Array[String] = null,
                            labelColumn: Array[String] = null,
@@ -80,6 +81,8 @@ object DataFrameUtils {
         labelMum = labelColumn.length
         inputList.asScala.toArray[Float]
       } else {
+        logger.warn("featureColumn and labelColumn are not provided, would take the last" +
+          "column as label column, and others would be feature columns")
         if (hasLabel) {
           featureNum = r.size - 1
           labelMum = 1
