@@ -27,7 +27,7 @@ import scala.sys.process._
 class TensorflowModelSpec extends FlatSpec with Matchers {
   ClusterServing.helper = new ClusterServingHelper()
   "Tensorflow Inception v1" should "work" in {
-    ("wget -O /tmp/tensorflow_inception_v1.tar https://sourceforge.net/projects/ " +
+    ("wget -O /tmp/tensorflow_inception_v1.tar https://sourceforge.net/projects/" +
 "analytics-zoo/files/analytics-zoo-data/tensorflow_inception_v1.tar").!
     "mkdir /tmp/tensorflow_inception_v1/".!
     "tar -xvf /tmp/tensorflow_inception_v1.tar -C /tmp/tensorflow_inception_v1/".!
@@ -55,7 +55,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
   }
 
   "Tensorflow MobileNet v1" should "work" in {
-    ("wget -O /tmp/tensorflow_mobilenet_v1.tar https://sourceforge.net/projects/ " +
+    ("wget -O /tmp/tensorflow_mobilenet_v1.tar https://sourceforge.net/projects/" +
 "analytics-zoo/files/analytics-zoo-data/tensorflow_mobilenet_v1.tar").!
     "mkdir /tmp/tensorflow_mobilenet_v1/".!
     "tar -xvf /tmp/tensorflow_mobilenet_v1.tar -C /tmp/tensorflow_mobilenet_v1".!
@@ -85,7 +85,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
 
   "TensorflowModel MobileNet v2" should "work" in {
-    ("wget -O /tmp/tensorflow_mobilenet_v2.tar https://sourceforge.net/projects/ " +
+    ("wget -O /tmp/tensorflow_mobilenet_v2.tar https://sourceforge.net/projects/" +
 "analytics-zoo/files/analytics-zoo-data/tensorflow_mobilenet_v2.tar").!
     "mkdir /tmp/tensorflow_mobilenet_v2/".!
     "tar -xvf /tmp/tensorflow_mobilenet_v2.tar -C /tmp/tensorflow_mobilenet_v2".!
@@ -115,7 +115,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
 
   "TensorflowModel ResNet 50" should "work" in {
-    ("wget -O /tmp/tensorflow_resnet50.tar https://sourceforge.net/projects/ " +
+    ("wget -O /tmp/tensorflow_resnet50.tar https://sourceforge.net/projects/" +
 "analytics-zoo/files/analytics-zoo-data/tensorflow_resnet50.tar").!
     "mkdir /tmp/tensorflow_resnet50/".!
     "tar -xvf /tmp/tensorflow_resnet50.tar -C /tmp/tensorflow_resnet50".!
@@ -144,7 +144,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
   }
 
   "TensorflowModel tf auto" should "work" in {
-    ("wget -O /tmp/tensorflow_tfauto.tar https://sourceforge.net/projects/ " +
+    ("wget -O /tmp/tensorflow_tfauto.tar https://sourceforge.net/projects/" +
 "analytics-zoo/files/analytics-zoo-data/tensorflow_tfauto.tar").!
     "mkdir /tmp/tensorflow_tfauto/".!
     "tar -xvf /tmp/tensorflow_tfauto.tar -C /tmp/tensorflow_tfauto".!
@@ -173,7 +173,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
   }
 
   "TensorflowModel VGG16" should "work" in {
-    ("wget -O /tmp/tensorflow_vgg16.tar https://sourceforge.net/projects/ " +
+    ("wget -O /tmp/tensorflow_vgg16.tar https://sourceforge.net/projects/" +
 "analytics-zoo/files/analytics-zoo-data/tensorflow_vgg16.tar").!
     "mkdir /tmp/tensorflow_vgg16/".!
     "tar -xvf /tmp/tensorflow_vgg16.tar -C /tmp/tensorflow_vgg16".!
@@ -202,7 +202,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
   }
 
   "TensorflowModel tf_2out" should "work" in {
-    ("wget -O /tmp/tensorflow_tf_2out.tar https://sourceforge.net/projects/ " +
+    ("wget -O /tmp/tensorflow_tf_2out.tar https://sourceforge.net/projects/" +
 "analytics-zoo/files/analytics-zoo-data/tensorflow_tf_2out.tar").!
     "mkdir /tmp/tensorflow_tf_2out/".!
     "tar -xvf /tmp/tensorflow_tf_2out.tar -C /tmp/tensorflow_tf_2out".!
@@ -230,7 +230,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
     })
   }
   "TF String input" should "work" in {
-    ("wget -O /tmp/tf_string.tar https://sourceforge.net/projects/ " +
+    ("wget -O /tmp/tf_string.tar https://sourceforge.net/projects/" +
 "analytics-zoo/files/analytics-zoo-data/tf_string.tar").!
     "tar -xvf /tmp/tf_string.tar -C /tmp/".!
 

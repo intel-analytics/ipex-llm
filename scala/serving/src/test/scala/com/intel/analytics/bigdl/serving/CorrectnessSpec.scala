@@ -76,8 +76,8 @@ class CorrectnessSpec extends FlatSpec with Matchers {
 //  }
   "Cluster Serving result" should "be correct" in {
 
-    ("wget -O /tmp/serving_val.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/imagenet_1k.tar").!
+    ("wget -O /tmp/serving_val.tar https://sourceforge.net/projects/" +
+      "analytics-zoo/files/analytics-zoo-data/serving_val.tar").!
     "tar -xvf /tmp/serving_val.tar -C /tmp/".!
     ClusterServing.helper = new ClusterServingHelper()
     val helper = ClusterServing.helper
@@ -85,7 +85,7 @@ class CorrectnessSpec extends FlatSpec with Matchers {
     DeprecatedUtils.loadConfig(helper)
 //    helper.dataShape = Array(Array(3, 224, 224))
     val model = helper.loadInferenceModel()
-    val imagePath = "/tmp/imagenet_1k"
+    val imagePath = "/tmp/serving_val"
     val lsCmd = "ls " + imagePath
 
     val totalNum = (lsCmd #| "wc").!!.split(" +").filter(_ != "").head.toInt
@@ -148,8 +148,8 @@ class CorrectnessSpec extends FlatSpec with Matchers {
 
   "Cluster Serving batch inference result" should "be correct" in {
 
-    ("wget -O /tmp/serving_val.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/imagenet_1k.tar").!
+    ("wget -O /tmp/serving_val.tar https://sourceforge.net/projects/" +
+"analytics-zoo/files/analytics-zoo-data/serving_val.tar").!
     "tar -xvf /tmp/serving_val.tar -C /tmp/".!
     ClusterServing.helper = new ClusterServingHelper()
 val helper = ClusterServing.helper
