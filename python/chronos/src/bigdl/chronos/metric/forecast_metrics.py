@@ -15,6 +15,7 @@
 #
 
 import torch
+import numpy
 from functools import partial
 from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
     mean_absolute_percentage_error, r2_score, symmetric_mean_absolute_percentage_error
@@ -28,6 +29,39 @@ TORCHMETRICS_REGRESSION_MAP = {
     'smape': symmetric_mean_absolute_percentage_error,
     'r2': r2_score,
 }
+
+
+def _standard_input(metrics, y_true, y_pred):
+    """
+    Standardize input functions. Format metrics,
+    check the ndim of y_pred and y_true,
+    converting 1-3 dim y_true and y_pred to 2 dim.
+    """
+    if isinstance(metrics, str):
+        metrics = [metrics]
+    metrics = list(map(lambda x: x.lower(), metrics))
+    assert all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),\
+        f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()}, "\
+        f"but get {metrics}."
+    assert type(y_true) is type(y_pred) and isinstance(y_pred, (numpy.ndarray, torch.Tensor)),\
+        "y_pred and y_true type must be numpy.ndarray or torch.Tensor, "\
+        f"but found {type(y_true), type(y_pred)}."
+    if isinstance(y_pred, numpy.ndarray) and isinstance(y_true, numpy.ndarray):
+        y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
+    assert y_true.shape == y_pred.shape,\
+        "y_true and y_pred should have the same shape, "\
+        f"but get {y_true.shape} and {y_pred.shape}."
+    if y_true.ndim == 1:
+        y_true = y_true.reshape(-1, 1)
+        y_pred = y_pred.reshape(-1, 1)
+        origin_shape = y_true.shape
+    elif y_true.ndim == 3:
+        origin_shape = y_true.shape
+        y_true = y_true.reshape(y_true.shape[0], y_true.shape[1]*y_true.shape[2])
+        y_pred = y_pred.reshape(y_pred.shape[0], y_pred.shape[1]*y_pred.shape[2])
+    else:
+        origin_shape = y_true.shape
+    return metrics, y_true, y_pred, origin_shape
 
 
 class Evaluator(object):
@@ -51,28 +85,16 @@ class Evaluator(object):
                  A floating point value, or an
                  array of floating point values, one for each individual target.
         """
-        if isinstance(metrics, str):
-            metrics = [metrics]
-        metrics = list(map(lambda x: x.lower(), metrics))
-        assert all([metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics]),\
-            f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()}, "\
-            f"but get {metrics}."
-        assert y_true.shape == y_pred.shape,\
-            "y_true and y_pred should have the same shape, "\
-            f"but get {y_true.shape} and {y_pred.shape}."
-        y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
+        metrics, y_true, y_pred, origin_shape = _standard_input(metrics, y_true, y_pred)
 
         res_list = []
         for metric in metrics:
-            res = None
-            if aggregate is None:  # TODO: not only support 3-dim data
-                res = torch.zeros(y_true.shape[1], y_true.shape[2])
-                for i in range(y_true.shape[1]):
-                    for j in range(y_true.shape[2]):
-                        res[i, j] = TORCHMETRICS_REGRESSION_MAP[metric](y_pred[:, i, j],
-                                                                        y_true[:, i, j])
-            else:  # currently this is only for 'mean'
+            if len(origin_shape) in [2, 3] and aggregate is None:
+                res = torch.zeros(y_true.shape[-1])
+                for i in range(y_true.shape[-1]):
+                    res[i] = TORCHMETRICS_REGRESSION_MAP[metric](y_pred[..., i], y_true[..., i])
+                res = res.reshape(origin_shape[1:])
+            else:
                 res = TORCHMETRICS_REGRESSION_MAP[metric](y_pred, y_true)
             res_list.append(res.numpy())
-
         return res_list
