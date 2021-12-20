@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--cpus_per_trial', type=int, default=1,
                         help="Int. Number of cpus for each trial")
-    parser.add_argument('--n_sampling', type=int, default=2,
+    parser.add_argument('--n_sampling', type=int, default=32,
                         help="Number of times to sample from the search_space.")
     parser.add_argument('--datadir', type=str,
                         help="Use local csv file by default.")
