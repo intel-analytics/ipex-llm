@@ -169,11 +169,9 @@ class Trainer(pl.Trainer):
         :param backend:             inc or nncf(nncf is not supported yet). Default: inc
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, use default config.
-        :param framework:   Supported values are tensorflow, pytorch, pytorch_fx, pytorch_ipex,
-                            onnxrt_integer, onnxrt_qlinear or mxnet; allow new framework backend
-                            extension. Default: pytorch_fx. Consistent with Intel Neural Compressor
-                            Quantization.
-
+        :param framework:   Supported values are pytorch, pytorch_fx, pytorch_ipex; allow new
+                            framework backend extension. Default: pytorch_fx.
+                            Consistent with Intel Neural Compressor Quantization.
         :param approach:    static or dynamic.
                             static: post_training_static_quant,
                             dynamic: post_training_dynamic_quant,
@@ -182,7 +180,7 @@ class Trainer(pl.Trainer):
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, higher_is_better=True}
                                     allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, higher_is_better=Flase} means accuracy < 0.99
+                                    {'absolute': 0.99, higher_is_better=False} means accuracy < 0.99
                                      must be satisfied.
         :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
                             Combine with max_trials field to decide when to exit.
