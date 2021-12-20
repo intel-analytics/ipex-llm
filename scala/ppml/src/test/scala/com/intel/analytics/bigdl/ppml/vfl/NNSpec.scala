@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.vfl
 
+import java.io.{File, FileFilter}
+
 import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.{LinearRegression, LogisticRegression}
@@ -24,22 +26,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
 
-class MockAnotherParty(algorithm: String, clientID: String = "mock") extends Thread {
-  override def run(): Unit = {
-    algorithm match {
-      case "logistic_regression" => runLogisticRegression()
-      case _ => throw new NotImplementedError()
-    }
-  }
-  def runLogisticRegression(): Unit = {
-    val spark = FLContext.getSparkSession()
-    import spark.implicits._
-    val df = spark.read.option("header", "true")
-      .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
-    val lr = new LogisticRegression(df.columns.size - 1)
-    lr.fit(df, valData = df)
-  }
-}
+
 class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   "Logistic Regression" should "work" in {
     val flServer = new FLServer()
