@@ -16,7 +16,8 @@ import collection.JavaConverters._
 import collection.JavaConversions._
 import scala.collection.mutable
 
-class VflGBoostEstimator(learningRate: Float = 0.005f,
+class VflGBoostEstimator(continuous: Boolean,
+                         learningRate: Float = 0.005f,
                          maxDepth: Int = 6,
                          minChildSize: Int = 1) extends Estimator {
   val logger = LogManager.getLogger(getClass)
@@ -56,31 +57,7 @@ class VflGBoostEstimator(learningRate: Float = 0.005f,
         st = System.currentTimeMillis()
         // Continuously split on nodes until reach maxDepth
         logger.info("Tree Boost " + i.toString)
-        while (currTree.canGrow && currTree.depth < maxDepth) {
-          // Find best split in curr tree
-          val bestLocalSplit = currTree.findBestSplit()
-          logger.debug(s"Find best split cost ${(System.currentTimeMillis() - st) / 1000f} s")
-          st = System.currentTimeMillis()
-          val bestSplit = getBestSplitFromServer(bestLocalSplit)
-          logger.debug(s"Sync split cost ${(System.currentTimeMillis() - st) / 1000f} s")
-          st = System.currentTimeMillis()
-          val isLocalSplit = bestLocalSplit.getClientID == bestSplit.getClientID
-          // If this split is in local dataset
-          if (bestSplit.featureID == -1 || bestSplit.gain < 1e-6f) {
-            logger.warn("Fail to split on current node")
-            logger.info(s"Set Leaf gain = ${bestSplit.gain}")
-            // Add current node to leaf
-            currTree.setLeaf(currTree.nodes(bestSplit.nodeID))
-            logger.debug(s"Set leaf ${(System.currentTimeMillis() - st) / 1000f} s")
-            st = System.currentTimeMillis()
-          } else {
-            // Then, apply split & upload to VFL Server
-            currTree.updateTree(bestSplit, isLocalSplit)
-            // End of building tree
-            logger.debug(s"Update tree ${(System.currentTimeMillis() - st) / 1000f} s")
-            st = System.currentTimeMillis()
-          }
-        }
+        buildTree(currTree, continuous = continuous)
         currTree.cleanup()
         // Add this tree into tree list
         logger.info(s"Built Tree_${i}" + currTree.toString)
@@ -115,33 +92,78 @@ class VflGBoostEstimator(learningRate: Float = 0.005f,
 
 
   }
-//  def buildTree() = {
-//    while (currTree.canGrow && currTree.depth < maxDepth) {
-//      // Find best split in curr tree
-//      val bestLocalSplit = currTree.findBestSplit()
-//      logger.debug(s"Find best split cost ${(System.currentTimeMillis() - st) / 1000f} s")
-//      st = System.currentTimeMillis()
-//      val bestSplit = getBestSplitFromServer(bestLocalSplit)
-//      logger.debug(s"Sync split cost ${(System.currentTimeMillis() - st) / 1000f} s")
-//      st = System.currentTimeMillis()
-//      val isLocalSplit = bestLocalSplit.getClientID == bestSplit.getClientID
-//      // If this split is in local dataset
-//      if (bestSplit.featureID == -1 || bestSplit.gain < 1e-6f) {
-//        logger.warn("Fail to split on current node")
-//        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
-//        // Add current node to leaf
-//        currTree.setLeaf(currTree.nodes(bestSplit.nodeID))
-//        logger.debug(s"Set leaf ${(System.currentTimeMillis() - st) / 1000f} s")
-//        st = System.currentTimeMillis()
-//      } else {
-//        // Then, apply split & upload to VFL Server
-//        currTree.updateTree(bestSplit, isLocalSplit)
-//        // End of building tree
-//        logger.debug(s"Update tree ${(System.currentTimeMillis() - st) / 1000f} s")
-//        st = System.currentTimeMillis()
-//      }
-//    }
-//  }
+  def trainRegressionTree(dataSet: ) = {
+    initFGBoost(labelBuffer.toArray)
+    // Boost (Build a new tree)
+    var keepBoosting = true
+    breakable {
+      for (i <- 0 until endEpoch) {
+        // Download g and h from VFL Server
+        // treeID = 0,1...,n
+        val grads = downloadGrad(i)
+        // Init an empty tree
+        var st = System.currentTimeMillis()
+        val currTree = RegressionTree(dataset, sortedIndexByFeature, grads, i.toString)
+        currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
+        logger.info("Initializing tree " + i.toString)
+        logger.debug(s"Initializing tree cost ${(System.currentTimeMillis() - st) / 1000f} s")
+        st = System.currentTimeMillis()
+        // Continuously split on nodes until reach maxDepth
+        logger.info("Tree Boost " + i.toString)
+        buildTree(currTree, continuous = continuous)
+        currTree.cleanup()
+        // Add this tree into tree list
+        logger.info(s"Built Tree_${i}" + currTree.toString)
+        if (currTree.leaves.isEmpty) {
+          logger.info("Early Stop boosting!")
+          break
+        }
+        // upload local tree
+        val treeLeaves = currTree.leaves.toArray
+        val treeIndexes = treeLeaves.map(_.nodeID.toInt).map(int2Integer).toList.asJava
+        val treeOutput = treeLeaves.map(_.similarScore).map(float2Float).toList.asJava
+        flClient.fgbostStub.uploadTreeLeaves(i.toString, treeIndexes, treeOutput)
+        logger.debug(s"Update tree leaves ${(System.currentTimeMillis() - st) / 1000f} s")
+        st = System.currentTimeMillis()
+        trees.enqueue(currTree)
+        // Evaluate tree and update residual and grads (g and h)
+        validateLast(dataset)
+        logger.debug(s"Validate last ${(System.currentTimeMillis() - st) / 1000f} s")
+        // upload predict result
+      }
+    }
+  }
+  def buildTree(tree: RegressionTree, continuous: Boolean) = {
+    while (tree.canGrow && tree.depth < maxDepth) {
+      // Find best split in curr tree
+      var st = System.currentTimeMillis()
+      val bestLocalSplit = tree.findBestSplit()
+      logger.debug(s"Find best split cost ${(System.currentTimeMillis() - st) / 1000f} s")
+      st = System.currentTimeMillis()
+      val bestSplit = getBestSplitFromServer(bestLocalSplit)
+      logger.debug(s"Sync split cost ${(System.currentTimeMillis() - st) / 1000f} s")
+      st = System.currentTimeMillis()
+      val isLocalSplit = bestLocalSplit.getClientID == bestSplit.getClientID
+      // If this split is in local dataset
+      val updateCondition = if (continuous) {
+        bestSplit.featureID == -1 || bestSplit.gain < 1e-6f
+      } else  bestSplit.featureID == -1
+      if (updateCondition) {
+        logger.warn("Fail to split on current node")
+        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
+        // Add current node to leaf
+        tree.setLeaf(tree.nodes(bestSplit.nodeID))
+        logger.debug(s"Set leaf ${(System.currentTimeMillis() - st) / 1000f} s")
+        st = System.currentTimeMillis()
+      } else {
+        // Then, apply split & upload to VFL Server
+        tree.updateTree(bestSplit, isLocalSplit)
+        // End of building tree
+        logger.debug(s"Update tree ${(System.currentTimeMillis() - st) / 1000f} s")
+        st = System.currentTimeMillis()
+      }
+    }
+  }
   def initFGBoost(label: Array[Float]): Unit = {
     logger.info("Initializing VFL Boost...")
     // Init predict, grad & hess
