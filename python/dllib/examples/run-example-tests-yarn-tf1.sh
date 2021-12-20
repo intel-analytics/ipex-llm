@@ -31,21 +31,21 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#2 Total time cost ${time} seconds"
 
-echo "#3 start test for orca inception inception"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
-  --imagenet /data/imagenettfrecord \
-  -b 128 --cluster_mode yarn-client
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  echo "orca inception failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#3 Total time cost ${time} seconds"
+# echo "#3 start test for orca inception inception"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
+#   --imagenet /data/imagenettfrecord \
+#   -b 128 --cluster_mode yarn-client
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   echo "orca inception failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#3 Total time cost ${time} seconds"
 
 echo "#4 start test for orca learn transfer_learning"
 #timer 
@@ -92,21 +92,21 @@ now=$(date "+%s")
 time=$((now - start))
 echo "#6 Total time cost ${time} seconds"
 
-echo "#7 start test for orca inception inception"
-#timer
-start=$(date "+%s")
-#run the example
-python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
-  --imagenet /data/imagenettfrecord \
-  -b 128 --cluster_mode yarn-cluster
-exit_status=$?
-if [ $exit_status -ne 0 ]; then
-  echo "orca inception failed"
-  exit $exit_status
-fi
-now=$(date "+%s")
-time=$((now - start))
-echo "#7 Total time cost ${time} seconds"
+# echo "#7 start test for orca inception inception"
+# #timer
+# start=$(date "+%s")
+# #run the example
+# python ${BIGDL_ROOT}/python/orca/example/learn/tf/inception/inception.py  \
+#   --imagenet /data/imagenettfrecord \
+#   -b 128 --cluster_mode yarn-cluster
+# exit_status=$?
+# if [ $exit_status -ne 0 ]; then
+#   echo "orca inception failed"
+#   exit $exit_status
+# fi
+# now=$(date "+%s")
+# time=$((now - start))
+# echo "#7 Total time cost ${time} seconds"
 
 echo "#8 start test for orca learn transfer_learning"
 #timer 
