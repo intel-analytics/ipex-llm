@@ -15,7 +15,7 @@
 #
 
 import torch
-import numpy
+from numpy import ndarray
 from functools import partial
 from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
     mean_absolute_percentage_error, r2_score, symmetric_mean_absolute_percentage_error
@@ -43,10 +43,10 @@ def _standard_input(metrics, y_true, y_pred):
     assert all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),\
         f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()}, "\
         f"but get {metrics}."
-    assert type(y_true) is type(y_pred) and isinstance(y_pred, (numpy.ndarray, torch.Tensor)),\
+    assert type(y_true) is type(y_pred) and isinstance(y_pred, (ndarray, torch.Tensor)),\
         "y_pred and y_true type must be numpy.ndarray or torch.Tensor, "\
         f"but found {type(y_true), type(y_pred)}."
-    if isinstance(y_pred, numpy.ndarray) and isinstance(y_true, numpy.ndarray):
+    if isinstance(y_pred, ndarray) and isinstance(y_true, ndarray):
         y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
     assert y_true.shape == y_pred.shape,\
         "y_true and y_pred should have the same shape, "\
