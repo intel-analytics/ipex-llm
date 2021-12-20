@@ -52,10 +52,10 @@ class LitResNet18(LightningModule):
         backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
         output_size = backbone.get_output_size()
         head = nn.Linear(output_size, num_classes)
-        self.modules = nn.Sequential(backbone, head)
+        self.classify = nn.Sequential(backbone, head)
 
     def forward(self, *args):
-        return self.modules(args[0])
+        return self.classify(args[0])
 
 
 class TestTrainer(TestCase):
@@ -63,7 +63,7 @@ class TestTrainer(TestCase):
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
-    user_defined_pl_model = Trainer.compile(model, loss, optimizer)
+    user_defined_pl_model = LitResNet18(10)
 
     def test_resnet18_ipex(self):
         resnet18 = vision.resnet18(
