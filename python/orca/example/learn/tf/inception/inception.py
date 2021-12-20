@@ -27,7 +27,7 @@ from bigdl.orca.learn.trigger import EveryEpoch, SeveralIteration
 from bigdl.orca.data.image import write_tfrecord, read_tfrecord
 from inception_preprocessing import preprocess_for_train, \
     preprocess_for_eval
-from nets import inception_v1
+from tensorflow.contrib.slim.python.slim.nets import inception_v1
 import tensorflow as tf
 from math import ceil
 
