@@ -50,7 +50,7 @@ def generate_data_key(ip, port, primary_key_path):
             "keylen": 32,
             "aad": "test",
         })
-    generateDataKeyWithoutPlaintext_resp = requests.post(url=base_url + "GenerateDataKeyWithoutPlaintext", data=json.dumps(params), headers=headers)
+    generateDataKeyWithoutPlaintext_resp = requests.post(url=base_url + "GenerateDataKeyWithoutPlaintext", data=json.dumps(params), headers=headers, timeout=100)
     encrypted_data_key=json.loads(generateDataKeyWithoutPlaintext_resp.text)['result']['ciphertext_base64']
     print('Writing generated data key to local file...')
     with open("./encrypted_data_key", "w") as f:

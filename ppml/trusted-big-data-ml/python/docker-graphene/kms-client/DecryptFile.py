@@ -58,7 +58,7 @@ def decrypt_data_key(ip, port, primary_key_path, data_key_path):
             "ciphertext":encrypted_data_key[0],
             "aad":"test",
         })
-    decrypt_res = requests.post(url=base_url + "Decrypt", data=json.dumps(params), headers=headers)
+    decrypt_res = requests.post(url=base_url + "Decrypt", data=json.dumps(params), headers=headers, timeout=100)
     decrypted_data_key = json.loads(decrypt_res.text)['result']['plaintext_base64']
     return decrypted_data_key
 

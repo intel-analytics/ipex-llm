@@ -45,7 +45,7 @@ def generate_primary_key(ip, port):
             "keyspec":"EH_AES_GCM_128",
             "origin":"EH_INTERNAL_KEY"
         })
-    create_resp = requests.post(url=base_url + "CreateKey", data=json.dumps(params), headers=headers)
+    create_resp = requests.post(url=base_url + "CreateKey", data=json.dumps(params), headers=headers, timeout=100)
     print('Writing generated primary key to local file...')
     with open("./encrypted_primary_key", "w") as f:
         f.write(json.loads(create_resp.text)['result']['cmk_base64'])
