@@ -195,7 +195,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
-        state_dict = self.get_state_dict(sc)
+        state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="fit",
             state_dict=state_dict,
@@ -266,6 +266,21 @@ class PyTorchPySparkEstimator(BaseEstimator):
             shutil.rmtree(temp_dir)
         return state_dicts
 
+    def _get_broadcasted_state_dict(self, sc):
+        if self.state_dict:
+            state_dict_b = sc.broadcast(self.state_dict)
+        else:
+            state_dict_b = None
+        return state_dict_b
+
+    def _get_broadcasted_state_dict(self, sc):
+        if self.state_dict:
+            state_dict_b = sc.broadcast(self.state_dict)
+        else:
+            state_dict_b = None
+        return state_dict_b
+
+
     def _predict_spark_xshards(self, xshards, init_params, params):
         def transform_func(iter, init_param, param):
             partition_data = list(iter)
@@ -297,7 +312,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
-        state_dict = self.get_state_dict(sc)
+        state_dict = self._get_broadcasted_state_dict(sc)
 
         init_params = dict(
             mode="predict",
@@ -366,7 +381,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
-        state_dict = self.get_state_dict(sc)
+        state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="evaluate",
             state_dict=state_dict,
@@ -419,12 +434,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         model.load_state_dict(model_state)
         return model.module if hasattr(model, "module") else model
 
-    def get_state_dict(self, sc):
-        if self.state_dict:
-            state_dict_b = sc.broadcast(self.state_dict)
-        else:
-            state_dict_b = None
-        return state_dict_b
+    def get_state_dict(self):
+        return self.state_dict
 
     @enable_multi_fs_save
     def save(self, model_path):

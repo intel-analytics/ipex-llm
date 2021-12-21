@@ -130,7 +130,7 @@ class PytorchPysparkWorker(TorchRunner):
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None):
-        self.load_state_dict(self.state_dict)
+        self.load_state_dict(self.state_dict.value)
         stats_list = super().train_epochs(data_creator, epochs, batch_size, profile, info,
                                           wrap_dataloader)
         state_dict = self.get_state_dict()
@@ -143,7 +143,7 @@ class PytorchPysparkWorker(TorchRunner):
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
         """Evaluates the model on the validation data set."""
-        self.load_state_dict(self.state_dict)
+        self.load_state_dict(self.state_dict.value)
         validation_stats = super().validate(data_creator, batch_size, num_steps, profile, info,
                                             wrap_dataloader)
         return [validation_stats]
@@ -154,7 +154,7 @@ class PytorchPysparkWorker(TorchRunner):
         self._toggle_profiling(profile=profile)
 
         partition = data_creator(config, batch_size)
-        self.load_state_dict(self.state_dict)
+        self.load_state_dict(self.state_dict.value)
         return super().predict(partition=partition, batch_size=batch_size, profile=profile)
 
     def shutdown(self):
