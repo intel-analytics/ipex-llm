@@ -37,8 +37,6 @@ from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.learn.utils import find_free_port
 
-logger = logging.getLogger(__name__)
-
 
 def partition_to_creator(partition):
 
@@ -93,6 +91,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
             log_level=logging.INFO,
             model_dir=None,
             log_to_driver=True):
+        logging.basicConfig(level=log_level,
+                            format='[%(asctime)s] %(levelname)-8s %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S'
+                            )
+        self.logger = logging.getLogger(__name__)
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
