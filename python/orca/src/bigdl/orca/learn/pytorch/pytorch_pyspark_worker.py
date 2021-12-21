@@ -29,6 +29,7 @@
 # limitations under the License.
 
 
+from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
 from pyspark import BarrierTaskContext
 from contextlib import closing
 import socket
@@ -94,27 +95,30 @@ class PytorchPysparkWorker(TorchRunner):
         self.cluster_info = cluster_info
         assert model_dir
         self.model_dir = model_dir
+        self.log_to_driver = log_to_driver
 
         self.setup(cores_per_worker)
-
-        self.cluster = cluster_info
-        if TaskContext.get():
-            self.partition_id = TaskContext.get().partitionId()
-        else:
-            self.partition_id = BarrierTaskContext.get().partitionId()
-
-        if log_to_driver:
-            self.log_path = os.path.join(tempfile.gettempdir(),
-                                         "{}_runner.log".format(self. partition_id))
-            duplicate_stdout_stderr_to_file(self.log_path)
-            self.logger_thread, self.thread_stop = \
-                LogMonitor.start_log_monitor(driver_ip=driver_ip,
-                                             driver_port=driver_port,
-                                             log_path=self.log_path,
-                                             partition_id=self.partition_id)
-
+        if self.log_to_driver:
+            self.log_path, self.logger_thread, self.thread_stop = \
+                PytorchPysparkWorker._start_log_monitor(driver_ip, driver_port)
         if self.backend == "torch-distributed":
-            self.setup_distributed(self.mode, self.cluster)
+            self.setup_distributed(self.mode, cluster_info)
+
+    @staticmethod
+    def _start_log_monitor(self, driver_ip, driver_port):
+        if TaskContext.get():
+            partition_id = TaskContext.get().partitionId()
+        else:
+            partition_id = BarrierTaskContext().get().partitionId()
+        log_path = os.path.join(tempfile.gettempdir(),
+                                "{}_runner.log".format(partition_id))
+        duplicate_stdout_stderr_to_file(log_path)
+        logger_thread, thread_stop = \
+            LogMonitor.start_log_monitor(driver_ip=driver_ip,
+                                         driver_port=driver_port,
+                                         log_path=log_path,
+                                         partition_id=partition_id)
+        return log_path, logger_thread, thread_stop
 
     def setup_distributed(self, mode, cluster_info):
         if mode == "fit":
@@ -163,7 +167,8 @@ class PytorchPysparkWorker(TorchRunner):
                                           wrap_dataloader)
         state_dict = self.get_state_dict()
 
-        LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+        if self.log_to_driver:
+            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
 
         if self.rank == 0:
             save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
@@ -176,7 +181,8 @@ class PytorchPysparkWorker(TorchRunner):
         self.load_state_dict(self.state_dict.value)
         validation_stats = super().validate(data_creator, batch_size, num_steps, profile, info,
                                             wrap_dataloader)
-        LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+        if self.log_to_driver:
+            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return [validation_stats]
 
     def predict(self, data_creator, batch_size=32, profile=False):
@@ -187,7 +193,8 @@ class PytorchPysparkWorker(TorchRunner):
         partition = data_creator(config, batch_size)
         self.load_state_dict(self.state_dict.value)
         result = super().predict(partition=partition, batch_size=batch_size, profile=profile)
-        LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+        if self.log_to_driver:
+            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return result
 
     def shutdown(self):
