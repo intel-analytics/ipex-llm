@@ -207,7 +207,7 @@ class ResNetSpec extends FlatSpec with Matchers {
 }
 
 object ResNetTest {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   val opt = T()
   var iChannels = 0
   val depth = opt.get("depth").getOrElse(18)

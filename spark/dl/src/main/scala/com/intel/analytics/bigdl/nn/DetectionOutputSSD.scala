@@ -285,7 +285,7 @@ class DetectionOutputSSD[T: ClassTag](val nClasses: Int = 21,
 }
 
 object DetectionOutputSSD {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply[@specialized(Float) T: ClassTag]
   (param: DetectionOutputParam, postProcess: Boolean = true)

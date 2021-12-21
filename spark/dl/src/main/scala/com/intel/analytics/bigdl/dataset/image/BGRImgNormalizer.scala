@@ -22,7 +22,7 @@ import org.apache.logging.log4j.LogManager
 import scala.collection.Iterator
 
 object BGRImgNormalizer {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply(meanR: Double, meanG: Double, meanB: Double,
     stdR: Double, stdG: Double, stdB: Double): BGRImgNormalizer = {

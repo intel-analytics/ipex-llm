@@ -23,7 +23,7 @@ import org.apache.spark.mllib.linalg.DenseVector
 import scala.collection.Iterator
 
 object BGRImgToImageVector {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply(): BGRImgToImageVector = {
     new BGRImgToImageVector()

@@ -78,7 +78,7 @@ trait ImageFrame extends Serializable {
 }
 
 object ImageFrame {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   /**
    * create LocalImageFrame

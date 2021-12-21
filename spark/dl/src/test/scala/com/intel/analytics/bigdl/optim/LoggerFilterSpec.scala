@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.optim
 import java.io.StringWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-import java.util.logging.LogManager
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToMiniBatch}
@@ -27,10 +26,7 @@ import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, TestUtils}
-import org.apache.logging.log4j.{Level, Logger, LogManager}
-import org.apache.logging.log4j.core.layout.PatternLayout
-import org.apache.logging.log4j.core.appender.WriterAppender
-import org.apache.logging.log4j.core.config.Configurator
+import org.apache.log4j.{Level, Logger, PatternLayout, WriterAppender}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -271,9 +267,9 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val warn = "bigdl warn message"
     val error = "bigdl error message"
 
-    Logger.getLogger(getClass).info(info)
-    Logger.getLogger(getClass).warn(warn)
-    Logger.getLogger(getClass).error(error)
+    LogManager.getLogger(getClass).info(info)
+    LogManager.getLogger(getClass).warn(warn)
+    LogManager.getLogger(getClass).error(error)
 
     val lines = Files.readAllLines(Paths.get(defaultFile), StandardCharsets.UTF_8)
 

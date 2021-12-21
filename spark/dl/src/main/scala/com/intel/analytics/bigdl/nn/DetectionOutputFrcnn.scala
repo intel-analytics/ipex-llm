@@ -28,7 +28,7 @@ import scala.collection.mutable.ArrayBuffer
 
 
 object DetectionOutputFrcnn {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   def apply(nmsThresh: Float = 0.3f, nClasses: Int = 21,
   bboxVote: Boolean = false, maxPerImage: Int = 100, thresh: Double = 0.05)(

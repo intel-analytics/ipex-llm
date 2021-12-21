@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
 
 object Perf {
 
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   val parser = new OptionParser[ResNet50PerfParams]("BigDL w/ Dnn Local Model Performance Test") {
     opt[String]('m', "model")

@@ -16,8 +16,6 @@
 
 package com.intel.analytics.bigdl.models.vgg
 
-import java.util.logging.LogManager
-
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, SoftmaxWithCriterion}
 import com.intel.analytics.bigdl.optim.SGD.{Poly, SequentialSchedule, Warmup}

@@ -117,7 +117,7 @@ abstract class FeatureTransformer()
 }
 
 object FeatureTransformer {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 }
 
 /**

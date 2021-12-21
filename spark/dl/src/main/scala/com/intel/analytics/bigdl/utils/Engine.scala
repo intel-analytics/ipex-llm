@@ -126,7 +126,7 @@ object Engine {
     }
   }
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
   private val singletonCounter = new AtomicBoolean()
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1

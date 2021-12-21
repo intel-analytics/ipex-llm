@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, M
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils._
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Train {

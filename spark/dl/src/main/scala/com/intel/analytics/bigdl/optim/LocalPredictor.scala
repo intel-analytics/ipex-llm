@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 
 object LocalPredictor {
 
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply[T: ClassTag](model: Module[T],
     featurePaddingParam: Option[PaddingParam[T]] = None,

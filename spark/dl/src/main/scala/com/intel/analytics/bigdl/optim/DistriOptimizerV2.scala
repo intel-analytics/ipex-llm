@@ -901,7 +901,7 @@ class TrainingContext[T: ClassTag](
       s"${batch.size()} should be divided by total core number: $subModelNumber")
 
     if (batch.size() < subModelNumber * 2) {
-      Logger.getLogger(this.getClass).warn(
+      LogManager.getLogger(this.getClass).warn(
         s"Warning: for better training speed, total batch size is recommended to be " +
           s"at least two times of core number $subModelNumber. " +
           s"please tune your batch size accordingly")
@@ -1122,23 +1122,23 @@ private object TrainingTrace {
 
 private class DistriLogger extends OptimizerLogger {
   override def info(message: String): Unit = {
-    Logger.getLogger(getClass).info(message)
+    LogManager.getLogger(getClass).info(message)
   }
 
   override def debug(message: String): Unit = {
-    Logger.getLogger(getClass).debug(message)
+    LogManager.getLogger(getClass).debug(message)
   }
 
   override def trace(message: String): Unit = {
-    Logger.getLogger(getClass).trace(message)
+    LogManager.getLogger(getClass).trace(message)
   }
 
   override def warn(message: String): Unit = {
-    Logger.getLogger(getClass).warn(message)
+    LogManager.getLogger(getClass).warn(message)
   }
 
   override def error(message: String): Unit = {
-    Logger.getLogger(getClass).error(message)
+    LogManager.getLogger(getClass).error(message)
   }
 }
 

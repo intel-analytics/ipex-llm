@@ -59,7 +59,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   customizedConverters: mutable.HashMap[String, Customizable[T]] = null
 )(implicit ev: TensorNumeric[T]) {
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   private var netparam: Caffe.NetParameter = _
   private var name2LayerV1: Map[String, V1LayerParameter] = Map[String, V1LayerParameter]()

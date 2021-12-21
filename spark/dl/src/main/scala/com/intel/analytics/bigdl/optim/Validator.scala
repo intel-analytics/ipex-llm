@@ -41,7 +41,7 @@ abstract class Validator[T, D](
   "Validator(model, dataset) is deprecated. Please use model.evaluate instead",
   "0.2.0")
 object Validator {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   def apply[T, D](model: Module[T], dataset: DataSet[D]): Validator[T, D] = {
     logger.warn("Validator(model, dataset) is deprecated. Please use model.evaluate instead")

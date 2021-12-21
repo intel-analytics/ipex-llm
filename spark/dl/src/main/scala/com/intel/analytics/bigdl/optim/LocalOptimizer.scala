@@ -32,7 +32,7 @@ import org.apache.logging.log4j.LogManager
 import scala.reflect.ClassTag
 
 object LocalOptimizer {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 }
 
 /**

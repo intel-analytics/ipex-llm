@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.utils.Engine
 import org.apache.logging.log4j.LogManager
 
 object Utils {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   def getBatchSize(batchSize : Int, totalPartition: Option[Int] = None): Int = {
     val nodeNumber = Engine.nodeNumber()

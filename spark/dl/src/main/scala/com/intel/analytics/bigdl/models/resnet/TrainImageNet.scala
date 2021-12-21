@@ -16,8 +16,6 @@
 
 package com.intel.analytics.bigdl.models.resnet
 
-import java.util.logging.LogManager
-
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.inception.{ImageNet2012, ImageNet2012Val}
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}

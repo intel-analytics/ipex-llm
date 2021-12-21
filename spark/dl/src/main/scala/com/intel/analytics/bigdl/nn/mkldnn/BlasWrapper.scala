@@ -61,7 +61,7 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
   }
 
   private[mkldnn] var needOutputFormats: Boolean = true
-  @transient private lazy val logger = Logger.getLogger(getClass)
+  @transient private lazy val logger = LogManager.getLogger(getClass)
 
   @transient private var subModels: Array[Module[Float]] = _
   @transient private var subModelNumber : Int = 1

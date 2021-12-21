@@ -48,7 +48,7 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
       val modelPath: String, val module : AbstractModule[Activity, Activity, T],
       useV2 : Boolean = true, overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) {
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   private val hdfsPrefix: String = "hdfs:"
 

@@ -327,7 +327,7 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
  * Common used DataSet builder.
  */
 object DataSet {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   /**
    * Wrap an array as a DataSet.
@@ -488,7 +488,7 @@ object DataSet {
    * Create a DataSet from a Hadoop sequence file folder.
    */
   object SeqFileFolder {
-    val logger = Logger.getLogger(getClass)
+    val logger = LogManager.getLogger(getClass)
 
     /**
      * Extract all hadoop sequence file paths from a local file folder.

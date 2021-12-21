@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import org.apache.logging.log4j.LogManager
 
 object BboxUtil {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def decodeRois(output: Tensor[Float]): Tensor[Float] = {
     // ignore if decoded

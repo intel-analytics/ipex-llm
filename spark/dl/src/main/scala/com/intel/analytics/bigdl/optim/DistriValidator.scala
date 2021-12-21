@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import org.apache.logging.log4j.LogManager
 
 object DistriValidator {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 }
 
 /**

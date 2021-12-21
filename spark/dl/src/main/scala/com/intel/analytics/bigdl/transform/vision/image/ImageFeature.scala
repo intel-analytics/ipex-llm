@@ -418,5 +418,5 @@ object ImageFeature {
 
   def apply(): ImageFeature = new ImageFeature()
 
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 }

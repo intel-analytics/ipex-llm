@@ -26,7 +26,8 @@ import org.apache.logging.log4j.core.config.Configurator
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
 import org.apache.logging.log4j.core.filter.ThresholdFilter
 import org.apache.logging.log4j.core.layout.PatternLayout
-import org.apache.logging.log4j._
+
+
 
  // scalastyle:off
  // | Property Name                           | Default            | Meaning                                      |
@@ -142,6 +143,7 @@ object LoggerFilter {
         if (clzLogger.isInstanceOf[org.apache.logging.log4j.core.Logger]) {
           clzLogger.asInstanceOf[org.apache.logging.log4j.core.Logger]
             .setAdditive(false)
+        }
       }
       // it should be set to WARN for the progress bar
       Configurator.setLevel("org.apache.spark.SparkContext", Level.WARN)

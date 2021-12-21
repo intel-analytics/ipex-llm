@@ -56,7 +56,7 @@ class Resize(resizeH: Int, resizeW: Int,
 }
 
 object Resize {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply(resizeH: Int, resizeW: Int,
     resizeMode: Int = Imgproc.INTER_LINEAR, useScaleFactor: Boolean = true): Resize =

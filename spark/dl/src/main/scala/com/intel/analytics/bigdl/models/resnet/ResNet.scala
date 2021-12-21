@@ -73,7 +73,7 @@ object Sbn {
 }
 
 object ResNet {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def shareGradInput(model: Module[Float]): Unit = {
     logger.info("Share gradients in ResNet")

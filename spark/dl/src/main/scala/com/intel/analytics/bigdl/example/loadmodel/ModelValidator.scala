@@ -35,7 +35,7 @@ import scala.language.existentials
  */
 object ModelValidator {
 
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   /**
    * This is a trait meaning the model type.

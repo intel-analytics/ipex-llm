@@ -23,7 +23,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.collection.mutable.ArrayBuffer
 
 abstract class BigDLSpecHelper extends FlatSpec with Matchers with BeforeAndAfter {
-  protected val logger = Logger.getLogger(getClass)
+  protected val logger = LogManager.getLogger(getClass)
 
   private val tmpFiles : ArrayBuffer[JFile] = new ArrayBuffer[JFile]()
 

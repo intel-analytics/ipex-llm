@@ -265,6 +265,6 @@ object ThreadPool {
     def reportFailure(t: Throwable) {}
   }
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 }
 

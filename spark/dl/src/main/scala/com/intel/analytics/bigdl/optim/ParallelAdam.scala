@@ -126,7 +126,7 @@ class ParallelAdam[@specialized(Float, Double) T: ClassTag](
 }
 
 object ParallelAdam {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   private[optim] def updateFrame[T: ClassTag](_s: Tensor[T], _r: Tensor[T], _denom: Tensor[T],
                                               clr: Double, dfdx: Tensor[T], parameter: Tensor[T],

@@ -162,7 +162,7 @@
             <artifactId>fastutil</artifactId>
             <version>7.0.2</version>
         </dependency>
-	<dependency>
+	    <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>${log4j.version}</version>
