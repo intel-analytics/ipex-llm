@@ -256,8 +256,6 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
         elif cluster_mode.startswith("k8s"):  # k8s, k8s-client or k8s-cluster
             assert "master" in kwargs, "Please specify master"
             assert "container_image" in kwargs, "Please specify container_image"
-            from bigdl.dllib.utils.utils import detect_conda_env_name
-            conda_env_name = detect_conda_env_name()
             for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                         "extra_python_lib", "penv_archive", "jars", "python_location"]:
                 if key in kwargs:
@@ -271,6 +269,8 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                                                executor_memory=memory,
                                                **spark_args)
             else:
+                from bigdl.dllib.utils.utils import detect_conda_env_name
+                conda_env_name = detect_conda_env_name()
                 sc = init_spark_on_k8s(master=kwargs["master"],
                                        container_image=kwargs["container_image"],
                                        conda_name=conda_env_name,

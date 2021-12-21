@@ -384,7 +384,7 @@ def init_spark_on_k8s_cluster(master,
     from bigdl.dllib.utils.spark import SparkRunner
     runner = SparkRunner(spark_log_level=spark_log_level,
                          redirect_spark_log=redirect_spark_log)
-    sc = runner.init_spark_on_k8s(
+    return_value = runner.init_spark_on_k8s_cluster(
         master=master,
         container_image=container_image,
         num_executors=num_executors,
@@ -398,7 +398,7 @@ def init_spark_on_k8s_cluster(master,
         jars=jars,
         conf=conf,
         python_location=python_location)
-    return sc
+    sys.exit(return_value)
 
 
 def stop_spark_standalone():
@@ -564,13 +564,11 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
     elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
         assert "master" in kwargs, "Please specify master"
         assert "container_image" in kwargs, "Please specify container_image"
-        from bigdl.dllib.utils.utils import detect_conda_env_name
-        conda_env_name = detect_conda_env_name()
         for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                     "extra_python_lib", "penv_archive", "jars", "python_location"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
-        from bigdl.dllib.nncontext import init_spark_on_k8s
+        from bigdl.dllib.nncontext import init_spark_on_k8s, init_spark_on_k8s_cluster
         if cluster_mode == "k8s-cluster":
             sc = init_spark_on_k8s_cluster(master=kwargs["master"],
                                            container_image=kwargs["container_image"],
@@ -579,6 +577,8 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
                                            executor_memory=memory,
                                            **spark_args)
         else:
+            from bigdl.dllib.utils.utils import detect_conda_env_name
+            conda_env_name = detect_conda_env_name()
             sc = init_spark_on_k8s(master=kwargs["master"],
                                    container_image=kwargs["container_image"],
                                    conda_name=conda_env_name,

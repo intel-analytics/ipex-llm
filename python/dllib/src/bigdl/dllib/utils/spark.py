@@ -107,8 +107,8 @@ class SparkRunner:
                                          extra_executor_memory_for_ray)
             py_version = ".".join(platform.python_version().split(".")[0:2])
             preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
-            ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" +\
-                      py_version + "/lib-dynload"
+            ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
+                py_version + "/lib-dynload"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
             conf.update({"spark.scheduler.minRegisteredResourcesRatio": "1.0",
@@ -182,7 +182,7 @@ class SparkRunner:
             py_version = ".".join(platform.python_version().split(".")[0:2])
             preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
             ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
-                      py_version + "/lib-dynload"
+                py_version + "/lib-dynload"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
             conf.update({"spark.scheduler.minRegisteredResourcesRatio": "1.0",
@@ -379,7 +379,6 @@ class SparkRunner:
                                   python_location=None):
         print("Initializing SparkContext for k8s-cluster mode")
         executor_python_env = "python_env"
-        os.environ["PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
 
         assert penv_archive, \
             "You should specify penv_archive explicitly"
@@ -394,10 +393,14 @@ class SparkRunner:
 
         conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                      executor_cores, executor_memory, extra_executor_memory_for_ray)
+
+        conf["spark.pyspark.driver.python"] = "{}/bin/python".format(executor_python_env)
+        conf["spark.pyspark.python"] = "{}/bin/python".format(executor_python_env)
+
         py_version = ".".join(platform.python_version().split(".")[0:2])
         preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
         ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
-                  py_version + "/lib-dynload"
+            py_version + "/lib-dynload"
         if "spark.executor.extraLibraryPath" in conf:
             ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
         conf.update({"spark.cores.max": num_executors * executor_cores,
@@ -414,9 +417,12 @@ class SparkRunner:
                 zoo_bigdl_jar_path, conf["spark.executor.extraClassPath"])
         else:
             conf["spark.executor.extraClassPath"] = zoo_bigdl_jar_path
-
-        sc = self.create_sc(submit_args, conf)
-        return sc
+        sys_args = " ".join(sys.argv)
+        conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
+        submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
+        print("submit command", submit_commnad)
+        return_value = os.system(submit_commnad)
+        return return_value
 
 
 def gen_submit_args(driver_cores, driver_memory, num_executors, executor_cores, executor_memory,
