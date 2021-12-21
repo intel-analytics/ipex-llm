@@ -158,7 +158,7 @@ class Trainer(pl.Trainer):
             return pl_model
 
     def quantize(self, pl_model: LightningModule,
-                 calib_dataloader: DataLoader,
+                 calib_dataloader: DataLoader = None,
                  val_dataloader: DataLoader = None,
                  metric: Metric = None,
                  backend='inc',
@@ -174,7 +174,8 @@ class Trainer(pl.Trainer):
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
         :param pl_model:       A Pytorch-Lightning model to be quantized.
-        :param calib_dataloader:    Iterable dataloader for calibration.
+        :param calib_dataloader:    Iterable dataloader for calibration. Required for static
+                                    quantization.
         :param val_dataloader:      Iterable dataloader for evaluation.
         :param metric:              Metric for evaluation.
         :param backend:             inc or nncf(nncf is not supported yet). Default: inc
@@ -223,7 +224,10 @@ class Trainer(pl.Trainer):
                 from bigdl.nano.quantization.quantization_inc import TorchMetricForINC
                 quantizer.eval_dataloader = val_dataloader
                 quantizer.metric = common.Metric(TorchMetricForINC, metric=metric)
-            quantizer.calib_dataloader = calib_dataloader
+            if approach == 'post_training_static_quant':
+                assert calib_dataloader, "calib_dataloader must not be None when approach is " \
+                                         "post-training static quantization."
+                quantizer.calib_dataloader = calib_dataloader
             quantized = quantizer()
             return quantized.model if quantized else None
         else:
