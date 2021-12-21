@@ -32,6 +32,7 @@ import collection.JavaConverters._
 import collection.JavaConversions._
 import scala.collection.mutable
 
+
 class VflGBoostEstimator(continuous: Boolean,
                          nLabel: Int = 1,
                          learningRate: Float = 0.005f,
@@ -44,6 +45,7 @@ class VflGBoostEstimator(continuous: Boolean,
   override def train(endEpoch: Int,
                      trainDataSet: LocalDataSet[MiniBatch[Float]],
                      valDataSet: LocalDataSet[MiniBatch[Float]]): Any = {
+    // transform the LocalDataSet to Array type, the input type of RegressionTree
     val featureBuffer = new ArrayBuffer[Tensor[Float]]()
     val labelBuffer = new ArrayBuffer[Float]()
     var count = 0
@@ -75,6 +77,13 @@ class VflGBoostEstimator(continuous: Boolean,
 
 
   }
+
+  /**
+   * Single round of tree boosting
+   * @param roundId ID to upload to FLServer
+   * @param tree the tree to boosting
+   * @return true if the tree could continue boosting, false otherwise (if no leaves to split)
+   */
   def boostRound(roundId: Int,
                  tree: RegressionTree): Boolean = {
     val i = roundId

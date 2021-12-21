@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
+/**
+ * Return the average of all clients Tensors when calling aggregate
+ */
 class AverageAggregator extends Aggregator[Table] {
   protected var modelName = "averaged"
 

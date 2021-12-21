@@ -29,9 +29,6 @@ import collection.JavaConversions._
 
 object VflLogisticRegression extends LogManager{
   def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
-    //TODO: we use get intersection to get data and input to model
-    // this do not need to be DataFrame?
-    // load data from dataset and preprocess\
     val salt = pSI.getSalt()
 
     val spark = FLContext.getSparkSession()

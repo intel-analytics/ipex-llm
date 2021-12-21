@@ -21,6 +21,12 @@ import com.intel.analytics.bigdl.ppml.FLModel
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.vfl.fgboost.VflGBoostEstimator
 
+/**
+ * FGBoost regression algorithm
+ * @param learningRate learning rate
+ * @param maxDepth max depth of boosting tree
+ * @param minChildSize
+ */
 class FGBoostRegression(learningRate: Float = 0.005f,
                         maxDepth: Int = 6,
                         minChildSize: Int = 1) extends FLModel {

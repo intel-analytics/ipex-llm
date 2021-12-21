@@ -21,6 +21,13 @@ import com.intel.analytics.bigdl.ppml.FLModel
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.vfl.fgboost.VflGBoostEstimator
 
+/**
+ * FGBoost classification algorithm
+ * @param nLabel label number for classification
+ * @param learningRate learning rate
+ * @param maxDepth max depth of boosting tree
+ * @param minChildSize
+ */
 class FGBoostClassification(nLabel: Int = 1,
                             learningRate: Float = 0.005f,
                             maxDepth: Int = 6,
