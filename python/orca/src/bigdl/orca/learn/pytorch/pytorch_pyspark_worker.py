@@ -35,6 +35,8 @@ import socket
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist
 import logging
+from bigdl.orca.learn.utils import save_pkl
+import os
 
 
 def find_ip_and_port(pre_iter):
@@ -68,7 +70,8 @@ class PytorchPysparkWorker(TorchRunner):
                  backend="torch-distributed",
                  mode="fit",
                  sync_stats=True,
-                 log_level=logging.INFO):
+                 log_level=logging.INFO,
+                 model_dir=None):
         super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
                          training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
                          log_level=log_level)
@@ -78,6 +81,8 @@ class PytorchPysparkWorker(TorchRunner):
         self.mode = mode
         self.backend = backend
         self.cluster_info = cluster_info
+        assert model_dir
+        self.model_dir = model_dir
 
         self.setup(cores_per_worker)
         if self.backend == "torch-distributed":
@@ -130,9 +135,9 @@ class PytorchPysparkWorker(TorchRunner):
         state_dict = self.get_state_dict()
 
         if self.rank == 0:
-            return [(state_dict, stats_list)]
-        else:
-            return [(None, stats_list)]
+            save_pkl(state_dict, os.path.join(self.model_dir, "states.pkl"))
+
+        return [stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):

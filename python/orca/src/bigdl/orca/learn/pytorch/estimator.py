@@ -59,8 +59,8 @@ class Estimator(object):
                training progress if use_tqdm=True.
         :param workers_per_node: parameter for `horovod` and `torch_distributed` backends. worker
                number on each node. default: 1.
-        :param model_dir: parameter for `bigdl` backend. The path to save model. During the
-               training, if checkpoint_trigger is defined and triggered, the model will be saved to
+        :param model_dir: parameter for `bigdl` and `spark` backend. The path to save model. During
+                the training, if checkpoint_trigger is defined and triggered, the model will be saved to
                model_dir.
         :param backend: You can choose "horovod",  "torch_distributed", "bigdl" or "spark" as
                backend. Default: `bigdl`.
@@ -112,7 +112,8 @@ class Estimator(object):
                                            use_tqdm=use_tqdm,
                                            workers_per_node=workers_per_node,
                                            sync_stats=sync_stats,
-                                           log_level=log_level)
+                                           log_level=log_level,
+                                           model_dir=model_dir)
         else:
             raise ValueError("Only horovod, torch_distributed, bigdl and spark backends are "
                              f"supported for now, got backend: {backend}")

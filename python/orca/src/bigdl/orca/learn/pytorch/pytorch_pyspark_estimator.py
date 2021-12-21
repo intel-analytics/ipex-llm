@@ -28,7 +28,8 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
+from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
+    get_remote_file_to_local
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
 
@@ -86,7 +87,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             use_tqdm=False,
             workers_per_node=1,
             sync_stats=True,
-            log_level=logging.INFO):
+            log_level=logging.INFO,
+            model_dir=None):
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
@@ -101,6 +103,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         if not training_operator_cls and not loss_creator:
             raise ValueError("If a loss_creator is not provided, you must "
                              "provide a custom training operator.")
+        if not model_dir:
+            raise ValueError("Please specify model directory when using spark backend")
+        self.model_dir = model_dir
 
         self.model_creator = model_creator
         self.initialization_hook = initialization_hook
@@ -127,7 +132,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             size=self.num_workers,
             cores_per_worker=self.cores_per_worker,
             sync_stats=sync_stats,
-            log_level=log_level)
+            log_level=log_level,
+            model_dir=self.model_dir)
 
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
@@ -231,8 +237,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        self.state_dict = res[0][0]
-        worker_stats = [re[1] for re in res]
+        self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
+        worker_stats = res
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
@@ -241,6 +247,23 @@ class PyTorchPySparkEstimator(BaseEstimator):
             return epoch_stats
         else:
             return epoch_stats
+
+    @staticmethod
+    def _get_state_dict_from_remote(remote_dir):
+        import tempfile
+        import shutil
+        import os
+        try:
+            temp_dir = tempfile.mkdtemp()
+            get_remote_file_to_local(os.path.join(remote_dir, "states.pkl"),
+                                     os.path.join(temp_dir, "states.pkl"),
+                                     over_write=True)
+            import pickle
+            with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
+                state_dicts = pickle.load(f)
+        finally:
+            shutil.rmtree(temp_dir)
+        return state_dicts
 
     def _predict_spark_xshards(self, xshards, init_params, params):
         def transform_func(iter, init_param, param):
@@ -273,9 +296,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
+
+        if self.state_dict:
+            state_dict_b = sc.broadcast(self.state_dict)
+        else:
+            state_dict_b = None
+
         init_params = dict(
             mode="predict",
-            state_dict=self.state_dict,
+            state_dict=state_dict_b,
             cluster_info=cluster_info,
         )
         init_params.update(self.worker_init_params)
@@ -340,9 +369,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
+
+        if self.state_dict:
+            state_dict_b = sc.broadcast(self.state_dict)
+        else:
+            state_dict_b = None
+
         init_params = dict(
             mode="evaluate",
-            state_dict=self.state_dict,
+            state_dict=state_dict_b,
             cluster_info=cluster_info)
 
         init_params.update(self.worker_init_params)
