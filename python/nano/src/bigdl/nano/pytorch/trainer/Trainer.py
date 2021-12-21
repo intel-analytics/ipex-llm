@@ -205,11 +205,16 @@ class Trainer(pl.Trainer):
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
             from neural_compressor.experimental import common
+
+            if approach not in ['static', 'dynamic']:
+                raise ValueError("Approach should be 'static' or 'dynamic', "
+                                 "{} is invalid.".format(approach))
             approach_map = {
-                'static': 'post_training_static_quant',
+                'static':  'post_training_static_quant',
                 'dynamic': 'post_training_dynamic_quant'
             }
             approach = approach_map.get(approach)
+
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
