@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator, optimizer_creator, loss_creator
 
@@ -118,7 +119,8 @@ class LSTMForecaster(BasePytorchForecaster):
         self.seed = seed
 
         # nano setting
-        self.num_processes = 1
+        current_num_threads = torch.get_num_threads()
+        self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
         self.use_ipex = False
         self.onnx_available = True
 
