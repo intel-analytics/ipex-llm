@@ -21,6 +21,7 @@ import warnings
 from bigdl.chronos.model.prophet import ProphetBuilder, ProphetModel
 from bigdl.chronos.autots.utils import recalculate_n_sampling
 
+
 # -
 
 class AutoProphet:
