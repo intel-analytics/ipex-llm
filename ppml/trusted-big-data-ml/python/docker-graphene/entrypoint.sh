@@ -132,19 +132,10 @@ case "$SPARK_K8S_CMD" in
         --resourceProfileId $SPARK_RESOURCE_PROFILE_ID
     elif [ "$SGX_ENABLED" == "true" ]; then
       ./init.sh && \
+      export spark_commnd="/opt/jdk8/bin/java -Xms$SGX_JVM_MEM_SIZE -Xmx$SGX_JVM_MEM_SIZE "${SPARK_EXECUTOR_JAVA_OPTS[@]}" -cp "$SPARK_CLASSPATH" org.apache.spark.executor.CoarseGrainedExecutorBackend --driver-url $SPARK_DRIVER_URL --executor-id $SPARK_EXECUTOR_ID --cores $SPARK_EXECUTOR_CORES --app-id $SPARK_APPLICATION_ID --hostname $SPARK_EXECUTOR_POD_IP --resourceProfileId $SPARK_RESOURCE_PROFILE_ID" && \
+      echo $spark_commnd && \
       SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
-        /opt/jdk8/bin/java \
-          -Xms$SGX_JVM_MEM_SIZE \
-          -Xmx$SGX_JVM_MEM_SIZE \
-          "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
-          -cp "$SPARK_CLASSPATH" \
-          org.apache.spark.executor.CoarseGrainedExecutorBackend \
-          --driver-url $SPARK_DRIVER_URL \
-          --executor-id $SPARK_EXECUTOR_ID \
-          --cores $SPARK_EXECUTOR_CORES \
-          --app-id $SPARK_APPLICATION_ID \
-          --hostname $SPARK_EXECUTOR_POD_IP \
-          --resourceProfileId $SPARK_RESOURCE_PROFILE_ID" 1>&2
+          $spark_commnd" 1>&2
     fi
     ;;
 
