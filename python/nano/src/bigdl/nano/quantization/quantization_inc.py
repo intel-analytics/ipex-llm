@@ -78,9 +78,9 @@ class QuantizationINC(Quantization):
         super().__init__(qconf)
 
 
-class TorchMetricForINC:
-    def __init__(self, metric):
-        self.metric = metric
+class INCMetric:
+    def __init__(self, metric, **kwargs):
+        self.metric = metric(**kwargs)
         self.pred_list = []
         self.label_list = []
 
@@ -94,6 +94,13 @@ class TorchMetricForINC:
         self.pred_list = []
         self.label_list = []
 
+
+class TorchINCMetric(INCMetric):
+    def reset(self):
+        """clear preds and labels storage"""
+        self.pred_list = []
+        self.label_list = []
+
     def result(self):
         import torch
         # calculate accuracy
@@ -101,3 +108,13 @@ class TorchMetricForINC:
         labels = torch.stack(self.label_list)
         accuracy = self.metric(preds, labels)
         return accuracy.item()
+
+
+class KerasINCMetric(INCMetric):
+    def result(self):
+        import tensorflow as tf
+        # calculate accuracy
+        preds = tf.stack(self.pred_list)
+        labels = tf.stack(self.label_list)
+        accuracy = self.metric(preds, labels)
+        return accuracy.numpy()
