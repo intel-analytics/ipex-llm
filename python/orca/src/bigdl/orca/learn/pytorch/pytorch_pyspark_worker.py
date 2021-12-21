@@ -29,7 +29,6 @@
 # limitations under the License.
 
 
-from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
 from pyspark import BarrierTaskContext
 from contextlib import closing
 import socket
@@ -105,7 +104,7 @@ class PytorchPysparkWorker(TorchRunner):
             self.setup_distributed(self.mode, cluster_info)
 
     @staticmethod
-    def _start_log_monitor(self, driver_ip, driver_port):
+    def _start_log_monitor(driver_ip, driver_port):
         if TaskContext.get():
             partition_id = TaskContext.get().partitionId()
         else:
