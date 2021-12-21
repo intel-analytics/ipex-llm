@@ -174,21 +174,20 @@ class Trainer(pl.Trainer):
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
         :param pl_model:       A Pytorch-Lightning model to be quantized.
-        :param calib_dataloader:    Iterable dataloader for calibration. Required for static
-                                    quantization.
-        :param val_dataloader:      Iterable dataloader for evaluation.
-        :param metric:              Metric for evaluation.
-        :param backend:             inc or nncf(nncf is not supported yet). Default: inc
+        :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
+                                    Required for static quantization.
+        :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
+        :param metric:              A torchmetrics.metric.Metric object for evaluation.
+        :param backend:             'inc' or 'nncf'('nncf' is not supported yet). Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
-                            Default: None, use default config.
-        :param framework:   Supported values are pytorch, pytorch_fx, pytorch_ipex; allow new
-                            framework backend extension. Default: pytorch_fx.
-                            Consistent with Intel Neural Compressor Quantization.
-        :param approach:    static or dynamic.
-                            static: post_training_static_quant,
-                            dynamic: post_training_dynamic_quant,
-                            Default: static.
-        :param tuning_strategy:    bayesian, basic, mse, sigopt. Default: bayesian.
+                            Default: '', use default config.
+        :param framework:   'pytorch', 'pytorch_fx', 'pytorch_ipex'. Default: 'pytorch_fx'.
+                            Consistent with Intel Neural Compressor.
+        :param approach:    'static' or 'dynamic'.
+                            'static': post_training_static_quant,
+                            'dynamic': post_training_dynamic_quant.
+                            Default: 'static'.
+        :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, higher_is_better=True}
                                     allows relative accuracy loss: 1%. accuracy_criterion =
@@ -200,7 +199,7 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :return:             A GraphModule. If there is no model found, return None.:
+        :return:            A GraphModule. If there is no model found, return None.
         """
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
