@@ -20,7 +20,6 @@ import types
 
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from bigdl.nano.pytorch.trainer import Trainer
 
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
 DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
@@ -46,6 +45,7 @@ class TSPipeline:
                  optimizer_creator,
                  best_config,
                  **kwargs):
+        from bigdl.nano.pytorch.trainer import Trainer
 
         # for runtime fit/predict/evaluate
         self._best_model = Trainer.compile(model=model,
@@ -184,6 +184,8 @@ class TSPipeline:
         :param batch_size: batch size, defaults to None, which takes the searched best batch_size.
         :param **kwargs: args to be passed to bigdl-nano trainer.
         '''
+        from bigdl.nano.pytorch.trainer import Trainer
+
         train_loader = None
         vaild_loader = None
         if batch_size is None:
