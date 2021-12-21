@@ -102,13 +102,13 @@ class PytorchPysparkWorker(TorchRunner):
         else:
             self.partition_id = BarrierTaskContext.get().partitionId()
         self.log_path = os.path.join(tempfile.gettempdir(),
-                                        "{}_runner.log".format(self.partition_id))
+                                     "{}_runner.log".format(self.partition_id))
         duplicate_stdout_stderr_to_file(self.log_path)
         self.logger_thread, self.thread_stop = \
             LogMonitor.start_log_monitor(driver_ip=driver_ip,
-                                            driver_port=driver_port,
-                                            log_path=self.log_path,
-                                            partition_id=self.partition_id)
+                                         driver_port=driver_port,
+                                         log_path=self.log_path,
+                                         partition_id=self.partition_id)
 
         if self.backend == "torch-distributed":
             self.setup_distributed(self.mode, self.cluster)
