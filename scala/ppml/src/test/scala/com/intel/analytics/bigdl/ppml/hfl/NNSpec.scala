@@ -38,6 +38,7 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger
     lr.fit(trainDf, valData = trainDf)
     lr.evaluate(trainDf)
     lr.predict(testDf)
+    flServer.stop()
   }
   "Linear Regression" should "work" in {
 

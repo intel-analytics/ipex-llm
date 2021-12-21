@@ -3,12 +3,12 @@ package com.intel.analytics.bigdl.ppml.example.vfl_gboost_regression
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.hfl.LogisticRegression
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
-import com.intel.analytics.bigdl.ppml.example.LogManager
+import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import scopt.OptionParser
 
 
 // TODO: handle dataset
-object VflGBoostRegression extends LogManager {
+object VflGBoostRegression extends DebugLogger {
 
   def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
     val spark = FLContext.getSparkSession()

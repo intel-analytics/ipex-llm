@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.ppml.vfl.fgboost
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.base.Estimator
@@ -73,9 +74,9 @@ class VflGBoostEstimator(continuous: Boolean,
 
   }
 
-  override def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Unit = {
+  override def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Array[Activity] = {
 
-
+    throw new NotImplementedError()
   }
 
   /**
