@@ -92,8 +92,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             sync_stats=True,
             log_level=logging.INFO,
             model_dir=None,
-            log_to_driver=True,
-            ):
+            log_to_driver=True):
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
