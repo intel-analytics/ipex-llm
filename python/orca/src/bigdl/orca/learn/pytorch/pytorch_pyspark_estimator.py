@@ -91,7 +91,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
             workers_per_node=1,
             sync_stats=True,
             log_level=logging.INFO,
-            model_dir=None):
+            model_dir=None,
+            log_to_driver=True,
+            ):
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
@@ -125,7 +127,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.ip = get_node_ip()
         self.port = find_free_port()
         is_local = sc.master.startswith("local")
-        self.need_to_log_to_driver = (not is_local)
+        self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
             start_log_server(self.ip, self.port)
 
@@ -144,6 +146,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             sync_stats=sync_stats,
             log_level=log_level,
             model_dir=self.model_dir,
+            log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port)
 
