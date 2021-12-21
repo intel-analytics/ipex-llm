@@ -130,12 +130,13 @@ class PytorchPysparkWorker(TorchRunner):
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None):
+        self.load_state_dict(self.state_dict)
         stats_list = super().train_epochs(data_creator, epochs, batch_size, profile, info,
                                           wrap_dataloader)
         state_dict = self.get_state_dict()
 
         if self.rank == 0:
-            save_pkl(state_dict, os.path.join(self.model_dir, "states.pkl"))
+            save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
 
         return [stats_list]
 
