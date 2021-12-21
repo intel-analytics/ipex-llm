@@ -60,6 +60,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
   "PSI download intersection" should "work" in {
     val flServer = new FLServer()
+    flServer.setClientNum(2)
     flServer.setPort(port)
     flServer.build()
     flServer.start()

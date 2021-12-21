@@ -33,17 +33,32 @@ public abstract class Aggregator<T> {
      */
     private Logger logger = LogManager.getLogger(getClass());
     public Map<FLPhase, Storage<T>> aggregateTypeMap;
+    protected Boolean hasReturn = false;
+    protected String returnMessage = "";
 
     public Aggregator() {
+        initStorage();
         aggregateTypeMap = new HashMap<>();
         aggregateTypeMap.put(TRAIN, trainStorage);
         aggregateTypeMap.put(EVAL, evalStorage);
         aggregateTypeMap.put(PREDICT, predictStorage);
-        initStorage();
+
+    }
+
+    public void setReturnMessage(String returnMessage) {
+        this.returnMessage = returnMessage;
+    }
+
+    public String getReturnMessage() {
+        return returnMessage;
     }
 
     public void setClientNum(Integer clientNum) {
         this.clientNum = clientNum;
+    }
+
+    public void setHasReturn(Boolean hasReturn) {
+        this.hasReturn = hasReturn;
     }
 
     public Storage<T> trainStorage;
@@ -57,6 +72,8 @@ public abstract class Aggregator<T> {
     }
 
     protected Integer clientNum;
+
+
     public abstract void aggregate(FLPhase flPhase);
 
     public Storage<T> getServerData(FLPhase type) {
@@ -64,7 +81,7 @@ public abstract class Aggregator<T> {
     }
     public <T> void putClientData(FLPhase type, String clientUUID, int version, T data)
             throws IllegalArgumentException, InterruptedException {
-        logger.debug(clientUUID + " getting data to update from server");
+        logger.debug(clientUUID + " getting data to update from server: " + type.toString());
         Storage storage = getServerData(type);
         checkVersion(storage.version, version);
         logger.debug(clientUUID + " version check pass, version: " + version);
@@ -72,7 +89,7 @@ public abstract class Aggregator<T> {
 
         synchronized (this) {
             storage.clientData.put(clientUUID, data);
-            logger.debug(clientUUID + " client data uploaded to server");
+            logger.debug(clientUUID + " client data uploaded to server: " + type.toString());
             logger.debug("Server received data " + storage.size() + "/" + clientNum);
             if (storage.size() >= clientNum) {
                 logger.debug("Server received all client data, start aggregate.");
@@ -91,6 +108,5 @@ public abstract class Aggregator<T> {
                     serverVersion + ", client version: " + clientVersion);
         }
     }
-
 
 }

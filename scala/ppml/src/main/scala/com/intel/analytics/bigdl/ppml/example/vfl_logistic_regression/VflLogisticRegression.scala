@@ -14,34 +14,37 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.example
+package com.intel.analytics.bigdl.ppml.example
 
 
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
-import com.intel.analytics.bigdl.ppml.example.LogManager
+import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import scopt.OptionParser
 
 import collection.JavaConverters._
 import collection.JavaConversions._
 
 
-object VflLogisticRegression extends LogManager{
+object VflLogisticRegression extends DebugLogger{
   def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
     val salt = pSI.getSalt()
 
     val spark = FLContext.getSparkSession()
     val df = spark.read.option("header", "true").csv(dataPath)
-    val dataSet = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
-
-    // we use same dataset to train and validate in this example
-    (dataSet, dataSet)
+    val intersectionDf = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
+    val (trainDf, valDf) = ExampleUtils.splitDataFrameToTrainVal(intersectionDf)
+    val testDf = trainDf.drop("Outcome")
+    trainDf.show()
+    testDf.show()
+    (trainDf, valDf, testDf)
   }
 
   def main(args: Array[String]): Unit = {
     case class Params(dataPath: String = null,
                       rowKeyName: String = "ID",
+                      hasLabel: Boolean = true,
                       learningRate: Float = 0.005f,
                       batchSize: Int = 4)
     val parser: OptionParser[Params] = new OptionParser[Params]("VFL Logistic Regression") {
@@ -52,6 +55,9 @@ object VflLogisticRegression extends LogManager{
       opt[String]('r', "rowKeyName")
         .text("row key name of data")
         .action((x, params) => params.copy(rowKeyName = x))
+      opt[Boolean]('y', "hasLabel")
+        .text("this party has label or not")
+        .action((x, params) => params.copy(hasLabel = x))
       opt[String]('l', "learningRate")
         .text("learning rate of training")
         .action((x, params) => params.copy(learningRate = x.toFloat))
@@ -72,13 +78,13 @@ object VflLogisticRegression extends LogManager{
      */
     FLContext.initFLContext()
     val pSI = new PSI()
-    val (trainData, testData) = getData(pSI, dataPath, rowKeyName, batchSize)
+    val (trainData, valData, testData) = getData(pSI, dataPath, rowKeyName, batchSize)
 
     // create LogisticRegression object to train the model
-
-    val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData = testData)
-    lr.evaluate()
+    val featureNum = if (argv.hasLabel) trainData.columns.size - 1 else trainData.columns.size
+    val lr = new LogisticRegression(featureNum, learningRate)
+    lr.fit(trainData, valData = valData, hasLabel = argv.hasLabel)
+    lr.evaluate(valData, hasLabel = argv.hasLabel)
     lr.predict(testData)
   }
 

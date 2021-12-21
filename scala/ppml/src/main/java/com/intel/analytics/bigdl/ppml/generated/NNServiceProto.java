@@ -1644,6 +1644,11 @@ public final class NNServiceProto {
      */
     com.google.protobuf.ByteString
         getAlgorithmBytes();
+
+    /**
+     * <code>optional bool return = 4;</code>
+     */
+    boolean getReturn();
   }
   /**
    * Protobuf type {@code EvaluateRequest}
@@ -1659,6 +1664,7 @@ public final class NNServiceProto {
     private EvaluateRequest() {
       clientuuid_ = "";
       algorithm_ = "";
+      return_ = false;
     }
 
     @Override
@@ -1709,6 +1715,11 @@ public final class NNServiceProto {
               String s = input.readStringRequireUtf8();
 
               algorithm_ = s;
+              break;
+            }
+            case 32: {
+
+              return_ = input.readBool();
               break;
             }
           }
@@ -1823,6 +1834,15 @@ public final class NNServiceProto {
       }
     }
 
+    public static final int RETURN_FIELD_NUMBER = 4;
+    private boolean return_;
+    /**
+     * <code>optional bool return = 4;</code>
+     */
+    public boolean getReturn() {
+      return return_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -1844,6 +1864,9 @@ public final class NNServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, algorithm_);
       }
+      if (return_ != false) {
+        output.writeBool(4, return_);
+      }
     }
 
     public int getSerializedSize() {
@@ -1860,6 +1883,10 @@ public final class NNServiceProto {
       }
       if (!getAlgorithmBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, algorithm_);
+      }
+      if (return_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, return_);
       }
       memoizedSize = size;
       return size;
@@ -1886,6 +1913,8 @@ public final class NNServiceProto {
       }
       result = result && getAlgorithm()
           .equals(other.getAlgorithm());
+      result = result && (getReturn()
+          == other.getReturn());
       return result;
     }
 
@@ -1904,6 +1933,9 @@ public final class NNServiceProto {
       }
       hash = (37 * hash) + ALGORITHM_FIELD_NUMBER;
       hash = (53 * hash) + getAlgorithm().hashCode();
+      hash = (37 * hash) + RETURN_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getReturn());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2032,6 +2064,8 @@ public final class NNServiceProto {
         }
         algorithm_ = "";
 
+        return_ = false;
+
         return this;
       }
 
@@ -2061,6 +2095,7 @@ public final class NNServiceProto {
           result.data_ = dataBuilder_.build();
         }
         result.algorithm_ = algorithm_;
+        result.return_ = return_;
         onBuilt();
         return result;
       }
@@ -2112,6 +2147,9 @@ public final class NNServiceProto {
         if (!other.getAlgorithm().isEmpty()) {
           algorithm_ = other.algorithm_;
           onChanged();
+        }
+        if (other.getReturn() != false) {
+          setReturn(other.getReturn());
         }
         onChanged();
         return this;
@@ -2393,6 +2431,32 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
+
+      private boolean return_ ;
+      /**
+       * <code>optional bool return = 4;</code>
+       */
+      public boolean getReturn() {
+        return return_;
+      }
+      /**
+       * <code>optional bool return = 4;</code>
+       */
+      public Builder setReturn(boolean value) {
+        
+        return_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool return = 4;</code>
+       */
+      public Builder clearReturn() {
+        
+        return_ = false;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -2473,6 +2537,16 @@ public final class NNServiceProto {
      * <code>optional int32 code = 3;</code>
      */
     int getCode();
+
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    String getMessage();
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getMessageBytes();
   }
   /**
    * Protobuf type {@code EvaluateResponse}
@@ -2488,6 +2562,7 @@ public final class NNServiceProto {
     private EvaluateResponse() {
       response_ = "";
       code_ = 0;
+      message_ = "";
     }
 
     @Override
@@ -2537,6 +2612,12 @@ public final class NNServiceProto {
             case 24: {
 
               code_ = input.readInt32();
+              break;
+            }
+            case 34: {
+              String s = input.readStringRequireUtf8();
+
+              message_ = s;
               break;
             }
           }
@@ -2626,6 +2707,40 @@ public final class NNServiceProto {
       return code_;
     }
 
+    public static final int MESSAGE_FIELD_NUMBER = 4;
+    private volatile Object message_;
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    public String getMessage() {
+      Object ref = message_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        message_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      Object ref = message_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2647,6 +2762,9 @@ public final class NNServiceProto {
       if (code_ != 0) {
         output.writeInt32(3, code_);
       }
+      if (!getMessageBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, message_);
+      }
     }
 
     public int getSerializedSize() {
@@ -2664,6 +2782,9 @@ public final class NNServiceProto {
       if (code_ != 0) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, code_);
+      }
+      if (!getMessageBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, message_);
       }
       memoizedSize = size;
       return size;
@@ -2690,6 +2811,8 @@ public final class NNServiceProto {
       }
       result = result && (getCode()
           == other.getCode());
+      result = result && getMessage()
+          .equals(other.getMessage());
       return result;
     }
 
@@ -2708,6 +2831,8 @@ public final class NNServiceProto {
       }
       hash = (37 * hash) + CODE_FIELD_NUMBER;
       hash = (53 * hash) + getCode();
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2836,6 +2961,8 @@ public final class NNServiceProto {
         }
         code_ = 0;
 
+        message_ = "";
+
         return this;
       }
 
@@ -2865,6 +2992,7 @@ public final class NNServiceProto {
           result.data_ = dataBuilder_.build();
         }
         result.code_ = code_;
+        result.message_ = message_;
         onBuilt();
         return result;
       }
@@ -2915,6 +3043,10 @@ public final class NNServiceProto {
         }
         if (other.getCode() != 0) {
           setCode(other.getCode());
+        }
+        if (!other.getMessage().isEmpty()) {
+          message_ = other.message_;
+          onChanged();
         }
         onChanged();
         return this;
@@ -3150,6 +3282,75 @@ public final class NNServiceProto {
       public Builder clearCode() {
         
         code_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private Object message_ = "";
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public String getMessage() {
+        Object ref = message_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          message_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        Object ref = message_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public Builder setMessage(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public Builder clearMessage() {
+        
+        message_ = getDefaultInstance().getMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public Builder setMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        message_ = value;
         onChanged();
         return this;
       }
@@ -4839,20 +5040,21 @@ public final class NNServiceProto {
       "inRequest\022\022\n\nclientuuid\030\001 \001(\t\022\024\n\004data\030\002 " +
       "\001(\0132\006.Table\022\021\n\talgorithm\030\003 \001(\t\"E\n\rTrainR" +
       "esponse\022\020\n\010response\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132" +
-      "\006.Table\022\014\n\004code\030\003 \001(\005\"N\n\017EvaluateRequest" +
+      "\006.Table\022\014\n\004code\030\003 \001(\005\"^\n\017EvaluateRequest" +
       "\022\022\n\nclientuuid\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Tab" +
-      "le\022\021\n\talgorithm\030\003 \001(\t\"H\n\020EvaluateRespons" +
-      "e\022\020\n\010response\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Tabl" +
-      "e\022\014\n\004code\030\003 \001(\005\"M\n\016PredictRequest\022\022\n\ncli" +
-      "entuuid\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Table\022\021\n\ta",
-      "lgorithm\030\003 \001(\t\"G\n\017PredictResponse\022\020\n\010res" +
-      "ponse\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Table\022\014\n\004cod" +
-      "e\030\003 \001(\0052\230\001\n\tNNService\022(\n\005train\022\r.TrainRe" +
-      "quest\032\016.TrainResponse\"\000\0221\n\010evaluate\022\020.Ev" +
-      "aluateRequest\032\021.EvaluateResponse\"\000\022.\n\007pr" +
-      "edict\022\017.PredictRequest\032\020.PredictResponse" +
-      "\"\000B:\n(com.intel.analytics.bigdl.ppml.gen" +
-      "eratedB\016NNServiceProtob\006proto3"
+      "le\022\021\n\talgorithm\030\003 \001(\t\022\016\n\006return\030\004 \001(\010\"Y\n" +
+      "\020EvaluateResponse\022\020\n\010response\030\001 \001(\t\022\024\n\004d" +
+      "ata\030\002 \001(\0132\006.Table\022\014\n\004code\030\003 \001(\005\022\017\n\007messa" +
+      "ge\030\004 \001(\t\"M\n\016PredictRequest\022\022\n\nclientuuid",
+      "\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Table\022\021\n\talgorith" +
+      "m\030\003 \001(\t\"G\n\017PredictResponse\022\020\n\010response\030\001" +
+      " \001(\t\022\024\n\004data\030\002 \001(\0132\006.Table\022\014\n\004code\030\003 \001(\005" +
+      "2\230\001\n\tNNService\022(\n\005train\022\r.TrainRequest\032\016" +
+      ".TrainResponse\"\000\0221\n\010evaluate\022\020.EvaluateR" +
+      "equest\032\021.EvaluateResponse\"\000\022.\n\007predict\022\017" +
+      ".PredictRequest\032\020.PredictResponse\"\000B:\n(c" +
+      "om.intel.analytics.bigdl.ppml.generatedB" +
+      "\016NNServiceProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4884,13 +5086,13 @@ public final class NNServiceProto {
     internal_static_EvaluateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_EvaluateRequest_descriptor,
-        new String[] { "Clientuuid", "Data", "Algorithm", });
+        new String[] { "Clientuuid", "Data", "Algorithm", "Return", });
     internal_static_EvaluateResponse_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_EvaluateResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_EvaluateResponse_descriptor,
-        new String[] { "Response", "Data", "Code", });
+        new String[] { "Response", "Data", "Code", "Message", });
     internal_static_PredictRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_PredictRequest_fieldAccessorTable = new

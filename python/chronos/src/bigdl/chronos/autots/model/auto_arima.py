@@ -16,11 +16,11 @@
 # limitations under the License.
 #
 
-from bigdl.orca.automl.auto_estimator import AutoEstimator
-from bigdl.chronos.model.arima import ARIMABuilder
-
+import warnings
+from bigdl.chronos.model.arima import ARIMABuilder, ARIMAModel
 
 # -
+
 
 class AutoARIMA:
 
@@ -36,6 +36,7 @@ class AutoARIMA:
                  cpus_per_trial=1,
                  name="auto_arima",
                  remote_dir=None,
+                 load_dir=None,
                  **arima_config
                  ):
         """
@@ -75,22 +76,29 @@ class AutoARIMA:
         :param arima_config: Other ARIMA hyperparameters.
 
         """
-        self.search_space = {
-            "p": p,
-            "q": q,
-            "seasonal": seasonal,
-            "P": P,
-            "Q": Q,
-            "m": m,
-        }
-        self.metric = metric
-        model_builder = ARIMABuilder()
-        self.auto_est = AutoEstimator(model_builder=model_builder,
-                                      logs_dir=logs_dir,
-                                      resources_per_trial={
-                                          "cpu": cpus_per_trial},
-                                      remote_dir=remote_dir,
-                                      name=name)
+        if load_dir:
+            self.best_model = ARIMAModel()
+            self.best_model.restore(load_dir)
+        try:
+            from bigdl.orca.automl.auto_estimator import AutoEstimator
+            self.search_space = {
+                "p": p,
+                "q": q,
+                "seasonal": seasonal,
+                "P": P,
+                "Q": Q,
+                "m": m,
+            }
+            self.metric = metric
+            model_builder = ARIMABuilder()
+            self.auto_est = AutoEstimator(model_builder=model_builder,
+                                          logs_dir=logs_dir,
+                                          resources_per_trial={
+                                              "cpu": cpus_per_trial},
+                                          remote_dir=remote_dir,
+                                          name=name)
+        except ImportError:
+            warnings.warn("You need to install `bigdl-orca[automl]` to use `fit` function.")
 
     def fit(self,
             data,
