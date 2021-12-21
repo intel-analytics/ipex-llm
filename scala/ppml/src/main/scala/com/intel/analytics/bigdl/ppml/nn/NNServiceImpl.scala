@@ -87,17 +87,29 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     val clientUUID = request.getClientuuid
     val data = request.getData
     val version = data.getMetaData.getVersion
+    val hasReturn = request.getReturn
     val aggregator = aggregatorMap.get(request.getAlgorithm)
     try {
-      aggregator.putClientData(TRAIN, clientUUID, version, data)
-      val responseData = aggregator.getServerData(TRAIN).serverData
+      aggregator.setHasReturn(hasReturn)
+      aggregator.putClientData(EVAL, clientUUID, version, data)
+      val responseData = aggregator.getServerData(EVAL).serverData
       if (responseData == null) {
         val response = "Data requested doesn't exist"
         responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(0).build)
       }
+      else if (hasReturn) {
+        val response = "Evaluate finishes"
+        // TODO: return type need to be refactor
+        val resultString = aggregator.getReturnMessage
+        responseObserver.onNext(EvaluateResponse.newBuilder
+          .setResponse(response)
+          .setMessage(resultString)
+          .setData(responseData).setCode(1).build)
+      }
       else {
-        val response = "Download data successfully"
-        responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setData(responseData).setCode(1).build)
+        val response = "Evaluate batch uploaded successfully, continue to next batch"
+        responseObserver.onNext(EvaluateResponse.newBuilder
+          .setResponse(response).setData(responseData).setCode(1).build)
       }
       responseObserver.onCompleted()
     } catch {
@@ -115,8 +127,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     val version = data.getMetaData.getVersion
     val aggregator = aggregatorMap.get(request.getAlgorithm)
     try {
-      aggregator.putClientData(EVAL, clientUUID, version, data)
-      val responseData = aggregator.getServerData(TRAIN).serverData
+      aggregator.putClientData(PREDICT, clientUUID, version, data)
+      val responseData = aggregator.getServerData(PREDICT).serverData
       if (responseData == null) {
         val response = "Data requested doesn't exist"
         responseObserver.onNext(PredictResponse.newBuilder.setResponse(response).setCode(0).build)
