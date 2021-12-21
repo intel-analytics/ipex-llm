@@ -280,7 +280,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             state_dict_b = None
         return state_dict_b
 
-
     def _predict_spark_xshards(self, xshards, init_params, params):
         def transform_func(iter, init_param, param):
             partition_data = list(iter)
