@@ -101,6 +101,12 @@ class TestTrainer(TestCase):
         out = qmodel(next(train_loader_iter)[0])
         assert out.shape == torch.Size([256, 10])
 
+        # Case 3: Dynamic quantization
+        qmodel = trainer.quantize(pl_model, approach='dynamic')
+        assert qmodel
+        out = qmodel(next(train_loader_iter)[0])
+        assert out.shape == torch.Size([256, 10])
+
     def test_trainer_quantize_inc_ptq_customized(self):
         # Test if a Lightning Module not compiled by nano works
         train_loader_iter = iter(self.train_loader)
