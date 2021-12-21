@@ -31,7 +31,6 @@ ONNXRT_BINDED_COMPONENTS = ['_ortsess_up_to_date',
                             '_ortsess',
                             '_build_ortsess',
                             'update_ortsess',
-                            'on_fit_start',
                             '_forward_onnx',
                             '_torch_forward',
                             'inference']
@@ -188,6 +187,7 @@ def inference(self,
 # on_fit_start (LightningModule method overwrite)
 def on_fit_start(self):
     self._ortsess_up_to_date = False
+    self.exit_onnx()
     return self._on_fit_start_old()
 
 
