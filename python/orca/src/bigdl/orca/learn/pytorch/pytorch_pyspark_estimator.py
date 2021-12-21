@@ -32,7 +32,10 @@ from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_s
     get_remote_file_to_local
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
+from bigdl.orca.learn.log_monitor import start_log_server
 
+from bigdl.dllib.utils.utils import get_node_ip
+from bigdl.orca.learn.utils import find_free_port
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +122,13 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
                                         self.total_cores * 4).repartition(self.num_workers)
 
+        self.ip = get_node_ip()
+        self.port = find_free_port()
+        is_local = sc.master.startswith("local")
+        self.need_to_log_to_driver = (not is_local)
+        if self.need_to_log_to_driver:
+            start_log_server(self.ip, self.port)
+
         self.worker_init_params = dict(
             model_creator=self.model_creator,
             optimizer_creator=optimizer_creator,
@@ -133,7 +143,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cores_per_worker=self.cores_per_worker,
             sync_stats=sync_stats,
             log_level=log_level,
-            model_dir=self.model_dir)
+            model_dir=self.model_dir,
+            driver_ip=self.ip,
+            driver_port=self.port)
 
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
