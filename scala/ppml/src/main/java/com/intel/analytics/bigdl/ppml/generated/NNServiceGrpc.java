@@ -6,7 +6,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
  */
 @javax.annotation.Generated(
     value = "by gRPC proto compiler (version 1.37.0)",
-    comments = "Source: FLProto.proto")
+    comments = "Source: nn_service.proto")
 public final class NNServiceGrpc {
 
   private NNServiceGrpc() {}
@@ -14,97 +14,97 @@ public final class NNServiceGrpc {
   public static final String SERVICE_NAME = "NNService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<FLProto.UploadRequest,
-      FLProto.UploadResponse> getUploadTrainMethod;
+  private static volatile io.grpc.MethodDescriptor<NNServiceProto.TrainRequest,
+      NNServiceProto.TrainResponse> getTrainMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "UploadTrain",
-      requestType = FLProto.UploadRequest.class,
-      responseType = FLProto.UploadResponse.class,
+      fullMethodName = SERVICE_NAME + '/' + "train",
+      requestType = NNServiceProto.TrainRequest.class,
+      responseType = NNServiceProto.TrainResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FLProto.UploadRequest,
-      FLProto.UploadResponse> getUploadTrainMethod() {
-    io.grpc.MethodDescriptor<FLProto.UploadRequest, FLProto.UploadResponse> getUploadTrainMethod;
-    if ((getUploadTrainMethod = NNServiceGrpc.getUploadTrainMethod) == null) {
+  public static io.grpc.MethodDescriptor<NNServiceProto.TrainRequest,
+      NNServiceProto.TrainResponse> getTrainMethod() {
+    io.grpc.MethodDescriptor<NNServiceProto.TrainRequest, NNServiceProto.TrainResponse> getTrainMethod;
+    if ((getTrainMethod = NNServiceGrpc.getTrainMethod) == null) {
       synchronized (NNServiceGrpc.class) {
-        if ((getUploadTrainMethod = NNServiceGrpc.getUploadTrainMethod) == null) {
-          NNServiceGrpc.getUploadTrainMethod = getUploadTrainMethod =
-              io.grpc.MethodDescriptor.<FLProto.UploadRequest, FLProto.UploadResponse>newBuilder()
+        if ((getTrainMethod = NNServiceGrpc.getTrainMethod) == null) {
+          NNServiceGrpc.getTrainMethod = getTrainMethod =
+              io.grpc.MethodDescriptor.<NNServiceProto.TrainRequest, NNServiceProto.TrainResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "UploadTrain"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "train"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.UploadRequest.getDefaultInstance()))
+                  NNServiceProto.TrainRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.UploadResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new NNServiceMethodDescriptorSupplier("UploadTrain"))
+                  NNServiceProto.TrainResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new NNServiceMethodDescriptorSupplier("train"))
               .build();
         }
       }
     }
-    return getUploadTrainMethod;
+    return getTrainMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FLProto.DownloadRequest,
-      FLProto.DownloadResponse> getDownloadTrainMethod;
+  private static volatile io.grpc.MethodDescriptor<NNServiceProto.EvaluateRequest,
+      NNServiceProto.EvaluateResponse> getEvaluateMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "DownloadTrain",
-      requestType = FLProto.DownloadRequest.class,
-      responseType = FLProto.DownloadResponse.class,
+      fullMethodName = SERVICE_NAME + '/' + "evaluate",
+      requestType = NNServiceProto.EvaluateRequest.class,
+      responseType = NNServiceProto.EvaluateResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FLProto.DownloadRequest,
-      FLProto.DownloadResponse> getDownloadTrainMethod() {
-    io.grpc.MethodDescriptor<FLProto.DownloadRequest, FLProto.DownloadResponse> getDownloadTrainMethod;
-    if ((getDownloadTrainMethod = NNServiceGrpc.getDownloadTrainMethod) == null) {
+  public static io.grpc.MethodDescriptor<NNServiceProto.EvaluateRequest,
+      NNServiceProto.EvaluateResponse> getEvaluateMethod() {
+    io.grpc.MethodDescriptor<NNServiceProto.EvaluateRequest, NNServiceProto.EvaluateResponse> getEvaluateMethod;
+    if ((getEvaluateMethod = NNServiceGrpc.getEvaluateMethod) == null) {
       synchronized (NNServiceGrpc.class) {
-        if ((getDownloadTrainMethod = NNServiceGrpc.getDownloadTrainMethod) == null) {
-          NNServiceGrpc.getDownloadTrainMethod = getDownloadTrainMethod =
-              io.grpc.MethodDescriptor.<FLProto.DownloadRequest, FLProto.DownloadResponse>newBuilder()
+        if ((getEvaluateMethod = NNServiceGrpc.getEvaluateMethod) == null) {
+          NNServiceGrpc.getEvaluateMethod = getEvaluateMethod =
+              io.grpc.MethodDescriptor.<NNServiceProto.EvaluateRequest, NNServiceProto.EvaluateResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "DownloadTrain"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "evaluate"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.DownloadRequest.getDefaultInstance()))
+                  NNServiceProto.EvaluateRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.DownloadResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new NNServiceMethodDescriptorSupplier("DownloadTrain"))
+                  NNServiceProto.EvaluateResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new NNServiceMethodDescriptorSupplier("evaluate"))
               .build();
         }
       }
     }
-    return getDownloadTrainMethod;
+    return getEvaluateMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FLProto.EvaluateRequest,
-      FLProto.EvaluateResponse> getUploadEvaluateMethod;
+  private static volatile io.grpc.MethodDescriptor<NNServiceProto.PredictRequest,
+      NNServiceProto.PredictResponse> getPredictMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "UploadEvaluate",
-      requestType = FLProto.EvaluateRequest.class,
-      responseType = FLProto.EvaluateResponse.class,
+      fullMethodName = SERVICE_NAME + '/' + "predict",
+      requestType = NNServiceProto.PredictRequest.class,
+      responseType = NNServiceProto.PredictResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FLProto.EvaluateRequest,
-      FLProto.EvaluateResponse> getUploadEvaluateMethod() {
-    io.grpc.MethodDescriptor<FLProto.EvaluateRequest, FLProto.EvaluateResponse> getUploadEvaluateMethod;
-    if ((getUploadEvaluateMethod = NNServiceGrpc.getUploadEvaluateMethod) == null) {
+  public static io.grpc.MethodDescriptor<NNServiceProto.PredictRequest,
+      NNServiceProto.PredictResponse> getPredictMethod() {
+    io.grpc.MethodDescriptor<NNServiceProto.PredictRequest, NNServiceProto.PredictResponse> getPredictMethod;
+    if ((getPredictMethod = NNServiceGrpc.getPredictMethod) == null) {
       synchronized (NNServiceGrpc.class) {
-        if ((getUploadEvaluateMethod = NNServiceGrpc.getUploadEvaluateMethod) == null) {
-          NNServiceGrpc.getUploadEvaluateMethod = getUploadEvaluateMethod =
-              io.grpc.MethodDescriptor.<FLProto.EvaluateRequest, FLProto.EvaluateResponse>newBuilder()
+        if ((getPredictMethod = NNServiceGrpc.getPredictMethod) == null) {
+          NNServiceGrpc.getPredictMethod = getPredictMethod =
+              io.grpc.MethodDescriptor.<NNServiceProto.PredictRequest, NNServiceProto.PredictResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "UploadEvaluate"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "predict"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.EvaluateRequest.getDefaultInstance()))
+                  NNServiceProto.PredictRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.EvaluateResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new NNServiceMethodDescriptorSupplier("UploadEvaluate"))
+                  NNServiceProto.PredictResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new NNServiceMethodDescriptorSupplier("predict"))
               .build();
         }
       }
     }
-    return getUploadEvaluateMethod;
+    return getPredictMethod;
   }
 
   /**
@@ -157,48 +157,48 @@ public final class NNServiceGrpc {
 
     /**
      */
-    public void uploadTrain(FLProto.UploadRequest request,
-                            io.grpc.stub.StreamObserver<FLProto.UploadResponse> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUploadTrainMethod(), responseObserver);
+    public void train(NNServiceProto.TrainRequest request,
+                      io.grpc.stub.StreamObserver<NNServiceProto.TrainResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getTrainMethod(), responseObserver);
     }
 
     /**
      */
-    public void downloadTrain(FLProto.DownloadRequest request,
-                              io.grpc.stub.StreamObserver<FLProto.DownloadResponse> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDownloadTrainMethod(), responseObserver);
+    public void evaluate(NNServiceProto.EvaluateRequest request,
+                         io.grpc.stub.StreamObserver<NNServiceProto.EvaluateResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getEvaluateMethod(), responseObserver);
     }
 
     /**
      */
-    public void uploadEvaluate(FLProto.EvaluateRequest request,
-                               io.grpc.stub.StreamObserver<FLProto.EvaluateResponse> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUploadEvaluateMethod(), responseObserver);
+    public void predict(NNServiceProto.PredictRequest request,
+                        io.grpc.stub.StreamObserver<NNServiceProto.PredictResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getPredictMethod(), responseObserver);
     }
 
     @Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
-            getUploadTrainMethod(),
+            getTrainMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FLProto.UploadRequest,
-                FLProto.UploadResponse>(
-                  this, METHODID_UPLOAD_TRAIN)))
+                NNServiceProto.TrainRequest,
+                NNServiceProto.TrainResponse>(
+                  this, METHODID_TRAIN)))
           .addMethod(
-            getDownloadTrainMethod(),
+            getEvaluateMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FLProto.DownloadRequest,
-                FLProto.DownloadResponse>(
-                  this, METHODID_DOWNLOAD_TRAIN)))
+                NNServiceProto.EvaluateRequest,
+                NNServiceProto.EvaluateResponse>(
+                  this, METHODID_EVALUATE)))
           .addMethod(
-            getUploadEvaluateMethod(),
+            getPredictMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FLProto.EvaluateRequest,
-                FLProto.EvaluateResponse>(
-                  this, METHODID_UPLOAD_EVALUATE)))
+                NNServiceProto.PredictRequest,
+                NNServiceProto.PredictResponse>(
+                  this, METHODID_PREDICT)))
           .build();
     }
   }
@@ -219,26 +219,26 @@ public final class NNServiceGrpc {
 
     /**
      */
-    public void uploadTrain(FLProto.UploadRequest request,
-                            io.grpc.stub.StreamObserver<FLProto.UploadResponse> responseObserver) {
+    public void train(NNServiceProto.TrainRequest request,
+                      io.grpc.stub.StreamObserver<NNServiceProto.TrainResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getUploadTrainMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getTrainMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void downloadTrain(FLProto.DownloadRequest request,
-                              io.grpc.stub.StreamObserver<FLProto.DownloadResponse> responseObserver) {
+    public void evaluate(NNServiceProto.EvaluateRequest request,
+                         io.grpc.stub.StreamObserver<NNServiceProto.EvaluateResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getDownloadTrainMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getEvaluateMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void uploadEvaluate(FLProto.EvaluateRequest request,
-                               io.grpc.stub.StreamObserver<FLProto.EvaluateResponse> responseObserver) {
+    public void predict(NNServiceProto.PredictRequest request,
+                        io.grpc.stub.StreamObserver<NNServiceProto.PredictResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getUploadEvaluateMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getPredictMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
@@ -258,23 +258,23 @@ public final class NNServiceGrpc {
 
     /**
      */
-    public FLProto.UploadResponse uploadTrain(FLProto.UploadRequest request) {
+    public NNServiceProto.TrainResponse train(NNServiceProto.TrainRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getUploadTrainMethod(), getCallOptions(), request);
+          getChannel(), getTrainMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FLProto.DownloadResponse downloadTrain(FLProto.DownloadRequest request) {
+    public NNServiceProto.EvaluateResponse evaluate(NNServiceProto.EvaluateRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getDownloadTrainMethod(), getCallOptions(), request);
+          getChannel(), getEvaluateMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FLProto.EvaluateResponse uploadEvaluate(FLProto.EvaluateRequest request) {
+    public NNServiceProto.PredictResponse predict(NNServiceProto.PredictRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getUploadEvaluateMethod(), getCallOptions(), request);
+          getChannel(), getPredictMethod(), getCallOptions(), request);
     }
   }
 
@@ -294,32 +294,32 @@ public final class NNServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FLProto.UploadResponse> uploadTrain(
-        FLProto.UploadRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<NNServiceProto.TrainResponse> train(
+        NNServiceProto.TrainRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getUploadTrainMethod(), getCallOptions()), request);
+          getChannel().newCall(getTrainMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FLProto.DownloadResponse> downloadTrain(
-        FLProto.DownloadRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<NNServiceProto.EvaluateResponse> evaluate(
+        NNServiceProto.EvaluateRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getDownloadTrainMethod(), getCallOptions()), request);
+          getChannel().newCall(getEvaluateMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FLProto.EvaluateResponse> uploadEvaluate(
-        FLProto.EvaluateRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<NNServiceProto.PredictResponse> predict(
+        NNServiceProto.PredictRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getUploadEvaluateMethod(), getCallOptions()), request);
+          getChannel().newCall(getPredictMethod(), getCallOptions()), request);
     }
   }
 
-  private static final int METHODID_UPLOAD_TRAIN = 0;
-  private static final int METHODID_DOWNLOAD_TRAIN = 1;
-  private static final int METHODID_UPLOAD_EVALUATE = 2;
+  private static final int METHODID_TRAIN = 0;
+  private static final int METHODID_EVALUATE = 1;
+  private static final int METHODID_PREDICT = 2;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -338,17 +338,17 @@ public final class NNServiceGrpc {
     @SuppressWarnings("unchecked")
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
-        case METHODID_UPLOAD_TRAIN:
-          serviceImpl.uploadTrain((FLProto.UploadRequest) request,
-              (io.grpc.stub.StreamObserver<FLProto.UploadResponse>) responseObserver);
+        case METHODID_TRAIN:
+          serviceImpl.train((NNServiceProto.TrainRequest) request,
+              (io.grpc.stub.StreamObserver<NNServiceProto.TrainResponse>) responseObserver);
           break;
-        case METHODID_DOWNLOAD_TRAIN:
-          serviceImpl.downloadTrain((FLProto.DownloadRequest) request,
-              (io.grpc.stub.StreamObserver<FLProto.DownloadResponse>) responseObserver);
+        case METHODID_EVALUATE:
+          serviceImpl.evaluate((NNServiceProto.EvaluateRequest) request,
+              (io.grpc.stub.StreamObserver<NNServiceProto.EvaluateResponse>) responseObserver);
           break;
-        case METHODID_UPLOAD_EVALUATE:
-          serviceImpl.uploadEvaluate((FLProto.EvaluateRequest) request,
-              (io.grpc.stub.StreamObserver<FLProto.EvaluateResponse>) responseObserver);
+        case METHODID_PREDICT:
+          serviceImpl.predict((NNServiceProto.PredictRequest) request,
+              (io.grpc.stub.StreamObserver<NNServiceProto.PredictResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -372,7 +372,7 @@ public final class NNServiceGrpc {
 
     @Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return FLProto.getDescriptor();
+      return NNServiceProto.getDescriptor();
     }
 
     @Override
@@ -411,9 +411,9 @@ public final class NNServiceGrpc {
         if (result == null) {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new NNServiceFileDescriptorSupplier())
-              .addMethod(getUploadTrainMethod())
-              .addMethod(getDownloadTrainMethod())
-              .addMethod(getUploadEvaluateMethod())
+              .addMethod(getTrainMethod())
+              .addMethod(getEvaluateMethod())
+              .addMethod(getPredictMethod())
               .build();
         }
       }

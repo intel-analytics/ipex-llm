@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.friesian.serving.recall.RecallService
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
@@ -34,7 +34,7 @@ import scala.collection.mutable.ArrayBuffer
 
 
 object RecallUtils {
-  private val logger = Logger.getLogger(classOf[RecallService].getName)
+  private val logger: Logger = LogManager.getLogger(classOf[RecallService].getName)
 
   def loadItemData(indexService: RecallService, dataDir: String, model:InferenceModel,
                    batchSize: Int = 0): Unit = {

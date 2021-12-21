@@ -318,10 +318,11 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
   }
 }
 
-class XGBClassifier () {
-  private val model = new XGBoostClassifier()
+class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
+  private val model = new XGBoostClassifier(xgboostParams)
   model.setNthread(Engine.coreNumber())
   model.setMaxBins(256)
+
   def setFeaturesCol(featuresColName: String): this.type = {
     model.setFeaturesCol(featuresColName)
     this
@@ -348,7 +349,7 @@ class XGBClassifier () {
     this
   }
 
-  def setEta(value: Int): this.type = {
+  def setEta(value: Double): this.type = {
     model.setEta(value)
     this
   }
@@ -368,6 +369,29 @@ class XGBClassifier () {
     this
   }
 
+  def setLabelCol(labelColName: String): this.type = {
+    model.setLabelCol(labelColName)
+    this
+  }
+  def setTreeMethod(value: String): this.type = {
+    model.setTreeMethod(value)
+    this
+  }
+
+  def setObjective(value: String): this.type = {
+    model.setObjective(value)
+    this
+  }
+
+  def setNumClass(value: Int): this.type = {
+    model.setNumClass(value)
+    this
+  }
+
+  def setTimeoutRequestWorkers(value: Long): this.type = {
+    model.setTimeoutRequestWorkers(value)
+    this
+  }
 }
 /**
  * [[XGBClassifierModel]] is a trained XGBoost classification model.
@@ -413,12 +437,22 @@ class XGBClassifierModel private[bigdl](
     }
     output
   }
+
+  def save(path: String): Unit = {
+    model.write.overwrite().save(path)
+  }
+
 }
 
 object XGBClassifierModel {
   def load(path: String, numClass: Int): XGBClassifierModel = {
     new XGBClassifierModel(XGBoostHelper.load(path, numClass))
   }
+
+  def load(path: String): XGBClassifierModel = {
+    new XGBClassifierModel(XGBoostClassificationModel.load(path))
+  }
+
 }
 
 /**

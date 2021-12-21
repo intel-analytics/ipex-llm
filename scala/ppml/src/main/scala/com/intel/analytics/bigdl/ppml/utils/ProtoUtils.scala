@@ -1,13 +1,12 @@
-package com.intel.analytics.bigdl.ppml.vfl.utils
+package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil.getParametersFromModel
 import com.intel.analytics.bigdl.ppml.FLClient
-import com.intel.analytics.bigdl.ppml.generated.FLProto
-import com.intel.analytics.bigdl.ppml.generated.FLProto.{DownloadResponse, FloatTensor, Table, TableMetaData}
-import org.apache.log4j.Logger
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -16,10 +15,10 @@ import scala.collection.JavaConverters._
 
 
 object ProtoUtils {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
   def outputTargetToTableProto(output: Activity,
                                target: Activity,
-                               meta: TableMetaData = null): FLProto.Table = {
+                               meta: TableMetaData = null): Table = {
     val tensorProto = toFloatTensor(output.toTensor[Float])
 
     val builder = Table.newBuilder
@@ -55,33 +54,30 @@ object ProtoUtils {
   def toFloatTensor(data: Array[Float]): FloatTensor = {
     toFloatTensor(data, Array(data.length))
   }
-  def uploadModel(client: FLClient,
-                  model: Module[Float],
-                  flVersion: Int,
-                  algorithm: String): Unit = {
-    val parameterTable = model.getParametersTable()
 
-    val metadata = TableMetaData.newBuilder
-      .setName("test").setVersion(flVersion).build
-
+  def getModelWeightTable(model: Module[Float], version: Int, name: String = "test") = {
     val weights = getParametersFromModel(model)._1
-
+    val metadata = TableMetaData.newBuilder
+      .setName(name).setVersion(version).build
+    FloatTensor.newBuilder()
+      .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
+      .addAllShape(weights.size.toList.map(v => int2Integer(v)))
+      .build()
     val tensor =
       FloatTensor.newBuilder()
         .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
         .addAllShape(weights.size.toList.map(v => int2Integer(v)))
         .build()
-
-
-    val metamodel = FLProto.Table.newBuilder
+    val metamodel = Table.newBuilder
       .putTable("weights", tensor)
       .setMetaData(metadata)
       .build
-    client.nnStub.uploadTrain(metamodel, algorithm)
+    metamodel
   }
 
+
   def updateModel(model: Module[Float],
-                  modelData: FLProto.Table): Unit = {
+                  modelData: Table): Unit = {
     val weigthBias = modelData.getTableMap.get("weights")
     val data = weigthBias.getTensorList.asScala.map(v => Float2float(v)).toArray
     val shape = weigthBias.getShapeList.asScala.map(v => Integer2int(v)).toArray
@@ -89,7 +85,7 @@ object ProtoUtils {
     getParametersFromModel(model)._1.copy(tensor)
   }
 
-  def getTensor(name: String, modelData: FLProto.Table): Tensor[Float] = {
+  def getTensor(name: String, modelData: Table): Tensor[Float] = {
     val dataMap = modelData.getTableMap.get(name)
     val data = dataMap.getTensorList.asScala.map(Float2float).toArray
     val shape = dataMap.getShapeList.asScala.map(Integer2int).toArray
@@ -97,25 +93,6 @@ object ProtoUtils {
   }
 
 
-  def downloadTrain(client: FLClient,
-                    modelName: String,
-                    flVersion: Int,
-                    algorithm: String): FLProto.Table = {
-    var code = 0
-    var maxRetry = 20000
-    var downloadRes = None: Option[DownloadResponse]
-    while (code == 0 && maxRetry > 0) {
-      downloadRes = Some(client.nnStub.downloadTrain(modelName, flVersion, algorithm))
-      code = downloadRes.get.getCode
-      if (code == 0) {
-        logger.info("Waiting 10ms for other clients!")
-        maxRetry -= 1
-        Thread.sleep(10)
-      }
-    }
-    if (code == 0) throw new Exception("Failed to download model within max retries!")
-    downloadRes.get.getData
-  }
 
   def randomSplit[T: ClassTag](weight: Array[Float],
                                data: Array[T],

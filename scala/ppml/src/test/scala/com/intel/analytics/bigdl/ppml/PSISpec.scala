@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl
+package com.intel.analytics.bigdl.ppml
 
-import com.intel.analytics.bigdl.ppml.FLServer
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils
 import com.intel.analytics.bigdl.ppml.utils.PortUtils
-import org.apache.log4j.Logger
-
-import scala.collection.JavaConverters._
+import org.apache.logging.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.TimeoutException
 
 class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
   var port: Int = 8980
   var target: String = "localhost:8980"
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   before {
     port = PortUtils.findNextPortAvailable(port)
     target = "localhost:" + port
@@ -41,7 +38,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     flServer.setPort(port)
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initFLContext()
     val pSI = new PSI()
     val salt = pSI.getSalt()
     flServer.stop()
@@ -52,7 +49,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     flServer.setPort(port)
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initFLContext()
     val pSI = new PSI()
     val set = List("key1", "key2")
     val salt = pSI.getSalt()
@@ -66,7 +63,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     flServer.setPort(port)
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initFLContext()
     val pSI1 = new PSI()
     val pSI2 = new PSI()
     val set1 = List("key1", "key2")
@@ -84,13 +81,13 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     flServer.setPort(port)
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initFLContext()
     val pSI1 = new PSI()
     val set1 = List("key1", "key2")
     val salt1 = pSI1.getSalt()
     pSI1.uploadSet(set1.asJava, salt1)
     try {
-      val intersection = pSI1.downloadIntersection()
+      val intersection = pSI1.downloadIntersection(maxTry = 2)
     } catch {
       case _: TimeoutException => println("Test pass")
       case _ => throw new Error("Test fail")

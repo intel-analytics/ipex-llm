@@ -25,10 +25,11 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.optim.{DistriOptimizer, Trigger}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils._
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.tensorflow.framework.{DataType, NodeDef, TensorProto, TensorShapeProto}
 
 import scala.collection.mutable
@@ -68,8 +69,8 @@ object TensorflowLoaderSpec {
 
 class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
-  Logger.getLogger("org").setLevel(Level.WARN)
-  Logger.getLogger("akka").setLevel(Level.WARN)
+  Configurator.setLevel("org", Level.WARN)
+  Configurator.setLevel("akka", Level.WARN)
 
   import TensorflowLoaderSpec._
 

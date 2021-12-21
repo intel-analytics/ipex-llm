@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.serving.serialization.StreamSerializer
 import com.intel.analytics.bigdl.serving.utils.Conventions
 import org.apache.flink.api.common.functions.RichMapFunction
 import org.apache.flink.configuration.Configuration
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 
 
 
@@ -38,7 +38,7 @@ class FlinkInference()
   var helper: ClusterServingHelper = null
 
   override def open(parameters: Configuration): Unit = {
-    logger = Logger.getLogger(getClass)
+    logger = LogManager.getLogger(getClass)
     helper = ClusterServing.helper
 //    val t = Tensor[Float](1, 2, 3).rand()
 //    val x = T.array(Array(t))

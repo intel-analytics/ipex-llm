@@ -35,8 +35,10 @@ import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.spark.sql.SparkSession;
 import redis.clients.jedis.Jedis;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
@@ -55,13 +57,13 @@ enum SearchType {
 }
 
 public class FeatureServer extends GrpcServerBase {
-    private static final Logger logger = Logger.getLogger(FeatureServer.class.getName());
+    private static final Logger logger = LogManager.getLogger(FeatureServer.class.getName());
 
     /** Create a Feature server. */
     public FeatureServer(String[] args) {
         super(args);
         configPath = "config_feature.yaml";
-        Logger.getLogger("org").setLevel(Level.ERROR);
+        Configurator.setLevel("org", Level.ERROR);
     }
 
     @Override

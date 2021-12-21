@@ -42,7 +42,7 @@ You can submit BigDL application from a client container that provides the requi
 sudo docker run -itd --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube:/root/.kube \
-    intelanalytics/hyper-zoo:latest bash
+    intelanalytics/bigdl-k8s:latest bash
 ```
 
 **Note:** to create the client container, `-v /etc/kubernetes:/etc/kubernetes:` and `-v /root/.kube:/root/.kube` are required to specify the path of kube config and installation.

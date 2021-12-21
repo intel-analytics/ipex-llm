@@ -18,10 +18,11 @@ package com.intel.analytics.bigdl.friesian.serving.recall.faiss.utils;
 import com.intel.analytics.bigdl.friesian.serving.recall.faiss.swighnswlib.intArray;
 import com.intel.analytics.bigdl.friesian.serving.recall.faiss.swighnswlib.longArray;
 import com.intel.analytics.bigdl.friesian.serving.recall.faiss.swighnswlib.floatArray;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class IndexHelperHNSW {
-    private static final Logger log = Logger.getLogger(IndexHelper.class);
+    private static final Logger log = LogManager.getLogger(IndexHelper.class);
 
     public static String show(longArray a, int rows, int cols) {
         StringBuilder sb = new StringBuilder();

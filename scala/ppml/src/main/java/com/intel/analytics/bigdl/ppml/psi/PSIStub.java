@@ -16,8 +16,10 @@
 
 package com.intel.analytics.bigdl.ppml.psi;
 
-import com.intel.analytics.bigdl.ppml.generated.FLProto;
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
 import com.intel.analytics.bigdl.ppml.generated.PSIServiceGrpc;
+import com.intel.analytics.bigdl.ppml.generated.PSIServiceProto.*;
+
 import io.grpc.Channel;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
@@ -30,37 +32,27 @@ import java.util.UUID;
 public class PSIStub {
     private static final Logger logger = LoggerFactory.getLogger(PSIStub.class);
     private PSIServiceGrpc.PSIServiceBlockingStub stub;
-    public PSIStub(Channel channel, String taskID) {
+    public PSIStub(Channel channel) {
         stub = PSIServiceGrpc.newBlockingStub(channel);
-        this.taskID = taskID;
     }
     protected String clientID = UUID.randomUUID().toString();
     protected String salt;
     protected int splitSize = 1000000;
-    protected String taskID;
 
     public String getSalt() {
-        if (this.taskID.isEmpty()) {
-            this.taskID = Utils.getRandomUUID();
-        }
-        return getSalt(this.taskID, 2, "Test");
+        return getSalt("");
     }
-
     /**
      * For PSI usage only
      * To get salt from FL Server, will get a new one if its salt does not exist on server
-     * @param name String, taskID
-     * @param clientNum int, client number
      * @param secureCode String, secure code
      * @return String, the salt get from server
      */
-    public String getSalt(String name, int clientNum, String secureCode) {
-        logger.info("Processing task with taskID: " + name + " ...");
-        FLProto.SaltRequest request = FLProto.SaltRequest.newBuilder()
-                .setTaskId(name)
-                .setClientNum(clientNum)
+    public String getSalt(String secureCode) {
+        logger.info(clientID + " getting salt from PSI service");
+        SaltRequest request = SaltRequest.newBuilder()
                 .setSecureCode(secureCode).build();
-        FLProto.SaltReply response;
+        SaltReply response;
         try {
             response = stub.getSalt(request);
         } catch (StatusRuntimeException e) {
@@ -82,8 +74,7 @@ public class PSIStub {
         int split = 0;
         while (split < numSplit) {
             List<String> splitArray = Utils.getSplit(hashedIdArray, split, numSplit, splitSize);
-            FLProto.UploadSetRequest request = FLProto.UploadSetRequest.newBuilder()
-                    .setTaskId(taskID)
+            UploadSetRequest request = UploadSetRequest.newBuilder()
                     .setSplit(split)
                     .setNumSplit(numSplit)
                     .setSplitLength(splitSize)
@@ -109,23 +100,21 @@ public class PSIStub {
         List<String> result = new ArrayList<String>();
         try {
             logger.info("Downloading 0th intersection");
-            FLProto.DownloadIntersectionRequest request = FLProto.DownloadIntersectionRequest.newBuilder()
-                    .setTaskId(taskID)
+            DownloadIntersectionRequest request = DownloadIntersectionRequest.newBuilder()
                     .setSplit(0)
                     .build();
-            FLProto.DownloadIntersectionResponse response = stub.downloadIntersection(request);
-            if (response.getStatus() == FLProto.SIGNAL.ERROR) {
+            DownloadIntersectionResponse response = stub.downloadIntersection(request);
+            if (response.getStatus() == SIGNAL.ERROR) {
                 throw new Exception("Task ID does not exist on server, please upload set first.");
             }
-            if (response.getStatus() == FLProto.SIGNAL.EMPTY_INPUT) {
+            if (response.getStatus() == SIGNAL.EMPTY_INPUT) {
                 // empty intersection, just return
                 return null;
             }
             logger.info("Downloaded 0th intersection");
             result.addAll(response.getIntersectionList());
             for (int i = 1; i < response.getNumSplit(); i++) {
-                request = FLProto.DownloadIntersectionRequest.newBuilder()
-                        .setTaskId(taskID)
+                request = DownloadIntersectionRequest.newBuilder()
                         .setSplit(i)
                         .build();
                 logger.info("Downloading " + i + "th intersection");

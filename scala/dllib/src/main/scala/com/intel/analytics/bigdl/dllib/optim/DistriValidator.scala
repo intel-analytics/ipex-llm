@@ -20,10 +20,10 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.dllib.optim.DistriValidator._
 import com.intel.analytics.bigdl.dllib.utils.{Engine, MklBlas}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 object DistriValidator {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 }
 
 /**

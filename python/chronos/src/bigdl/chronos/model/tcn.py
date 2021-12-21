@@ -42,9 +42,7 @@ import warnings
 
 import torch
 import torch.nn as nn
-from torch.nn.utils import weight_norm
-from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel, \
-    PYTORCH_REGRESSION_LOSS_MAP
+from .utils import PYTORCH_REGRESSION_LOSS_MAP
 
 
 class Chomp1d(nn.Module):
@@ -60,20 +58,22 @@ class TemporalBlock(nn.Module):
     def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2,
                  repo_initialization=True):
         super(TemporalBlock, self).__init__()
-        self.conv1 = weight_norm(nn.Conv1d(n_inputs, n_outputs, kernel_size,
-                                           stride=stride, padding=padding, dilation=dilation))
+        self.conv1 = nn.Conv1d(n_inputs, n_outputs, kernel_size,
+                               stride=stride, padding=padding, dilation=dilation)
+        self.bn1 = nn.BatchNorm1d(n_outputs)
         self.chomp1 = Chomp1d(padding)
         self.relu1 = nn.ReLU()
         self.dropout1 = nn.Dropout(dropout)
 
-        self.conv2 = weight_norm(nn.Conv1d(n_outputs, n_outputs, kernel_size,
-                                           stride=stride, padding=padding, dilation=dilation))
+        self.conv2 = nn.Conv1d(n_outputs, n_outputs, kernel_size,
+                               stride=stride, padding=padding, dilation=dilation)
+        self.bn2 = nn.BatchNorm1d(n_outputs)
         self.chomp2 = Chomp1d(padding)
         self.relu2 = nn.ReLU()
         self.dropout2 = nn.Dropout(dropout)
 
-        self.net = nn.Sequential(self.conv1, self.chomp1, self.relu1, self.dropout1,
-                                 self.conv2, self.chomp2, self.relu2, self.dropout2)
+        self.net = nn.Sequential(self.conv1, self.bn1, self.relu1, self.dropout1, self.chomp1,
+                                 self.conv2, self.bn2, self.relu2, self.dropout2, self.chomp2)
         self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
         self.relu = nn.ReLU()
         if repo_initialization:
@@ -167,24 +167,30 @@ def loss_creator(config):
     return getattr(torch.nn, loss_name)()
 
 
-class TCNPytorch(PytorchBaseModel):
-    def __init__(self, check_optional_config=False):
-        super().__init__(model_creator=model_creator,
-                         optimizer_creator=optimizer_creator,
-                         loss_creator=loss_creator,
-                         check_optional_config=check_optional_config)
+# the PytorchBaseModel will only be used for orca.automl
+try:
+    from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
 
-    def _get_required_parameters(self):
-        return {
-            "past_seq_len",
-            "input_feature_num",
-            "future_seq_len",
-            "output_feature_num"
-        }
+    class TCNPytorch(PytorchBaseModel):
+        def __init__(self, check_optional_config=False):
+            super().__init__(model_creator=model_creator,
+                             optimizer_creator=optimizer_creator,
+                             loss_creator=loss_creator,
+                             check_optional_config=check_optional_config)
 
-    def _get_optional_parameters(self):
-        return {
-            "nhid",
-            "levels",
-            "kernel_size",
-        } | super()._get_optional_parameters()
+        def _get_required_parameters(self):
+            return {
+                "past_seq_len",
+                "input_feature_num",
+                "future_seq_len",
+                "output_feature_num"
+            }
+
+        def _get_optional_parameters(self):
+            return {
+                "nhid",
+                "levels",
+                "kernel_size",
+            } | super()._get_optional_parameters()
+except ImportError:
+    pass

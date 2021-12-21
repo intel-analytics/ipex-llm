@@ -28,7 +28,6 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
 import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Train {

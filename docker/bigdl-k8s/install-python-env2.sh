@@ -30,4 +30,5 @@ pip install --no-cache-dir pyarrow && \
 pip install --no-cache-dir opencv-python==4.2.0.34 && \
 pip install --no-cache-dir aioredis==1.1.0 && \
 pip install --no-cache-dir tensorflow==2.4.0 && \
+pip install --no-cache-dir deepctr_torch && \
 source deactivate

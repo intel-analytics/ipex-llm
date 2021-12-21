@@ -96,7 +96,7 @@ def setup_package():
         extras_require={'ray': ['ray==1.2.0', 'psutil', 'aiohttp==3.7.0', 'aioredis==1.1.0',
                                 'setproctitle', 'hiredis==1.1.0', 'async-timeout==3.0.1'],
                         'automl': ['aiohttp==3.7.4', 'aioredis==1.3.1',
-                                   'ray[tune]==1.2.0', 'scikit-learn', 'tensorboard', 'xgboost']
+                                   'ray[tune]==1.2.0', 'scikit-learn', 'tensorboard']
                         },
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,

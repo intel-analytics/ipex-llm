@@ -121,6 +121,7 @@ case "$SPARK_K8S_CMD" in
       /opt/jdk8/bin/java \
         -Xms$SPARK_EXECUTOR_MEMORY \
         -Xmx$SPARK_EXECUTOR_MEMORY \
+        "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
         -cp "$SPARK_CLASSPATH" \
         org.apache.spark.executor.CoarseGrainedExecutorBackend \
         --driver-url $SPARK_DRIVER_URL \
@@ -135,6 +136,7 @@ case "$SPARK_K8S_CMD" in
         /opt/jdk8/bin/java \
           -Xms$SGX_JVM_MEM_SIZE \
           -Xmx$SGX_JVM_MEM_SIZE \
+          "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
           -cp "$SPARK_CLASSPATH" \
           org.apache.spark.executor.CoarseGrainedExecutorBackend \
           --driver-url $SPARK_DRIVER_URL \
