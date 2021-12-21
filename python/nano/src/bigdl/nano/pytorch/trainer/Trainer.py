@@ -210,7 +210,7 @@ class Trainer(pl.Trainer):
                 raise ValueError("Approach should be 'static' or 'dynamic', "
                                  "{} is invalid.".format(approach))
             approach_map = {
-                'static':  'post_training_static_quant',
+                'static': 'post_training_static_quant',
                 'dynamic': 'post_training_dynamic_quant'
             }
             approach = approach_map.get(approach)

@@ -18,10 +18,9 @@
 import os
 from unittest import TestCase
 
-from pytorch_lightning import LightningModule
 import pytest
 import torch
-import torchmetrics
+from pytorch_lightning import LightningModule
 from test._train_torch_lightning import create_data_loader, data_transform
 from test._train_torch_lightning import train_with_linear_top_layer
 from torch import nn
@@ -89,23 +88,11 @@ class TestTrainer(TestCase):
         out = qmodel(next(train_loader_iter)[0])
         assert out.shape == torch.Size([256, 10])
 
-        # Case 2: Override by arguments
-        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
-                                  metric=torchmetrics.F1(10), framework='pytorch_fx',
-                                  approach='static',
-                                  tuning_strategy='basic',
-                                  accuracy_criterion={'relative':         0.99,
-                                                      'higher_is_better': True})
-
-        assert qmodel
-        out = qmodel(next(train_loader_iter)[0])
-        assert out.shape == torch.Size([256, 10])
-
-        # Case 3: Dynamic quantization
-        qmodel = trainer.quantize(pl_model, approach='dynamic')
-        assert qmodel
-        out = qmodel(next(train_loader_iter)[0])
-        assert out.shape == torch.Size([256, 10])
+        # Case 4: Invalid approach
+        invalid_approach = 'qat'
+        with pytest.raises(ValueError, match="Approach should be 'static' or 'dynamic', "
+                                             "{} is invalid.".format(invalid_approach)):
+            trainer.quantize(pl_model, approach=invalid_approach)
 
     def test_trainer_quantize_inc_ptq_customized(self):
         # Test if a Lightning Module not compiled by nano works
