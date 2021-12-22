@@ -203,6 +203,17 @@ nn_model = NNModel(bigDLModel)
 
 Meanwhile, for advanced use cases (e.g. model with multiple input tensor), `NNModel` supports: `setSamplePreprocessing(value: Preprocessing[Any, Sample[T]])`to directly compose Sample according to user-specified Preprocessing.
 
+We can get model from `NNModel` by:
+**Scala:**
+```scala
+val model = nnModel.getModel()
+```
+
+**Python:**
+```python
+model = nn_model.model
+```
+
 ---
 
 ### 2.3 NNClassifier
