@@ -19,8 +19,9 @@ import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
 import com.intel.analytics.bigdl.ppml.generated.PSIServiceGrpc;
 import com.intel.analytics.bigdl.ppml.generated.PSIServiceProto.*;
 import io.grpc.stub.StreamObserver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 public class PSIServiceImpl extends PSIServiceGrpc.PSIServiceImplBase {
-    private static final Logger logger = LoggerFactory.getLogger(PSIServiceImpl.class);
+    private static final Logger logger = LogManager.getLogger(PSIServiceImpl.class);
     // TODO Thread safe
     protected PsiIntersection psiTask;
     // This psiCollections is

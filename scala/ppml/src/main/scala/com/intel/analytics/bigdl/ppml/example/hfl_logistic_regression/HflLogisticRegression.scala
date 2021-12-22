@@ -26,9 +26,6 @@ import collection.JavaConversions._
 object HflLogisticRegression extends DebugLogger {
 
   def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
-    //TODO: we use get intersection to get data and input to model
-    // this do not need to be DataFrame?
-    // load data from dataset and preprocess
     val spark = FLContext.getSparkSession()
     import spark.implicits._
     val df = spark.read.csv(dataPath)
