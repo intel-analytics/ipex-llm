@@ -39,12 +39,15 @@ version=$1
 quick=$2
 upload=$3
 
-# Add spark3 suffix to the project name to avoid conflict with the whl for spark2.
-# Add name=, == and - in pattern matching so that if the script runs twice,
-# it won't change anything in the second run.
-sed -i "s/bigdl-orca==/bigdl-orca-spark3==/g" $FRIESIAN_DIR/src/setup.py
-sed -i "s/name='bigdl-friesian'/name='bigdl-friesian-spark3'/g" $FRIESIAN_DIR/src/setup.py
-sed -i "s/bigdl-orca\[ray\]/bigdl-orca-spark3\[ray\]/g" $FRIESIAN_DIR/src/setup.py
-sed -i "s/dist\/bigdl_friesian-/dist\/bigdl_friesian_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh
+# The version suffix will differ spark3 from spark2.
+if [ "${version}" == "default" ]; then
+    version=$(cat $FRIESIAN_DIR/../version.txt | head -1)
+fi
+if [[ "${version}" == *"spark3" ]]; then
+    spark3_version="${version}"
+else
+    # Ignore if the version already has spark3 suffix modified by other modules.
+    spark3_version="${version}spark3"
+fi
 
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x
+bash ${RUN_SCRIPT_DIR}/release.sh linux ${spark3_version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x
