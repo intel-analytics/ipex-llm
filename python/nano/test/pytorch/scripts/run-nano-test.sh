@@ -9,20 +9,11 @@ wget -nv ${FTP_URI}/analytics-zoo-data/cifar-10-python.tar.gz -P ${NANO_TEST_DIR
 set -e
 echo "#Start bigdl-nano tests"
 echo "#1 Start test imagefolder"
-start=$(date "+%s")
-python -m pytest -s ${NANO_TEST_DIR}/test_imagefolder.py
-now=$(date "+%s")
-time1=$((now-start))
 
-echo "#2 Start test models vision"
-start=$(date "+%s")
-python -m pytest -s ${NANO_TEST_DIR}/test_models_vision.py
-now=$(date "+%s")
-time2=$((now-start))
 
 echo "#2 Start test lightning"
 start=$(date "+%s")
-python -m pytest -s ${NANO_TEST_DIR}/test_lightning.py
+python -m pytest -s ${NANO_TEST_DIR}/pytorch/test_lightning.py
 now=$(date "+%s")
 time2=$((now-start))
 
