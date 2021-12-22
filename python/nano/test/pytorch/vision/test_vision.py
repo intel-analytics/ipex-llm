@@ -19,8 +19,7 @@ import pytest
 import os
 from unittest import TestCase
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
-from test._train_torch_lightning import train_with_linear_top_layer
+from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
 
 
 batch_size = 256
@@ -28,56 +27,49 @@ num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 
-class TestModelsVision(TestCase):
+class TestVision(TestCase):
 
-    def test_resnet18_ipex(self):
+    def test_resnet18(self):
         resnet18 = vision.resnet18(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            resnet18, batch_size, num_workers, data_dir,
-            accelerator=IPEXAccelerator())
+            resnet18, batch_size, num_workers, data_dir)
 
-    def test_resnet34_ipex(self):
+    def test_resnet34(self):
         resnet34 = vision.resnet34(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            resnet34, batch_size, num_workers, data_dir,
-            accelerator=IPEXAccelerator())
+            resnet34, batch_size, num_workers, data_dir)
 
-    def test_resnet50_ipex(self):
+    def test_resnet50(self):
         resnet50 = vision.resnet50(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            resnet50, batch_size, num_workers, data_dir,
-            accelerator=IPEXAccelerator())
+            resnet50, batch_size, num_workers, data_dir)
 
-    def test_mobilenet_v3_large_ipex(self):
+    def test_mobilenet_v3_large(self):
         mobilenet = vision.mobilenet_v3_large(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            mobilenet, batch_size, num_workers, data_dir,
-            accelerator=IPEXAccelerator())
+            mobilenet, batch_size, num_workers, data_dir)
 
-    def test_mobilenet_v3_small_ipex(self):
+    def test_mobilenet_v3_small(self):
         mobilenet = vision.mobilenet_v3_small(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            mobilenet, batch_size, num_workers, data_dir,
-            accelerator=IPEXAccelerator())
+            mobilenet, batch_size, num_workers, data_dir)
 
-    def test_mobilenet_v2_ipex(self):
+    def test_mobilenet_v2(self):
         mobilenet = vision.mobilenet_v2(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            mobilenet, batch_size, num_workers, data_dir,
-            accelerator=IPEXAccelerator())
+            mobilenet, batch_size, num_workers, data_dir)
 
-    def test_shufflenet_ipex(self):
+    def test_shufflenet(self):
         shufflenet = vision.shufflenet_v2_x1_0(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            shufflenet, batch_size, num_workers, data_dir,
-            accelerator=IPEXAccelerator())
+            shufflenet, batch_size, num_workers, data_dir)
 
 
 if __name__ == '__main__':
