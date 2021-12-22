@@ -17,7 +17,7 @@ The procedure of training a model from scratch usually involves following steps:
 
 1. define your model (by connecting layers/activations into a network)
 2. decide your loss function (which function to optimize)
-3. optimization (choose a proper algorithm and hyper parameters, and train)
+3. train (choose a proper algorithm and hyper parameters, and train)
 4. evaluation (evaluate your model) 
 
 Before training models, please make sure BigDL DLLib is installed, BigDL context is initialized properly, and your data is ready. Refer to [Before using BigDL](#before-using-bigdl) and [Prepare Your Data](#prepare-your-data) for details.
@@ -44,7 +44,7 @@ model.fit(df, batchSize = 4, nbEpoch = 1, featureCols = Array("f1", "f2", "f3"),
 
 After `fit` finishes, you can then use the trained model for prediction or evaluation.
 ```
-model.predict(df, predictionCol = "predict")
+model.predict(df, featureCols = Array("f1", "f2", "f3"), predictionCol = "predict")
 ```
 
 ---
