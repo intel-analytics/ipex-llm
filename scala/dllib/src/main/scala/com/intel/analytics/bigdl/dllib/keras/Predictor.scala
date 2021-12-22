@@ -367,8 +367,6 @@ trait Predictable[T] extends VectorCompatibility{
     }
   }
 
-  var featureCols: Array[String] = null
-  var internalFeatureCol: String = null
   var predictTransformer: Preprocessing[Any, Sample[T]] = null
 
   def outputToPrediction(output: Tensor[T]): Any = {
@@ -376,10 +374,13 @@ trait Predictable[T] extends VectorCompatibility{
   }
 
   def predict(x: DataFrame,
+              featureCols: Array[String],
               predictionCol: String,
               batchPerThread: Int): DataFrame = {
     require(predictTransformer!=null, "Must train the model before call predcition")
 
+    val guid = java.util.UUID.randomUUID.toString
+    val internalFeatureCol = "features" + guid
     val df = if (featureCols.size > 1) {
       val assembler = new VectorAssembler()
         .setInputCols(featureCols)
@@ -439,8 +440,9 @@ trait Predictable[T] extends VectorCompatibility{
   }
 
   def predict(x: DataFrame,
+              featureCols: Array[String],
               predictionCol: String): DataFrame = {
-    predict(x, predictionCol, batchPerThread = 4)
+    predict(x, featureCols, predictionCol, batchPerThread = 4)
   }
 
   /**

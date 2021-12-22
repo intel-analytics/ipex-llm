@@ -486,7 +486,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
 
     val guid = java.util.UUID.randomUUID.toString
-    internalFeatureCol = "features" + guid
+    val internalFeatureCol = "features" + guid
     val internalLabelCol = "labels" + guid
     val df = if (featureCols.size > 1) {
       val assembler = new VectorAssembler()
@@ -533,7 +533,6 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       featureCols: Array[String],
       labelCols: Array[String],
       valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    this.featureCols = featureCols
     val preprocessing =
       FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
         .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
@@ -556,7 +555,6 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       nbEpoch: Int,
       featureCols: Array[String],
       labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
-    this.featureCols = featureCols
     this.fit(x, batchSize, nbEpoch, featureCols, labelCols, null)
   }
 

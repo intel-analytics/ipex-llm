@@ -271,7 +271,7 @@ class TrainingSpec extends ZooSpecHelper {
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
     model.fit(df, batchSize = 4, nbEpoch = 1, featureCols = Array("features"),
     labelCols = Array("label"))
-    val predDf = model.predict(df, predictionCol = "predict")
+    val predDf = model.predict(df, featureCols = Array("features"), predictionCol = "predict")
     predDf.show()
   }
 
@@ -295,7 +295,8 @@ class TrainingSpec extends ZooSpecHelper {
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
     model.fit(df, batchSize = 4, nbEpoch = 1, featureCols = Array("f1", "f2", "f3"),
       labelCols = Array("label"))
-    val predDf = model.predict(df, predictionCol = "predict")
+    val predDf = model.predict(df, featureCols = Array("f1", "f2", "f3"),
+      predictionCol = "predict")
     predDf.show()
   }
 }
