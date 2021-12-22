@@ -45,9 +45,9 @@ if [ "${version}" == "default" ]; then
     version=$(cat $DLLIB_DIR/../version.txt | head -1)
 fi
 if [[ "${version}" == *"spark3" ]]; then
+    # Ignore if the version already has spark3 suffix modified by other modules.
     spark3_version="${version}"
 else
-    # Ignore if the version already has spark3 suffix modified by other modules.
     spark3_version="${version}spark3"
 fi
 
