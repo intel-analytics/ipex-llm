@@ -242,12 +242,12 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                              mode="fit",
                                              num_workers=self.num_workers)
         # TODO: Handle callbacks
-        # if callbacks is not None:
-        #     for callback in callbacks:
-        #         from bigdl.orca.learn.pytorch.callbacks import Callback
-        #         assert issubclass(type(callback), Callback), \
-        #             "All elements in callbacks should be an instance of Callback. " \
-        #             "But got type:{}".format(type(callback))
+        if callbacks is not None:
+            from bigdl.orca.learn.pytorch.callbacks import Callback
+            for callback in callbacks:
+                assert issubclass(type(callback), Callback), \
+                    "All elements in callbacks should be an instance of Callback. " \
+                    "But got type:{}".format(type(callback))
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
