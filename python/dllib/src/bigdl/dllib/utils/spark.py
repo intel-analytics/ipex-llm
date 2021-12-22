@@ -177,6 +177,7 @@ class SparkRunner:
             submit_args = submit_args + " --jars " + ",".join(get_bigdl_jars())
             if py_files:
                 submit_args = submit_args + " --py-files {}".format(py_files)
+
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                          executor_cores, executor_memory,
                                          extra_executor_memory_for_ray)
