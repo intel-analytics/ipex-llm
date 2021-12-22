@@ -212,7 +212,7 @@ val model = nnModel.getModel()
 
 **Python:**
 ```python
-model = nn_model.model
+model = nn_model.getModel()
 ```
 
 ---
