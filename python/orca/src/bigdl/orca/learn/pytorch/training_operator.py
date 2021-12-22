@@ -216,8 +216,9 @@ class TrainingOperator:
                 "global_step": self.global_step
             }
             batch_info.update(info)
-            for callback in callbacks:
-                callback.on_batch_begin(batch_idx)
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_batch_begin(batch_idx)
             metrics = self.train_batch(batch, batch_info=batch_info)
             if self.use_tqdm and self.world_rank == 0:
                 _progress_bar.n = batch_idx + 1
@@ -232,8 +233,9 @@ class TrainingOperator:
 
             metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
             self.global_step += 1
-            for callback in callbacks:
-                callback.on_batch_end(batch_idx)
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_batch_end(batch_idx)
 
     def train_batch(self, batch, batch_info):
         """Computes loss and updates the model over one batch.

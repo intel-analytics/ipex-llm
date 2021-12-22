@@ -252,14 +252,15 @@ class TorchRunner:
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
-
-        for callback in callbacks:
-            callback.set_model(self.models)
-            callback.on_train_begin()
+        if callbacks is not None:
+            for callback in callbacks:
+                callback.set_model(self.models)
+                callback.on_train_begin()
         stats_list = list()
         for i in range(epochs):
-            for callback in callbacks:
-                callback.on_epoch_begin(epoch=self.epochs)
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_epoch_begin(epoch=self.epochs)
             stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks)
             if self.rank == 0:
                 if self.sync_stats:
@@ -270,10 +271,12 @@ class TorchRunner:
                                      f"stats on rank 0: {stats}")
             stats_list.append(stats)
             self.epochs_stats = stats
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_epoch_end(epoch=self.epochs)
+        if callbacks is not None:
             for callback in callbacks:
-                callback.on_epoch_end(epoch=self.epochs)
-        for callback in callbacks:
-            callback.on_train_end()
+                callback.on_train_end()
         return stats_list
 
     def train_epoch(self,
