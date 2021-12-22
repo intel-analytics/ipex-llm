@@ -19,6 +19,7 @@
 import pandas as pd
 import warnings
 from bigdl.chronos.model.prophet import ProphetBuilder, ProphetModel
+from bigdl.chronos.autots.utils import recalculate_n_sampling
 
 
 # -
@@ -113,7 +114,7 @@ class AutoProphet:
             expect_horizon=None,
             freq=None,
             metric_threshold=None,
-            n_sampling=50,
+            n_sampling=16,
             search_alg=None,
             search_alg_params=None,
             scheduler=None,
@@ -137,8 +138,9 @@ class AutoProphet:
                https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#timeseries-offset-aliasesDefaulted
                to None, where an unreliable frequency will be infer implicitly.
         :param metric_threshold: a trial will be terminated when metric threshold is met
-        :param n_sampling: Number of times to sample from the search_space. Defaults to 50.
-               If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
+        :param n_sampling: Number of trials to evaluate in total. Defaults to 16.
+               If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+               and round up n_sampling according to hp.grid_search.
                If this is -1, (virtually) infinite samples are generated
                until a stopping condition is met.
         :param search_alg: str, all supported searcher provided by ray tune
@@ -164,6 +166,8 @@ class AutoProphet:
                                   "cross_validation": cross_validation})
         train_data = data if cross_validation else data[:len(data)-expect_horizon]
         validation_data = None if cross_validation else data[len(data)-expect_horizon:]
+        n_sampling = recalculate_n_sampling(self.search_space,
+                                            n_sampling) if n_sampling != -1 else -1
         self.auto_est.fit(data=train_data,
                           validation_data=validation_data,
                           metric=self.metric,

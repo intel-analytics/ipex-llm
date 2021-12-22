@@ -21,6 +21,7 @@ from bigdl.chronos.data import TSDataset
 import bigdl.orca.automl.hp as hp
 from bigdl.chronos.autots.model import AutoModelFactory
 from bigdl.chronos.autots.tspipeline import TSPipeline
+from bigdl.chronos.autots.utils import recalculate_n_sampling
 
 
 class AutoTSEstimator:
@@ -197,8 +198,9 @@ class AutoTSEstimator:
                It defaults to 32.
         :param validation_data: Validation data. Validation data type should be the same as data.
         :param metric_threshold: a trial will be terminated when metric threshold is met.
-        :param n_sampling: Number of times to sample from the search_space. Defaults to 1.
-               If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
+        :param n_sampling: Number of trials to evaluate in total. Defaults to 1.
+               If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+               and round up n_sampling according to hp.grid_search.
                If this is -1, (virtually) infinite samples are generated
                until a stopping condition is met.
         :param search_alg: str, all supported searcher provided by ray tune
@@ -228,6 +230,8 @@ class AutoTSEstimator:
 
         if is_third_party_model:
             self.search_space.update({"batch_size": batch_size})
+            n_sampling = recalculate_n_sampling(self.search_space,
+                                                n_sampling) if n_sampling != -1 else -1
             self.model.fit(
                 data=train_d,
                 epochs=epochs,
