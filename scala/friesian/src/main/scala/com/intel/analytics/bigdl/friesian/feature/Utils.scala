@@ -16,18 +16,14 @@
 
 package com.intel.analytics.bigdl.friesian.feature
 
-import java.util
-import java.util.{List => JList}
-
 import org.apache.spark.TaskContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.functions.{col, udf}
 import org.apache.spark.sql.types.{ArrayType, IntegerType}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row}
 
-import scala.collection.{immutable, mutable}
+import scala.collection.mutable
 import scala.collection.mutable.WrappedArray
-import reflect.runtime.universe._
 import scala.util.Random
 
 private[friesian] object Utils {

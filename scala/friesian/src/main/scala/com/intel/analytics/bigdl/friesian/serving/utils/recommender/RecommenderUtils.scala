@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The BigDL Authors.
+ * Copyright 2016 The BigDL Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,8 +132,8 @@ object RecommenderUtils {
             "modify method getTopK in RecommendUtils to ensure the ranking result is correct.")
         }
       } else {
-        throw new Exception("Not supported inference result type, please modify method getTopK in " +
-          "RecommendUtils to ensure the ranking result is correct.")
+        throw new Exception("Not supported inference result type, please modify method getTopK " +
+          "in RecommendUtils to ensure the ranking result is correct.")
       }
     }).toArray
     val flattenResult = resultArr.flatten
