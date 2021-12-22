@@ -124,7 +124,7 @@ class ParallelAdam[@specialized(Float, Double) T: ClassTag](
 
   override def getLearningRate(): Double = this.learningRate
 }
-
+ 
 object ParallelAdam {
   val logger = LogManager.getLogger(this.getClass)
 
