@@ -169,7 +169,7 @@ class Trainer(pl.Trainer):
                  accuracy_criterion: dict = None,
                  timeout=0,
                  max_trials=1
-                 ) -> Optional[GraphModule]:
+                 ) -> GraphModule:
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
@@ -233,6 +233,9 @@ class Trainer(pl.Trainer):
                                          "post-training static quantization."
                 quantizer.calib_dataloader = calib_dataloader
             quantized = quantizer()
-            return quantized.model if quantized else None
+            if quantized:
+                return quantized.model
+            else:
+                raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
