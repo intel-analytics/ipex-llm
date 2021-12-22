@@ -269,9 +269,35 @@ class TrainingSpec extends ZooSpecHelper {
     val model = Sequential[Float]()
     model.add(Dense[Float](2, activation = "sigmoid", inputShape = Shape(6)))
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
-
     model.fit(df, batchSize = 4, nbEpoch = 1, featureCols = Array("features"),
-      labelCol = Array("label"), valX = null)
+    labelCols = Array("label"))
+    val predDf = model.predict(df, featureCols = Array("features"), predictionCol = "predict")
+    predDf.show()
+  }
+
+  "Keras model" should "support dataframe with multiple features" in {
+    val weight = Array(1.0, 2.0, 3.0)
+    val rnd = RandomGenerator.RNG
+    val rawdata = (1 to 100)
+      .map(i => Array.tabulate(weight.size)(index => rnd.uniform(0, 1) * 2 - 1))
+      .map { record =>
+        val y = record.zip(weight).map(t => t._1 * t._2).sum
+        -1.0 + 0.01 * rnd.normal(0, 1)
+        val label = if (y > 0) 2.0 else 1.0
+        (record(0), record(1), record(2), label)
+      }
+
+    val sqlContext = new SQLContext(sc)
+    val data = sc.parallelize(rawdata)
+    val df = sqlContext.createDataFrame(data).toDF("f1", "f2", "f3", "label")
+    val model = Sequential[Float]()
+    model.add(Dense[Float](2, activation = "sigmoid", inputShape = Shape(3)))
+    model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
+    model.fit(df, batchSize = 4, nbEpoch = 1, featureCols = Array("f1", "f2", "f3"),
+      labelCols = Array("label"))
+    val predDf = model.predict(df, featureCols = Array("f1", "f2", "f3"),
+      predictionCol = "predict")
+    predDf.show()
   }
 }
 
