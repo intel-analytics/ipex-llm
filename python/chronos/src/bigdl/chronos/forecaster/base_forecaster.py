@@ -16,7 +16,7 @@
 
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import\
-    np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard
+    np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard, loader_to_creator
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 import numpy as np
