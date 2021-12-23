@@ -34,7 +34,7 @@ public class Storage<T> {
     public int version;
     public T serverData = null;
     public Map<String, T> clientData;
-    Storage (String name) {
+    public Storage (String name) {
         version = 0;
         this.name = name;
         clientData = new ConcurrentHashMap<>();

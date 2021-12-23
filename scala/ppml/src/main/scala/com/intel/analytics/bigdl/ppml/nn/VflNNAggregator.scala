@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLPhase}
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.nn.NNAggregator
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.toFloatTensor
 import com.intel.analytics.bigdl.{Criterion, Module}
@@ -39,7 +40,7 @@ import org.apache.logging.log4j.LogManager
 class VflNNAggregator(model: Module[Float],
                       optimMethod: OptimMethod[Float],
                       criterion: Criterion[Float],
-                      validationMethods: Array[ValidationMethod[Float]]) extends Aggregator[Table]{
+                      validationMethods: Array[ValidationMethod[Float]]) extends NNAggregator{
   val module = Sequential[Float]().add(CAddTable[Float]())
   if (model != null) {
     module.add(model)
@@ -51,7 +52,7 @@ class VflNNAggregator(model: Module[Float],
    * @param aggType FLPhase enum type, one of TRAIN, EVAL, PREDICT
    */
   override def aggregate(aggType: FLPhase): Unit = {
-    val storage = getServerData(aggType)
+    val storage = getServerData(aggType).getTableStorage()
     val (inputTable, target) = ProtoUtils.tableProtoToOutputTarget(storage)
 
     val output = module.forward(inputTable)
@@ -62,7 +63,7 @@ class VflNNAggregator(model: Module[Float],
       val loss = criterion.forward(output, target)
       val gradOutputLayer = criterion.backward(output, target)
       val grad = module.backward(inputTable, gradOutputLayer)
-      val meta = metaBuilder.setName("gradInput").setVersion(trainStorage.version).build()
+      val meta = metaBuilder.setName("gradInput").setVersion(storage.version).build()
 
       aggregatedTable = Table.newBuilder()
         .setMetaData(meta)
@@ -82,18 +83,18 @@ class VflNNAggregator(model: Module[Float],
         })
         setReturnMessage(result.toString)
       }
-      val meta = metaBuilder.setName("evaluateResult").setVersion(evalStorage.version).build()
+      val meta = metaBuilder.setName("evaluateResult").setVersion(storage.version).build()
       aggregatedTable = Table.newBuilder()
         .setMetaData(meta)
         .build()
     } else if (aggType == PREDICT) {
-      val meta = metaBuilder.setName("predictResult").setVersion(predictStorage.version).build()
+      val meta = metaBuilder.setName("predictResult").setVersion(storage.version).build()
       aggregatedTable = Table.newBuilder()
         .setMetaData(meta)
         .putTable("predictOutput", toFloatTensor(output.toTensor[Float]))
         .build()
     }
-    aggregateTypeMap.get(aggType).updateStorage(aggregatedTable)
+    storage.updateStorage(aggregatedTable)
   }
 
 }

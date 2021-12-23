@@ -17,6 +17,10 @@
 
 package com.intel.analytics.bigdl.ppml.common
 
+import java.util
+
+import com.intel.analytics.bigdl.ppml.base.StorageHolder
+import com.intel.analytics.bigdl.ppml.common.FLPhase.{EVAL, PREDICT, TRAIN}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 
 import scala.collection.JavaConversions._
@@ -25,9 +29,15 @@ import scala.collection.JavaConverters._
 /**
  * Return the average of all clients Tensors when calling aggregate
  */
-class AverageAggregator extends Aggregator[Table] {
+class AverageAggregator extends Aggregator {
   protected var modelName = "averaged"
 
+  override def initStorage(): Unit = {
+    aggregateTypeMap.put(TRAIN, new StorageHolder(FLDataType.TABLE))
+    aggregateTypeMap.put(EVAL, new StorageHolder(FLDataType.TABLE))
+    aggregateTypeMap.put(PREDICT, new StorageHolder(FLDataType.TABLE))
+
+  }
   /**
    * aggregate current temporary model weights and put updated model into storage
    */
@@ -36,11 +46,7 @@ class AverageAggregator extends Aggregator[Table] {
     val sumedDataMap = new java.util.HashMap[String, FloatTensor]()
     // sum
     // to do: concurrent hashmap
-    val storage = flPhase match {
-      case FLPhase.TRAIN => trainStorage
-      case FLPhase.EVAL => evalStorage
-      case FLPhase.PREDICT => predictStorage
-    }
+    val storage = getServerData(flPhase).getTableStorage()
     val dataMap = storage.clientData
     for (model <- dataMap.asScala.values) {
       val modelMap = model.getTableMap

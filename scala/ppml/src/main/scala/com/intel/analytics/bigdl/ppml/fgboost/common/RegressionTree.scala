@@ -3,6 +3,7 @@ import org.apache.logging.log4j.LogManager
 import java.util
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.ppml.fgboost.common.TreeUtils
 
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConverters._

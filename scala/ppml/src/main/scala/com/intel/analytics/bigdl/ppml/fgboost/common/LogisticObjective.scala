@@ -16,8 +16,8 @@
 
 package com.intel.analytics.zoo.narwhal.fl.vertical.tree
 
-import com.intel.analytics.bigdl.ppml.vfl.fgboost.TreeObjective
-import com.intel.analytics.bigdl.ppml.vfl.fgboost.TreeUtils._
+import com.intel.analytics.bigdl.ppml.fgboost.common.TreeObjective
+import com.intel.analytics.bigdl.ppml.fgboost.common.TreeUtils._
 
 class LogisticObjective extends TreeObjective {
   def getGradient(predict: Array[Float],

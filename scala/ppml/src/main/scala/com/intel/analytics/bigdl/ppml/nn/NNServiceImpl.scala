@@ -22,6 +22,7 @@ import java.util.Map
 
 import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, MSECriterion, Sigmoid, View}
 import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
+import com.intel.analytics.bigdl.ppml.base.DataHolder
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, AverageAggregator}
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
@@ -37,12 +38,12 @@ import collection.JavaConversions._
 
 class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
   private val logger = LogManager.getLogger(getClass)
-  private var aggregatorMap: Map[String, Aggregator[Table]] = null
+  private var aggregatorMap: Map[String, Aggregator] = null
   initAggregatorMap()
 
 
   private def initAggregatorMap(): Unit = {
-    aggregatorMap = new util.HashMap[String, Aggregator[Table]]
+    aggregatorMap = new util.HashMap[String, Aggregator]
     aggregatorMap.put("vfl_logistic_regression", VflNNAggregator(1, Sigmoid[Float](),
       null, BCECriterion[Float](), Array(new Top1Accuracy())))
     aggregatorMap.put("hfl_linear_regression", VflNNAggregator(1, View[Float](),
@@ -60,9 +61,9 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     val version = data.getMetaData.getVersion
     val aggregator = aggregatorMap.get(request.getAlgorithm)
     try {
-      aggregator.putClientData(TRAIN, clientUUID, version, data)
+      aggregator.putClientData(TRAIN, clientUUID, version, new DataHolder(data))
       logger.debug(s"$clientUUID getting server new data to update local")
-      val responseData = aggregator.getServerData(TRAIN).serverData
+      val responseData = aggregator.getServerData(TRAIN).getTableStorage().serverData
       if (responseData == null) {
         val response = "Data requested doesn't exist"
         responseObserver.onNext(TrainResponse.newBuilder.setResponse(response).setCode(0).build)
@@ -91,8 +92,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     val aggregator = aggregatorMap.get(request.getAlgorithm)
     try {
       aggregator.setHasReturn(hasReturn)
-      aggregator.putClientData(EVAL, clientUUID, version, data)
-      val responseData = aggregator.getServerData(EVAL).serverData
+      aggregator.putClientData(EVAL, clientUUID, version, new DataHolder(data))
+      val responseData = aggregator.getServerData(EVAL).getTableStorage().serverData
       if (responseData == null) {
         val response = "Data requested doesn't exist"
         responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(0).build)
@@ -127,8 +128,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     val version = data.getMetaData.getVersion
     val aggregator = aggregatorMap.get(request.getAlgorithm)
     try {
-      aggregator.putClientData(PREDICT, clientUUID, version, data)
-      val responseData = aggregator.getServerData(PREDICT).serverData
+      aggregator.putClientData(PREDICT, clientUUID, version, new DataHolder(data))
+      val responseData = aggregator.getServerData(PREDICT).getTableStorage().serverData
       if (responseData == null) {
         val response = "Data requested doesn't exist"
         responseObserver.onNext(PredictResponse.newBuilder.setResponse(response).setCode(0).build)

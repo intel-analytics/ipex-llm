@@ -14,21 +14,37 @@
 // limitations under the License.
 //
 syntax = 'proto3';
-
+package fgboost;
 import "fl_base.proto";
 //option java_multiple_files = true;
 option java_package = "com.intel.analytics.bigdl.ppml.generated";
 option java_outer_classname = "FGBoostServiceProto";
 
 service FGBoostService {
-    rpc UploadSplitTrain(UploadSplitRequest) returns (UploadResponse) {}
-    rpc DownloadSplitTrain(DownloadSplitRequest) returns (DownloadSplitResponse) {}
-    rpc Register(RegisterRequest) returns (RegisterResponse) {}
-    rpc UploadTreeEval(UploadTreeEvalRequest) returns (UploadResponse) {}
-    rpc UploadTreeLeaves(UploadTreeLeavesRequest) returns (UploadResponse) {}
-    rpc PredictTree(PredictTreeRequest) returns (PredictTreeResponse) {}
+    rpc uploadTable(UploadTableRequest) returns (UploadResponse) {}
+    rpc downloadTable(DownloadTableRequest) returns (DownloadResponse) {}
+    rpc split(SplitRequest) returns (SplitResponse) {}
+    rpc register(RegisterRequest) returns (RegisterResponse) {}
+    rpc uploadTreeLeaves(UploadTreeLeavesRequest) returns (UploadResponse) {}
+    rpc evaluate(EvaluateRequest) returns (EvaluateResponse) {}
+    rpc predict(PredictRequest) returns (PredictResponse) {}
 }
 
+message UploadTableRequest {
+    string clientuuid = 1;
+    Table data = 2;
+    string algorithm = 3;
+}
+message DownloadTableRequest {
+    TableMetaData metaData = 1;
+    string algorithm = 2;
+}
+
+message DownloadResponse {
+    Table data = 1;
+    string response = 2;
+    int32 code = 3;
+}
 message TreeLeaves {
     string treeID = 1;
     repeated int32 leafIndex = 2;
@@ -83,28 +99,38 @@ message UploadTreeEvalRequest {
     repeated BoostEval treeEval = 3;
 }
 
-message UploadSplitRequest {
-    string clientuuid = 1;
-    DataSplit split = 2;
-}
 
-message PredictTreeRequest {
+
+message EvaluateRequest {
     string clientuuid = 1;
     repeated BoostEval treeEval = 2;
     int32 bsVersion = 3;
 }
 
-message PredictTreeResponse {
-    Table result = 1;
+message EvaluateResponse {
+    string response = 1;
+    Table data = 2;
+    int32 code = 3;
+    string message = 4;
 }
-
-message DownloadSplitRequest {
+message PredictRequest {
     string clientuuid = 1;
-    string treeID = 2;
-    string nodeID = 3;
+    repeated BoostEval treeEval = 2;
+    int32 bsVersion = 3;
+}
+message SplitRequest {
+    string clientuuid = 1;
+    DataSplit split = 2;
+}
+message PredictResponse {
+    string response = 1;
+    Table data = 2;
+    int32 code = 3;
 }
 
-message DownloadSplitResponse {
+
+
+message SplitResponse {
     DataSplit split = 1;
     string response = 2;
     int32 code = 3;

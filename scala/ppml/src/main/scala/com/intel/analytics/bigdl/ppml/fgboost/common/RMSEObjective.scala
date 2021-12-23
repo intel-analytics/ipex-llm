@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.vfl.fgboost
 
+import com.intel.analytics.bigdl.ppml.fgboost.common.TreeObjective
+
 class RMSEObjective extends TreeObjective {
   def getGradient(predict: Array[Float],
                   label: Array[Float]): Array[Array[Float]] = {
