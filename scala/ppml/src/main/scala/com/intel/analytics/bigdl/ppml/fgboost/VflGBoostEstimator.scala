@@ -93,6 +93,7 @@ class VflGBoostEstimator(continuous: Boolean,
     logger.info(s"Built Tree_${i}" + currTree.toString)
     if (currTree.leaves.isEmpty) {
       logger.info("Early Stop boosting!")
+      // Did not find leave dequeue usage, so this should never be called
       return false
     }
     // upload local tree
@@ -162,6 +163,11 @@ class VflGBoostEstimator(continuous: Boolean,
       }
     }
   }
+
+  /**
+   * The initialization before boosting. Upload data label to FLServer
+   * @param label
+   */
   def initFGBoost(label: Array[Float]): Unit = {
     logger.info("Initializing VFL Boost...")
     // Init predict, grad & hess
@@ -178,6 +184,12 @@ class VflGBoostEstimator(continuous: Boolean,
     // Upload
     flClient.fgbostStub.uploadTable(gradData.build)
   }
+
+  /**
+   * Download gradient from FLServer
+   * @param treeID
+   * @return
+   */
   def downloadGrad(treeID: Int): Array[Array[Float]] = {
     // Note that g may be related to Y
     // H = 1 in regression
@@ -218,6 +230,6 @@ class VflGBoostEstimator(continuous: Boolean,
         }).toList.asJava)
         .build()
     }.toList
-    flClient.fgbostStub.uploadTreeEval(res.asJava)
+    flClient.fgbostStub.evaluate(res.asJava)
   }
 }

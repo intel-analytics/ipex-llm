@@ -1,13 +1,29 @@
+/*
+ * Copyright 2021 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.intel.analytics.bigdl.ppml.base
 
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, Storage}
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, DataSplit, TreeLeaves}
+import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table
 
 /**
  * The storage holder holding all types of Storage
  * Aggregator could use this generic holder type to aggregate
- * @param flDataType the instance of storage of this holder
+ * @param flDataType the instance of storage of this holder, could be one of [[FLDataType]]
  */
 class StorageHolder(flDataType: FLDataType) {
   private var clientDataSize: Int = 0
