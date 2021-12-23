@@ -2,7 +2,6 @@ ARG SPARK_VERSION=2.4.6
 ARG HADOOP_VERSION=2.7
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
-ARG JDK_FILE_PREPEND=jdk
 ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG TINI_VERSION=v0.18.0
@@ -13,7 +12,6 @@ FROM ubuntu:18.04 as spark
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ARG JDK_VERSION
-ARG JDK_FILE_PREPEND
 ARG JDK_URL
 ARG SPARK_HOME
 ARG TINI_VERSION
@@ -23,11 +21,11 @@ ENV SPARK_HOME                          ${SPARK_HOME}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git && \
 # java
-    wget $JDK_URL && \
-    gunzip $JDK_FILE_PREPEND-$JDK_VERSION-linux-x64.tar.gz && \
-    tar -xf $JDK_FILE_PREPEND-$JDK_VERSION-linux-x64.tar -C /opt && \
-    rm $JDK_FILE_PREPEND-$JDK_VERSION-linux-x64.tar && \
-    mv /opt/$JDK_FILE_PREPEND* /opt/jdk$JDK_VERSION && \
+    wget -O jdk.tar.gz $JDK_URL && \
+    gunzip jdk.tar.gz && \
+    mkdir /opt/jdk$JDK_VERSION && \
+    tar -xf jdk.tar -C /opt/jdk$JDK_VERSION --strip-components 1 && \
+    rm jdk.tar && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk && \
 # spark
     wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
