@@ -75,7 +75,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     (writerAppender, writer)
   }
 
-  "A LoggerFilter" should "output correct info on console and bigdl.log" in {
+  ignore should "A LoggerFilter output correct info on console and bigdl.log" in {
     TestUtils.cancelOnWindows()
     val logFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
     val optimClz = "com.intel.analytics.bigdl.dllib.optim"
