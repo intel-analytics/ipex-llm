@@ -15,11 +15,9 @@
 #
 
 import os
-import numpy
 import torch
 import types
 
-from torch.utils.data import DataLoader
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 
@@ -72,7 +70,7 @@ class TSPipeline:
         '''
         Evaluate the time series pipeline.
 
-        :param data: data can be a TSDataset or data creator(will be supported).
+        :param data: data can be a TSDataset or data creator.
                The TSDataset should follow the same operations as the training
                TSDataset used in AutoTSEstimator.fit.
         :param metrics: list. The evaluation metric name to optimize. e.g. ["mse"]
@@ -92,14 +90,16 @@ class TSPipeline:
             yhat = self._tsdataset_unscale(yhat)
             # unscale
             y = self._tsdataset_unscale(y)
-        elif isinstance(data, DataLoader):
-            x, y = self._data_loader(data)
-            yhat = self._best_model.inference(x if isinstance(x, numpy)
-                                                else torch.from_numpy(x),
+        elif isinstance(data, types.FunctionType):
+            x, y = TSPipeline._transform_dataloader(data(self._best_config))
+            if self._best_config['batch_size']:
+                batch_size = self._best_config['batch_size']
+            yhat = self._best_model.inference(torch.from_numpy(x),
                                               batch_size=batch_size,
                                               backend=None).numpy()
         else:
-            pass
+            raise RuntimeError("We only support input tsdataset or data creator, "
+                               f"but found {data.__class__}.")
 
         # evaluate
         aggregate = 'mean' if multioutput == 'uniform_average' else None
@@ -111,7 +111,7 @@ class TSPipeline:
         '''
         Evaluate the time series pipeline with onnx.
 
-        :param data: data can be a TSDataset or data creator(will be supported).
+        :param data: data can be a TSDataset or data creator.
                The TSDataset should follow the same operations as the training
                TSDataset used in AutoTSEstimator.fit.
         :param metrics: list. The evaluation metric name to optimize. e.g. ["mse"]
@@ -123,13 +123,24 @@ class TSPipeline:
                effective when data is a TSDataset. The values defaults to 32.
         '''
         # predict with onnx
-        x, y = self._tsdataset_to_numpy(data, is_predict=False)
-        yhat = self._best_model.inference(x,
-                                          batch_size=batch_size,
-                                          backend="onnx")
-        yhat = self._tsdataset_unscale(yhat)
-        # unscale
-        y = self._tsdataset_unscale(y)
+        if isinstance(data, TSDataset):
+            x, y = self._tsdataset_to_numpy(data, is_predict=False)
+            yhat = self._best_model.inference(x,
+                                              batch_size=batch_size,
+                                              backend="onnx")
+            yhat = self._tsdataset_unscale(yhat)
+            # unscale
+            y = self._tsdataset_unscale(y)
+        elif isinstance(data, types.FunctionType):
+            x, y = TSPipeline._transform_dataloader(data(self._best_config))
+            if self._best_config['batch_size']:
+                batch_size = self._best_config['batch_size']
+            yhat = self._best_model.inference(x,
+                                              batch_size=batch_size,
+                                              backend="onnx")
+        else:
+            raise RuntimeError("We only support input tsdataset or data creator, "
+                               f"but found {data.__class__}.")
         # evaluate
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         eval_result = Evaluator.evaluate(metrics, y, yhat, aggregate=aggregate)
@@ -139,7 +150,7 @@ class TSPipeline:
         '''
         Rolling predict with time series pipeline.
 
-        :param data: data can be a TSDataset or data creator(will be supported).
+        :param data: data can be a TSDataset or data creator.
                The TSDataset should follow the same operations as the training
                TSDataset used in AutoTSEstimator.fit.
         :param batch_size: predict batch_size, the process will cost more time
@@ -152,20 +163,23 @@ class TSPipeline:
                                               batch_size=batch_size,
                                               backend=None)
             yhat = self._tsdataset_unscale(yhat)
-        elif isinstance(data, DataLoader):
-            x, _ = self._data_loader(data)
-            yhat = self._best_model.inference(x,
+        elif isinstance(data, types.FunctionType):
+            x, _ = TSPipeline._transform_dataloader(data(self._best_config), is_predict=True)
+            if self._best_config['batch_size']:
+                batch_size = self._best_config['batch_size']
+            yhat = self._best_model.inference(torch.from_numpy(x),
                                               batch_size=batch_size,
-                                              backward=None)
+                                              backend=None)
         else:
-            pass
+            raise RuntimeError("We only support input tsdataset or data creator, "
+                               f"but found {data.__class__}")
         return yhat
 
     def predict_with_onnx(self, data, batch_size=32):
         '''
         Rolling predict with onnx with time series pipeline.
 
-        :param data: data can be a TSDataset or data creator(will be supported).
+        :param data: data can be a TSDataset or data creator.
                The TSDataset should follow the same operations as the training
                TSDataset used in AutoTSEstimator.fit.
         :param batch_size: predict batch_size, the process will cost more time
@@ -178,13 +192,16 @@ class TSPipeline:
                                               batch_size=batch_size,
                                               backend="onnx")
             yhat = self._tsdataset_unscale(yhat)
-        elif isinstance(data, DataLoader):
-            x, _ = self._data_loader(data)
+        elif isinstance(data, types.FunctionType):
+            x, _ = TSPipeline._transform_dataloader(data(self._best_config), is_predict=True)
+            if self._best_config['batch_size']:
+                batch_size = self._best_config['batch_size']
             yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
                                               backend="onnx")
         else:
-            pass
+            raise RuntimeError("We only support input tsdataset or data creator, "
+                               f"but found {data.__class__}")
         return yhat
 
     def fit(self,
@@ -198,7 +215,7 @@ class TSPipeline:
 
         :param data: The data support following formats:
 
-               | 1. data creator (TO BE SUPPORTED):
+               | 1. data creator:
                | a function that takes a config dictionary as parameter and
                | returns a PyTorch DataLoader.
                |
@@ -220,11 +237,17 @@ class TSPipeline:
             if batch_size is None:
                 batch_size = self._best_config["batch_size"]
             train_loader = self._tsdataset_to_loader(data, batch_size=batch_size)
-            if validation_data is not None:
+            if validation_data:
                 valid_loader = self._tsdataset_to_loader(validation_data, batch_size=batch_size)
+        elif isinstance(data, types.FunctionType):
+            if batch_size is None:
+                batch_size = self._best_config["batch_size"]
+            train_loader = data(self._best_config)
+            if validation_data:
+                valid_loader = validation_data(self._best_config)
         else:
-            # data creator
-            train_loader, valid_loader = data, validation_data
+            raise RuntimeError("We only support input TSDataset or Function, "
+                               f"but found {data.__class__}.")
 
         self.trainer = Trainer(max_epochs=epochs, **kwargs)
         self.trainer.fit(self._best_model,
@@ -330,16 +353,10 @@ class TSPipeline:
             y = unscale_timeseries_numpy(y, self._scaler, self._scaler_index)
         return y
 
-    def _data_loader(self, data):
-        from torch import Tensor
-        data_type_check = next(iter(data))[0]
-        if isinstance(data_type_check, numpy):
-            x = numpy.concatenate([x for x, _ in data], axis=0)
-            y = numpy.concatenate([y for _, y in data], axis=0)
-        elif isinstance(data_type_check, Tensor):
-            x = torch.cat([x for x, _ in data], dim=0)
-            y = torch.cat([y for _, y in data], dim=0)
-        else:
-            raise TypeError("We only support numpy.ndarray or numpy, "
-                            f"but found {type(data_type_check)}")
+    @staticmethod
+    def _transform_dataloader(data, is_predict=False):
+        x = torch.cat([x for x, _ in data], dim=0).numpy()
+        y = None
+        if not is_predict:
+            y = torch.cat([y for _, y in data], dim=0).numpy()
         return x, y
