@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, OptimizerV1, OptimizerV2, T, Table}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Train {

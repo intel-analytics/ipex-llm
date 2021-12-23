@@ -19,13 +19,14 @@ import com.intel.analytics.bigdl.example.utils.WordMeta
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions._
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.sql.SQLContext
 
 object DataframePredictor {
 
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.example").setLevel(Level.INFO)
+  Configurator.setLevel("com.intel.analytics.bigdl.example", Level.INFO)
 
   def main(args: Array[String]): Unit = {
 

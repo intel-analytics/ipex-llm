@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, T, Table}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class QuantizableSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -39,7 +39,7 @@ class QuantizableSpec extends FlatSpec with Matchers with BeforeAndAfter {
     System.clearProperty("bigdl.engineType")
   }
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   "Sequential LeNet5" should "work correctly" in {
     val seq = LeNet5(10)

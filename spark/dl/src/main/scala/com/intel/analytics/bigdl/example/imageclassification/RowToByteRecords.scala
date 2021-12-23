@@ -17,13 +17,13 @@
 package com.intel.analytics.bigdl.example.imageclassification
 
 import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.Row
 
 import scala.collection.Iterator
 
 object RowToByteRecords {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply(colName: String = "data"): RowToByteRecords = {
     new RowToByteRecords(colName)

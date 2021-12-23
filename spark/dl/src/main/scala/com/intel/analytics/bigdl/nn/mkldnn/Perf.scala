@@ -29,14 +29,14 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{Engine, T, Table, ThreadPool}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
 import scala.reflect.ClassTag
 
 object Perf {
 
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   val parser = new OptionParser[ResNet50PerfParams]("BigDL w/ Dnn Local Model Performance Test") {
     opt[String]('m', "model")

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 class TensorflowSaverSpec extends TensorflowSpecHelper {
   override def doBefore(): Unit = {

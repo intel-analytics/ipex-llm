@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.intermediate.ConversionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Module, _}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkContext, TaskContext}
 
@@ -56,7 +56,7 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     parameterProcessers: Array[ParameterProcessor] = null) extends DistriOptimizer.Cache[T]
 
   import Optimizer._
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   private[optim] def optimize[T: ClassTag](
     cacheOfMaster: MasterCache[T],
@@ -901,7 +901,7 @@ class TrainingContext[T: ClassTag](
       s"${batch.size()} should be divided by total core number: $subModelNumber")
 
     if (batch.size() < subModelNumber * 2) {
-      Logger.getLogger(this.getClass).warn(
+      LogManager.getLogger(this.getClass).warn(
         s"Warning: for better training speed, total batch size is recommended to be " +
           s"at least two times of core number $subModelNumber. " +
           s"please tune your batch size accordingly")
@@ -1122,23 +1122,23 @@ private object TrainingTrace {
 
 private class DistriLogger extends OptimizerLogger {
   override def info(message: String): Unit = {
-    Logger.getLogger(getClass).info(message)
+    LogManager.getLogger(getClass).info(message)
   }
 
   override def debug(message: String): Unit = {
-    Logger.getLogger(getClass).debug(message)
+    LogManager.getLogger(getClass).debug(message)
   }
 
   override def trace(message: String): Unit = {
-    Logger.getLogger(getClass).trace(message)
+    LogManager.getLogger(getClass).trace(message)
   }
 
   override def warn(message: String): Unit = {
-    Logger.getLogger(getClass).warn(message)
+    LogManager.getLogger(getClass).warn(message)
   }
 
   override def error(message: String): Unit = {
-    Logger.getLogger(getClass).error(message)
+    LogManager.getLogger(getClass).error(message)
   }
 }
 

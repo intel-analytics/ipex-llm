@@ -26,16 +26,17 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, OptimizerV1, OptimizerV2, T, Table}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 
 object Train {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
 
   import Utils._
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
 

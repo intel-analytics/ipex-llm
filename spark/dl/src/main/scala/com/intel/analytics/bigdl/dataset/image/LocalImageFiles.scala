@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dataset.image
 import java.awt.color.ColorSpace
 import java.nio.file.{Files, Path}
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 object LocalImageFiles {
   Class.forName("javax.imageio.ImageIO")
@@ -27,7 +27,7 @@ object LocalImageFiles {
   // Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   /**
    * read the folder names, which are the class names, sort the name and convert to an integer

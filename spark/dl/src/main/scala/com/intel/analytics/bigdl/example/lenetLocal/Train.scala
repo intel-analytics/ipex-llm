@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
 
 
 object Train {

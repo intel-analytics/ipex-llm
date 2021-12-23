@@ -22,13 +22,13 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
 import com.intel.analytics.bigdl.utils.Table
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable.ArrayBuffer
 
 
 object DetectionOutputFrcnn {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   def apply(nmsThresh: Float = 0.3f, nClasses: Int = 21,
   bboxVote: Boolean = false, maxPerImage: Int = 100, thresh: Double = 0.05)(

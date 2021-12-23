@@ -16,8 +16,18 @@
 
 package com.intel.analytics.bigdl.utils
 
-import org.apache.log4j._
-import java.nio.file.{Paths, Files}
+import java.nio.charset.Charset
+import java.nio.file.{Files, Paths}
+
+import org.apache.logging.log4j.core.{Appender, LoggerContext}
+import org.apache.logging.log4j.core.appender.{ConsoleAppender, FileAppender}
+import org.apache.logging.log4j.{Level, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
+import org.apache.logging.log4j.core.filter.ThresholdFilter
+import org.apache.logging.log4j.core.layout.PatternLayout
+
+
 
  // scalastyle:off
  // | Property Name                           | Default            | Meaning                                      |
@@ -43,15 +53,20 @@ object LoggerFilter {
    * @return a new file appender
    */
   private def fileAppender(filePath: String, level: Level = Level.INFO): FileAppender = {
-    val fileAppender = new FileAppender
-    fileAppender.setName("FileLogger")
-    fileAppender.setFile(filePath)
-    fileAppender.setLayout(new PatternLayout(pattern))
-    fileAppender.setThreshold(level)
-    fileAppender.setAppend(true)
-    fileAppender.activateOptions()
-
-    fileAppender
+    val filter = ThresholdFilter.createFilter(level,
+      org.apache.logging.log4j.core.Filter.Result.NEUTRAL,
+      org.apache.logging.log4j.core.Filter.Result.DENY)
+    val logContext = LogManager.getContext(false).asInstanceOf[LoggerContext]
+    val config = logContext.getConfiguration()
+    val layout = PatternLayout.createLayout(pattern, null, config, null,
+      Charset.defaultCharset, false, false, "", "")
+    val appender = FileAppender.createAppender(filePath, "true", "false",
+      "FileLogger", "true", "false", "false", "4000",
+      layout, filter, "false", null, config)
+    appender.start()
+    config.addAppender(appender)
+    logContext.updateLoggers()
+    appender
   }
 
   /**
@@ -61,13 +76,18 @@ object LoggerFilter {
    * @return a new console appender
    */
   private def consoleAppender(level: Level = Level.INFO): ConsoleAppender = {
-    val console = new ConsoleAppender
-    console.setLayout(new PatternLayout(pattern))
-    console.setThreshold(level)
-    console.activateOptions()
-    console.setTarget("System.out")
-
-    console
+    val filter = ThresholdFilter.createFilter(level,
+      org.apache.logging.log4j.core.Filter.Result.NEUTRAL,
+      org.apache.logging.log4j.core.Filter.Result.DENY)
+    val logContext = LogManager.getContext(false).asInstanceOf[LoggerContext]
+    val config = logContext.getConfiguration()
+    val layout = PatternLayout.createLayout(pattern, null, config, null,
+      Charset.defaultCharset, false, false, "", "")
+    val appender = ConsoleAppender.createDefaultAppenderForLayout(layout)
+    appender.start()
+    config.addAppender(appender)
+    logContext.updateLoggers()
+    appender
   }
 
   /**
@@ -77,7 +97,12 @@ object LoggerFilter {
    * @param appender appender, eg. return of `fileAppender` or `consoleAppender`
    */
   private def classLogToAppender(className: String, appender: Appender): Unit = {
-    Logger.getLogger(className).addAppender(appender)
+    val logger = LogManager.getLogger(className)
+    if (logger.isInstanceOf[org.apache.logging.log4j.core.Logger]) {
+      logger.asInstanceOf[org.apache.logging.log4j.core.Logger].addAppender(appender)
+    }
+    val logContext = LogManager.getContext(false).asInstanceOf[LoggerContext]
+    logContext.updateLoggers()
   }
 
   private val defaultPath = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
@@ -100,7 +125,7 @@ object LoggerFilter {
       if (!Files.exists(logFilePath)) {
         Files.createFile(logFilePath)
       } else if (Files.isDirectory(logFilePath)) {
-        Logger.getLogger(getClass)
+        LogManager.getLogger(getClass)
           .error(s"$logFile exists and is an directory. Can't redirect to it.")
       }
 
@@ -114,13 +139,23 @@ object LoggerFilter {
 
       for (clz <- defaultClasses) {
         classLogToAppender(clz, consoleAppender(Level.ERROR))
-        Logger.getLogger(clz).setAdditivity(false)
+        val clzLogger = LogManager.getLogger(clz)
+        if (clzLogger.isInstanceOf[org.apache.logging.log4j.core.Logger]) {
+          clzLogger.asInstanceOf[org.apache.logging.log4j.core.Logger]
+            .setAdditive(false)
+        }
       }
       // it should be set to WARN for the progress bar
-      Logger.getLogger("org.apache.spark.SparkContext").setLevel(Level.WARN)
+      Configurator.setLevel("org.apache.spark.SparkContext", Level.WARN)
 
       // set all logs to file
-      Logger.getRootLogger.addAppender(fileAppender(logFile, Level.INFO))
+      val rootLogger = LogManager.getLogger(LogManager.getRootLogger)
+      if (rootLogger.isInstanceOf[org.apache.logging.log4j.core.Logger]) {
+        rootLogger.asInstanceOf[org.apache.logging.log4j.core.Logger]
+          .addAppender(fileAppender(logFile, Level.INFO))
+        val logContext = LogManager.getContext(false).asInstanceOf[LoggerContext]
+        logContext.updateLoggers()
+      }
 
       // because we have set all defaultClasses loggers additivity to false
       // so we should reconfigure them.

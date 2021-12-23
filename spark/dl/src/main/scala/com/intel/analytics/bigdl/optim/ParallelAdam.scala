@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.math._
 import scala.reflect.ClassTag
@@ -126,7 +126,7 @@ class ParallelAdam[@specialized(Float, Double) T: ClassTag](
 }
 
 object ParallelAdam {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   private[optim] def updateFrame[T: ClassTag](_s: Tensor[T], _r: Tensor[T], _denom: Tensor[T],
                                               clr: Double, dfdx: Tensor[T], parameter: Tensor[T],

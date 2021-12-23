@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.commons.io.FileUtils
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.opencv.core.CvType
 import org.opencv.imgcodecs.Imgcodecs
@@ -32,9 +33,9 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val resource = getClass().getClassLoader().getResource("pascal/000025.jpg")
 
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
   "toFloatsPixels" should "work properly" in {
     val img = OpenCVMat.read(resource.getFile)
     val floats = new Array[Float](img.height() * img.width() * img.channels())

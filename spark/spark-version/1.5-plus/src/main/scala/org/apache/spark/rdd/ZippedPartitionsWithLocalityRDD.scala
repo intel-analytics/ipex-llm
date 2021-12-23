@@ -18,7 +18,7 @@ package org.apache.spark.rdd
 
 import java.io.{IOException, ObjectOutputStream}
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.{Partition, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
@@ -34,7 +34,7 @@ object ZippedPartitionsWithLocalityRDD {
       sc, sc.clean(f), rdd1, rdd2, preservesPartitioning)
   }
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 }
 
 /**

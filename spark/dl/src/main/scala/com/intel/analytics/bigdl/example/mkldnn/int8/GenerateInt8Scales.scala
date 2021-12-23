@@ -20,7 +20,8 @@ import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.models.resnet.ImageNetDataSet
 import com.intel.analytics.bigdl.nn.{Graph, Module}
 import com.intel.analytics.bigdl.utils.Engine
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, LogManager, Logger}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -30,10 +31,10 @@ import org.apache.spark.rdd.RDD
  * and will genereate a model whose name is the same except including "quantized"
  */
 object GenerateInt8Scales {
-  val logger: Logger = Logger.getLogger(getClass)
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  val logger = LogManager.getLogger(getClass)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
 
   import Utils._
 

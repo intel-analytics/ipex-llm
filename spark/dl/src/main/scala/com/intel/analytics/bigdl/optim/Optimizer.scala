@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.utils.Engine
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
@@ -475,7 +475,7 @@ abstract class Optimizer[T: ClassTag, D](
 }
 
 object Optimizer {
-  private val logger: Logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   private[bigdl] def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
   : String = {

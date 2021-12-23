@@ -45,7 +45,8 @@ import com.intel.analytics.bigdl.utils.tf.TensorflowDataFormat
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.parse
 import com.intel.analytics.bigdl.utils.tf._
 import org.apache.spark.sql.{DataFrame, SQLContext}
-import org.apache.log4j._
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
@@ -2696,7 +2697,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def showBigDlInfoLogs(): Unit = {
-    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
   }
 
   def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {

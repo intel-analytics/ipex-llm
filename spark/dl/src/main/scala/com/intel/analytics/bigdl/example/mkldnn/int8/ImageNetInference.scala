@@ -21,7 +21,8 @@ import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils._
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, LogManager, Logger}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 
 /**
@@ -29,9 +30,9 @@ import org.apache.spark.SparkContext
  */
 object ImageNetInference {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   import Utils._
 

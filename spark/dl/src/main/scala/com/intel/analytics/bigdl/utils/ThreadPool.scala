@@ -21,7 +21,7 @@ import java.util.concurrent._
 import com.intel.analytics.bigdl.mkl.hardware.Affinity
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnn => BackendMklDnn}
 import org.apache.commons.lang.exception.ExceptionUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -265,6 +265,6 @@ object ThreadPool {
     def reportFailure(t: Throwable) {}
   }
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 }
 

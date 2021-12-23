@@ -20,10 +20,10 @@ import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 object LocalValidator {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 }
 
 /**

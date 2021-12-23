@@ -27,7 +27,8 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, MTImageFeatureToBatch, MatToTensor, PixelBytesToMat}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{ChannelScaledNormalizer, RandomCropper, RandomResize}
 import com.intel.analytics.bigdl.utils._
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, Logger, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 
 /**
@@ -35,8 +36,8 @@ import org.apache.spark.SparkContext
  */
 object TestImageNet {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-  val logger = Logger.getLogger(getClass)
+  Configurator.setLevel("com.intel.analytics.bigdl.optim", Level.INFO)
+  val logger = LogManager.getLogger(getClass)
 
   import Utils._
 

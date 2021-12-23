@@ -160,7 +160,7 @@
         <thrift.path>thrift</thrift.path>
         <thrift.version>0.9.2</thrift.version>
         <slf4j.version>1.7.7</slf4j.version>
-        <log4j.version>1.2.17</log4j.version>
+        <log4j.version>2.17.0</log4j.version>
         <jetty.version>6.1.26</jetty.version>
         <jetty.jspapi.version>6.1.14</jetty.jspapi.version>
         <commons-cli.version>1.2</commons-cli.version>
@@ -235,6 +235,22 @@
                 <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>1.7.16</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-client</artifactId>
                 <version>${hadoop.version}</version>
@@ -243,6 +259,14 @@
                     <exclusion>
                         <groupId>javax.servlet</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -603,7 +627,7 @@
                                 <!-- Too many deprecation usage, let's suspend it temporary-->
                                 <arg>-deprecation:false</arg>
                                 <arg>-feature</arg>
-                                <arg>-Xfatal-warnings</arg>
+                                <!--<arg>-Xfatal-warnings</arg>-->
                             </args>
                             <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
                                  by Spark SQL for code generation. -->

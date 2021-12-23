@@ -32,7 +32,7 @@ import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import org.apache.commons.lang.exception.ExceptionUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.util.AccumulatorV2
@@ -45,7 +45,7 @@ object DistriOptimizer extends AbstractOptimizer {
 
   import Optimizer._
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   /**
    * Optimizer cache some metadata on each executor
