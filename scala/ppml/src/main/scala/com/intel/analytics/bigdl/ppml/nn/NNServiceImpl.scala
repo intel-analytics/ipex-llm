@@ -15,7 +15,7 @@
  */
 
 
-package com.intel.analytics.bigdl.ppml.nn
+package com.intel.analytics.bigdl.ppml.service
 
 import java.util
 import java.util.Map

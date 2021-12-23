@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.ppml.common.Aggregator
 import com.intel.analytics.bigdl.ppml.psi.PSIServiceImpl
 import java.io.{File, IOException}
 
-import com.intel.analytics.bigdl.ppml.nn.NNServiceImpl
+import com.intel.analytics.bigdl.ppml.service.NNServiceImpl
 import org.apache.logging.log4j.{Level, LogManager}
 import org.apache.logging.log4j.core.config.Configurator
 

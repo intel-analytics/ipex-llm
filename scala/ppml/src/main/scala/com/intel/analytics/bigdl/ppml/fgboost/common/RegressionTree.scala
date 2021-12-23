@@ -135,6 +135,11 @@ class RegressionTree(
   }
 
 
+  /**
+   *
+   * @param record the input tensor
+   * @return the Array of result of path, res(i) = true means the input should go left of branch
+   */
   def predict(record: Tensor[Float]): Array[Boolean] = {
     // Only predict with local nodes
     val res = Array.fill[Boolean](math.pow(2, depth + 1).toInt)(true)

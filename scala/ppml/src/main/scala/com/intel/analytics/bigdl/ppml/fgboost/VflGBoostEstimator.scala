@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.utils.DataSetUtils
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
 import org.apache.logging.log4j.LogManager
 
@@ -47,25 +48,16 @@ class VflGBoostEstimator(continuous: Boolean,
                      trainDataSet: LocalDataSet[MiniBatch[Float]],
                      valDataSet: LocalDataSet[MiniBatch[Float]]): Any = {
     // transform the LocalDataSet to Array type, the input type of RegressionTree
-    val featureBuffer = new ArrayBuffer[Tensor[Float]]()
-    val labelBuffer = new ArrayBuffer[Float]()
-    var count = 0
-    val data = trainDataSet.data(true)
-    while (count < data.size) {
-      val batch = data.next()
-      featureBuffer.append(batch.getInput().toTensor[Float])
-      labelBuffer.append(batch.getTarget().toTensor[Float].value())
-    }
-    val dataset = featureBuffer.toArray
-    val sortedIndexByFeature = TreeUtils.sortByFeature(dataset)
+    val (feature, label) = DataSetUtils.localDataSetToArray(trainDataSet)
+    val sortedIndexByFeature = TreeUtils.sortByFeature(feature)
     // TODO Load model from file
     // Sync VFL Worker/Client
-    initFGBoost(labelBuffer.toArray)
+    initFGBoost(label)
 
     if (continuous) {
-      trainRegressionTree(dataset, sortedIndexByFeature, endEpoch)
+      trainRegressionTree(feature, sortedIndexByFeature, endEpoch)
     } else {
-      trainClassificationTree(dataset, sortedIndexByFeature, endEpoch)
+      trainClassificationTree(feature, sortedIndexByFeature, endEpoch)
     }
   }
 

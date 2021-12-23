@@ -83,13 +83,20 @@ class VflGBoostAggregator extends Aggregator[Table] {
 
   override def aggregate(flPhase: FLPhase): Unit = {
     // TODO aggregate split
-    aggregateSplit()
-    if (leafMap.size >= clientNum) {
-      aggregateTree()
+    if (flPhase == FLPhase.TRAIN) {
+      aggregateSplit()
+      if (leafMap.size >= clientNum) {
+        aggregateTree()
+      }
+    }
+    else if (flPhase == FLPhase.EVAL) {
+      aggEvaluate()
+    } else if (flPhase == FLPhase.PREDICT) {
+      aggPredict()
     }
   }
 
-  def aggEvaluate(agg: Boolean): Unit = {
+  def aggEvaluate(): Unit = {
     if (leafMap.size >= clientNum) {
       aggregateTree()
     }

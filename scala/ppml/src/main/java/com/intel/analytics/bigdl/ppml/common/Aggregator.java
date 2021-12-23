@@ -32,17 +32,12 @@ public abstract class Aggregator<T> {
      * it maps the enum type: TRAIN, EVAL, PREDICT to corresponded storage
      */
     private Logger logger = LogManager.getLogger(getClass());
-    public Map<FLPhase, Storage<T>> aggregateTypeMap;
+    protected Map<FLPhase, Storage<T>> aggregateTypeMap;
     protected Boolean hasReturn = false;
     protected String returnMessage = "";
 
     public Aggregator() {
         initStorage();
-        aggregateTypeMap = new HashMap<>();
-        aggregateTypeMap.put(TRAIN, trainStorage);
-        aggregateTypeMap.put(EVAL, evalStorage);
-        aggregateTypeMap.put(PREDICT, predictStorage);
-
     }
 
     public void setReturnMessage(String returnMessage) {
@@ -65,35 +60,31 @@ public abstract class Aggregator<T> {
     public Storage<T> evalStorage;
     public Storage<T> predictStorage;
 
-    public void initStorage() {
-        trainStorage = new Storage<>("train");
-        evalStorage = new Storage<>("eval");
-        predictStorage = new Storage<>("predict");
-    }
+    abstract public void initStorage()
 
     protected Integer clientNum;
 
 
     public abstract void aggregate(FLPhase flPhase);
 
-    public Storage<T> getServerData(FLPhase type) {
-        return aggregateTypeMap.get(type);
+    public Storage<T> getServerData(FLPhase flPhase) {
+        return aggregateTypeMap.get(flPhase);
     }
-    public <T> void putClientData(FLPhase type, String clientUUID, int version, T data)
+    public <T> void putClientData(FLPhase flPhase, String clientUUID, int version, T data)
             throws IllegalArgumentException, InterruptedException {
-        logger.debug(clientUUID + " getting data to update from server: " + type.toString());
-        Storage storage = getServerData(type);
+        logger.debug(clientUUID + " getting data to update from server: " + flPhase.toString());
+        Storage storage = getServerData(flPhase);
         checkVersion(storage.version, version);
         logger.debug(clientUUID + " version check pass, version: " + version);
 
 
         synchronized (this) {
             storage.clientData.put(clientUUID, data);
-            logger.debug(clientUUID + " client data uploaded to server: " + type.toString());
+            logger.debug(clientUUID + " client data uploaded to server: " + flPhase.toString());
             logger.debug("Server received data " + storage.size() + "/" + clientNum);
             if (storage.size() >= clientNum) {
                 logger.debug("Server received all client data, start aggregate.");
-                aggregate(type);
+                aggregate(flPhase);
                 notifyAll();
             } else {
                 wait();
