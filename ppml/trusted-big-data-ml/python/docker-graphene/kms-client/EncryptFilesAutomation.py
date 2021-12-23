@@ -27,5 +27,5 @@ if __name__ == "__main__":
     GeneratePrimaryKey.generate_primary_key(ip, port)
     print('[INFO] Generate Data Key Start...')
     GenerateDataKey.generate_data_key(ip, port, './encrypted_primary_key')
-    print('[INFO]  Encrypt Files Start...')
+    print('[INFO] Encrypt Files Start...')
     encrypt_files(ip, port, './encrypted_primary_key', './encrypted_data_key', input_dir, save_dir)
