@@ -5,7 +5,7 @@ Blogs
 - [From Ray to Chronos: Build end-to-end AI use cases using BigDL on top of Ray](https://www.anyscale.com/blog/from-ray-to-chronos-build-end-to-end-ai-use-cases-using-bigdl-on-top-of-ray)
 - [Scalable AutoXGBoost Using Analytics Zoo](https://medium.com/intel-analytics-software/scalable-autoxgboost-using-analytics-zoo-automl-30d576cb138a)
 - [Intelligent 5G L2 MAC Scheduler: Powered by Capgemini NetAnticipate 5G on Intel Architecture](https://networkbuilders.intel.com/solutionslibrary/intelligent-5g-l2-mac-scheduler-powered-by-capgemini-netanticipate-5g-on-intel-architecture)
-- [Better Together: Privacy-Preserving Machine Learning](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/alibaba-privacy-preserving-machine-learning.html)
+- [Better Together: Privacy-Preserving Machine Learning Powered by Intel SGX and Intel DL Boost](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/alibaba-privacy-preserving-machine-learning.html)
 
 **2020**
 - [SK Telecom, Intel Build AI Pipeline to Improve Network Quality](https://networkbuilders.intel.com/solutionslibrary/sk-telecom-intel-build-ai-pipeline-to-improve-network-quality)
