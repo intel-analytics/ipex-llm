@@ -34,7 +34,7 @@ class Objective(object):
         Args:
             model_instance (keras model, optional):  the created model instance. Defaults to None.
             model_initor (closure, optional):  function to create the input args. Defaults to None
-            model_cls (class type, optional): The model base class, used together with model_initor to create the model.
+            model_cls (class type, optional): The model class used with model_initor to create model.
                             e.g. tf.Keras.Sequential, tf.Keras.Model
                Either model_instance or model_initor should be a non-None value.
                if both not None, use model_initor and ignore the other.
