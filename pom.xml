@@ -627,7 +627,7 @@
                                 <!-- Too many deprecation usage, let's suspend it temporary-->
                                 <arg>-deprecation:false</arg>
                                 <arg>-feature</arg>
-                                <arg>-Xfatal-warnings</arg>
+                                <!--<arg>-Xfatal-warnings</arg>-->
                             </args>
                             <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
                                  by Spark SQL for code generation. -->
