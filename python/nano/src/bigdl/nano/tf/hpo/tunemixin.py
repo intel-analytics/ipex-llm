@@ -40,17 +40,16 @@ class HPOMixin:
             timeout (int, optional): optuna argument. Defaults to 600.
         """
         if not resume:
-            self.objective=Objective(
-                model_cls = self.__class__.__bases__[1],
+            self.objective = Objective(
+                model_cls=self.__class__.__bases__[1],
                 model_initor=self.model_initor,
-                model_compiler = self.model_compiler,
-                target_metric = target_metric,
+                model_compiler=self.model_compiler,
+                target_metric=target_metric,
                 *args,
                 **kwargs,
-                )
+            )
             self.study = optuna.create_study(direction=direction)
         self.study.optimize(self.objective, n_trials=n_trails, timeout=timeout)
-
 
     def tune_summary(self):
         """Retrive a summary of trials
@@ -70,7 +69,6 @@ class HPOMixin:
         else:
             print("Seems you have not done any tuning yet.  \
                   Call tune and then call tune_summary to get the statistics.")
-
 
     def end_tune(self, use_trial_id=-1):
         """ Put an end to tuning.

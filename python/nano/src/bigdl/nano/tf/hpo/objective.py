@@ -21,14 +21,14 @@ from tensorflow.keras.models import clone_model
 
 class Objective(object):
     def __init__(self,
-        model_instance=None,
-        model_cls = None,
-        model_initor=None,
-        model_compiler=None,
-        target_metric=None,
-        *args,
-        **kwargs,
-        ):
+                 model_instance=None,
+                 model_cls=None,
+                 model_initor=None,
+                 model_compiler=None,
+                 target_metric=None,
+                 *args,
+                 **kwargs,
+                 ):
         """Init the objective
 
         Args:
@@ -51,7 +51,8 @@ class Objective(object):
         self.model_initor = model_initor
         if self.model is not None and self.model_initor is not None:
             if model_cls is None:
-               raise ValueError("model_cls should also be specified if smodel_initor is specified")
+                raise ValueError(
+                    "model_cls should also be specified if smodel_initor is specified")
             self.model = None
             print("Warn: passed model is ignored when model_init is not null")
 
@@ -61,7 +62,6 @@ class Objective(object):
         self.target_metric = target_metric
         self.args = args
         self.kwargs = kwargs
-
 
     def __call__(self, trial):
         # Clear clutter from previous Keras session graphs.
@@ -81,7 +81,7 @@ class Objective(object):
         # fit
         hist = model.fit(*self.args, **self.kwargs)
 
-        #evaluate
+        # evaluate
         (x_valid, y_valid) = self.kwargs.get('validation_data', (None, None))
         if x_valid is not None:
             scores = model.evaluate(x_valid, y_valid, verbose=0)
@@ -89,7 +89,7 @@ class Objective(object):
             x_train = self.kwargs.get('x')
             y_train = self.kwargs.get('y')
             scores = model.evaluate(x_train, y_train, verbose=0)
-            #return max(hist.history[self.target_metric])
+            # return max(hist.history[self.target_metric])
         if self.target_metric is not None:
             try:
                 metric_index = model.metrics_names.index(self.target_metric)
@@ -98,6 +98,6 @@ class Objective(object):
                                 specified in the compile metrics")
             score = scores[metric_index]
         else:
-            score = scores[1] # the first metric specified in compile
+            score = scores[1]  # the first metric specified in compile
 
         return score
