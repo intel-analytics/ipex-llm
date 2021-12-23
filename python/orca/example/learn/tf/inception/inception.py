@@ -186,7 +186,7 @@ def config_option_parser():
                       help="The memory you want to use on each node. "
                            "You can change it depending on your own cluster setting.")
     parser.add_option('--py_files', type=str, default=None,
-                      help='The pyfiles you need.')
+                      help='The python files you need.')
 
     return parser
 
