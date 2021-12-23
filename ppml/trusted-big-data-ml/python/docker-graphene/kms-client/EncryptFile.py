@@ -72,7 +72,7 @@ def encrypt_file(ip, port, primary_key_path, data_key_path, data_file_path):
     with open(data_file_path + '.encrypted', 'wb') as encrypted_file:
         encrypted_file.write(encrypted)
     #os.system('openssl aes-256-cbc -a -salt -e -in ' + data_file_path + ' -out ' + data_file_path + '.encrypted -pass pass:' + data_key)
-    print('Encrypt Successfully! Encrypted Output Is' + data_file_path + '.encrypted')
+    print('Encrypt Successfully! Encrypted Output Is ' + data_file_path + '.encrypted')
 
 if __name__ == "__main__":
     ip,port,pkp,dkp,dfp = get_args()

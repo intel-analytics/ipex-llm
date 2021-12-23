@@ -70,7 +70,7 @@ def decrypt_file(ip, port, primary_key_path, data_key_path, encrypted_file_path)
     decrypted = fernet.decrypt(original)
     with open(encrypted_file_path + '.decrypted', 'wb') as decrypted_file:
         decrypted_file.write(decrypted)
-    print('Decrypt Successfully! Decrypted Output Is' + encrypted_file_path + '.decrypted')
+    print('Decrypt Successfully! Decrypted Output Is ' + encrypted_file_path + '.decrypted')
 
 if __name__ == "__main__":
     ip,port,pkp,dkp,efp = get_args()
