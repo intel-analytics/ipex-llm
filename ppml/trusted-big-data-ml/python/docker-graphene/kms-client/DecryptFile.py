@@ -62,15 +62,17 @@ def decrypt_data_key(ip, port, primary_key_path, data_key_path):
     decrypted_data_key = json.loads(decrypt_res.text)['result']['plaintext_base64']
     return decrypted_data_key
 
-def decrypt_file(ip, port, primary_key_path, data_key_path, encrypted_file_path):
+def decrypt_file(ip, port, primary_key_path, data_key_path, encrypted_file_path, save_path = None):
     data_key = decrypt_data_key(ip, port, primary_key_path, data_key_path)
     fernet = Fernet(data_key)
     with open(encrypted_file_path, 'rb') as file:
         original = file.read()
     decrypted = fernet.decrypt(original)
-    with open(encrypted_file_path + '.decrypted', 'wb') as decrypted_file:
+    if save_path is None:
+        save_path = encrypted_file_path + '.decrypted'
+    with open(save_path, 'wb') as decrypted_file:
         decrypted_file.write(decrypted)
-    print('Decrypt Successfully! Decrypted Output Is ' + encrypted_file_path + '.decrypted')
+    print('Decrypt Successfully! Decrypted Output Is ' + save_path)
 
 if __name__ == "__main__":
     ip,port,pkp,dkp,efp = get_args()
