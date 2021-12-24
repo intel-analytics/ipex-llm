@@ -31,7 +31,8 @@ import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.objectives.ZooClassNLLCriterion
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.{MinMaxScaler, VectorAssembler}
 import org.apache.spark.ml.linalg.Vector
@@ -207,8 +208,8 @@ class NNClassifierSpec extends ZooSpecHelper {
   }
 
   "NNClassifier" should "get the same classification result with BigDL model" in {
-    Logger.getLogger("org").setLevel(Level.WARN)
-    Logger.getLogger("akka").setLevel(Level.WARN)
+    Configurator.setLevel("org", Level.WARN)
+    Configurator.setLevel("akka", Level.WARN)
 
     val model = LeNet5(10)
 

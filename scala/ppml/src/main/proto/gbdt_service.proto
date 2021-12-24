@@ -15,93 +15,18 @@
 //
 syntax = 'proto3';
 
-
+import "fl_base.proto";
 //option java_multiple_files = true;
 option java_package = "com.intel.analytics.bigdl.ppml.generated";
-option java_outer_classname = "FLProto";
+option java_outer_classname = "FGBoostServiceProto";
 
-// PSI proto
-service PSIService {
-    // Gives SHA256 Hash salt
-    rpc getSalt (SaltRequest) returns (SaltReply) {}
-    rpc uploadSet (UploadSetRequest) returns (UploadSetResponse) {}
-    rpc downloadIntersection (DownloadIntersectionRequest) returns (DownloadIntersectionResponse) {}
-}
-service NNService {
-    rpc UploadTrain(UploadRequest) returns (UploadResponse) {}
-    rpc DownloadTrain(DownloadRequest) returns (DownloadResponse) {}
-    rpc UploadEvaluate(EvaluateRequest) returns (EvaluateResponse) {}
-}
-service GBService {
+service FGBoostService {
     rpc UploadSplitTrain(UploadSplitRequest) returns (UploadResponse) {}
     rpc DownloadSplitTrain(DownloadSplitRequest) returns (DownloadSplitResponse) {}
     rpc Register(RegisterRequest) returns (RegisterResponse) {}
     rpc UploadTreeEval(UploadTreeEvalRequest) returns (UploadResponse) {}
     rpc UploadTreeLeaves(UploadTreeLeavesRequest) returns (UploadResponse) {}
     rpc PredictTree(PredictTreeRequest) returns (PredictTreeResponse) {}
-}
-enum SIGNAL {
-    SUCCESS = 0;
-    WAIT = 1;
-    TIMEOUT = 2;
-    EMPTY_INPUT = 3;
-    ERROR = 4;
-}
-
-message SaltRequest {
-    string task_id = 1;
-    int32 client_num = 2;
-    string secure_code = 3;
-}
-
-message SaltReply {
-    string salt_reply = 1;
-}
-
-message UploadSetRequest {
-    string task_id = 1;
-    string client_id = 2;
-    int32 split = 3;
-    int32 num_split = 4;
-    int32 split_length = 5;
-    int32 total_length = 6;
-    repeated string hashedID = 7;
-}
-
-message UploadSetResponse {
-    string task_id = 1;
-    SIGNAL status = 2;
-}
-
-message DownloadIntersectionRequest {
-    string task_id = 1;
-    int32 split = 2;
-}
-
-message DownloadIntersectionResponse {
-    string task_id = 1;
-    SIGNAL status = 2;
-    int32 split = 3;
-    int32 num_split = 4;
-    int32 split_length = 5;
-    int32 total_length = 6;
-    repeated string intersection = 7;
-}
-
-
-message FloatTensor {
-    repeated int32 shape = 1;
-    repeated float tensor = 2;
-}
-//
-message Table {
-    TableMetaData metaData = 1;
-    map<string, FloatTensor> table = 2;
-}
-//
-message TableMetaData {
-    string name = 1;
-    int32 version = 2;
 }
 
 message TreeLeaves {
@@ -114,7 +39,6 @@ message UploadTreeLeavesRequest {
     string clientuuid = 1;
     TreeLeaves treeLeaves = 2;
 }
-
 message DataSplit {
     string treeID = 1;
     string nodeID = 2;
@@ -126,7 +50,10 @@ message DataSplit {
     string clientUid = 8;
 }
 
-
+message UploadResponse {
+    string response = 1;
+    int32 code = 2;
+}
 message TreePredict {
     string treeID = 1;
     repeated bool predicts = 2;
@@ -140,28 +67,6 @@ message BoostEval {
     repeated TreePredict evaluates = 1;
 }
 
-message DownloadRequest {
-    TableMetaData metaData = 1;
-    string algorithm = 2;
-}
-
-message DownloadResponse {
-    Table data = 1;
-    string response = 2;
-    int32 code = 3;
-}
-
-message UploadRequest {
-    string clientuuid = 1;
-    Table data = 2;
-    string algorithm = 3;
-}
-
-message UploadResponse {
-    string response = 1;
-    int32 code = 2;
-}
-
 message RegisterRequest {
     string clientuuid = 1;
     string token = 2;
@@ -170,18 +75,6 @@ message RegisterRequest {
 message RegisterResponse {
     string response = 1;
     int32 code = 2;
-}
-
-message EvaluateRequest {
-    string clientuuid = 1;
-    Table data = 2;
-    bool last = 3;
-}
-
-message EvaluateResponse {
-    Table data = 1;
-    string response = 2;
-    int32 code = 3;
 }
 
 message UploadTreeEvalRequest {
@@ -216,3 +109,4 @@ message DownloadSplitResponse {
     string response = 2;
     int32 code = 3;
 }
+

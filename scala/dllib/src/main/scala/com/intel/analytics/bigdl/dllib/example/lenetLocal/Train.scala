@@ -25,7 +25,6 @@ import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
 import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
-import org.apache.log4j.{Level, Logger}
 
 
 object Train {

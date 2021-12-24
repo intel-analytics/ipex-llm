@@ -25,13 +25,15 @@ import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import java.util.concurrent.TimeUnit;
 
 public class RecommenderClient {
-    private static final Logger logger = Logger.getLogger(RecommenderClient.class.getName());
+    private static final Logger logger = LogManager.getLogger(RecommenderClient.class.getName());
     private final RecommenderGrpc.RecommenderBlockingStub blockingStub;
 
     public RecommenderClient(Channel channel) {
@@ -93,7 +95,7 @@ public class RecommenderClient {
 
     /** Issues several different requests and then exits. */
     public static void main(String[] args) throws InterruptedException {
-        Logger.getLogger("org").setLevel(Level.ERROR);
+        Configurator.setLevel("org", Level.ERROR);
 
         CMDParser cmdParser = new CMDParser();
         cmdParser.addOption("target", "The server to connect to.", "localhost:8980");

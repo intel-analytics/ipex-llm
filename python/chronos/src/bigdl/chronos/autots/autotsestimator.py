@@ -50,7 +50,7 @@ class AutoTSEstimator:
                  metric="mse",
                  loss=None,
                  optimizer="Adam",
-                 past_seq_len=2,
+                 past_seq_len='auto',
                  future_seq_len=1,
                  input_feature_num=None,
                  output_target_num=None,
@@ -91,7 +91,9 @@ class AutoTSEstimator:
                tf.keras optimizer instance.
         :param past_seq_len: Int or or hp sampling function. The number of historical steps (i.e.
                lookback) used for forecasting. For hp sampling, see bigdl.orca.automl.hp for more
-               details. The values defaults to 2.
+               details. The values defaults to 'auto', which will automatically infer the
+               cycle length of each time series and take the mode of them. The search space
+               will be automatically set to hp.randint(0.5*cycle_length, 2*cycle_length).
         :param future_seq_len: Int or List. The number of future steps to forecast. The value
                defaults to 1, if `future_seq_len` is a list, we will sample discretely according
                to the input list. 1 means the timestamp just after the observed data.
@@ -254,7 +256,14 @@ class AutoTSEstimator:
                 scheduler_params=scheduler_params
             )
 
-        return TSPipeline(best_model=self._get_best_automl_model(),
+        best_model = self._get_best_automl_model()
+
+        return TSPipeline(model=best_model.model,
+                          loss=best_model.criterion,
+                          optimizer=best_model.optimizer,
+                          model_creator=best_model.model_creator,
+                          loss_creator=best_model.loss_creator,
+                          optimizer_creator=best_model.optimizer_creator,
                           best_config=self.get_best_config(),
                           scaler=self._scaler,
                           scaler_index=self._scaler_index)
@@ -274,6 +283,10 @@ class AutoTSEstimator:
         # automatically inference output_feature_num
         # input_feature_num will be set by base pytorch model according to selected features.
         search_space['output_feature_num'] = len(train_data.target_col)
+        if search_space['past_seq_len'] == 'auto':
+            cycle_length = train_data.get_cycle_length(aggregate='mode', top_k=3)
+            cycle_length = 2 if cycle_length < 2 else cycle_length
+            search_space['past_seq_len'] = hp.randint(cycle_length//2, cycle_length*2)
 
         # append feature selection into search space
         # TODO: more flexible setting

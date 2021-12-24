@@ -195,7 +195,6 @@ class SerializerSpec extends BigDLSpecHelper {
     "com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalMM",
     "com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalERF",
     "com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalCAddTable",
-    "com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalSoftMax",
     "com.intel.analytics.bigdl.dllib.keras.autograd.KerasConstant",
     "com.intel.analytics.bigdl.dllib.keras.autograd.KerasParameter",
     "com.intel.analytics.bigdl.dllib.keras.autograd.LambdaTorch",

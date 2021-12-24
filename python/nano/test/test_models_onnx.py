@@ -21,6 +21,7 @@ from unittest import TestCase
 
 import torch
 from torch import nn
+from torch.utils.data import TensorDataset, DataLoader
 
 import numpy as np
 
@@ -44,6 +45,22 @@ class ResNet18(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
+class MultiInputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 128)
+        self.layer_2 = nn.Linear(28 * 28, 128)
+        self.layer_3 = nn.Linear(256, 2)
+
+    def forward(self, x1, x2):
+
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+
+        return self.layer_3(x)
 
 
 class TestModelsOnnx(TestCase):
@@ -75,6 +92,37 @@ class TestModelsOnnx(TestCase):
 
         for x, y in train_loader:
             pl_model.inference(x.numpy())
+    
+    def test_multiple_input_onnx(self):
+        model = MultiInputModel()
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        x1 = torch.randn(100, 28*28)
+        x2 = torch.randn(100, 28*28)
+        y = torch.zeros(100).long()
+        y[0:50] = 1
+        train_loader = DataLoader(TensorDataset(x1, x2, y), batch_size=32, shuffle=True)
+        trainer.fit(pl_model, train_loader)
+        assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
+
+        for x1, x2, y in train_loader:
+            onnx_res = pl_model.inference([x1.numpy(), x2.numpy()])  # onnxruntime
+            pytorch_res = pl_model.inference([x1, x2], backend=None).numpy()  # native pytorch
+            assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date while inferencing
+            np.testing.assert_almost_equal(onnx_res, pytorch_res, decimal=5)  # same result
+        
+        trainer = Trainer(max_epochs=1)
+        trainer.fit(pl_model, train_loader)
+        assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
+
+        pl_model.update_ortsess()  # update the ortsess with default settings
+        assert pl_model._ortsess_up_to_date is True # ortsess is up-to-date after updating
+
+        for x1, x2, y in train_loader:
+            pl_model.inference([x1.numpy(), x2.numpy()])
 
 
 if __name__ == '__main__':
