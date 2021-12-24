@@ -93,7 +93,6 @@ class VflGBoostEstimator(continuous: Boolean,
     logger.info(s"Built Tree_${i}" + currTree.toString)
     if (currTree.leaves.isEmpty) {
       logger.info("Early Stop boosting!")
-      // Did not find leave dequeue usage, so this should never be called
       return false
     }
     // upload local tree

@@ -145,6 +145,7 @@ class VflGBoostAggregator extends Aggregator {
     val treeLeaves = serverTreeLeaves(treeID)
     logger.debug("Predict with encoding" + encoding.mkString("Array(", ", ", ")"))
     logger.debug("Tree map encoding" + treeLeaves.mkString("Array(", ", ", ")"))
+    // go through the path by encoding to the leaf node
     var currIndex = 0
     while (!treeLeaves.contains(currIndex)) {
       logger.debug("CurrIndex " + currIndex)
@@ -182,14 +183,14 @@ class VflGBoostAggregator extends Aggregator {
 
   def aggregateTree(): Unit = {
     logger.info(s"Add new Tree ${serverTreeLeaves.length}")
-    val leafMao = aggregateTypeMap.get(FLPhase.LEAF).getLeafStorage().clientData
+    val leafMap = aggregateTypeMap.get(FLPhase.LEAF).getLeafStorage().clientData
 
-    val treeIndexes = leafMao.values.head.getLeafIndexList.map(Integer2int).toArray
-    val treeOutputs = leafMao.values.head.getLeafOutputList.map(Float2float).toArray
+    val treeIndexes = leafMap.values.head.getLeafIndexList.map(Integer2int).toArray
+    val treeOutputs = leafMap.values.head.getLeafOutputList.map(Float2float).toArray
     val treeLeaves = treeIndexes.zip(treeOutputs).toMap
     // Add new tree leaves to server
     serverTreeLeaves += treeLeaves
-    leafMao.clear()
+    leafMap.clear()
   }
 
   def updateGradient(newPredict: Array[Float]): Unit = {
@@ -249,12 +250,9 @@ class VflGBoostAggregator extends Aggregator {
   }
 
   def aggregatePredict(): Array[Array[(String, Array[java.lang.Boolean])]] = {
-    // Aggregate from temp predict
+    // get proto and convert to scala object
     logger.info("Aggregate Predict")
     val boostEvalBranchMap = getServerData(FLPhase.BRANCH).getBranchStorage().clientData
-    val clients = boostEvalBranchMap.keys.toIterator
-
-    // extract from evalMap
     val evalResults = boostEvalBranchMap.mapValues { list =>
       list.toArray.map { be =>
         be.getEvaluatesList.asScala.toArray.map { treePredict =>
@@ -262,18 +260,15 @@ class VflGBoostAggregator extends Aggregator {
         }
       }
     }
-
-    val result = evalResults(clients.next())
-    // Join predict result.
-    while (clients.hasNext) {
-      result.zip(evalResults(clients.next())).foreach { be =>
-        be._1.zip(be._2).foreach { treePredict =>
-          val left = treePredict._1
-          val right = treePredict._2
-          require(left._1 == right._1, "Tree id miss match." +
-            s" Got ${left._1} ${right._1}.")
-          left._2.indices.foreach { i =>
-            left._2(i) = (left._2(i) && right._2(i))
+    val clientsIterator = boostEvalBranchMap.keys.toIterator
+    val result = evalResults(clientsIterator.next())
+    while (clientsIterator.hasNext) {
+      result.zip(evalResults(clientsIterator.next())).foreach { be =>
+        be._1.zip(be._2).foreach { case (clientPredict1, clientPredict2) =>
+          require(clientPredict1._1 == clientPredict2._1, "Tree id miss match." +
+            s" Got ${clientPredict1._1} ${clientPredict2._1}.")
+          clientPredict1._2.indices.foreach { i =>
+            clientPredict1._2(i) = clientPredict1._2(i) && clientPredict2._2(i)
           }
         }
       }
@@ -285,7 +280,7 @@ class VflGBoostAggregator extends Aggregator {
     val tableStorage = aggregateTypeMap.get(FLPhase.PREDICT).getTableStorage()
     val aggedPredict = aggregatePredict()
     val newPredict = aggedPredict.zip(basePrediction).map(p =>
-      // agged prediction + base prediction
+      // Predict value of each boosting tree
       p._1.map(x => predictWithEncoding(x._2, x._1.toInt)).sum + p._2
     )
     val metaData = TableMetaData.newBuilder()
