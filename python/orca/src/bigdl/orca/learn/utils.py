@@ -460,7 +460,7 @@ def put_local_dir_to_remote(local_dir, remote_dir):
         if not fs.exists(remote_dir):
             fs.mkdir(remote_dir)
         for file in os.listdir(local_dir):
-            with open(file, "rb") as f:
+            with open(os.path.join(local_dir, file), "rb") as f:
                 fs.upload(os.path.join(remote_dir, file), f)
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
@@ -473,7 +473,7 @@ def put_local_dir_to_remote(local_dir, remote_dir):
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
         for file in os.listdir(local_dir):
-            with open(file, "rb") as f:
+            with open(os.path.join(local_dir, file), "rb") as f:
                 s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix+'/'+file)
     else:
         if remote_dir.startswith("file://"):
