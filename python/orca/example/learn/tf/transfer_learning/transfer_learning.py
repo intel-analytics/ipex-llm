@@ -53,7 +53,7 @@ parser.add_argument('--batch_size', type=int, default=64, help='The training bat
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--download_url', type=str, default="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
                     help="The url of cats_and_dogs_filtered.zip.")
-parser.add_argument('--download', type=bool, default=False, help='download dataset or not')
+parser.add_argument('--download', type=bool, default=True, help='download dataset or not')
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 
