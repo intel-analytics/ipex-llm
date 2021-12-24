@@ -64,6 +64,15 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                                       .preprocess_nyc_taxi()\
                                       .get_tsdata(dt_col='timestamp',
                                                   target_col=['value'])
+    elif name.lower().strip() == 'electricity_load':
+        return PublicDataset(name='electricity_load',
+                             path=path,
+                             redownload=redownload,
+                             **kwargs).get_public_data()\
+                                      .preprocess_electricity_load()\
+                                      .get_tsdata(dt_col='timestamp',
+                                                  target_col=['value'],
+                                                  id_col='id')
     else:
-        raise NameError("Only network_traffic, AIOps, fsi, nyc_taxi "
+        raise NameError("Only network_traffic, AIOps, fsi, nyc_taxi, electricity_load "
                         f"are supported in Chronos built-in dataset, while get {name}.")
