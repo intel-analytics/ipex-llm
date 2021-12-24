@@ -18,6 +18,7 @@ import logging
 import os
 import sys
 import tempfile
+import shutil
 
 import tensorflow as tf
 from contextlib import closing
@@ -25,8 +26,10 @@ import socket
 
 from pyspark import BarrierTaskContext, TaskContext
 
+from bigdl.dllib.utils.tf import change_path_in_tf_checkpoint
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
+    get_checkpoint_from_callbacks, put_local_dir_to_remote
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
@@ -324,6 +327,22 @@ class SparkRunner:
                                        config=config, epochs=epochs,
                                        steps_per_epoch=steps_per_epoch,
                                        validation_steps=validation_steps)
+        checkpoint = None
+        if callbacks:
+            checkpoint = get_checkpoint_from_callbacks(callbacks)
+            if checkpoint:
+                original_filepath = checkpoint.filepath
+                original_checkpoint_dir = os.path.dirname(original_filepath)
+                print("original_checkpoint_dir is: ", original_checkpoint_dir)
+                ckpt_name = os.path.basename(original_filepath)
+                print("checkpoint name is: ", ckpt_name)
+                temp_dir = tempfile.mkdtemp()
+                base_dirpath = 'worker_' + str(self.rank)
+                local_checkpoint_dir = os.path.join(temp_dir, base_dirpath)
+                print("local checkpoint dir is: ", local_checkpoint_dir)
+                os.makedirs(local_checkpoint_dir)
+                checkpoint.filepath = os.path.join(local_checkpoint_dir, ckpt_name)
+                print("new checkpoint filepath is: ", checkpoint.filepath)
 
         history = model.fit(train_dataset,
                             epochs=epochs,
@@ -335,6 +354,12 @@ class SparkRunner:
                             steps_per_epoch=steps_per_epoch,
                             validation_steps=validation_steps,
                             validation_freq=validation_freq)
+
+        if checkpoint:
+            if self.rank == 0:
+                # change_path_in_tf_checkpoint(os.path.join(local_checkpoint_dir, "checkpoint"), ckpt_name)
+                put_local_dir_to_remote(local_checkpoint_dir, original_checkpoint_dir)
+            shutil.rmtree(temp_dir)
 
         return (model, history)
 

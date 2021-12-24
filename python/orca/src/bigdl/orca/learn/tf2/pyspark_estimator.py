@@ -23,14 +23,18 @@ import shutil
 
 import pickle
 
+import tensorflow as tf
+
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    get_remote_file_to_local
+    get_remote_file_to_local, is_local_path
 
 from bigdl.dllib.utils.utils import get_node_ip
+from bigdl.orca.data.file import exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
-from bigdl.orca.learn.utils import find_free_port
+from bigdl.orca.learn.utils import find_free_port, get_checkpoint_from_callbacks, get_remote_dir_to_local,\
+    get_remote_files_to_local_dir
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
@@ -93,7 +97,7 @@ class SparkTFEstimator():
             callbacks=None, validation_data=None, class_weight=None,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
-            label_cols=None, model_dir=None):
+            label_cols=None):
         """
         Train this tensorflow model with train data.
         :param data: train data. It can be XShards, Spark DataFrame or creator function which
@@ -126,6 +130,13 @@ class SparkTFEstimator():
             weights = sc.broadcast(self.model_weights)
         else:
             weights = None
+
+        # checkpoint by callback
+        if callbacks:
+            checkpoint = get_checkpoint_from_callbacks(callbacks)
+            if checkpoint:
+                checkpoint_file_path = checkpoint.filepath
+                assert checkpoint_file_path
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -379,7 +390,29 @@ class SparkTFEstimator():
                TensorFlow format.
         """
         model = self.model_creator(self.config)
-        model.load_weights(filepath, by_name)
+        if exists(filepath):
+            # not tensorflow format
+            if is_local_path(filepath):
+                model.load_weights(filepath, by_name)
+            else:
+                file_name = os.path.basename(filepath)
+                temp_path = os.path.join(tempfile.gettempdir(), file_name)
+                get_remote_file_to_local(filepath, temp_path)
+                try:
+                    model.load_weights(temp_path, by_name)
+                finally:
+                    os.remove(temp_path)
+        else:
+            # tensorflow format
+            if is_local_path(filepath):
+                model.load_weights(filepath, by_name)
+            else:
+                temp_dir = tempfile.mkdtemp()
+                local_path = get_remote_files_to_local_dir(filepath, temp_dir)
+                try:
+                    model.load_weights(local_path, by_name)
+                finally:
+                    os.remove(temp_dir)
         self.model_weights = model.get_weights()
 
     @enable_multi_fs_save
@@ -426,3 +459,20 @@ class SparkTFEstimator():
         model = self.model_creator(self.config)
         model.set_weights(self.model_weights)
         return model
+
+    @staticmethod
+    def latest_checkpoint(checkpoint_dir):
+        if is_local_path(checkpoint_dir):
+            checkpoint_path = tf.train.latest_checkpoint(checkpoint_dir)
+            return checkpoint_path
+        else:
+            try:
+                temp_dir = tempfile.mkdtemp()
+                get_remote_dir_to_local(checkpoint_dir, temp_dir)
+                checkpoint_path = tf.train.latest_checkpoint(temp_dir)
+                checkpoint_prefix = os.path.basename(checkpoint_path)
+                return os.path.join(checkpoint_dir, checkpoint_prefix)
+            finally:
+                shutil.rmtree(temp_dir)
+
+

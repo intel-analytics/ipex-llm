@@ -15,8 +15,15 @@
 #
 
 import logging
-
+import tempfile
+import shutil
+import os
 import numpy as np
+
+import tensorflow as tf
+from bigdl.dllib.utils.file_utils import is_local_path
+from bigdl.orca.learn.utils import get_remote_dir_to_local
+
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +89,20 @@ class Estimator(object):
             raise ValueError("Only horovod, tf2 and spark backends are supported"
                              f" for now, got backend: {backend}")
 
-
+    @staticmethod
+    def latest_checkpoint(checkpoint_dir):
+        if is_local_path(checkpoint_dir):
+            checkpoint_path = tf.train.latest_checkpoint(checkpoint_dir)
+            return checkpoint_path
+        else:
+            try:
+                temp_dir = tempfile.mkdtemp()
+                get_remote_dir_to_local(checkpoint_dir, temp_dir)
+                checkpoint_path = tf.train.latest_checkpoint(temp_dir)
+                checkpoint_prefix = os.path.basename(checkpoint_path)
+                return os.path.join(checkpoint_dir, checkpoint_prefix)
+            finally:
+                shutil.rmtree(temp_dir)
 def make_data_creator(refs):
     def data_creator(config, batch_size):
         return refs
