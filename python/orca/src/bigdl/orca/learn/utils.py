@@ -494,7 +494,7 @@ def get_remote_dir_to_local(remote_dir, local_dir):
         for file in fs.ls(remote_dir):
             base_name = os.path.basename(file)
             local_file = os.path.join(local_dir, base_name)
-            with open(local_file, "rb") as f:
+            with open(local_file, "wb") as f:
                 fs.download(os.path.join(remote_dir, file), f)
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
