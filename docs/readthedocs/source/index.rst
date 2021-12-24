@@ -121,4 +121,6 @@ BigDL Documentation
    :caption: Real-World Application
    
    doc/Application/presentations.md
+   doc/Application/blogs.md
    doc/Application/powered-by.md  
+
