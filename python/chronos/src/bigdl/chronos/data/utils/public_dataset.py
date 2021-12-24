@@ -190,7 +190,7 @@ class PublicDataset:
                 dst.write(src.read())
         self.df = pd.read_csv(self.final_file_path, parse_dates=['timestamp'])
         return self
-    
+
     def preprocess_electricity_load(self):
         '''
         return data that meets the minimum requirements of tsdata.
@@ -205,9 +205,9 @@ class PublicDataset:
             os.rename(download_file+'.txt', self.final_file_path)
         df = pd.read_csv(self.final_file_path, delimiter=';', parse_dates=['Unnamed: 0'])
         self.df = pd.melt(df,
-                     id_vars=['Unnamed: 0'],
-                     value_vars=df.T.index[1:])\
-                    .rename(columns={'Unnamed: 0':'timestamp', 'variable':'id'})
+                          id_vars=['Unnamed: 0'],
+                          value_vars=df.T.index[1:])\
+                    .rename(columns={'Unnamed: 0': 'timestamp', 'variable': 'id'})
         return self
 
     def get_tsdata(self,
