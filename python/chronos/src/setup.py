@@ -45,7 +45,7 @@ def get_bigdl_packages():
 
 def setup_package():
     metadata = dict(
-        name='bigdl-chronos-spark3',
+        name='bigdl-chronos',
         version=VERSION,
         description='Scalable time series analysis using AutoML',
         author='BigDL Authors',
