@@ -69,13 +69,13 @@ start=$(date "+%s")
 if [ -d data/input_2tower ]; then
   echo "data/input_2tower already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/input_2tower.tar.gz -P data
-  tar -xvzf data/input_2tower.tar.gz -C data
+  wget -nv $FTP_URI/analytics-zoo-data/input_deepFM.tar.gz -P data
+  tar -xvzf data/input_deepFM.tar.gz -C data
 fi
 
 python ../../example/deep_fm/deepFM_train.py \
-    --data_dir ./data/input_2tower \
-    --model_dir ./result/model \
+    --data_dir ./data/input_deepFM \
+    --model_dir ./result/deepFM_model \
     --frequency_limit 2 
 
 now=$(date "+%s")
