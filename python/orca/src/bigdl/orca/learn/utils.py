@@ -534,7 +534,7 @@ def get_remote_files_to_local_dir(remote_path_prefix, local_dir):
             base_name = os.path.basename(file)
             if base_name.startswith(prefix):
                 local_file = os.path.join(local_dir, base_name)
-                with open(local_file, "rb") as f:
+                with open(local_file, "wb") as f:
                     fs.download(os.path.join(remote_dir, file), f)
         return os.path.join(local_dir, prefix)
     elif remote_path_prefix.startswith("s3"):  # s3://bucket/file_path

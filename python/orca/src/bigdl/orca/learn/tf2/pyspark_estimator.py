@@ -379,7 +379,7 @@ class SparkTFEstimator():
         model.set_weights(self.model_weights)
         model.save_weights(filepath, overwrite, save_format)
 
-    
+
     def load_weights(self, filepath, by_name=False):
         """
         Save tensorflow keras model in this estimator.
