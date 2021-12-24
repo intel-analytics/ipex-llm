@@ -48,7 +48,7 @@ from bigdl.orca.learn.tf.estimator import Estimator
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn-client, yarn-cluster or spark-submit.')
-parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets where includes folder datasets/cats_and_dogs_filtered.')
+parser.add_argument('--data_dir', type=str, default="/data", help='The path of datesets where includes folder datasets/cats_and_dogs_filtered.')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--download_url', type=str, default="https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip",
