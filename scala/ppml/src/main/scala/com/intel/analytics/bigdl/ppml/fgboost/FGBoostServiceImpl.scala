@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.service
+package com.intel.analytics.bigdl.ppml.fgboost
 
 import com.intel.analytics.bigdl.ppml.base.DataHolder
 import com.intel.analytics.bigdl.ppml.common.FLPhase
@@ -23,8 +23,9 @@ import com.intel.analytics.bigdl.ppml.generated.{FGBoostServiceGrpc, FGBoostServ
 import com.intel.analytics.bigdl.ppml.vfl.fgboost.VflGBoostAggregator
 import io.grpc.stub.StreamObserver
 
-class FGBoostServiceImpl extends FGBoostServiceGrpc.FGBoostServiceImplBase{
+class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
   val aggregator = new VflGBoostAggregator()
+  aggregator.setClientNum(clientNum)
   override def downloadTable(request: DownloadTableRequest,
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
     val version = request.getMetaData.getVersion
