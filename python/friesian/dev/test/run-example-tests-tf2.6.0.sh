@@ -66,8 +66,8 @@ echo "#3 start example test for deepfm train"
 
 #timer
 start=$(date "+%s")
-if [ -d data/input_2tower ]; then
-  echo "data/input_2tower already exists"
+if [ -d data/input_deepFM ]; then
+  echo "data/input_deepFM already exists"
 else
   wget -nv $FTP_URI/analytics-zoo-data/input_deepFM.tar.gz -P data
   tar -xvzf data/input_deepFM.tar.gz -C data
