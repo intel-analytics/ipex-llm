@@ -20,7 +20,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
 
-from bigdl.dllib.feature.dataset import movielens 
+from bigdl.dllib.feature.dataset import movielens
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.friesian.feature import FeatureTable
