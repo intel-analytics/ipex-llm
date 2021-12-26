@@ -75,8 +75,8 @@ fi
 
 python ../../example/deep_fm/deepFM_train.py \
     --data_dir ./data/input_deepFM \
-    --model_dir ./result/deepFM_model \
-    --frequency_limit 2 
+    --model_dir ./result/deepFM_model
+    #--frequency_limit 2 
 
 now=$(date "+%s")
 time3=$((now - start))
