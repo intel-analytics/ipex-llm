@@ -412,7 +412,7 @@ class SparkTFEstimator():
                 try:
                     model.load_weights(local_path, by_name)
                 finally:
-                    os.remove(temp_dir)
+                    shutil.rmtree(temp_dir)
         self.model_weights = model.get_weights()
 
     @enable_multi_fs_save
