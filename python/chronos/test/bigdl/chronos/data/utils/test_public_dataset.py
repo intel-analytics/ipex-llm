@@ -87,16 +87,17 @@ class TestPublicDataset(ZooTestCase):
             assert set(tsdata.df.columns) == {'time_step', 'cpu_usage', 'mem_usage', 'id'}
             tsdata._check_basic_invariants()
 
-    def test_get_electricity_load(self):
-        name = 'electricity_load'
+    def test_get_uci_electricity(self):
+        name = 'uci_electricity'
         path = '~/.chronos/dataset'
         if os.environ.get('FTP_URI', None):
-            file_url = f"{os.getenv('FTP_URI')}/analytics-zoo-data/apps/ElectricityLD/electricity_load_data.csv"
+            file_url = f"{os.getenv('FTP_URI')}/analytics-zoo-data/apps/ElectricityLD/uci_electricity_data.csv"
             public_data = PublicDataset(name, path, redownload=False, with_split=False)
             df = pd.read_csv(file_url,
                              delimiter=';',
                              parse_dates=['Unnamed: 0'],
-                             nrows=10000)
+                             nrows=10000,
+                             low_memory=False)
             public_data.df = pd.melt(df,
                                      id_vars=['Unnamed: 0'],
                                      value_vars=df.T.index[1:])\
