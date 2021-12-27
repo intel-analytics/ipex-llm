@@ -41,7 +41,7 @@ object Module {
    */
   @deprecated("Java based serialization not recommended any more, please use loadModule instead",
     "0.3")
-  private def load[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
+  private[bigdl] def load[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
     File.load[AbstractModule[Activity, Activity, T]](path)
   }
 
