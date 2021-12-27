@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# the following code is adapted from https://github.com/philipperemy/n-beats/
+#
 # MIT License
 #
 # Copyright (c) 2019 Philippe Rémy
@@ -244,3 +246,32 @@ def loss_creator(config):
         raise RuntimeError(f"Got '{loss_name}' for loss name, "
                            "where 'mse', 'mae' or 'huber_loss' is expected")
     return getattr(torch.nn, loss_name)()
+
+
+try:
+    from bigdl.orca.automl.model.base_pytorch_model import PytorchBaseModel
+
+    class NBeatsPytorch(PytorchBaseModel):
+        def __init__(self, check_optional_config=False):
+            super().__init__(model_creator=model_creator,
+                             optimizer_creator=optimizer_creator,
+                             loss_creator=loss_creator,
+                             check_optional_config=check_optional_config)
+
+        def _get_required_parameters(self):
+            return {
+                "past_seq_len",
+                "future_seq_len"
+            }
+
+        def _get_optional_parameters(self):
+            return {
+                "stack_types",
+                "nb_blocks_per_stack",
+                "thetas_dim",
+                "share_weights_in_stack",
+                "hidden_layer_units",
+                "nb_harmonics"
+            } | super()._get_optional_parameters()
+except ImportError:
+    pass
