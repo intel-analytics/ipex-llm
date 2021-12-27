@@ -1,10 +1,14 @@
-302,303c302,303
+301,303c301,303
+< try:
 <     set_scputimes_ntuple("/proc")
 < except Exception:  # pragma: no cover
 ---
+> #try:
 >     #set_scputimes_ntuple("/proc")
 > #except Exception:  # pragma: no cover
-305c305
+305,306c305,306
 <     traceback.print_exc()
+<     scputimes = namedtuple('scputimes', 'user system idle')(0.0, 0.0, 0.0)
 ---
 >     #traceback.print_exc()
+> scputimes = namedtuple('scputimes', 'user system idle')(0.0, 0.0, 0.0)
