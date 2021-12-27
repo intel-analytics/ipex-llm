@@ -37,8 +37,8 @@ class SerializeModelSpec extends FlatSpec with Matchers {
     // case object.
     val model = ResNet(32, 1000, T("depth" -> 50, "dataSet" -> ImageNet))
     println(s"generate the model file ${path.toString}")
-    model.save(path.toString, true)
-    val loaded = Module.load[Float](path.toString)
+    model.saveModule(path.toString, overWrite = true)
+    val loaded = Module.loadModule[Float](path.toString)
 
     val length = Files.size(path) / 1024.0 / 1024.0
     length should be < 300.0

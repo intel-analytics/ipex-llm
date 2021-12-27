@@ -67,7 +67,7 @@ object TrainImageNet {
       val shortcut: ShortcutType = ShortcutType.B
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         val curModel =
           ResNet(classNum = param.classes, T("shortcutType" -> shortcut, "depth" -> param.depth,

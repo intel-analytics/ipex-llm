@@ -294,7 +294,7 @@ private[bigdl] class TFTrainingHelper protected(val graphRunner: GraphRunner,
   }
 
   def loadZooCheckpoint(path: String): Unit = {
-    val module = Module.load(path).asInstanceOf[TFTrainingHelper]
+    val module = Module.loadModule[Float](path).asInstanceOf[TFTrainingHelper]
     assert(module.variables sameElements this.variables,
       "variables in graphdef does not equal to the current variables." +
         s"\nvariable names in checkpoint: ${module.variables}" +

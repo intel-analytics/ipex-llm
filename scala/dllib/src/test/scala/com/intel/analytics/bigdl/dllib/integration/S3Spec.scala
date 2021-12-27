@@ -46,8 +46,8 @@ class S3Spec extends FlatSpec with Matchers with BeforeAndAfter{
   "save and load model from s3" should "be correct" in {
     val path = s3aPath + "/lenet.obj"
     val model = LeNet5(10)
-    model.save(path, true)
-    val lenet = Module.load(path)
+    model.saveModule(path, overWrite = true)
+    val lenet = Module.loadModule(path)
     lenet should be (model)
   }
 

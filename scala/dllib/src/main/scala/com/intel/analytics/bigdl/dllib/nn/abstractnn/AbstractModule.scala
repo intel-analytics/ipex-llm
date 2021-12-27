@@ -570,7 +570,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return self
    */
   @deprecated("please use recommended saveModule(path, overWrite)", "0.3.0")
-  def save(path : String, overWrite: Boolean = false) : this.type = {
+  private def save(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.save(this, path, overWrite)
     this

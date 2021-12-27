@@ -67,15 +67,15 @@ class Node(JavaValue):
 class SharedStaticUtils():
 
     @staticmethod
-    def load(path, bigdl_type="float"):
-        """
-        Load a pre-trained Bigdl model.
-
-        :param path: The path containing the pre-trained model.
-        :return: A pre-trained model.
-        """
-        jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
-        return Layer.of(jmodel)
+    # def load(path, bigdl_type="float"):
+    #     """
+    #     Load a pre-trained Bigdl model.
+    #
+    #     :param path: The path containing the pre-trained model.
+    #     :return: A pre-trained model.
+    #     """
+    #     jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
+    #     return Layer.of(jmodel)
 
     @staticmethod
     def of(jvalue, bigdl_type="float"):
@@ -541,9 +541,9 @@ class Layer(JavaValue, SharedStaticUtils):
         return callBigDlFunc(self.bigdl_type,
                              "isWithWeights", self.value)
 
-    def save(self, path, over_write=False):
-        callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
-                      over_write)
+    # def save(self, path, over_write=False):
+    #     callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
+    #                   over_write)
 
     def saveModel(self, modelPath, weightPath=None, over_write=False):
         callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, modelPath,

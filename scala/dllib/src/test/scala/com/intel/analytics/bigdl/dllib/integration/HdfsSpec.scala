@@ -60,20 +60,6 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
     }
   }
 
-  "save and load model from hdfs" should "be correct" in {
-    val model = LeNet5(10)
-    val hdfsPath = hdfs + "/lenet.obj"
-    File.saveToHdfs(model, hdfsPath, true)
-    val hdfsModel = Module.load(hdfsPath)
-
-    val localPath = java.io.File.createTempFile("lenet", ".obj").getAbsolutePath
-    File.save(model, localPath, true)
-    val localModel = Module.load(localPath)
-
-    hdfsModel should be (model)
-    hdfsModel should be (localModel)
-  }
-
   "load minist from hdfs" should "be correct" in {
     val folder = mnistFolder + "/t10k-images-idx3-ubyte"
     val resource = getClass().getClassLoader().getResource("mnist")

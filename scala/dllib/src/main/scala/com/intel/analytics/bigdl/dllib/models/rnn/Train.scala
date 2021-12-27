@@ -93,7 +93,7 @@ object Train {
           Some(featurePadding), Some(labelPadding)))
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         val curModel = SimpleRNN(
           inputSize = totalVocabLength,

@@ -52,7 +52,7 @@ object Test {
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToSample()
       val evaluationSet = transformer(rddData)
 
-      val model = Module.load[Float](param.model)
+      val model = Module.loadModule[Float](param.model)
       val result = model.evaluate(evaluationSet,
         Array(new Top1Accuracy[Float]), Some(param.batchSize))
 
