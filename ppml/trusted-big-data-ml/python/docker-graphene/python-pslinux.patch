@@ -1,0 +1,10 @@
+302,303c302,303
+<     set_scputimes_ntuple("/proc")
+< except Exception:  # pragma: no cover
+---
+>     #set_scputimes_ntuple("/proc")
+> #except Exception:  # pragma: no cover
+305c305
+<     traceback.print_exc()
+---
+>     #traceback.print_exc()
