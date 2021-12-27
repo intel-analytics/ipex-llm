@@ -144,6 +144,7 @@ class BasePytorchForecaster(Forecaster):
 
             # Trainer init and fitting
             self.trainer = Trainer(logger=False, max_epochs=epochs,
+                                   checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex)
             self.trainer.fit(self.internal, data)
             self.fitted = True
