@@ -70,7 +70,7 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                              path=path,
                              redownload=redownload,
                              **kwargs).get_public_data()\
-                                      .preprocess_electricity_load()\
+                                      .preprocess_uci_electricity()\
                                       .get_tsdata(dt_col='timestamp',
                                                   target_col=['value'],
                                                   id_col='id')

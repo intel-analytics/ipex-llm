@@ -191,7 +191,7 @@ class PublicDataset:
         self.df = pd.read_csv(self.final_file_path, parse_dates=['timestamp'])
         return self
 
-    def preprocess_electricity_load(self):
+    def preprocess_uci_electricity(self):
         '''
         return data that meets the minimum requirements of tsdata.
         '''
