@@ -187,6 +187,7 @@ def inference(self,
 # on_fit_start (LightningModule method overwrite)
 def on_fit_start(self):
     self._ortsess_up_to_date = False
+    self._ortsess = None
     self.exit_onnx()
     return self._on_fit_start_old()
 
