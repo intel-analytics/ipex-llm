@@ -45,7 +45,7 @@ def _standard_input(metrics, y_true, y_pred):
         f"but get {metrics}."
     assert type(y_true) is type(y_pred) and isinstance(y_pred, ndarray),\
         "y_pred and y_true type must be numpy.ndarray, "\
-        f"but found {type(y_true)} and {type(y_pred)}."
+        f"but found {type(y_pred)} and {type(y_true)}."
     y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
 
     assert y_true.shape == y_pred.shape,\
