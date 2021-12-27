@@ -47,20 +47,22 @@ def _standard_input(metrics, y_true, y_pred):
         "y_pred and y_true type must be numpy.ndarray, "\
         f"but found {type(y_true)} and {type(y_pred)}."
     y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
+
     assert y_true.shape == y_pred.shape,\
         "y_true and y_pred should have the same shape, "\
         f"but get {y_true.shape} and {y_pred.shape}."
+
     if y_true.ndim == 1:
         y_true = y_true.reshape(-1, 1)
         y_pred = y_pred.reshape(-1, 1)
-        origin_shape = y_true.shape
+        original_shape = y_true.shape
     elif y_true.ndim == 3:
-        origin_shape = y_true.shape
+        original_shape = y_true.shape
         y_true = y_true.reshape(y_true.shape[0], y_true.shape[1]*y_true.shape[2])
         y_pred = y_pred.reshape(y_pred.shape[0], y_pred.shape[1]*y_pred.shape[2])
     else:
-        origin_shape = y_true.shape
-    return metrics, y_true, y_pred, origin_shape
+        original_shape = y_true.shape
+    return metrics, y_true, y_pred, original_shape
 
 
 class Evaluator(object):
@@ -84,15 +86,15 @@ class Evaluator(object):
                  A floating point value, or an
                  array of floating point values, one for each individual target.
         """
-        metrics, y_true, y_pred, origin_shape = _standard_input(metrics, y_true, y_pred)
+        metrics, y_true, y_pred, original_shape = _standard_input(metrics, y_true, y_pred)
 
         res_list = []
         for metric in metrics:
-            if len(origin_shape) in [2, 3] and aggregate is None:
+            if len(original_shape) in [2, 3] and aggregate is None:
                 res = torch.zeros(y_true.shape[-1])
                 for i in range(y_true.shape[-1]):
                     res[i] = TORCHMETRICS_REGRESSION_MAP[metric](y_pred[..., i], y_true[..., i])
-                res = res.reshape(origin_shape[1:])
+                res = res.reshape(original_shape[1:])
             else:
                 res = TORCHMETRICS_REGRESSION_MAP[metric](y_pred, y_true)
             res_list.append(res.numpy())
