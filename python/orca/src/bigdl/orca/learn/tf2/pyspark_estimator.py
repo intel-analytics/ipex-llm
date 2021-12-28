@@ -31,7 +31,7 @@ from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
-from bigdl.orca.learn.utils import find_free_port, get_checkpoint_from_callbacks
+from bigdl.orca.learn.utils import find_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator
 from bigdl.orca.learn.log_monitor import start_log_server
@@ -126,13 +126,6 @@ class SparkTFEstimator():
             weights = sc.broadcast(self.model_weights)
         else:
             weights = None
-
-        # checkpoint by callback
-        if callbacks:
-            checkpoint = get_checkpoint_from_callbacks(callbacks)
-            if checkpoint:
-                checkpoint_file_path = checkpoint.filepath
-                assert checkpoint_file_path
 
         init_params = dict(
             model_creator=self.model_creator,
