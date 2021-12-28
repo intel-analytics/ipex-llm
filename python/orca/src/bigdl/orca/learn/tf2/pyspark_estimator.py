@@ -23,11 +23,9 @@ import shutil
 
 import pickle
 
-import tensorflow as tf
-
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    get_remote_file_to_local, is_local_path, get_remote_dir_to_local, get_remote_files_with_prefix_to_local
+    get_remote_file_to_local, is_local_path, get_remote_files_with_prefix_to_local
 
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.data.file import exists
@@ -35,8 +33,7 @@ from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
 from bigdl.orca.learn.utils import find_free_port, get_checkpoint_from_callbacks
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
-    convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe
+    convert_predict_xshards_to_dataframe, make_data_creator
 from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext

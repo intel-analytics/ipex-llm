@@ -103,6 +103,7 @@ class Estimator(object):
             finally:
                 shutil.rmtree(temp_dir)
 
+
 def make_data_creator(refs):
     def data_creator(config, batch_size):
         return refs

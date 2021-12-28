@@ -151,7 +151,7 @@ class TestTFEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_checkpoint(self):
+    def test_checkpoint_weights(self):
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 100)
         spark = OrcaContext.get_spark_session()
