@@ -84,6 +84,7 @@ def get_bigdl_packages():
             print("including", package)
     return bigdl_packages
 
+
 def setup_package():
     metadata = dict(
         name='bigdl-orca',
