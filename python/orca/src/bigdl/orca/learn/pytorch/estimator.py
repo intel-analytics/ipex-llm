@@ -35,7 +35,9 @@ class Estimator(object):
                    model_dir=None,
                    backend="bigdl",
                    sync_stats=False,
-                   log_level=logging.INFO):
+                   log_level=logging.INFO,
+                   log_to_driver=True,
+                   ):
         """
         Create an Estimator for torch.
 
@@ -71,6 +73,8 @@ class Estimator(object):
                are always averaged across workers. Default: True
         :param log_level: Setting the log_level of each distributed worker. This param only works
                horovod, torch_distributed and pyspark backend.
+        :param log_to_driver: (bool) Whether display executor log on driver in cluster mode.
+               Default: True. This option is only for "spark" backend.
         :return: an Estimator object.
         """
         if backend in {"horovod", "torch_distributed"}:
@@ -113,7 +117,9 @@ class Estimator(object):
                                            workers_per_node=workers_per_node,
                                            sync_stats=sync_stats,
                                            log_level=log_level,
-                                           model_dir=model_dir)
+                                           model_dir=model_dir,
+                                           log_to_driver=log_to_driver,
+                                           )
         else:
             raise ValueError("Only horovod, torch_distributed, bigdl and spark backends are "
                              f"supported for now, got backend: {backend}")

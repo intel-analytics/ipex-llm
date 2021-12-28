@@ -32,9 +32,10 @@ from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_s
     get_remote_file_to_local
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
+from bigdl.orca.learn.log_monitor import start_log_server
 
-
-logger = logging.getLogger(__name__)
+from bigdl.dllib.utils.utils import get_node_ip
+from bigdl.orca.learn.utils import find_free_port
 
 
 def partition_to_creator(partition):
@@ -88,7 +89,13 @@ class PyTorchPySparkEstimator(BaseEstimator):
             workers_per_node=1,
             sync_stats=True,
             log_level=logging.INFO,
-            model_dir=None):
+            model_dir=None,
+            log_to_driver=True):
+        logging.basicConfig(level=log_level,
+                            format='[%(asctime)s] %(levelname)-8s %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S'
+                            )
+        self.logger = logging.getLogger(__name__)
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
@@ -119,6 +126,13 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
                                         self.total_cores * 4).repartition(self.num_workers)
 
+        self.ip = get_node_ip()
+        self.port = find_free_port()
+        is_local = sc.master.startswith("local")
+        self.need_to_log_to_driver = (not is_local) and log_to_driver
+        if self.need_to_log_to_driver:
+            start_log_server(self.ip, self.port)
+
         self.worker_init_params = dict(
             model_creator=self.model_creator,
             optimizer_creator=optimizer_creator,
@@ -133,12 +147,17 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cores_per_worker=self.cores_per_worker,
             sync_stats=sync_stats,
             log_level=log_level,
-            model_dir=self.model_dir)
+            model_dir=self.model_dir,
+            log_to_driver=self.need_to_log_to_driver,
+            driver_ip=self.ip,
+            driver_port=self.port)
 
+        local_init_params = self.worker_init_params.copy()
+        local_init_params["log_to_driver"] = False
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
             cluster_info=self._get_cluster_info(sc),
-            **self.worker_init_params)
+            **local_init_params)
 
         self.state_dict = self.driver_runner.get_state_dict()
 

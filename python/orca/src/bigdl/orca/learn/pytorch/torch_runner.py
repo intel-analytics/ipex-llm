@@ -102,7 +102,10 @@ class TorchRunner:
                  scheduler_step_freq=None,
                  sync_stats=True,
                  log_level=logging.INFO):
-        logging.basicConfig(level=log_level)
+        logging.basicConfig(level=log_level,
+                            format='[%(asctime)s] %(levelname)-8s %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S'
+                            )
         self.logger = logging.getLogger(__name__)
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
