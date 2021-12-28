@@ -18,7 +18,6 @@ import os
 import torch
 import types
 import numpy as np
-from torch.nn.modules.container import T
 
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
