@@ -1,6 +1,6 @@
 # Orca Ray Pong example
 
-We demonstrate how to easily run [mutil-agent](https://github.com/ray-project/ray/blob/master/rllib/examples/multiagent_two_trainers.py)
+We demonstrate how to easily run [multi-agent](https://github.com/ray-project/ray/blob/master/rllib/examples/multi_agent_two_trainers.py)
 example provided by [Ray](https://github.com/ray-project/ray). See [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/rayonspark/) for more details for RayOnSpark support in Analytics Zoo.
 
 ## Prepare environments
@@ -18,12 +18,12 @@ You can run this example on local mode and yarn client mode.
 
 - Run with Spark Local mode:
 ```bash
-python multiagent_two_trainers.py
+python multi_agent_two_trainers.py
 ```
 
 - Run with Yarn Client mode, export env `HADOOP_CONF_DIR`:
 ```bash
-python multiagent_two_trainers.py --cluster_mode yarn
+python multi_agent_two_trainers.py --cluster_mode yarn
 ```
 
 In above commands

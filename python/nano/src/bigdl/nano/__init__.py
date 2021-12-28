@@ -36,5 +36,5 @@ def check_nano_envs():
                 f"bigdl-nano-init python pytorch-lenet.py --device ipex"
                 f"{highlight_boundary}")
 
-
-check_nano_envs()
+# disable env check for now, as it does not work for tf and windows
+# check_nano_envs()
