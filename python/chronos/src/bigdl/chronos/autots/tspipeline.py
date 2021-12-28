@@ -18,6 +18,7 @@ import os
 import torch
 import types
 import numpy as np
+from torch.nn.modules.container import T
 
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
@@ -92,8 +93,8 @@ class TSPipeline:
             yhat = self._tsdataset_unscale(yhat)
             y = self._tsdataset_unscale(y)
         elif isinstance(data, types.FunctionType):
-            self._best_config.update({'batch_size': batch_size})
             yhat_list, y_list = [], []
+            self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
                 yhat = self._best_model.inference(x,
                                                   backend=None).numpy()
@@ -136,8 +137,8 @@ class TSPipeline:
             # unscale
             y = self._tsdataset_unscale(y)
         elif isinstance(data, types.FunctionType):
-            self._best_config.update({'batch_size': batch_size})
             yhat_list, y_list = [], []
+            self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
                 yhat = self._best_model.inference(x.numpy(),
                                                   backend="onnx")
@@ -171,8 +172,8 @@ class TSPipeline:
                                               backend=None)
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
-            self._best_config.update({'batch_size': batch_size})
             yhat_list = []
+            self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
                 yhat = self._best_model.inference(x,
                                                   backend=None)
@@ -201,8 +202,8 @@ class TSPipeline:
                                               backend="onnx")
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
-            self._best_config.update({'batch_size': batch_size})
             yhat_list = []
+            self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
                 yhat = self._best_model.inference(x.numpy(),
                                                   backend="onnx")
@@ -249,6 +250,8 @@ class TSPipeline:
             if validation_data:
                 valid_loader = self._tsdataset_to_loader(validation_data, batch_size=batch_size)
         elif isinstance(data, types.FunctionType):
+            if batch_size:
+                self._best_config.update({'batch_size': batch_size})
             train_loader = data(self._best_config)
             if validation_data:
                 valid_loader = validation_data(self._best_config)

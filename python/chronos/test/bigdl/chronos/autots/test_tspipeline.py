@@ -17,7 +17,6 @@
 import tempfile
 from unittest import TestCase
 import pytest
-import numpy
 import torch
 
 from torch.utils.data import TensorDataset, DataLoader
@@ -52,8 +51,8 @@ class TestTSPipeline(TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_seq2seq_tsppl_support_dataloader(self):
-        tmp_dir = tempfile.TemporaryDirectory()
+    def test_seq2seq_tsppl_seq2seq_support_dataloader(self):
+        tmp_seq2seq_dir = tempfile.TemporaryDirectory()
         init_orca_context(cores=4, memory="4g")
         autots = AutoTSEstimator(model="seq2seq",
                                  search_space="minimal",
@@ -61,42 +60,91 @@ class TestTSPipeline(TestCase):
                                  output_target_num=2,
                                  past_seq_len=10,
                                  future_seq_len=2)
-        tsppl = autots.fit(data=train_data_creator({}),
-                           validation_data=valid_data_creator({}),
-                           epochs=2)
-        tsppl.save(tmp_dir.name)
-        del tsppl
+        tsppl_seq2seq = autots.fit(data=train_data_creator({}),
+                                   validation_data=valid_data_creator({}),
+                                   epochs=2,
+                                   batch_size=32)
+        tsppl_seq2seq.save(tmp_seq2seq_dir.name)
+        del tsppl_seq2seq
         stop_orca_context()
 
-        tsppl = TSPipeline.load(tmp_dir.name)
-        tsppl.fit(data=train_data_creator,
-                  validation_data=valid_data_creator,
-                  epochs=2)
-        config = tsppl._best_config
+        # load
+        tsppl_seq2seq = TSPipeline.load(tmp_seq2seq_dir.name)
+        tsppl_seq2seq.fit(data=train_data_creator,
+                          validation_data=valid_data_creator,
+                          epochs=2,
+                          batch_size=128)
+        assert tsppl_seq2seq._best_config['batch_size'] == 128
+        config = tsppl_seq2seq._best_config
         # predict
-        yhat = tsppl.predict(valid_data_creator)
-        assert tuple(yhat.shape) == (10000,
-                                     config['future_seq_len'],
-                                     config['input_feature_num'])
-        yhat = tsppl.predict_with_onnx(valid_data_creator)
-        assert tuple(yhat.shape) == (10000,
-                                     config['future_seq_len'],
-                                     config['input_feature_num'])
+        yhat = tsppl_seq2seq.predict(valid_data_creator, batch_size=16)
+        assert yhat.shape == (10000,
+                              config['future_seq_len'],
+                              config['input_feature_num'])
+        assert tsppl_seq2seq._best_config['batch_size'] == 16
+        yhat = tsppl_seq2seq.predict_with_onnx(valid_data_creator, batch_size=64)
+        assert yhat.shape == (10000,
+                              config['future_seq_len'],
+                              config['input_feature_num'])
+        assert tsppl_seq2seq._best_config['batch_size'] == 64
 
         # evaluate
-        mse, smape = tsppl.evaluate(valid_data_creator, metrics=['mse', 'smape'])
-        assert isinstance(mse, numpy.ndarray) and smape < 2.0
-        mse, smape = tsppl.evaluate_with_onnx(valid_data_creator, metrics=['mse', 'smape'])
-        assert isinstance(mse, numpy.ndarray) and smape < 2.0
+        _, smape = tsppl_seq2seq.evaluate(valid_data_creator,
+                                          metrics=['mse', 'smape'],
+                                          batch_size=16)
+        assert tsppl_seq2seq._best_config['batch_size'] == 16
+        assert smape < 2.0
+        _, smape = tsppl_seq2seq.evaluate_with_onnx(valid_data_creator,
+                                                    metrics=['mse', 'smape'],
+                                                    batch_size=64)
+        assert tsppl_seq2seq._best_config['batch_size'] == 64
+        assert smape < 2.0
 
         with pytest.raises(RuntimeError):
-            tsppl.predict(torch.randn(10000,
-                                      config['past_seq_len'],
-                                      config['input_feature_num']))
+            tsppl_seq2seq.predict(torch.randn(10000,
+                                  config['past_seq_len'],
+                                  config['input_feature_num']))
         with pytest.raises(RuntimeError):
-            tsppl.evaluate(torch.randn(10000,
-                                       config['past_seq_len'],
-                                       config['input_feature_num']))
+            tsppl_seq2seq.evaluate(torch.randn(10000,
+                                   config['past_seq_len'],
+                                   config['input_feature_num']))
+
+    def test_tcn_tsppl_seq2seq_support_dataloader(self):
+        tmp_tcn_dir = tempfile.TemporaryDirectory()
+        init_orca_context(cores=4, memory="4g")
+        autots = AutoTSEstimator(model="tcn",
+                                 search_space="minimal",
+                                 input_feature_num=2,
+                                 output_target_num=2,
+                                 past_seq_len=10,
+                                 future_seq_len=2)
+        tsppl_tcn = autots.fit(data=train_data_creator({}),
+                               validation_data=valid_data_creator({}),
+                               epochs=2,
+                               batch_size=32)
+        tsppl_tcn.save(tmp_tcn_dir.name)
+        del tsppl_tcn
+        stop_orca_context()
+
+        # load
+        tsppl_tcn = TSPipeline.load(tmp_tcn_dir.name)
+        tsppl_tcn.fit(data=train_data_creator,
+                      validation_data=valid_data_creator,
+                      epochs=2,
+                      batch_size=128)
+        assert tsppl_tcn._best_config['batch_size'] == 128
+        config = tsppl_tcn._best_config
+        yhat = tsppl_tcn.predict(data=valid_data_creator, batch_size=16)
+        assert tsppl_tcn._best_config['batch_size'] == 16
+        assert yhat.shape == (10000,
+                              config['future_seq_len'],
+                              config['output_feature_num'])
+
+        _, smape = tsppl_tcn.evaluate(data=valid_data_creator,
+                                      metrics=['mse', 'smape'],
+                                      batch_size=64)
+        assert tsppl_tcn._best_config['batch_size'] == 64
+        assert smape < 2.0
 
 if __name__ == "__main__":
     pytest.main([__file__])
