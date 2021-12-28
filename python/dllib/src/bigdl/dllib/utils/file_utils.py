@@ -141,6 +141,24 @@ def put_local_file_to_remote(local_path, remote_path, over_write=False):
     callZooFunc("float", "putLocalFileToRemote", local_path, remote_path, over_write)
 
 
+def get_remote_dir_to_local(remote_dir, local_dir):
+    # get remote file lists
+    file_list = get_file_list(remote_dir)
+    # get remote files to local
+    [get_remote_file_to_local(file, os.path.join(local_dir, os.path.basename(file)))
+     for file in file_list]
+
+def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
+    remote_dir = os.path.dirname(remote_path_prefix)
+    prefix = os.path.basename(remote_path_prefix)
+    # get remote file lists
+    file_list = get_file_list(remote_dir)
+    file_list = [file for file in file_list if os.path.basename(file).startswith(prefix)]
+    # get remote files to local
+    [get_remote_file_to_local(file, os.path.join(local_dir, os.path.basename(file)))
+     for file in file_list]
+    return os.path.join(local_dir, prefix)
+
 def set_core_number(num):
     callZooFunc("float", "setCoreNumber", num)
 

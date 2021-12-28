@@ -21,8 +21,7 @@ import os
 import numpy as np
 
 import tensorflow as tf
-from bigdl.dllib.utils.file_utils import is_local_path
-from bigdl.orca.learn.utils import get_remote_dir_to_local
+from bigdl.dllib.utils.file_utils import is_local_path, get_remote_dir_to_local
 
 
 logger = logging.getLogger(__name__)
@@ -103,6 +102,7 @@ class Estimator(object):
                 return os.path.join(checkpoint_dir, checkpoint_prefix)
             finally:
                 shutil.rmtree(temp_dir)
+
 def make_data_creator(refs):
     def data_creator(config, batch_size):
         return refs

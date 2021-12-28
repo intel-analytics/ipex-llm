@@ -27,14 +27,13 @@ import tensorflow as tf
 
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    get_remote_file_to_local, is_local_path
+    get_remote_file_to_local, is_local_path, get_remote_dir_to_local, get_remote_files_with_prefix_to_local
 
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
-from bigdl.orca.learn.utils import find_free_port, get_checkpoint_from_callbacks, get_remote_dir_to_local,\
-    get_remote_files_to_local_dir
+from bigdl.orca.learn.utils import find_free_port, get_checkpoint_from_callbacks
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
@@ -396,20 +395,21 @@ class SparkTFEstimator():
                 model.load_weights(filepath, by_name)
             else:
                 file_name = os.path.basename(filepath)
-                temp_path = os.path.join(tempfile.gettempdir(), file_name)
-                get_remote_file_to_local(filepath, temp_path)
+                temp_dir = tempfile.mkdtemp()
+                temp_path = os.path.join(temp_dir, file_name)
                 try:
+                    get_remote_file_to_local(filepath, temp_path)
                     model.load_weights(temp_path, by_name)
                 finally:
-                    os.remove(temp_path)
+                    shutil.rmtree(temp_dir)
         else:
             # tensorflow format
             if is_local_path(filepath):
                 model.load_weights(filepath, by_name)
             else:
                 temp_dir = tempfile.mkdtemp()
-                local_path = get_remote_files_to_local_dir(filepath, temp_dir)
                 try:
+                    local_path = get_remote_files_with_prefix_to_local(filepath, temp_dir)
                     model.load_weights(local_path, by_name)
                 finally:
                     shutil.rmtree(temp_dir)
@@ -459,20 +459,3 @@ class SparkTFEstimator():
         model = self.model_creator(self.config)
         model.set_weights(self.model_weights)
         return model
-
-    @staticmethod
-    def latest_checkpoint(checkpoint_dir):
-        if is_local_path(checkpoint_dir):
-            checkpoint_path = tf.train.latest_checkpoint(checkpoint_dir)
-            return checkpoint_path
-        else:
-            try:
-                temp_dir = tempfile.mkdtemp()
-                get_remote_dir_to_local(checkpoint_dir, temp_dir)
-                checkpoint_path = tf.train.latest_checkpoint(temp_dir)
-                checkpoint_prefix = os.path.basename(checkpoint_path)
-                return os.path.join(checkpoint_dir, checkpoint_prefix)
-            finally:
-                shutil.rmtree(temp_dir)
-
-
