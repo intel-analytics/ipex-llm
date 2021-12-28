@@ -152,10 +152,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
             driver_ip=self.ip,
             driver_port=self.port)
 
+        local_init_params = self.worker_init_params.copy()
+        local_init_params["log_to_driver"] = False
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
             cluster_info=self._get_cluster_info(sc),
-            **self.worker_init_params)
+            **local_init_params)
 
         self.state_dict = self.driver_runner.get_state_dict()
 

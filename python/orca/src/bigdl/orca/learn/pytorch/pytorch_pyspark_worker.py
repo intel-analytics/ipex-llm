@@ -122,7 +122,7 @@ class PytorchPysparkWorker(TorchRunner):
     def setup_distributed(self, mode, cluster_info):
         if mode == "fit":
             self.rank = self._get_rank(cluster_info)
-            logger.info("cluster is: ", cluster_info)
+            logger.info(f"cluster is: {cluster_info}")
             address = f"tcp://{cluster_info[0]}"
             self.setup_torch_distribute(url=address,
                                         world_rank=self.rank,
