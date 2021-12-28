@@ -96,8 +96,7 @@ class Trainer(pl.Trainer):
                 plugin = DDPSpawnPlugin(parallel_devices=[
                     torch.device(device) for _ in range(num_processes)],
                     cpu_for_each_process=cpu_for_each_process,
-                    cluster_environment=LightningEnvironment(),
-                    find_unused_parameters=find_unused_parameters)
+                    cluster_environment=LightningEnvironment())
             elif distributed_backend == "ray":
                 # Import RayPlugins may entangle with openmp even if it has not been used,
                 # which leads to an unacceptably low performance.
