@@ -66,7 +66,7 @@ class Node(JavaValue):
 
 class SharedStaticUtils():
 
-    @staticmethod
+    # @staticmethod
     # def load(path, bigdl_type="float"):
     #     """
     #     Load a pre-trained Bigdl model.
