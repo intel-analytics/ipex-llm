@@ -40,7 +40,6 @@ class Trainer(pl.Trainer):
                  use_ipex: bool = False,
                  enable_bf16=False,
                  distributed_backend="spawn",
-                 find_unused_parameters = False,
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  *args: Any, **kwargs: Any) -> None:
         """

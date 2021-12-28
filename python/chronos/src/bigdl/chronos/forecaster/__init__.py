@@ -25,8 +25,8 @@ try:
     import torch
     torch_available = True
 except:
-    warnings.warn("Please install `torch` to use forecasters, including TCMFForecaster"
-                  "\TCNForecaster\LSTMForecaster\Seq2SeqForecaster.")
+    warnings.warn("Please install `torch` to use forecasters, including TCMFForecaster, "
+                  "TCNForecaster, LSTMForecaster, Seq2SeqForecaster.")
 try:
     import tensorflow as tf
     assert tf.__version__ < "2.0.0"
