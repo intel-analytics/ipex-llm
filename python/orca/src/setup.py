@@ -17,7 +17,7 @@
 #
 
 import os
-from re import A
+
 import sys
 from shutil import copyfile, copytree, rmtree
 import fnmatch
