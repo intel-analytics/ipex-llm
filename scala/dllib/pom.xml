@@ -223,7 +223,7 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
-            <version>${scala.major.version}</version>
+            <version>${scala.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
