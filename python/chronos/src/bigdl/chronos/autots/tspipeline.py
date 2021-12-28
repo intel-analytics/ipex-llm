@@ -17,6 +17,7 @@
 import os
 import torch
 import types
+import numpy as np
 
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
@@ -87,16 +88,19 @@ class TSPipeline:
             yhat = self._best_model.inference(torch.from_numpy(x),
                                               batch_size=batch_size,
                                               backend=None).numpy()
-            yhat = self._tsdataset_unscale(yhat)
             # unscale
+            yhat = self._tsdataset_unscale(yhat)
             y = self._tsdataset_unscale(y)
         elif isinstance(data, types.FunctionType):
-            x, y = TSPipeline._transform_dataloader(data(self._best_config))
-            if self._best_config['batch_size']:
-                batch_size = self._best_config['batch_size']
-            yhat = self._best_model.inference(torch.from_numpy(x),
-                                              batch_size=batch_size,
-                                              backend=None).numpy()
+            self._best_config.update({'batch_size': batch_size})
+            yhat_list, y_list = [], []
+            for x, y in data(self._best_config):
+                yhat = self._best_model.inference(x,
+                                                  backend=None).numpy()
+                yhat_list.append(yhat)
+                y_list.append(y)
+            yhat = np.concatenate(yhat_list, axis=0)
+            y = torch.cat(y_list, dim=0).numpy()
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
                                f"but found {data.__class__}.")
@@ -132,12 +136,15 @@ class TSPipeline:
             # unscale
             y = self._tsdataset_unscale(y)
         elif isinstance(data, types.FunctionType):
-            x, y = TSPipeline._transform_dataloader(data(self._best_config))
-            if self._best_config['batch_size']:
-                batch_size = self._best_config['batch_size']
-            yhat = self._best_model.inference(x,
-                                              batch_size=batch_size,
-                                              backend="onnx")
+            self._best_config.update({'batch_size': batch_size})
+            yhat_list, y_list = [], []
+            for x, y in data(self._best_config):
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend="onnx")
+                yhat_list.append(yhat)
+                y_list.append(y)
+            yhat = np.concatenate(yhat_list, axis=0)
+            y = torch.cat(y_list, dim=0).numpy()
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
                                f"but found {data.__class__}.")
@@ -164,12 +171,13 @@ class TSPipeline:
                                               backend=None)
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
-            x, _ = TSPipeline._transform_dataloader(data(self._best_config), is_predict=True)
-            if self._best_config['batch_size']:
-                batch_size = self._best_config['batch_size']
-            yhat = self._best_model.inference(torch.from_numpy(x),
-                                              batch_size=batch_size,
-                                              backend=None)
+            self._best_config.update({'batch_size': batch_size})
+            yhat_list = []
+            for x, _ in data(self._best_config):
+                yhat = self._best_model.inference(x,
+                                                  backend=None)
+                yhat_list.append(yhat)
+            yhat = np.concatenate(yhat_list, axis=0)
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
                                f"but found {data.__class__}")
@@ -193,12 +201,13 @@ class TSPipeline:
                                               backend="onnx")
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
-            x, _ = TSPipeline._transform_dataloader(data(self._best_config), is_predict=True)
-            if self._best_config['batch_size']:
-                batch_size = self._best_config['batch_size']
-            yhat = self._best_model.inference(x,
-                                              batch_size=batch_size,
-                                              backend="onnx")
+            self._best_config.update({'batch_size': batch_size})
+            yhat_list = []
+            for x, _ in data(self._best_config):
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend="onnx")
+                yhat_list.append(yhat)
+            yhat = np.concatenate(yhat_list, axis=0)
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
                                f"but found {data.__class__}")
@@ -240,8 +249,6 @@ class TSPipeline:
             if validation_data:
                 valid_loader = self._tsdataset_to_loader(validation_data, batch_size=batch_size)
         elif isinstance(data, types.FunctionType):
-            if batch_size is None:
-                batch_size = self._best_config["batch_size"]
             train_loader = data(self._best_config)
             if validation_data:
                 valid_loader = validation_data(self._best_config)
@@ -352,11 +359,3 @@ class TSPipeline:
             from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
             y = unscale_timeseries_numpy(y, self._scaler, self._scaler_index)
         return y
-
-    @staticmethod
-    def _transform_dataloader(data, is_predict=False):
-        x = torch.cat([x for x, _ in data], dim=0).numpy()
-        y = None
-        if not is_predict:
-            y = torch.cat([y for _, y in data], dim=0).numpy()
-        return x, y
