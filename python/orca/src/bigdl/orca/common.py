@@ -158,6 +158,15 @@ class OrcaContext(metaclass=OrcaContextMeta):
         return RayContext.get()
 
 
+def _check_python_micro_version():
+    # with ray >=1.8.0, python small micro version will cause pickle error in ray.init()
+    # (https://github.com/ray-project/ray/issues/19938)
+    import sys
+    if sys.version_info[2] < 3:
+        raise RuntimeError(f"Found python version {sys.version[:5]}. We only support python"
+                           f"with micro version >= 10 (e.g. 3.{sys.version_info[1]}.10)")
+
+
 def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                       init_ray_on_spark=False, **kwargs):
     """
@@ -290,6 +299,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     from bigdl.orca.ray import RayContext
     ray_ctx = RayContext(sc, **ray_args)
     if init_ray_on_spark:
+        _check_python_micro_version()
         driver_cores = 0  # This is the default value.
         ray_ctx.init(driver_cores=driver_cores)
     return sc
