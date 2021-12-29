@@ -454,8 +454,8 @@ class TestNNClassifer():
         try:
             tmp_dir = tempfile.mkdtemp()
             modelPath = os.path.join(tmp_dir, "model")
-            nnModel.model.save(modelPath)
-            loaded_model = Model.load(modelPath)
+            nnModel.model.saveModel(modelPath)
+            loaded_model = Model.loadModel(modelPath)
             resultDF = NNModel(loaded_model).transform(df)
             assert resultDF.count() == 4
         finally:
@@ -735,8 +735,8 @@ class TestNNClassifer():
         try:
             tmp_dir = tempfile.mkdtemp()
             modelPath = os.path.join(tmp_dir, "model")
-            nnClassifierModel.model.save(modelPath)
-            loaded_model = Model.load(modelPath)
+            nnClassifierModel.model.saveModel(modelPath)
+            loaded_model = Model.loadModel(modelPath)
             resultDF = NNClassifierModel(loaded_model).transform(df)
             assert resultDF.count() == 4
         finally:
