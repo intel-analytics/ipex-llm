@@ -541,10 +541,6 @@ class Layer(JavaValue, SharedStaticUtils):
         return callBigDlFunc(self.bigdl_type,
                              "isWithWeights", self.value)
 
-    # def save(self, path, over_write=False):
-    #     callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
-    #                   over_write)
-
     def saveModel(self, modelPath, weightPath=None, over_write=False):
         callBigDlFunc(self.bigdl_type, "saveBigDLModule", self.value, modelPath,
                       weightPath, over_write)

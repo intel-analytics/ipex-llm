@@ -592,6 +592,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
+  final def saveModel(path : String, weightPath : String = null,
+    overWrite: Boolean = false) : this.type = {
+    this.saveModule(path, weightPath, overWrite)
+    this
+  }
+
   /**
    * Save this module definition to path.
    * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
