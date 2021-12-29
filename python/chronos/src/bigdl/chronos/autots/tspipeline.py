@@ -103,7 +103,7 @@ class TSPipeline:
             y = torch.cat(y_list, dim=0).numpy()
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__}.")
+                               f"but found {data.__class__.__name__}.")
 
         # evaluate
         aggregate = 'mean' if multioutput == 'uniform_average' else None
@@ -147,7 +147,7 @@ class TSPipeline:
             y = torch.cat(y_list, dim=0).numpy()
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__}.")
+                               f"but found {data.__class__.__name__}.")
         # evaluate
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         eval_result = Evaluator.evaluate(metrics, y, yhat, aggregate=aggregate)
@@ -180,7 +180,7 @@ class TSPipeline:
             yhat = np.concatenate(yhat_list, axis=0)
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__}")
+                               f"but found {data.__class__.__name__}")
         return yhat
 
     def predict_with_onnx(self, data, batch_size=32):
@@ -210,7 +210,7 @@ class TSPipeline:
             yhat = np.concatenate(yhat_list, axis=0)
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__}")
+                               f"but found {data.__class__.__name__}")
         return yhat
 
     def fit(self,
@@ -256,7 +256,7 @@ class TSPipeline:
                 valid_loader = validation_data(self._best_config)
         else:
             raise RuntimeError("We only support input TSDataset or Function, "
-                               f"but found {data.__class__}.")
+                               f"but found {data.__class__.__name__}.")
 
         self.trainer = Trainer(max_epochs=epochs, **kwargs)
         self.trainer.fit(self._best_model,
