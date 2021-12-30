@@ -1941,9 +1941,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     testResultArray.toList.asJava
   }
 
-  def loadBigDL(path: String): AbstractModule[Activity, Activity, T] = {
-    Module.load[T](path)
-  }
+//  def loadBigDL(path: String): AbstractModule[Activity, Activity, T] = {
+//    Module.load[T](path)
+//  }
 
   def loadBigDLModule(modulePath: String,
     weightPath : String): AbstractModule[Activity, Activity, T] = {
@@ -2079,12 +2079,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val gradOutputActivity = jTensorsToActivity(gradOutput, gradOutputIsTable)
     val outputActivity = model.backward(inputActivity, gradOutputActivity)
     activityToJTensors(outputActivity)
-  }
-
-
-  def modelSave(module: AbstractModule[Activity, Activity, T],
-    path: String, overWrite: Boolean): Unit = {
-    module.save(path, overWrite)
   }
 
   def saveBigDLModule(module: AbstractModule[Activity, Activity, T],

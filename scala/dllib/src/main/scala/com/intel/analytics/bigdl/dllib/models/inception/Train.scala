@@ -58,7 +58,7 @@ object TrainInceptionV1 {
       )
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else if (param.graphModel) {
         Inception_v1_NoAuxClassifier.graph(classNum = param.classNumber)
       } else {

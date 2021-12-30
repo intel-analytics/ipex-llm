@@ -54,7 +54,7 @@ object Test {
         HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) -> BGRImgToSample()
       val evaluationSet = transformer(rddData)
 
-      val model = Module.load[Float](param.model)
+      val model = Module.loadModule[Float](param.model)
       val result = model.evaluate(evaluationSet,
         Array(new Top1Accuracy[Float], new Top5Accuracy[Float]), param.batchSize)
 
