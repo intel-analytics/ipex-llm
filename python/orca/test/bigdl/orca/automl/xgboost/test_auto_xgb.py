@@ -65,7 +65,7 @@ def get_spark_df():
 
     feature_cols = ["f1", "f2", "f3"]
     label_cols = ["t"]
-    train_df = get_df( size=100)
+    train_df = get_df(size=100)
     val_df = get_df(size=30)
     return train_df, val_df, feature_cols, label_cols
 
