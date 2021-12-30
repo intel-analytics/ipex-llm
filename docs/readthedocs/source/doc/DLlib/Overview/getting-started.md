@@ -1,8 +1,16 @@
 ---
-## **Before using BigDL DLLib**
+## **Setup Deep Learning Project using BigDL DLLib**
 
-Before using BigDL DLLib, you need to install Apache Spark and obtain DLLib libraries. Then in your program, you need to ensure the SparkContext is created successfully and initialize BigDL engine before calling BigDL APIs. Navigate to [DLLib](dllib.md) for details about how to install BigDL DLLib and how to use DLLib to build deep learning application on Spark.
+To use BigDL DLLib to build your own deep learning application, you can use maven to create your project and add bigdl-dllib to your dependency. Please add below code to your pom.xml to add BigDL DLLib as your dependency:
+```
+<dependency>
+    <groupId>com.intel.analytics.bigdl</groupId>
+    <artifactId>bigdl-dllib-spark_2.4.6</artifactId>
+    <version>0.14.0-SNAPSHOT</version>
+</dependency>
+```
 
+For more information about how to use BigDL to build your applications, please refer https://github.com/intel-analytics/BigDL/tree/branch-2.0/apps/SimpleMlp
 ---
 
 ## **Prepare your Data**
