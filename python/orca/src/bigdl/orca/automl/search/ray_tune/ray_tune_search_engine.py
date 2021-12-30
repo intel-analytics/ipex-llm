@@ -87,6 +87,8 @@ class RayTuneSearchEngine(SearchEngine):
                    a tuple in form of (x, y)
                         x: ndarray for training input
                         y: ndarray for training output
+               Spark Dataframe:
+                   a Spark Dataframe for training
         :param model_builder: model creation function
         :param epochs: max epochs for training
         :param validation_data: validation data
