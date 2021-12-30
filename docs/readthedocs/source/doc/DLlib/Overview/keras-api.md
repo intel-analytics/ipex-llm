@@ -6,9 +6,9 @@
 To define a model in Scala using the Keras-like API, one just needs to import the following packages:
 
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers._
-import com.intel.analytics.zoo.pipeline.api.keras.models._
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers._
+import com.intel.analytics.bigdl.dllib.keras.models._
+import com.intel.analytics.bigdl.dllib.utils.Shape
 ```
 
 One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a `Shape` object __excluding__ batch dimension, for example, `inputShape=Shape(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
@@ -19,9 +19,9 @@ Here we use the Keras-like API to define a LeNet CNN model and train it on the M
 
 ```scala
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.zoo.pipeline.api.keras.layers._
-import com.intel.analytics.zoo.pipeline.api.keras.models._
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers._
+import com.intel.analytics.bigdl.dllib.keras.models._
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 val model = Sequential()
 model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
@@ -81,9 +81,9 @@ Sequential()
 
 Example code to create a sequential model:
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Activation}
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.{Dense, Activation}
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 val model = Sequential[Float]()
 model.add(Dense[Float](32, inputShape = Shape(128)))
@@ -114,7 +114,7 @@ Parameters:
 
 To merge a list of input __nodes__ (__NOT__ layers), following some merge mode in the Functional API:
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
+import com.intel.analytics.bigdl.dllib.keras.layers.Merge.merge
 
 merge(inputs, mode = "sum", concatAxis = -1) // This will return an output NODE.
 ```
@@ -127,10 +127,10 @@ Parameters:
 
 Example code to create a graph model:
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Input}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
-import com.intel.analytics.zoo.pipeline.api.keras.models.Model
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.{Dense, Input}
+import com.intel.analytics.bigdl.dllib.keras.layers.Merge.merge
+import com.intel.analytics.bigdl.dllib.keras.models.Model
+import com.intel.analytics.bigdl.dllib.utils.Shape
 
 // instantiate input nodes
 val input1 = Input[Float](inputShape = Shape(8))
@@ -169,9 +169,9 @@ Masking(mask_value=0.0, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Masking
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.Masking
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -252,8 +252,8 @@ SparseDense(output_dim, init="glorot_uniform", activation=None, W_regularizer=No
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.SparseDense
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.SparseDense
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val layer = SparseDense[Float](outputDim = 5, inputShape = Shape(2, 4))
@@ -340,9 +340,9 @@ SoftShrink(value = 0.5, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.SoftShrink
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.SoftShrink
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -474,9 +474,9 @@ Reshape(target_shape, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Reshape
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.Reshape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -587,9 +587,9 @@ Merge(layers=None, mode="sum", concat_axis=-1, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.InputLayer
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.InputLayer
+import com.intel.analytics.bigdl.dllib.keras.layers.Merge
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
 import com.intel.analytics.bigdl.utils.{Shape, T}
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -711,9 +711,9 @@ MaxoutDense(output_dim, nb_feature=4, W_regularizer=None, b_regularizer=None, bi
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.MaxoutDense
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.MaxoutDense
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -784,9 +784,9 @@ Squeeze(dim=None, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Squeeze
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.Squeeze
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -865,9 +865,9 @@ BinaryThreshold(value=1e-6, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.BinaryThreshold
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.BinaryThreshold
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -995,9 +995,9 @@ Sqrt(input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Sqrt
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.Sqrt
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1063,9 +1063,9 @@ Mul(input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Mul
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.Mul
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1156,9 +1156,9 @@ MulConstant(constant, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.MulConstant
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.MulConstant
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1253,9 +1253,9 @@ Scale(size, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Scale
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.Scale
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1320,9 +1320,9 @@ Log(input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Log
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.Log
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1422,9 +1422,9 @@ Identity(input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Identity
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers.Identity
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1557,8 +1557,8 @@ Select(dim, index, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Select
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.Select
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1634,9 +1634,9 @@ Dense(output_dim, init="glorot_uniform", activation=None, W_regularizer=None, b_
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Dense
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.Dense
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1701,9 +1701,9 @@ Negative(input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Negative
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.Negative
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1789,9 +1789,9 @@ CAdd(size, b_regularizer=None, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.CAdd
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.CAdd
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1872,9 +1872,9 @@ RepeatVector(n, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.RepeatVector
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.RepeatVector
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -1954,8 +1954,8 @@ GaussianSampler(input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.GaussianSampler
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.GaussianSampler
 import com.intel.analytics.bigdl.utils.{Shape, MultiShape, T}
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -2054,9 +2054,9 @@ Exp(input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Exp
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.Exp
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -2186,9 +2186,9 @@ Square(input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Square
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.Square
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -2320,9 +2320,9 @@ Power(power, scale=1, shift=0, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Power
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.Power
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -2404,9 +2404,9 @@ AddConstant(constant, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.AddConstant
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.AddConstant
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -2509,9 +2509,9 @@ Narrow(dim, offset, length=1, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Narrow
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.Narrow
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -2622,9 +2622,9 @@ Permute(dims, input_shape=None, name=None)
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Permute
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.Permute
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
@@ -2729,9 +2729,9 @@ ResizeBilinear(output_height, output_width, align_corner=False, dim_ordering="th
 
 **Scala example:**
 ```scala
-import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
-import com.intel.analytics.zoo.pipeline.api.keras.layers.ResizeBilinear
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+import com.intel.analytics.bigdl.dllib.keras.layers.ResizeBilinear
+import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential()
@@ -2830,4 +2830,46 @@ array([[[[0.43790358, 0.61913717, 0.2543214 ],
 
         [[0.12074634, 0.6571231 , 0.752728  ],
          [0.86969995, 0.6700518 , 0.36353552]]]], dtype=float32)
+```
+---
+## 8. Persistence
+This section describes how to save and load the Keras-like API.
+
+### 8.1 save
+To save a Keras model, you call the method `saveModel(path)`.
+
+**Scala:**
+```scala
+import com.intel.analytics.bigdl.dllib.keras.layers.{Dense, Activation}
+import com.intel.analytics.bigdl.dllib.keras.models.Sequential
+
+val model = Sequential[Float]()
+model.add(Dense[Float](32, inputShape = Shape(128)))
+model.add(Activation[Float]("relu"))
+model.saveModel("/tmp/seq.model")
+```
+**Python:**
+```python
+import bigdl.dllib.keras.Sequential
+from bigdl.dllib.keras.layer import Dense
+
+model = Sequential()
+model.add(Dense(input_shape=(32, )))
+model.saveModel("/tmp/seq.model")
+```
+
+### 8.2 load
+To load a saved Keras model, you call the method `load(path)`.
+
+**Scala:**
+```scala
+import com.intel.analytics.bigdl.dllib.keras.Net
+
+val model = Net.load[Float]("/tmp/seq.model")
+```
+
+**Python:**
+```python
+from bigdl.dllib.net import Net
+Net.load("/tmp/seq.model")
 ```
