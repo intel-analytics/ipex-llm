@@ -19,6 +19,14 @@ docker run --name orca-dev -it orca-dev:latest
 
 with the args `-it`, you will attach to a pseudo-TTY in the container. 
 
+You can also run a rebuild container image from `vankyle2go/orca-dev`, which is build from the `Dockerfile` with default build args. 
+
+```shell
+docker run --name orca-dev -it vankyle2go/orca-dev:latest
+```
+
+## OpenSSH Server Support
+
 The OpenSSH Server is also installed in the container, you can use `-p`  when running  `docker run` to expose the 22 port of container to the host and access the container with SSH client. For example:
 
 ```shell
