@@ -388,7 +388,7 @@ class BigDLEstimator(OrcaSparkEstimator):
                                        "for example 'optimMethod-TorchModelf53bddcc'"
 
         try:
-            self.model = Model.load(os.path.join(path, "model.{}".format(version)))
+            self.model = Model.loadModel(os.path.join(path, "model.{}".format(version)))
             assert isinstance(self.model, Container), \
                 "The loaded model should be a Container, please check your checkpoint type."
             self.optimizer = OptimMethod.load(os.path.join(path,

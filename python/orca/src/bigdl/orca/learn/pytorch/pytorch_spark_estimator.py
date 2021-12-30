@@ -355,7 +355,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                                        "for example 'optimMethod-TorchModelf53bddcc'"
 
         try:
-            loaded_model = Model.load(os.path.join(path, "model.{}".format(version)))
+            loaded_model = Model.loadModel(os.path.join(path, "model.{}".format(version)))
             self.model = TorchModel.from_value(loaded_model.value)
             self.optimizer = OptimMethod.load(os.path.join(path, "{}.{}".format(prefix, version)))
         except Exception as e:
