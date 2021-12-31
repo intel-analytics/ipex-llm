@@ -1,4 +1,4 @@
-set -x
+#set -x
 FERNET_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/fernet-java8-1.4.2.jar
 SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/sparkdecryptfiles_2.12-0.1.0.jar
 ENCRYPTED_SAVE_DIR_PATH=/ppml/trusted-big-data-ml/work/encrypted_output
