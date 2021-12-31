@@ -19,7 +19,7 @@ Then, you will get a KMS server running in a docker container.
 
 ## 2. Deploy KMS Client
 
-The KMS client in this example is implemented in the environment of [SGX-based Trusted Big Data ML][https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene], and you can also do the same in other trusted execution environments, like Trusted Realtime ML etc. 
+The KMS client in this example is running in the environment of [SGX-based Trusted Big Data ML][https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene], in which we have deployed necessary requirements. You can also do the same in other trusted execution environments, like Trusted Realtime ML etc., after installing python modules listed in `requirement.yml` with pip. 
 
 Prepare and start the client container as below:
 
