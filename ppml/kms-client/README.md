@@ -46,7 +46,7 @@ sudo docker run -itd \
     -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data/kms-example \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
     -v $KMS_CLIENT_DIR_PATH:/ppml/trusted-big-data-ml/work/kms-client
-    --name=spark-local \
+    --name=kms-client \
     -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=64G \
     $DOCKER_IMAGE bash
@@ -67,7 +67,7 @@ A file encryption/decryption example is used to illustrate the KMS, in which the
 Enter the client container deployed in the previous step and run the shell script:
 
 ```bash
-docker exec -it spark-local bash
+docker exec -it kms-client bash
 cd /ppml/trusted-big-data-ml
 bash bash work/test-suites/kms-e2e-example.sh
 ```
