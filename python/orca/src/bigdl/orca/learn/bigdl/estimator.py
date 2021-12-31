@@ -360,6 +360,12 @@ class BigDLEstimator(OrcaSparkEstimator):
             self.nn_model = NNModel(self.model, feature_preprocessing=self.feature_preprocessing)
         return self
 
+    def __load_bigdl_model(self, path, bigdl_type="float"):
+        from bigdl.dllib.utils.common import callBigDlFunc
+        from bigdl.dllib.nn.layer import Layer
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
+        return Layer.of(jmodel)
+
     def load_orca_checkpoint(self, path, version=None, prefix=None):
         """
         Load existing checkpoint. To load a specific checkpoint, please provide both `version`
@@ -388,7 +394,7 @@ class BigDLEstimator(OrcaSparkEstimator):
                                        "for example 'optimMethod-TorchModelf53bddcc'"
 
         try:
-            self.model = Model.loadModel(os.path.join(path, "model.{}".format(version)))
+            self.model = self.__load_bigdl_model(os.path.join(path, "model.{}".format(version)))
             assert isinstance(self.model, Container), \
                 "The loaded model should be a Container, please check your checkpoint type."
             self.optimizer = OptimMethod.load(os.path.join(path,

@@ -1941,9 +1941,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     testResultArray.toList.asJava
   }
 
-//  def loadBigDL(path: String): AbstractModule[Activity, Activity, T] = {
-//    Module.load[T](path)
-//  }
+  def loadBigDL(path: String): AbstractModule[Activity, Activity, T] = {
+    Module.load[T](path)
+  }
 
   def loadBigDLModule(modulePath: String,
     weightPath : String): AbstractModule[Activity, Activity, T] = {
