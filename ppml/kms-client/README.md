@@ -60,7 +60,7 @@ A file encryption/decryption example is used to illustrate the KMS, in which the
 
 <div align="center">
 <div align="center">
-<p align="center"> <img src="../docs/readthedocs/image/KMS End-to-end Example Flow Chart..png" height="220px"><br></p>
+<p align="center"> <img src="../docs/readthedocs/image/KMS_End-to-end_Example_Flow_Chart.png" height="220px"><br></p>
 </div>
 
 
