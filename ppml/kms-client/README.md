@@ -43,7 +43,7 @@ sudo docker run -itd \
     --device=/dev/sgx/provision \
     -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-    -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+    -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data/kms-example \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
     -v $KMS_CLIENT_DIR_PATH:/ppml/trusted-big-data-ml/work/kms-client
     --name=spark-local \
@@ -52,7 +52,7 @@ sudo docker run -itd \
     $DOCKER_IMAGE bash
 ```
 
-Pay attention to the variables and set them to correct values according to your operating environment.
+Pay attention to the variables and set them to correct values according to your operating environment. As for data, we use [iris.csv](https://www.kaggle.com/saurabh00007/iriscsv). All the files put at `$DATA_PATH` will be mounted to `/ppml/trusted-big-data-ml/data/kms-example`, encrypted and decrypted automatically later.
 
 ## 3. Run The End-to-end Example
 
