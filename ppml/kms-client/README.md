@@ -1,6 +1,6 @@
 # Client API for Key Management System
 
-BigDL implements its key management system based on [eHSM][https://github.com/intel/ehsm/] (SGX Enclave Based Hardware Security Module). It enables users to receive a central key management service by using client APIs here, which allow users to generate keys and encrypt/decrypt data files safely and conveniently.
+BigDL implements its key management system based on [eHSM](https://github.com/intel/ehsm/) (SGX Enclave Based Hardware Security Module). It enables users to receive a central key management service by using client APIs here, which allow users to generate keys and encrypt/decrypt data files safely and conveniently.
 
 In the following, we present with a end-to-end  kms example.
 
@@ -19,7 +19,7 @@ Then, you will get a KMS server running in a docker container.
 
 ## 2. Deploy KMS Client
 
-The KMS client in this example is running in the environment of [SGX-based Trusted Big Data ML][https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene], in which we have deployed necessary requirements. You can also do the same in other trusted execution environments, like Trusted Realtime ML etc., after installing python modules listed in `requirement.yml` with pip. 
+The KMS client in this example is running in the environment of [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene), in which we have deployed necessary requirements. You can also do the same in other trusted execution environments, like Trusted Realtime ML etc., after installing python modules listed in `requirement.yml` with pip. 
 
 Prepare and start the client container as below:
 
