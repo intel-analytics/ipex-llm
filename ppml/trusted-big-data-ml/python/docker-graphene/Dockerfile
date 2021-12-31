@@ -87,6 +87,7 @@ RUN cd /opt && \
 ADD spark-example-sql-e2e.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
 ADD sparkdecryptfiles_2.12-0.1.0.jar /opt/spark-${SPARK_VERSION}/examples/jars/sparkdecryptfiles_2.12-0.1.0.jar
 ADD fernet-java8-1.4.2.jar /opt/spark-${SPARK_VERSION}/examples/jars/fernet-java8-1.4.2.jar
+ADD kms-requirement.yml /ppml/trusted-big-data-ml/work/kms-requirement.yml
 
 # hadoop
 RUN cd /opt && \
@@ -226,7 +227,7 @@ RUN apt-get install -y python3-minimal && \
     pip install --no-cache-dir pyarrow && \
     pip install --no-cache-dir ninja meson && \
     pip install --no-cache-dir psutil && \
-    pip install -r /ppml/trusted-big-data-ml/work/kms-client/requirement.yml && \
+    pip install -r /ppml/trusted-big-data-ml/work/kms-requirement.yml && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec
 
@@ -284,7 +285,8 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-e2e-example.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-pi.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-sql-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/kms-e2e-example.sh
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
