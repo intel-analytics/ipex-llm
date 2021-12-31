@@ -97,3 +97,15 @@ class TorchModel(Layer):
                     torch.Tensor(new_extra_params[idx].to_ndarray()), named_buffer[1].size()))
                 idx += 1
         return m
+
+    def saveModel(self, path, over_write=False):
+        from bigdl.dllib.utils.common import callBigDlFunc
+        callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
+                      over_write)
+
+    @staticmethod
+    def loadModel(path, bigdl_type="float"):
+        from bigdl.dllib.utils.common import callBigDlFunc
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
+        return Layer.of(jmodel)
+
