@@ -6,7 +6,7 @@ In the following, we present with a end-to-end  kms example.
 
 ## 1. Deploy KMS Server
 
-The KMS server is based on [eHSM][https://github.com/intel/ehsm/] , it can be downloaded and deployed following commands below:
+The KMS server is based on [eHSM](https://github.com/intel/ehsm/) , it can be downloaded and deployed following commands below:
 
 ```
 git clone https://github.com/intel/ehsm.git 
