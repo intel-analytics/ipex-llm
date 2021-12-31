@@ -208,7 +208,6 @@ RUN apt-get update --fix-missing && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y netcat net-tools
-ADD ../../../kms-client /ppml/trusted-big-data-ml/work/kms-client
 
 #python
 RUN apt-get install -y python3-minimal && \
