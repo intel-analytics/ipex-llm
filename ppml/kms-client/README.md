@@ -54,7 +54,7 @@ sudo docker run -itd \
 
 Pay attention to the variables and set them to correct values according to your operating environment.
 
-### 3. Run The End-to-end Example
+## 3. Run The End-to-end Example
 
 A file encryption/decryption example is used to illustrate the KMS, in which the decryption process is done as a spark job in SGX. Its workflow can be seen as below:
 
