@@ -46,12 +46,11 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   var validationResult = Array[ValidationResult]()
 
   // wrapper methods to simplify data access
-  def getLabelStorage() = {
-    aggregateTypeMap.get(FLPhase.LABEL).getTableStorage()
-  }
-  def getBranchStorage() = {
-    aggregateTypeMap.get(FLPhase.BRANCH).getBranchStorage()
-  }
+  def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTableStorage()
+  def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
+  def getTreeLeaveStorage() = aggregateTypeMap.get(FLPhase.LEAF).getLeafStorage()
+  def getBranchStorage() = aggregateTypeMap.get(FLPhase.BRANCH).getBranchStorage()
+  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTableStorage()
 
   override def initStorage(): Unit = {
     aggregateTypeMap.put(FLPhase.LABEL, new StorageHolder(FLDataType.TENSOR_MAP))
@@ -194,7 +193,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
 
   def aggregateTreeLeaves(): Unit = {
     logger.info(s"Add new Tree ${serverTreeLeaves.length}")
-    val leafMap = aggregateTypeMap.get(FLPhase.LEAF).getLeafStorage().clientData
+    val leafMap = getTreeLeaveStorage().clientData
 
     val treeIndexes = leafMap.values.head.getLeafIndexList.map(Integer2int).toArray
     val treeOutputs = leafMap.values.head.getLeafOutputList.map(Float2float).toArray
@@ -244,7 +243,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
 
   def getTreeNodeId(treeID: String, nodeID: String): String = treeID + "_" + nodeID
   def aggregateSplit(): Unit = {
-    val splitMap = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage().clientData
+    val splitMap = getSplitStorage().clientData
     var bestGain = Float.MinValue
     bestSplit.synchronized {
       splitMap.values.foreach { split =>
@@ -287,7 +286,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   def aggPredict(): Unit = {
-    val tableStorage = aggregateTypeMap.get(FLPhase.PREDICT).getTableStorage()
+    val tableStorage = getPredictStorage()
     val aggedPredict = aggregatePredict()
     val newPredict = aggedPredict.zip(basePrediction).map(p =>
       // Predict value of each boosting tree
