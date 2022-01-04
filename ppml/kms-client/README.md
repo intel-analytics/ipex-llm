@@ -45,14 +45,14 @@ sudo docker run -itd \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data/kms-example \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+    -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
     --name=kms-client \
     -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=64G \
     $DOCKER_IMAGE bash
 ```
 
-Pay attention to the variables and set them to correct values according to your operating environment. As for data, we use [iris.csv](https://www.kaggle.com/saurabh00007/iriscsv). All the files put at `$DATA_PATH` will be mounted to `/ppml/trusted-big-data-ml/data/kms-example`, encrypted and decrypted automatically later.
-
+Pay attention to the variables and set them to correct values according to your operating environment. As for data, we use [iris.csv](https://www.kaggle.com/saurabh00007/iriscsv). All the files put at `$DATA_PATH` will be mounted to `/ppml/trusted-big-data-ml/data/kms-example`, encrypted and decrypted automatically later. You can learn about how to generate `$KEYS_PATH` and `$SECURE_PASSWORD_PATH` in **Prepare data, key and password** section (here)[https://github.com/intel-analytics/BigDL/tree/9973fbf0c65525934830461d6085defae48de84d/ppml/trusted-big-data-ml/python/docker-graphene].
 ## 3. Run The End-to-end Example
 
 A file encryption/decryption example is used to illustrate the KMS, in which the decryption process is done as a spark job in SGX. Its workflow can be seen as below:
@@ -66,7 +66,7 @@ A file encryption/decryption example is used to illustrate the KMS, in which the
 Enter the client container deployed in the previous step and run the shell script:
 
 ```bash
-docker exec -it kms-client bash
+sudo docker exec -it kms-client bash
 cd /ppml/trusted-big-data-ml
 bash bash work/test-suites/kms-e2e-example.sh
 ```
