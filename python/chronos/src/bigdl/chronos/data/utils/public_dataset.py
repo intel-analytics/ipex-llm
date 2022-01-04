@@ -211,7 +211,8 @@ class PublicDataset:
                           id_vars=['Unnamed: 0'],
                           value_vars=df.T.index[1:])\
                     .rename(columns={'Unnamed: 0': 'timestamp', 'variable': 'id'})
-        self.df.value = self.df.value.apply(lambda x: str(x).replace(",", ""))
+        import numpy as np
+        self.df.value = self.df.value.apply(lambda x: str(x).replace(",", "")).astype(np.float64)
         return self
 
     def get_tsdata(self,
