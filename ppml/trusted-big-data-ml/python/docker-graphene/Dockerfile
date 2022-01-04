@@ -202,6 +202,7 @@ COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
 COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
+ADD ./kms-client /ppml/trusted-big-data-ml/work/kms-client
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree zip && \
@@ -227,7 +228,7 @@ RUN apt-get install -y python3-minimal && \
     pip install --no-cache-dir pyarrow && \
     pip install --no-cache-dir ninja meson && \
     pip install --no-cache-dir psutil && \
-    pip install -r /ppml/trusted-big-data-ml/work/kms-requirement.yml && \
+    pip install -r /ppml/trusted-big-data-ml/work/kms-client/requirement.yml && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec
 
@@ -247,7 +248,6 @@ ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
 ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
-
 
 RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
     patch /usr/local/lib/python3.6/dist-packages/dill/_dill.py ./_dill.py.patch && \
@@ -286,7 +286,8 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-pi.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-sql-examples.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/kms-e2e-example.sh
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/kms-e2e-example.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/kms-client/*
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml

@@ -45,7 +45,6 @@ sudo docker run -itd \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data/kms-example \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-    -v $KMS_CLIENT_DIR_PATH:/ppml/trusted-big-data-ml/work/kms-client
     --name=kms-client \
     -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=64G \
