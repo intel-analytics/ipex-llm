@@ -30,7 +30,7 @@ from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "data")
+data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
 
 class ResNet18(nn.Module):
@@ -64,7 +64,7 @@ class TestTrainer(TestCase):
     train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
     user_defined_pl_model = LitResNet18(10)
 
-    def test_resnet18_ipex(self):
+    def test_resnet18(self):
         resnet18 = vision.resnet18(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(

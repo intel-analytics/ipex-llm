@@ -31,7 +31,7 @@ from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "data")
+data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
 
 class ResNet18(nn.Module):
@@ -62,7 +62,7 @@ class MultiInputModel(nn.Module):
         return self.layer_3(x)
 
 
-class TestModelsOnnx(TestCase):
+class TestOnnx(TestCase):
 
     def test_trainer_compile_with_onnx(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
@@ -71,7 +71,7 @@ class TestModelsOnnx(TestCase):
         trainer = Trainer(max_epochs=1)
 
         pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
-        train_loader = create_data_loader(data_dir, batch_size,
+        train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
         assert pl_model._ortsess_up_to_date is False  # ortsess is not up-to-date after training

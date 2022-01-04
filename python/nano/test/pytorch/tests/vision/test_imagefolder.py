@@ -23,7 +23,7 @@ from test.pytorch.utils._train_imagefolder import train_torch_lightning
 
 
 batch_size = 1
-resources_root = os.path.join(os.path.dirname(__file__), "resources")
+resources_root = os.path.join(os.path.dirname(__file__), "../../resources")
 root_dir1 = os.path.join(resources_root, "train_image_folder_png")
 root_dir2 = os.path.join(resources_root, "train_image_folder_jpg")
 
