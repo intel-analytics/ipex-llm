@@ -95,8 +95,7 @@ class TSPipeline:
             yhat_list, y_list = [], []
             self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
-                yhat = self._best_model.inference(x,
-                                                  backend=None).numpy()
+                yhat = self._best_model.inference(x, backend=None).numpy()
                 yhat_list.append(yhat)
                 y_list.append(y)
             yhat = np.concatenate(yhat_list, axis=0)
@@ -139,8 +138,7 @@ class TSPipeline:
             yhat_list, y_list = [], []
             self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(),
-                                                  backend="onnx")
+                yhat = self._best_model.inference(x.numpy(), backend="onnx")
                 yhat_list.append(yhat)
                 y_list.append(y)
             yhat = np.concatenate(yhat_list, axis=0)
@@ -174,8 +172,7 @@ class TSPipeline:
             yhat_list = []
             self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
-                yhat = self._best_model.inference(x,
-                                                  backend=None)
+                yhat = self._best_model.inference(x, backend=None)
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
@@ -204,8 +201,7 @@ class TSPipeline:
             yhat_list = []
             self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(),
-                                                  backend="onnx")
+                yhat = self._best_model.inference(x.numpy(), backend="onnx")
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
@@ -255,7 +251,7 @@ class TSPipeline:
             if validation_data:
                 valid_loader = validation_data(self._best_config)
         else:
-            raise RuntimeError("We only support input TSDataset or Function, "
+            raise RuntimeError("We only support input TSDataset or data creator, "
                                f"but found {data.__class__.__name__}.")
 
         self.trainer = Trainer(max_epochs=epochs, **kwargs)
