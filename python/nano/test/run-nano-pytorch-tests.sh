@@ -16,3 +16,4 @@ time=$((now-start))
 
 echo "Bigdl-nano tests finished"
 echo "Time used:$time seconds"
+
