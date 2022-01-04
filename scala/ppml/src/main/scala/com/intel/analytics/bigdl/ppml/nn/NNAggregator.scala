@@ -9,11 +9,16 @@ import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLDataType, FLPhase, S
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table
 
 abstract class NNAggregator extends Aggregator {
+  protected var hasReturn = false
 
+  def setHasReturn(hasReturn: Boolean): Unit = {
+    this.hasReturn = hasReturn
+  }
+  def getStorage(flPhase: FLPhase) = aggregateTypeMap.get(flPhase).getTableStorage()
   override def initStorage(): Unit = {
-    aggregateTypeMap.put(TRAIN, new StorageHolder(FLDataType.TABLE))
-    aggregateTypeMap.put(EVAL, new StorageHolder(FLDataType.TABLE))
-    aggregateTypeMap.put(PREDICT, new StorageHolder(FLDataType.TABLE))
+    aggregateTypeMap.put(TRAIN, new StorageHolder(FLDataType.TENSOR_MAP))
+    aggregateTypeMap.put(EVAL, new StorageHolder(FLDataType.TENSOR_MAP))
+    aggregateTypeMap.put(PREDICT, new StorageHolder(FLDataType.TENSOR_MAP))
   }
 
 }

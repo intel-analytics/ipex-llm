@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.fgboost
+package com.intel.analytics.bigdl.ppml.fgboost.common
 
 import com.intel.analytics.bigdl.ppml.fgboost.common.TreeObjective
 

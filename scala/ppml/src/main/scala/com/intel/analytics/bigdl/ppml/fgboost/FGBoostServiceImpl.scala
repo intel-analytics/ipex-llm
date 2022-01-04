@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.ppml.base.DataHolder
 import com.intel.analytics.bigdl.ppml.common.FLPhase
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.{FGBoostServiceGrpc, FGBoostServiceProto}
-import com.intel.analytics.bigdl.ppml.vfl.fgboost.VflGBoostAggregator
 import io.grpc.stub.StreamObserver
 
 class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
@@ -29,7 +28,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   override def downloadTable(request: DownloadTableRequest,
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
     val version = request.getMetaData.getVersion
-    val data = aggregator.getServerData(FLPhase.LABEL).getTableStorage().serverData
+    val data = aggregator.getLabelStorage().serverData
     if (data == null) {
       val response = "Your required data doesn't exist"
       responseObserver.onNext(DownloadResponse.newBuilder.setResponse(response).setCode(0).build)

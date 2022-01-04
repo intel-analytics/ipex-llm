@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.narwhal.fl.vertical.tree
+package com.intel.analytics.bigdl.ppml.fgboost.common
 
 import com.intel.analytics.bigdl.ppml.fgboost.common.TreeObjective
 import com.intel.analytics.bigdl.ppml.fgboost.common.TreeUtils._

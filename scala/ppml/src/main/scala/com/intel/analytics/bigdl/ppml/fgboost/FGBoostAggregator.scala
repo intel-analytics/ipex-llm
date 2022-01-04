@@ -17,6 +17,8 @@
 package com.intel.analytics.bigdl.ppml.fgboost
 
 
+import com.intel.analytics.bigdl.dllib.optim.{ValidationMethod, ValidationResult}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.base.StorageHolder
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLDataType, FLPhase}
 import com.intel.analytics.bigdl.ppml.fgboost.common.{RMSEObjective, TreeObjective}
@@ -29,7 +31,8 @@ import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 
-class VflGBoostAggregator extends Aggregator {
+class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null)
+  extends Aggregator {
 
   val logger = LogManager.getLogger(this.getClass)
 
@@ -40,12 +43,16 @@ class VflGBoostAggregator extends Aggregator {
   var validationSize = -1
   var basePrediction: Array[Float] = null
   val bestSplit = new java.util.HashMap[String, DataSplit]()
+  var validationResult = Array[ValidationResult]()
+
+  // wrapper methods to simplify data access
   def getLabelStorage() = {
     aggregateTypeMap.get(FLPhase.LABEL).getTableStorage()
   }
   def getBranchStorage() = {
     aggregateTypeMap.get(FLPhase.BRANCH).getBranchStorage()
   }
+
   override def initStorage(): Unit = {
     aggregateTypeMap.put(FLPhase.LABEL, new StorageHolder(FLDataType.TENSOR_MAP))
     aggregateTypeMap.put(FLPhase.PREDICT, new StorageHolder(FLDataType.TENSOR_MAP))
@@ -57,36 +64,28 @@ class VflGBoostAggregator extends Aggregator {
     flPhase match {
       case FLPhase.LABEL => initGradient()
       case FLPhase.SPLIT => aggregateSplit()
-      case FLPhase.LEAF => aggregateTree()
+      case FLPhase.LEAF => aggregateTreeLeaves()
       case FLPhase.EVAL => aggEvaluate()
       case FLPhase.PREDICT => aggPredict()
       case _ => throw new NotImplementedError()
     }
   }
 
-  def getBestSplit() = {
-    val splitClientData = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage().clientData
-    var bestGain = Float.MinValue
-    if (splitClientData.nonEmpty) {
-      bestSplit.synchronized {
-        splitClientData.values.foreach { split =>
-          if (split.getGain > bestGain) {
-            val id = getTreeNodeId(split.getTreeID, split.getNodeID);
-            bestSplit.put(id, split)
-            bestGain = split.getGain
-          }
-        }
-        splitClientData.clear()
-        bestSplit.notifyAll()
+  def getBestSplit(treeID: String, nodeID: String): DataSplit = {
+    synchronized(bestSplit) {
+      val id = getTreeNodeId(treeID, nodeID)
+      while ( {
+        !bestSplit.containsKey(id)
+      }) try bestSplit.wait()
+      catch {
+        case ie: InterruptedException =>
+          throw new RuntimeException(ie)
       }
-    } else {
-      val labelClientData = getLabelStorage().clientData
-      if (labelClientData.nonEmpty && getLabelStorage().getVersion() == 0) {
-        // Initializing gradient
-        initGradient()
-      }
+      return bestSplit.get(id)
     }
   }
+
+
   def setObj(objective: TreeObjective): Unit = {
     obj = objective
   }
@@ -130,8 +129,8 @@ class VflGBoostAggregator extends Aggregator {
       .putTable("label", toFloatTensor(label))
       .build()
     // Update gradient
-    aggregateTypeMap.get(FLPhase.LABEL).getTableStorage().clearClientAndUpdateServer(aggregatedModel)
-    labelClientData.clear()
+    getLabelStorage().clearClientAndUpdateServer(aggregatedModel)
+    logger.debug("Init gradient completed.")
   }
 
   def setClientNum(clientNum: Int): this.type = {
@@ -142,6 +141,13 @@ class VflGBoostAggregator extends Aggregator {
   def aggEvaluate(): Unit = {
     val aggPredict = aggregatePredict()
     val newPredict = predictWithTree(aggPredict)
+    val predictTensor = Tensor[Float](newPredict, Array(newPredict.size))
+    val targetProto = getLabelStorage().serverData
+    val targetTensor = getTensor("label", targetProto)
+//    validationResult = validationMethods.map(vMethod => {
+//      vMethod.apply(predictTensor, targetTensor)
+//    })
+
     // Compute new residual
     updateGradient(newPredict)
   }
@@ -186,7 +192,7 @@ class VflGBoostAggregator extends Aggregator {
     }
   }
 
-  def aggregateTree(): Unit = {
+  def aggregateTreeLeaves(): Unit = {
     logger.info(s"Add new Tree ${serverTreeLeaves.length}")
     val leafMap = aggregateTypeMap.get(FLPhase.LEAF).getLeafStorage().clientData
 
@@ -202,7 +208,7 @@ class VflGBoostAggregator extends Aggregator {
     // For XGBoost Regression with squared loss
     // g = y' - y, h = 1
     logger.info("Updating Gradient with new Predict")
-    val tableStorage = aggregateTypeMap.get(FLPhase.LABEL).getTableStorage()
+    val tableStorage = getLabelStorage()
     val gradTable = tableStorage.serverData.getTableMap
     val predict = gradTable.get("predict").getTensorList.asScala.toArray.map(_.toFloat)
     val label = gradTable.get("label").getTensorList.asScala.toArray.map(_.toFloat)
@@ -233,7 +239,6 @@ class VflGBoostAggregator extends Aggregator {
       .putTable("label", toFloatTensor(label))
       .build()
     // Update gradient
-    tableStorage.clientData.clear()
     tableStorage.clearClientAndUpdateServer(aggregatedModel)
   }
 
@@ -259,7 +264,7 @@ class VflGBoostAggregator extends Aggregator {
     logger.info("Aggregate Predict")
     val boostEvalBranchMap = getBranchStorage().clientData
     val evalResults = boostEvalBranchMap.mapValues { list =>
-      list.toArray.map { be =>
+      list.asScala.toArray.map { be =>
         be.getEvaluatesList.asScala.toArray.map { treePredict =>
           (treePredict.getTreeID, treePredict.getPredictsList.asScala.toArray)
         }

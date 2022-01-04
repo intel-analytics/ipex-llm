@@ -34,7 +34,7 @@ public abstract class Aggregator {
      * it maps the enum type: TRAIN, EVAL, PREDICT to corresponded storage
      */
     private Logger logger = LogManager.getLogger(getClass());
-    protected Map<FLPhase, StorageHolder> aggregateTypeMap;
+    public Map<FLPhase, StorageHolder> aggregateTypeMap;
 
     protected String returnMessage = "";
 
@@ -42,11 +42,7 @@ public abstract class Aggregator {
         aggregateTypeMap = new HashMap<>();
         initStorage();
     }
-    protected Boolean hasReturn = false;
 
-    public void setHasReturn(Boolean hasReturn) {
-        this.hasReturn = hasReturn;
-    }
 
     public void setReturnMessage(String returnMessage) {
         this.returnMessage = returnMessage;
@@ -68,14 +64,11 @@ public abstract class Aggregator {
 
     public abstract void aggregate(FLPhase flPhase);
 
-    public StorageHolder getServerData(FLPhase flPhase) {
-        return aggregateTypeMap.get(flPhase);
-    }
     public void putClientData(FLPhase flPhase,
                                   String clientUUID, int version, DataHolder dataHolder)
             throws IllegalArgumentException, InterruptedException {
         logger.debug(clientUUID + " getting data to update from server: " + flPhase.toString());
-        StorageHolder storageHolder = getServerData(flPhase);
+        StorageHolder storageHolder = aggregateTypeMap.get(flPhase);
         if (version != -1) checkVersion(storageHolder.getVersion(), version);
 
         logger.debug(clientUUID + " version check pass, version: " + version);

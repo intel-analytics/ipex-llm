@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.nn
+package com.intel.analytics.bigdl.ppml.nn
 
 import com.intel.analytics.bigdl.dllib.nn.{CAddTable, Sequential}
 import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod, ValidationResult}
@@ -49,52 +49,55 @@ class VflNNAggregator(model: Module[Float],
 
   /**
    * Aggregate the clients data to update server data by aggType
-   * @param aggType FLPhase enum type, one of TRAIN, EVAL, PREDICT
+   * @param flPhase FLPhase enum type, one of TRAIN, EVAL, PREDICT
    */
-  override def aggregate(aggType: FLPhase): Unit = {
-    val storage = getServerData(aggType).getTableStorage()
+  override def aggregate(flPhase: FLPhase): Unit = {
+    val storage = getStorage(flPhase)
     val (inputTable, target) = ProtoUtils.tableProtoToOutputTarget(storage)
 
     val output = module.forward(inputTable)
 
     val metaBuilder = TableMetaData.newBuilder()
     var aggregatedTable: Table = null
-    if (aggType == FLPhase.TRAIN) {
-      val loss = criterion.forward(output, target)
-      val gradOutputLayer = criterion.backward(output, target)
-      val grad = module.backward(inputTable, gradOutputLayer)
-      val meta = metaBuilder.setName("gradInput").setVersion(storage.version).build()
+    flPhase match {
+      case FLPhase.TRAIN =>
+        val loss = criterion.forward(output, target)
+        val gradOutputLayer = criterion.backward(output, target)
+        val grad = module.backward(inputTable, gradOutputLayer)
+        val meta = metaBuilder.setName("gradInput").setVersion(storage.version).build()
 
-      aggregatedTable = Table.newBuilder()
-        .setMetaData(meta)
-        .putTable("gradInput", toFloatTensor(grad.toTable.apply[Tensor[Float]](1)))
-        .putTable("loss", toFloatTensor(Tensor[Float](T(loss))))
-        .build()
-    } else if (aggType == EVAL) {
-      val batchValidationResult = validationMethods.map(vMethod => {
-        vMethod.apply(output, target)
-      })
-      validationResult = validationResult :+ batchValidationResult
-      if (hasReturn) {
-        val result = validationResult.reduce((x, y) => {
-          x.zip(y).map {
-            case (r1, r2) => r1 + r2
-          }
+        aggregatedTable = Table.newBuilder()
+          .setMetaData(meta)
+          .putTable("gradInput", toFloatTensor(grad.toTable.apply[Tensor[Float]](1)))
+          .putTable("loss", toFloatTensor(Tensor[Float](T(loss))))
+          .build()
+
+      case FLPhase.EVAL =>
+        val batchValidationResult = validationMethods.map(vMethod => {
+          vMethod.apply(output, target)
         })
-        setReturnMessage(result.toString)
-      }
-      val meta = metaBuilder.setName("evaluateResult").setVersion(storage.version).build()
-      aggregatedTable = Table.newBuilder()
-        .setMetaData(meta)
-        .build()
-    } else if (aggType == PREDICT) {
-      val meta = metaBuilder.setName("predictResult").setVersion(storage.version).build()
-      aggregatedTable = Table.newBuilder()
-        .setMetaData(meta)
-        .putTable("predictOutput", toFloatTensor(output.toTensor[Float]))
-        .build()
+        validationResult = validationResult :+ batchValidationResult
+        if (hasReturn) {
+          val result = validationResult.reduce((x, y) => {
+            x.zip(y).map {
+              case (r1, r2) => r1 + r2
+            }
+          })
+          setReturnMessage(result.toString)
+        }
+        val meta = metaBuilder.setName("evaluateResult").setVersion(storage.version).build()
+        aggregatedTable = Table.newBuilder()
+          .setMetaData(meta)
+          .build()
+
+      case FLPhase.PREDICT =>
+        val meta = metaBuilder.setName("predictResult").setVersion(storage.version).build()
+        aggregatedTable = Table.newBuilder()
+          .setMetaData(meta)
+          .putTable("predictOutput", toFloatTensor(output.toTensor[Float]))
+          .build()
     }
-    storage.updateStorage(aggregatedTable)
+    storage.clearClientAndUpdateServer(aggregatedTable)
   }
 
 }

@@ -1,4 +1,4 @@
-package com.intel.analytics.bigdl.ppml.hfl.nn
+package com.intel.analytics.bigdl.ppml.nn
 
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.estimator.LocalEstimator

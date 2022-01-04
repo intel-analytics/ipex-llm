@@ -30,13 +30,14 @@ class StorageHolder(flDataType: FLDataType) {
   private var tableStorage: Storage[Table] = null
   private var splitStorage: Storage[DataSplit] = null
   private var leafStorage: Storage[TreeLeaves] = null
-  private var branchStorage: Storage[List[BoostEval]] = null
+  private var branchStorage: Storage[java.util.List[BoostEval]] = null
 
   flDataType match {
-    case FLDataType.TABLE => tableStorage = new Storage[Table](flDataType.toString)
-    case FLDataType.SPLIT => splitStorage = new Storage[DataSplit](flDataType.toString)
+    case FLDataType.TENSOR_MAP => tableStorage = new Storage[Table](flDataType.toString)
+    case FLDataType.TREE_SPLIT => splitStorage = new Storage[DataSplit](flDataType.toString)
     case FLDataType.LEAF => leafStorage = new Storage[TreeLeaves](flDataType.toString)
-    case FLDataType.BOOST_EVAL => branchStorage = new Storage[List[BoostEval]](flDataType.toString)
+    case FLDataType.BOOST_EVAL => branchStorage =
+      new Storage[java.util.List[BoostEval]](flDataType.toString)
     case _ => throw new NotImplementedError()
   }
   def getVersion(): Int = {
