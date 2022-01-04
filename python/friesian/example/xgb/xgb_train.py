@@ -33,7 +33,7 @@ spark_conf = {"spark.network.timeout": "10000000",
               "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
               "spark.kryo.unsafe": "true",
               "spark.kryoserializer.buffer.max": "1024m",
-              "spark.task.cpus": "1",
+              "spark.task.cpus": "8",
               "spark.executor.heartbeatInterval": "200s",
               "spark.driver.maxResultSize": "40G",
               "spark.eventLog.enabled": "true",
@@ -56,10 +56,11 @@ if __name__ == '__main__':
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
     parser.add_argument('--data_dir', type=str, help='data directory')
+    parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
+
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
@@ -75,40 +76,48 @@ if __name__ == '__main__':
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
                 "len_hashtags", "len_domains", "len_links"]
-    # cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified", "present_media",
-    #             "tweet_type", "language", 'present_media_language']
-    # embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
-    #               "present_domains"]
-    features = num_cols
+    cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified", "present_media",
+                "tweet_type", "language", 'present_media_language']
+    embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
+                  "present_domains"]
+    features = num_cols + [col + "_te_label" for col in cat_cols] +\
+               [col + "_te_label" for col in embed_cols]
 
-    train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
-    test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
-    assembler = VectorAssembler(inputCols=features, outputCol="features")
-    train = assembler.transform(train_tbl.df).select("features", "label").cache()
-    test = test_tbl.df
+    train = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
+    test = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
+    test_user_ids = test.select("engaged_with_user_id").cast("engaged_with_user_id", "str"). \
+        to_list("engaged_with_user_id")
+    test_labels = test.select("label").to_list("label")
 
-    todense = lambda x: DenseVector(x.toArray())
-    todenseUdf = F.udf(todense, VectorUDT())
-    train = train.withColumn("features", todenseUdf("features"))
-    train.printSchema()
-    train.show(5, False)
+    full = train.concat(test)
+    reindex_tbls = full.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
+    full, min_max_dict = full.min_max_scale(num_cols)
+    full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols="label")
 
-    # fit model no training data
+    train = train.transform_min_max_scale(num_cols, min_max_dict) \
+        .reindex(embed_cols, reindex_tbls)\
+        .encode_target(target_cols="label", targets=target_codes) \
+        .merge_cols(features, "features") \
+        .select(["label", "features"])\
+        .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
+
+    test = test.transform_min_max_scale(num_cols, min_max_dict) \
+        .reindex(embed_cols, reindex_tbls)\
+        .encode_target(target_cols="label", targets=target_codes)\
+        .df
+
     classifier = XGBClassifier()
     classifier.setNthread(1)
-    classifier.fit(train)
-    print(classifier)
-    xgbmodel = XGBClassifierModel(classifier.fit(train))
-    xgbmodel.setFeaturesCol(features)
+    model = classifier.fit(train.df)
 
-    # make predictions for test data
-    y_pred = xgbmodel.transform(test)
-    y_pred.show()
-    y_pred.printSchema()
+    xgbmodel = XGBClassifierModel(model)
+    xgbmodel.setFeaturesCol(features)
+    predicts = xgbmodel.transform(test)
+
     gr = [row.label for row in test.select("label").collect()]
-    predictions = [row.prediction for row in y_pred.select("prediction").collect()]
-    print(predictions)
-    # evaluate predictions
-    accuracy = accuracy_score(gr, predictions)
+    predicts =[row.prediction for row in  predicts.select("prediction").collect()]
+    accuracy = accuracy_score(gr, predicts)
+
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
+
     stop_orca_context()
