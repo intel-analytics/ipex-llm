@@ -16,7 +16,6 @@
 import json
 import logging
 import os
-import sys
 import tempfile
 import shutil
 
@@ -29,7 +28,7 @@ from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.data.file import put_local_dir_to_remote
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
-    get_checkpoint_from_callbacks
+    get_specific_object_from_callbacks, get_replaced_path
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
@@ -329,13 +328,11 @@ class SparkRunner:
                                        validation_steps=validation_steps)
         checkpoint = None
         if callbacks:
-            checkpoint = get_checkpoint_from_callbacks(callbacks)
+            checkpoint = get_specific_object_from_callbacks(tf.keras.callbacks.ModelCheckpoint, callbacks)
             if checkpoint:
-                original_filepath = checkpoint.filepath
-                original_checkpoint_dir = os.path.dirname(original_filepath)
-                ckpt_name = os.path.basename(original_filepath)
-                temp_dir = tempfile.mkdtemp()
-                checkpoint.filepath = os.path.join(temp_dir, ckpt_name)
+                original_checkpoint_dir = os.path.dirname(checkpoint.filepath)
+                replaced_checkpoint_path = get_replaced_path(checkpoint.filepath)
+                checkpoint.filepath = replaced_checkpoint_path
 
         history = model.fit(train_dataset,
                             epochs=epochs,
@@ -351,9 +348,9 @@ class SparkRunner:
         if checkpoint:
             try:
                 if self.rank == 0:
-                    put_local_dir_to_remote(temp_dir, original_checkpoint_dir)
+                    put_local_dir_to_remote(os.path.dirname(replaced_checkpoint_path), original_checkpoint_dir)
             finally:
-                shutil.rmtree(temp_dir)
+                shutil.rmtree(os.path.dirname(replaced_checkpoint_path))
 
         return (model, history)
 

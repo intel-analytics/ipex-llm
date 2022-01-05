@@ -17,6 +17,7 @@
 from contextlib import closing
 import socket
 import sys
+import tempfile
 
 from bigdl.dllib.utils.file_utils import get_file_list
 from bigdl.orca.data import SparkXShards
@@ -441,9 +442,16 @@ def duplicate_stdout_stderr_to_file(log_path):
     os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
 
-def get_checkpoint_from_callbacks(callbacks):
-    import tensorflow as tf
+def get_specific_object_from_callbacks(class_type, callbacks):
     for c in callbacks:
-        if isinstance(c, tf.keras.callbacks.ModelCheckpoint):
+        if isinstance(c, class_type):
             return c
     return None
+
+
+def get_replaced_path(original_filepath):
+    base_name = os.path.basename(original_filepath)
+    print("base name is: ", base_name)
+    temp_dir = tempfile.mkdtemp()
+    return os.path.join(temp_dir, base_name)
+
