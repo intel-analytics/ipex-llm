@@ -220,8 +220,8 @@ class TestPytorch(TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             path = tmp_dir_name + "/model.obj"
-            az_model.save(path, True)
-            loaded_model = Model.load(path)
+            az_model.saveModel(path, over_write = True)
+            loaded_model = TorchModel.loadModel(path)
             loaded_torchModel = TorchModel.from_value(loaded_model.value)
             dummy_input = torch.ones(16, 2)
             loaded_torchModel.forward(dummy_input.numpy())
