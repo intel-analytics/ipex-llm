@@ -106,7 +106,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
 
     val version = -1 // TODO: need to modify proto
     try {
-      aggregator.putClientData(FLPhase.LEAF, clientUUID, version, new DataHolder(leaves))
+      aggregator.putClientData(FLPhase.TREE_LEAVES, clientUUID, version, new DataHolder(leaves))
       val response = s"Tree leaves uploaded to server at clientID: $clientUUID, version: $version"
       responseObserver.onNext(UploadResponse.newBuilder.setResponse(response).setCode(0).build)
       responseObserver.onCompleted()
@@ -126,8 +126,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
     try {
-      aggregator.putClientData(FLPhase.EVAL, clientUUID, -1, new DataHolder(predicts))
-      val result = aggregator.getBranchStorage().serverData
+      aggregator.putClientData(FLPhase.TREE_EVAL, clientUUID, -1, new DataHolder(predicts))
+      val result = aggregator.getPredictStorage().serverData
       if (result == null) {
         val response = "Your required data doesn't exist"
         responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(0).build)
@@ -135,7 +135,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
       }
       else {
         val response = "Download data successfully"
-        responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(1).build)
+        responseObserver.onNext(
+          EvaluateResponse.newBuilder.setResponse(response).setData(result).setCode(1).build)
         responseObserver.onCompleted()
       }
     } catch {
@@ -153,7 +154,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
     try {
-      aggregator.putClientData(FLPhase.PREDICT, clientUUID, -1, new DataHolder(predicts))
+      aggregator.putClientData(FLPhase.TREE_EVAL, clientUUID, -1, new DataHolder(predicts))
       val result = aggregator.getPredictStorage().serverData
       if (result == null) {
         val response = "Your required data doesn't exist"
@@ -162,11 +163,14 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
       }
       else {
         val response = "Download data successfully"
-        responseObserver.onNext(PredictResponse.newBuilder.setResponse(response).setCode(1).build)
+        responseObserver.onNext(
+          PredictResponse.newBuilder.setResponse(response).setData(result).setCode(1).build)
         responseObserver.onCompleted()
       }
     } catch {
       case e: Exception =>
+        val error = e.getStackTrace.map(_.toString).mkString("\n")
+        logger.error(e.getMessage + "\n" + error)
         val response = PredictResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()

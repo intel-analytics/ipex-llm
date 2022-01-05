@@ -179,22 +179,4 @@ object ProtoUtils {
     else
       false
   }
-
-  def toBoostEvals(localPredicts: Array[Map[String, Array[Boolean]]]): List[BoostEval] = {
-    // Sorted by treeID
-    localPredicts.map{predict =>
-      BoostEval.newBuilder()
-        .addAllEvaluates(predict.toSeq.sortBy(_._1).map(p => {
-          TreePredict.newBuilder().setTreeID(p._1)
-            .addAllPredicts(p._2.map(boolean2Boolean).toList.asJava)
-            .build()
-        }).toList.asJava)
-        .build()
-    }.toList
-  }
-  def toArrayFloat(response: PredictResponse): Array[Float] = {
-    response.getData.getTableMap.get("predictResult")
-      .getTensorList.asScala.toArray.map(_.toFloat)
-  }
-
 }

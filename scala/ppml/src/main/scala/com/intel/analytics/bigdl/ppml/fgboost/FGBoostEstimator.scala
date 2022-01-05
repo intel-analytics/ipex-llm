@@ -49,10 +49,10 @@ class FGBoostEstimator(continuous: Boolean,
   override protected val evaluateResults: mutable.Map[String, ArrayBuffer[Float]] = null
   val trees = new mutable.Queue[RegressionTree]()
   override def train(endEpoch: Int,
-                     trainDataSet: LocalDataSet[MiniBatch[Float]],
-                     valDataSet: LocalDataSet[MiniBatch[Float]]): Any = {
+                     trainDataSet: RDD[(Array[Float], Array[Float])],
+                     valDataSet: RDD[(Array[Float], Array[Float])]): Any = {
     // transform the LocalDataSet to Array type, the input type of RegressionTree
-    val (feature, label) = DataSetUtils.localDataSetToArray(trainDataSet)
+    val (feature, label) = DataFrameUtils.arrayRDDToTensorArray(trainDataSet)
     val sortedIndexByFeature = TreeUtils.sortByFeature(feature)
     // TODO Load model from file
     initFGBoost(label)
@@ -64,20 +64,20 @@ class FGBoostEstimator(continuous: Boolean,
     }
   }
 
-  override def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]): Unit = {
-    val (feature, label) = DataSetUtils.localDataSetToArray(dataSet)
+  override def evaluate(dataSet: RDD[(Array[Float], Array[Float])]): Unit = {
+    val (feature, label) = DataFrameUtils.arrayRDDToTensorArray(dataSet)
     // TODO Load model from file
     val predictResult = predictTree(feature)
     val predictActivity = Tensor[Float](predictResult, Array(predictResult.length))
-    val targetProto = flClient.fgbostStub.downloadTable("label", 0).getData
+    val targetProto = flClient.fgbostStub.downloadLabel("label", 0).getData
     val targetActivity = getTensor("label", targetProto)
     validationMethods.map(vMethod => {
       vMethod.apply(predictActivity, targetActivity)
     })
   }
 
-  override def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Array[Activity] = {
-    val (feature, label) = DataSetUtils.localDataSetToArray(dataSet)
+  override def predict(dataSet: RDD[(Array[Float], Array[Float])]): Array[Activity] = {
+    val (feature, label) = DataFrameUtils.arrayRDDToTensorArray(dataSet)
     val predictResult = predictTree(feature)
     predictResult.map{ value =>
       Tensor[Float](Array(value), Array(1))
@@ -92,7 +92,7 @@ class FGBoostEstimator(continuous: Boolean,
     // message may be too large, split by group to send to FLServer
     val messageSize = 2 * 1e6
     val groupedSize = Math.ceil(messageSize / booleanOnePredict).toInt
-    val result = localPredicts.grouped(groupedSize).flatMap{groupedPredicts =>
+    val result = localPredicts.grouped(groupedSize).flatMap{ groupedPredicts =>
       val boostEvals = toBoostEvals(groupedPredicts)
       val response = flClient.fgbostStub.predict(boostEvals.asJava)
       toArrayFloat(response)
@@ -208,7 +208,7 @@ class FGBoostEstimator(continuous: Boolean,
       gradData.putTable("label", toFloatTensor(label))
     }
     // Upload
-    flClient.fgbostStub.uploadTable(gradData.build)
+    flClient.fgbostStub.uploadLabel(gradData.build)
   }
 
   /**
@@ -219,7 +219,7 @@ class FGBoostEstimator(continuous: Boolean,
   def downloadGrad(treeID: Int): Array[Array[Float]] = {
     // Note that g may be related to Y
     // H = 1 in regression
-    val response = flClient.fgbostStub.downloadTable("xgboost_grad", treeID - 1)
+    val response = flClient.fgbostStub.downloadLabel("xgboost_grad", treeID - 1)
     logger.info("Downloaded grads from FLServer")
     val gradTable = response.getData
     val grad = getTensor("grad", gradTable).toArray

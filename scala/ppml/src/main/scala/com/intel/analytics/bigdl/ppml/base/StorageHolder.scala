@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.ppml.base
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, Storage}
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table
+import org.apache.logging.log4j.LogManager
 
 /**
  * The storage holder holding all types of Storage
@@ -26,6 +27,8 @@ import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table
  * @param flDataType the instance of storage of this holder, could be one of [[FLDataType]]
  */
 class StorageHolder(flDataType: FLDataType) {
+  private val logger = LogManager.getLogger(getClass)
+
   private var clientDataSize: Int = 0
   private var tableStorage: Storage[Table] = null
   private var splitStorage: Storage[DataSplit] = null
@@ -35,7 +38,7 @@ class StorageHolder(flDataType: FLDataType) {
   flDataType match {
     case FLDataType.TENSOR_MAP => tableStorage = new Storage[Table](flDataType.toString)
     case FLDataType.TREE_SPLIT => splitStorage = new Storage[DataSplit](flDataType.toString)
-    case FLDataType.TREE_LEAF => leafStorage = new Storage[TreeLeaves](flDataType.toString)
+    case FLDataType.TREE_LEAVES => leafStorage = new Storage[TreeLeaves](flDataType.toString)
     case FLDataType.TREE_EVAL => branchStorage =
       new Storage[java.util.List[BoostEval]](flDataType.toString)
     case _ => throw new NotImplementedError()
@@ -51,15 +54,21 @@ class StorageHolder(flDataType: FLDataType) {
     if (dataHolder.table != null) {
       tableStorage.clientData.put(clientID, dataHolder.table)
       clientDataSize = tableStorage.clientData.size()
+      logger.debug(s"Put Table into client data map, current size: $clientDataSize")
     } else if (dataHolder.split != null) {
       splitStorage.clientData.put(clientID, dataHolder.split)
       clientDataSize = splitStorage.clientData.size()
-    } else if (dataHolder.leaves != null) {
-      leafStorage.clientData.put(clientID, dataHolder.leaves)
+      logger.debug(s"Put Split into client data map, current size: $clientDataSize")
+    } else if (dataHolder.treeLeaves != null) {
+      leafStorage.clientData.put(clientID, dataHolder.treeLeaves)
       clientDataSize = leafStorage.clientData.size()
-    } else if (dataHolder.split != null) {
+      logger.debug(s"Put TreeLeaves into client data map, current size: $clientDataSize")
+    } else if (dataHolder.boostEval != null) {
       branchStorage.clientData.put(clientID, dataHolder.boostEval)
       clientDataSize = branchStorage.clientData.size()
+      logger.debug(s"Put TreeEval into client data map, current size: $clientDataSize")
+    } else {
+      throw new IllegalArgumentException("Data is empty, could not uploaded to server.")
     }
   }
   def getTableStorage() = this.tableStorage

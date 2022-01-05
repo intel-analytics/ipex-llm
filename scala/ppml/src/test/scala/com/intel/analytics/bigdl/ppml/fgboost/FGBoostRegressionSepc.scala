@@ -38,7 +38,7 @@ class FGBoostRegressionSepc extends FlatSpec with Matchers with BeforeAndAfter w
     val fGBoostRegression = new FGBoostRegression()
     fGBoostRegression.fit(filledDF)
     val result = fGBoostRegression.predict(df)
-
+    require(result.size == 5, "output size mismatch")
   }
 }
 

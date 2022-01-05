@@ -24,6 +24,6 @@ public enum FLPhase {
     // FGBoost Phase
     LABEL,
     SPLIT,
-    LEAF,
-    BRANCH
+    TREE_LEAVES,
+    TREE_EVAL
 }

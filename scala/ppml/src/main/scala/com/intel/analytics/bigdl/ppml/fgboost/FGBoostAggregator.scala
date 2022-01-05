@@ -48,14 +48,16 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   // wrapper methods to simplify data access
   def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTableStorage()
   def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
-  def getTreeLeaveStorage() = aggregateTypeMap.get(FLPhase.LEAF).getLeafStorage()
-  def getBranchStorage() = aggregateTypeMap.get(FLPhase.BRANCH).getBranchStorage()
+  def getTreeLeaveStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAVES).getLeafStorage()
+  def getBranchStorage() = aggregateTypeMap.get(FLPhase.TREE_EVAL).getBranchStorage()
   def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTableStorage()
 
   override def initStorage(): Unit = {
     aggregateTypeMap.put(FLPhase.LABEL, new StorageHolder(FLDataType.TENSOR_MAP))
     aggregateTypeMap.put(FLPhase.PREDICT, new StorageHolder(FLDataType.TENSOR_MAP))
     aggregateTypeMap.put(FLPhase.SPLIT, new StorageHolder(FLDataType.TREE_SPLIT))
+    aggregateTypeMap.put(FLPhase.TREE_LEAVES, new StorageHolder(FLDataType.TREE_LEAVES))
+    aggregateTypeMap.put(FLPhase.TREE_EVAL, new StorageHolder(FLDataType.TREE_EVAL))
   }
 
   override def aggregate(flPhase: FLPhase): Unit = {
@@ -63,9 +65,9 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     flPhase match {
       case FLPhase.LABEL => initGradient()
       case FLPhase.SPLIT => aggregateSplit()
-      case FLPhase.LEAF => aggregateTreeLeaves()
+      case FLPhase.TREE_LEAVES => aggregateTreeLeaves()
       case FLPhase.EVAL => aggEvaluate()
-      case FLPhase.PREDICT => aggPredict()
+      case FLPhase.TREE_EVAL => aggPredict()
       case _ => throw new NotImplementedError()
     }
   }
@@ -286,12 +288,12 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   def aggPredict(): Unit = {
-    val tableStorage = getPredictStorage()
     val aggedPredict = aggregatePredict()
     val newPredict = aggedPredict.zip(basePrediction).map(p =>
       // Predict value of each boosting tree
       p._1.map(x => predictWithEncoding(x._2, x._1.toInt)).sum + p._2
     )
+    val tableStorage = getPredictStorage()
     val metaData = TableMetaData.newBuilder()
       .setName("predictResult")
       .setVersion(tableStorage.version)

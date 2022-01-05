@@ -34,10 +34,12 @@ class DataHolder(_table: Table = null,
                  _boostEval: java.util.List[BoostEval] = null) {
   var table: Table = null
   var split: DataSplit = null
-  var leaves: TreeLeaves = null
+  var treeLeaves: TreeLeaves = null
   var boostEval: java.util.List[BoostEval] = null
   if (_table != null) table = _table
   if (_split != null) split = _split
+  if (_treeLeaves != null) treeLeaves = _treeLeaves
+  if (_boostEval != null) boostEval = _boostEval
   def this(value: Table) = this(_table = value)
   def this(value: DataSplit) = this(_split = value)
   def this(value: TreeLeaves) = this(_treeLeaves = value)

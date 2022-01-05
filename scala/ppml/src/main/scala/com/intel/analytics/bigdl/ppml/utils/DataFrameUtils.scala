@@ -121,7 +121,9 @@ object DataFrameUtils {
     arrayRDD.collect().map{
       case (featureArray, labelArray) =>
         featureTensorArray.add(Tensor[Float](featureArray, Array(featureArray.size)))
-        labelTensorArray.add(labelArray(0))
+        if (labelArray.size > 0) {
+          labelTensorArray.add(labelArray(0))
+        }
     }
     (featureTensorArray.asScala.toArray, labelTensorArray.asScala.toArray)
   }
