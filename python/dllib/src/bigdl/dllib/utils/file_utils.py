@@ -163,8 +163,6 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
 
 
 def put_local_files_with_prefix_to_remote(local_path_prefix, remote_dir, over_write=False):
-    remote_dir = os.path.dirname(local_path_prefix)
-    prefix = os.path.basename(local_path_prefix)
     # get local file lists
     file_list = glob.glob(local_path_prefix + "*")
     # get remote files to local
