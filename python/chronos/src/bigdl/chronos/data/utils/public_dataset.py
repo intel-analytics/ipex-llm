@@ -18,6 +18,7 @@ import requests
 
 import tqdm
 import pandas as pd
+import numpy as np
 from bigdl.chronos.data.tsdataset import TSDataset
 
 
@@ -211,8 +212,7 @@ class PublicDataset:
                           id_vars=['Unnamed: 0'],
                           value_vars=df.T.index[1:])\
                     .rename(columns={'Unnamed: 0': 'timestamp', 'variable': 'id'})
-        import numpy as np
-        self.df.value = self.df.value.apply(lambda x: str(x).replace(",", "")).astype(np.float64)
+        self.df.value = self.df.value.apply(lambda x: str(x).replace(",", "")).astype(np.float32)
         return self
 
     def get_tsdata(self,
