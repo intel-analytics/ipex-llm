@@ -10,17 +10,6 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 USER root
 
-RUN if [ ! -z "$HTTPS_PROXY" ] || [ ! -z "$HTTP_PROXY" ]; then \
-    echo "Setting Proxy..."; \
-    echo "export http_proxy=${HTTP_PROXY}" >> /etc/profile.d/02-proxy.sh; \
-    echo "export https_proxy=${HTTPS_PROXY}" >> /etc/profile.d/02-proxy.sh; \
-    echo "export HTTP_PROXY=${HTTP_PROXY}" >> /etc/profile.d/02-proxy.sh; \
-    echo "export HTTPS_PROXY=${HTTPS_PROXY}" >> /etc/profile.d/02-proxy.sh; \
-    source /etc/profile.d/02-proxy.sh; \
-    echo "Acquire::http::Proxy \"${HTTP_PROXY}\";" >> /etc/apt/apt.conf; \
-    echo "Acquire::https::Proxy \"${HTTPS_PROXY}\";" >> /etc/apt/apt.conf; \
-    cat /etc/apt/apt.conf; \
-    fi
 
 # Install OS dependencies for bigdl orca
 # - tini is installed as a helpful container entrypoint that reaps zombie
@@ -104,16 +93,7 @@ RUN set -x && \
     # Using conda to update all packages: https://github.com/mamba-org/mamba/issues/1092
     conda update --all --quiet --yes && \
     conda clean --all -f -y && \
-    rm -rf "/root/.cache/yarn"
-
-RUN if [ ! -z "$HTTPS_PROXY" ] || [ ! -z "$HTTP_PROXY" ]; then \
-    conda config --set proxy_servers.http ${HTTP_PROXY}; \
-    conda config --set proxy_servers.https ${HTTPS_PROXY}; \
-    pip config set global.proxy ${HTTPS_PROXY}; \
-    git config --global https.proxy ${HTTPS_PROXY}; \
-    git config --global http.proxy ${HTTP_PROXY}; \
-    # sed '<\/proxies>/i/' file # Add Proxy configuration to maven setting
-    fi; \
+    rm -rf "/root/.cache/yarn" && \
     conda init bash
 
 

@@ -4,26 +4,13 @@ This docker image contain the basic development environment for BigDL-Orca. You 
 
 ## Quick Start
 
-First, build the image with the Dockerfile
-
-```shell
-cd BigDL/python/orca
-docker build -t orca-dev:latest -f ./orca-dev.dockerfile
-```
-
-You can run a new container with the image:
-
-```shell
-docker run --name orca-dev -it orca-dev:latest
-```
-
-with the args `-it`, you will attach to a pseudo-TTY in the container. 
-
-You can also run a rebuild container image from `vankyle2go/orca-dev`, which is build from the `Dockerfile` with default build args. 
+You can run a rebuild container image from `vankyle2go/orca-dev`, which is build from the `Dockerfile` with default build args. 
 
 ```shell
 docker run --name orca-dev -it vankyle2go/orca-dev:latest
 ```
+
+with the args `-it`, you will attach to a pseudo-TTY in the container. 
 
 ## OpenSSH Server Support
 
@@ -76,15 +63,44 @@ $image
 
 Now you have a container with the `/root` mounted to a folder on host. 
 
-## Build Behind Proxy
+## Build a Custom Image
 
-If you are behind a proxy, you might need to set `HTTP_PROXY` and `HTTPS_PROXY` variable when running `docker build`.  
+With the `orca-dev.dockerfile` here, you can build your own image including your custom settings. Edit the docker file and use `docker build` command to build your image. 
 
-```shell
-docker build --build-arg HTTP_PROXY=<protocol>://<host>:<port> --build-arg HTTPS_PROXY=<protocol>://<host>:<port> -t orca-dev:latest -f orca-dev.dockerfile .
+```
+docker build -t orca-dev:latest - orca-dev.dockerfile
+```
+
+If you are behind a proxy, you might need to set `HTTP_PROXY` and `HTTPS_PROXY` variable when running `docker build`. You can also add the proxy configuration to the profile settings in the container so that you can use proxy when you are building the image. Here is a snippet for reference. 
+
+```Dockerfile
+RUN if [ ! -z "$HTTPS_PROXY" ] || [ ! -z "$HTTP_PROXY" ]; then \
+    echo "export http_proxy=${HTTP_PROXY}" >> /etc/profile.d/02-proxy.sh; \
+    echo "export https_proxy=${HTTPS_PROXY}" >> /etc/profile.d/02-proxy.sh; \
+    echo "export HTTP_PROXY=${HTTP_PROXY}" >> /etc/profile.d/02-proxy.sh; \
+    echo "export HTTPS_PROXY=${HTTPS_PROXY}" >> /etc/profile.d/02-proxy.sh; \
+    echo "Acquire::http::Proxy \"${HTTP_PROXY}\";" >> /etc/apt/apt.conf; \
+    echo "Acquire::https::Proxy \"${HTTPS_PROXY}\";" >> /etc/apt/apt.conf; \
+    fi
+
+# ...Steps to install git and conda...
+
+RUN if [ ! -z "$HTTPS_PROXY" ] || [ ! -z "$HTTP_PROXY" ]; then \
+    conda config --set proxy_servers.http ${HTTP_PROXY}; \
+    conda config --set proxy_servers.https ${HTTPS_PROXY}; \ 
+    pip config set global.proxy ${HTTPS_PROXY}; \
+    git config --global https.proxy ${HTTPS_PROXY}; \
+    git config --global http.proxy ${HTTP_PROXY}; \
+    fi
 ```
 
 These settings will be add to the `/etc/profile.d/02-proxy.sh` and will keep effect when you use. 
+
+Then you can build the image with the `--build-arg` to add proxy parameters to the `docker build` command. 
+
+```shell
+docker build --build-arg HTTP_PROXY=<protocol>://<host>:<port> --build-arg HTTPS_PROXY=<protocol>://<host>:<port> -t orca-dev:latest - orca-dev.dockerfile
+```
 
 However, these settings will **NOT** change the maven configuration, which is defined at `/etc/maven/settings.xml` . You may need to configure the proxy for maven manually after build. Or you can simply modify the `Dockerfile` to add a `COPY` or `ADD` command to provide a new `settings.xml` to the container.
 
