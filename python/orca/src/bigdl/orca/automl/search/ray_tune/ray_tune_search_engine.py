@@ -87,6 +87,8 @@ class RayTuneSearchEngine(SearchEngine):
                    a tuple in form of (x, y)
                         x: ndarray for training input
                         y: ndarray for training output
+               Spark Dataframe:
+                   a Spark Dataframe for training
         :param model_builder: model creation function
         :param epochs: max epochs for training
         :param validation_data: validation data
@@ -290,8 +292,9 @@ class RayTuneSearchEngine(SearchEngine):
             train_data = ray.get(data_id)
             val_data = ray.get(validation_data_id)
             config = convert_bayes_configs(config).copy()
-            if not isinstance(model_builder, ModelBuilder):
-                raise ValueError(f"You must input a ModelBuilder instance for model_builder")
+            # This check is turned off to support ducking typing
+            # if not isinstance(model_builder, ModelBuilder):
+            #     raise ValueError(f"You must input a ModelBuilder instance for model_builder")
             trial_model = model_builder.build(config)
 
             # no need to call build since it is called the first time fit_eval is called.

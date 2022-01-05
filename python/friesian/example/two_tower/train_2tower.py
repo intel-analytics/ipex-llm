@@ -159,7 +159,7 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Two Tower Training/Inference')
     parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The cluster mode, such as local, yarn or standalone.')
+                        help='The cluster mode, such as local, yarn, standalone or spark-submit.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
     parser.add_argument('--executor_cores', type=int, default=8,
@@ -218,7 +218,7 @@ if __name__ == '__main__':
     reindex_tbls = full_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     train_tbl, test_tbl, user_info, item_info = prepare_features(train_tbl, test_tbl, reindex_tbls)
 
-    output_dir = args.data_dir + "/embed_reindex"
+    output_dir = args.data_dir + "/embed_reindex/"
     for i, c in enumerate(embed_cols):
         reindex_tbls[i].write_parquet(output_dir + "_" + c)
 

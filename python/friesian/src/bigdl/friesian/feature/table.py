@@ -653,7 +653,6 @@ class Table:
         df = df.filter(pyspark_col('rank') == 1).drop('rank', 'id')
         return self._clone(df)
 
-
     def append_column(self, name, column):
         """
         Append a column with a constant value to the Table.
@@ -1300,13 +1299,13 @@ class FeatureTable(Table):
 
     def add_negative_samples(self, item_size, item_col="item", label_col="label", neg_num=1):
         """
-        Generate negative records for each record in the FeatureTable. All the records in the original
-        FeatureTable will be treated as positive samples with value 1 for label_col and the negative
-        samples will be randomly generated with value 0 for label_col.
+        Generate negative records for each record in the FeatureTable. All the records in the
+        original FeatureTable will be treated as positive samples with value 1 for label_col
+        and the negative samples will be randomly generated with value 0 for label_col.
 
         :param item_size: int, the total number of items in the FeatureTable.
-        :param item_col: str, the name of the item column. Whether the record is positive or negative
-               will be based on this column. Default is 'item'.
+        :param item_col: str, the name of the item column. Whether the record is positive or
+               negative will be based on this column. Default is 'item'.
         :param label_col: str, the name of the label column. Default is 'label'.
         :param neg_num: int, the number of negative records for each positive record. Default is 1.
 

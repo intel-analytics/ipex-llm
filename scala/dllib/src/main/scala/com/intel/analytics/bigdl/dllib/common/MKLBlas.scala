@@ -19,13 +19,13 @@ package com.intel.analytics.bigdl.dllib.common
 import com.intel.analytics.bigdl.mkl.{MKL => BMKL}
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import org.apache.logging.log4j.LogManager
 // import com.intel.analytics.zoo.mkl.MKL.{vdErf, vsErf}
-import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
 
 private[bigdl] object zooMKLBlas {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   def erf[T: ClassTag](tensor: Tensor[T])
     (implicit ev: TensorNumeric[T]): Unit = {

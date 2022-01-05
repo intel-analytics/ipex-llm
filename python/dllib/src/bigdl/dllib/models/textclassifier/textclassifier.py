@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 import itertools
 import re
 from optparse import OptionParser
@@ -40,6 +39,7 @@ def analyze_texts(data_rdd):
     def index(w_c_i):
         ((w, c), i) = w_c_i
         return (w, (i + 1, c))
+
     return data_rdd.flatMap(lambda text_label: text_to_words(text_label[0])) \
         .map(lambda word: (word, 1)).reduceByKey(lambda a, b: a + b) \
         .sortBy(lambda w_c: - w_c[1]).zipWithIndex() \
@@ -127,7 +127,7 @@ def train(sc, data_path,
         lambda vectors_label: to_sample(vectors_label[0], vectors_label[1], embedding_dim))
 
     train_rdd, val_rdd = sample_rdd.randomSplit(
-        [training_split, 1-training_split])
+        [training_split, 1 - training_split])
 
     optimizer = Optimizer.create(
         model=build_model(news20.CLASS_NUM),
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     parser.add_option("-p", "--p", dest="p", default="0.0")
     parser.add_option("-d", "--data_path", dest="data_path", default="/tmp/news20/")
     parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
-    parser.add_option("--on-yarn", action="store_true",  dest="onYarn", default=False)
+    parser.add_option("--on-yarn", action="store_true", dest="onYarn", default=False)
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
@@ -183,15 +183,15 @@ if __name__ == "__main__":
         data_path = options.data_path
         if options.onYarn:
             hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-            assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-                    "set the environment variable HADOOP_CONF_DIR"
+            assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode." \
+                                " Please set the environment variable HADOOP_CONF_DIR"
             conda_env_name = detect_conda_env_name()
             sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,
-                    conda_name=conda_env_name,
-                    num_executors=2,
-                    executor_cores=2,
-                    executor_memory="20g",
-                    driver_memory="10g")
+                                    conda_name=conda_env_name,
+                                    num_executors=2,
+                                    executor_cores=2,
+                                    executor_memory="20g",
+                                    driver_memory="10g")
         else:
             conf = {"spark.driver.memory": "40g"}
             sc = init_spark_on_local(cores=4, conf=conf)

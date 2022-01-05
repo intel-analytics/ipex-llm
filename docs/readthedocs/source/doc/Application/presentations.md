@@ -2,26 +2,42 @@
 ---
 
 **Tutorial:**
+- Seamlessly Scaling out Big Data AI on Ray and Apache Spark, [CVPR 2021](https://cvpr2021.thecvf.com/program) [tutorial](https://jason-dai.github.io/cvpr2021/), June 2021 ([slides](https://jason-dai.github.io/cvpr2021/slides/End-to-End%20Big%20Data%20AI%20Pipeline%20using%20Analytics%20Zoo%20-%20CVPR21.pdf))
+
+- Automated Machine Learning Workflow for Distributed Big Data Using Analytics Zoo,  [CVPR 2020](https://cvpr2020.thecvf.com/program/tutorials) [tutorial](https://jason-dai.github.io/cvpr2020/), June 2020 ([slides](https://jason-dai.github.io/cvpr2020/slides/AIonBigData_cvpr20.pdf))
+
+- Building Deep Learning Applications for Big Data, [AAAI 2019]( https://aaai.org/Conferences/AAAI-19/aaai19tutorials/#sp2) [tutorial](https://jason-dai.github.io/aaai2019/), January 2019 ([slides](https://jason-dai.github.io/aaai2019/slides/AI%20on%20Big%20Data%20(Jason%20Dai).pdf))
 
 - Analytics Zoo: Distributed TensorFlow and Keras on Apache Spark, [AI conference](https://conferences.oreilly.com/artificial-intelligence/ai-ca-2019/public/schedule/detail/77069), Sep 2019, San Jose ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Tutorial%20Analytics%20ZOO.pdf))
 
+- Building Deep Learning Applications on Big Data Platforms, [CVPR 2018](https://cvpr2018.thecvf.com/) [tutorial](https://jason-dai.github.io/cvpr2018/), June 2018 ([slides](https://jason-dai.github.io/cvpr2018/slides/BigData_DL_Jason-CVPR.pdf))
+
 **Talks:**
+- E2E Smart Transportation CV application in Inspur (using Insight Data-Intelligence platform), [CVPR 2021](https://jason-dai.github.io/cvpr2021/), July 2021 ([slides](https://jason-dai.github.io/cvpr2021/slides/Inspur%20E2E%20Smart%20Transportation%20CV%20application%20-CVPR21.pdf))
 
-- Context-aware Fast Food Recommendation with Ray on Apache Spark at Burger King, [Data + AI Summit Europe 2020](https://databricks.com/session_eu20/context-aware-fast-food-recommendation-with-ray-on-apache-spark-at-burger-king), November 2020, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1118%20Context-aware%20Fast%20Food%20Recommendation%20with%20Ray%20on%20Apache%20Spark%20at%20Burger%20King.pdf))
+- Mobile Order Click-Through Rate (CTR) Recommendation with Ray on Apache Spark at Burger King, [Ray Summit 2021](https://www.anyscale.com/events/2021/06/22/mobile-order-click-through-rate-ctr-recommendation-with-ray-on-apache-spark-at-burger-king), June 2021 ([slides](https://files.speakerdeck.com/presentations/1870110b5adf4bfc8f0c76255a417f09/Kai_Huang_and_Luyang_Wang.pdf))
 
-- Cluster Serving: Distributed Model Inference using Apache Flink in Analytics Zoo, [Flink Forward 2020](https://www.flink-forward.org/global-2020/conference-program#cluster-serving--distributed-model-inference-using-apache-flink-in-analytics-zoo), October 2020, ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1020%20Cluster%20Serving%20Distributed%20Model%20Inference%20using%20Apache%20Flink%20in%20Analytics%20Zoo%20.pdf))
+- Deep Reinforcement Learning Recommenders using RayOnSpark, **Data + AI Summit 2021**, May 2021 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210527DeepReinforcementLearningRecommendersUsingRayOnSpark2.pdf))
 
-- Project Zouwu: Scalable AutoML for Telco Time Series Analysis using Ray and Analytics Zoo, [Ray Summit Connect 2020](https://anyscale.com/blog/videos-and-slides-for-the-fourth-ray-summit-connect-august-12-2020/), August 2020, ([slides](https://anyscale.com/wp-content/uploads/2020/08/Ding-Ding-Connect-slides.pdf))
+- Cluster Serving: Deep Learning Model Serving for Big Data, **Data + AI Summit 2021**, May 2021 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/210526Cluster-Serving.pdf))
 
-- Cluster Serving: Distributed Model Inference using Big Data Streaming in Analytics Zoo, [OpML 2020](https://www.usenix.org/conference/opml20/presentation/song), July 2020, ([slides](https://www.usenix.org/sites/default/files/conference/protected-files/opml20_talks_43_slides_song.pdf))
+- Offer Recommendation System with Apache Spark at Burger King, [Data + AI Summit 2021](https://databricks.com/session_na21/offer-recommendation-system-with-apache-spark-at-burger-king), May 2021 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/20210526Offer%20Recommendation.pdf))
 
-- Scalable AutoML for Time Series Forecasting using Ray, [OpML 2020](https://www.usenix.org/conference/opml20/presentation/huang), July 2020, ([slides](https://www.usenix.org/sites/default/files/conference/protected-files/opml20_talks_84_slides_huang.pdf))
+- Context-aware Fast Food Recommendation with Ray on Apache Spark at Burger King, [Data + AI Summit Europe 2020](https://databricks.com/session_eu20/context-aware-fast-food-recommendation-with-ray-on-apache-spark-at-burger-king), November 2020 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1118%20Context-aware%20Fast%20Food%20Recommendation%20with%20Ray%20on%20Apache%20Spark%20at%20Burger%20King.pdf))
 
-- Scalable AutoML for Time Series Forecasting using Ray, [Spark + AI Summit 2020](https://databricks.com/session_na20/scalable-automl-for-time-series-forecasting-using-ray), June 2020, ([slides](https://www.slideshare.net/databricks/scalable-automl-for-time-series-forecasting-using-ray))
+- Cluster Serving: Distributed Model Inference using Apache Flink in Analytics Zoo, [Flink Forward 2020](https://www.flink-forward.org/global-2020/conference-program#cluster-serving--distributed-model-inference-using-apache-flink-in-analytics-zoo), October 2020 ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/1020%20Cluster%20Serving%20Distributed%20Model%20Inference%20using%20Apache%20Flink%20in%20Analytics%20Zoo%20.pdf))
 
-- Running Emerging AI Applications on Big Data Platforms with Ray On Apache Spark, [Spark + AI Summit 2020](https://databricks.com/session_na20/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark), June 2020, ([slides](https://www.slideshare.net/databricks/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark))
+- Project Zouwu: Scalable AutoML for Telco Time Series Analysis using Ray and Analytics Zoo, [Ray Summit Connect 2020](https://anyscale.com/blog/videos-and-slides-for-the-fourth-ray-summit-connect-august-12-2020/), August 2020 ([slides](https://anyscale.com/wp-content/uploads/2020/08/Ding-Ding-Connect-slides.pdf))
 
-- Vectorized Deep Learning Acceleration from Preprocessing to Inference and Training on Apache Spark in SK Telecom, [Spark + AI Summit 2020](https://databricks.com/session_na20/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom), June 2020, ([slides](https://www.slideshare.net/databricks/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom?from_action=save))
+- Cluster Serving: Distributed Model Inference using Big Data Streaming in Analytics Zoo, [OpML 2020](https://www.usenix.org/conference/opml20/presentation/song), July 2020 ([slides](https://www.usenix.org/sites/default/files/conference/protected-files/opml20_talks_43_slides_song.pdf))
+
+- Scalable AutoML for Time Series Forecasting using Ray, [OpML 2020](https://www.usenix.org/conference/opml20/presentation/huang), July 2020 ([slides](https://www.usenix.org/sites/default/files/conference/protected-files/opml20_talks_84_slides_huang.pdf))
+
+- Scalable AutoML for Time Series Forecasting using Ray, [Spark + AI Summit 2020](https://databricks.com/session_na20/scalable-automl-for-time-series-forecasting-using-ray), June 2020 ([slides](https://www.slideshare.net/databricks/scalable-automl-for-time-series-forecasting-using-ray))
+
+- Running Emerging AI Applications on Big Data Platforms with Ray On Apache Spark, [Spark + AI Summit 2020](https://databricks.com/session_na20/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark), June 2020 ([slides](https://www.slideshare.net/databricks/running-emerging-ai-applications-on-big-data-platforms-with-ray-on-apache-spark))
+
+- Vectorized Deep Learning Acceleration from Preprocessing to Inference and Training on Apache Spark in SK Telecom, [Spark + AI Summit 2020](https://databricks.com/session_na20/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom), June 2020 ([slides](https://www.slideshare.net/databricks/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom?from_action=save))
 
 - Architecture and practice of big data analysis and deep learning model inference using Analytics Zoo on Flink, [Flink Forward Asia 2019](https://developer.aliyun.com/special/ffa2019-conference?spm=a2c6h.13239638.0.0.21f27955PCNMUB#), Nov 2019, Beijing ([slides](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/Architecture%20and%20practice%20of%20big%20data%20analysis%20and%20deep%20learning%20model%20inference%20using%20Analytics%20Zoo%20on%20Flink(FFA2019)%20.pdf))
 

@@ -23,16 +23,16 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Table}
 import com.intel.analytics.bigdl.dllib.common.zooUtils
+import org.apache.logging.log4j.LogManager
 // import com.intel.analytics.bigdl.dllib.models.common.ZooModel
 import org.apache.commons.io.FileUtils
-import org.apache.log4j.Logger
 import org.scalactic.TolerantNumerics
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
 abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter {
-  protected val logger = Logger.getLogger(getClass)
+  protected val logger = LogManager.getLogger(getClass)
 
   private val epsilon = 1e-4f
 

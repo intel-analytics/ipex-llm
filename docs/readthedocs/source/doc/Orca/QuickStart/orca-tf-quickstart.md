@@ -12,7 +12,6 @@
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
-
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
@@ -28,15 +27,17 @@ from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":  # For local machine
     init_orca_context(cluster_mode="local", cores=4, memory="10g")
+    dataset_dir = "~/tensorflow_datasets"
 elif cluster_mode == "k8s":  # For K8s cluster
     init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
 elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
     init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
+    dataset_dir = "hdfs:///tensorflow_datasets"
 ```
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
 
-**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details.
+**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](./../../UserGuide/hadoop.md) for more details. To use tensorflow_datasets on HDFS, you should correctly set HADOOP_HOME, HADOOP_HDFS_HOME, LD_LIBRARY_PATH, etc. For more details, please refer to TensorFlow documentation [link](https://github.com/tensorflow/docs/blob/r1.11/site/en/deploy/hadoop.md).
 
 ### **Step 2: Define the Model**
 
@@ -83,7 +84,6 @@ def preprocess(data):
     return data['image'], data['label']
 
 # get DataSet
-dataset_dir = "./mnist_data"
 mnist_train = tfds.load(name="mnist", split="train", data_dir=dataset_dir)
 mnist_test = tfds.load(name="mnist", split="test", data_dir=dataset_dir)
 

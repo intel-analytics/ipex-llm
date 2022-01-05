@@ -16,9 +16,23 @@
 
 package com.intel.analytics.bigdl.ppml.example
 
+import org.apache.spark.sql.DataFrame
 
 
 object ExampleUtils {
+  /**
+   * Split a DataFrame into 2 parts for training and evaluation, the size is controlled by ratio
+   * @param df DataFrame to split
+   * @param ratio Float, default 0.8, means training data size is 0.8 * totalSize
+   * @return 2-tuple of DataFrame
+   */
+  def splitDataFrameToTrainVal(df: DataFrame, ratio: Float = 0.8f): (DataFrame, DataFrame) = {
+    val size = df.count()
+    val trainSize = (size * ratio).toInt
+    val trainDf = df.limit(trainSize)
+    val valDf = df.except(trainDf)
+    (trainDf, valDf)
+  }
   def minMaxNormalize(data: Array[Array[Float]], col: Int): Array[Array[Float]] = {
     val min = data.map(_ (col)).min
     val max = data.map(_ (col)).max

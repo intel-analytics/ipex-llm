@@ -8,12 +8,13 @@ spec:
   - name: spark-example
     image: intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT
     imagePullPolicy: Never
-    workingDir: /opt/spark
     volumeMounts:
     - name: sgx-enclave
       mountPath: /dev/sgx/enclave
     - name: sgx-provision
       mountPath: /dev/sgx/provision
+    - name: data-exchange
+      mountPath: /opt/occlum_spark/data
     securityContext:
       privileged: true
   volumes:
@@ -23,4 +24,6 @@ spec:
   - name: sgx-provision
     hostPath:
       path: /dev/sgx_provision
-
+  - name: data-exchange
+    hostPath:
+      path: /tmp

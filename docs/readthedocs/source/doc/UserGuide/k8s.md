@@ -42,7 +42,7 @@ You can submit BigDL application from a client container that provides the requi
 sudo docker run -itd --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube:/root/.kube \
-    intelanalytics/hyper-zoo:latest bash
+    intelanalytics/bigdl-k8s:latest bash
 ```
 
 **Note:** to create the client container, `-v /etc/kubernetes:/etc/kubernetes:` and `-v /root/.kube:/root/.kube` are required to specify the path of kube config and installation.
@@ -108,13 +108,29 @@ The `/opt` directory contains:
 - spark is the spark home.
 - redis is the redis home.
 
-### **3. Run BigDL Examples on k8s**
+### **3. Submit to k8s from remote**
+
+Instead of lanuching a client container, you can also submit BigDL application from a remote node with the following steps:
+
+1. Check the [prerequisites](https://spark.apache.org/docs/latest/running-on-kubernetes.html#prerequisites) of running Spark on Kubernetes.
+
+    - The remote node needs to properly setup the configurations and authentications of the k8s cluster (e.g. the `config` file under `~/.kube`, especially the server address in the `config`).
+
+    - Install `kubectl` on the remote node and run some sample commands for verification, for example `kubectl auth can-i <list|create|edit|delete> pods`. 
+    Note that the installation of `kubectl` is not a must for the remote node, but it is a useful tool to verify whether the remote node has access to the k8s cluster.
+
+    - The environment variables `http_proxy` and `https_proxy` may affect the connection using `kubectl`. You may check and unset these environment variables in case you get errors when executing the `kubectl` commands on the remote node.
+
+2. Follow the steps in the [Python User Guide](./python.html#install) to install BigDL in a conda environment.
+
+
+### **4. Run BigDL on k8s**
 
 _**Note**: Please make sure `kubectl` has appropriate permission to create, list and delete pod._
 
-_**Note**: Please refer to section 4 for some know issues._
+You may refer to [Section 5](#known-issues) for some known issues when running BigDL on k8s.
 
-#### **3.1 K8s client mode**
+#### **4.1 K8s client mode**
 
 We recommend using `init_orca_context` at the very beginning of your code (e.g. in script.py) to initiate and run BigDL on standard K8s clusters in [client mode](http://spark.apache.org/docs/latest/running-on-kubernetes.html#client-mode).
 
@@ -123,14 +139,14 @@ from bigdl.orca import init_orca_context
 
 init_orca_context(cluster_mode="k8s", master="k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>",
                   container_image="intelanalytics/bigdl-k8s:latest",
-                  num_nodes=2, cores=2,
-                  conf={"spark.driver.host": "x.x.x.x",
-                        "spark.driver.port": "x"})
+                  num_nodes=2, cores=2, memory="2g")
 ```
+
+Remark: You may need to specify Spark driver host and port if necessary by adding the argument: `conf={"spark.driver.host": "x.x.x.x", "spark.driver.port": "x"}`.
 
 Execute `python script.py` to run your program on k8s cluster directly.
 
-#### **3.2 K8s cluster mode**
+#### **4.2 K8s cluster mode**
 
 For k8s [cluster mode](https://spark.apache.org/docs/3.1.2/running-on-kubernetes.html#cluster-mode), you can call `init_orca_context` and specify cluster_mode to be "spark-submit" in your python script (e.g. in script.py):
 
@@ -164,7 +180,7 @@ ${SPARK_HOME}/bin/spark-submit \
   local:///path/script.py
 ```
 
-#### **3.3 Run Jupyter Notebooks**
+#### **4.3 Run Jupyter Notebooks**
 
 After a Docker container is launched and user login into the container, you can start the Jupyter Notebook service inside the container.
 
@@ -184,7 +200,7 @@ You will see the output message like below. This means the Jupyter Notebook serv
 
 Then, refer [docker guide](./docker.md) to open Jupyter Notebook service from a browser and run notebook.
 
-#### **3.4 Run Scala programs**
+#### **4.4 Run Scala programs**
 
 Use spark-submit to submit your BigDL program.  e.g., run [nnframes imageInference](../../../../../../scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/imageInference) example (running in either local mode or cluster mode) as follows:
 
@@ -230,11 +246,11 @@ Options:
 - --class: scala example class name.
 - --inputDir: input data path of the nnframe example. The data path is the mounted filesystem of the host. Refer to more details by [Kubernetes Volumes](https://spark.apache.org/docs/latest/running-on-kubernetes.html#using-kubernetes-volumes).
 
-### **4 Know issues**
+### **5 Known Issues**
 
 This section shows some common topics for both client mode and cluster mode.
 
-#### **4.1 How to specify python environment**
+#### **5.1 How to specify the Python environment?**
 
 The k8s image provides conda python environment. Image "intelanalytics/bigdl-k8s:latest" installs python environment in "/usr/local/envs/pytf1/bin/python". Image "intelanalytics/bigdl-k8s:latest-tf2" installs python environment in "/usr/local/envs/pytf2/bin/python".
 
@@ -251,7 +267,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.pyspark.python=/usr/local/envs/pytf1/bin/python \
   file:///path/script.py
 ```
-#### **4.2 How to retain executor logs for debugging?**
+#### **5.2 How to retain executor logs for debugging?**
 
 The k8s would delete the pod once the executor failed in client mode and cluster mode.  If you want to get the content of executor log, you could set "temp-dir" to a mounted network file system (NFS) storage to change the log dir to replace the former one. In this case, you may meet `JSONDecodeError` because multiple executors would write logs to the same physical folder and cause conflicts. The solutions are in the next section.
 
@@ -259,11 +275,11 @@ The k8s would delete the pod once the executor failed in client mode and cluster
 init_orca_context(..., extra_params = {"temp-dir": "/bigdl/"})
 ```
 
-#### **4.3 How to deal with "JSONDecodeError" ?**
+#### **5.3 How to deal with "JSONDecodeError"?**
 
 If you set `temp-dir` to a mounted nfs storage and use multiple executors , you may meet `JSONDecodeError` since multiple executors would write to the same physical folder and cause conflicts. Do not mount `temp-dir` to shared storage is one option to avoid conflicts. But if you debug ray on k8s, you need to output logs to a shared storage. In this case, you could set num-nodes to 1. After testing, you can remove `temp-dir` setting and run multiple executors.
 
-#### **4.4 How to use NFS?**
+#### **5.4 How to use NFS?**
 
 If you want to save some files out of pod's lifecycle, such as logging callbacks or tensorboard callbacks, you need to set the output dir to a mounted persistent volume dir. Let NFS be a simple example.
 
@@ -289,23 +305,23 @@ ${SPARK_HOME}/bin/spark-submit \
   file:///path/script.py
 ```
 
-#### **4.5 How to deal with  "RayActorError" ?**
+#### **5.5 How to deal with "RayActorError"?**
 
 "RayActorError" may caused by running out of the ray memory. If you meet this error, try to increase the memory for ray.
 
 ```python
-init_orca_context(..., exra_executor_memory_for_ray=100g)
+init_orca_context(..., extra_executor_memory_for_ray="100g")
 ```
 
-####  **4.6 How to set proper "steps_per_epoch" and "validation steps" ?**
+#### **5.6 How to set proper "steps_per_epoch" and "validation steps"?**
 
 The `steps_per_epoch` and `validation_steps` should equal to numbers of dataset divided by batch size if you want to train all dataset. The `steps_per_epoch` and `validation_steps` do not relate to the `num_nodes` when total dataset and batch size are fixed. For example, you set `num_nodes` to 1, and set `steps_per_epoch` to 6. If you change the `num_nodes` to 3, the `steps_per_epoch` should still be 6.
 
-#### **4.7 Others**
+#### **5.7 Others**
 
 `spark.kubernetes.container.image.pullPolicy` needs to be specified as `always` if you need to update your spark executor image for k8s.
 
-### **5. Access logs and clear pods**
+### **6. Access logs and clear pods**
 
 When application is running, it’s possible to stream logs on the driver pod:
 

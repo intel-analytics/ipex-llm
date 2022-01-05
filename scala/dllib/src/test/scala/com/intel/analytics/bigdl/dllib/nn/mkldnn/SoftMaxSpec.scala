@@ -16,15 +16,67 @@
 
 package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
+import com.intel.analytics.bigdl.dllib.integration.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.nn.SoftMin
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
-class SoftMaxSpec extends FlatSpec with Matchers {
+import scala.concurrent.Future
+import scala.reflect.ClassTag
+
+@com.intel.analytics.bigdl.tags.Serial
+class SoftMaxSpec extends TorchSpec with Matchers {
+  @transient
+  private var results: Array[Future[Unit]] = null
+  private var pos = 1
+  var internalOutput = Tensor[Float]()
+  var internalGradInput = Tensor[Float]()
+
+  private def getPositiveDimension(input: Tensor[Float]): Int = {
+    val inputDim = input.nDimension() // data batch dim
+    pos = if (pos <= 0) {
+      inputDim + pos
+    }
+    else pos
+    require(1 <= pos && pos <= input.nDimension(),
+      s"Invalid position: $pos ." + s"input dimension ${input.nDimension()}")
+    pos
+  }
+
+  def internalUpdateOutput(input: Tensor[Float]): Tensor[Float] = {
+    require(1 <= input.nDimension() && input.nDimension() <= 4,
+      "1D, 2D, 3D or 4D tensor expected" +
+        s"input dimension ${input.nDimension()}")
+    pos = getPositiveDimension(input)
+    // get nFrame and stride value based on the input
+    val (nFrame, stride) = input.nDimension() - pos match {
+      case 0 => (1, 1)
+      case 1 => (input.size(pos), 1)
+      case 2 => (1, input.size(pos + 1) * input.size(pos + 2))
+      case _ => (input.size(pos), input.size(pos + 2) * input.size(pos + 3))
+    }
+
+    if (results == null || results.length != nFrame * stride) {
+      results = new Array[Future[Unit]](nFrame * stride)
+    }
+    internalOutput.resizeAs(input)
+    SoftMin.updateOutput[Float](input, internalOutput, results, pos)
+    internalOutput
+  }
+
+  def internalUpdateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float]
+  = {
+    internalGradInput.resizeAs(internalOutput)
+    SoftMin.updateGradInput[Float](input, gradOutput, internalGradInput,
+      internalOutput, results, pos)
+    internalGradInput
+  }
+
   "SoftMax forward 1-D" should "work correctly" in {
     // we should test the cases which contain 1
     val tests = List(2, 1)
@@ -107,16 +159,21 @@ class SoftMaxSpec extends FlatSpec with Matchers {
 
       val output = sm.forward(input)
 
-      val nnSm = nn.SoftMax()
-      val nnOutput = nnSm.forward(input)
+//      val nnSm = nn.SoftMax()
+//      val nnOutput = nnSm.forward(input)
+//
+//      Tools.dense(output) should be (nnOutput)
+
+      val nnOutput = internalUpdateOutput(input)
+
+      val gradOutput = Tensor[Float]().resizeAs(output.toTensor).rand(-10, 10)
+      sm.backward(input, gradOutput)
+//      nnSm.backward(input, gradOutput)
+      val nnGradInput = internalUpdateGradInput(input, gradOutput)
+
 
       Tools.dense(output) should be (nnOutput)
-
-      val gradOutput = Tensor[Float]().resizeAs(nnOutput).rand(-10, 10)
-      sm.backward(input, gradOutput)
-      nnSm.backward(input, gradOutput)
-
-      Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
+      Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnGradInput,
         epsilon = 1e-5) should be (true)
     }
   }
@@ -142,16 +199,17 @@ class SoftMaxSpec extends FlatSpec with Matchers {
 
       val output = sm.forward(input)
 
-      val nnSm = nn.SoftMax()
-      val nnOutput = nnSm.forward(input)
-
+//      val nnSm = nn.SoftMax()
+//      val nnOutput = nnSm.forward(input)
+      val nnOutput = internalUpdateOutput(input)
       Tools.dense(output) should be (nnOutput)
 
-      val gradOutput = Tensor[Float]().resizeAs(nnOutput).rand(-10, 10)
+      val gradOutput = Tensor[Float]().resizeAs(output.toTensor).rand(-10, 10)
       sm.backward(input, gradOutput)
-      nnSm.backward(input, gradOutput)
+//      nnSm.backward(input, gradOutput)
+      val nnGradInput = internalUpdateGradInput(input, gradOutput)
 
-      Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
+      Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnGradInput,
         epsilon = 1e-5) should be (true)
     }
   }
@@ -165,20 +223,26 @@ class SoftMaxSpec extends FlatSpec with Matchers {
     sm.initBwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
       Memory.Format.nchw)), TrainingPhase)
 
-    val nnSm = nn.SoftMax()
+//    val nnSm = nn.SoftMax()
 
     val input = Tensor(batchSize, channel, height, width).rand()
     val gradOutput = Tensor().resizeAs(input).rand(-10, 10)
 
     sm.forward(input)
-    nnSm.forward(input)
+//    nnSm.forward(input)
+    val nnOutput = internalUpdateOutput(input)
 
     sm.backward(input, gradOutput)
-    nnSm.backward(input, gradOutput)
+//    nnSm.backward(input, gradOutput)
+    val nnGradInput = internalUpdateGradInput(input, gradOutput)
 
-    Equivalent.nearequals(Tools.dense(sm.output).toTensor, nnSm.output.toTensor,
+//    Equivalent.nearequals(Tools.dense(sm.output).toTensor, nnSm.output.toTensor,
+//      epsilon = 1e-5) should be (true)
+//    Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
+//      epsilon = 1e-5) should be (true)
+    Equivalent.nearequals(Tools.dense(sm.output).toTensor, nnOutput,
       epsilon = 1e-5) should be (true)
-    Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnSm.gradInput.toTensor,
+    Equivalent.nearequals(Tools.dense(sm.gradInput).toTensor, nnGradInput,
       epsilon = 1e-5) should be (true)
   }
 
@@ -190,14 +254,15 @@ class SoftMaxSpec extends FlatSpec with Matchers {
       Memory.Format.nchw)), InferencePhase)
     sm.evaluate()
 
-    val nnSm = nn.SoftMax()
+//    val nnSm = nn.SoftMax()
 
     (0 until 5).foreach { _ =>
       val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
       sm.forward(input)
-      nnSm.forward(input)
+//      nnSm.forward(input)
+      val nnOutput = internalUpdateOutput(input)
 
-      Tools.dense(sm.output) should be (nnSm.output)
+      Tools.dense(sm.output) should be (nnOutput)
     }
   }
 

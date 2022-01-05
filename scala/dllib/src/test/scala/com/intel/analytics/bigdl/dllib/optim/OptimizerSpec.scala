@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.optim
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, LocalDataSet, Sample}
-import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, Linear, Sequential}
+import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, Module, Linear, Sequential}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -215,7 +215,7 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dummyOptimizer.optimize()
 
     model.clearState()
-    val loadedModel = File.load[Module[Double]] (filePath + "/model")
+    val loadedModel = Module.loadModule[Double] (filePath + "/model")
     loadedModel should be(model)
   }
 
@@ -235,7 +235,7 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     model.clearState()
     val loadedModel =
-      File.load[Module[Double]](filePath + "/model.test")
+      Module.loadModule[Double](filePath + "/model.test")
     loadedModel should be(model)
   }
 

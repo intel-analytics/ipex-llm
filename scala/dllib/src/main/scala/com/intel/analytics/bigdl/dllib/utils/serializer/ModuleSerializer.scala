@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.models.maskrcnn.MaskRCNN
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.nn.ops.{RandomUniform => RandomUniformOps}
 import com.intel.analytics.bigdl.dllib.nn.tf.{DecodeRawSerializer, ParseExample, ParseSingleExample, StridedSlice}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
@@ -239,11 +239,11 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.StaticGraph", Graph)
     registerModule("com.intel.analytics.bigdl.dllib.nn.DynamicGraph", Graph)
     registerModule("com.intel.analytics.bigdl.nn.DynamicGraph", Graph)
-    registerModule("com.intel.analytics.bigdl.dllib.nn.keras.Model", Model)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.internal.Model", Model)
     registerModule("com.intel.analytics.bigdl.nn.keras.Model", Model)
-    registerModule("com.intel.analytics.bigdl.dllib.nn.keras.Sequential", KSequential)
+    registerModule("com.intel.analytics.bigdl.dllib.nn.internal.Sequential", KSequential)
     registerModule("com.intel.analytics.bigdl.nn.keras.Sequential", KSequential)
-    registerModule("com.intel.analytics.bigdl.dllib.nn.keras.layers.KerasLayerWrapper",
+    registerModule("com.intel.analytics.bigdl.dllib.nn.internal.layers.KerasLayerWrapper",
       KerasLayerSerializer)
     registerModule("com.intel.analytics.bigdl.nn.keras.layers.KerasLayerWrapper",
       KerasLayerSerializer)

@@ -1,21 +1,12 @@
 package com.intel.analytics.bigdl.ppml.generated;
 
-import io.grpc.stub.ClientCalls;
-
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
- * <pre>
- * PSI proto
- * </pre>
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.33.0)",
-    comments = "Source: FLProto.proto")
+    value = "by gRPC proto compiler (version 1.37.0)",
+    comments = "Source: psi_service.proto")
 public final class PSIServiceGrpc {
 
   private PSIServiceGrpc() {}
@@ -23,29 +14,29 @@ public final class PSIServiceGrpc {
   public static final String SERVICE_NAME = "PSIService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<FLProto.SaltRequest,
-      FLProto.SaltReply> getGetSaltMethod;
+  private static volatile io.grpc.MethodDescriptor<PSIServiceProto.SaltRequest,
+      PSIServiceProto.SaltReply> getGetSaltMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "getSalt",
-      requestType = FLProto.SaltRequest.class,
-      responseType = FLProto.SaltReply.class,
+      requestType = PSIServiceProto.SaltRequest.class,
+      responseType = PSIServiceProto.SaltReply.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FLProto.SaltRequest,
-      FLProto.SaltReply> getGetSaltMethod() {
-    io.grpc.MethodDescriptor<FLProto.SaltRequest, FLProto.SaltReply> getGetSaltMethod;
+  public static io.grpc.MethodDescriptor<PSIServiceProto.SaltRequest,
+      PSIServiceProto.SaltReply> getGetSaltMethod() {
+    io.grpc.MethodDescriptor<PSIServiceProto.SaltRequest, PSIServiceProto.SaltReply> getGetSaltMethod;
     if ((getGetSaltMethod = PSIServiceGrpc.getGetSaltMethod) == null) {
       synchronized (PSIServiceGrpc.class) {
         if ((getGetSaltMethod = PSIServiceGrpc.getGetSaltMethod) == null) {
           PSIServiceGrpc.getGetSaltMethod = getGetSaltMethod =
-              io.grpc.MethodDescriptor.<FLProto.SaltRequest, FLProto.SaltReply>newBuilder()
+              io.grpc.MethodDescriptor.<PSIServiceProto.SaltRequest, PSIServiceProto.SaltReply>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "getSalt"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.SaltRequest.getDefaultInstance()))
+                  PSIServiceProto.SaltRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.SaltReply.getDefaultInstance()))
+                  PSIServiceProto.SaltReply.getDefaultInstance()))
               .setSchemaDescriptor(new PSIServiceMethodDescriptorSupplier("getSalt"))
               .build();
         }
@@ -54,29 +45,29 @@ public final class PSIServiceGrpc {
     return getGetSaltMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FLProto.UploadSetRequest,
-      FLProto.UploadSetResponse> getUploadSetMethod;
+  private static volatile io.grpc.MethodDescriptor<PSIServiceProto.UploadSetRequest,
+      PSIServiceProto.UploadSetResponse> getUploadSetMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "uploadSet",
-      requestType = FLProto.UploadSetRequest.class,
-      responseType = FLProto.UploadSetResponse.class,
+      requestType = PSIServiceProto.UploadSetRequest.class,
+      responseType = PSIServiceProto.UploadSetResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FLProto.UploadSetRequest,
-      FLProto.UploadSetResponse> getUploadSetMethod() {
-    io.grpc.MethodDescriptor<FLProto.UploadSetRequest, FLProto.UploadSetResponse> getUploadSetMethod;
+  public static io.grpc.MethodDescriptor<PSIServiceProto.UploadSetRequest,
+      PSIServiceProto.UploadSetResponse> getUploadSetMethod() {
+    io.grpc.MethodDescriptor<PSIServiceProto.UploadSetRequest, PSIServiceProto.UploadSetResponse> getUploadSetMethod;
     if ((getUploadSetMethod = PSIServiceGrpc.getUploadSetMethod) == null) {
       synchronized (PSIServiceGrpc.class) {
         if ((getUploadSetMethod = PSIServiceGrpc.getUploadSetMethod) == null) {
           PSIServiceGrpc.getUploadSetMethod = getUploadSetMethod =
-              io.grpc.MethodDescriptor.<FLProto.UploadSetRequest, FLProto.UploadSetResponse>newBuilder()
+              io.grpc.MethodDescriptor.<PSIServiceProto.UploadSetRequest, PSIServiceProto.UploadSetResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "uploadSet"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.UploadSetRequest.getDefaultInstance()))
+                  PSIServiceProto.UploadSetRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.UploadSetResponse.getDefaultInstance()))
+                  PSIServiceProto.UploadSetResponse.getDefaultInstance()))
               .setSchemaDescriptor(new PSIServiceMethodDescriptorSupplier("uploadSet"))
               .build();
         }
@@ -85,29 +76,29 @@ public final class PSIServiceGrpc {
     return getUploadSetMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FLProto.DownloadIntersectionRequest,
-      FLProto.DownloadIntersectionResponse> getDownloadIntersectionMethod;
+  private static volatile io.grpc.MethodDescriptor<PSIServiceProto.DownloadIntersectionRequest,
+      PSIServiceProto.DownloadIntersectionResponse> getDownloadIntersectionMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "downloadIntersection",
-      requestType = FLProto.DownloadIntersectionRequest.class,
-      responseType = FLProto.DownloadIntersectionResponse.class,
+      requestType = PSIServiceProto.DownloadIntersectionRequest.class,
+      responseType = PSIServiceProto.DownloadIntersectionResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FLProto.DownloadIntersectionRequest,
-      FLProto.DownloadIntersectionResponse> getDownloadIntersectionMethod() {
-    io.grpc.MethodDescriptor<FLProto.DownloadIntersectionRequest, FLProto.DownloadIntersectionResponse> getDownloadIntersectionMethod;
+  public static io.grpc.MethodDescriptor<PSIServiceProto.DownloadIntersectionRequest,
+      PSIServiceProto.DownloadIntersectionResponse> getDownloadIntersectionMethod() {
+    io.grpc.MethodDescriptor<PSIServiceProto.DownloadIntersectionRequest, PSIServiceProto.DownloadIntersectionResponse> getDownloadIntersectionMethod;
     if ((getDownloadIntersectionMethod = PSIServiceGrpc.getDownloadIntersectionMethod) == null) {
       synchronized (PSIServiceGrpc.class) {
         if ((getDownloadIntersectionMethod = PSIServiceGrpc.getDownloadIntersectionMethod) == null) {
           PSIServiceGrpc.getDownloadIntersectionMethod = getDownloadIntersectionMethod =
-              io.grpc.MethodDescriptor.<FLProto.DownloadIntersectionRequest, FLProto.DownloadIntersectionResponse>newBuilder()
+              io.grpc.MethodDescriptor.<PSIServiceProto.DownloadIntersectionRequest, PSIServiceProto.DownloadIntersectionResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "downloadIntersection"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.DownloadIntersectionRequest.getDefaultInstance()))
+                  PSIServiceProto.DownloadIntersectionRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FLProto.DownloadIntersectionResponse.getDefaultInstance()))
+                  PSIServiceProto.DownloadIntersectionResponse.getDefaultInstance()))
               .setSchemaDescriptor(new PSIServiceMethodDescriptorSupplier("downloadIntersection"))
               .build();
         }
@@ -161,9 +152,6 @@ public final class PSIServiceGrpc {
   }
 
   /**
-   * <pre>
-   * PSI proto
-   * </pre>
    */
   public static abstract class PSIServiceImplBase implements io.grpc.BindableService {
 
@@ -172,56 +160,53 @@ public final class PSIServiceGrpc {
      * Gives SHA256 Hash salt
      * </pre>
      */
-    public void getSalt(FLProto.SaltRequest request,
-                        io.grpc.stub.StreamObserver<FLProto.SaltReply> responseObserver) {
-      asyncUnimplementedUnaryCall(getGetSaltMethod(), responseObserver);
+    public void getSalt(PSIServiceProto.SaltRequest request,
+                        io.grpc.stub.StreamObserver<PSIServiceProto.SaltReply> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetSaltMethod(), responseObserver);
     }
 
     /**
      */
-    public void uploadSet(FLProto.UploadSetRequest request,
-                          io.grpc.stub.StreamObserver<FLProto.UploadSetResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getUploadSetMethod(), responseObserver);
+    public void uploadSet(PSIServiceProto.UploadSetRequest request,
+                          io.grpc.stub.StreamObserver<PSIServiceProto.UploadSetResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUploadSetMethod(), responseObserver);
     }
 
     /**
      */
-    public void downloadIntersection(FLProto.DownloadIntersectionRequest request,
-                                     io.grpc.stub.StreamObserver<FLProto.DownloadIntersectionResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getDownloadIntersectionMethod(), responseObserver);
+    public void downloadIntersection(PSIServiceProto.DownloadIntersectionRequest request,
+                                     io.grpc.stub.StreamObserver<PSIServiceProto.DownloadIntersectionResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDownloadIntersectionMethod(), responseObserver);
     }
 
     @Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getGetSaltMethod(),
-            asyncUnaryCall(
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FLProto.SaltRequest,
-                FLProto.SaltReply>(
+                PSIServiceProto.SaltRequest,
+                PSIServiceProto.SaltReply>(
                   this, METHODID_GET_SALT)))
           .addMethod(
             getUploadSetMethod(),
-            asyncUnaryCall(
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FLProto.UploadSetRequest,
-                FLProto.UploadSetResponse>(
+                PSIServiceProto.UploadSetRequest,
+                PSIServiceProto.UploadSetResponse>(
                   this, METHODID_UPLOAD_SET)))
           .addMethod(
             getDownloadIntersectionMethod(),
-            asyncUnaryCall(
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FLProto.DownloadIntersectionRequest,
-                FLProto.DownloadIntersectionResponse>(
+                PSIServiceProto.DownloadIntersectionRequest,
+                PSIServiceProto.DownloadIntersectionResponse>(
                   this, METHODID_DOWNLOAD_INTERSECTION)))
           .build();
     }
   }
 
   /**
-   * <pre>
-   * PSI proto
-   * </pre>
    */
   public static final class PSIServiceStub extends io.grpc.stub.AbstractAsyncStub<PSIServiceStub> {
     private PSIServiceStub(
@@ -240,33 +225,30 @@ public final class PSIServiceGrpc {
      * Gives SHA256 Hash salt
      * </pre>
      */
-    public void getSalt(FLProto.SaltRequest request,
-                        io.grpc.stub.StreamObserver<FLProto.SaltReply> responseObserver) {
-      ClientCalls.asyncUnaryCall(
+    public void getSalt(PSIServiceProto.SaltRequest request,
+                        io.grpc.stub.StreamObserver<PSIServiceProto.SaltReply> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetSaltMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void uploadSet(FLProto.UploadSetRequest request,
-                          io.grpc.stub.StreamObserver<FLProto.UploadSetResponse> responseObserver) {
-      ClientCalls.asyncUnaryCall(
+    public void uploadSet(PSIServiceProto.UploadSetRequest request,
+                          io.grpc.stub.StreamObserver<PSIServiceProto.UploadSetResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getUploadSetMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void downloadIntersection(FLProto.DownloadIntersectionRequest request,
-                                     io.grpc.stub.StreamObserver<FLProto.DownloadIntersectionResponse> responseObserver) {
-      ClientCalls.asyncUnaryCall(
+    public void downloadIntersection(PSIServiceProto.DownloadIntersectionRequest request,
+                                     io.grpc.stub.StreamObserver<PSIServiceProto.DownloadIntersectionResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDownloadIntersectionMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
   /**
-   * <pre>
-   * PSI proto
-   * </pre>
    */
   public static final class PSIServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<PSIServiceBlockingStub> {
     private PSIServiceBlockingStub(
@@ -285,30 +267,27 @@ public final class PSIServiceGrpc {
      * Gives SHA256 Hash salt
      * </pre>
      */
-    public FLProto.SaltReply getSalt(FLProto.SaltRequest request) {
-      return blockingUnaryCall(
+    public PSIServiceProto.SaltReply getSalt(PSIServiceProto.SaltRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetSaltMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FLProto.UploadSetResponse uploadSet(FLProto.UploadSetRequest request) {
-      return blockingUnaryCall(
+    public PSIServiceProto.UploadSetResponse uploadSet(PSIServiceProto.UploadSetRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getUploadSetMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public FLProto.DownloadIntersectionResponse downloadIntersection(FLProto.DownloadIntersectionRequest request) {
-      return blockingUnaryCall(
+    public PSIServiceProto.DownloadIntersectionResponse downloadIntersection(PSIServiceProto.DownloadIntersectionRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getDownloadIntersectionMethod(), getCallOptions(), request);
     }
   }
 
   /**
-   * <pre>
-   * PSI proto
-   * </pre>
    */
   public static final class PSIServiceFutureStub extends io.grpc.stub.AbstractFutureStub<PSIServiceFutureStub> {
     private PSIServiceFutureStub(
@@ -327,25 +306,25 @@ public final class PSIServiceGrpc {
      * Gives SHA256 Hash salt
      * </pre>
      */
-    public com.google.common.util.concurrent.ListenableFuture<FLProto.SaltReply> getSalt(
-        FLProto.SaltRequest request) {
-      return futureUnaryCall(
+    public com.google.common.util.concurrent.ListenableFuture<PSIServiceProto.SaltReply> getSalt(
+        PSIServiceProto.SaltRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetSaltMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FLProto.UploadSetResponse> uploadSet(
-        FLProto.UploadSetRequest request) {
-      return futureUnaryCall(
+    public com.google.common.util.concurrent.ListenableFuture<PSIServiceProto.UploadSetResponse> uploadSet(
+        PSIServiceProto.UploadSetRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getUploadSetMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FLProto.DownloadIntersectionResponse> downloadIntersection(
-        FLProto.DownloadIntersectionRequest request) {
-      return futureUnaryCall(
+    public com.google.common.util.concurrent.ListenableFuture<PSIServiceProto.DownloadIntersectionResponse> downloadIntersection(
+        PSIServiceProto.DownloadIntersectionRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDownloadIntersectionMethod(), getCallOptions()), request);
     }
   }
@@ -372,16 +351,16 @@ public final class PSIServiceGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_GET_SALT:
-          serviceImpl.getSalt((FLProto.SaltRequest) request,
-              (io.grpc.stub.StreamObserver<FLProto.SaltReply>) responseObserver);
+          serviceImpl.getSalt((PSIServiceProto.SaltRequest) request,
+              (io.grpc.stub.StreamObserver<PSIServiceProto.SaltReply>) responseObserver);
           break;
         case METHODID_UPLOAD_SET:
-          serviceImpl.uploadSet((FLProto.UploadSetRequest) request,
-              (io.grpc.stub.StreamObserver<FLProto.UploadSetResponse>) responseObserver);
+          serviceImpl.uploadSet((PSIServiceProto.UploadSetRequest) request,
+              (io.grpc.stub.StreamObserver<PSIServiceProto.UploadSetResponse>) responseObserver);
           break;
         case METHODID_DOWNLOAD_INTERSECTION:
-          serviceImpl.downloadIntersection((FLProto.DownloadIntersectionRequest) request,
-              (io.grpc.stub.StreamObserver<FLProto.DownloadIntersectionResponse>) responseObserver);
+          serviceImpl.downloadIntersection((PSIServiceProto.DownloadIntersectionRequest) request,
+              (io.grpc.stub.StreamObserver<PSIServiceProto.DownloadIntersectionResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -405,7 +384,7 @@ public final class PSIServiceGrpc {
 
     @Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return FLProto.getDescriptor();
+      return PSIServiceProto.getDescriptor();
     }
 
     @Override

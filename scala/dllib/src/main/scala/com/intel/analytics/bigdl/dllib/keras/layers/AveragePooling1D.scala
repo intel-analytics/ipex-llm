@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
-import com.intel.analytics.bigdl.dllib.nn.keras.Pooling1D
+import com.intel.analytics.bigdl.dllib.nn.internal.Pooling1D
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric

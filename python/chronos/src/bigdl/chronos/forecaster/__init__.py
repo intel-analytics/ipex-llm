@@ -25,22 +25,24 @@ try:
     import torch
     torch_available = True
 except:
-    warnings.warn("Please install `torch` to use full collection of forecasters.")
+    warnings.warn("Please install `torch` to use forecasters, including TCMFForecaster, "
+                  "TCNForecaster, LSTMForecaster, Seq2SeqForecaster.")
 try:
     import tensorflow as tf
+    assert tf.__version__ < "2.0.0"
     tf_available = True
 except:
-    warnings.warn("Please install `tensorflow` to use full collection of forecasters.")
+    warnings.warn("Please install `tensorflow<2.0.0` to use MTNetForecaster.")
 try:
     import prophet
     prophet_available = True
 except:
-    warnings.warn("Please install `prophet` to use full collection of forecasters.")
+    warnings.warn("Please install `prophet` to use ProphetForecaster.")
 try:
     import pmdarima
     arima_available = True
 except:
-    warnings.warn("Please install `pmdarima` to use full collection of forecasters.")
+    warnings.warn("Please install `pmdarima` to use ARIMAForecaster.")
 
 # import forecasters
 if torch_available:

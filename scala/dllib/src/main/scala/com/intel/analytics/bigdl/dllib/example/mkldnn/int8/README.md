@@ -17,6 +17,8 @@ cause you can use spark local mode to generate scales.
 After that, you can call `GenerateInt8Scales`, it will generate a model with
 a `quantized` in the name. It's the original model combined with scales information.
 
+Note that `bigquant_avx512` and `mkldnn` are not supported on macOS.
+
 ```bash
 #!/bin/bash
 
@@ -59,8 +61,9 @@ CNN models and you can normally get performance benifit.
 ## Use different engine to quantize the model
 
 You can use `bigdl.engineType` to set different engine to do the quantize. If you
-set the engine to `mklblas`, it will use bigquant to quantize the model, otherwise
-will use the mkldnn int8
+set the engine to `mklblas`, it will use `bigquant` to quantize the model, otherwise will use the mkldnn int8.
+
+Note that `bigquant_avx512` and `mkldnn` are not supported on macOS.
 
 ## Command to startup
 

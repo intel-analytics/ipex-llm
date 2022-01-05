@@ -53,7 +53,7 @@ ssh root@$MASTER "docker run -itd \
       -e SPARK_MASTER_PORT=7077 \
       -e SPARK_MASTER_WEBUI_PORT=8080 \
       $TRUSTED_BIGDATA_ML_DOCKER bash -c 'cd /ppml/trusted-big-data-ml && ./init.sh && ./start-spark-standalone-master-sgx.sh  && tail -f /dev/null'"
-while ! ssh root@$MASTER "nc -z $MASTER 8080"; do
+while ! ssh root@$MASTER "nc -z -v $MASTER 8080 2>&1 | grep -a 'succeed' | wc -l"; do
   sleep 10
 done
 
@@ -83,7 +83,7 @@ for worker in ${WORKERS[@]}
 
 for worker in ${WORKERS[@]}
   do
-    while ! ssh root@$worker "nc -z $worker 8081"; do
+    while ! ssh root@$worker "nc -z -v $worker 8081 2>&1 | grep -a 'succeed' | wc -l"; do
       sleep 10
     done
   done

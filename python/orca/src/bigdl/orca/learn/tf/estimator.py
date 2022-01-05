@@ -796,7 +796,7 @@ class KerasEstimator(Estimator):
             validation_data=None,
             session_config=None,
             checkpoint_trigger=None,
-            auto_shard_files=True
+            auto_shard_files=False
             ):
         """
         Train this keras model with train data.

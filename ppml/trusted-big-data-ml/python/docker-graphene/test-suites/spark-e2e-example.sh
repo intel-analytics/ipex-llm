@@ -18,6 +18,6 @@ if [ $status_8_scala_e2e -ne 0 ]; then
 fi
 status_8_scala_e2e=$(echo $?)
 
-echo "#### example.8 Excepted result(e2e): INFO this is results count: XXX"
+echo "#### example.8 Excepted result(e2e): INFO this is result2 count: XXX"
 echo "---- example.8 Actual result: "
-cat spark-example-sql-e2e-sgx.log | egrep -a 'INFO this is results count:'
+cat spark-example-sql-e2e-sgx.log | egrep -a 'INFO this is result2 count:'

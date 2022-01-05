@@ -16,23 +16,30 @@
 
 import logging
 import os
+
 from pyspark.sql.dataframe import DataFrame
-import numpy as np
 import tempfile
 import shutil
 
-from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, get_remote_file_to_local
+import pickle
 
+from bigdl.dllib.utils.common import get_node_and_core_number
+from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
+    get_remote_file_to_local
+
+from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
+from bigdl.orca.learn.utils import find_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
     process_xshards_of_pandas_dataframe
+from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
 
 logger = logging.getLogger(__name__)
+
 
 class SparkTFEstimator():
     def __init__(self,
@@ -41,7 +48,9 @@ class SparkTFEstimator():
                  compile_args_creator=None,
                  verbose=False,
                  workers_per_node=1,
-                 model_dir=None):
+                 model_dir=None,
+                 log_to_driver=True,
+                 **kwargs):
         self.model_creator = model_creator
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
@@ -57,9 +66,9 @@ class SparkTFEstimator():
         self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
                                         self.total_cores * 4).repartition(self.num_workers)
 
-        if not "inter_op_parallelism"  in self.config:
+        if "inter_op_parallelism" not in self.config:
             self.config["inter_op_parallelism"] = 1
-        if not "intra_op_parallelism" in self.config:
+        if "intra_op_parallelism" not in self.config:
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
@@ -69,6 +78,12 @@ class SparkTFEstimator():
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
         self.model_dir = model_dir
+        self.ip = get_node_ip()
+        self.port = find_free_port()
+        is_local = sc.master.startswith("local")
+        self.need_to_log_to_driver = (not is_local) and log_to_driver
+        if self.need_to_log_to_driver:
+            start_log_server(self.ip, self.port)
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
@@ -97,8 +112,20 @@ class SparkTFEstimator():
                the model to "pay more attention" to samples from an under-represented class.
         :return:
         """
-        import numpy as np
         sc = OrcaContext.get_spark_context()
+
+        # dataframe change to xshard, num_partition >= num_workers
+        data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
+                                                           feature_cols, label_cols,
+                                                           mode="fit",
+                                                           num_workers=self.num_workers,
+                                                           accept_str_col=True)
+
+        # for continuous training
+        if self.model_weights:
+            weights = sc.broadcast(self.model_weights)
+        else:
+            weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -106,10 +133,14 @@ class SparkTFEstimator():
             config=self.config,
             verbose=self.verbose,
             size=self.num_workers,
+            model_weights=weights,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
-            epoch=self.epoch
+            epoch=self.epoch,
+            need_to_log_to_driver=self.need_to_log_to_driver,
+            driver_ip=self.ip,
+            driver_port=self.port
         )
 
         params = dict(
@@ -124,13 +155,6 @@ class SparkTFEstimator():
             data_config=data_config
         )
 
-        # dataframe change to xshard, num_partition >= num_workers
-        data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
-                                                           feature_cols, label_cols,
-                                                           mode="fit",
-                                                           num_workers=self.num_workers,
-                                                           accept_str_col=True)
-
         if isinstance(data, SparkXShards):
             # set train/validation data
             if validation_data is None:
@@ -141,7 +165,7 @@ class SparkTFEstimator():
 
                 res = data.rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).collect()
+                    lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
                     data_tuple_list = list(iter)
@@ -153,7 +177,7 @@ class SparkTFEstimator():
 
                 res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
                     .mapPartitions(
-                        lambda iter: transform_func(iter, init_params, params)).collect()
+                    lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -167,14 +191,14 @@ class SparkTFEstimator():
         if self.model_dir:
             try:
                 temp_dir = tempfile.mkdtemp()
-                get_remote_file_to_local(os.path.join(self.model_dir, "states.pkl"),
-                                         os.path.join(temp_dir, "states.pkl"),
+                get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
+                                         os.path.join(temp_dir, "state.pkl"),
                                          over_write=True)
                 import pickle
-                with open(os.path.join(temp_dir, "states.pkl"), 'rb') as f:
-                    states = pickle.load(f)
-                    self.model_weights = states['weights']
-                    self.epoch = states["epoch"]
+                with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
+                    state = pickle.load(f)
+                    self.model_weights = state['weights']
+                    self.epoch = state["epoch"]
             finally:
                 shutil.rmtree(temp_dir)
 
@@ -200,9 +224,16 @@ class SparkTFEstimator():
                the model to "pay more attention" to samples from an under-represented class.
         :return: validation result
         """
-        import numpy as np
         sc = OrcaContext.get_spark_context()
         logger.info("Starting validation step.")
+
+        # dataframe change to xshard, num_partition >= num_workers
+        data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
+                                             feature_cols=feature_cols,
+                                             label_cols=label_cols,
+                                             mode="evaluate",
+                                             num_workers=self.num_workers,
+                                             accept_str_col=True)
 
         if self.model_weights:
             weights = sc.broadcast(self.model_weights)
@@ -217,7 +248,10 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=weights,
             mode="evaluate",
-            cluster_info=self._get_cluster_info(sc)
+            cluster_info=self._get_cluster_info(sc),
+            need_to_log_to_driver=self.need_to_log_to_driver,
+            driver_ip=self.ip,
+            driver_port=self.port
         )
 
         params = dict(
@@ -228,14 +262,6 @@ class SparkTFEstimator():
             callbacks=callbacks,
             data_config=data_config,
         )
-
-        # dataframe change to xshard, num_partition >= num_workers
-        data, _ = maybe_dataframe_to_xshards(data, validation_data=None,
-                                             feature_cols=feature_cols,
-                                             label_cols=label_cols,
-                                             mode="evaluate",
-                                             num_workers=self.num_workers,
-                                             accept_str_col=True)
 
         if isinstance(data, SparkXShards):
             # set train/validation data
@@ -254,7 +280,6 @@ class SparkTFEstimator():
 
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
-
         return res[0]
 
     def predict(self, data, batch_size=None, verbose=1,
@@ -290,7 +315,10 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=weights,
             mode="predict",
-            cluster_info=None
+            cluster_info=self._get_cluster_info(sc),
+            need_to_log_to_driver=self.need_to_log_to_driver,
+            driver_ip=self.ip,
+            driver_port=self.port
         )
 
         params = dict(
@@ -316,9 +344,8 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).predict(**param)
 
-            pred_shards = SparkXShards(xshards.rdd.repartition(self.num_workers) \
-                                       .mapPartitions(
-                                           lambda iter: transform_func(iter, init_params, params)))
+            pred_shards = SparkXShards(xshards.rdd.mapPartitions(
+                lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
@@ -356,9 +383,9 @@ class SparkTFEstimator():
         self.model_weights = model.get_weights()
 
     @enable_multi_fs_save
-    def save(self, filepath, overwrite=True, save_format=None):
+    def save(self, checkpoint):
         """
-        Saves the model at the provided path.
+        Saves the checkpoint at the provided path.
         :param checkpoint: (str) Path to the target checkpoint file.
         """
 
@@ -367,21 +394,28 @@ class SparkTFEstimator():
         # allreduce communication protocol.
         # So we need to call get_state on every remote workers, otherwise
         # it might get stuck
-        model = self.model_creator(self.config)
-        model.set_weights(self.model_weights)
-        model.save(filepath, overwrite=overwrite, save_format=save_format)
+        state = {
+            "epoch": self.epoch,
+            "weights": self.model_weights
+        }
+
+        with open(checkpoint, "wb") as f:
+            pickle.dump(state, f)
+
+        return checkpoint
 
     @enable_multi_fs_load
-    def load(self, filepath):
+    def load(self, checkpoint):
         """
-        Load tensorflow keras model in this estimator.
+        Loads the model from the provided checkpoint.
 
-        :param filepath: keras model weights save path.
+        :param checkpoint: (str) Path to target checkpoint file.
+
         """
-        import tensorflow as tf
-        model = tf.keras.models.load_model(filepath)
-        self.model_weights = model.get_weights()
-
+        with open(checkpoint, "rb") as f:
+            state = pickle.load(f)
+        self.model_weights = state['weights']
+        self.epoch = state['epoch']
 
     def get_model(self):
         """

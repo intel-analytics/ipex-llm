@@ -1,0 +1,37 @@
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+syntax = "proto3";
+
+option java_package = "com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature";
+option java_outer_classname = "FeatureProto";
+option objc_class_prefix = "RTG";
+
+package feature;
+import "google/protobuf/empty.proto";
+
+// Interface exported by the server.
+service Feature {
+    rpc getUserFeatures(IDs) returns (Features) {}
+    rpc getItemFeatures(IDs) returns (Features) {}
+    rpc getMetrics(google.protobuf.Empty) returns (ServerMessage) {}
+    rpc resetMetrics(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+}
+
+message IDs {
+    repeated int32 ID = 1;
+}
+
+message Features {
+    repeated string colNames = 1;
+    repeated string b64Feature = 2;
+    repeated int32 ID = 3;
+}
+
+message ServerMessage {
+    string str = 1;
+}

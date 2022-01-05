@@ -30,9 +30,10 @@ import com.intel.analytics.bigdl.dllib.tensor.{DnnStorage, Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{SparkContextLifeCycle}
+import com.intel.analytics.bigdl.dllib.utils.SparkContextLifeCycle
 import com.intel.analytics.bigdl.dllib.utils._
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -44,7 +45,8 @@ class OptimPredictorShutdownSpec extends SparkContextLifeCycle with Matchers {
 
   "model predict should have no memory leak" should "be correct" in {
     LoggerFilter.redirectSparkInfoLogs()
-    Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
+    Configurator.setLevel("com.intel.analytics.bigdl.dllib.optim", Level.INFO)
+
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
     val imageFrame = ImageFrame.read(resource.getFile, sc) ->
@@ -108,8 +110,8 @@ class DistriOptimizerSpec2 extends SparkContextLifeCycle with Matchers {
 
   override def appName: String = "RDDOptimizerSpec"
 
-  Logger.getLogger("org").setLevel(Level.WARN)
-  Logger.getLogger("akka").setLevel(Level.WARN)
+  Configurator.setLevel("org", Level.WARN)
+  Configurator.setLevel("akka", Level.WARN)
 
   private var dataSet: DistributedDataSet[MiniBatch[Float]] = _
 

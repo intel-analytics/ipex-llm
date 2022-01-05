@@ -77,7 +77,9 @@ class OnnxLoader(object):
                 root_nodes.append((name, op_type))
                 prev_modules = [dummy_root]
 
-            bigdl_module, outputs_shape = self._make_module_from_onnx_node(op_type, inputs, prev_modules, attrs, outputs)
+            bigdl_module, outputs_shape = self._make_module_from_onnx_node(op_type, inputs,
+                                                                           prev_modules, attrs,
+                                                                           outputs)
 
             assert len(outputs) == len(outputs_shape)
 

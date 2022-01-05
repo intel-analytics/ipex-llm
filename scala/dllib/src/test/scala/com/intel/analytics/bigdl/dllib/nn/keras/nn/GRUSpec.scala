@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.dllib.nn.keras.{GRU, Sequential => KSequential}
+import com.intel.analytics.bigdl.dllib.nn.internal.{GRU, Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
@@ -72,7 +72,7 @@ class GRUSpec extends KerasBaseSpec {
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 32, 36))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode, weightConverter)
+      kerasCode, weightConverter, precision = 1e-3)
   }
 
   "GRU go backwards and return sequences" should "be the same as Keras" in {

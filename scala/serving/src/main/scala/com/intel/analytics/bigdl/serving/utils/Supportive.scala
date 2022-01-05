@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.serving.utils
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 trait Supportive {
   def timing[T](name: String)(f: => T): T = {
@@ -24,7 +24,7 @@ trait Supportive {
     val result = f
     val end = System.nanoTime()
     val cost = (end - begin)
-    Logger.getLogger(getClass).info(s"$name time elapsed [${cost / 1e6} ms].")
+    LogManager.getLogger(getClass).info(s"$name time elapsed [${cost / 1e6} ms].")
     result
   }
 }

@@ -27,7 +27,7 @@ from bigdl.orca.learn.trigger import EveryEpoch, SeveralIteration
 from bigdl.orca.data.image import write_tfrecord, read_tfrecord
 from inception_preprocessing import preprocess_for_train, \
     preprocess_for_eval
-from nets import inception_v1
+from tensorflow.contrib.slim.python.slim.nets import inception_v1
 import tensorflow as tf
 from math import ceil
 
@@ -185,6 +185,8 @@ def config_option_parser():
     parser.add_option("--memory", type=str, default="10g",
                       help="The memory you want to use on each node. "
                            "You can change it depending on your own cluster setting.")
+    parser.add_option('--py_files', type=str, default=None,
+                      help='The python files you need.')
 
     return parser
 
@@ -203,7 +205,7 @@ if __name__ == "__main__":
 
     num_nodes = 1 if options.cluster_mode == "local" else options.worker_num
     init_orca_context(cluster_mode=options.cluster_mode, cores=options.cores, num_nodes=num_nodes,
-                      memory=options.memory)
+                      memory=options.memory, py_files=options.py_files)
 
     images = tf.placeholder(dtype=tf.float32, shape=(None, 224, 224, 3))
     labels = tf.placeholder(dtype=tf.int32, shape=(None))

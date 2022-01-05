@@ -25,6 +25,7 @@ from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
+from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
 
@@ -367,8 +368,8 @@ class TSDataset:
             MinimalFCParameters, EfficientFCParameters
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
-                  "minimal": MinimalFCParameters(),
-                  "efficient": EfficientFCParameters()}
+                          "minimal": MinimalFCParameters(),
+                          "efficient": EfficientFCParameters()}
 
         assert not self._has_generate_agg_feature, \
             "Only one of gen_global_feature and gen_rolling_feature should be called."
@@ -432,8 +433,8 @@ class TSDataset:
             MinimalFCParameters, EfficientFCParameters
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
-                  "minimal": MinimalFCParameters(),
-                  "efficient": EfficientFCParameters()}
+                          "minimal": MinimalFCParameters(),
+                          "efficient": EfficientFCParameters()}
 
         assert not self._has_generate_agg_feature,\
             "Only one of gen_global_feature and gen_rolling_feature should be called."
@@ -473,15 +474,16 @@ class TSDataset:
         return self
 
     def roll(self,
-             lookback,
              horizon,
+             lookback='auto',
              feature_col=None,
              target_col=None,
              id_sensitive=False):
         '''
         Sampling by rolling for machine learning/deep learning models.
 
-        :param lookback: int, lookback value.
+        :param lookback: int, lookback value. Default to 'auto',
+               if 'auto', the mode of time series' cycle length will be taken as the lookback.
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
@@ -560,6 +562,8 @@ class TSDataset:
         roll_feature_df = None if self.roll_feature_df is None \
             else self.roll_feature_df[additional_feature_col]
 
+        if lookback == 'auto':
+            lookback = self.get_cycle_length('mode', top_k=3)
         rolling_result = \
             self.df.groupby([self.id_col]) \
                 .apply(lambda df: roll_timeseries_dataframe(df=df,
@@ -604,7 +608,7 @@ class TSDataset:
     def to_torch_data_loader(self,
                              batch_size=32,
                              roll=False,
-                             lookback=None,
+                             lookback='auto',
                              horizon=None,
                              feature_col=None,
                              target_col=None, ):
@@ -618,7 +622,8 @@ class TSDataset:
         :param roll: Boolean. Whether to roll the dataframe before converting to DataLoader.
                If True, you must also specify lookback and horizon for rolling. If False, you must
                have called tsdataset.roll() before calling to_torch_data_loader(). Default to False.
-        :param lookback: int, lookback value.
+        :param lookback: int, lookback value. Default to 'auto',
+               the mode of time series' cycle length will be taken as the lookback.
         :param horizon: int or list,
                if `horizon` is an int, we will sample `horizon` step
                continuously after the forecasting point.
@@ -660,8 +665,6 @@ class TSDataset:
         from torch.utils.data import TensorDataset, DataLoader
         import torch
         if roll:
-            if lookback is None:
-                raise ValueError("You must input lookback if roll is True")
             if horizon is None:
                 raise ValueError("You must input horizon if roll is True")
             from bigdl.chronos.data.utils.roll_dataset import RollDataset
@@ -673,6 +676,8 @@ class TSDataset:
             # set scaler index for unscale_numpy
             self.scaler_index = [self.target_col.index(t) for t in target_col]
 
+            if lookback == 'auto':
+                lookback = self.get_cycle_length('mode', top_k=3)
             torch_dataset = RollDataset(self.df,
                                         lookback=lookback,
                                         horizon=horizon,
@@ -812,3 +817,47 @@ class TSDataset:
         # check dt sorted
         if strict_check:
             _check_dt_is_sorted(self.df, self.dt_col)
+
+    def get_cycle_length(self, aggregate='mode', top_k=3):
+        """
+        Calculate the cycle length of the time series in this TSDataset.
+
+        Args:
+            top_k (int): The freq with top top_k power after fft will be
+                used to check the autocorrelation. Higher top_k might be time-consuming.
+                The value is default to 3.
+            aggregate (str): Select the mode of calculation time period,
+                We only support 'min', 'max', 'mode', 'median', 'mean'.
+
+        Returns:
+            Describe the value of the time period distribution.
+        """
+        assert isinstance(top_k, int),\
+            f"top_k type must be int, but found {type(top_k)}."
+        assert isinstance(aggregate, str),\
+            f"aggregate type must be str, but found {type(aggregate)}."
+        assert aggregate.lower().strip() in ['min', 'max', 'mode', 'median', 'mean'], \
+            f"We Only support 'min' 'max' 'mode' 'median' 'mean', but found {aggregate}."
+
+        if len(self.target_col) == 1:
+            res = self.df.groupby(self.id_col)\
+                         .apply(lambda x: (cycle_length_est(x[self.target_col[0]].values, top_k)))
+        else:
+            res = self.df.groupby(self.id_col)\
+                         .apply(lambda x: pd.DataFrame({'cycle_length':
+                                [cycle_length_est(x[col].values,
+                                                  top_k)for col in self.target_col]}))
+            res = res.cycle_length
+
+        if aggregate.lower().strip() == 'mode':
+            self.best_cycle_length = int(res.value_counts().index[0])
+        elif aggregate.lower().strip() == 'mean':
+            self.best_cycle_length = int(res.mean())
+        elif aggregate.lower().strip() == 'median':
+            self.best_cycle_length = int(res.median())
+        elif aggregate.lower().strip() == 'min':
+            self.best_cycle_length = int(res.min())
+        elif aggregate.lower().strip() == 'max':
+            self.best_cycle_length = int(res.max())
+
+        return self.best_cycle_length

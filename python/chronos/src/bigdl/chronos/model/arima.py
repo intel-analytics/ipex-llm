@@ -19,11 +19,10 @@ from pmdarima.arima import ARIMA
 from pmdarima.arima import ndiffs
 from pmdarima.arima import nsdiffs
 
-from bigdl.orca.automl.metrics import Evaluator
-from bigdl.orca.automl.model.abstract import BaseModel, ModelBuilder
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 
-class ARIMAModel(BaseModel):
+class ARIMAModel:
 
     def __init__(self):
         """
@@ -138,7 +137,7 @@ class ARIMAModel(BaseModel):
 
         forecasts = self.predict(horizon=len(target), rolling=rolling)
 
-        return [Evaluator.evaluate(m, target, forecasts) for m in metrics]
+        return Evaluator.evaluate(metrics, target, forecasts, aggregate="mean")
 
     def save(self, checkpoint_file):
         if self.model is None:
@@ -152,7 +151,7 @@ class ARIMAModel(BaseModel):
         self.model_init = True
 
 
-class ARIMABuilder(ModelBuilder):
+class ARIMABuilder:
 
     def __init__(self, **arima_config):
         """

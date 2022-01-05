@@ -37,9 +37,10 @@ import numpy as np
 
 from bigdl.orca.learn.metrics import Metric
 from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollection,
-                                          NUM_SAMPLES)
+                                            NUM_SAMPLES)
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
-                                              SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
+                                                SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 tqdm = None
 try:
@@ -84,7 +85,9 @@ class TrainingOperator:
                  criterion=None,
                  schedulers=None,
                  use_fp16=False,
-                 use_tqdm=False):
+                 use_tqdm=False,
+                 sync_stats=False,
+                 dist_backend=None):
         # You are not expected to override this method.
         self._models = models  # List of models
         assert isinstance(
@@ -110,6 +113,8 @@ class TrainingOperator:
             raise ValueError("tqdm must be installed to use tqdm in training.")
         self._use_tqdm = use_tqdm
         self.global_step = 0
+        self.sync_stats = sync_stats
+        self.dist_backend = dist_backend
 
         if type(self) is TrainingOperator:
             for component in (models, schedulers, optimizers):
@@ -134,7 +139,7 @@ class TrainingOperator:
         """
         pass
 
-    def train_epoch(self, iterator, info):
+    def train_epoch(self, iterator, info, callbacks=None):
         """Runs one standard training pass over the training dataloader.
 
         By default, this method will iterate over the given iterator and
@@ -186,18 +191,35 @@ class TrainingOperator:
                 desc=desc,
                 unit="batch",
                 leave=False)
+        else:
+            _progress_bar = None
 
         metric_meters = AverageMeterCollection()
 
         self.model.train()
+        if isinstance(self.model, DDP):
+            with self.model.join():
+                self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
+        else:
+            self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
+
+        if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
+            self.scheduler.step()
+
+        return metric_meters.summary(sync_stats=self.sync_stats,
+                                     dist_backend=self.dist_backend)
+
+    def _train_loop(self, iterator, info, _progress_bar, metric_meters, callbacks):
         for batch_idx, batch in enumerate(iterator):
             batch_info = {
                 "batch_idx": batch_idx,
                 "global_step": self.global_step
             }
             batch_info.update(info)
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_batch_begin(batch_idx)
             metrics = self.train_batch(batch, batch_info=batch_info)
-
             if self.use_tqdm and self.world_rank == 0:
                 _progress_bar.n = batch_idx + 1
                 postfix = {}
@@ -211,11 +233,9 @@ class TrainingOperator:
 
             metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
             self.global_step += 1
-
-        if self.scheduler and info.get(SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
-            self.scheduler.step()
-
-        return metric_meters.summary()
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_batch_end(batch_idx)
 
     def train_batch(self, batch, batch_info):
         """Computes loss and updates the model over one batch.
@@ -269,11 +289,7 @@ class TrainingOperator:
         # Compute gradients in a backward pass.
         with self.timers.record("grad"):
             self.optimizer.zero_grad()
-            if self.use_fp16:
-                with amp.scale_loss(loss, self.optimizer) as scaled_loss:
-                    scaled_loss.backward()
-            else:
-                loss.backward()
+            loss.backward()
 
         # Call step of optimizer to update model params.
         with self.timers.record("apply"):

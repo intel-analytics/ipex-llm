@@ -72,8 +72,8 @@ def setup_package(plat_name):
     tensorflow_requires = ["intel-tensorflow==2.6.0",
                            "keras==2.6.0"]
 
-    pytorch_requires = ["torch==1.8.0",
-                        "torchvision==0.9.0",
+    pytorch_requires = ["torch==1.9.0",
+                        "torchvision==0.10.0",
                         "pytorch_lightning==1.4.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
@@ -126,7 +126,7 @@ if __name__ == '__main__':
             "Cannot find --plat-name argument. bigdl-tf requires --plat-name to build.")
     verbose_plat_name = sys.argv[idx + 1]
 
-    valid_plat_names = {"win_amd64", "manylinux2010_x86_64"}
+    valid_plat_names = ("win_amd64", "manylinux2010_x86_64")
     if verbose_plat_name not in valid_plat_names:
         raise ValueError(f"--plat-name is not valid. "
                          f"--plat-name should be one of {valid_plat_names}"

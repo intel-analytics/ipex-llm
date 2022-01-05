@@ -84,11 +84,9 @@ def read_data_sets(train_dir, data_type="train"):
 
     :return:
 
-    ```
-    (ndarray, ndarray) representing (features, labels)
-    features is a 4D unit8 numpy array [index, y, x, depth] representing each pixel valued from 0 to 255.
-    labels is 1D unit8 nunpy array representing the label valued from 0 to 9.
-    ```
+    ``` (ndarray, ndarray) representing (features, labels) features is a 4D unit8 numpy array [
+    index, y, x, depth] representing each pixel valued from 0 to 255. labels is 1D unit8 nunpy
+    array representing the label valued from 0 to 9. ```
 
     """
     TRAIN_IMAGES = 'train-images-idx3-ubyte.gz'

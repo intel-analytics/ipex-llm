@@ -15,9 +15,9 @@
  */
 package com.intel.analytics.bigdl.dllib.feature.image
 
-import org.apache.log4j.Logger
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
+import org.apache.logging.log4j.LogManager
 import org.opencv.imgcodecs.Imgcodecs
 
 /**
@@ -39,7 +39,7 @@ class ImageBytesToMat(byteKey: String = ImageFeature.bytes,
 }
 
 object ImageBytesToMat {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply(byteKey: String = ImageFeature.bytes,
             imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): ImageBytesToMat =

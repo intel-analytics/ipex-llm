@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
 import com.intel.analytics.bigdl.dllib.nn.MSECriterion
-import com.intel.analytics.bigdl.dllib.nn.keras._
+import com.intel.analytics.bigdl.dllib.nn.internal._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{Engine, Shape}
 import com.intel.analytics.bigdl.dllib.optim.{DummyDataSet, SGD, Top1Accuracy}

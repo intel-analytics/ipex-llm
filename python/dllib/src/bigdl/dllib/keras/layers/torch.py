@@ -18,7 +18,7 @@
 
 import sys
 
-#from ..engine.topology import ZooKerasLayer
+# from ..engine.topology import ZooKerasLayer
 from bigdl.dllib.keras.engine import ZooKerasLayer
 
 if sys.version >= '3':
@@ -51,6 +51,7 @@ class Select(ZooKerasLayer):
     >>> select = Select(0, -1, input_shape=(3, 4), name="select1")
     creating: createZooKerasSelect
     """
+
     def __init__(self, dim, index, input_shape=None, **kwargs):
         super(Select, self).__init__(None,
                                      dim,
@@ -83,6 +84,7 @@ class Narrow(ZooKerasLayer):
     >>> narrow = Narrow(1, 3, input_shape=(5, 6, 7), name="narrow1")
     creating: createZooKerasNarrow
     """
+
     def __init__(self, dim, offset, length=1, input_shape=None, **kwargs):
         super(Narrow, self).__init__(None,
                                      dim,
@@ -119,9 +121,10 @@ class Squeeze(ZooKerasLayer):
     >>> squeeze3 = Squeeze((1, 2), input_shape=(1, 1, 1, 32))
     creating: createZooKerasSqueeze
     """
+
     def __init__(self, dim=None, input_shape=None, **kwargs):
         if isinstance(dim, int):
-            dim = (dim, )
+            dim = (dim,)
         super(Squeeze, self).__init__(None,
                                       dim,
                                       list(input_shape) if input_shape else None,
@@ -144,6 +147,7 @@ class AddConstant(ZooKerasLayer):
     >>> addconstant = AddConstant(1, input_shape=(1, 4, 5))
     creating: createZooKerasAddConstant
     """
+
     def __init__(self, constant, input_shape=None, **kwargs):
         super(AddConstant, self).__init__(None,
                                           float(constant),
@@ -167,6 +171,7 @@ class MulConstant(ZooKerasLayer):
     >>> mulconstant = MulConstant(2.2, input_shape=(3, 4))
     creating: createZooKerasMulConstant
     """
+
     def __init__(self, constant, input_shape=None, **kwargs):
         super(MulConstant, self).__init__(None,
                                           float(constant),
@@ -195,6 +200,7 @@ class LRN2D(ZooKerasLayer):
     >>> lrn2d = LRN2D(1e-3, 1.2, 0.4, 4, dim_ordering="tf", input_shape=(4, 5, 6))
     creating: createZooKerasLRN2D
     """
+
     def __init__(self, alpha=1e-4, k=1.0, beta=0.75, n=5,
                  dim_ordering="th", input_shape=None, **kwargs):
         super(LRN2D, self).__init__(None,
@@ -244,6 +250,7 @@ class ShareConvolution2D(ZooKerasLayer):
     >>> shareconv2d = ShareConvolution2D(32, 3, 4, activation="tanh", input_shape=(3, 128, 128))
     creating: createZooKerasShareConvolution2D
     """
+
     def __init__(self, nb_filter, nb_row, nb_col, init="glorot_uniform",
                  activation=None, subsample=(1, 1), pad_h=0, pad_w=0, propagate_back=True,
                  dim_ordering="th", W_regularizer=None, b_regularizer=None,
@@ -292,6 +299,7 @@ class CAdd(ZooKerasLayer):
     >>> cadd = CAdd((2, 1), input_shape=(3, ))
     creating: createZooKerasCAdd
     """
+
     def __init__(self, size, b_regularizer=None, input_shape=None, **kwargs):
         super(CAdd, self).__init__(None,
                                    size,
@@ -324,6 +332,7 @@ class CMul(ZooKerasLayer):
     >>> cmul = CMul((2, 1), input_shape=(3, ))
     creating: createZooKerasCMul
     """
+
     def __init__(self, size, W_regularizer=None, input_shape=None, **kwargs):
         super(CMul, self).__init__(None,
                                    size,
@@ -347,6 +356,7 @@ class Exp(ZooKerasLayer):
     >>> exp = Exp(input_shape=(2, 3, 4))
     creating: createZooKerasExp
     """
+
     def __init__(self, input_shape=None, **kwargs):
         super(Exp, self).__init__(None,
                                   list(input_shape) if input_shape else None,
@@ -366,6 +376,7 @@ class Identity(ZooKerasLayer):
     >>> identity = Identity(input_shape=(3, ))
     creating: createZooKerasIdentity
     """
+
     def __init__(self, input_shape=None, **kwargs):
         super(Identity, self).__init__(None,
                                        list(input_shape) if input_shape else None,
@@ -387,6 +398,7 @@ class Log(ZooKerasLayer):
     >>> log = Log(input_shape=(4, 8, 8))
     creating: createZooKerasLog
     """
+
     def __init__(self, input_shape=None, **kwargs):
         super(Log, self).__init__(None,
                                   list(input_shape) if input_shape else None,
@@ -408,6 +420,7 @@ class Mul(ZooKerasLayer):
     >>> mul = Mul(input_shape=(3, 4, 5))
     creating: createZooKerasMul
     """
+
     def __init__(self, input_shape=None, **kwargs):
         super(Mul, self).__init__(None,
                                   list(input_shape) if input_shape else None,
@@ -434,6 +447,7 @@ class Power(ZooKerasLayer):
     >>> power = Power(3, input_shape=(3, ))
     creating: createZooKerasPower
     """
+
     def __init__(self, power, scale=1, shift=0, input_shape=None, **kwargs):
         super(Power, self).__init__(None,
                                     float(power),
@@ -463,6 +477,7 @@ class Scale(ZooKerasLayer):
     >>> scale = Scale((2, 1), input_shape=(3, ))
     creating: createZooKerasScale
     """
+
     def __init__(self, size, input_shape=None, **kwargs):
         super(Scale, self).__init__(None,
                                     size,
@@ -485,6 +500,7 @@ class Sqrt(ZooKerasLayer):
     >>> sqrt = Sqrt(input_shape=(3, ))
     creating: createZooKerasSqrt
     """
+
     def __init__(self, input_shape=None, **kwargs):
         super(Sqrt, self).__init__(None,
                                    list(input_shape) if input_shape else None,
@@ -506,6 +522,7 @@ class Square(ZooKerasLayer):
     >>> square = Square(input_shape=(5, ))
     creating: createZooKerasSquare
     """
+
     def __init__(self, input_shape=None, **kwargs):
         super(Square, self).__init__(None,
                                      list(input_shape) if input_shape else None,
@@ -528,6 +545,7 @@ class HardShrink(ZooKerasLayer):
     >>> hardshrink = HardShrink(input_shape=(2, 4, 8))
     creating: createZooKerasHardShrink
     """
+
     def __init__(self, value=0.5, input_shape=None, **kwargs):
         super(HardShrink, self).__init__(None,
                                          float(value),
@@ -552,6 +570,7 @@ class HardTanh(ZooKerasLayer):
     >>> hardtanh = HardTanh(input_shape=(3, 4))
     creating: createZooKerasHardTanh
     """
+
     def __init__(self, min_value=-1, max_value=1, input_shape=None, **kwargs):
         super(HardTanh, self).__init__(None,
                                        float(min_value),
@@ -575,6 +594,7 @@ class Negative(ZooKerasLayer):
     >>> negative = Negative(input_shape=(4, 5, 8))
     creating: createZooKerasNegative
     """
+
     def __init__(self, input_shape=None, **kwargs):
         super(Negative, self).__init__(None,
                                        list(input_shape) if input_shape else None,
@@ -600,6 +620,7 @@ class PReLU(ZooKerasLayer):
     >>> prelu = PReLU(input_shape=(3, 4, 8, 8))
     creating: createZooKerasPReLU
     """
+
     def __init__(self, n_output_plane=0, input_shape=None, **kwargs):
         super(PReLU, self).__init__(None,
                                     n_output_plane,
@@ -634,7 +655,8 @@ class RReLU(ZooKerasLayer):
     >>> rrelu = RReLU(input_shape=(3, 4))
     creating: createZooKerasRReLU
     """
-    def __init__(self, lower=1.0/8, upper=1.0/3, input_shape=None, **kwargs):
+
+    def __init__(self, lower=1.0 / 8, upper=1.0 / 3, input_shape=None, **kwargs):
         super(RReLU, self).__init__(None,
                                     float(lower),
                                     float(upper),
@@ -658,6 +680,7 @@ class SoftShrink(ZooKerasLayer):
     >>> softshrink = SoftShrink(input_shape=(4, 4, 8, 8))
     creating: createZooKerasSoftShrink
     """
+
     def __init__(self, value=0.5, input_shape=None, **kwargs):
         super(SoftShrink, self).__init__(None,
                                          float(value),
@@ -685,6 +708,7 @@ class WithinChannelLRN2D(ZooKerasLayer):
     >>> withinchannellrn2d = WithinChannelLRN2D(input_shape=(2, 3, 8, 8))
     creating: createZooKerasWithinChannelLRN2D
     """
+
     def __init__(self, size=5, alpha=1.0, beta=0.75, input_shape=None, **kwargs):
         super(WithinChannelLRN2D, self).__init__(None,
                                                  size,
@@ -712,6 +736,7 @@ class BinaryThreshold(ZooKerasLayer):
     >>> binarythreshold = BinaryThreshold(input_shape=(2, 3, 4, 5))
     creating: createZooKerasBinaryThreshold
     """
+
     def __init__(self, value=1e-6, input_shape=None, **kwargs):
         super(BinaryThreshold, self).__init__(None,
                                               float(value),
@@ -734,6 +759,7 @@ class Threshold(ZooKerasLayer):
     >>> threshold = Threshold(input_shape=(2, 3, 4, 5))
     creating: createZooKerasThreshold
     """
+
     def __init__(self, th=1e-6, v=0.0, input_shape=None, **kwargs):
         super(Threshold, self).__init__(None,
                                         float(th),
@@ -755,6 +781,7 @@ class GaussianSampler(ZooKerasLayer):
     >>> gaussianSampler = GaussianSampler(input_shape=[(3,),(3,)])
     creating: createZooKerasGaussianSampler
     """
+
     def __init__(self, input_shape=None, **kwargs):
         super(GaussianSampler, self).__init__(None,
                                               list(input_shape) if input_shape else None,
@@ -780,6 +807,7 @@ class ResizeBilinear(ZooKerasLayer):
     >>> resizeBilinear = ResizeBilinear(10, 20, input_shape=(2, 3, 5, 7))
     creating: createZooKerasResizeBilinear
     """
+
     def __init__(self, output_height, output_width, align_corner=False,
                  dim_ordering="th", input_shape=None, **kwargs):
         super(ResizeBilinear, self).__init__(None,
@@ -802,6 +830,7 @@ class SelectTable(ZooKerasLayer):
     >>> selectTable = SelectTable(0, input_shape=[[2, 3], [5, 7]])
     creating: createZooKerasSelectTable
     """
+
     def __init__(self, index, input_shape=None, **kwargs):
         super(SelectTable, self).__init__(None,
                                           index,

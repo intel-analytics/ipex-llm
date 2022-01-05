@@ -31,7 +31,6 @@ from bigdl.orca.ray import RayContext
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 
-
 import ray
 from ray.exceptions import RayActorError
 
@@ -57,7 +56,6 @@ def check_for_failure(remote_values):
 
 
 def partition_refs_to_creator(partition_refs):
-
     def data_creator(config, batch_size):
         from bigdl.orca.data.utils import ray_partitions_get_data_label, index_data, get_size
         from torch.utils.data import Dataset, DataLoader
@@ -105,7 +103,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             scheduler_step_freq="batch",
             use_tqdm=False,
             backend="torch_distributed",
-            workers_per_node=1):
+            workers_per_node=1,
+            sync_stats=True,
+            log_level=logging.INFO):
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
@@ -124,6 +124,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         self.training_operator_cls = training_operator_cls
         self.scheduler_step_freq = scheduler_step_freq
         self.use_tqdm = use_tqdm
+        self.sync_stats = sync_stats
 
         if not training_operator_cls and not loss_creator:
             raise ValueError("If a loss_creator is not provided, you must "
@@ -141,7 +142,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             scheduler_step_freq=self.scheduler_step_freq,
             use_tqdm=self.use_tqdm,
             config=worker_config,
-            metrics=metrics
+            metrics=metrics,
+            sync_stats=sync_stats,
+            log_level=log_level
         )
 
         if backend == "torch_distributed":
@@ -196,7 +199,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             reduce_results=True,
             info=None,
             feature_cols=None,
-            label_cols=None):
+            label_cols=None,
+            callbacks=[]):
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -221,6 +225,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param label_cols: label column names if data is Spark DataFrame.
+        :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
@@ -247,7 +252,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 data_creator = partition_refs_to_creator(partition_refs)
                 # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
                 return worker.train_epochs.remote(
-                    data_creator, epochs, batch_size, profile, info, False)
+                    data_creator, epochs, batch_size, profile, info, False, callbacks)
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
@@ -260,7 +265,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                                        epochs=epochs,
                                                        batch_size=batch_size,
                                                        profile=profile,
-                                                       info=info)
+                                                       info=info,
+                                                       callbacks=callbacks)
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
@@ -454,9 +460,14 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 stats[stat_key] = worker_stats[0][stat_key]
         return stats
 
-    def _train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False, info=None):
+    def _train_epochs(self, data_creator,
+                      epochs=1, batch_size=32,
+                      profile=False, info=None,
+                      callbacks=None):
+
         params = dict(data_creator=data_creator, epochs=epochs,
-                      batch_size=batch_size, profile=profile, info=info)
+                      batch_size=batch_size, profile=profile, info=info,
+                      callbacks=callbacks)
         remote_worker_stats = []
         for i, w in enumerate(self.remote_workers):
             stats = w.train_epochs.remote(**params)

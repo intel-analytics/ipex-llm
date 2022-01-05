@@ -4,16 +4,16 @@
 
 ### **1. Pull Docker Image**
 
-You may pull a Docker image from the  [Analytics Zoo Docker Hub](https://hub.docker.com/r/intelanalytics/analytics-zoo).
+You may pull a Docker image from the  [Docker Hub](https://hub.docker.com/r/intelanalytics/bigdl/tags).
 
 To pull the nightly build version, use
 ```bash
-sudo docker pull intelanalytics/analytics-zoo:latest
+sudo docker pull intelanalytics/bigdl:0.14.0-SNAPSHOT
 ```
 
-To pull other versions, please refer to [Analytics Zoo Docker Hub Tags](https://hub.docker.com/r/intelanalytics/analytics-zoo/tags?page=1&ordering=last_updated), select a tag and use
+To pull other versions, please refer to [BigDL Docker Hub Tags](https://hub.docker.com/r/intelanalytics/bigdl/tags?page=1&ordering=last_updated), select a tag and use
 ```bash
-sudo docker pull intelanalytics/analytics-zoo:tag_name
+sudo docker pull intelanalytics/bigdl:tag_name
 ```
 
 **Configuring resources**
@@ -45,14 +45,14 @@ sudo systemctl restart docker
 
 ### **2. Launch Docker Container**
 
-After pulling the Analytics Zoo Docker image, you can launch an Analytics Zoo Docker container:
+After pulling the BigDL Docker image, you can launch an BigDL Docker container:
 ```
 sudo docker run -it --rm --net=host \
     -e NOTEBOOK_PORT=12345 \
     -e NOTEBOOK_TOKEN="your-token" \
     -e http_proxy=http://your-proxy-host:your-proxy-port \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
-    intelanalytics/analytics-zoo:latest bash
+    intelanalytics/bigdl:0.14.0-SNAPSHOT bash
 ```
 
 * The value 12345 is a user specified port number.
@@ -66,12 +66,11 @@ root@[hostname]:/opt/work#
 
 The /opt/work directory contains:
 
-* download-analytics-zoo.sh is used for downloading Analytics-Zoo distributions.
 * start-notebook.sh is used for starting the jupyter notebook. You can specify the environment settings and spark settings to start a specified jupyter notebook.
-* analytics-Zoo-${ANALYTICS_ZOO_VERSION} is the Analytics-Zoo home of Analytics-Zoo distribution.
-* analytics-zoo-SPARK_x.x-x.x.x-dist.zip is the zip file of Analytics-Zoo distribution.
+* bigdl-${BigDL_VERSION} is the BigDL home of BigDL distribution.
 * spark-${SPARK_VERSION} is the Spark home.
-* analytics-zoo is cloned from https://github.com/intel-analytics/analytics-zoo, contains apps, examples using analytics-zoo.
+* BigDL is cloned from https://github.com/intel-analytics/BigDL.git, contains apps, examples using BigDL.
+* opt/download-bigdl.sh is used for downloading BigDL distributions.
 
 ### **3. Run Jupyter Notebook Examples in the Container**
 
@@ -81,15 +80,17 @@ After a Docker container is launched and user login into the container, you can 
 
 In the `/opt/work` directory, run this command line to start the Jupyter Notebook service:
 ```
+source activate bigdl
 ./start-notebook.sh
 ```
 
 You will see the output message like below. This means the Jupyter Notebook service has started successfully within the container.
 ```
-[I 01:04:45.625 NotebookApp] Serving notebooks from local directory: /opt/work/analytics-zoo-0.5.0-SNAPSHOT/apps
-[I 01:04:45.625 NotebookApp] The Jupyter Notebook is running at:
-[I 01:04:45.625 NotebookApp] http://(the-host-name or 127.0.0.1):12345/?token=...
-[I 01:04:45.625 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[I 07:40:39.354 NotebookApp] Serving notebooks from local directory: /opt/work/bigdl-0.14.0-SNAPSHOT/apps
+[I 07:40:39.355 NotebookApp] Jupyter Notebook 6.4.6 is running at:
+[I 07:40:39.355 NotebookApp] http://(the-host-name):12345/?token=...
+[I 07:40:39.355 NotebookApp]  or http://127.0.0.1:12345/?token=...
+[I 07:40:39.355 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
 ```
 
 #### **3.2 Connect to Jupyter Notebook service from a browser**
@@ -102,9 +103,9 @@ As a result, you will see the Jupyter Notebook like this:
 
 ![](images/notebook1.jpg)
 
-#### **3.3 Run Analytics Zoo Jupyter Notebooks**
+#### **3.3 Run BigDL Jupyter Notebooks**
 
-After connecting to the Jupyter Notebook in the browser, you can run multiple Analytics Zoo Jupyter Notebook examples. The example shown below is the “dogs-vs-cats”.
+After connecting to the Jupyter Notebook in the browser, you can run multiple BigDL Jupyter Notebook examples. The example shown below is the “dogs-vs-cats”.
 
 * Click into the "dogs-vs-cats" folder:
 
@@ -124,7 +125,7 @@ After connecting to the Jupyter Notebook in the browser, you can run multiple An
 
 ### **4. Shut Down Docker Container**
 
-You should shut down the Analytics Zoo Docker container after using it.
+You should shut down the BigDL Docker container after using it.
 
 1. You can list all the active Docker containers by command line:
 ```
@@ -134,7 +135,7 @@ sudo docker ps
 2. You will see your docker containers:
 ```
 CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
-40de2cdad025        intelanalytics/analytics-zoo:latest          "/opt/work/start-n..."   3 hours ago         Up 3 hours                               upbeat_al
+40de2cdad025        intelanalytics/bigdl:0.14.0-SNAPSHOT         "/opt/work/start-n..."   3 hours ago         Up 3 hours                              upbeat_al
 ```
 
 3. Shut down the corresponding docker container by its ID:

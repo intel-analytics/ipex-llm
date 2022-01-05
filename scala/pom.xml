@@ -155,12 +155,12 @@
         <native-maven-plugin.version>1.0-alpha-8</native-maven-plugin.version>
         <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
 
-        <hadoop.version>2.7.3</hadoop.version>
+        <hadoop.version>2.7.7</hadoop.version>
         <guava.version>11.0.2</guava.version>
         <thrift.path>thrift</thrift.path>
         <thrift.version>0.9.2</thrift.version>
         <slf4j.version>1.7.7</slf4j.version>
-        <log4j.version>2.14.1</log4j.version>
+        <log4j.version>2.17.0</log4j.version>
         <jetty.version>6.1.26</jetty.version>
         <jetty.jspapi.version>6.1.14</jetty.jspapi.version>
         <commons-cli.version>1.2</commons-cli.version>
@@ -186,7 +186,6 @@
         <module>dllib</module>
         <module>orca</module>
         <module>friesian</module>
-        <module>friesian.serving</module>
         <module>grpc</module>
         <module>serving</module>
 	<module>ppml</module>

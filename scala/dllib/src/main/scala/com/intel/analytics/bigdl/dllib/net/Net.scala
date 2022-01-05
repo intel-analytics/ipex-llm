@@ -23,8 +23,8 @@ import java.util
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, Initializable}
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasIdentityWrapper
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasIdentityWrapper
 import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, InitializationMethod, StaticGraph, Identity => BIdentity, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
@@ -42,7 +42,7 @@ import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.Sequential
 import com.intel.analytics.bigdl.dllib.net.{GraphNet, NetUtils}
 import org.apache.commons.io.FileUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.bigdl.api.python.BigDLSerDe
 import org.apache.zookeeper.KeeperException.UnimplementedException
 
@@ -279,7 +279,7 @@ object Net {
   }
 
   protected object NetSaver {
-    private val logger = Logger.getLogger(getClass)
+    private val logger = LogManager.getLogger(getClass)
 
     protected val header =
       """

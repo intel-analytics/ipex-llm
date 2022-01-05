@@ -1,0 +1,57 @@
+######## Feature Service
+
+### Basic setting
+
+# Default: 8980, which port to create the server
+servicePort: 8082
+
+# Default: null, open a port for prometheus monitoring tool, if set, user can check the
+# performance using prometheus
+monitorPort: 1235
+
+# 'kv' or 'inference' default: kv
+serviceType: kv
+
+# default: false, if need to load initial data to redis, set true
+loadInitialData: true
+
+# default: "", prefix for redis key
+redisKeyPrefix:
+
+# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
+redisClusterItemSlotType: 2
+
+# default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
+# provided. Only support parquet file
+initialUserDataPath: /home/yina/Documents/data/friesian-demo/wnd_user_2000.parquet
+initialItemDataPath: /home/yina/Documents/data/friesian-demo/wnd_item_1000.parquet
+
+# default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
+# userFeatureColumns must be provided
+userIDColumn: enaging_user_id
+userFeatureColumns: enaging_user_follower_count, enaging_user_following_count, enaging_user_is_verified
+
+# default: null, if loadInitialData=true and initialItemDataPath != null, userIDColumn and
+# userFeatureColumns must be provided
+itemIDColumn: tweet_id
+itemFeatureColumns: present_media, language, tweet_type, engaged_with_user_follower_count,engaged_with_user_following_count, len_hashtags, len_domains, len_links, present_media_language, engaged_with_user_is_verified
+
+# default: null, user model path or item model path must be provided if serviceType
+# contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
+# be ignored
+# userModelPath:
+
+# default: null, user model path or item model path must be provided if serviceType
+# contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
+# be ignored
+# itemModelPath:
+
+# default: 1, number of models used for inference
+# modelParallelism: 3
+
+### Redis Configuration
+# default: localhost:6379
+# redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
+
+# default: 256, JedisPoolMaxTotal
+# redisPoolMaxTotal:

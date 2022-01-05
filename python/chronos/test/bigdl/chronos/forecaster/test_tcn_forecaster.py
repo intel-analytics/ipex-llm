@@ -79,6 +79,7 @@ class TestChronosModelTCNForecaster(TestCase):
         test_pred = forecaster.predict(test_data[0])
         assert test_pred.shape == test_data[1].shape
         test_mse = forecaster.evaluate(test_data)
+        assert test_mse[0].shape == test_data[1].shape[1:]
 
     def test_tcn_forecaster_fit_loader(self):
         train_loader, _, _ = create_data(loader=True)
@@ -232,4 +233,17 @@ class TestChronosModelTCNForecaster(TestCase):
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
+        stop_orca_context()
+
+    def test_tcn_dataloader_distributed(self):
+        train_loader, _, _ = create_data(loader=True)
+        init_orca_context(cores=4, memory="2g")
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=3,
+                                   lr=0.01,
+                                   distributed=True)
+        forecaster.fit(train_loader, epochs=2)
         stop_orca_context()

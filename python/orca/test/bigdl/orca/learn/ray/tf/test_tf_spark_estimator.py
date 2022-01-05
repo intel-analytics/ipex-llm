@@ -16,7 +16,9 @@
 import shutil
 import tempfile
 from unittest import TestCase
+import time
 
+import time
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -91,13 +93,61 @@ class TestTFEstimator(TestCase):
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
-            trainer.save(os.path.join(temp_dir, "a.model"))
-            trainer.load(os.path.join(temp_dir, "a.model"))
+            trainer.save(os.path.join(temp_dir, "a.ckpt"))
+            trainer.load(os.path.join(temp_dir, "a.ckpt"))
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
             print("validation result: ", res)
 
             res = trainer.predict(df, feature_cols=["feature"]).collect()
+            print("predict result: ", res)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_dataframe_with_empty_partition(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+
+        rdd_with_empty = rdd.repartition(4). \
+            mapPartitionsWithIndex(lambda idx, part: [] if idx == 0 else part)
+
+        spark = OrcaContext.get_spark_session()
+        from pyspark.ml.linalg import DenseVector
+        df = rdd_with_empty.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                           int(np.random.randint(0, 2, size=())))) \
+            .toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark",
+                model_dir=temp_dir)
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"]
+                              )
+
+            print("start saving")
+            trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            trainer.save(os.path.join(temp_dir, "a.ckpt"))
+            trainer.load(os.path.join(temp_dir, "a.ckpt"))
+            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            res = trainer.predict(df, feature_cols=["feature"]).collect()
+            print("predict result: ", res)
         finally:
             shutil.rmtree(temp_dir)
 

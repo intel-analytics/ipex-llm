@@ -26,6 +26,7 @@ DATASET_NAME = {'network_traffic': ['2018%02d.agr' % i for i in range(1, 13)]
                 'AIOps': ['machine_usage.tar.gz'],
                 'fsi': ['individual_stocks_5yr.zip'],
                 'nyc_taxi': ['nyc_taxi.csv'],
+                'uci_electricity': ['LD2011_2014.txt.zip']
                 }
 BASE_URL = \
     {'network_traffic':
@@ -36,7 +37,9 @@ BASE_URL = \
      'fsi':
      ['https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip'],
      'nyc_taxi':
-     ['https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv']}
+     ['https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv'],
+     'uci_electricity':
+     ['https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip']}
 
 
 class PublicDataset:
@@ -186,6 +189,28 @@ class PublicDataset:
             with open(raw_csv_name, 'rb') as src, open(self.final_file_path, 'wb') as dst:
                 dst.write(src.read())
         self.df = pd.read_csv(self.final_file_path, parse_dates=['timestamp'])
+        return self
+
+    def preprocess_uci_electricity(self):
+        '''
+        return data that meets the minimum requirements of tsdata.
+        '''
+        if not os.path.exists(self.final_file_path):
+            import zipfile
+            zip_file = zipfile.ZipFile(os.path.join(
+                                       os.path.expanduser(self.dir_path),
+                                       DATASET_NAME[self.name][0]))
+            zip_file.extractall(os.path.join(os.path.expanduser(self.dir_path)))
+            download_file = os.path.join(self.dir_path, DATASET_NAME[self.name][0].split('.')[0])
+            os.rename(download_file+'.txt', self.final_file_path)
+        df = pd.read_csv(self.final_file_path,
+                         delimiter=';',
+                         parse_dates=['Unnamed: 0'],
+                         low_memory=False)
+        self.df = pd.melt(df,
+                          id_vars=['Unnamed: 0'],
+                          value_vars=df.T.index[1:])\
+                    .rename(columns={'Unnamed: 0': 'timestamp', 'variable': 'id'})
         return self
 
     def get_tsdata(self,

@@ -71,6 +71,10 @@ RUN cd /opt && \
     cd resnet50 && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.bin/download" -O resnet_v1_50.bin && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml/download" -O resnet_v1_50.xml
+# data and scripts for kubernets
+RUN cd /opt && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/scala/serving/scripts/perf-benchmark/requirement.yml && \
+    wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG
 
 # stage.3 az ppml occlum
 FROM ubuntu:18.04 as ppml
@@ -148,7 +152,9 @@ ADD ./start-flink-taskmanager.sh /opt/start-flink-taskmanager.sh
 ADD ./start-cluster-serving-job.sh /opt/start-cluster-serving-job.sh
 ADD ./start-http-frontend.sh /opt/start-http-frontend.sh
 ADD ./start-all.sh /opt/start-all.sh
-ADD ./cluster-serving-config.yaml /ppml/trusted-realtime-ml/java/config.yaml
+ADD ./init-cluster-serving.sh /opt/init-cluster-serving.sh
+ADD ./init-benchmark.sh /opt/init-benchmark.sh
+ADD ./e2e_throughput.py /opt/e2e_throughput.py
 
 RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-redis.sh && \
@@ -157,4 +163,8 @@ RUN chmod a+x /opt/init-occlum-taskmanager.sh && \
     chmod a+x /opt/start-flink-taskmanager.sh && \
     chmod a+x /opt/start-cluster-serving-job.sh && \
     chmod a+x /opt/start-http-frontend.sh && \
-    chmod a+x /opt/start-all.sh
+    chmod a+x /opt/start-all.sh && \
+    chmod a+x /opt/init-cluster-serving.sh && \
+    chmod a+x /opt/config.yaml && \
+    chmod a+x /opt/init-benchmark.sh && \
+    chmod a+x /opt/e2e_throughput.py

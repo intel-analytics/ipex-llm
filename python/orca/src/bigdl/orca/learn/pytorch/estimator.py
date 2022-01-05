@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import logging
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 
 
@@ -32,7 +33,11 @@ class Estimator(object):
                    use_tqdm=False,
                    workers_per_node=1,
                    model_dir=None,
-                   backend="bigdl"):
+                   backend="bigdl",
+                   sync_stats=False,
+                   log_level=logging.INFO,
+                   log_to_driver=True,
+                   ):
         """
         Create an Estimator for torch.
 
@@ -56,11 +61,20 @@ class Estimator(object):
                training progress if use_tqdm=True.
         :param workers_per_node: parameter for `horovod` and `torch_distributed` backends. worker
                number on each node. default: 1.
-        :param model_dir: parameter for `bigdl` backend. The path to save model. During the
-               training, if checkpoint_trigger is defined and triggered, the model will be saved to
-               model_dir.
+        :param model_dir: parameter for `bigdl` and `spark` backend. The path to save model. During
+               the training, if checkpoint_trigger is defined and triggered, the model will be
+               saved to model_dir.
         :param backend: You can choose "horovod",  "torch_distributed", "bigdl" or "spark" as
                backend. Default: `bigdl`.
+        :param sync_stats: Whether to sync metrics across all distributed workers after each epoch.
+               If set to False, only rank 0's metrics are printed. This param only works horovod,
+               torch_distributed and pyspark backend. For spark backend, the metrics printed are
+               are always synced. This param only affects the printed metrics, the returned metrics
+               are always averaged across workers. Default: True
+        :param log_level: Setting the log_level of each distributed worker. This param only works
+               horovod, torch_distributed and pyspark backend.
+        :param log_to_driver: (bool) Whether display executor log on driver in cluster mode.
+               Default: True. This option is only for "spark" backend.
         :return: an Estimator object.
         """
         if backend in {"horovod", "torch_distributed"}:
@@ -76,7 +90,9 @@ class Estimator(object):
                                        scheduler_step_freq=scheduler_step_freq,
                                        use_tqdm=use_tqdm,
                                        workers_per_node=workers_per_node,
-                                       backend=backend)
+                                       backend=backend,
+                                       sync_stats=sync_stats,
+                                       log_level=log_level)
         elif backend == "bigdl":
             from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
             return PyTorchSparkEstimator(model=model,
@@ -98,7 +114,12 @@ class Estimator(object):
                                            config=config,
                                            scheduler_step_freq=scheduler_step_freq,
                                            use_tqdm=use_tqdm,
-                                           workers_per_node=workers_per_node)
+                                           workers_per_node=workers_per_node,
+                                           sync_stats=sync_stats,
+                                           log_level=log_level,
+                                           model_dir=model_dir,
+                                           log_to_driver=log_to_driver,
+                                           )
         else:
             raise ValueError("Only horovod, torch_distributed, bigdl and spark backends are "
                              f"supported for now, got backend: {backend}")
