@@ -1673,6 +1673,16 @@ object InternalDistriOptimizerV2 {
   }
 }
 
+object Models {
+  def loadModel[T: ClassTag](path: String)(implicit ev: TensorNumeric[T]): keras.Model[T] = {
+    val model = Net.load[T](path)
+    if (!model.isInstanceOf[Model[T]]) {
+      throw new RuntimeException("Not an Analytics Zoo Keras-style model.")
+    }
+    model.asInstanceOf[keras.Model[T]]
+  }
+}
+
 object Model {
   /**
    * Build a multiple-input, multiple-output graph container.
@@ -1763,11 +1773,6 @@ object Model {
   def apply[T: ClassTag](input : Variable[T], output : Variable[T])
     (implicit ev: TensorNumeric[T]) : keras.Model[T] = {
     keras.Model[T](Array(input.node), Array(output.node))
-  }
-
-  def loadModel[T: ClassTag](path: String)(implicit ev: TensorNumeric[T]): keras.Model[T] = {
-    val model = keras.Model.loadModel(path)
-    return model
   }
 }
 

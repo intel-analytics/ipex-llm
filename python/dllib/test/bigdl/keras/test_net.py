@@ -93,7 +93,8 @@ class TestLayer(ZooTestCase):
         zmodel = ZModel(input, output, name="graph1")
         tmp_path = create_tmp_path()
         zmodel.saveModel(tmp_path, None, True)
-        model_reloaded = ZModel.loadModel(tmp_path)
+        from bigdl.dllib.keras.models import load_model
+        model_reloaded = load_model(tmp_path)
         input_data = np.random.random([3, 5])
         self.compare_output_and_grad_input(zmodel, model_reloaded, input_data)
 

@@ -2870,6 +2870,6 @@ val model = Models.loadModel[Float]("/tmp/seq.model")
 
 **Python:**
 ```python
-from bigdl.dllib.keras.Models
-model = Models.loadModel("/tmp/seq.model")
+from bigdl.dllib.keras.models
+model = load_model("/tmp/seq.model")
 ```

@@ -291,13 +291,4 @@ object Model extends KerasLayerSerializable {
     val tGraph = subModules(0).asInstanceOf[StaticGraph[T]]
     Model(tGraph.inputs.toArray, new GraphRef(tGraph).getOutputs().toArray)
   }
-
-  def loadModel[T: ClassTag](path: String)(implicit ev: TensorNumeric[T]): Model[T] = {
-    val model = Net.load[T](path)
-    if (!model.isInstanceOf[Model[T]]) {
-      throw new RuntimeException(
-        "Not an Analytics Zoo Keras-style model.")
-    }
-    model.asInstanceOf[Model[T]]
-  }
 }
