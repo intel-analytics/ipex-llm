@@ -71,7 +71,7 @@ object Train {
         GreyImgToBatch(param.batchSize) -> toAutoencoderBatch()
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         if (param.graphModel) Autoencoder.graph(classNum = 32) else Autoencoder(classNum = 32)
       }

@@ -49,9 +49,9 @@ python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rl_pong/rl_pong.py --itera
 now=$(date "+%s")
 time4=$((now-start))
 
-echo "#5 Start multiagent example"
+echo "#5 Start multi_agent example"
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multiagent_two_trainers.py --iterations 5
+python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multi_agent_two_trainers.py --iterations 5
 now=$(date "+%s")
 time5=$((now-start))
 
@@ -143,7 +143,7 @@ echo "#3 auto-xgboost-regressor time used:$time3 seconds"
 echo "#4 orca rl_pong time used:$time4 seconds"
 echo "#5 orca async_parameter_server time used:$time5 seconds"
 echo "#6 orca sync_parameter_server time used:$time6 seconds"
-echo "#7 orca multiagent_two_trainers time used:$time7 seconds"
+echo "#7 orca multi_agent_two_trainers time used:$time7 seconds"
 echo "#8 mxnet_lenet time used:$time8 seconds"
 echo "#9 fashion-mnist time used:$time9 seconds"
 echo "#10 orca super-resolution example time used:$time10 seconds"

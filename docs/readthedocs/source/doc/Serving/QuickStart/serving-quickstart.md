@@ -9,7 +9,8 @@ This section provides a quick start example for you to run BigDL Cluster Serving
 
 Use one command to run Cluster Serving container. (We provide quick start model in older version of docker image, for newest version, please refer to following sections and we remove the model to reduce the docker image size).
 ```
-docker run --name cluster-serving -itd --net=host intelanalytics/bigdl-cluster-serving:0.9.1
+(bigdl-cluster-serving publish is in progress, so use following for now)
+docker run --name cluster-serving -itd --net=host intelanalytics/zoo-cluster-serving:0.9.1
 ```
 Log into the container using `docker exec -it cluster-serving bash`, and run
 ```

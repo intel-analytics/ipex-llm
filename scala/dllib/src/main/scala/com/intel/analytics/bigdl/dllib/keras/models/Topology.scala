@@ -1041,7 +1041,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
             cachedModels.unpersist()
             val newModel = if (modelFile != null) {
               DistriOptimizer.logger.info("Model recover from last snapshot")
-              Module.load[T](modelFile)
+              Module.loadModule[T](modelFile)
             } else {
               DistriOptimizer.logger.info("Model recover from origin model")
               trainingModel

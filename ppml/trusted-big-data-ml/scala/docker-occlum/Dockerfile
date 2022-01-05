@@ -66,12 +66,10 @@ RUN cd /opt/src && \
     make install && \
     rm -f protobuf-2.5.0.tar.bz2 && \
     cd /opt/src && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene/hadoop-common-shell.patch && \
-    git clone https://github.com/apache/hadoop.git && \
+    git clone https://github.com/analytics-zoo/hadoop.git && \
     cd hadoop && \
-    git checkout rel/release-${HADOOP_VERSION} -b branch-${HADOOP_VERSION} && \
+    git checkout branch-3.2.0-ppml && \
     cd hadoop-common-project/hadoop-common && \
-    patch src/main/java/org/apache/hadoop/util/Shell.java /opt/src/hadoop-common-shell.patch && \
     export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
         -Dhttp.proxyHost=$HTTP_PROXY_HOST \
         -Dhttp.proxyPort=$HTTP_PROXY_PORT \

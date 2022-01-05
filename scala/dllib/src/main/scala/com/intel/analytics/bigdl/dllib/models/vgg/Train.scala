@@ -49,7 +49,7 @@ object Train {
         BGRImgToBatch(param.batchSize)
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         if (param.graphModel) VggForCifar10.graph(classNum = 10) else VggForCifar10(classNum = 10)
       }

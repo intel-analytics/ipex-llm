@@ -133,5 +133,6 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
         self.use_ipex = False  # S2S has worse performance on ipex
         self.onnx_available = True
+        self.checkpoint_callback = False
 
         super().__init__()

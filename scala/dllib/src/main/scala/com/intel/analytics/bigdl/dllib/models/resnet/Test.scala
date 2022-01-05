@@ -46,7 +46,7 @@ object Test {
           Cifar10DataSet.trainStd) -> BGRImgToSample()
       val evaluationSet = transformer(rddData)
 
-      val model = Module.load[Float](param.model)
+      val model = Module.loadModule[Float](param.model)
       println(model)
       val result = model.evaluate(evaluationSet, Array(new Top1Accuracy[Float]),
         Some(param.batchSize))

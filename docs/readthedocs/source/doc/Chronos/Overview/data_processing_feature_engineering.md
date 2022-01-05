@@ -115,12 +115,13 @@ View [TSDataset API Doc](../../PythonAPI/Chronos/tsdataset.html#) for more detai
 
 Built-in Dataset supports the function of data downloading, preprocessing, and returning to the `TSDataset` object of the public data set.
 
-|Dataset name|Task|Time Series Length|Feature Number|Information Page|Download Link|
-|---|---|---|---|---|---|
-|network_traffic|forecasting|8760|2|[network_traffic](http://mawi.wide.ad.jp/~agurim/about.html)|[network_traffic](http://mawi.wide.ad.jp/~agurim/dataset/)|
-|nyc_taxi|forecasting|10320|1|[nyc_taxi](https://github.com/numenta/NAB/blob/master/data/README.md)|[nyc_taxi](https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv)|
-|fsi|forecasting|1259|1|[fsi](https://github.com/CNuge/kaggle-code/tree/master/stock_data)|[fsi](https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip)|
-|AIOps|anomaly_detect|61570|1|[AIOps](https://github.com/alibaba/clusterdata)|[AIOps](http://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz)|
+|Dataset name|Task|Time Series Length|Number of Instances|Feature Number|Information Page|Download Link|
+|---|---|---|---|---|---|---|
+|network_traffic|forecasting|8760|1|2|[network_traffic](http://mawi.wide.ad.jp/~agurim/about.html)|[network_traffic](http://mawi.wide.ad.jp/~agurim/dataset/)|
+|nyc_taxi|forecasting|10320|1|1|[nyc_taxi](https://github.com/numenta/NAB/blob/master/data/README.md)|[nyc_taxi](https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv)|
+|fsi|forecasting|1259|1|1|[fsi](https://github.com/CNuge/kaggle-code/tree/master/stock_data)|[fsi](https://github.com/CNuge/kaggle-code/raw/master/stock_data/individual_stocks_5yr.zip)|
+|AIOps|anomaly_detect|61570|1|1|[AIOps](https://github.com/alibaba/clusterdata)|[AIOps](http://clusterdata2018pubcn.oss-cn-beijing.aliyuncs.com/machine_usage.tar.gz)|
+|uci_electricity|forecasting|140256|370|1|[uci_electricity](https://archive.ics.uci.edu/ml/datasets/ElectricityLoadDiagrams20112014)|[uci_electricity](https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip)|
 
 Specify the `name`, the raw data file will be saved in the specified `path` (defaults to ~/.chronos/dataset). `redownload` can help you re-download the files you need.
 
