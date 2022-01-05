@@ -26,9 +26,11 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.generated.NNServiceProto.EvaluateResponse
+import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import com.intel.analytics.bigdl.ppml.{FLClient, FLContext}
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
 import org.apache.logging.log4j.LogManager
+import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -54,15 +56,18 @@ class VflNNEstimator(algorithm: String,
    * @return
    */
   def train(endEpoch: Int,
-            trainDataSet: LocalDataSet[MiniBatch[Float]],
-            valDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float] = {
+            trainData: RDD[(Array[Float], Array[Float])],
+            valData: RDD[(Array[Float], Array[Float])]): Module[Float] = {
+    val trainSampleRDD = DataFrameUtils.arrayRDDToSampleRDD(trainData)
+    val trainDataSet = DataFrameUtils.sampleRDDToMiniBatch(trainSampleRDD).toLocal()
+    val valSampleRDD = DataFrameUtils.arrayRDDToSampleRDD(valData)
+    val valDataSet = DataFrameUtils.sampleRDDToMiniBatch(valSampleRDD).toLocal()
     val clientUUID = flClient.getClientUUID()
     val size = trainDataSet.size()
     var iteration = 0
     (0 until endEpoch).foreach { epoch =>
       val dataSet = trainDataSet.data(true)
       var count = 0
-      var hasLabel = true
       while (count < size) {
         logger.debug(s"training next batch, progress: $count/$size, epoch: $epoch/$endEpoch")
         val miniBatch = dataSet.next()
@@ -73,18 +78,17 @@ class VflNNEstimator(algorithm: String,
           .update("neval", iteration + 1)
         val input = miniBatch.getInput()
         val target = miniBatch.getTarget()
-        if (target == null) hasLabel = false
         model.training()
         val output = model.forward(input)
 
-        // Upload to PS
+        // Convert to protobuf and upload to FLServer
         val metadata = TableMetaData.newBuilder
               .setName(s"${model.getName()}_output").setVersion(iteration).build
         val tableProto = outputTargetToTableProto(model.output, target, metadata)
         model.zeroGradParameters()
         val gradInput = flClient.nnStub.train(tableProto, algorithm).getData
 
-        // model replace
+        // Get gradient from server and apply to local model
         val errors = getTensor("gradInput", gradInput)
         val loss = getTensor("loss", gradInput).value()
         model.backward(input, errors)
@@ -96,7 +100,7 @@ class VflNNEstimator(algorithm: String,
       }
       if (valDataSet != null) {
         model.evaluate()
-        evaluate(valDataSet)
+        evaluate(valData)
       }
 
     }
@@ -111,16 +115,18 @@ class VflNNEstimator(algorithm: String,
    * then return the evaluation result
    * @param dataSet the data to evaluate
    */
-  override def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]): Unit = {
+  def evaluate(data: RDD[(Array[Float], Array[Float])]) = {
+    val sampleRDD = DataFrameUtils.arrayRDDToSampleRDD(data)
+    val dataSet = DataFrameUtils.sampleRDDToMiniBatch(sampleRDD).toLocal()
     val dataSize = dataSet.size()
-    val data = dataSet.data(false)
+    val dataIter = dataSet.data(false)
     var count = 0
     var iteration = 0
     var evaluateResult = ""
     while (count < dataSize) {
       logger.debug(s"evaluating next batch, progress: $count/$dataSize")
       model.evaluate()
-      val miniBatch = data.next()
+      val miniBatch = dataIter.next()
       val input = miniBatch.getInput()
       val target = miniBatch.getTarget()
       val output = model.forward(input)
@@ -128,7 +134,7 @@ class VflNNEstimator(algorithm: String,
       val metadata = TableMetaData.newBuilder
         .setName(s"${model.getName()}_output").setVersion(iteration).build
       val tableProto = outputTargetToTableProto(model.output, target, metadata)
-      val hasReturn = if (!data.hasNext) true else false
+      val hasReturn = if (!dataIter.hasNext) true else false
       evaluateResult = flClient.nnStub.evaluate(tableProto, algorithm, hasReturn).getMessage
       iteration += 1
       count += miniBatch.size()
@@ -144,15 +150,17 @@ class VflNNEstimator(algorithm: String,
    * @param dataSet the data to predict
    * @return
    */
-  override def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Array[Activity] = {
+  def predict(data: RDD[(Array[Float], Array[Float])]) = {
+    val sampleRDD = DataFrameUtils.arrayRDDToSampleRDD(data)
+    val dataSet = DataFrameUtils.sampleRDDToMiniBatch(sampleRDD).toLocal()
     val dataSize = dataSet.size()
-    val data = dataSet.data(false)
+    val dataIter = dataSet.data(false)
     var count = 0
     var iteration = 0
     var resultSeq = Seq[Tensor[Float]]()
     while (count < dataSize) {
       model.evaluate()
-      val miniBatch = data.next()
+      val miniBatch = dataIter.next()
       val input = miniBatch.getInput()
       val target = miniBatch.getTarget()
       val output = model.forward(input)

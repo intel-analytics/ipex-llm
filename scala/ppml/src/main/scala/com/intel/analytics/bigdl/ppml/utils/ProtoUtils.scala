@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.Module
@@ -90,10 +106,6 @@ object ProtoUtils {
     val weights = getParametersFromModel(model)._1
     val metadata = TableMetaData.newBuilder
       .setName(name).setVersion(version).build
-    FloatTensor.newBuilder()
-      .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
-      .addAllShape(weights.size.toList.map(v => int2Integer(v)))
-      .build()
     val tensor =
       FloatTensor.newBuilder()
         .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
@@ -168,7 +180,21 @@ object ProtoUtils {
       false
   }
 
-
-
+  def toBoostEvals(localPredicts: Array[Map[String, Array[Boolean]]]): List[BoostEval] = {
+    // Sorted by treeID
+    localPredicts.map{predict =>
+      BoostEval.newBuilder()
+        .addAllEvaluates(predict.toSeq.sortBy(_._1).map(p => {
+          TreePredict.newBuilder().setTreeID(p._1)
+            .addAllPredicts(p._2.map(boolean2Boolean).toList.asJava)
+            .build()
+        }).toList.asJava)
+        .build()
+    }.toList
+  }
+  def toArrayFloat(response: PredictResponse): Array[Float] = {
+    response.getData.getTableMap.get("predictResult")
+      .getTensorList.asScala.toArray.map(_.toFloat)
+  }
 
 }

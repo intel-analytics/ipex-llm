@@ -22,8 +22,10 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, Metrics, OptimMethod, ValidationMethod}
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.base.Estimator
+import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
 import org.apache.logging.log4j.LogManager
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -52,8 +54,12 @@ class HflNNEstimator(algorithm: String,
 
 
   def train(endEpoch: Int,
-            trainDataSet: LocalDataSet[MiniBatch[Float]],
-            valDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float] = {
+            trainData: RDD[(Array[Float], Array[Float])],
+            valData: RDD[(Array[Float], Array[Float])]): Module[Float] = {
+    val trainSampleRDD = DataFrameUtils.arrayRDDToSampleRDD(trainData)
+    val trainDataSet = DataFrameUtils.sampleRDDToMiniBatch(trainSampleRDD).toLocal()
+    val valSampleRDD = DataFrameUtils.arrayRDDToSampleRDD(valData)
+    val valDataSet = DataFrameUtils.sampleRDDToMiniBatch(valSampleRDD).toLocal()
     val clientUUID = flClient.getClientUUID()
     val size = trainDataSet.size()
     var iteration = 0
@@ -74,10 +80,14 @@ class HflNNEstimator(algorithm: String,
 
     model
   }
-  def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]) = {
+  def evaluate(data: RDD[(Array[Float], Array[Float])]) = {
+    val sampleRDD = DataFrameUtils.arrayRDDToSampleRDD(data)
+    val dataSet = DataFrameUtils.sampleRDDToMiniBatch(sampleRDD).toLocal()
     model.evaluate(dataSet, metrics)
   }
-  def predict(dataSet: LocalDataSet[MiniBatch[Float]]) = {
+  def predict(data: RDD[(Array[Float], Array[Float])]) = {
+    val sampleRDD = DataFrameUtils.arrayRDDToSampleRDD(data)
+    val dataSet = DataFrameUtils.sampleRDDToMiniBatch(sampleRDD).toLocal()
     localPredictor.predict(dataSet)
   }
 }

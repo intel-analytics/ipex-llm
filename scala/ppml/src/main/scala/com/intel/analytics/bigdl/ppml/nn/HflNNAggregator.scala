@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.ppml.nn
 
-import com.intel.analytics.bigdl.ppml.base.StorageHolder
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, FLPhase}
 import com.intel.analytics.bigdl.ppml.common.FLPhase.{EVAL, PREDICT, TRAIN}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, Table, TableMetaData}
@@ -24,18 +23,13 @@ import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, Table,
 import scala.collection.JavaConverters._
 
 
+
 /**
- * HFL just use AverageAggregator to aggregate on server
+ * Return the average of all clients Tensors when calling aggregate
  */
 class HflNNAggregator extends NNAggregator {
   protected var modelName = "averaged"
 
-  override def initStorage(): Unit = {
-    aggregateTypeMap.put(TRAIN, new StorageHolder(FLDataType.TENSOR_MAP))
-    aggregateTypeMap.put(EVAL, new StorageHolder(FLDataType.TENSOR_MAP))
-    aggregateTypeMap.put(PREDICT, new StorageHolder(FLDataType.TENSOR_MAP))
-
-  }
   /**
    * aggregate current temporary model weights and put updated model into storage
    */

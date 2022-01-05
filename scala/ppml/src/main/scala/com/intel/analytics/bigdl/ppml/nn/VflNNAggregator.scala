@@ -65,7 +65,6 @@ class VflNNAggregator(model: Module[Float],
         val gradOutputLayer = criterion.backward(output, target)
         val grad = module.backward(inputTable, gradOutputLayer)
         val meta = metaBuilder.setName("gradInput").setVersion(storage.version).build()
-
         aggregatedTable = Table.newBuilder()
           .setMetaData(meta)
           .putTable("gradInput", toFloatTensor(grad.toTable.apply[Tensor[Float]](1)))
@@ -77,7 +76,7 @@ class VflNNAggregator(model: Module[Float],
           vMethod.apply(output, target)
         })
         validationResult = validationResult :+ batchValidationResult
-        if (hasReturn) {
+        if (shouldReturn) {
           val result = validationResult.reduce((x, y) => {
             x.zip(y).map {
               case (r1, r2) => r1 + r2

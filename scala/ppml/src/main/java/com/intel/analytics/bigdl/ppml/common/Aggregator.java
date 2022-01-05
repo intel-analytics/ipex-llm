@@ -43,7 +43,6 @@ public abstract class Aggregator {
         initStorage();
     }
 
-
     public void setReturnMessage(String returnMessage) {
         this.returnMessage = returnMessage;
     }

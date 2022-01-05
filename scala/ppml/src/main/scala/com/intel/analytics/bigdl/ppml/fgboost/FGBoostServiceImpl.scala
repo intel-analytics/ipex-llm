@@ -20,14 +20,20 @@ import com.intel.analytics.bigdl.ppml.base.DataHolder
 import com.intel.analytics.bigdl.ppml.common.FLPhase
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.{FGBoostServiceGrpc, FGBoostServiceProto}
+import com.intel.analytics.bigdl.ppml.fgboost.FGBoostAggregator
 import io.grpc.stub.StreamObserver
+import org.apache.logging.log4j.LogManager
+
+
 
 class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
-  val aggregator = new VflGBoostAggregator()
+  val logger = LogManager.getLogger(getClass)
+  val aggregator = new FGBoostAggregator()
   aggregator.setClientNum(clientNum)
-  override def downloadTable(request: DownloadTableRequest,
+  override def downloadLabel(request: DownloadLabelRequest,
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
     val version = request.getMetaData.getVersion
+    logger.debug(s"Server received downloadLabel request of version: $version")
     val data = aggregator.getLabelStorage().serverData
     if (data == null) {
       val response = "Your required data doesn't exist"
@@ -42,7 +48,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     }
   }
 
-  override def uploadTable(request: UploadTableRequest,
+  override def uploadLabel(request: UploadLabelRequest,
                            responseObserver: StreamObserver[UploadResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val data = request.getData
@@ -51,6 +57,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
       aggregator.putClientData(FLPhase.LABEL, clientUUID, version, new DataHolder(data))
       val response = s"Table uploaded to server at clientID: $clientUUID, version: $version"
       responseObserver.onNext(UploadResponse.newBuilder.setResponse(response).setCode(0).build)
+      responseObserver.onCompleted()
     } catch {
       case e: Exception =>
         val response = UploadResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
@@ -69,15 +76,16 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val version = -1 // version is not needed in fgboost
     try {
       aggregator.putClientData(FLPhase.SPLIT, clientUUID, version, new DataHolder(split))
-      val bestSplit = aggregator.getBestSplit()
-      if (split == null) {
-        val response = "Your required data doesn't exist"
+      val bestSplit = aggregator.getBestSplit(split.getTreeID, split.getNodeID)
+      if (bestSplit == null) {
+        val response = "Your required bestSplit data doesn't exist"
         responseObserver.onNext(SplitResponse.newBuilder.setResponse(response).setCode(0).build)
         responseObserver.onCompleted()
       }
       else {
-        val response = "Download data successfully"
-        responseObserver.onNext(SplitResponse.newBuilder.setResponse(response).setSplit(split).setCode(1).build)
+        val response = "Split node successfully"
+        responseObserver.onNext(
+          SplitResponse.newBuilder.setResponse(response).setSplit(bestSplit).setCode(1).build)
         responseObserver.onCompleted()
       }
     } catch {
@@ -96,16 +104,16 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val clientUUID = request.getClientuuid
     val leaves = request.getTreeLeaves
 
-    val version = -1 // version is not needed in fgboost
+    val version = -1 // TODO: need to modify proto
     try {
       aggregator.putClientData(FLPhase.LEAF, clientUUID, version, new DataHolder(leaves))
-      val bestSplit = aggregator.getBestSplit()
-      val response = "Your required data doesn't exist"
+      val response = s"Tree leaves uploaded to server at clientID: $clientUUID, version: $version"
       responseObserver.onNext(UploadResponse.newBuilder.setResponse(response).setCode(0).build)
       responseObserver.onCompleted()
     } catch {
       case e: Exception =>
-        val response = UploadResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        val response = UploadResponse.newBuilder.setResponse(
+          e.getStackTrace.toString).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {
@@ -115,13 +123,56 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
 
   override def evaluate(request: EvaluateRequest,
                         responseObserver: StreamObserver[EvaluateResponse]): Unit = {
+    val clientUUID = request.getClientuuid
+    val predicts: java.util.List[BoostEval] = request.getTreeEvalList
+    try {
+      aggregator.putClientData(FLPhase.EVAL, clientUUID, -1, new DataHolder(predicts))
+      val result = aggregator.getBranchStorage().serverData
+      if (result == null) {
+        val response = "Your required data doesn't exist"
+        responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(0).build)
+        responseObserver.onCompleted()
+      }
+      else {
+        val response = "Download data successfully"
+        responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(1).build)
+        responseObserver.onCompleted()
+      }
+    } catch {
+      case e: Exception =>
+        val response = EvaluateResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    } finally {
 
+    }
   }
 
   override def predict(request: PredictRequest,
                        responseObserver: StreamObserver[PredictResponse]): Unit = {
+    val clientUUID = request.getClientuuid
+    val predicts: java.util.List[BoostEval] = request.getTreeEvalList
+    try {
+      aggregator.putClientData(FLPhase.PREDICT, clientUUID, -1, new DataHolder(predicts))
+      val result = aggregator.getPredictStorage().serverData
+      if (result == null) {
+        val response = "Your required data doesn't exist"
+        responseObserver.onNext(PredictResponse.newBuilder.setResponse(response).setCode(0).build)
+        responseObserver.onCompleted()
+      }
+      else {
+        val response = "Download data successfully"
+        responseObserver.onNext(PredictResponse.newBuilder.setResponse(response).setCode(1).build)
+        responseObserver.onCompleted()
+      }
+    } catch {
+      case e: Exception =>
+        val response = PredictResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        responseObserver.onNext(response)
+        responseObserver.onCompleted()
+    } finally {
 
+    }
   }
-
 
 }

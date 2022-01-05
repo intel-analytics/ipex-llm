@@ -47,11 +47,14 @@ abstract class FLModel() {
           labelColumn: Array[String] = null,
           valData: DataFrame = null,
           hasLabel: Boolean = true) = {
-    val _trainData = DataFrameUtils.dataFrameToMiniBatch(trainData, featureColumn, labelColumn,
-      hasLabel = hasLabel, batchSize = batchSize)
-    val _valData = DataFrameUtils.dataFrameToMiniBatch(valData, featureColumn, labelColumn,
-      hasLabel = hasLabel, batchSize = batchSize)
-    estimator.train(epoch, _trainData.toLocal(), _valData.toLocal())
+    val _trainData = DataFrameUtils.dataFrameToArrayRDD(trainData, featureColumn, labelColumn,
+      hasLabel = hasLabel)
+    val _valData = if (valData != null) {
+      DataFrameUtils.dataFrameToArrayRDD(valData, featureColumn, labelColumn,
+        hasLabel = hasLabel)
+    } else null
+
+    estimator.train(epoch, _trainData, _valData)
   }
 
   /**
@@ -73,9 +76,9 @@ abstract class FLModel() {
         println(r._1 + ":" + r._2.mkString(","))
       }
     } else {
-      val _data = DataFrameUtils.dataFrameToMiniBatch(data, featureColumn, labelColumn,
-        hasLabel = hasLabel, batchSize = batchSize)
-      estimator.evaluate(_data.toLocal())
+      val _data = DataFrameUtils.dataFrameToArrayRDD(data, featureColumn, labelColumn,
+        hasLabel = hasLabel)
+      estimator.evaluate(_data)
     }
   }
 
@@ -89,9 +92,8 @@ abstract class FLModel() {
   def predict(data: DataFrame,
               batchSize: Int = 4,
               featureColumn: Array[String] = null): Array[Activity] = {
-    val _data = DataFrameUtils.dataFrameToMiniBatch(data, featureColumn,
-      hasLabel = false, batchSize = batchSize)
-    estimator.predict(_data.toLocal())
+    val _data = DataFrameUtils.dataFrameToArrayRDD(data, featureColumn, hasLabel = false)
+    estimator.predict(_data)
   }
 }
 
