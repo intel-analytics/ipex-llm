@@ -25,14 +25,13 @@ from torch.utils.data import TensorDataset, DataLoader
 
 import numpy as np
 
-from test._train_torch_lightning import create_data_loader, data_transform
+from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
-from test._train_torch_lightning import train_with_linear_top_layer
 
 batch_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "data")
+data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
 
 class ResNet18(nn.Module):
@@ -46,6 +45,7 @@ class ResNet18(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+
 class MultiInputModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -55,7 +55,6 @@ class MultiInputModel(nn.Module):
         self.layer_3 = nn.Linear(256, 2)
 
     def forward(self, x1, x2):
-
         x1 = self.layer_1(x1)
         x2 = self.layer_2(x2)
         x = torch.cat([x1, x2], axis=1)
@@ -63,8 +62,8 @@ class MultiInputModel(nn.Module):
         return self.layer_3(x)
 
 
-class TestModelsOnnx(TestCase):
-    
+class TestOnnx(TestCase):
+
     def test_trainer_compile_with_onnx(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
@@ -72,10 +71,10 @@ class TestModelsOnnx(TestCase):
         trainer = Trainer(max_epochs=1)
 
         pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
-        train_loader = create_data_loader(data_dir, batch_size,\
-            num_workers, data_transform, subset=200)
+        train_loader = create_data_loader(data_dir, batch_size, \
+                                          num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
-        assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
+        assert pl_model._ortsess_up_to_date is False  # ortsess is not up-to-date after training
 
         for x, y in train_loader:
             onnx_res = pl_model.inference(x.numpy())  # onnxruntime
@@ -89,14 +88,14 @@ class TestModelsOnnx(TestCase):
 
         trainer = Trainer(max_epochs=1)
         trainer.fit(pl_model, train_loader)
-        assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
+        assert pl_model._ortsess_up_to_date is False  # ortsess is not up-to-date after training
 
         pl_model.update_ortsess()  # update the ortsess with default settings
-        assert pl_model._ortsess_up_to_date is True # ortsess is up-to-date after updating
+        assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date after updating
 
         for x, y in train_loader:
             pl_model.inference(x.numpy())
-    
+
     def test_multiple_input_onnx(self):
         model = MultiInputModel()
         loss = nn.CrossEntropyLoss()
@@ -104,13 +103,13 @@ class TestModelsOnnx(TestCase):
         trainer = Trainer(max_epochs=1)
 
         pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
-        x1 = torch.randn(100, 28*28)
-        x2 = torch.randn(100, 28*28)
+        x1 = torch.randn(100, 28 * 28)
+        x2 = torch.randn(100, 28 * 28)
         y = torch.zeros(100).long()
         y[0:50] = 1
         train_loader = DataLoader(TensorDataset(x1, x2, y), batch_size=32, shuffle=True)
         trainer.fit(pl_model, train_loader)
-        assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
+        assert pl_model._ortsess_up_to_date is False  # ortsess is not up-to-date after training
 
         for x1, x2, y in train_loader:
             onnx_res = pl_model.inference([x1.numpy(), x2.numpy()])  # onnxruntime
@@ -124,10 +123,10 @@ class TestModelsOnnx(TestCase):
 
         trainer = Trainer(max_epochs=1)
         trainer.fit(pl_model, train_loader)
-        assert pl_model._ortsess_up_to_date is False # ortsess is not up-to-date after training
+        assert pl_model._ortsess_up_to_date is False  # ortsess is not up-to-date after training
 
         pl_model.update_ortsess()  # update the ortsess with default settings
-        assert pl_model._ortsess_up_to_date is True # ortsess is up-to-date after updating
+        assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date after updating
 
         for x1, x2, y in train_loader:
             pl_model.inference([x1.numpy(), x2.numpy()])
