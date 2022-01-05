@@ -43,27 +43,31 @@ import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.dllib.optim.ZooTrigger
-import com.intel.analytics.bigdl.dllib.feature.{DiskFeatureSet, DistributedFeatureSet, FeatureSet}
+import com.intel.analytics.bigdl.dllib.feature._
 import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
-import com.intel.analytics.bigdl.dllib.feature.dataset
 import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.{Net, Predictable}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Lambda, Variable}
 import com.intel.analytics.bigdl.dllib.keras.autograd._
 import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
-// import com.intel.analytics.bigdl.dllib.keras.Model
+import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.net.NetUtils
-// import com.intel.analytics.bigdl.dllib.Net.TorchModel
-import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
-// import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
+import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping,
+GradientClipping, L2NormClipping}
+import com.intel.analytics.bigdl.dllib.feature.common._
+import com.intel.analytics.bigdl.dllib.nnframes.NNImageSchema
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.{SparkContext, TaskContext}
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
+import org.apache.spark.sql.types.DataType
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.ml.VectorCompatibility
+import org.apache.spark.ml.feature.VectorAssembler
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
@@ -71,7 +75,7 @@ import scala.reflect.ClassTag
 import scala.language.implicitConversions
 
 abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: TensorNumeric[T])
-  extends KerasLayer[Activity, Activity, T] with Net with Predictable[T] {
+  extends KerasLayer[Activity, Activity, T] with Net with Predictable[T] with VectorCompatibility {
 
   protected val module: Module[T] = this
 
@@ -470,6 +474,89 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       batchSize: Int,
       nbEpoch: Int)(implicit ev: TensorNumeric[T]): Unit = {
     this.fit(x, batchSize, nbEpoch, null)
+  }
+
+  private def getDataSet(
+      dataFrame: DataFrame,
+      batchSize: Int,
+      featureCols: Array[String],
+      labelCols: Array[String],
+      preprocessing: Preprocessing[(Any, Option[Any]), Sample[T]]): FeatureSet[MiniBatch[T]] = {
+
+    val sp = FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
+      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
+
+    val guid = java.util.UUID.randomUUID.toString
+    val internalFeatureCol = "features" + guid
+    val internalLabelCol = "labels" + guid
+    val df = if (featureCols.size > 1) {
+      val assembler = new VectorAssembler()
+        .setInputCols(featureCols)
+        .setOutputCol(internalFeatureCol)
+      assembler.transform(dataFrame)
+    } else {
+      dataFrame.withColumnRenamed(featureCols.head, internalFeatureCol)
+    }
+
+    val assembleDF = if (labelCols.size > 1) {
+      val assembler = new VectorAssembler()
+        .setInputCols(labelCols)
+        .setOutputCol(internalLabelCol)
+      assembler.transform(df)
+    } else {
+      df.withColumnRenamed(labelCols.head, internalLabelCol)
+    }
+
+    val featureColIndex = assembleDF.schema.fieldIndex(internalFeatureCol)
+    val featureType = assembleDF.schema(internalFeatureCol).dataType
+    val featureFunc = unwrapVectorAsNecessary(featureType)
+
+    val labelFunc: (Row) => Option[Any] = {
+      val lci = assembleDF.schema.fieldIndex(internalLabelCol)
+      val labelFunc = unwrapVectorAsNecessary(assembleDF.schema(internalLabelCol).dataType)
+      (row: Row) => Some(labelFunc(row, lci))
+    }
+
+    val featureAndLabel = assembleDF.rdd.map { row =>
+      val features = featureFunc(row, featureColIndex)
+      val labels = labelFunc(row)
+      (features, labels)
+    }
+
+    val initialDataSet = FeatureSet.rdd(featureAndLabel).transform(sp)
+    initialDataSet.transform(SampleToMiniBatch[T](batchSize))
+  }
+
+  def fit(
+      x: DataFrame,
+      batchSize: Int,
+      nbEpoch: Int,
+      featureCols: Array[String],
+      labelCols: Array[String],
+      valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
+    val preprocessing =
+      FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
+        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
+
+    val trainingData = getDataSet(x, batchSize, featureCols, labelCols,
+      preprocessing).toDataSet()
+    val valData = if (valX != null) {
+      getDataSet(valX, batchSize, featureCols, labelCols, preprocessing).toDataSet()
+    } else null
+
+    this.fit(trainingData, nbEpoch, valData)
+
+    predictTransformer = ToTuple() -> preprocessing
+      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]].clonePreprocessing()
+  }
+
+  def fit(
+      x: DataFrame,
+      batchSize: Int,
+      nbEpoch: Int,
+      featureCols: Array[String],
+      labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
+    this.fit(x, batchSize, nbEpoch, featureCols, labelCols, null)
   }
 
   /**
@@ -954,7 +1041,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
             cachedModels.unpersist()
             val newModel = if (modelFile != null) {
               DistriOptimizer.logger.info("Model recover from last snapshot")
-              Module.load[T](modelFile)
+              Module.loadModule[T](modelFile)
             } else {
               DistriOptimizer.logger.info("Model recover from origin model")
               trainingModel
@@ -1356,7 +1443,7 @@ private[bigdl] class InternalDistriOptimizerV2[T: ClassTag] (
 }
 
 object InternalDistriOptimizer {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   protected def validate[T](validationFeatureSet: FeatureSet[MiniBatch[T]],
                             validationMethods: Array[ValidationMethod[T]],
@@ -1513,7 +1600,7 @@ object InternalDistriOptimizer {
 }
 
 object InternalDistriOptimizerV2 {
-  val logger = Logger.getLogger(this.getClass)
+  val logger = LogManager.getLogger(this.getClass)
 
   protected def validate[T](validationFeatureSet: FeatureSet[MiniBatch[T]],
                             validationMethods: Array[ValidationMethod[T]],

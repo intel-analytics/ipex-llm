@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils._
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Train {
@@ -47,7 +46,7 @@ object Train {
       val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         if (param.graphModel) {
           LeNet5.graph(classNum = 10)

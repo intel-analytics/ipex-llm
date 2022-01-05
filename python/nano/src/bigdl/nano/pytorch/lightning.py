@@ -24,7 +24,7 @@ from torch.optim import Optimizer
 
 
 class LightningModuleFromTorch(LightningModule):
-    def __init__(self, model: nn.Module, loss: _Loss, optimizer: Optimizer,
+    def __init__(self, model: nn.Module, loss: _Loss = None, optimizer: Optimizer = None,
                  metrics: List[Metric] = None):
         """
         Integrate pytorch modules, loss, optimizer to pytorch-lightning model.
@@ -40,8 +40,8 @@ class LightningModuleFromTorch(LightningModule):
         self.optimizer = optimizer
         self.metrics = metrics
 
-    def forward(self, x):
-        return self.model(x)
+    def forward(self, *args, **kwargs):
+        return self.model(*args, **kwargs)
 
     def _forward(self, batch):
         # Handle different numbers of input for various models
@@ -49,19 +49,17 @@ class LightningModuleFromTorch(LightningModule):
         return self.model(*(batch[:nargs - 1]))
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
         y_hat = self._forward(batch)
-        loss = self.loss(y_hat, y)
+        loss = self.loss(y_hat, batch[-1])  # use last output as target
         self.log("train/loss", loss, on_step=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
         y_hat = self._forward(batch)
-        loss = self.loss(y_hat, y)
+        loss = self.loss(y_hat, batch[-1])  # use last output as target
         self.log("val/loss", loss, on_epoch=True, prog_bar=True, logger=True)
         if self.metrics:
-            acc = {"val/" + type(metric).__name__: metric(y_hat, y)
+            acc = {"val/" + type(metric).__name__: metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
         else:
@@ -69,12 +67,11 @@ class LightningModuleFromTorch(LightningModule):
         return loss, acc
 
     def test_step(self, batch, batch_idx):
-        x, y = batch
         y_hat = self._forward(batch)
-        loss = self.loss(y_hat, y)
+        loss = self.loss(y_hat, batch[-1])  # use last output as target
         self.log("test/loss", loss, on_epoch=True, prog_bar=True, logger=True)
         if self.metrics:
-            acc = {"test/" + type(metric).__name__: metric(y_hat, y)
+            acc = {"test/" + type(metric).__name__: metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
         else:

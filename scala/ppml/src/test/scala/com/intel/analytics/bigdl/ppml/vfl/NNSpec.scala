@@ -16,17 +16,38 @@
 
 package com.intel.analytics.bigdl.ppml.vfl
 
-import com.intel.analytics.bigdl.ppml.FLServer
+import java.io.{File, FileFilter}
+
+import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.{LinearRegression, LogisticRegression}
+import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
 
 
-class NNSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   "Logistic Regression" should "work" in {
-    // TODO: tests would be added after API changed to Spark local DataFrame
+    val flServer = new FLServer()
+    flServer.build()
+    flServer.start()
+    val spark = FLContext.getSparkSession()
+    import spark.implicits._
+    val df = spark.read.option("header", "true")
+      .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
+
+    FLContext.initFLContext()
+    val psi = new PSI()
+    val salt = psi.getSalt()
+    val trainDf = psi.uploadSetAndDownloadIntersection(df, salt)
+    val testDf = trainDf.drop("Outcome")
+    trainDf.show()
+    val lr = new LogisticRegression(df.columns.size - 1)
+    lr.fit(trainDf, valData = trainDf)
+    lr.evaluate(trainDf)
+    lr.predict(testDf)
+    flServer.stop()
   }
   "Linear Regression" should "work" in {
 
@@ -35,7 +56,7 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val flServer = new FLServer()
     flServer.build()
     flServer.start()
-    VflContext.initContext()
+    FLContext.initFLContext()
     val logisticRegression = new LogisticRegression(featureNum = 1)
     val linearRegression = new LinearRegression(featureNum = 1)
     flServer.stop()

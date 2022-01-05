@@ -28,12 +28,14 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.base_estimator import BaseEstimator
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
+from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
+    get_remote_file_to_local
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
+from bigdl.orca.learn.log_monitor import start_log_server
 
-
-logger = logging.getLogger(__name__)
+from bigdl.dllib.utils.utils import get_node_ip
+from bigdl.orca.learn.utils import find_free_port
 
 
 def partition_to_creator(partition):
@@ -86,7 +88,14 @@ class PyTorchPySparkEstimator(BaseEstimator):
             use_tqdm=False,
             workers_per_node=1,
             sync_stats=True,
-            log_level=logging.INFO):
+            log_level=logging.INFO,
+            model_dir=None,
+            log_to_driver=True):
+        logging.basicConfig(level=log_level,
+                            format='[%(asctime)s] %(levelname)-8s %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S'
+                            )
+        self.logger = logging.getLogger(__name__)
         if config is not None and "batch_size" in config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate/predict function of the estimator instead.")
@@ -101,6 +110,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         if not training_operator_cls and not loss_creator:
             raise ValueError("If a loss_creator is not provided, you must "
                              "provide a custom training operator.")
+        if not model_dir:
+            raise ValueError("Please specify model directory when using spark backend")
+        self.model_dir = model_dir
 
         self.model_creator = model_creator
         self.initialization_hook = initialization_hook
@@ -113,6 +125,13 @@ class PyTorchPySparkEstimator(BaseEstimator):
         # over partition to cover tasks all over the cluster
         self.workerRDD = sc.parallelize(list(range(self.total_cores * 4)),
                                         self.total_cores * 4).repartition(self.num_workers)
+
+        self.ip = get_node_ip()
+        self.port = find_free_port()
+        is_local = sc.master.startswith("local")
+        self.need_to_log_to_driver = (not is_local) and log_to_driver
+        if self.need_to_log_to_driver:
+            start_log_server(self.ip, self.port)
 
         self.worker_init_params = dict(
             model_creator=self.model_creator,
@@ -127,12 +146,18 @@ class PyTorchPySparkEstimator(BaseEstimator):
             size=self.num_workers,
             cores_per_worker=self.cores_per_worker,
             sync_stats=sync_stats,
-            log_level=log_level)
+            log_level=log_level,
+            model_dir=self.model_dir,
+            log_to_driver=self.need_to_log_to_driver,
+            driver_ip=self.ip,
+            driver_port=self.port)
 
+        local_init_params = self.worker_init_params.copy()
+        local_init_params["log_to_driver"] = False
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
             cluster_info=self._get_cluster_info(sc),
-            **self.worker_init_params)
+            **local_init_params)
 
         self.state_dict = self.driver_runner.get_state_dict()
 
@@ -189,9 +214,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
+        state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="fit",
-            state_dict=self.state_dict,
+            state_dict=state_dict,
             cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
@@ -231,8 +257,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        self.state_dict = res[0][0]
-        worker_stats = [re[1] for re in res]
+        self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
+        worker_stats = res
 
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
@@ -241,6 +267,37 @@ class PyTorchPySparkEstimator(BaseEstimator):
             return epoch_stats
         else:
             return epoch_stats
+
+    @staticmethod
+    def _get_state_dict_from_remote(remote_dir):
+        import tempfile
+        import shutil
+        import os
+        try:
+            temp_dir = tempfile.mkdtemp()
+            get_remote_file_to_local(os.path.join(remote_dir, "state.pkl"),
+                                     os.path.join(temp_dir, "state.pkl"),
+                                     over_write=True)
+            import pickle
+            with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
+                state_dicts = pickle.load(f)
+        finally:
+            shutil.rmtree(temp_dir)
+        return state_dicts
+
+    def _get_broadcasted_state_dict(self, sc):
+        if self.state_dict:
+            state_dict_b = sc.broadcast(self.state_dict)
+        else:
+            state_dict_b = None
+        return state_dict_b
+
+    def _get_broadcasted_state_dict(self, sc):
+        if self.state_dict:
+            state_dict_b = sc.broadcast(self.state_dict)
+        else:
+            state_dict_b = None
+        return state_dict_b
 
     def _predict_spark_xshards(self, xshards, init_params, params):
         def transform_func(iter, init_param, param):
@@ -273,9 +330,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
+        state_dict = self._get_broadcasted_state_dict(sc)
+
         init_params = dict(
             mode="predict",
-            state_dict=self.state_dict,
+            state_dict=state_dict,
             cluster_info=cluster_info,
         )
         init_params.update(self.worker_init_params)
@@ -340,9 +399,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         sc = OrcaContext.get_spark_context()
         cluster_info = self._get_cluster_info(sc)
+        state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="evaluate",
-            state_dict=self.state_dict,
+            state_dict=state_dict,
             cluster_info=cluster_info)
 
         init_params.update(self.worker_init_params)

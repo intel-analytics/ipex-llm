@@ -22,9 +22,10 @@ import com.intel.analytics.bigdl.orca.utils.{PythonInterpreter, PythonInterprete
 import com.intel.analytics.bigdl.orca.tf.TFNetNative
 import com.intel.analytics.bigdl.orca.utils.ZooSpecHelper
 import jep.NDArray
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import com.intel.analytics.bigdl.dllib.NNContext.initNNContext
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 
 @PythonInterpreterTest
 class TorchModelSpec extends ZooSpecHelper{
@@ -35,7 +36,7 @@ class TorchModelSpec extends ZooSpecHelper{
       cancel("Please export PYTHONHOME before this test.")
     } else {
       logger.info(s"use python home: ${System.getenv("PYTHONHOME")}")
-      Logger.getLogger(PythonInterpreter.getClass()).setLevel(Level.DEBUG)
+      Configurator.setLevel(PythonInterpreter.getClass().getName, Level.DEBUG)
       // Load TFNet before create interpreter, or the TFNet will throw an OMP error #13
       TFNetNative.isLoaded
     }

@@ -28,7 +28,6 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
 import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Train {
@@ -50,7 +49,7 @@ object Train {
         BGRImgToBatch(param.batchSize)
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         if (param.graphModel) VggForCifar10.graph(classNum = 10) else VggForCifar10(classNum = 10)
       }

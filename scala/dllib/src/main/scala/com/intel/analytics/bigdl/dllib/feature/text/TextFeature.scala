@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.text
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 
 import scala.collection.{Set, mutable}
 import scala.reflect.ClassTag
@@ -172,7 +172,7 @@ object TextFeature {
    */
   val predict = "predict"
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger: Logger = LogManager.getLogger(getClass)
 
   /**
    * Create a TextFeature without label.

@@ -53,8 +53,8 @@ def main(cluster_mode, max_epoch, file_path, batch_size, platform, non_interacti
 
     if cluster_mode == "local":
         init_orca_context(cluster_mode="local", cores=4, memory="3g")
-    elif cluster_mode == "yarn":
-        init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, driver_memory="3g")
+    elif cluster_mode.startswith("yarn"):
+        init_orca_context(cluster_mode=cluster_mode, num_nodes=2, cores=2, driver_memory="3g")
     elif cluster_mode == "spark-submit":
         init_orca_context(cluster_mode="spark-submit")
     load_data(file_path)
@@ -222,4 +222,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
     main(args.cluster_mode, args.epochs, args.file_path, args.batch_size, args.platform,
          args.non_interactive)
-

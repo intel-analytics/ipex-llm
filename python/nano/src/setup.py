@@ -72,8 +72,8 @@ def setup_package(plat_name):
     tensorflow_requires = ["intel-tensorflow==2.6.0",
                            "keras==2.6.0"]
 
-    pytorch_requires = ["torch==1.8.0",
-                        "torchvision==0.9.0",
+    pytorch_requires = ["torch==1.9.0",
+                        "torchvision==0.10.0",
                         "pytorch_lightning==1.4.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",

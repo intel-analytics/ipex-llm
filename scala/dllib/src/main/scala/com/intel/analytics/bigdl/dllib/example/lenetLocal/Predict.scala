@@ -20,14 +20,15 @@ import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
 import com.intel.analytics.bigdl.dllib.optim.LocalPredictor
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 
 import scala.collection.mutable.ArrayBuffer
 
 object Predict {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
 
 
   import Utils._
@@ -54,7 +55,7 @@ object Predict {
       }
       val samples = samplesBuffer.toArray
 
-      val model = Module.load[Float](param.model)
+      val model = Module.loadModule[Float](param.model)
       val localPredictor = LocalPredictor(model)
       val result = localPredictor.predict(samples)
       val result_class = localPredictor.predictClass(samples)

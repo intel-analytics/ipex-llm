@@ -17,7 +17,9 @@
 package com.intel.analytics.bigdl.ppml.common;
 
 
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,36 +29,29 @@ import java.util.concurrent.ConcurrentHashMap;
  * server data for clients to download, and all client data uploaded at this version
  */
 public class Storage<T> {
-    private Logger logger = Logger.getLogger(getClass());
+    private Logger logger = LogManager.getLogger(getClass());
     public String name;
     public int version;
     public T serverData = null;
-    public Map<String, T> localData;
+    public Map<String, T> clientData;
     Storage (String name) {
         version = 0;
         this.name = name;
-        localData = new ConcurrentHashMap<>();
+        clientData = new ConcurrentHashMap<>();
     }
     public void updateStorage(T data) {
-        localData.clear();
+        clientData.clear();
         serverData = data;
         version += 1;
-        logger.info("Storage " + name + " of version:" + version + " aggregated.");
+        logger.info("Storage " + name + " of version: " + version + " aggregated.");
     }
     /**
      *
      * @return The size of data collection of each local node
      */
     public int size() {
-        return localData.size();
+        return clientData.size();
     }
 
-    /**
-     * Put the local data into this storage
-     * @param key data key
-     * @param value data value
-     */
-    public void put(String key, T value) {
-        localData.put(key, value);
-    }
+   
 }

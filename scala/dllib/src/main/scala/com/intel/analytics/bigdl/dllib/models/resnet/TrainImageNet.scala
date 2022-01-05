@@ -26,13 +26,14 @@ import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 
 object TrainImageNet {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.INFO)
-  val logger = Logger.getLogger(getClass)
+  Configurator.setLevel("com.intel.analytics.bigdl.dllib.optim", Level.INFO)
+  val logger = LogManager.getLogger(getClass)
 
   import Utils._
 
@@ -66,7 +67,7 @@ object TrainImageNet {
       val shortcut: ShortcutType = ShortcutType.B
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         val curModel =
           ResNet(classNum = param.classes, T("shortcutType" -> shortcut, "depth" -> param.depth,

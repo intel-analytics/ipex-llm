@@ -14,9 +14,8 @@
 # limitations under the License.
 #
 
+import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
-from bigdl.chronos.forecaster.utils import set_pytorch_seed
-from bigdl.chronos.model.VanillaLSTM_pytorch import VanillaLSTMPytorch
 from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator, optimizer_creator, loss_creator
 
 
@@ -28,12 +27,12 @@ class LSTMForecaster(BasePytorchForecaster):
                                         input_feature_num=2,
                                         output_feature_num=2,
                                         ...)
-            >>> forecaster.fit((x_train, y_train))
-            >>> forecaster.to_local()  # if you set distributed=True
-            >>> test_pred = forecaster.predict(x_test)
-            >>> test_eval = forecaster.evaluate((x_test, y_test))
-            >>> forecaster.save({ckpt_name})
-            >>> forecaster.restore({ckpt_name})
+        >>> forecaster.fit((x_train, y_train))
+        >>> forecaster.to_local()  # if you set distributed=True
+        >>> test_pred = forecaster.predict(x_test)
+        >>> test_eval = forecaster.evaluate((x_test, y_test))
+        >>> forecaster.save({ckpt_name})
+        >>> forecaster.load({ckpt_name})
     """
 
     def __init__(self,
@@ -71,9 +70,8 @@ class LSTMForecaster(BasePytorchForecaster):
         :param lr: Specify the learning rate. This value defaults to 0.001.
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
-               distributed forecaster. You may choose from "mse", "me", "mae",
-               "mse","rmse","msle","r2", "mpe", "mape", "mspe", "smape", "mdape"
-               and "smdape" for a non-distributed forecaster.
+               distributed forecaster. You may choose from "mse", "mae",
+               "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.
@@ -92,17 +90,20 @@ class LSTMForecaster(BasePytorchForecaster):
             "input_feature_num": input_feature_num,
             "output_feature_num": output_feature_num
         }
-        self.config = {
-            "lr": lr,
-            "loss": loss,
+        self.model_config = {
             "hidden_dim": hidden_dim,
             "layer_num": layer_num,
-            "optim": optimizer,
             "dropout": dropout
+        }
+        self.loss_config = {
+            "loss": loss
+        }
+        self.optim_config = {
+            "lr": lr,
+            "optim": optimizer
         }
 
         # model creator settings
-        self.local_model = VanillaLSTMPytorch
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
@@ -116,5 +117,12 @@ class LSTMForecaster(BasePytorchForecaster):
         self.lr = lr
         self.metrics = metrics
         self.seed = seed
+
+        # nano setting
+        current_num_threads = torch.get_num_threads()
+        self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
+        self.use_ipex = False
+        self.onnx_available = True
+        self.checkpoint_callback = False
 
         super().__init__()

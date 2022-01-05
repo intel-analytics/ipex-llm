@@ -13,23 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import warnings
 from logging import warning
 from typing import Any, List, Optional
-import warnings
 
 import pytorch_lightning as pl
 import torch
-from torchmetrics.metric import Metric
+from pytorch_lightning import LightningModule
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from torch import nn
+from torch.fx.graph_module import GraphModule
 from torch.nn.modules.loss import _Loss
+from torch.utils.data import DataLoader
+from torchmetrics.metric import Metric
 
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-
 
 distributed_backends = ["spawn", "ray"]
 
@@ -143,8 +143,6 @@ class Trainer(pl.Trainer):
                 "Loss and optimizer should be None if model is a pytorch-lightning model."
             pl_model = model
         else:
-            assert loss and optimizer, \
-                "Loss and optimizer are required to construct a LightningModule instance."
             pl_model = LightningModuleFromTorch(model, loss, optimizer, metrics)
 
         if onnx:
@@ -156,3 +154,86 @@ class Trainer(pl.Trainer):
                 return pl_model
         else:
             return pl_model
+
+    def quantize(self, pl_model: LightningModule,
+                 calib_dataloader: DataLoader = None,
+                 val_dataloader: DataLoader = None,
+                 metric: Metric = None,
+                 backend='inc',
+                 conf='',
+                 framework='pytorch_fx',
+                 approach='static',
+                 tuning_strategy='bayesian',
+                 accuracy_criterion: dict = None,
+                 timeout=0,
+                 max_trials=1
+                 ) -> GraphModule:
+        """
+        Calibrate a Pytorch-Lightning model for post-training quantization.
+
+        :param pl_model:       A Pytorch-Lightning model to be quantized.
+        :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
+                                    Required for static quantization.
+        :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
+        :param metric:              A torchmetrics.metric.Metric object for evaluation.
+        :param backend:             'inc' or 'nncf'('nncf' is not supported yet). Default: 'inc'.
+        :param conf:        A path to conf yaml file for quantization.
+                            Default: '', use default config.
+        :param framework:   'pytorch', 'pytorch_fx', 'pytorch_ipex'. Default: 'pytorch_fx'.
+                            Consistent with Intel Neural Compressor.
+        :param approach:    'static' or 'dynamic'.
+                            'static': post_training_static_quant,
+                            'dynamic': post_training_dynamic_quant.
+                            Default: 'static'.
+        :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
+        :param accuracy_criterion:  Tolerable accuracy drop.
+                                    accuracy_criterion = {'relative': 0.1, higher_is_better=True}
+                                    allows relative accuracy loss: 1%. accuracy_criterion =
+                                    {'absolute': 0.99, higher_is_better=False} means accuracy < 0.99
+                                     must be satisfied.
+        :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
+                            Combine with max_trials field to decide when to exit.
+        :param max_trials:  Max tune times. Default: 1.
+                            Combine with timeout field to decide when to exit.
+                            "timeout=0, max_trials=1" means it will try quantization only once and
+                            return satisfying best model.
+        :return:            A GraphModule. If there is no model found, return None.
+        """
+        if backend == 'inc':
+            from bigdl.nano.quantization import QuantizationINC
+            from neural_compressor.experimental import common
+
+            if approach not in ['static', 'dynamic']:
+                raise ValueError("Approach should be 'static' or 'dynamic', "
+                                 "{} is invalid.".format(approach))
+            approach_map = {
+                'static': 'post_training_static_quant',
+                'dynamic': 'post_training_dynamic_quant'
+            }
+            approach = approach_map.get(approach)
+
+            quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
+                                        tuning_strategy=tuning_strategy,
+                                        accuracy_criterion=accuracy_criterion,
+                                        timeout=timeout, max_trials=max_trials)
+            if isinstance(pl_model, LightningModuleFromTorch):
+                # LightningModuleFromTorch.forward fails to trace in FX, so replace it temporarily
+                quantizer.model = pl_model.model
+            else:
+                quantizer.model = pl_model
+
+            if val_dataloader and metric:
+                from bigdl.nano.quantization.quantization_inc import TorchMetricForINC
+                quantizer.eval_dataloader = val_dataloader
+                quantizer.metric = common.Metric(TorchMetricForINC, metric=metric)
+            if approach == 'post_training_static_quant':
+                assert calib_dataloader, "calib_dataloader must not be None when approach is " \
+                                         "post-training static quantization."
+                quantizer.calib_dataloader = calib_dataloader
+            quantized = quantizer()
+            if quantized:
+                return quantized.model
+            else:
+                raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
+        else:
+            raise NotImplementedError("Backend {} is not implemented.".format(backend))

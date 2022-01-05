@@ -77,7 +77,8 @@ class SparkRunner:
                            hadoop_user_name="root",
                            spark_yarn_archive=None,
                            conf=None,
-                           jars=None):
+                           jars=None,
+                           py_files=None):
         print("Initializing SparkContext for yarn-client mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -98,6 +99,8 @@ class SparkRunner:
                 archive = archive + "," + additional_archive
             submit_args = "--master yarn --deploy-mode client"
             submit_args = submit_args + " --archives {}".format(archive)
+            if py_files:
+                submit_args = submit_args + " --py-files {}".format(py_files)
             submit_args = submit_args + gen_submit_args(
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
@@ -146,7 +149,8 @@ class SparkRunner:
                                    hadoop_user_name="root",
                                    spark_yarn_archive=None,
                                    conf=None,
-                                   jars=None):
+                                   jars=None,
+                                   py_files=None):
         print("Initializing job for yarn-cluster mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -155,6 +159,7 @@ class SparkRunner:
         pack_env = False
         assert penv_archive or conda_name, \
             "You should either specify penv_archive or conda_name explicitly"
+        return_value = 1
         try:
 
             if not penv_archive:
@@ -170,6 +175,8 @@ class SparkRunner:
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
             submit_args = submit_args + " --jars " + ",".join(get_bigdl_jars())
+            if py_files:
+                submit_args = submit_args + " --py-files {}".format(py_files)
 
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                          executor_cores, executor_memory,
@@ -189,6 +196,7 @@ class SparkRunner:
                          "spark.executorEnv.PYTHONHOME": executor_python_env,
                          "spark.executor.extraLibraryPath": ld_path,
                          "spark.executorEnv.LD_PRELOAD": preload_so})
+            conf["spark.yarn.appMasterEnv.LD_PRELOAD"] = preload_so
             if spark_yarn_archive:
                 conf["spark.yarn.archive"] = spark_yarn_archive
             zoo_bigdl_path_on_executor = ":".join(
@@ -207,11 +215,11 @@ class SparkRunner:
             print(sys_args)
             submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
             print(submit_commnad)
-            return os.system(submit_commnad)
+            return_value = os.system(submit_commnad)
         finally:
             if conda_name and penv_archive and pack_env:
                 os.remove(penv_archive)
-            return 1
+            return return_value
 
     def init_spark_standalone(self,
                               num_executors,
