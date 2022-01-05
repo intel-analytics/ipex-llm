@@ -166,7 +166,8 @@ def put_local_files_with_prefix_to_remote(local_path_prefix, remote_dir, over_wr
     # get local file lists
     file_list = glob.glob(local_path_prefix + "*")
     # get remote files to local
-    [put_local_file_to_remote(file, os.path.join(remote_dir, os.path.basename(file)), over_write=over_write)
+    [put_local_file_to_remote(file, os.path.join(remote_dir, os.path.basename(file)),
+                              over_write=over_write)
      for file in file_list]
 
 
