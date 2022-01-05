@@ -9,9 +9,8 @@ import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.common.{FLPhase, Storage}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
-
 import com.intel.analytics.bigdl.dllib.utils.{Table => DllibTable}
-
+import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, PredictResponse, TreePredict}
 import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
@@ -143,6 +142,23 @@ object ProtoUtils {
       counts(indx) += 1
     }
     splits
+  }
+
+  def toBoostEvals(localPredicts: Array[Map[String, Array[Boolean]]]): List[BoostEval] = {
+    // Sorted by treeID
+    localPredicts.map{predict =>
+      BoostEval.newBuilder()
+        .addAllEvaluates(predict.toSeq.sortBy(_._1).map(p => {
+          TreePredict.newBuilder().setTreeID(p._1)
+            .addAllPredicts(p._2.map(boolean2Boolean).toList.asJava)
+            .build()
+        }).toList.asJava)
+        .build()
+    }.toList
+  }
+  def toArrayFloat(response: PredictResponse): Array[Float] = {
+    response.getData.getTableMap.get("predictResult")
+      .getTensorList.asScala.toArray.map(_.toFloat)
   }
 
   def almostEqual(v1: Float, v2: Float): Boolean = {

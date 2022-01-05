@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.fgboost
+package com.intel.analytics.bigdl.ppml.fgboost
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
@@ -22,8 +22,10 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.base.Estimator
+import com.intel.analytics.bigdl.ppml.fgboost.common.{RegressionTree, Split, TreeUtils}
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.utils.DataSetUtils
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
 import org.apache.logging.log4j.LogManager
 
@@ -47,25 +49,16 @@ class VflGBoostEstimator(continuous: Boolean,
                      trainDataSet: LocalDataSet[MiniBatch[Float]],
                      valDataSet: LocalDataSet[MiniBatch[Float]]): Any = {
     // transform the LocalDataSet to Array type, the input type of RegressionTree
-    val featureBuffer = new ArrayBuffer[Tensor[Float]]()
-    val labelBuffer = new ArrayBuffer[Float]()
-    var count = 0
-    val data = trainDataSet.data(true)
-    while (count < data.size) {
-      val batch = data.next()
-      featureBuffer.append(batch.getInput().toTensor[Float])
-      labelBuffer.append(batch.getTarget().toTensor[Float].value())
-    }
-    val dataset = featureBuffer.toArray
-    val sortedIndexByFeature = TreeUtils.sortByFeature(dataset)
+    val (feature, label) = DataSetUtils.localDataSetToArray(trainDataSet)
+    val sortedIndexByFeature = TreeUtils.sortByFeature(feature)
     // TODO Load model from file
     // Sync VFL Worker/Client
-    initFGBoost(labelBuffer.toArray)
+    initFGBoost(label)
 
     if (continuous) {
-      trainRegressionTree(dataset, sortedIndexByFeature, endEpoch)
+      trainRegressionTree(feature, sortedIndexByFeature, endEpoch)
     } else {
-      trainClassificationTree(dataset, sortedIndexByFeature, endEpoch)
+      trainClassificationTree(feature, sortedIndexByFeature, endEpoch)
     }
   }
 
@@ -169,6 +162,11 @@ class VflGBoostEstimator(continuous: Boolean,
       }
     }
   }
+
+  /**
+   * The initialization before boosting. Upload data label to FLServer
+   * @param label
+   */
   def initFGBoost(label: Array[Float]): Unit = {
     logger.info("Initializing VFL Boost...")
     // Init predict, grad & hess
@@ -185,6 +183,12 @@ class VflGBoostEstimator(continuous: Boolean,
     // Upload
     flClient.fgbostStub.uploadTable(gradData.build)
   }
+
+  /**
+   * Download gradient from FLServer
+   * @param treeID
+   * @return
+   */
   def downloadGrad(treeID: Int): Array[Array[Float]] = {
     // Note that g may be related to Y
     // H = 1 in regression
@@ -225,6 +229,6 @@ class VflGBoostEstimator(continuous: Boolean,
         }).toList.asJava)
         .build()
     }.toList
-    flClient.fgbostStub.uploadTreeEval(res.asJava)
+    flClient.fgbostStub.evaluate(res.asJava)
   }
 }

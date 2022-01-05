@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.fgboost
+package com.intel.analytics.bigdl.ppml.fgboost.common
+
+
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+
 
 object TreeUtils {
 
@@ -64,8 +67,8 @@ object TreeUtils {
   }
 
   def computeScoreWithSum(gradSum: Float,
-                       hessSum: Float,
-                       lambda: Float): Float = {
+                          hessSum: Float,
+                          lambda: Float): Float = {
     math.pow(gradSum, 2).toFloat / (hessSum + lambda)
   }
 

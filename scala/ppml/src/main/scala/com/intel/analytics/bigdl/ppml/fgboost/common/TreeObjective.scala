@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.common;
+package com.intel.analytics.bigdl.ppml.fgboost.common
 
-public enum FLPhase {
-    // NN Phase
-    TRAIN,
-    EVAL,
-    PREDICT,
-    // FGBoost Phase
-    LABEL,
-    SPLIT,
-    LEAF,
-    BRANCH
+trait TreeObjective {
+  def getGradient(predict: Array[Float],
+                  label: Array[Float]): Array[Array[Float]]
+
+  def getLoss(predict: Array[Float],
+              label: Array[Float]): Float
+
 }

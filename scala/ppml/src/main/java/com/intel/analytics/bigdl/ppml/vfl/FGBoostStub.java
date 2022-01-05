@@ -70,18 +70,18 @@ public class FGBoostStub {
     }
 
 
-    public UploadResponse uploadTreeEval(
+    public EvaluateResponse evaluate(
             List<BoostEval> boostEval) {
-        UploadTreeEvalRequest uploadTreeEvalRequest = UploadTreeEvalRequest
+        EvaluateRequest evaluateRequest = EvaluateRequest
                 .newBuilder()
                 .setClientuuid(clientID)
                 .addAllTreeEval(boostEval)
                 .build();
 
-        return stub.uploadTreeEval(uploadTreeEvalRequest);
+        return stub.evaluate(evaluateRequest);
     }
 
-    public PredictResponse uploadTreePred(
+    public PredictResponse predict(
             List<BoostEval> boostEval) {
         PredictRequest request = PredictRequest
                 .newBuilder()

@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl.fgboost
+package com.intel.analytics.bigdl.ppml.common;
 
-class RMSEObjective extends TreeObjective {
-  def getGradient(predict: Array[Float],
-                  label: Array[Float]): Array[Array[Float]] = {
-    val grad = predict.zip(label).map(x => x._1 - x._2)
-    val hess = Array.fill[Float](label.length)(1)
-    Array(grad, hess)
-  }
-
-  def getLoss(predict: Array[Float],
-              label: Array[Float]): Float = {
-    require(predict.length == label.length)
-    predict.zip(label).map(x => x._1 - x._2).map(math.pow(_, 2) / 2).sum.toFloat / label.length
-  }
+public enum FLDataType {
+    TENSOR_MAP,
+    TREE_SPLIT,
+    LEAF,
+    BOOST_EVAL
 }

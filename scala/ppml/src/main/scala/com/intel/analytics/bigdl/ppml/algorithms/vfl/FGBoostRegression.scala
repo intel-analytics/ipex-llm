@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.algorithms.vfl
 import com.intel.analytics.bigdl.dllib.nn.Sequential
 import com.intel.analytics.bigdl.ppml.FLModel
 import com.intel.analytics.bigdl.ppml.base.Estimator
-import com.intel.analytics.bigdl.ppml.vfl.fgboost.VflGBoostEstimator
+import com.intel.analytics.bigdl.ppml.fgboost.VflGBoostEstimator
 
 /**
  * FGBoost regression algorithm

@@ -34,17 +34,22 @@ public class Storage<T> {
     public int version;
     public T serverData = null;
     public Map<String, T> clientData;
-    Storage (String name) {
+    public Storage (String name) {
         version = 0;
         this.name = name;
         clientData = new ConcurrentHashMap<>();
     }
-    public void updateStorage(T data) {
+    public void clearClientAndUpdateServer(T data) {
         clientData.clear();
         serverData = data;
         version += 1;
         logger.info("Storage " + name + " of version: " + version + " aggregated.");
     }
+
+    public int getVersion() {
+        return version;
+    }
+
     /**
      *
      * @return The size of data collection of each local node

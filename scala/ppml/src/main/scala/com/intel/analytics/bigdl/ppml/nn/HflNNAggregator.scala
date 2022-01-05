@@ -14,20 +14,28 @@
  * limitations under the License.
  */
 
+package com.intel.analytics.bigdl.ppml.nn
 
-package com.intel.analytics.bigdl.ppml.common
+import com.intel.analytics.bigdl.ppml.base.StorageHolder
+import com.intel.analytics.bigdl.ppml.common.{FLDataType, FLPhase}
+import com.intel.analytics.bigdl.ppml.common.FLPhase.{EVAL, PREDICT, TRAIN}
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, Table, TableMetaData}
 
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
-
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
+
 /**
- * Return the average of all clients Tensors when calling aggregate
+ * HFL just use AverageAggregator to aggregate on server
  */
-class AverageAggregator extends Aggregator[Table] {
+class HflNNAggregator extends NNAggregator {
   protected var modelName = "averaged"
 
+  override def initStorage(): Unit = {
+    aggregateTypeMap.put(TRAIN, new StorageHolder(FLDataType.TENSOR_MAP))
+    aggregateTypeMap.put(EVAL, new StorageHolder(FLDataType.TENSOR_MAP))
+    aggregateTypeMap.put(PREDICT, new StorageHolder(FLDataType.TENSOR_MAP))
+
+  }
   /**
    * aggregate current temporary model weights and put updated model into storage
    */
@@ -36,16 +44,12 @@ class AverageAggregator extends Aggregator[Table] {
     val sumedDataMap = new java.util.HashMap[String, FloatTensor]()
     // sum
     // to do: concurrent hashmap
-    val storage = flPhase match {
-      case FLPhase.TRAIN => trainStorage
-      case FLPhase.EVAL => evalStorage
-      case FLPhase.PREDICT => predictStorage
-    }
+    val storage = aggregateTypeMap.get(flPhase).getTableStorage()
     val dataMap = storage.clientData
     for (model <- dataMap.asScala.values) {
       val modelMap = model.getTableMap
 
-      for (tensorName <- modelMap.keySet) {
+      for (tensorName <- modelMap.keySet.asScala) {
         val shapeList = modelMap.get(tensorName).getShapeList
         val dataList = modelMap.get(tensorName).getTensorList
         if (sumedDataMap.get(tensorName) == null) sumedDataMap.put(tensorName, FloatTensor.newBuilder.addAllTensor(dataList).addAllShape(shapeList).build)
@@ -81,6 +85,6 @@ class AverageAggregator extends Aggregator[Table] {
     val metaData = TableMetaData.newBuilder
       .setName(modelName).setVersion(storage.version + 1).build
     val aggregatedTable = Table.newBuilder.setMetaData(metaData).putAllTable(averagedDataMap).build
-    storage.updateStorage(aggregatedTable)
+    storage.clearClientAndUpdateServer(aggregatedTable)
   }
 }
