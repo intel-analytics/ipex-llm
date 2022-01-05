@@ -77,7 +77,10 @@ class RayTuneSearchEngine(SearchEngine):
                 search_alg_params=None,
                 scheduler=None,
                 scheduler_params=None,
-                mc=False):
+                mc=False,
+                feature_cols=None,
+                target_cols=None,
+                ):
         """
         Do necessary preparations for the engine
         :param data: data for training
@@ -106,6 +109,8 @@ class RayTuneSearchEngine(SearchEngine):
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         :param mc: if calculate uncertainty
+        :param feature_cols: feature column names if data is Spark DataFrame.
+        :param target_cols: target column names if data is Spark DataFrame.
         """
         # metric and metric's mode
         self.metric_name = metric.__name__ if callable(metric) else (metric or DEFAULT_METRIC_NAME)
@@ -130,7 +135,9 @@ class RayTuneSearchEngine(SearchEngine):
                                                    mode=self.mode,
                                                    mc=mc,
                                                    remote_dir=self.remote_dir,
-                                                   resources_per_trial=self.resources_per_trial
+                                                   resources_per_trial=self.resources_per_trial,
+                                                   feature_cols=feature_cols,
+                                                   target_cols=target_cols,
                                                    )
 
     @staticmethod
@@ -271,6 +278,8 @@ class RayTuneSearchEngine(SearchEngine):
                             mc=False,
                             remote_dir=None,
                             resources_per_trial=None,
+                            feature_cols=None,
+                            target_cols=None,
                             ):
         """
         Prepare the train function for ray tune
@@ -285,12 +294,31 @@ class RayTuneSearchEngine(SearchEngine):
 
         :return: the train function
         """
-        data_id = ray.put(data)
-        validation_data_id = ray.put(validation_data)
+        from pyspark.sql import DataFrame
+        if isinstance(data, DataFrame):
+            from orca.learn.utils import dataframe_to_xshards
+            from bigdl.dllib.utils.common import get_node_and_core_number
+            from bigdl.orca.data.utils import process_spark_xshards
+            num_workers, _ = get_node_and_core_number()
+            spark_xshards, val_spark_xshards = dataframe_to_xshards(data,
+                                                                    validation_data=validation_data,
+                                                                    feature_cols=feature_cols,
+                                                                    label_cols=target_cols,
+                                                                    mode="fit",
+                                                                    num_workers=num_workers)
+            ray_data = process_spark_xshards(spark_xshards)
+            ray_validation_data = process_spark_xshards(val_spark_xshards)
+        else:
+            ray_data = ray.put(data)
+            ray_validation_data = ray.put(validation_data)
 
         def train_func(config):
-            train_data = ray.get(data_id)
-            val_data = ray.get(validation_data_id)
+            if isinstance(data, DataFrame):
+                train_data = get_data_from_ray_xshards(ray_data)
+                val_data = get_data_from_ray_xshards(ray_validation_data)
+            else:
+                train_data = ray.get(ray_data)
+                val_data = ray.get(ray_validation_data)
             config = convert_bayes_configs(config).copy()
             # This check is turned off to support ducking typing
             # if not isinstance(model_builder, ModelBuilder):
@@ -360,3 +388,11 @@ class TrialStopper(Stopper):
 
 def trial_dirname_creator(trial):
     return f"{trial.trainable_name}_{trial.trial_id}"
+
+
+def get_data_from_ray_xshards(data):
+    import numpy as np
+    data_parts = data.collect()
+    X = np.concatenate([part["x"] for part in data_parts])
+    y = np.concatenate([part["y"] for part in data_parts])
+    return X, y

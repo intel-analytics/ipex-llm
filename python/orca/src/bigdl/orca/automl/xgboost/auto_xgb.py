@@ -249,7 +249,8 @@ class AutoXGBRegressor(AutoEstimator):
                     search_alg_params=search_alg_params,
                     scheduler=scheduler,
                     scheduler_params=scheduler_params,
-                    )
+                    feature_cols=feature_cols,
+                    target_cols=target_cols)
 
 
 def _maybe_convert_spark_df_to_ndarray(data,
