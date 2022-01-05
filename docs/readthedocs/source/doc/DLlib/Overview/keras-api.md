@@ -2859,17 +2859,17 @@ model.saveModel("/tmp/seq.model")
 ```
 
 ### 8.2 load
-To load a saved Keras model, you call the method `load(path)`.
+To load a saved Keras model, you call the method `load_model(path)`.
 
 **Scala:**
 ```scala
-import com.intel.analytics.bigdl.dllib.keras.Net
+import com.intel.analytics.bigdl.dllib.keras.Models
 
-val model = Net.load[Float]("/tmp/seq.model")
+val model = Models.loadModel[Float]("/tmp/seq.model")
 ```
 
 **Python:**
 ```python
-from bigdl.dllib.net import Net
-Net.load("/tmp/seq.model")
+from bigdl.dllib.keras.Models
+model = Models.loadModel("/tmp/seq.model")
 ```
