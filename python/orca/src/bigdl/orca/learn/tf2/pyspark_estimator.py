@@ -391,7 +391,6 @@ class SparkTFEstimator():
                     remote_dir = os.path.dirname(filepath)
                     put_local_files_with_prefix_to_remote(temp_path, remote_dir, over_write=overwrite)
             finally:
-                # [os.remove(file) for file in glob.glob(temp_path + "*")]
                 shutil.rmtree(temp_dir)
 
 
