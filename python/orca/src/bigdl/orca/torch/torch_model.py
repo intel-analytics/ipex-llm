@@ -108,4 +108,3 @@ class TorchModel(Layer):
         from bigdl.dllib.utils.common import callBigDlFunc
         jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
         return Layer.of(jmodel)
-
