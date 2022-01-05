@@ -80,6 +80,12 @@ class Model(KerasNet):
         model.value = jvalue
         return model
 
+    @staticmethod
+    def loadModel(model_path, bigdl_type="float"):
+        from bigdl.dllib.net import Net
+        model = Net.load(model_path, bigdl_type=bigdl_type)
+        return model
+
 
 @keras_export('bigdl.dllib.keras.Sequential')
 class Sequential(KerasNet):
