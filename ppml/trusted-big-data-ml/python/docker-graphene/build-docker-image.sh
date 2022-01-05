@@ -38,4 +38,4 @@ else
     fi
 fi
 
-rm ./kms-client
+rm -r ./kms-client
