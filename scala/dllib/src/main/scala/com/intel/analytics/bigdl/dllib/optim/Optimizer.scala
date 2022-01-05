@@ -551,7 +551,7 @@ object Optimizer {
   private[bigdl] def saveModel[T](model: Module[T], checkpointPath : Option[String],
     overWrite : Boolean, postfix: String = ""): Unit = {
     if (checkpointPath.isDefined) {
-      model.saveModule(s"${checkpointPath.get}/model$postfix", overWrite = overWrite)
+      model.save(s"${checkpointPath.get}/model$postfix", overWrite = overWrite)
     }
   }
 

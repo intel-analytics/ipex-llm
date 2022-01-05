@@ -27,6 +27,12 @@ if sys.version >= '3':
     unicode = str
 
 
+def load_model(model_path, bigdl_type="float"):
+    from bigdl.dllib.net import Net
+    model = Net.load(model_path, bigdl_type=bigdl_type)
+    return model
+
+
 @keras_export('bigdl.dllib.keras.Model')
 class Model(KerasNet):
     """
