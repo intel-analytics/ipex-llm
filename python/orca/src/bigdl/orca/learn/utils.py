@@ -454,4 +454,3 @@ def get_replaced_path(original_filepath):
     print("base name is: ", base_name)
     temp_dir = tempfile.mkdtemp()
     return os.path.join(temp_dir, base_name)
-

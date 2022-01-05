@@ -328,7 +328,8 @@ class SparkRunner:
                                        validation_steps=validation_steps)
         checkpoint = None
         if callbacks:
-            checkpoint = get_specific_object_from_callbacks(tf.keras.callbacks.ModelCheckpoint, callbacks)
+            checkpoint = get_specific_object_from_callbacks(tf.keras.callbacks.ModelCheckpoint,
+                                                            callbacks)
             if checkpoint:
                 original_checkpoint_dir = os.path.dirname(checkpoint.filepath)
                 replaced_checkpoint_path = get_replaced_path(checkpoint.filepath)
@@ -348,7 +349,8 @@ class SparkRunner:
         if checkpoint:
             try:
                 if self.rank == 0:
-                    put_local_dir_to_remote(os.path.dirname(replaced_checkpoint_path), original_checkpoint_dir)
+                    put_local_dir_to_remote(os.path.dirname(replaced_checkpoint_path),
+                                            original_checkpoint_dir)
             finally:
                 shutil.rmtree(os.path.dirname(replaced_checkpoint_path))
 
