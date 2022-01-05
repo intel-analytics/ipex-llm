@@ -379,7 +379,8 @@ class SparkTFEstimator():
             model.save_weights(filepath, overwrite, save_format)
         else:
             file_name = os.path.basename(filepath)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
             try:
                 model.save_weights(temp_path, overwrite, save_format)
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
@@ -390,7 +391,8 @@ class SparkTFEstimator():
                     remote_dir = os.path.dirname(filepath)
                     put_local_files_with_prefix_to_remote(temp_path, remote_dir, over_write=overwrite)
             finally:
-                [os.remove(file) for file in glob.glob(temp_path + "*")]
+                # [os.remove(file) for file in glob.glob(temp_path + "*")]
+                shutil.rmtree(temp_dir)
 
 
     def load_weights(self, filepath, by_name=False):
