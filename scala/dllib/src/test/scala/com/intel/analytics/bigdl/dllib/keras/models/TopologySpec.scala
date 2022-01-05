@@ -54,6 +54,19 @@ class ModelSerialTest extends ModuleSerializationTest {
       inputData)
 
     testParameterSerialWithModel()
+
+    val smodel = Sequential[Float]()
+    smodel.add(Dense[Float](8, inputShape = Shape(10)))
+    val stmpFile = ZooSpecHelper.createTmpFile()
+    smodel.saveModule(stmpFile.getAbsolutePath, overWrite = true)
+    val sreloadModel = Models.loadModel[Float](stmpFile.getAbsolutePath)
+    val sinputData = Tensor[Float](2, 10).rand()
+    ZooSpecHelper.compareOutputAndGradInput(
+      smodel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      sreloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      sinputData)
+
+    testParameterSerialWithModel()
   }
 }
 
