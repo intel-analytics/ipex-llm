@@ -79,10 +79,13 @@ class QuantizationINC(Quantization):
 
 
 class INCMetric:
-    def __init__(self, metric, **kwargs):
-        self.metric = metric(**kwargs)
+    def __init__(self, metric):
+        self._metric = metric
         self.pred_list = []
         self.label_list = []
+
+    def __call__(self, *args, **kwargs):
+        return self
 
     def update(self, preds, labels):
         # add preds and labels to storage
@@ -106,7 +109,7 @@ class TorchINCMetric(INCMetric):
         # calculate accuracy
         preds = torch.stack(self.pred_list)
         labels = torch.stack(self.label_list)
-        accuracy = self.metric(preds, labels)
+        accuracy = self._metric(preds, labels)
         return accuracy.item()
 
 
@@ -116,5 +119,5 @@ class KerasINCMetric(INCMetric):
         # calculate accuracy
         preds = tf.stack(self.pred_list)
         labels = tf.stack(self.label_list)
-        accuracy = self.metric(preds, labels)
+        accuracy = self._metric(preds, labels)
         return accuracy.numpy()
