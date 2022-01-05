@@ -259,7 +259,7 @@ class VflGBoostAggregator extends Aggregator {
     logger.info("Aggregate Predict")
     val boostEvalBranchMap = getBranchStorage().clientData
     val evalResults = boostEvalBranchMap.mapValues { list =>
-      list.toArray.map { be =>
+      list.asScala.toArray.map { be =>
         be.getEvaluatesList.asScala.toArray.map { treePredict =>
           (treePredict.getTreeID, treePredict.getPredictsList.asScala.toArray)
         }
