@@ -62,10 +62,9 @@ WORKDIR /tmp
 
 # CONDA_MIRROR is a mirror prefix to speed up downloading
 # For example, people from mainland China could set it as
-# https://mirrors.tuna.tsinghua.edu.cn/github-release/conda-forge/miniforge/LatestRelease
-ARG CONDA_MIRROR=https://github.com/conda-forge/miniforge/releases/latest/download
-# ARG CONDA_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/github-release/conda-forge/miniforge/LatestRelease
-
+# https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda
+ARG CONDA_MIRROR=https://repo.anaconda.com/miniconda
+# ARG CONDA_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda
 
 # ---- Miniforge installer ----
 # Check https://github.com/conda-forge/miniforge/releases
@@ -75,21 +74,18 @@ ARG CONDA_MIRROR=https://github.com/conda-forge/miniforge/releases/latest/downlo
 # - conda + mamba: either Mambaforge to use Python or Mambaforge-pypy3 to use PyPy
 # Installation: conda, mamba, pip
 RUN set -x && \
-    # Miniforge installer
-    if [ -f "/etc/profile.d/02-proxy.sh" ];then \
-    source /etc/profile.d/02-proxy.sh; \
-    fi; \
+    # Miniconda3 installer
     mkdir -p "${CONDA_DIR}" && \
-    miniforge_arch=$(uname -m) && \
-    miniforge_installer="Mambaforge-Linux-${miniforge_arch}.sh" && \
-    wget "${CONDA_MIRROR}/${miniforge_installer}" && \
-    /bin/bash "${miniforge_installer}" -f -b -p "${CONDA_DIR}" && \
-    rm "${miniforge_installer}" && \
+    miniconda_arch=$(uname -m) && \
+    miniconda_installer="Miniconda3-latest-Linux-${miniconda_arch}.sh" && \
+    wget "${CONDA_MIRROR}/${miniconda_installer}" && \
+    /bin/bash "${miniconda_installer}" -f -b -p "${CONDA_DIR}" && \
+    rm "${miniconda_installer}" && \
     # Conda configuration see https://conda.io/projects/conda/en/latest/configuration.html
     conda config --system --set auto_update_conda false && \
     conda config --system --set show_channel_urls true && \
-    if [[ "${PYTHON_VERSION}" != "default" ]]; then mamba install --quiet --yes python="${PYTHON_VERSION}"; fi && \
-    mamba list python | grep '^python ' | tr -s ' ' | cut -d ' ' -f 1,2 >> "${CONDA_DIR}/conda-meta/pinned" && \
+    if [[ "${PYTHON_VERSION}" != "default" ]]; then conda install --quiet --yes python="${PYTHON_VERSION}"; fi && \
+    conda list python | grep '^python ' | tr -s ' ' | cut -d ' ' -f 1,2 >> "${CONDA_DIR}/conda-meta/pinned" && \
     # Using conda to update all packages: https://github.com/mamba-org/mamba/issues/1092
     conda update --all --quiet --yes && \
     conda clean --all -f -y && \
