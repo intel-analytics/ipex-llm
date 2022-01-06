@@ -18,7 +18,7 @@ import os
 IDENTIFIER_LEN = 27
 
 
-def process(command, fail_fast=False, timeout=120):
+def process(command, fail_fast=True, timeout=120):
     import subprocess
     pro = subprocess.Popen(
         command,

@@ -60,7 +60,8 @@ class RayTuneSearchEngine(SearchEngine):
             return None
         else:
             default_remote_dir = f"hdfs:///tmp/{name}"
-            process(command=f"hadoop fs -mkdir -p {default_remote_dir}")
+            process(command=f"hadoop fs -mkdir -p {default_remote_dir}; "
+                            f"hadoop fs -chmod 777 {default_remote_dir}")
             return default_remote_dir
 
     def compile(self,
