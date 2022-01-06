@@ -120,6 +120,9 @@ RUN apt-get update --fix-missing && \
 # python
     /opt/install-python-env.sh
 
+RUN echo "source activate bigdl" > ~/.bashrc
+ENV PATH /usr/local/envs/bigdl/bin:$PATH
+
 ADD ./start-notebook.sh /opt/work
 RUN chmod a+x /opt/work/start-notebook.sh
 
