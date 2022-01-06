@@ -77,7 +77,7 @@ class VflNNAggregator(model: Module[Float],
           vMethod.apply(output, target)
         })
         validationResult = validationResult :+ batchValidationResult
-        if (hasReturn) {
+        if (shouldReturn) {
           val result = validationResult.reduce((x, y) => {
             x.zip(y).map {
               case (r1, r2) => r1 + r2

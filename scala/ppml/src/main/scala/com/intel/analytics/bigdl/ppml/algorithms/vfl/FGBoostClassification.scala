@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.algorithms.vfl
 import com.intel.analytics.bigdl.dllib.nn.Sequential
 import com.intel.analytics.bigdl.ppml.FLModel
 import com.intel.analytics.bigdl.ppml.base.Estimator
-import com.intel.analytics.bigdl.ppml.fgboost.VflGBoostEstimator
+import com.intel.analytics.bigdl.ppml.fgboost.FGBoostEstimator
 
 /**
  * FGBoost classification algorithm
@@ -33,7 +33,7 @@ class FGBoostClassification(nLabel: Int = 1,
                             maxDepth: Int = 6,
                             minChildSize: Int = 1) extends FLModel {
   override val model: Sequential[Float] = null
-  override val estimator: Estimator = new VflGBoostEstimator(
+  override val estimator: Estimator = new FGBoostEstimator(
     continuous = false, nLabel = nLabel, learningRate, maxDepth, minChildSize)
 }
 
