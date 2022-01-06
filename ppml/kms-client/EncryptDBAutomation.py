@@ -38,7 +38,7 @@ args = parser.parse_args()
 KEYWHIZ_SERVER_IP=args.ip
 INPUT_DB_PATH = args.dbp
 
-# Step 1. Generate Keys And Use Them to Encyypt Files Outside SGX With KMS 
+# Generate Keys And Use Them to Encyypt Files Outside SGX With KMS 
 print("[INFO] Start To Process Target Data File Outside SGX...")
 print("[INFO] Start To Convert The DB File To CSV Files...")
 convert_db_to_csv(INPUT_DB_PATH)
