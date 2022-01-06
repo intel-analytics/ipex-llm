@@ -1674,12 +1674,9 @@ object InternalDistriOptimizerV2 {
 }
 
 object Models {
-  def loadModel[T: ClassTag](path: String)(implicit ev: TensorNumeric[T]): keras.Model[T] = {
+  def loadModel[T: ClassTag](path: String)(implicit ev: TensorNumeric[T]): KerasNet[T] = {
     val model = Net.load[T](path)
-    if (!model.isInstanceOf[Model[T]]) {
-      throw new RuntimeException("Not an Analytics Zoo Keras-style model.")
-    }
-    model.asInstanceOf[keras.Model[T]]
+    return model
   }
 }
 
