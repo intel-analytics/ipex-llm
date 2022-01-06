@@ -59,7 +59,7 @@ forecaster.predict_with_onnx(x_test)
 
 ## Options
 * `--epochs` Max number of epochs to train in each trial. Default to be 2.
-* `--n_sampling` Number of times to sample from the search_space. Default to be 1.
+* `--n_sampling` Number of times to sample from the search_space. Default to be 6.
 * `--cpus_per_trail` Number of cpus for each trial. Default to be 2.
 * `--memory` The memory you want to use on each node. Default to be 10g.
 * `--cluster_mode` The mode for the Spark cluster. local or yarn. Default to be `local`. You can refer to OrcaContext documents [here](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca-context.html) for details.

@@ -17,7 +17,13 @@
 package com.intel.analytics.bigdl.ppml.common;
 
 public enum FLPhase {
+    // NN Phase
     TRAIN,
     EVAL,
-    PREDICT
+    PREDICT,
+    // FGBoost Phase
+    LABEL,
+    SPLIT,
+    LEAF,
+    BRANCH
 }

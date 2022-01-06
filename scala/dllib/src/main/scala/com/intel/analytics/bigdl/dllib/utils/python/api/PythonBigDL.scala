@@ -2081,7 +2081,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     activityToJTensors(outputActivity)
   }
 
-
   def modelSave(module: AbstractModule[Activity, Activity, T],
     path: String, overWrite: Boolean): Unit = {
     module.save(path, overWrite)

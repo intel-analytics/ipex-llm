@@ -48,7 +48,7 @@ object Test {
         batchSize = param.batchSize, None, None, None,
         partitionNum = Some(1))
 
-      val model = Module.load[Float](param.model)
+      val model = Module.loadModule[Float](param.model)
       val result = model.evaluate(evaluationSet.toLocal(),
         Array(new Top1Accuracy[Float].asInstanceOf[ValidationMethod[Float]]))
       result.foreach(r => println(s"${r._2} is ${r._1}"))

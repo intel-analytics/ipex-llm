@@ -50,7 +50,7 @@ object Test {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val model = Module.load[Float](param.modelSnapshot.get)
+      val model = Module.loadModule[Float](param.modelSnapshot.get)
 
       if (param.evaluate) {
         val valtokens = SequencePreprocess(

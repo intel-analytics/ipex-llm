@@ -29,7 +29,46 @@ Key features:
    * ID & feature align (optional)
    * Weight/Gradient Aggregation in SGX
 * Training Worker in SGX
+## Example 
 
+### Prepare environment
+#### SGX
+TO ADD
+#### Get jar ready
+##### Build from source
+```bash
+git clone https://github.com/intel-analytics/BigDL.git
+cd BigDL/scala
+./make-dist.sh
+```
+the jar would be `BigDL/scala/ppml/target/bigdl-ppml...jar-with-dependencies.jar`
+##### Download pre-build
+```bash
+wget
+```
+#### Config
+If deploying PPML on cluster, need to overwrite config `./ppml-conf.yaml`. Default config (localhost:8980) would be used if no `ppml-conf.yaml` exists in the directory.
+#### Start FL Server
+```bash
+java -cp com.intel.analytics.bigdl.ppml.FLServer
+```
+### HFL Logistic Regression
+We provide an example demo in `BigDL/scala/ppml/demo`
+```bash
+# client 1
+java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-1.csv
+
+# client 2
+java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-2.csv
+```
+### VFL Logistic Regression
+```bash
+# client 1
+java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-1.csv
+
+# client 2
+java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-2.csv
+```
 ## References
 
 1. [Intel SGX](https://software.intel.com/content/www/us/en/develop/topics/software-guard-extensions.html)

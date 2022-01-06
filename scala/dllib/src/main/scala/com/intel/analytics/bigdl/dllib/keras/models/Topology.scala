@@ -53,8 +53,9 @@ import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.net.NetUtils
-import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
-import com.intel.analytics.bigdl.dllib.feature.common.{FeatureLabelPreprocessing, Preprocessing, ScalarToTensor, SeqToTensor}
+import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping,
+GradientClipping, L2NormClipping}
+import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.nnframes.NNImageSchema
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
@@ -475,54 +476,54 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     this.fit(x, batchSize, nbEpoch, null)
   }
 
-  def unwrapVectorAsNecessary(colType: DataType): (Row, Int) => Any = {
-    // to support both ML Vector and MLlib Vector
-    if (colType.typeName.contains("vector")) {
-      (row: Row, index: Int) => getVectorSeq(row, colType, index)
-    } else {
-      (row: Row, index: Int) => row.get(index)
-    }
-  }
-
   private def getDataSet(
       dataFrame: DataFrame,
       batchSize: Int,
       featureCols: Array[String],
-      labelCol: String): FeatureSet[MiniBatch[T]] = {
+      labelCols: Array[String],
+      preprocessing: Preprocessing[(Any, Option[Any]), Sample[T]]): FeatureSet[MiniBatch[T]] = {
 
     val sp = FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
       .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
 
+    val guid = java.util.UUID.randomUUID.toString
+    val internalFeatureCol = "features" + guid
+    val internalLabelCol = "labels" + guid
     val df = if (featureCols.size > 1) {
       val assembler = new VectorAssembler()
         .setInputCols(featureCols)
-        .setOutputCol("features")
+        .setOutputCol(internalFeatureCol)
       assembler.transform(dataFrame)
     } else {
-      dataFrame.withColumnRenamed(featureCols.head, "features")
+      dataFrame.withColumnRenamed(featureCols.head, internalFeatureCol)
     }
 
-    val featureCol = "features"
-    val featureColIndex = df.schema.fieldIndex(featureCol)
-    val featureType = df.schema(featureCol).dataType
+    val assembleDF = if (labelCols.size > 1) {
+      val assembler = new VectorAssembler()
+        .setInputCols(labelCols)
+        .setOutputCol(internalLabelCol)
+      assembler.transform(df)
+    } else {
+      df.withColumnRenamed(labelCols.head, internalLabelCol)
+    }
+
+    val featureColIndex = assembleDF.schema.fieldIndex(internalFeatureCol)
+    val featureType = assembleDF.schema(internalFeatureCol).dataType
     val featureFunc = unwrapVectorAsNecessary(featureType)
 
-    val labelFunc: (Row) => Option[Any] = if (df.columns.contains(labelCol)) {
-      val lci = df.schema.fieldIndex(labelCol)
-      val labelFunc = unwrapVectorAsNecessary(df.schema(labelCol).dataType)
+    val labelFunc: (Row) => Option[Any] = {
+      val lci = assembleDF.schema.fieldIndex(internalLabelCol)
+      val labelFunc = unwrapVectorAsNecessary(assembleDF.schema(internalLabelCol).dataType)
       (row: Row) => Some(labelFunc(row, lci))
-    } else {
-      (row: Row) => None
     }
 
-    val featureAndLabel = df.rdd.map { row =>
+    val featureAndLabel = assembleDF.rdd.map { row =>
       val features = featureFunc(row, featureColIndex)
       val labels = labelFunc(row)
       (features, labels)
     }
 
     val initialDataSet = FeatureSet.rdd(featureAndLabel).transform(sp)
-
     initialDataSet.transform(SampleToMiniBatch[T](batchSize))
   }
 
@@ -531,15 +532,22 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       batchSize: Int,
       nbEpoch: Int,
       featureCols: Array[String],
-      labelCol: Array[String],
+      labelCols: Array[String],
       valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    require(labelCol.size == 1, "currently only suport set one column label")
-    val trainingData = getDataSet(x, batchSize, featureCols, labelCol.head).toDataSet()
+    val preprocessing =
+      FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
+        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
+
+    val trainingData = getDataSet(x, batchSize, featureCols, labelCols,
+      preprocessing).toDataSet()
     val valData = if (valX != null) {
-      getDataSet(valX, batchSize, featureCols, labelCol.head).toDataSet()
+      getDataSet(valX, batchSize, featureCols, labelCols, preprocessing).toDataSet()
     } else null
 
     this.fit(trainingData, nbEpoch, valData)
+
+    predictTransformer = ToTuple() -> preprocessing
+      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]].clonePreprocessing()
   }
 
   def fit(
@@ -547,8 +555,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       batchSize: Int,
       nbEpoch: Int,
       featureCols: Array[String],
-      labelCol: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
-    this.fit(x, batchSize, nbEpoch, featureCols, labelCol, null)
+      labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
+    this.fit(x, batchSize, nbEpoch, featureCols, labelCols, null)
   }
 
   /**
@@ -1033,7 +1041,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
             cachedModels.unpersist()
             val newModel = if (modelFile != null) {
               DistriOptimizer.logger.info("Model recover from last snapshot")
-              Module.load[T](modelFile)
+              Module.loadModule[T](modelFile)
             } else {
               DistriOptimizer.logger.info("Model recover from origin model")
               trainingModel
@@ -1662,6 +1670,13 @@ object InternalDistriOptimizerV2 {
       iter
     }.count()
     models.unpersist()
+  }
+}
+
+object Models {
+  def loadModel[T: ClassTag](path: String)(implicit ev: TensorNumeric[T]): KerasNet[T] = {
+    val model = Net.load[T](path)
+    return model
   }
 }
 

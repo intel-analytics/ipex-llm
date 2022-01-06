@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.ppml.common.Aggregator
 import com.intel.analytics.bigdl.ppml.psi.PSIServiceImpl
 import java.io.{File, IOException}
 
+import com.intel.analytics.bigdl.ppml.fgboost.FGBoostServiceImpl
 import com.intel.analytics.bigdl.ppml.nn.NNServiceImpl
 import org.apache.logging.log4j.{Level, LogManager}
 import org.apache.logging.log4j.core.config.Configurator
@@ -50,6 +51,10 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   private val logger = LogManager.getLogger(classOf[FLServer])
   configPath = "ppml-conf.yaml"
   var clientNum: Int = 1
+
+  def setClientNum(clientNum: Int) = {
+    this.clientNum = clientNum
+  }
   @throws[IOException]
   override def parseConfig(): Unit = {
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
@@ -62,8 +67,6 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
     // start all services without providing service list
     serverServices.add(new PSIServiceImpl(clientNum))
     serverServices.add(new NNServiceImpl(clientNum))
-
-
-
+    serverServices.add(new FGBoostServiceImpl(clientNum))
   }
 }

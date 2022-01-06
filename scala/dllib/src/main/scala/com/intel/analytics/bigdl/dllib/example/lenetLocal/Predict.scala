@@ -55,7 +55,7 @@ object Predict {
       }
       val samples = samplesBuffer.toArray
 
-      val model = Module.load[Float](param.model)
+      val model = Module.loadModule[Float](param.model)
       val localPredictor = LocalPredictor(model)
       val result = localPredictor.predict(samples)
       val result_class = localPredictor.predictClass(samples)

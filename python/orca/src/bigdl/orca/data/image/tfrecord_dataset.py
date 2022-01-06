@@ -15,7 +15,6 @@
 #
 
 import os
-import tensorflow as tf
 from bigdl.orca.data.image.imagenet_dataset import *
 from bigdl.orca.data.image.parquet_dataset import _check_arguments
 
@@ -74,6 +73,7 @@ def read_imagenet(path: str,
     is_training: True or False. train dataset or val dataset
 
     """
+    import tensorflow as tf
     filenames = get_filenames(is_training, path)
     dataset = tf.data.Dataset.from_tensor_slices(filenames)
 

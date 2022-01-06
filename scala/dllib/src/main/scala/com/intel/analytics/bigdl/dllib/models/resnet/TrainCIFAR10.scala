@@ -58,7 +58,7 @@ object TrainCIFAR10 {
       }
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         val curModel = if (param.graphModel) {
           ResNet.graph(param.classes,
