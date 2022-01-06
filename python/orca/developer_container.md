@@ -19,7 +19,7 @@ The OpenSSH Server is also installed in the container, you can use `-p`  when ru
 ```shell
 docker run --name orca-dev -it \
 -p 8022:22 \
-orca-dev:latest
+vankyle2go/orca-dev:latest
 ```
 
 then you can access the 8022 port of the host IP address with SSH clients to connect to the container after you run `service ssh start` in the container. 
@@ -32,7 +32,7 @@ As most of our servers usually suffer from lacks of disk space of root partition
 docker run --name orca-dev -it \
 -p 8022:22 \
 -v /path/on/other/partition:/data \
-orca-dev:latest
+vankyle2go/orca-dev:latest
 ```
 
 However, it may cause problems if you directly mount some empty folder to the home directory of user in container(by default, `/root/`) , where the maven repository storage in. To mount the directory which was configured during the build of image, you can copy these files from a temporary container to the host, and then mount them to the container you are using for development, so that the container can rely on these files to function properly. Here are some reference steps:
@@ -41,7 +41,7 @@ First, define the directory on the host that you want to storage files, in this 
 
 ```shell
 root_fs_dir=/disk1
-image=orca-dev:latest
+image=vankyle2go/orca-dev:latest
 container_name=orca-dev
 ```
 
