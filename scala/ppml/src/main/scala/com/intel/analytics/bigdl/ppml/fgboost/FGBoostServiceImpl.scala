@@ -21,13 +21,16 @@ import com.intel.analytics.bigdl.ppml.common.FLPhase
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.{FGBoostServiceGrpc, FGBoostServiceProto}
 import io.grpc.stub.StreamObserver
+import org.apache.logging.log4j.LogManager
 
 class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
-  val aggregator = new VflGBoostAggregator()
+  val logger = LogManager.getLogger(getClass)
+  val aggregator = new FGBoostAggregator()
   aggregator.setClientNum(clientNum)
-  override def downloadTable(request: DownloadTableRequest,
+  override def downloadLabel(request: DownloadLabelRequest,
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
     val version = request.getMetaData.getVersion
+    logger.debug(s"Server received downloadLabel request of version: $version")
     val data = aggregator.getLabelStorage().serverData
     if (data == null) {
       val response = "Your required data doesn't exist"
@@ -42,7 +45,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     }
   }
 
-  override def uploadTable(request: UploadTableRequest,
+  override def uploadLabel(request: UploadLabelRequest,
                            responseObserver: StreamObserver[UploadResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val data = request.getData
@@ -69,14 +72,14 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val version = -1 // version is not needed in fgboost
     try {
       aggregator.putClientData(FLPhase.SPLIT, clientUUID, version, new DataHolder(split))
-      val bestSplit = aggregator.getBestSplit()
+      val bestSplit = aggregator.getBestSplit(split.getTreeID, split.getNodeID)
       if (split == null) {
-        val response = "Your required data doesn't exist"
+        val response = "Your required bestSplit data doesn't exist"
         responseObserver.onNext(SplitResponse.newBuilder.setResponse(response).setCode(0).build)
         responseObserver.onCompleted()
       }
       else {
-        val response = "Download data successfully"
+        val response = "Split node successfully"
         responseObserver.onNext(SplitResponse.newBuilder.setResponse(response).setSplit(split).setCode(1).build)
         responseObserver.onCompleted()
       }
@@ -98,9 +101,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
 
     val version = -1 // version is not needed in fgboost
     try {
-      aggregator.putClientData(FLPhase.LEAF, clientUUID, version, new DataHolder(leaves))
-      val bestSplit = aggregator.getBestSplit()
-      val response = "Your required data doesn't exist"
+      aggregator.putClientData(FLPhase.TREE_LEAVES, clientUUID, version, new DataHolder(leaves))
+      val response = s"Tree leaves uploaded to server at clientID: $clientUUID, version: $version"
       responseObserver.onNext(UploadResponse.newBuilder.setResponse(response).setCode(0).build)
       responseObserver.onCompleted()
     } catch {

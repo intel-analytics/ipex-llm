@@ -25,10 +25,10 @@ import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLDataType, FLPhase, S
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table
 
 abstract class NNAggregator extends Aggregator {
-  protected var hasReturn = false
+  protected var shouldReturn = false
 
-  def setHasReturn(hasReturn: Boolean): Unit = {
-    this.hasReturn = hasReturn
+  def setHasReturn(shouldReturn: Boolean): Unit = {
+    this.shouldReturn = shouldReturn
   }
   def getStorage(flPhase: FLPhase) = aggregateTypeMap.get(flPhase).getTableStorage()
   override def initStorage(): Unit = {

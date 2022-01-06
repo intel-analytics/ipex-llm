@@ -35,8 +35,8 @@ class StorageHolder(flDataType: FLDataType) {
   flDataType match {
     case FLDataType.TENSOR_MAP => tableStorage = new Storage[Table](flDataType.toString)
     case FLDataType.TREE_SPLIT => splitStorage = new Storage[DataSplit](flDataType.toString)
-    case FLDataType.LEAF => leafStorage = new Storage[TreeLeaves](flDataType.toString)
-    case FLDataType.BOOST_EVAL => branchStorage =
+    case FLDataType.TREE_LEAF => leafStorage = new Storage[TreeLeaves](flDataType.toString)
+    case FLDataType.TREE_EVAL => branchStorage =
       new Storage[java.util.List[BoostEval]](flDataType.toString)
     case _ => throw new NotImplementedError()
   }

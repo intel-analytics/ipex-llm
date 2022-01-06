@@ -48,8 +48,8 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   // wrapper methods to simplify data access
   def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTableStorage()
   def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
-  def getTreeLeaveStorage() = aggregateTypeMap.get(FLPhase.LEAF).getLeafStorage()
-  def getBranchStorage() = aggregateTypeMap.get(FLPhase.BRANCH).getBranchStorage()
+  def getTreeLeaveStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAVES).getLeafStorage()
+  def getBranchStorage() = aggregateTypeMap.get(FLPhase.TREE_EVAL).getBranchStorage()
   def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTableStorage()
 
   override def initStorage(): Unit = {
@@ -63,7 +63,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     flPhase match {
       case FLPhase.LABEL => initGradient()
       case FLPhase.SPLIT => aggregateSplit()
-      case FLPhase.LEAF => aggregateTreeLeaves()
+      case FLPhase.TREE_LEAVES => aggregateTreeLeaves()
       case FLPhase.EVAL => aggEvaluate()
       case FLPhase.PREDICT => aggPredict()
       case _ => throw new NotImplementedError()

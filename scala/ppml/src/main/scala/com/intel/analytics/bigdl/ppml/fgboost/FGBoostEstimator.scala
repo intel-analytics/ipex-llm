@@ -69,7 +69,7 @@ class FGBoostEstimator(continuous: Boolean,
     // TODO Load model from file
     val predictResult = predictTree(feature)
     val predictActivity = Tensor[Float](predictResult, Array(predictResult.length))
-    val targetProto = flClient.fgbostStub.downloadTable("label", 0).getData
+    val targetProto = flClient.fgbostStub.downloadLabel("label", 0).getData
     val targetActivity = getTensor("label", targetProto)
     validationMethods.map(vMethod => {
       vMethod.apply(predictActivity, targetActivity)
@@ -208,7 +208,7 @@ class FGBoostEstimator(continuous: Boolean,
       gradData.putTable("label", toFloatTensor(label))
     }
     // Upload
-    flClient.fgbostStub.uploadTable(gradData.build)
+    flClient.fgbostStub.uploadLabel(gradData.build)
   }
 
   /**
@@ -219,7 +219,7 @@ class FGBoostEstimator(continuous: Boolean,
   def downloadGrad(treeID: Int): Array[Array[Float]] = {
     // Note that g may be related to Y
     // H = 1 in regression
-    val response = flClient.fgbostStub.downloadTable("xgboost_grad", treeID - 1)
+    val response = flClient.fgbostStub.downloadLabel("xgboost_grad", treeID - 1)
     logger.info("Downloaded grads from FLServer")
     val gradTable = response.getData
     val grad = getTensor("grad", gradTable).toArray
