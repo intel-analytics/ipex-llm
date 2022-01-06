@@ -24,6 +24,7 @@ from bigdl.orca.automl.search.utils import get_ckpt_hdfs, put_ckpt_hdfs
 from bigdl.orca.automl.search import TensorboardLogger
 from ray.tune import Stopper
 from bigdl.orca.automl.model.abstract import ModelBuilder
+from bigdl.orca.data import ray_xshards
 
 
 class RayTuneSearchEngine(SearchEngine):
@@ -296,7 +297,7 @@ class RayTuneSearchEngine(SearchEngine):
         """
         from pyspark.sql import DataFrame
         if isinstance(data, DataFrame):
-            from orca.learn.utils import dataframe_to_xshards
+            from bigdl.orca.learn.utils import dataframe_to_xshards
             from bigdl.dllib.utils.common import get_node_and_core_number
             from bigdl.orca.data.utils import process_spark_xshards
             num_workers, _ = get_node_and_core_number()
@@ -306,19 +307,21 @@ class RayTuneSearchEngine(SearchEngine):
                                                                     label_cols=target_cols,
                                                                     mode="fit",
                                                                     num_workers=num_workers)
-            ray_data = process_spark_xshards(spark_xshards)
-            ray_validation_data = process_spark_xshards(val_spark_xshards)
+            ray_xshards = process_spark_xshards(spark_xshards, num_workers=num_workers)
+            val_ray_xshards = process_spark_xshards(val_spark_xshards, num_workers=num_workers)
+            data_ref = ray_xshards.get_partition_refs()
+            validation_data_ref = val_ray_xshards.get_partition_refs()
         else:
-            ray_data = ray.put(data)
-            ray_validation_data = ray.put(validation_data)
+            data_ref = ray.put(data)
+            validation_data_ref = ray.put(validation_data)
 
         def train_func(config):
-            if isinstance(data, DataFrame):
-                train_data = get_data_from_ray_xshards(ray_data)
-                val_data = get_data_from_ray_xshards(ray_validation_data)
+            if isinstance(data_ref, list):
+                train_data = get_data_from_part_refs(data_ref)
+                val_data = get_data_from_part_refs(validation_data_ref)
             else:
-                train_data = ray.get(ray_data)
-                val_data = ray.get(ray_validation_data)
+                train_data = ray.get(data_ref)
+                val_data = ray.get(validation_data_ref)
             config = convert_bayes_configs(config).copy()
             # This check is turned off to support ducking typing
             # if not isinstance(model_builder, ModelBuilder):
@@ -390,9 +393,20 @@ def trial_dirname_creator(trial):
     return f"{trial.trainable_name}_{trial.trial_id}"
 
 
-def get_data_from_ray_xshards(data):
+def get_data_from_part_refs(part_refs):
     import numpy as np
-    data_parts = data.collect()
-    X = np.concatenate([part["x"] for part in data_parts])
-    y = np.concatenate([part["y"] for part in data_parts])
+    partitions = ray.get(part_refs)
+
+    # convert list of dicts to one dict
+    result = {}
+    for part in partitions:
+        result.update(part)
+
+    # reorder dict with partition index
+    parts = [result[idx] for idx in range(len(result.keys()))]
+    shards = [item for part in parts for item in part]
+
+    X = np.concatenate([np.stack(shard["x"], axis=1) for shard in shards], axis=0)
+    y = np.concatenate([shard["y"] for shard in shards], axis=0)
+
     return X, y

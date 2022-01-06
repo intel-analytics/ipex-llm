@@ -233,10 +233,6 @@ class AutoXGBRegressor(AutoEstimator):
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param target_cols: target column names if data is Spark DataFrame.
         """
-        data, validation_data = _maybe_convert_spark_df_to_ndarray(data,
-                                                                   validation_data,
-                                                                   feature_cols,
-                                                                   target_cols)
         super().fit(data=data,
                     epochs=epochs,
                     validation_data=validation_data,
