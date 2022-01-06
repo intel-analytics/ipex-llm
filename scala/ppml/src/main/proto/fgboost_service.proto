@@ -21,8 +21,8 @@ option java_package = "com.intel.analytics.bigdl.ppml.generated";
 option java_outer_classname = "FGBoostServiceProto";
 
 service FGBoostService {
-    rpc uploadTable(UploadTableRequest) returns (UploadResponse) {}
-    rpc downloadTable(DownloadTableRequest) returns (DownloadResponse) {}
+    rpc uploadLabel(UploadLabelRequest) returns (UploadResponse) {}
+    rpc downloadLabel(DownloadLabelRequest) returns (DownloadResponse) {}
     rpc split(SplitRequest) returns (SplitResponse) {}
     rpc register(RegisterRequest) returns (RegisterResponse) {}
     rpc uploadTreeLeaves(UploadTreeLeavesRequest) returns (UploadResponse) {}
@@ -30,18 +30,18 @@ service FGBoostService {
     rpc predict(PredictRequest) returns (PredictResponse) {}
 }
 
-message UploadTableRequest {
+message UploadLabelRequest {
     string clientuuid = 1;
-    Table data = 2;
+    TensorMap data = 2;
     string algorithm = 3;
 }
-message DownloadTableRequest {
-    TableMetaData metaData = 1;
+message DownloadLabelRequest {
+    MetaData metaData = 1;
     string algorithm = 2;
 }
 
 message DownloadResponse {
-    Table data = 1;
+    TensorMap data = 1;
     string response = 2;
     int32 code = 3;
 }
@@ -109,7 +109,7 @@ message EvaluateRequest {
 
 message EvaluateResponse {
     string response = 1;
-    Table data = 2;
+    TensorMap data = 2;
     int32 code = 3;
     string message = 4;
 }
@@ -124,7 +124,7 @@ message SplitRequest {
 }
 message PredictResponse {
     string response = 1;
-    Table data = 2;
+    TensorMap data = 2;
     int32 code = 3;
 }
 

@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.ppml.common;
 
 import com.intel.analytics.bigdl.ppml.base.DataHolder;
 import com.intel.analytics.bigdl.ppml.base.StorageHolder;
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

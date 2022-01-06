@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.base
 
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, Storage}
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TensorMap
 
 /**
  * The storage holder holding all types of Storage
@@ -27,16 +27,16 @@ import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table
  */
 class StorageHolder(flDataType: FLDataType) {
   private var clientDataSize: Int = 0
-  private var tableStorage: Storage[Table] = null
+  private var tableStorage: Storage[TensorMap] = null
   private var splitStorage: Storage[DataSplit] = null
   private var leafStorage: Storage[TreeLeaves] = null
   private var branchStorage: Storage[java.util.List[BoostEval]] = null
 
   flDataType match {
-    case FLDataType.TENSOR_MAP => tableStorage = new Storage[Table](flDataType.toString)
+    case FLDataType.TENSOR_MAP => tableStorage = new Storage[TensorMap](flDataType.toString)
     case FLDataType.TREE_SPLIT => splitStorage = new Storage[DataSplit](flDataType.toString)
-    case FLDataType.LEAF => leafStorage = new Storage[TreeLeaves](flDataType.toString)
-    case FLDataType.BOOST_EVAL => branchStorage =
+    case FLDataType.TREE_LEAF => leafStorage = new Storage[TreeLeaves](flDataType.toString)
+    case FLDataType.TREE_EVAL => branchStorage =
       new Storage[java.util.List[BoostEval]](flDataType.toString)
     case _ => throw new NotImplementedError()
   }

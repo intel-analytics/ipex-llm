@@ -20,6 +20,15 @@ import org.apache.logging.log4j.LogManager
 
 import scala.collection.immutable.HashSet
 
+/**
+ *
+ * @param nodeID the id of this node in tree
+ * @param leftChild left child node TreeNode
+ * @param rightChild right child node TreeNode
+ * @param similarScore
+ * @param recordSet the dataset this node could use to gain
+ * @param depth
+ */
 class TreeNode (
                  val nodeID: String,
                  var leftChild: TreeNode,

@@ -19,23 +19,17 @@ package com.intel.analytics.bigdl.ppml.nn
 import com.intel.analytics.bigdl.ppml.base.StorageHolder
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, FLPhase}
 import com.intel.analytics.bigdl.ppml.common.FLPhase.{EVAL, PREDICT, TRAIN}
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, Table, TableMetaData}
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, TensorMap, MetaData}
 
 import scala.collection.JavaConverters._
 
 
 /**
- * HFL just use AverageAggregator to aggregate on server
+ * Return the average of all clients Tensors when calling aggregate
  */
 class HflNNAggregator extends NNAggregator {
   protected var modelName = "averaged"
 
-  override def initStorage(): Unit = {
-    aggregateTypeMap.put(TRAIN, new StorageHolder(FLDataType.TENSOR_MAP))
-    aggregateTypeMap.put(EVAL, new StorageHolder(FLDataType.TENSOR_MAP))
-    aggregateTypeMap.put(PREDICT, new StorageHolder(FLDataType.TENSOR_MAP))
-
-  }
   /**
    * aggregate current temporary model weights and put updated model into storage
    */
@@ -47,7 +41,7 @@ class HflNNAggregator extends NNAggregator {
     val storage = aggregateTypeMap.get(flPhase).getTableStorage()
     val dataMap = storage.clientData
     for (model <- dataMap.asScala.values) {
-      val modelMap = model.getTableMap
+      val modelMap = model.getTensorsMap
 
       for (tensorName <- modelMap.keySet.asScala) {
         val shapeList = modelMap.get(tensorName).getShapeList
@@ -82,9 +76,10 @@ class HflNNAggregator extends NNAggregator {
       averagedDataMap.put(tensorName, averagedFloatTensor)
     }
 
-    val metaData = TableMetaData.newBuilder
+    val metaData = MetaData.newBuilder
       .setName(modelName).setVersion(storage.version + 1).build
-    val aggregatedTable = Table.newBuilder.setMetaData(metaData).putAllTable(averagedDataMap).build
+    val aggregatedTable = TensorMap.newBuilder
+      .setMetaData(metaData).putAllTensors(averagedDataMap).build
     storage.clearClientAndUpdateServer(aggregatedTable)
   }
 }

@@ -57,8 +57,8 @@ class VflNNAggregator(model: Module[Float],
 
     val output = module.forward(inputTable)
 
-    val metaBuilder = TableMetaData.newBuilder()
-    var aggregatedTable: Table = null
+    val metaBuilder = MetaData.newBuilder()
+    var aggregatedTable: TensorMap = null
     flPhase match {
       case FLPhase.TRAIN =>
         val loss = criterion.forward(output, target)
@@ -66,10 +66,10 @@ class VflNNAggregator(model: Module[Float],
         val grad = module.backward(inputTable, gradOutputLayer)
         val meta = metaBuilder.setName("gradInput").setVersion(storage.version).build()
 
-        aggregatedTable = Table.newBuilder()
+        aggregatedTable = TensorMap.newBuilder()
           .setMetaData(meta)
-          .putTable("gradInput", toFloatTensor(grad.toTable.apply[Tensor[Float]](1)))
-          .putTable("loss", toFloatTensor(Tensor[Float](T(loss))))
+          .putTensors("gradInput", toFloatTensor(grad.toTable.apply[Tensor[Float]](1)))
+          .putTensors("loss", toFloatTensor(Tensor[Float](T(loss))))
           .build()
 
       case FLPhase.EVAL =>
@@ -77,7 +77,7 @@ class VflNNAggregator(model: Module[Float],
           vMethod.apply(output, target)
         })
         validationResult = validationResult :+ batchValidationResult
-        if (hasReturn) {
+        if (shouldReturn) {
           val result = validationResult.reduce((x, y) => {
             x.zip(y).map {
               case (r1, r2) => r1 + r2
@@ -86,15 +86,15 @@ class VflNNAggregator(model: Module[Float],
           setReturnMessage(result.toString)
         }
         val meta = metaBuilder.setName("evaluateResult").setVersion(storage.version).build()
-        aggregatedTable = Table.newBuilder()
+        aggregatedTable = TensorMap.newBuilder()
           .setMetaData(meta)
           .build()
 
       case FLPhase.PREDICT =>
         val meta = metaBuilder.setName("predictResult").setVersion(storage.version).build()
-        aggregatedTable = Table.newBuilder()
+        aggregatedTable = TensorMap.newBuilder()
           .setMetaData(meta)
-          .putTable("predictOutput", toFloatTensor(output.toTensor[Float]))
+          .putTensors("predictOutput", toFloatTensor(output.toTensor[Float]))
           .build()
     }
     storage.clearClientAndUpdateServer(aggregatedTable)

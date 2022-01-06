@@ -34,17 +34,17 @@ public class FGBoostStub {
         this.clientID = clientID;
         stub = FGBoostServiceGrpc.newBlockingStub(channel);
     }
-    public DownloadResponse downloadTable(String modelName, int flVersion) {
+    public DownloadResponse downloadLabel(String modelName, int flVersion) {
         logger.info("Download the following data:");
-        TableMetaData metadata = TableMetaData.newBuilder()
+        MetaData metadata = MetaData.newBuilder()
                 .setName(modelName).setVersion(flVersion + 1).build();
-        DownloadTableRequest downloadRequest = DownloadTableRequest.newBuilder().setMetaData(metadata).build();
-        return stub.downloadTable(downloadRequest);
+        DownloadLabelRequest downloadRequest = DownloadLabelRequest.newBuilder().setMetaData(metadata).build();
+        return stub.downloadLabel(downloadRequest);
     }
 
-    public UploadResponse uploadTable(Table data) {
+    public UploadResponse uploadLabel(TensorMap data) {
 
-        UploadTableRequest uploadRequest = UploadTableRequest
+        UploadLabelRequest uploadRequest = UploadLabelRequest
                 .newBuilder()
                 .setData(data)
                 .setClientuuid(clientID)
@@ -53,10 +53,10 @@ public class FGBoostStub {
         logger.info("Upload the following data:");
         logger.info("Upload Data Name:" + data.getMetaData().getName());
         logger.info("Upload Data Version:" + data.getMetaData().getVersion());
-        logger.debug("Upload Data" + data.getTableMap());
-//        logger.info("Upload" + data.getTableMap().get("weights").getTensorList().subList(0, 5));
+        logger.debug("Upload Data" + data.getTensorsMap());
+//        logger.info("Upload" + data.getTensorsMap().get("weights").getTensorList().subList(0, 5));
 
-        UploadResponse uploadResponse = stub.uploadTable(uploadRequest);
+        UploadResponse uploadResponse = stub.uploadLabel(uploadRequest);
         return uploadResponse;
     }
     public SplitResponse split(DataSplit ds) {

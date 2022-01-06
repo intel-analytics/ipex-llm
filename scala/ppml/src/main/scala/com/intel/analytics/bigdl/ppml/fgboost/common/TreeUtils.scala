@@ -24,6 +24,12 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 object TreeUtils {
 
   // TODO sort dataset by feature, sort index of sorted result
+  /**
+   * For each feature, sort from smallest to largest value of the inputData, and return an Array
+   * For N * M (batchSize * featureNum) the result should be (featureNum * batchSize)
+   * @param inputData Array of Tensor to sort
+   * @return the sorted 2D Array
+   */
   def sortByFeature(inputData: Array[Tensor[Float]]): Array[Array[Int]] = {
     Array.tabulate(inputData(0).size(1)){featureI =>
       Array.tabulate(inputData.length)(i => (i, inputData(i).valueAt(featureI + 1))).sortBy(_._2).map(_._1)

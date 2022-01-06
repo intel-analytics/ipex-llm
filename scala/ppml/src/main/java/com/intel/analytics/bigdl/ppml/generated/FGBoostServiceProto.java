@@ -14,14 +14,14 @@ public final class FGBoostServiceProto {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
-  public interface UploadTableRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:fgboost.UploadTableRequest)
+  public interface UploadLabelRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.UploadLabelRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    java.lang.String getClientuuid();
+    String getClientuuid();
     /**
      * <code>optional string clientuuid = 1;</code>
      */
@@ -29,22 +29,22 @@ public final class FGBoostServiceProto {
         getClientuuidBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional string algorithm = 3;</code>
      */
-    java.lang.String getAlgorithm();
+    String getAlgorithm();
     /**
      * <code>optional string algorithm = 3;</code>
      */
@@ -52,27 +52,27 @@ public final class FGBoostServiceProto {
         getAlgorithmBytes();
   }
   /**
-   * Protobuf type {@code fgboost.UploadTableRequest}
+   * Protobuf type {@code fgboost.UploadLabelRequest}
    */
-  public  static final class UploadTableRequest extends
+  public  static final class UploadLabelRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:fgboost.UploadTableRequest)
-      UploadTableRequestOrBuilder {
-    // Use UploadTableRequest.newBuilder() to construct.
-    private UploadTableRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:fgboost.UploadLabelRequest)
+      UploadLabelRequestOrBuilder {
+    // Use UploadLabelRequest.newBuilder() to construct.
+    private UploadLabelRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private UploadTableRequest() {
+    private UploadLabelRequest() {
       clientuuid_ = "";
       algorithm_ = "";
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private UploadTableRequest(
+    private UploadLabelRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -93,17 +93,17 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               clientuuid_ = s;
               break;
             }
             case 18: {
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -112,7 +112,7 @@ public final class FGBoostServiceProto {
               break;
             }
             case 26: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               algorithm_ = s;
               break;
@@ -130,29 +130,29 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest.Builder.class);
+              UploadLabelRequest.class, Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private volatile Object clientuuid_;
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getClientuuid() {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         clientuuid_ = s;
         return s;
       }
@@ -162,11 +162,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         clientuuid_ = b;
         return b;
       } else {
@@ -175,39 +175,39 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData() {
-      return data_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 3;
-    private volatile java.lang.Object algorithm_;
+    private volatile Object algorithm_;
     /**
      * <code>optional string algorithm = 3;</code>
      */
-    public java.lang.String getAlgorithm() {
-      java.lang.Object ref = algorithm_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getAlgorithm() {
+      Object ref = algorithm_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         algorithm_ = s;
         return s;
       }
@@ -217,11 +217,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
-      java.lang.Object ref = algorithm_;
-      if (ref instanceof java.lang.String) {
+      Object ref = algorithm_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         algorithm_ = b;
         return b;
       } else {
@@ -272,15 +272,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest)) {
+      if (!(obj instanceof UploadLabelRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest) obj;
+      UploadLabelRequest other = (UploadLabelRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
@@ -295,7 +295,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -315,58 +315,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseFrom(byte[] data)
+    public static UploadLabelRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseFrom(java.io.InputStream input)
+    public static UploadLabelRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseDelimitedFrom(java.io.InputStream input)
+    public static UploadLabelRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseDelimitedFrom(
+    public static UploadLabelRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -378,7 +378,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest prototype) {
+    public static Builder newBuilder(UploadLabelRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -386,32 +386,32 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code fgboost.UploadTableRequest}
+     * Protobuf type {@code fgboost.UploadLabelRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:fgboost.UploadTableRequest)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:fgboost.UploadLabelRequest)
+        UploadLabelRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest.Builder.class);
+                UploadLabelRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadLabelRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -443,23 +443,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest.getDefaultInstance();
+      public UploadLabelRequest getDefaultInstanceForType() {
+        return UploadLabelRequest.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest result = buildPartial();
+      public UploadLabelRequest build() {
+        UploadLabelRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest(this);
+      public UploadLabelRequest buildPartial() {
+        UploadLabelRequest result = new UploadLabelRequest(this);
         result.clientuuid_ = clientuuid_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -498,16 +498,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest)other);
+        if (other instanceof UploadLabelRequest) {
+          return mergeFrom((UploadLabelRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(UploadLabelRequest other) {
+        if (other == UploadLabelRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -531,11 +531,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest parsedMessage = null;
+        UploadLabelRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest) e.getUnfinishedMessage();
+          parsedMessage = (UploadLabelRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -545,20 +545,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private Object clientuuid_ = "";
       /**
        * <code>optional string clientuuid = 1;</code>
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getClientuuid() {
+        Object ref = clientuuid_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           clientuuid_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -566,11 +566,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
+        Object ref = clientuuid_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           clientuuid_ = b;
           return b;
         } else {
@@ -581,7 +581,7 @@ public final class FGBoostServiceProto {
        * <code>optional string clientuuid = 1;</code>
        */
       public Builder setClientuuid(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -614,29 +614,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -650,10 +650,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -664,13 +664,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -682,7 +682,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -696,33 +696,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder> 
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -731,20 +731,20 @@ public final class FGBoostServiceProto {
         return dataBuilder_;
       }
 
-      private java.lang.Object algorithm_ = "";
+      private Object algorithm_ = "";
       /**
        * <code>optional string algorithm = 3;</code>
        */
-      public java.lang.String getAlgorithm() {
-        java.lang.Object ref = algorithm_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getAlgorithm() {
+        Object ref = algorithm_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           algorithm_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -752,11 +752,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
-        java.lang.Object ref = algorithm_;
+        Object ref = algorithm_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           algorithm_ = b;
           return b;
         } else {
@@ -767,7 +767,7 @@ public final class FGBoostServiceProto {
        * <code>optional string algorithm = 3;</code>
        */
       public Builder setAlgorithm(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -810,65 +810,65 @@ public final class FGBoostServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:fgboost.UploadTableRequest)
+      // @@protoc_insertion_point(builder_scope:fgboost.UploadLabelRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:fgboost.UploadTableRequest)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:fgboost.UploadLabelRequest)
+    private static final UploadLabelRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest();
+      DEFAULT_INSTANCE = new UploadLabelRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest getDefaultInstance() {
+    public static UploadLabelRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<UploadTableRequest>
-        PARSER = new com.google.protobuf.AbstractParser<UploadTableRequest>() {
-      public UploadTableRequest parsePartialFrom(
+    private static final com.google.protobuf.Parser<UploadLabelRequest>
+        PARSER = new com.google.protobuf.AbstractParser<UploadLabelRequest>() {
+      public UploadLabelRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UploadTableRequest(input, extensionRegistry);
+          return new UploadLabelRequest(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<UploadTableRequest> parser() {
+    public static com.google.protobuf.Parser<UploadLabelRequest> parser() {
       return PARSER;
     }
 
-    @java.lang.Override
-    public com.google.protobuf.Parser<UploadTableRequest> getParserForType() {
+    @Override
+    public com.google.protobuf.Parser<UploadLabelRequest> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest getDefaultInstanceForType() {
+    public UploadLabelRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface DownloadTableRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:fgboost.DownloadTableRequest)
+  public interface DownloadLabelRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.DownloadLabelRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
     boolean hasMetaData();
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData getMetaData();
+    FlBaseProto.MetaData getMetaData();
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaDataOrBuilder getMetaDataOrBuilder();
+    FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder();
 
     /**
      * <code>optional string algorithm = 2;</code>
      */
-    java.lang.String getAlgorithm();
+    String getAlgorithm();
     /**
      * <code>optional string algorithm = 2;</code>
      */
@@ -876,26 +876,26 @@ public final class FGBoostServiceProto {
         getAlgorithmBytes();
   }
   /**
-   * Protobuf type {@code fgboost.DownloadTableRequest}
+   * Protobuf type {@code fgboost.DownloadLabelRequest}
    */
-  public  static final class DownloadTableRequest extends
+  public  static final class DownloadLabelRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:fgboost.DownloadTableRequest)
-      DownloadTableRequestOrBuilder {
-    // Use DownloadTableRequest.newBuilder() to construct.
-    private DownloadTableRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:fgboost.DownloadLabelRequest)
+      DownloadLabelRequestOrBuilder {
+    // Use DownloadLabelRequest.newBuilder() to construct.
+    private DownloadLabelRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private DownloadTableRequest() {
+    private DownloadLabelRequest() {
       algorithm_ = "";
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private DownloadTableRequest(
+    private DownloadLabelRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -916,11 +916,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.Builder subBuilder = null;
+              FlBaseProto.MetaData.Builder subBuilder = null;
               if (metaData_ != null) {
                 subBuilder = metaData_.toBuilder();
               }
-              metaData_ = input.readMessage(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.parser(), extensionRegistry);
+              metaData_ = input.readMessage(FlBaseProto.MetaData.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(metaData_);
                 metaData_ = subBuilder.buildPartial();
@@ -929,7 +929,7 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               algorithm_ = s;
               break;
@@ -947,50 +947,50 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest.Builder.class);
+              DownloadLabelRequest.class, Builder.class);
     }
 
     public static final int METADATA_FIELD_NUMBER = 1;
-    private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData metaData_;
+    private FlBaseProto.MetaData metaData_;
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
     public boolean hasMetaData() {
       return metaData_ != null;
     }
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData getMetaData() {
-      return metaData_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.getDefaultInstance() : metaData_;
+    public FlBaseProto.MetaData getMetaData() {
+      return metaData_ == null ? FlBaseProto.MetaData.getDefaultInstance() : metaData_;
     }
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaDataOrBuilder getMetaDataOrBuilder() {
+    public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
       return getMetaData();
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 2;
-    private volatile java.lang.Object algorithm_;
+    private volatile Object algorithm_;
     /**
      * <code>optional string algorithm = 2;</code>
      */
-    public java.lang.String getAlgorithm() {
-      java.lang.Object ref = algorithm_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getAlgorithm() {
+      Object ref = algorithm_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         algorithm_ = s;
         return s;
       }
@@ -1000,11 +1000,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
-      java.lang.Object ref = algorithm_;
-      if (ref instanceof java.lang.String) {
+      Object ref = algorithm_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         algorithm_ = b;
         return b;
       } else {
@@ -1049,15 +1049,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest)) {
+      if (!(obj instanceof DownloadLabelRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest) obj;
+      DownloadLabelRequest other = (DownloadLabelRequest) obj;
 
       boolean result = true;
       result = result && (hasMetaData() == other.hasMetaData());
@@ -1070,7 +1070,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1088,58 +1088,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseFrom(byte[] data)
+    public static DownloadLabelRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseFrom(java.io.InputStream input)
+    public static DownloadLabelRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseDelimitedFrom(java.io.InputStream input)
+    public static DownloadLabelRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseDelimitedFrom(
+    public static DownloadLabelRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1151,7 +1151,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest prototype) {
+    public static Builder newBuilder(DownloadLabelRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1159,32 +1159,32 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code fgboost.DownloadTableRequest}
+     * Protobuf type {@code fgboost.DownloadLabelRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:fgboost.DownloadTableRequest)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:fgboost.DownloadLabelRequest)
+        DownloadLabelRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest.Builder.class);
+                DownloadLabelRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadLabelRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1214,23 +1214,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest.getDefaultInstance();
+      public DownloadLabelRequest getDefaultInstanceForType() {
+        return DownloadLabelRequest.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest result = buildPartial();
+      public DownloadLabelRequest build() {
+        DownloadLabelRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest(this);
+      public DownloadLabelRequest buildPartial() {
+        DownloadLabelRequest result = new DownloadLabelRequest(this);
         if (metaDataBuilder_ == null) {
           result.metaData_ = metaData_;
         } else {
@@ -1268,16 +1268,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest)other);
+        if (other instanceof DownloadLabelRequest) {
+          return mergeFrom((DownloadLabelRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(DownloadLabelRequest other) {
+        if (other == DownloadLabelRequest.getDefaultInstance()) return this;
         if (other.hasMetaData()) {
           mergeMetaData(other.getMetaData());
         }
@@ -1297,11 +1297,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest parsedMessage = null;
+        DownloadLabelRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest) e.getUnfinishedMessage();
+          parsedMessage = (DownloadLabelRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1311,29 +1311,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData metaData_ = null;
+      private FlBaseProto.MetaData metaData_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaDataOrBuilder> metaDataBuilder_;
+          FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder> metaDataBuilder_;
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public boolean hasMetaData() {
         return metaDataBuilder_ != null || metaData_ != null;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData getMetaData() {
+      public FlBaseProto.MetaData getMetaData() {
         if (metaDataBuilder_ == null) {
-          return metaData_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.getDefaultInstance() : metaData_;
+          return metaData_ == null ? FlBaseProto.MetaData.getDefaultInstance() : metaData_;
         } else {
           return metaDataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public Builder setMetaData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData value) {
+      public Builder setMetaData(FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1347,10 +1347,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public Builder setMetaData(
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.Builder builderForValue) {
+          FlBaseProto.MetaData.Builder builderForValue) {
         if (metaDataBuilder_ == null) {
           metaData_ = builderForValue.build();
           onChanged();
@@ -1361,13 +1361,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public Builder mergeMetaData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData value) {
+      public Builder mergeMetaData(FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
           if (metaData_ != null) {
             metaData_ =
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
+              FlBaseProto.MetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
           } else {
             metaData_ = value;
           }
@@ -1379,7 +1379,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public Builder clearMetaData() {
         if (metaDataBuilder_ == null) {
@@ -1393,33 +1393,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.Builder getMetaDataBuilder() {
+      public FlBaseProto.MetaData.Builder getMetaDataBuilder() {
         
         onChanged();
         return getMetaDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaDataOrBuilder getMetaDataOrBuilder() {
+      public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
         if (metaDataBuilder_ != null) {
           return metaDataBuilder_.getMessageOrBuilder();
         } else {
           return metaData_ == null ?
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.getDefaultInstance() : metaData_;
+              FlBaseProto.MetaData.getDefaultInstance() : metaData_;
         }
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaDataOrBuilder> 
+          FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder>
           getMetaDataFieldBuilder() {
         if (metaDataBuilder_ == null) {
           metaDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaDataOrBuilder>(
+              FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder>(
                   getMetaData(),
                   getParentForChildren(),
                   isClean());
@@ -1428,20 +1428,20 @@ public final class FGBoostServiceProto {
         return metaDataBuilder_;
       }
 
-      private java.lang.Object algorithm_ = "";
+      private Object algorithm_ = "";
       /**
        * <code>optional string algorithm = 2;</code>
        */
-      public java.lang.String getAlgorithm() {
-        java.lang.Object ref = algorithm_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getAlgorithm() {
+        Object ref = algorithm_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           algorithm_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -1449,11 +1449,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
-        java.lang.Object ref = algorithm_;
+        Object ref = algorithm_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           algorithm_ = b;
           return b;
         } else {
@@ -1464,7 +1464,7 @@ public final class FGBoostServiceProto {
        * <code>optional string algorithm = 2;</code>
        */
       public Builder setAlgorithm(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -1507,39 +1507,39 @@ public final class FGBoostServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:fgboost.DownloadTableRequest)
+      // @@protoc_insertion_point(builder_scope:fgboost.DownloadLabelRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:fgboost.DownloadTableRequest)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:fgboost.DownloadLabelRequest)
+    private static final DownloadLabelRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest();
+      DEFAULT_INSTANCE = new DownloadLabelRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest getDefaultInstance() {
+    public static DownloadLabelRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<DownloadTableRequest>
-        PARSER = new com.google.protobuf.AbstractParser<DownloadTableRequest>() {
-      public DownloadTableRequest parsePartialFrom(
+    private static final com.google.protobuf.Parser<DownloadLabelRequest>
+        PARSER = new com.google.protobuf.AbstractParser<DownloadLabelRequest>() {
+      public DownloadLabelRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new DownloadTableRequest(input, extensionRegistry);
+          return new DownloadLabelRequest(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<DownloadTableRequest> parser() {
+    public static com.google.protobuf.Parser<DownloadLabelRequest> parser() {
       return PARSER;
     }
 
-    @java.lang.Override
-    public com.google.protobuf.Parser<DownloadTableRequest> getParserForType() {
+    @Override
+    public com.google.protobuf.Parser<DownloadLabelRequest> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest getDefaultInstanceForType() {
+    public DownloadLabelRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1550,22 +1550,22 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional string response = 2;</code>
      */
-    java.lang.String getResponse();
+    String getResponse();
     /**
      * <code>optional string response = 2;</code>
      */
@@ -1593,7 +1593,7 @@ public final class FGBoostServiceProto {
       code_ = 0;
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -1619,11 +1619,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1632,7 +1632,7 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               response_ = s;
               break;
@@ -1655,50 +1655,50 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse.Builder.class);
+              DownloadResponse.class, Builder.class);
     }
 
     public static final int DATA_FIELD_NUMBER = 1;
-    private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData() {
-      return data_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 2;
-    private volatile java.lang.Object response_;
+    private volatile Object response_;
     /**
      * <code>optional string response = 2;</code>
      */
-    public java.lang.String getResponse() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getResponse() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         response_ = s;
         return s;
       }
@@ -1708,11 +1708,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getResponseBytes() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
+      Object ref = response_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         response_ = b;
         return b;
       } else {
@@ -1773,15 +1773,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse)) {
+      if (!(obj instanceof DownloadResponse)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse) obj;
+      DownloadResponse other = (DownloadResponse) obj;
 
       boolean result = true;
       result = result && (hasData() == other.hasData());
@@ -1796,7 +1796,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -1816,58 +1816,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseFrom(
+    public static DownloadResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseFrom(
+    public static DownloadResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseFrom(byte[] data)
+    public static DownloadResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseFrom(
+    public static DownloadResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseFrom(java.io.InputStream input)
+    public static DownloadResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseFrom(
+    public static DownloadResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseDelimitedFrom(java.io.InputStream input)
+    public static DownloadResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseDelimitedFrom(
+    public static DownloadResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseFrom(
+    public static DownloadResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parseFrom(
+    public static DownloadResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1879,7 +1879,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse prototype) {
+    public static Builder newBuilder(DownloadResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1887,7 +1887,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -1899,17 +1899,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.DownloadResponse)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponseOrBuilder {
+        DownloadResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse.Builder.class);
+                DownloadResponse.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse.newBuilder()
@@ -1944,23 +1944,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse.getDefaultInstance();
+      public DownloadResponse getDefaultInstanceForType() {
+        return DownloadResponse.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse result = buildPartial();
+      public DownloadResponse build() {
+        DownloadResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse(this);
+      public DownloadResponse buildPartial() {
+        DownloadResponse result = new DownloadResponse(this);
         if (dataBuilder_ == null) {
           result.data_ = data_;
         } else {
@@ -1999,16 +1999,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse)other);
+        if (other instanceof DownloadResponse) {
+          return mergeFrom((DownloadResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(DownloadResponse other) {
+        if (other == DownloadResponse.getDefaultInstance()) return this;
         if (other.hasData()) {
           mergeData(other.getData());
         }
@@ -2031,11 +2031,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse parsedMessage = null;
+        DownloadResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse) e.getUnfinishedMessage();
+          parsedMessage = (DownloadResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2045,29 +2045,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public Builder setData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2081,10 +2081,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       public Builder setData(
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -2095,13 +2095,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public Builder mergeData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -2113,7 +2113,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -2127,33 +2127,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder> 
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -2162,20 +2162,20 @@ public final class FGBoostServiceProto {
         return dataBuilder_;
       }
 
-      private java.lang.Object response_ = "";
+      private Object response_ = "";
       /**
        * <code>optional string response = 2;</code>
        */
-      public java.lang.String getResponse() {
-        java.lang.Object ref = response_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getResponse() {
+        Object ref = response_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           response_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -2183,11 +2183,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
-        java.lang.Object ref = response_;
+        Object ref = response_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           response_ = b;
           return b;
         } else {
@@ -2198,7 +2198,7 @@ public final class FGBoostServiceProto {
        * <code>optional string response = 2;</code>
        */
       public Builder setResponse(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -2271,12 +2271,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.DownloadResponse)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse DEFAULT_INSTANCE;
+    private static final DownloadResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse();
+      DEFAULT_INSTANCE = new DownloadResponse();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse getDefaultInstance() {
+    public static DownloadResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2294,12 +2294,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<DownloadResponse> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse getDefaultInstanceForType() {
+    public DownloadResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2312,7 +2312,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string treeID = 1;</code>
      */
-    java.lang.String getTreeID();
+    String getTreeID();
     /**
      * <code>optional string treeID = 1;</code>
      */
@@ -2322,7 +2322,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated int32 leafIndex = 2;</code>
      */
-    java.util.List<java.lang.Integer> getLeafIndexList();
+    java.util.List<Integer> getLeafIndexList();
     /**
      * <code>repeated int32 leafIndex = 2;</code>
      */
@@ -2335,7 +2335,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated float leafOutput = 3;</code>
      */
-    java.util.List<java.lang.Float> getLeafOutputList();
+    java.util.List<Float> getLeafOutputList();
     /**
      * <code>repeated float leafOutput = 3;</code>
      */
@@ -2362,7 +2362,7 @@ public final class FGBoostServiceProto {
       leafOutput_ = java.util.Collections.emptyList();
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -2388,14 +2388,14 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               treeID_ = s;
               break;
             }
             case 16: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                leafIndex_ = new java.util.ArrayList<java.lang.Integer>();
+                leafIndex_ = new java.util.ArrayList<Integer>();
                 mutable_bitField0_ |= 0x00000002;
               }
               leafIndex_.add(input.readInt32());
@@ -2405,7 +2405,7 @@ public final class FGBoostServiceProto {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
-                leafIndex_ = new java.util.ArrayList<java.lang.Integer>();
+                leafIndex_ = new java.util.ArrayList<Integer>();
                 mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
@@ -2416,7 +2416,7 @@ public final class FGBoostServiceProto {
             }
             case 29: {
               if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-                leafOutput_ = new java.util.ArrayList<java.lang.Float>();
+                leafOutput_ = new java.util.ArrayList<Float>();
                 mutable_bitField0_ |= 0x00000004;
               }
               leafOutput_.add(input.readFloat());
@@ -2426,7 +2426,7 @@ public final class FGBoostServiceProto {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
-                leafOutput_ = new java.util.ArrayList<java.lang.Float>();
+                leafOutput_ = new java.util.ArrayList<Float>();
                 mutable_bitField0_ |= 0x00000004;
               }
               while (input.getBytesUntilLimit() > 0) {
@@ -2454,30 +2454,30 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.Builder.class);
+              TreeLeaves.class, Builder.class);
     }
 
     private int bitField0_;
     public static final int TREEID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object treeID_;
+    private volatile Object treeID_;
     /**
      * <code>optional string treeID = 1;</code>
      */
-    public java.lang.String getTreeID() {
-      java.lang.Object ref = treeID_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getTreeID() {
+      Object ref = treeID_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         treeID_ = s;
         return s;
       }
@@ -2487,11 +2487,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getTreeIDBytes() {
-      java.lang.Object ref = treeID_;
-      if (ref instanceof java.lang.String) {
+      Object ref = treeID_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         treeID_ = b;
         return b;
       } else {
@@ -2500,11 +2500,11 @@ public final class FGBoostServiceProto {
     }
 
     public static final int LEAFINDEX_FIELD_NUMBER = 2;
-    private java.util.List<java.lang.Integer> leafIndex_;
+    private java.util.List<Integer> leafIndex_;
     /**
      * <code>repeated int32 leafIndex = 2;</code>
      */
-    public java.util.List<java.lang.Integer>
+    public java.util.List<Integer>
         getLeafIndexList() {
       return leafIndex_;
     }
@@ -2523,11 +2523,11 @@ public final class FGBoostServiceProto {
     private int leafIndexMemoizedSerializedSize = -1;
 
     public static final int LEAFOUTPUT_FIELD_NUMBER = 3;
-    private java.util.List<java.lang.Float> leafOutput_;
+    private java.util.List<Float> leafOutput_;
     /**
      * <code>repeated float leafOutput = 3;</code>
      */
-    public java.util.List<java.lang.Float>
+    public java.util.List<Float>
         getLeafOutputList() {
       return leafOutput_;
     }
@@ -2615,15 +2615,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves)) {
+      if (!(obj instanceof TreeLeaves)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves) obj;
+      TreeLeaves other = (TreeLeaves) obj;
 
       boolean result = true;
       result = result && getTreeID()
@@ -2635,7 +2635,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -2657,58 +2657,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseFrom(
+    public static TreeLeaves parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseFrom(
+    public static TreeLeaves parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseFrom(byte[] data)
+    public static TreeLeaves parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseFrom(
+    public static TreeLeaves parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseFrom(java.io.InputStream input)
+    public static TreeLeaves parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseFrom(
+    public static TreeLeaves parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseDelimitedFrom(java.io.InputStream input)
+    public static TreeLeaves parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseDelimitedFrom(
+    public static TreeLeaves parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseFrom(
+    public static TreeLeaves parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parseFrom(
+    public static TreeLeaves parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2720,7 +2720,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves prototype) {
+    public static Builder newBuilder(TreeLeaves prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -2728,7 +2728,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -2740,17 +2740,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.TreeLeaves)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeavesOrBuilder {
+        TreeLeavesOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.Builder.class);
+                TreeLeaves.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.newBuilder()
@@ -2781,23 +2781,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.getDefaultInstance();
+      public TreeLeaves getDefaultInstanceForType() {
+        return TreeLeaves.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves result = buildPartial();
+      public TreeLeaves build() {
+        TreeLeaves result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves(this);
+      public TreeLeaves buildPartial() {
+        TreeLeaves result = new TreeLeaves(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.treeID_ = treeID_;
@@ -2843,16 +2843,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves)other);
+        if (other instanceof TreeLeaves) {
+          return mergeFrom((TreeLeaves)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.getDefaultInstance()) return this;
+      public Builder mergeFrom(TreeLeaves other) {
+        if (other == TreeLeaves.getDefaultInstance()) return this;
         if (!other.getTreeID().isEmpty()) {
           treeID_ = other.treeID_;
           onChanged();
@@ -2889,11 +2889,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves parsedMessage = null;
+        TreeLeaves parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves) e.getUnfinishedMessage();
+          parsedMessage = (TreeLeaves) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2904,20 +2904,20 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.lang.Object treeID_ = "";
+      private Object treeID_ = "";
       /**
        * <code>optional string treeID = 1;</code>
        */
-      public java.lang.String getTreeID() {
-        java.lang.Object ref = treeID_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getTreeID() {
+        Object ref = treeID_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           treeID_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -2925,11 +2925,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getTreeIDBytes() {
-        java.lang.Object ref = treeID_;
+        Object ref = treeID_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           treeID_ = b;
           return b;
         } else {
@@ -2940,7 +2940,7 @@ public final class FGBoostServiceProto {
        * <code>optional string treeID = 1;</code>
        */
       public Builder setTreeID(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -2973,17 +2973,17 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<java.lang.Integer> leafIndex_ = java.util.Collections.emptyList();
+      private java.util.List<Integer> leafIndex_ = java.util.Collections.emptyList();
       private void ensureLeafIndexIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          leafIndex_ = new java.util.ArrayList<java.lang.Integer>(leafIndex_);
+          leafIndex_ = new java.util.ArrayList<Integer>(leafIndex_);
           bitField0_ |= 0x00000002;
          }
       }
       /**
        * <code>repeated int32 leafIndex = 2;</code>
        */
-      public java.util.List<java.lang.Integer>
+      public java.util.List<Integer>
           getLeafIndexList() {
         return java.util.Collections.unmodifiableList(leafIndex_);
       }
@@ -3022,7 +3022,7 @@ public final class FGBoostServiceProto {
        * <code>repeated int32 leafIndex = 2;</code>
        */
       public Builder addAllLeafIndex(
-          java.lang.Iterable<? extends java.lang.Integer> values) {
+          Iterable<? extends Integer> values) {
         ensureLeafIndexIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, leafIndex_);
@@ -3039,17 +3039,17 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<java.lang.Float> leafOutput_ = java.util.Collections.emptyList();
+      private java.util.List<Float> leafOutput_ = java.util.Collections.emptyList();
       private void ensureLeafOutputIsMutable() {
         if (!((bitField0_ & 0x00000004) == 0x00000004)) {
-          leafOutput_ = new java.util.ArrayList<java.lang.Float>(leafOutput_);
+          leafOutput_ = new java.util.ArrayList<Float>(leafOutput_);
           bitField0_ |= 0x00000004;
          }
       }
       /**
        * <code>repeated float leafOutput = 3;</code>
        */
-      public java.util.List<java.lang.Float>
+      public java.util.List<Float>
           getLeafOutputList() {
         return java.util.Collections.unmodifiableList(leafOutput_);
       }
@@ -3088,7 +3088,7 @@ public final class FGBoostServiceProto {
        * <code>repeated float leafOutput = 3;</code>
        */
       public Builder addAllLeafOutput(
-          java.lang.Iterable<? extends java.lang.Float> values) {
+          Iterable<? extends Float> values) {
         ensureLeafOutputIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, leafOutput_);
@@ -3119,12 +3119,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.TreeLeaves)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves DEFAULT_INSTANCE;
+    private static final TreeLeaves DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves();
+      DEFAULT_INSTANCE = new TreeLeaves();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves getDefaultInstance() {
+    public static TreeLeaves getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3142,12 +3142,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<TreeLeaves> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves getDefaultInstanceForType() {
+    public TreeLeaves getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3160,7 +3160,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    java.lang.String getClientuuid();
+    String getClientuuid();
     /**
      * <code>optional string clientuuid = 1;</code>
      */
@@ -3174,11 +3174,11 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves getTreeLeaves();
+    TreeLeaves getTreeLeaves();
     /**
      * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeavesOrBuilder getTreeLeavesOrBuilder();
+    TreeLeavesOrBuilder getTreeLeavesOrBuilder();
   }
   /**
    * Protobuf type {@code fgboost.UploadTreeLeavesRequest}
@@ -3195,7 +3195,7 @@ public final class FGBoostServiceProto {
       clientuuid_ = "";
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -3221,17 +3221,17 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               clientuuid_ = s;
               break;
             }
             case 18: {
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.Builder subBuilder = null;
+              TreeLeaves.Builder subBuilder = null;
               if (treeLeaves_ != null) {
                 subBuilder = treeLeaves_.toBuilder();
               }
-              treeLeaves_ = input.readMessage(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.parser(), extensionRegistry);
+              treeLeaves_ = input.readMessage(TreeLeaves.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(treeLeaves_);
                 treeLeaves_ = subBuilder.buildPartial();
@@ -3252,29 +3252,29 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.Builder.class);
+              UploadTreeLeavesRequest.class, Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private volatile Object clientuuid_;
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getClientuuid() {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         clientuuid_ = s;
         return s;
       }
@@ -3284,11 +3284,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         clientuuid_ = b;
         return b;
       } else {
@@ -3297,7 +3297,7 @@ public final class FGBoostServiceProto {
     }
 
     public static final int TREELEAVES_FIELD_NUMBER = 2;
-    private com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves treeLeaves_;
+    private TreeLeaves treeLeaves_;
     /**
      * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
      */
@@ -3307,13 +3307,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves getTreeLeaves() {
-      return treeLeaves_ == null ? com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.getDefaultInstance() : treeLeaves_;
+    public TreeLeaves getTreeLeaves() {
+      return treeLeaves_ == null ? TreeLeaves.getDefaultInstance() : treeLeaves_;
     }
     /**
      * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeavesOrBuilder getTreeLeavesOrBuilder() {
+    public TreeLeavesOrBuilder getTreeLeavesOrBuilder() {
       return getTreeLeaves();
     }
 
@@ -3354,15 +3354,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest)) {
+      if (!(obj instanceof UploadTreeLeavesRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest) obj;
+      UploadTreeLeavesRequest other = (UploadTreeLeavesRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
@@ -3375,7 +3375,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -3393,58 +3393,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeavesRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeavesRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseFrom(byte[] data)
+    public static UploadTreeLeavesRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeavesRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseFrom(java.io.InputStream input)
+    public static UploadTreeLeavesRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeavesRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseDelimitedFrom(java.io.InputStream input)
+    public static UploadTreeLeavesRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseDelimitedFrom(
+    public static UploadTreeLeavesRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeavesRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeavesRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3456,7 +3456,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest prototype) {
+    public static Builder newBuilder(UploadTreeLeavesRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -3464,7 +3464,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -3476,17 +3476,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.UploadTreeLeavesRequest)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequestOrBuilder {
+        UploadTreeLeavesRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.Builder.class);
+                UploadTreeLeavesRequest.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.newBuilder()
@@ -3519,23 +3519,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.getDefaultInstance();
+      public UploadTreeLeavesRequest getDefaultInstanceForType() {
+        return UploadTreeLeavesRequest.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest result = buildPartial();
+      public UploadTreeLeavesRequest build() {
+        UploadTreeLeavesRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest(this);
+      public UploadTreeLeavesRequest buildPartial() {
+        UploadTreeLeavesRequest result = new UploadTreeLeavesRequest(this);
         result.clientuuid_ = clientuuid_;
         if (treeLeavesBuilder_ == null) {
           result.treeLeaves_ = treeLeaves_;
@@ -3573,16 +3573,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest)other);
+        if (other instanceof UploadTreeLeavesRequest) {
+          return mergeFrom((UploadTreeLeavesRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(UploadTreeLeavesRequest other) {
+        if (other == UploadTreeLeavesRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -3602,11 +3602,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest parsedMessage = null;
+        UploadTreeLeavesRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest) e.getUnfinishedMessage();
+          parsedMessage = (UploadTreeLeavesRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3616,20 +3616,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private Object clientuuid_ = "";
       /**
        * <code>optional string clientuuid = 1;</code>
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getClientuuid() {
+        Object ref = clientuuid_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           clientuuid_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -3637,11 +3637,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
+        Object ref = clientuuid_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           clientuuid_ = b;
           return b;
         } else {
@@ -3652,7 +3652,7 @@ public final class FGBoostServiceProto {
        * <code>optional string clientuuid = 1;</code>
        */
       public Builder setClientuuid(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -3685,9 +3685,9 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves treeLeaves_ = null;
+      private TreeLeaves treeLeaves_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeavesOrBuilder> treeLeavesBuilder_;
+          TreeLeaves, TreeLeaves.Builder, TreeLeavesOrBuilder> treeLeavesBuilder_;
       /**
        * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
        */
@@ -3697,9 +3697,9 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves getTreeLeaves() {
+      public TreeLeaves getTreeLeaves() {
         if (treeLeavesBuilder_ == null) {
-          return treeLeaves_ == null ? com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.getDefaultInstance() : treeLeaves_;
+          return treeLeaves_ == null ? TreeLeaves.getDefaultInstance() : treeLeaves_;
         } else {
           return treeLeavesBuilder_.getMessage();
         }
@@ -3707,7 +3707,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
        */
-      public Builder setTreeLeaves(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves value) {
+      public Builder setTreeLeaves(TreeLeaves value) {
         if (treeLeavesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3724,7 +3724,7 @@ public final class FGBoostServiceProto {
        * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
        */
       public Builder setTreeLeaves(
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.Builder builderForValue) {
+          TreeLeaves.Builder builderForValue) {
         if (treeLeavesBuilder_ == null) {
           treeLeaves_ = builderForValue.build();
           onChanged();
@@ -3737,11 +3737,11 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
        */
-      public Builder mergeTreeLeaves(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves value) {
+      public Builder mergeTreeLeaves(TreeLeaves value) {
         if (treeLeavesBuilder_ == null) {
           if (treeLeaves_ != null) {
             treeLeaves_ =
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.newBuilder(treeLeaves_).mergeFrom(value).buildPartial();
+              TreeLeaves.newBuilder(treeLeaves_).mergeFrom(value).buildPartial();
           } else {
             treeLeaves_ = value;
           }
@@ -3769,7 +3769,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.Builder getTreeLeavesBuilder() {
+      public TreeLeaves.Builder getTreeLeavesBuilder() {
         
         onChanged();
         return getTreeLeavesFieldBuilder().getBuilder();
@@ -3777,23 +3777,23 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeavesOrBuilder getTreeLeavesOrBuilder() {
+      public TreeLeavesOrBuilder getTreeLeavesOrBuilder() {
         if (treeLeavesBuilder_ != null) {
           return treeLeavesBuilder_.getMessageOrBuilder();
         } else {
           return treeLeaves_ == null ?
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.getDefaultInstance() : treeLeaves_;
+              TreeLeaves.getDefaultInstance() : treeLeaves_;
         }
       }
       /**
        * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeavesOrBuilder> 
+          TreeLeaves, TreeLeaves.Builder, TreeLeavesOrBuilder>
           getTreeLeavesFieldBuilder() {
         if (treeLeavesBuilder_ == null) {
           treeLeavesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeavesOrBuilder>(
+              TreeLeaves, TreeLeaves.Builder, TreeLeavesOrBuilder>(
                   getTreeLeaves(),
                   getParentForChildren(),
                   isClean());
@@ -3816,12 +3816,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.UploadTreeLeavesRequest)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest DEFAULT_INSTANCE;
+    private static final UploadTreeLeavesRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest();
+      DEFAULT_INSTANCE = new UploadTreeLeavesRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest getDefaultInstance() {
+    public static UploadTreeLeavesRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3839,12 +3839,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<UploadTreeLeavesRequest> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest getDefaultInstanceForType() {
+    public UploadTreeLeavesRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3857,7 +3857,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string treeID = 1;</code>
      */
-    java.lang.String getTreeID();
+    String getTreeID();
     /**
      * <code>optional string treeID = 1;</code>
      */
@@ -3867,7 +3867,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string nodeID = 2;</code>
      */
-    java.lang.String getNodeID();
+    String getNodeID();
     /**
      * <code>optional string nodeID = 2;</code>
      */
@@ -3897,7 +3897,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated int32 itemSet = 7;</code>
      */
-    java.util.List<java.lang.Integer> getItemSetList();
+    java.util.List<Integer> getItemSetList();
     /**
      * <code>repeated int32 itemSet = 7;</code>
      */
@@ -3910,7 +3910,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string clientUid = 8;</code>
      */
-    java.lang.String getClientUid();
+    String getClientUid();
     /**
      * <code>optional string clientUid = 8;</code>
      */
@@ -3939,7 +3939,7 @@ public final class FGBoostServiceProto {
       clientUid_ = "";
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -3965,13 +3965,13 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               treeID_ = s;
               break;
             }
             case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               nodeID_ = s;
               break;
@@ -3998,7 +3998,7 @@ public final class FGBoostServiceProto {
             }
             case 56: {
               if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
-                itemSet_ = new java.util.ArrayList<java.lang.Integer>();
+                itemSet_ = new java.util.ArrayList<Integer>();
                 mutable_bitField0_ |= 0x00000040;
               }
               itemSet_.add(input.readInt32());
@@ -4008,7 +4008,7 @@ public final class FGBoostServiceProto {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000040) == 0x00000040) && input.getBytesUntilLimit() > 0) {
-                itemSet_ = new java.util.ArrayList<java.lang.Integer>();
+                itemSet_ = new java.util.ArrayList<Integer>();
                 mutable_bitField0_ |= 0x00000040;
               }
               while (input.getBytesUntilLimit() > 0) {
@@ -4018,7 +4018,7 @@ public final class FGBoostServiceProto {
               break;
             }
             case 66: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               clientUid_ = s;
               break;
@@ -4039,30 +4039,30 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder.class);
+              DataSplit.class, Builder.class);
     }
 
     private int bitField0_;
     public static final int TREEID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object treeID_;
+    private volatile Object treeID_;
     /**
      * <code>optional string treeID = 1;</code>
      */
-    public java.lang.String getTreeID() {
-      java.lang.Object ref = treeID_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getTreeID() {
+      Object ref = treeID_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         treeID_ = s;
         return s;
       }
@@ -4072,11 +4072,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getTreeIDBytes() {
-      java.lang.Object ref = treeID_;
-      if (ref instanceof java.lang.String) {
+      Object ref = treeID_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         treeID_ = b;
         return b;
       } else {
@@ -4085,18 +4085,18 @@ public final class FGBoostServiceProto {
     }
 
     public static final int NODEID_FIELD_NUMBER = 2;
-    private volatile java.lang.Object nodeID_;
+    private volatile Object nodeID_;
     /**
      * <code>optional string nodeID = 2;</code>
      */
-    public java.lang.String getNodeID() {
-      java.lang.Object ref = nodeID_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getNodeID() {
+      Object ref = nodeID_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         nodeID_ = s;
         return s;
       }
@@ -4106,11 +4106,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getNodeIDBytes() {
-      java.lang.Object ref = nodeID_;
-      if (ref instanceof java.lang.String) {
+      Object ref = nodeID_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         nodeID_ = b;
         return b;
       } else {
@@ -4155,11 +4155,11 @@ public final class FGBoostServiceProto {
     }
 
     public static final int ITEMSET_FIELD_NUMBER = 7;
-    private java.util.List<java.lang.Integer> itemSet_;
+    private java.util.List<Integer> itemSet_;
     /**
      * <code>repeated int32 itemSet = 7;</code>
      */
-    public java.util.List<java.lang.Integer>
+    public java.util.List<Integer>
         getItemSetList() {
       return itemSet_;
     }
@@ -4178,18 +4178,18 @@ public final class FGBoostServiceProto {
     private int itemSetMemoizedSerializedSize = -1;
 
     public static final int CLIENTUID_FIELD_NUMBER = 8;
-    private volatile java.lang.Object clientUid_;
+    private volatile Object clientUid_;
     /**
      * <code>optional string clientUid = 8;</code>
      */
-    public java.lang.String getClientUid() {
-      java.lang.Object ref = clientUid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getClientUid() {
+      Object ref = clientUid_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         clientUid_ = s;
         return s;
       }
@@ -4199,11 +4199,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getClientUidBytes() {
-      java.lang.Object ref = clientUid_;
-      if (ref instanceof java.lang.String) {
+      Object ref = clientUid_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         clientUid_ = b;
         return b;
       } else {
@@ -4303,15 +4303,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit)) {
+      if (!(obj instanceof DataSplit)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit) obj;
+      DataSplit other = (DataSplit) obj;
 
       boolean result = true;
       result = result && getTreeID()
@@ -4321,12 +4321,12 @@ public final class FGBoostServiceProto {
       result = result && (getFeatureID()
           == other.getFeatureID());
       result = result && (
-          java.lang.Float.floatToIntBits(getSplitValue())
-          == java.lang.Float.floatToIntBits(
+          Float.floatToIntBits(getSplitValue())
+          == Float.floatToIntBits(
               other.getSplitValue()));
       result = result && (
-          java.lang.Float.floatToIntBits(getGain())
-          == java.lang.Float.floatToIntBits(
+          Float.floatToIntBits(getGain())
+          == Float.floatToIntBits(
               other.getGain()));
       result = result && (getSetLength()
           == other.getSetLength());
@@ -4337,7 +4337,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -4351,10 +4351,10 @@ public final class FGBoostServiceProto {
       hash = (37 * hash) + FEATUREID_FIELD_NUMBER;
       hash = (53 * hash) + getFeatureID();
       hash = (37 * hash) + SPLITVALUE_FIELD_NUMBER;
-      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+      hash = (53 * hash) + Float.floatToIntBits(
           getSplitValue());
       hash = (37 * hash) + GAIN_FIELD_NUMBER;
-      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+      hash = (53 * hash) + Float.floatToIntBits(
           getGain());
       hash = (37 * hash) + SETLENGTH_FIELD_NUMBER;
       hash = (53 * hash) + getSetLength();
@@ -4369,58 +4369,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseFrom(
+    public static DataSplit parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseFrom(
+    public static DataSplit parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseFrom(byte[] data)
+    public static DataSplit parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseFrom(
+    public static DataSplit parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseFrom(java.io.InputStream input)
+    public static DataSplit parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseFrom(
+    public static DataSplit parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseDelimitedFrom(java.io.InputStream input)
+    public static DataSplit parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseDelimitedFrom(
+    public static DataSplit parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseFrom(
+    public static DataSplit parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parseFrom(
+    public static DataSplit parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -4432,7 +4432,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit prototype) {
+    public static Builder newBuilder(DataSplit prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -4440,7 +4440,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -4452,17 +4452,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.DataSplit)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder {
+        DataSplitOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder.class);
+                DataSplit.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.newBuilder()
@@ -4503,23 +4503,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.getDefaultInstance();
+      public DataSplit getDefaultInstanceForType() {
+        return DataSplit.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit result = buildPartial();
+      public DataSplit build() {
+        DataSplit result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit(this);
+      public DataSplit buildPartial() {
+        DataSplit result = new DataSplit(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.treeID_ = treeID_;
@@ -4566,16 +4566,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit)other);
+        if (other instanceof DataSplit) {
+          return mergeFrom((DataSplit)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.getDefaultInstance()) return this;
+      public Builder mergeFrom(DataSplit other) {
+        if (other == DataSplit.getDefaultInstance()) return this;
         if (!other.getTreeID().isEmpty()) {
           treeID_ = other.treeID_;
           onChanged();
@@ -4622,11 +4622,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit parsedMessage = null;
+        DataSplit parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit) e.getUnfinishedMessage();
+          parsedMessage = (DataSplit) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -4637,20 +4637,20 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.lang.Object treeID_ = "";
+      private Object treeID_ = "";
       /**
        * <code>optional string treeID = 1;</code>
        */
-      public java.lang.String getTreeID() {
-        java.lang.Object ref = treeID_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getTreeID() {
+        Object ref = treeID_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           treeID_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -4658,11 +4658,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getTreeIDBytes() {
-        java.lang.Object ref = treeID_;
+        Object ref = treeID_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           treeID_ = b;
           return b;
         } else {
@@ -4673,7 +4673,7 @@ public final class FGBoostServiceProto {
        * <code>optional string treeID = 1;</code>
        */
       public Builder setTreeID(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -4706,20 +4706,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object nodeID_ = "";
+      private Object nodeID_ = "";
       /**
        * <code>optional string nodeID = 2;</code>
        */
-      public java.lang.String getNodeID() {
-        java.lang.Object ref = nodeID_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getNodeID() {
+        Object ref = nodeID_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           nodeID_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -4727,11 +4727,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getNodeIDBytes() {
-        java.lang.Object ref = nodeID_;
+        Object ref = nodeID_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           nodeID_ = b;
           return b;
         } else {
@@ -4742,7 +4742,7 @@ public final class FGBoostServiceProto {
        * <code>optional string nodeID = 2;</code>
        */
       public Builder setNodeID(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -4879,17 +4879,17 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<java.lang.Integer> itemSet_ = java.util.Collections.emptyList();
+      private java.util.List<Integer> itemSet_ = java.util.Collections.emptyList();
       private void ensureItemSetIsMutable() {
         if (!((bitField0_ & 0x00000040) == 0x00000040)) {
-          itemSet_ = new java.util.ArrayList<java.lang.Integer>(itemSet_);
+          itemSet_ = new java.util.ArrayList<Integer>(itemSet_);
           bitField0_ |= 0x00000040;
          }
       }
       /**
        * <code>repeated int32 itemSet = 7;</code>
        */
-      public java.util.List<java.lang.Integer>
+      public java.util.List<Integer>
           getItemSetList() {
         return java.util.Collections.unmodifiableList(itemSet_);
       }
@@ -4928,7 +4928,7 @@ public final class FGBoostServiceProto {
        * <code>repeated int32 itemSet = 7;</code>
        */
       public Builder addAllItemSet(
-          java.lang.Iterable<? extends java.lang.Integer> values) {
+          Iterable<? extends Integer> values) {
         ensureItemSetIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, itemSet_);
@@ -4945,20 +4945,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientUid_ = "";
+      private Object clientUid_ = "";
       /**
        * <code>optional string clientUid = 8;</code>
        */
-      public java.lang.String getClientUid() {
-        java.lang.Object ref = clientUid_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getClientUid() {
+        Object ref = clientUid_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           clientUid_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -4966,11 +4966,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getClientUidBytes() {
-        java.lang.Object ref = clientUid_;
+        Object ref = clientUid_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           clientUid_ = b;
           return b;
         } else {
@@ -4981,7 +4981,7 @@ public final class FGBoostServiceProto {
        * <code>optional string clientUid = 8;</code>
        */
       public Builder setClientUid(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -5028,12 +5028,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.DataSplit)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit DEFAULT_INSTANCE;
+    private static final DataSplit DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit();
+      DEFAULT_INSTANCE = new DataSplit();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit getDefaultInstance() {
+    public static DataSplit getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5051,12 +5051,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<DataSplit> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit getDefaultInstanceForType() {
+    public DataSplit getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5069,7 +5069,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string response = 1;</code>
      */
-    java.lang.String getResponse();
+    String getResponse();
     /**
      * <code>optional string response = 1;</code>
      */
@@ -5097,7 +5097,7 @@ public final class FGBoostServiceProto {
       code_ = 0;
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -5123,7 +5123,7 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               response_ = s;
               break;
@@ -5146,29 +5146,29 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse.Builder.class);
+              UploadResponse.class, Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object response_;
+    private volatile Object response_;
     /**
      * <code>optional string response = 1;</code>
      */
-    public java.lang.String getResponse() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getResponse() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         response_ = s;
         return s;
       }
@@ -5178,11 +5178,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getResponseBytes() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
+      Object ref = response_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         response_ = b;
         return b;
       } else {
@@ -5236,15 +5236,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse)) {
+      if (!(obj instanceof UploadResponse)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse) obj;
+      UploadResponse other = (UploadResponse) obj;
 
       boolean result = true;
       result = result && getResponse()
@@ -5254,7 +5254,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -5270,58 +5270,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseFrom(
+    public static UploadResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseFrom(
+    public static UploadResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseFrom(byte[] data)
+    public static UploadResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseFrom(
+    public static UploadResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseFrom(java.io.InputStream input)
+    public static UploadResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseFrom(
+    public static UploadResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseDelimitedFrom(java.io.InputStream input)
+    public static UploadResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseDelimitedFrom(
+    public static UploadResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseFrom(
+    public static UploadResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parseFrom(
+    public static UploadResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -5333,7 +5333,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse prototype) {
+    public static Builder newBuilder(UploadResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -5341,7 +5341,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -5353,17 +5353,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.UploadResponse)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponseOrBuilder {
+        UploadResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse.Builder.class);
+                UploadResponse.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse.newBuilder()
@@ -5392,23 +5392,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse.getDefaultInstance();
+      public UploadResponse getDefaultInstanceForType() {
+        return UploadResponse.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse result = buildPartial();
+      public UploadResponse build() {
+        UploadResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse(this);
+      public UploadResponse buildPartial() {
+        UploadResponse result = new UploadResponse(this);
         result.response_ = response_;
         result.code_ = code_;
         onBuilt();
@@ -5442,16 +5442,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse)other);
+        if (other instanceof UploadResponse) {
+          return mergeFrom((UploadResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(UploadResponse other) {
+        if (other == UploadResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -5471,11 +5471,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse parsedMessage = null;
+        UploadResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse) e.getUnfinishedMessage();
+          parsedMessage = (UploadResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -5485,20 +5485,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object response_ = "";
+      private Object response_ = "";
       /**
        * <code>optional string response = 1;</code>
        */
-      public java.lang.String getResponse() {
-        java.lang.Object ref = response_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getResponse() {
+        Object ref = response_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           response_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -5506,11 +5506,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
-        java.lang.Object ref = response_;
+        Object ref = response_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           response_ = b;
           return b;
         } else {
@@ -5521,7 +5521,7 @@ public final class FGBoostServiceProto {
        * <code>optional string response = 1;</code>
        */
       public Builder setResponse(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -5594,12 +5594,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.UploadResponse)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse DEFAULT_INSTANCE;
+    private static final UploadResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse();
+      DEFAULT_INSTANCE = new UploadResponse();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse getDefaultInstance() {
+    public static UploadResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5617,12 +5617,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<UploadResponse> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse getDefaultInstanceForType() {
+    public UploadResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5635,7 +5635,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string treeID = 1;</code>
      */
-    java.lang.String getTreeID();
+    String getTreeID();
     /**
      * <code>optional string treeID = 1;</code>
      */
@@ -5645,7 +5645,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated bool predicts = 2;</code>
      */
-    java.util.List<java.lang.Boolean> getPredictsList();
+    java.util.List<Boolean> getPredictsList();
     /**
      * <code>repeated bool predicts = 2;</code>
      */
@@ -5671,7 +5671,7 @@ public final class FGBoostServiceProto {
       predicts_ = java.util.Collections.emptyList();
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -5697,14 +5697,14 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               treeID_ = s;
               break;
             }
             case 16: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                predicts_ = new java.util.ArrayList<java.lang.Boolean>();
+                predicts_ = new java.util.ArrayList<Boolean>();
                 mutable_bitField0_ |= 0x00000002;
               }
               predicts_.add(input.readBool());
@@ -5714,7 +5714,7 @@ public final class FGBoostServiceProto {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
-                predicts_ = new java.util.ArrayList<java.lang.Boolean>();
+                predicts_ = new java.util.ArrayList<Boolean>();
                 mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
@@ -5739,30 +5739,30 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder.class);
+              TreePredict.class, Builder.class);
     }
 
     private int bitField0_;
     public static final int TREEID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object treeID_;
+    private volatile Object treeID_;
     /**
      * <code>optional string treeID = 1;</code>
      */
-    public java.lang.String getTreeID() {
-      java.lang.Object ref = treeID_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getTreeID() {
+      Object ref = treeID_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         treeID_ = s;
         return s;
       }
@@ -5772,11 +5772,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getTreeIDBytes() {
-      java.lang.Object ref = treeID_;
-      if (ref instanceof java.lang.String) {
+      Object ref = treeID_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         treeID_ = b;
         return b;
       } else {
@@ -5785,11 +5785,11 @@ public final class FGBoostServiceProto {
     }
 
     public static final int PREDICTS_FIELD_NUMBER = 2;
-    private java.util.List<java.lang.Boolean> predicts_;
+    private java.util.List<Boolean> predicts_;
     /**
      * <code>repeated bool predicts = 2;</code>
      */
-    public java.util.List<java.lang.Boolean>
+    public java.util.List<Boolean>
         getPredictsList() {
       return predicts_;
     }
@@ -5856,15 +5856,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict)) {
+      if (!(obj instanceof TreePredict)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict) obj;
+      TreePredict other = (TreePredict) obj;
 
       boolean result = true;
       result = result && getTreeID()
@@ -5874,7 +5874,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -5892,58 +5892,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseFrom(
+    public static TreePredict parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseFrom(
+    public static TreePredict parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseFrom(byte[] data)
+    public static TreePredict parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseFrom(
+    public static TreePredict parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseFrom(java.io.InputStream input)
+    public static TreePredict parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseFrom(
+    public static TreePredict parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseDelimitedFrom(java.io.InputStream input)
+    public static TreePredict parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseDelimitedFrom(
+    public static TreePredict parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseFrom(
+    public static TreePredict parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parseFrom(
+    public static TreePredict parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -5955,7 +5955,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict prototype) {
+    public static Builder newBuilder(TreePredict prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -5963,7 +5963,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -5975,17 +5975,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.TreePredict)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder {
+        TreePredictOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder.class);
+                TreePredict.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.newBuilder()
@@ -6014,23 +6014,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.getDefaultInstance();
+      public TreePredict getDefaultInstanceForType() {
+        return TreePredict.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict result = buildPartial();
+      public TreePredict build() {
+        TreePredict result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict(this);
+      public TreePredict buildPartial() {
+        TreePredict result = new TreePredict(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.treeID_ = treeID_;
@@ -6071,16 +6071,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict)other);
+        if (other instanceof TreePredict) {
+          return mergeFrom((TreePredict)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.getDefaultInstance()) return this;
+      public Builder mergeFrom(TreePredict other) {
+        if (other == TreePredict.getDefaultInstance()) return this;
         if (!other.getTreeID().isEmpty()) {
           treeID_ = other.treeID_;
           onChanged();
@@ -6107,11 +6107,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict parsedMessage = null;
+        TreePredict parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict) e.getUnfinishedMessage();
+          parsedMessage = (TreePredict) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -6122,20 +6122,20 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.lang.Object treeID_ = "";
+      private Object treeID_ = "";
       /**
        * <code>optional string treeID = 1;</code>
        */
-      public java.lang.String getTreeID() {
-        java.lang.Object ref = treeID_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getTreeID() {
+        Object ref = treeID_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           treeID_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -6143,11 +6143,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getTreeIDBytes() {
-        java.lang.Object ref = treeID_;
+        Object ref = treeID_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           treeID_ = b;
           return b;
         } else {
@@ -6158,7 +6158,7 @@ public final class FGBoostServiceProto {
        * <code>optional string treeID = 1;</code>
        */
       public Builder setTreeID(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -6191,17 +6191,17 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<java.lang.Boolean> predicts_ = java.util.Collections.emptyList();
+      private java.util.List<Boolean> predicts_ = java.util.Collections.emptyList();
       private void ensurePredictsIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          predicts_ = new java.util.ArrayList<java.lang.Boolean>(predicts_);
+          predicts_ = new java.util.ArrayList<Boolean>(predicts_);
           bitField0_ |= 0x00000002;
          }
       }
       /**
        * <code>repeated bool predicts = 2;</code>
        */
-      public java.util.List<java.lang.Boolean>
+      public java.util.List<Boolean>
           getPredictsList() {
         return java.util.Collections.unmodifiableList(predicts_);
       }
@@ -6240,7 +6240,7 @@ public final class FGBoostServiceProto {
        * <code>repeated bool predicts = 2;</code>
        */
       public Builder addAllPredicts(
-          java.lang.Iterable<? extends java.lang.Boolean> values) {
+          Iterable<? extends Boolean> values) {
         ensurePredictsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
             values, predicts_);
@@ -6271,12 +6271,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.TreePredict)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict DEFAULT_INSTANCE;
+    private static final TreePredict DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict();
+      DEFAULT_INSTANCE = new TreePredict();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict getDefaultInstance() {
+    public static TreePredict getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -6294,12 +6294,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<TreePredict> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict getDefaultInstanceForType() {
+    public TreePredict getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -6312,12 +6312,12 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
-    java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> 
+    java.util.List<TreePredict>
         getPredictsList();
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict getPredicts(int index);
+    TreePredict getPredicts(int index);
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
@@ -6325,13 +6325,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
-    java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> 
+    java.util.List<? extends TreePredictOrBuilder>
         getPredictsOrBuilderList();
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder getPredictsOrBuilder(
-        int index);
+    TreePredictOrBuilder getPredictsOrBuilder(
+            int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostPredict}
@@ -6348,7 +6348,7 @@ public final class FGBoostServiceProto {
       predicts_ = java.util.Collections.emptyList();
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -6375,11 +6375,11 @@ public final class FGBoostServiceProto {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                predicts_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict>();
+                predicts_ = new java.util.ArrayList<TreePredict>();
                 mutable_bitField0_ |= 0x00000001;
               }
               predicts_.add(
-                  input.readMessage(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.parser(), extensionRegistry));
+                  input.readMessage(TreePredict.parser(), extensionRegistry));
               break;
             }
           }
@@ -6398,28 +6398,28 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict.Builder.class);
+              BoostPredict.class, Builder.class);
     }
 
     public static final int PREDICTS_FIELD_NUMBER = 1;
-    private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> predicts_;
+    private java.util.List<TreePredict> predicts_;
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
-    public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> getPredictsList() {
+    public java.util.List<TreePredict> getPredictsList() {
       return predicts_;
     }
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
-    public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> 
+    public java.util.List<? extends TreePredictOrBuilder>
         getPredictsOrBuilderList() {
       return predicts_;
     }
@@ -6432,13 +6432,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict getPredicts(int index) {
+    public TreePredict getPredicts(int index) {
       return predicts_.get(index);
     }
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder getPredictsOrBuilder(
+    public TreePredictOrBuilder getPredictsOrBuilder(
         int index) {
       return predicts_.get(index);
     }
@@ -6474,15 +6474,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict)) {
+      if (!(obj instanceof BoostPredict)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict) obj;
+      BoostPredict other = (BoostPredict) obj;
 
       boolean result = true;
       result = result && getPredictsList()
@@ -6490,7 +6490,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -6506,58 +6506,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseFrom(
+    public static BoostPredict parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseFrom(
+    public static BoostPredict parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseFrom(byte[] data)
+    public static BoostPredict parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseFrom(
+    public static BoostPredict parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseFrom(java.io.InputStream input)
+    public static BoostPredict parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseFrom(
+    public static BoostPredict parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseDelimitedFrom(java.io.InputStream input)
+    public static BoostPredict parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseDelimitedFrom(
+    public static BoostPredict parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseFrom(
+    public static BoostPredict parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parseFrom(
+    public static BoostPredict parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6569,7 +6569,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict prototype) {
+    public static Builder newBuilder(BoostPredict prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -6577,7 +6577,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -6589,17 +6589,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.BoostPredict)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredictOrBuilder {
+        BoostPredictOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict.Builder.class);
+                BoostPredict.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict.newBuilder()
@@ -6631,23 +6631,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict.getDefaultInstance();
+      public BoostPredict getDefaultInstanceForType() {
+        return BoostPredict.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict result = buildPartial();
+      public BoostPredict build() {
+        BoostPredict result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict(this);
+      public BoostPredict buildPartial() {
+        BoostPredict result = new BoostPredict(this);
         int from_bitField0_ = bitField0_;
         if (predictsBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -6689,16 +6689,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict)other);
+        if (other instanceof BoostPredict) {
+          return mergeFrom((BoostPredict)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict.getDefaultInstance()) return this;
+      public Builder mergeFrom(BoostPredict other) {
+        if (other == BoostPredict.getDefaultInstance()) return this;
         if (predictsBuilder_ == null) {
           if (!other.predicts_.isEmpty()) {
             if (predicts_.isEmpty()) {
@@ -6737,11 +6737,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict parsedMessage = null;
+        BoostPredict parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict) e.getUnfinishedMessage();
+          parsedMessage = (BoostPredict) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -6752,22 +6752,22 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> predicts_ =
+      private java.util.List<TreePredict> predicts_ =
         java.util.Collections.emptyList();
       private void ensurePredictsIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          predicts_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict>(predicts_);
+          predicts_ = new java.util.ArrayList<TreePredict>(predicts_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> predictsBuilder_;
+          TreePredict, TreePredict.Builder, TreePredictOrBuilder> predictsBuilder_;
 
       /**
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> getPredictsList() {
+      public java.util.List<TreePredict> getPredictsList() {
         if (predictsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(predicts_);
         } else {
@@ -6787,7 +6787,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict getPredicts(int index) {
+      public TreePredict getPredicts(int index) {
         if (predictsBuilder_ == null) {
           return predicts_.get(index);
         } else {
@@ -6798,7 +6798,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
       public Builder setPredicts(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict value) {
+          int index, TreePredict value) {
         if (predictsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -6815,7 +6815,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
       public Builder setPredicts(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder builderForValue) {
+          int index, TreePredict.Builder builderForValue) {
         if (predictsBuilder_ == null) {
           ensurePredictsIsMutable();
           predicts_.set(index, builderForValue.build());
@@ -6828,7 +6828,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
-      public Builder addPredicts(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict value) {
+      public Builder addPredicts(TreePredict value) {
         if (predictsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -6845,7 +6845,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
       public Builder addPredicts(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict value) {
+          int index, TreePredict value) {
         if (predictsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -6862,7 +6862,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
       public Builder addPredicts(
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder builderForValue) {
+          TreePredict.Builder builderForValue) {
         if (predictsBuilder_ == null) {
           ensurePredictsIsMutable();
           predicts_.add(builderForValue.build());
@@ -6876,7 +6876,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
       public Builder addPredicts(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder builderForValue) {
+          int index, TreePredict.Builder builderForValue) {
         if (predictsBuilder_ == null) {
           ensurePredictsIsMutable();
           predicts_.add(index, builderForValue.build());
@@ -6890,7 +6890,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
       public Builder addAllPredicts(
-          java.lang.Iterable<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> values) {
+          Iterable<? extends TreePredict> values) {
         if (predictsBuilder_ == null) {
           ensurePredictsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -6930,14 +6930,14 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder getPredictsBuilder(
+      public TreePredict.Builder getPredictsBuilder(
           int index) {
         return getPredictsFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder getPredictsOrBuilder(
+      public TreePredictOrBuilder getPredictsOrBuilder(
           int index) {
         if (predictsBuilder_ == null) {
           return predicts_.get(index);  } else {
@@ -6947,7 +6947,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
-      public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> 
+      public java.util.List<? extends TreePredictOrBuilder>
            getPredictsOrBuilderList() {
         if (predictsBuilder_ != null) {
           return predictsBuilder_.getMessageOrBuilderList();
@@ -6958,31 +6958,31 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder addPredictsBuilder() {
+      public TreePredict.Builder addPredictsBuilder() {
         return getPredictsFieldBuilder().addBuilder(
-            com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.getDefaultInstance());
+            TreePredict.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder addPredictsBuilder(
+      public TreePredict.Builder addPredictsBuilder(
           int index) {
         return getPredictsFieldBuilder().addBuilder(
-            index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.getDefaultInstance());
+            index, TreePredict.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.TreePredict predicts = 1;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder> 
+      public java.util.List<TreePredict.Builder>
            getPredictsBuilderList() {
         return getPredictsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> 
+          TreePredict, TreePredict.Builder, TreePredictOrBuilder>
           getPredictsFieldBuilder() {
         if (predictsBuilder_ == null) {
           predictsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder>(
+              TreePredict, TreePredict.Builder, TreePredictOrBuilder>(
                   predicts_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
@@ -7006,12 +7006,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.BoostPredict)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict DEFAULT_INSTANCE;
+    private static final BoostPredict DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict();
+      DEFAULT_INSTANCE = new BoostPredict();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict getDefaultInstance() {
+    public static BoostPredict getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -7029,12 +7029,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<BoostPredict> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict getDefaultInstanceForType() {
+    public BoostPredict getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -7047,12 +7047,12 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
-    java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> 
+    java.util.List<TreePredict>
         getEvaluatesList();
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict getEvaluates(int index);
+    TreePredict getEvaluates(int index);
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
@@ -7060,13 +7060,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
-    java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> 
+    java.util.List<? extends TreePredictOrBuilder>
         getEvaluatesOrBuilderList();
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder getEvaluatesOrBuilder(
-        int index);
+    TreePredictOrBuilder getEvaluatesOrBuilder(
+            int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostEval}
@@ -7083,7 +7083,7 @@ public final class FGBoostServiceProto {
       evaluates_ = java.util.Collections.emptyList();
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -7110,11 +7110,11 @@ public final class FGBoostServiceProto {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                evaluates_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict>();
+                evaluates_ = new java.util.ArrayList<TreePredict>();
                 mutable_bitField0_ |= 0x00000001;
               }
               evaluates_.add(
-                  input.readMessage(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.parser(), extensionRegistry));
+                  input.readMessage(TreePredict.parser(), extensionRegistry));
               break;
             }
           }
@@ -7133,28 +7133,28 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder.class);
+              BoostEval.class, Builder.class);
     }
 
     public static final int EVALUATES_FIELD_NUMBER = 1;
-    private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> evaluates_;
+    private java.util.List<TreePredict> evaluates_;
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
-    public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> getEvaluatesList() {
+    public java.util.List<TreePredict> getEvaluatesList() {
       return evaluates_;
     }
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
-    public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> 
+    public java.util.List<? extends TreePredictOrBuilder>
         getEvaluatesOrBuilderList() {
       return evaluates_;
     }
@@ -7167,13 +7167,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict getEvaluates(int index) {
+    public TreePredict getEvaluates(int index) {
       return evaluates_.get(index);
     }
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder getEvaluatesOrBuilder(
+    public TreePredictOrBuilder getEvaluatesOrBuilder(
         int index) {
       return evaluates_.get(index);
     }
@@ -7209,15 +7209,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval)) {
+      if (!(obj instanceof BoostEval)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval) obj;
+      BoostEval other = (BoostEval) obj;
 
       boolean result = true;
       result = result && getEvaluatesList()
@@ -7225,7 +7225,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -7241,58 +7241,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseFrom(
+    public static BoostEval parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseFrom(
+    public static BoostEval parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseFrom(byte[] data)
+    public static BoostEval parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseFrom(
+    public static BoostEval parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseFrom(java.io.InputStream input)
+    public static BoostEval parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseFrom(
+    public static BoostEval parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseDelimitedFrom(java.io.InputStream input)
+    public static BoostEval parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseDelimitedFrom(
+    public static BoostEval parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseFrom(
+    public static BoostEval parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parseFrom(
+    public static BoostEval parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -7304,7 +7304,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval prototype) {
+    public static Builder newBuilder(BoostEval prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -7312,7 +7312,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -7324,17 +7324,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.BoostEval)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder {
+        BoostEvalOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder.class);
+                BoostEval.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.newBuilder()
@@ -7366,23 +7366,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.getDefaultInstance();
+      public BoostEval getDefaultInstanceForType() {
+        return BoostEval.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval result = buildPartial();
+      public BoostEval build() {
+        BoostEval result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval(this);
+      public BoostEval buildPartial() {
+        BoostEval result = new BoostEval(this);
         int from_bitField0_ = bitField0_;
         if (evaluatesBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -7424,16 +7424,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval)other);
+        if (other instanceof BoostEval) {
+          return mergeFrom((BoostEval)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.getDefaultInstance()) return this;
+      public Builder mergeFrom(BoostEval other) {
+        if (other == BoostEval.getDefaultInstance()) return this;
         if (evaluatesBuilder_ == null) {
           if (!other.evaluates_.isEmpty()) {
             if (evaluates_.isEmpty()) {
@@ -7472,11 +7472,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval parsedMessage = null;
+        BoostEval parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval) e.getUnfinishedMessage();
+          parsedMessage = (BoostEval) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -7487,22 +7487,22 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> evaluates_ =
+      private java.util.List<TreePredict> evaluates_ =
         java.util.Collections.emptyList();
       private void ensureEvaluatesIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          evaluates_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict>(evaluates_);
+          evaluates_ = new java.util.ArrayList<TreePredict>(evaluates_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> evaluatesBuilder_;
+          TreePredict, TreePredict.Builder, TreePredictOrBuilder> evaluatesBuilder_;
 
       /**
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> getEvaluatesList() {
+      public java.util.List<TreePredict> getEvaluatesList() {
         if (evaluatesBuilder_ == null) {
           return java.util.Collections.unmodifiableList(evaluates_);
         } else {
@@ -7522,7 +7522,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict getEvaluates(int index) {
+      public TreePredict getEvaluates(int index) {
         if (evaluatesBuilder_ == null) {
           return evaluates_.get(index);
         } else {
@@ -7533,7 +7533,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
       public Builder setEvaluates(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict value) {
+          int index, TreePredict value) {
         if (evaluatesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -7550,7 +7550,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
       public Builder setEvaluates(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder builderForValue) {
+          int index, TreePredict.Builder builderForValue) {
         if (evaluatesBuilder_ == null) {
           ensureEvaluatesIsMutable();
           evaluates_.set(index, builderForValue.build());
@@ -7563,7 +7563,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
-      public Builder addEvaluates(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict value) {
+      public Builder addEvaluates(TreePredict value) {
         if (evaluatesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -7580,7 +7580,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
       public Builder addEvaluates(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict value) {
+          int index, TreePredict value) {
         if (evaluatesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -7597,7 +7597,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
       public Builder addEvaluates(
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder builderForValue) {
+          TreePredict.Builder builderForValue) {
         if (evaluatesBuilder_ == null) {
           ensureEvaluatesIsMutable();
           evaluates_.add(builderForValue.build());
@@ -7611,7 +7611,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
       public Builder addEvaluates(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder builderForValue) {
+          int index, TreePredict.Builder builderForValue) {
         if (evaluatesBuilder_ == null) {
           ensureEvaluatesIsMutable();
           evaluates_.add(index, builderForValue.build());
@@ -7625,7 +7625,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
       public Builder addAllEvaluates(
-          java.lang.Iterable<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict> values) {
+          Iterable<? extends TreePredict> values) {
         if (evaluatesBuilder_ == null) {
           ensureEvaluatesIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -7665,14 +7665,14 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder getEvaluatesBuilder(
+      public TreePredict.Builder getEvaluatesBuilder(
           int index) {
         return getEvaluatesFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder getEvaluatesOrBuilder(
+      public TreePredictOrBuilder getEvaluatesOrBuilder(
           int index) {
         if (evaluatesBuilder_ == null) {
           return evaluates_.get(index);  } else {
@@ -7682,7 +7682,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
-      public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> 
+      public java.util.List<? extends TreePredictOrBuilder>
            getEvaluatesOrBuilderList() {
         if (evaluatesBuilder_ != null) {
           return evaluatesBuilder_.getMessageOrBuilderList();
@@ -7693,31 +7693,31 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder addEvaluatesBuilder() {
+      public TreePredict.Builder addEvaluatesBuilder() {
         return getEvaluatesFieldBuilder().addBuilder(
-            com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.getDefaultInstance());
+            TreePredict.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder addEvaluatesBuilder(
+      public TreePredict.Builder addEvaluatesBuilder(
           int index) {
         return getEvaluatesFieldBuilder().addBuilder(
-            index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.getDefaultInstance());
+            index, TreePredict.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder> 
+      public java.util.List<TreePredict.Builder>
            getEvaluatesBuilderList() {
         return getEvaluatesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder> 
+          TreePredict, TreePredict.Builder, TreePredictOrBuilder>
           getEvaluatesFieldBuilder() {
         if (evaluatesBuilder_ == null) {
           evaluatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredictOrBuilder>(
+              TreePredict, TreePredict.Builder, TreePredictOrBuilder>(
                   evaluates_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
@@ -7741,12 +7741,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.BoostEval)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval DEFAULT_INSTANCE;
+    private static final BoostEval DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval();
+      DEFAULT_INSTANCE = new BoostEval();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getDefaultInstance() {
+    public static BoostEval getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -7764,12 +7764,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<BoostEval> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getDefaultInstanceForType() {
+    public BoostEval getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -7782,7 +7782,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    java.lang.String getClientuuid();
+    String getClientuuid();
     /**
      * <code>optional string clientuuid = 1;</code>
      */
@@ -7792,7 +7792,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string token = 2;</code>
      */
-    java.lang.String getToken();
+    String getToken();
     /**
      * <code>optional string token = 2;</code>
      */
@@ -7815,7 +7815,7 @@ public final class FGBoostServiceProto {
       token_ = "";
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -7841,13 +7841,13 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               clientuuid_ = s;
               break;
             }
             case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               token_ = s;
               break;
@@ -7865,29 +7865,29 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest.Builder.class);
+              RegisterRequest.class, Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private volatile Object clientuuid_;
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getClientuuid() {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         clientuuid_ = s;
         return s;
       }
@@ -7897,11 +7897,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         clientuuid_ = b;
         return b;
       } else {
@@ -7910,18 +7910,18 @@ public final class FGBoostServiceProto {
     }
 
     public static final int TOKEN_FIELD_NUMBER = 2;
-    private volatile java.lang.Object token_;
+    private volatile Object token_;
     /**
      * <code>optional string token = 2;</code>
      */
-    public java.lang.String getToken() {
-      java.lang.Object ref = token_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getToken() {
+      Object ref = token_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         token_ = s;
         return s;
       }
@@ -7931,11 +7931,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getTokenBytes() {
-      java.lang.Object ref = token_;
-      if (ref instanceof java.lang.String) {
+      Object ref = token_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         token_ = b;
         return b;
       } else {
@@ -7979,15 +7979,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest)) {
+      if (!(obj instanceof RegisterRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest) obj;
+      RegisterRequest other = (RegisterRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
@@ -7997,7 +7997,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -8013,58 +8013,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseFrom(
+    public static RegisterRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseFrom(
+    public static RegisterRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseFrom(byte[] data)
+    public static RegisterRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseFrom(
+    public static RegisterRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseFrom(java.io.InputStream input)
+    public static RegisterRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseFrom(
+    public static RegisterRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseDelimitedFrom(java.io.InputStream input)
+    public static RegisterRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseDelimitedFrom(
+    public static RegisterRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseFrom(
+    public static RegisterRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parseFrom(
+    public static RegisterRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -8076,7 +8076,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest prototype) {
+    public static Builder newBuilder(RegisterRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -8084,7 +8084,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -8096,17 +8096,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.RegisterRequest)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequestOrBuilder {
+        RegisterRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest.Builder.class);
+                RegisterRequest.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest.newBuilder()
@@ -8135,23 +8135,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest.getDefaultInstance();
+      public RegisterRequest getDefaultInstanceForType() {
+        return RegisterRequest.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest result = buildPartial();
+      public RegisterRequest build() {
+        RegisterRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest(this);
+      public RegisterRequest buildPartial() {
+        RegisterRequest result = new RegisterRequest(this);
         result.clientuuid_ = clientuuid_;
         result.token_ = token_;
         onBuilt();
@@ -8185,16 +8185,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest)other);
+        if (other instanceof RegisterRequest) {
+          return mergeFrom((RegisterRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(RegisterRequest other) {
+        if (other == RegisterRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -8215,11 +8215,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest parsedMessage = null;
+        RegisterRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest) e.getUnfinishedMessage();
+          parsedMessage = (RegisterRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -8229,20 +8229,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private Object clientuuid_ = "";
       /**
        * <code>optional string clientuuid = 1;</code>
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getClientuuid() {
+        Object ref = clientuuid_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           clientuuid_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -8250,11 +8250,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
+        Object ref = clientuuid_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           clientuuid_ = b;
           return b;
         } else {
@@ -8265,7 +8265,7 @@ public final class FGBoostServiceProto {
        * <code>optional string clientuuid = 1;</code>
        */
       public Builder setClientuuid(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -8298,20 +8298,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object token_ = "";
+      private Object token_ = "";
       /**
        * <code>optional string token = 2;</code>
        */
-      public java.lang.String getToken() {
-        java.lang.Object ref = token_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getToken() {
+        Object ref = token_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           token_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -8319,11 +8319,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getTokenBytes() {
-        java.lang.Object ref = token_;
+        Object ref = token_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           token_ = b;
           return b;
         } else {
@@ -8334,7 +8334,7 @@ public final class FGBoostServiceProto {
        * <code>optional string token = 2;</code>
        */
       public Builder setToken(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -8381,12 +8381,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.RegisterRequest)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest DEFAULT_INSTANCE;
+    private static final RegisterRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest();
+      DEFAULT_INSTANCE = new RegisterRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest getDefaultInstance() {
+    public static RegisterRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -8404,12 +8404,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<RegisterRequest> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest getDefaultInstanceForType() {
+    public RegisterRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -8422,7 +8422,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string response = 1;</code>
      */
-    java.lang.String getResponse();
+    String getResponse();
     /**
      * <code>optional string response = 1;</code>
      */
@@ -8450,7 +8450,7 @@ public final class FGBoostServiceProto {
       code_ = 0;
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -8476,7 +8476,7 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               response_ = s;
               break;
@@ -8499,29 +8499,29 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse.Builder.class);
+              RegisterResponse.class, Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object response_;
+    private volatile Object response_;
     /**
      * <code>optional string response = 1;</code>
      */
-    public java.lang.String getResponse() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getResponse() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         response_ = s;
         return s;
       }
@@ -8531,11 +8531,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getResponseBytes() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
+      Object ref = response_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         response_ = b;
         return b;
       } else {
@@ -8589,15 +8589,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse)) {
+      if (!(obj instanceof RegisterResponse)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse) obj;
+      RegisterResponse other = (RegisterResponse) obj;
 
       boolean result = true;
       result = result && getResponse()
@@ -8607,7 +8607,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -8623,58 +8623,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseFrom(
+    public static RegisterResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseFrom(
+    public static RegisterResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseFrom(byte[] data)
+    public static RegisterResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseFrom(
+    public static RegisterResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseFrom(java.io.InputStream input)
+    public static RegisterResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseFrom(
+    public static RegisterResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseDelimitedFrom(java.io.InputStream input)
+    public static RegisterResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseDelimitedFrom(
+    public static RegisterResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseFrom(
+    public static RegisterResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parseFrom(
+    public static RegisterResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -8686,7 +8686,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse prototype) {
+    public static Builder newBuilder(RegisterResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -8694,7 +8694,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -8706,17 +8706,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.RegisterResponse)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponseOrBuilder {
+        RegisterResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse.Builder.class);
+                RegisterResponse.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse.newBuilder()
@@ -8745,23 +8745,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse.getDefaultInstance();
+      public RegisterResponse getDefaultInstanceForType() {
+        return RegisterResponse.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse result = buildPartial();
+      public RegisterResponse build() {
+        RegisterResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse(this);
+      public RegisterResponse buildPartial() {
+        RegisterResponse result = new RegisterResponse(this);
         result.response_ = response_;
         result.code_ = code_;
         onBuilt();
@@ -8795,16 +8795,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse)other);
+        if (other instanceof RegisterResponse) {
+          return mergeFrom((RegisterResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(RegisterResponse other) {
+        if (other == RegisterResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -8824,11 +8824,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse parsedMessage = null;
+        RegisterResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse) e.getUnfinishedMessage();
+          parsedMessage = (RegisterResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -8838,20 +8838,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object response_ = "";
+      private Object response_ = "";
       /**
        * <code>optional string response = 1;</code>
        */
-      public java.lang.String getResponse() {
-        java.lang.Object ref = response_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getResponse() {
+        Object ref = response_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           response_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -8859,11 +8859,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
-        java.lang.Object ref = response_;
+        Object ref = response_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           response_ = b;
           return b;
         } else {
@@ -8874,7 +8874,7 @@ public final class FGBoostServiceProto {
        * <code>optional string response = 1;</code>
        */
       public Builder setResponse(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -8947,12 +8947,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.RegisterResponse)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse DEFAULT_INSTANCE;
+    private static final RegisterResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse();
+      DEFAULT_INSTANCE = new RegisterResponse();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse getDefaultInstance() {
+    public static RegisterResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -8970,12 +8970,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<RegisterResponse> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse getDefaultInstanceForType() {
+    public RegisterResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -8988,7 +8988,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    java.lang.String getClientuuid();
+    String getClientuuid();
     /**
      * <code>optional string clientuuid = 1;</code>
      */
@@ -9003,12 +9003,12 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
-    java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> 
+    java.util.List<BoostEval>
         getTreeEvalList();
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getTreeEval(int index);
+    BoostEval getTreeEval(int index);
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
@@ -9016,13 +9016,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
-    java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+    java.util.List<? extends BoostEvalOrBuilder>
         getTreeEvalOrBuilderList();
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder getTreeEvalOrBuilder(
-        int index);
+    BoostEvalOrBuilder getTreeEvalOrBuilder(
+            int index);
   }
   /**
    * Protobuf type {@code fgboost.UploadTreeEvalRequest}
@@ -9041,7 +9041,7 @@ public final class FGBoostServiceProto {
       treeEval_ = java.util.Collections.emptyList();
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -9067,7 +9067,7 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               clientuuid_ = s;
               break;
@@ -9079,11 +9079,11 @@ public final class FGBoostServiceProto {
             }
             case 26: {
               if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-                treeEval_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval>();
+                treeEval_ = new java.util.ArrayList<BoostEval>();
                 mutable_bitField0_ |= 0x00000004;
               }
               treeEval_.add(
-                  input.readMessage(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.parser(), extensionRegistry));
+                  input.readMessage(BoostEval.parser(), extensionRegistry));
               break;
             }
           }
@@ -9102,30 +9102,30 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest.Builder.class);
+              UploadTreeEvalRequest.class, Builder.class);
     }
 
     private int bitField0_;
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private volatile Object clientuuid_;
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getClientuuid() {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         clientuuid_ = s;
         return s;
       }
@@ -9135,11 +9135,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         clientuuid_ = b;
         return b;
       } else {
@@ -9157,17 +9157,17 @@ public final class FGBoostServiceProto {
     }
 
     public static final int TREEEVAL_FIELD_NUMBER = 3;
-    private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> treeEval_;
+    private java.util.List<BoostEval> treeEval_;
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
-    public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> getTreeEvalList() {
+    public java.util.List<BoostEval> getTreeEvalList() {
       return treeEval_;
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
-    public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+    public java.util.List<? extends BoostEvalOrBuilder>
         getTreeEvalOrBuilderList() {
       return treeEval_;
     }
@@ -9180,13 +9180,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getTreeEval(int index) {
+    public BoostEval getTreeEval(int index) {
       return treeEval_.get(index);
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder getTreeEvalOrBuilder(
+    public BoostEvalOrBuilder getTreeEvalOrBuilder(
         int index) {
       return treeEval_.get(index);
     }
@@ -9235,15 +9235,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest)) {
+      if (!(obj instanceof UploadTreeEvalRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest) obj;
+      UploadTreeEvalRequest other = (UploadTreeEvalRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
@@ -9255,7 +9255,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -9275,58 +9275,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseFrom(
+    public static UploadTreeEvalRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseFrom(
+    public static UploadTreeEvalRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseFrom(byte[] data)
+    public static UploadTreeEvalRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseFrom(
+    public static UploadTreeEvalRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseFrom(java.io.InputStream input)
+    public static UploadTreeEvalRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseFrom(
+    public static UploadTreeEvalRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseDelimitedFrom(java.io.InputStream input)
+    public static UploadTreeEvalRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseDelimitedFrom(
+    public static UploadTreeEvalRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseFrom(
+    public static UploadTreeEvalRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parseFrom(
+    public static UploadTreeEvalRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -9338,7 +9338,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest prototype) {
+    public static Builder newBuilder(UploadTreeEvalRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -9346,7 +9346,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -9358,17 +9358,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.UploadTreeEvalRequest)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequestOrBuilder {
+        UploadTreeEvalRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest.Builder.class);
+                UploadTreeEvalRequest.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest.newBuilder()
@@ -9404,23 +9404,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest.getDefaultInstance();
+      public UploadTreeEvalRequest getDefaultInstanceForType() {
+        return UploadTreeEvalRequest.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest result = buildPartial();
+      public UploadTreeEvalRequest build() {
+        UploadTreeEvalRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest(this);
+      public UploadTreeEvalRequest buildPartial() {
+        UploadTreeEvalRequest result = new UploadTreeEvalRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.clientuuid_ = clientuuid_;
@@ -9466,16 +9466,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest)other);
+        if (other instanceof UploadTreeEvalRequest) {
+          return mergeFrom((UploadTreeEvalRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(UploadTreeEvalRequest other) {
+        if (other == UploadTreeEvalRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -9521,11 +9521,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest parsedMessage = null;
+        UploadTreeEvalRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest) e.getUnfinishedMessage();
+          parsedMessage = (UploadTreeEvalRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -9536,20 +9536,20 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.lang.Object clientuuid_ = "";
+      private Object clientuuid_ = "";
       /**
        * <code>optional string clientuuid = 1;</code>
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getClientuuid() {
+        Object ref = clientuuid_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           clientuuid_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -9557,11 +9557,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
+        Object ref = clientuuid_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           clientuuid_ = b;
           return b;
         } else {
@@ -9572,7 +9572,7 @@ public final class FGBoostServiceProto {
        * <code>optional string clientuuid = 1;</code>
        */
       public Builder setClientuuid(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -9631,22 +9631,22 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> treeEval_ =
+      private java.util.List<BoostEval> treeEval_ =
         java.util.Collections.emptyList();
       private void ensureTreeEvalIsMutable() {
         if (!((bitField0_ & 0x00000004) == 0x00000004)) {
-          treeEval_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval>(treeEval_);
+          treeEval_ = new java.util.ArrayList<BoostEval>(treeEval_);
           bitField0_ |= 0x00000004;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> treeEvalBuilder_;
+          BoostEval, BoostEval.Builder, BoostEvalOrBuilder> treeEvalBuilder_;
 
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> getTreeEvalList() {
+      public java.util.List<BoostEval> getTreeEvalList() {
         if (treeEvalBuilder_ == null) {
           return java.util.Collections.unmodifiableList(treeEval_);
         } else {
@@ -9666,7 +9666,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getTreeEval(int index) {
+      public BoostEval getTreeEval(int index) {
         if (treeEvalBuilder_ == null) {
           return treeEval_.get(index);
         } else {
@@ -9677,7 +9677,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
       public Builder setTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval value) {
+          int index, BoostEval value) {
         if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -9694,7 +9694,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
       public Builder setTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder builderForValue) {
+          int index, BoostEval.Builder builderForValue) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           treeEval_.set(index, builderForValue.build());
@@ -9707,7 +9707,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
-      public Builder addTreeEval(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval value) {
+      public Builder addTreeEval(BoostEval value) {
         if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -9724,7 +9724,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
       public Builder addTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval value) {
+          int index, BoostEval value) {
         if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -9741,7 +9741,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
       public Builder addTreeEval(
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder builderForValue) {
+          BoostEval.Builder builderForValue) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           treeEval_.add(builderForValue.build());
@@ -9755,7 +9755,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
       public Builder addTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder builderForValue) {
+          int index, BoostEval.Builder builderForValue) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           treeEval_.add(index, builderForValue.build());
@@ -9769,7 +9769,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
       public Builder addAllTreeEval(
-          java.lang.Iterable<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> values) {
+          Iterable<? extends BoostEval> values) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -9809,14 +9809,14 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder getTreeEvalBuilder(
+      public BoostEval.Builder getTreeEvalBuilder(
           int index) {
         return getTreeEvalFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder getTreeEvalOrBuilder(
+      public BoostEvalOrBuilder getTreeEvalOrBuilder(
           int index) {
         if (treeEvalBuilder_ == null) {
           return treeEval_.get(index);  } else {
@@ -9826,7 +9826,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
-      public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+      public java.util.List<? extends BoostEvalOrBuilder>
            getTreeEvalOrBuilderList() {
         if (treeEvalBuilder_ != null) {
           return treeEvalBuilder_.getMessageOrBuilderList();
@@ -9837,31 +9837,31 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder addTreeEvalBuilder() {
+      public BoostEval.Builder addTreeEvalBuilder() {
         return getTreeEvalFieldBuilder().addBuilder(
-            com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.getDefaultInstance());
+            BoostEval.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder addTreeEvalBuilder(
+      public BoostEval.Builder addTreeEvalBuilder(
           int index) {
         return getTreeEvalFieldBuilder().addBuilder(
-            index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.getDefaultInstance());
+            index, BoostEval.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder> 
+      public java.util.List<BoostEval.Builder>
            getTreeEvalBuilderList() {
         return getTreeEvalFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+          BoostEval, BoostEval.Builder, BoostEvalOrBuilder>
           getTreeEvalFieldBuilder() {
         if (treeEvalBuilder_ == null) {
           treeEvalBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder>(
+              BoostEval, BoostEval.Builder, BoostEvalOrBuilder>(
                   treeEval_,
                   ((bitField0_ & 0x00000004) == 0x00000004),
                   getParentForChildren(),
@@ -9885,12 +9885,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.UploadTreeEvalRequest)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest DEFAULT_INSTANCE;
+    private static final UploadTreeEvalRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest();
+      DEFAULT_INSTANCE = new UploadTreeEvalRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest getDefaultInstance() {
+    public static UploadTreeEvalRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -9908,12 +9908,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<UploadTreeEvalRequest> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest getDefaultInstanceForType() {
+    public UploadTreeEvalRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -9926,7 +9926,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    java.lang.String getClientuuid();
+    String getClientuuid();
     /**
      * <code>optional string clientuuid = 1;</code>
      */
@@ -9936,12 +9936,12 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> 
+    java.util.List<BoostEval>
         getTreeEvalList();
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getTreeEval(int index);
+    BoostEval getTreeEval(int index);
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
@@ -9949,13 +9949,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+    java.util.List<? extends BoostEvalOrBuilder>
         getTreeEvalOrBuilderList();
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder getTreeEvalOrBuilder(
-        int index);
+    BoostEvalOrBuilder getTreeEvalOrBuilder(
+            int index);
 
     /**
      * <code>optional int32 bsVersion = 3;</code>
@@ -9979,7 +9979,7 @@ public final class FGBoostServiceProto {
       bsVersion_ = 0;
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -10005,18 +10005,18 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               clientuuid_ = s;
               break;
             }
             case 18: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                treeEval_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval>();
+                treeEval_ = new java.util.ArrayList<BoostEval>();
                 mutable_bitField0_ |= 0x00000002;
               }
               treeEval_.add(
-                  input.readMessage(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.parser(), extensionRegistry));
+                  input.readMessage(BoostEval.parser(), extensionRegistry));
               break;
             }
             case 24: {
@@ -10040,30 +10040,30 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest.Builder.class);
+              EvaluateRequest.class, Builder.class);
     }
 
     private int bitField0_;
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private volatile Object clientuuid_;
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getClientuuid() {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         clientuuid_ = s;
         return s;
       }
@@ -10073,11 +10073,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         clientuuid_ = b;
         return b;
       } else {
@@ -10086,17 +10086,17 @@ public final class FGBoostServiceProto {
     }
 
     public static final int TREEEVAL_FIELD_NUMBER = 2;
-    private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> treeEval_;
+    private java.util.List<BoostEval> treeEval_;
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> getTreeEvalList() {
+    public java.util.List<BoostEval> getTreeEvalList() {
       return treeEval_;
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+    public java.util.List<? extends BoostEvalOrBuilder>
         getTreeEvalOrBuilderList() {
       return treeEval_;
     }
@@ -10109,13 +10109,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getTreeEval(int index) {
+    public BoostEval getTreeEval(int index) {
       return treeEval_.get(index);
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder getTreeEvalOrBuilder(
+    public BoostEvalOrBuilder getTreeEvalOrBuilder(
         int index) {
       return treeEval_.get(index);
     }
@@ -10173,15 +10173,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest)) {
+      if (!(obj instanceof EvaluateRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest) obj;
+      EvaluateRequest other = (EvaluateRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
@@ -10193,7 +10193,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -10213,58 +10213,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseFrom(byte[] data)
+    public static EvaluateRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseFrom(java.io.InputStream input)
+    public static EvaluateRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseDelimitedFrom(java.io.InputStream input)
+    public static EvaluateRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseDelimitedFrom(
+    public static EvaluateRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -10276,7 +10276,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest prototype) {
+    public static Builder newBuilder(EvaluateRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -10284,7 +10284,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -10296,17 +10296,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.EvaluateRequest)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequestOrBuilder {
+        EvaluateRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest.Builder.class);
+                EvaluateRequest.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest.newBuilder()
@@ -10342,23 +10342,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest.getDefaultInstance();
+      public EvaluateRequest getDefaultInstanceForType() {
+        return EvaluateRequest.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest result = buildPartial();
+      public EvaluateRequest build() {
+        EvaluateRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest(this);
+      public EvaluateRequest buildPartial() {
+        EvaluateRequest result = new EvaluateRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.clientuuid_ = clientuuid_;
@@ -10404,16 +10404,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest)other);
+        if (other instanceof EvaluateRequest) {
+          return mergeFrom((EvaluateRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(EvaluateRequest other) {
+        if (other == EvaluateRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -10459,11 +10459,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest parsedMessage = null;
+        EvaluateRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest) e.getUnfinishedMessage();
+          parsedMessage = (EvaluateRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -10474,20 +10474,20 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.lang.Object clientuuid_ = "";
+      private Object clientuuid_ = "";
       /**
        * <code>optional string clientuuid = 1;</code>
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getClientuuid() {
+        Object ref = clientuuid_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           clientuuid_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -10495,11 +10495,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
+        Object ref = clientuuid_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           clientuuid_ = b;
           return b;
         } else {
@@ -10510,7 +10510,7 @@ public final class FGBoostServiceProto {
        * <code>optional string clientuuid = 1;</code>
        */
       public Builder setClientuuid(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -10543,22 +10543,22 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> treeEval_ =
+      private java.util.List<BoostEval> treeEval_ =
         java.util.Collections.emptyList();
       private void ensureTreeEvalIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          treeEval_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval>(treeEval_);
+          treeEval_ = new java.util.ArrayList<BoostEval>(treeEval_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> treeEvalBuilder_;
+          BoostEval, BoostEval.Builder, BoostEvalOrBuilder> treeEvalBuilder_;
 
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> getTreeEvalList() {
+      public java.util.List<BoostEval> getTreeEvalList() {
         if (treeEvalBuilder_ == null) {
           return java.util.Collections.unmodifiableList(treeEval_);
         } else {
@@ -10578,7 +10578,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getTreeEval(int index) {
+      public BoostEval getTreeEval(int index) {
         if (treeEvalBuilder_ == null) {
           return treeEval_.get(index);
         } else {
@@ -10589,7 +10589,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder setTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval value) {
+          int index, BoostEval value) {
         if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -10606,7 +10606,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder setTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder builderForValue) {
+          int index, BoostEval.Builder builderForValue) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           treeEval_.set(index, builderForValue.build());
@@ -10619,7 +10619,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public Builder addTreeEval(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval value) {
+      public Builder addTreeEval(BoostEval value) {
         if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -10636,7 +10636,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder addTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval value) {
+          int index, BoostEval value) {
         if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -10653,7 +10653,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder addTreeEval(
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder builderForValue) {
+          BoostEval.Builder builderForValue) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           treeEval_.add(builderForValue.build());
@@ -10667,7 +10667,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder addTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder builderForValue) {
+          int index, BoostEval.Builder builderForValue) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           treeEval_.add(index, builderForValue.build());
@@ -10681,7 +10681,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder addAllTreeEval(
-          java.lang.Iterable<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> values) {
+          Iterable<? extends BoostEval> values) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -10721,14 +10721,14 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder getTreeEvalBuilder(
+      public BoostEval.Builder getTreeEvalBuilder(
           int index) {
         return getTreeEvalFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder getTreeEvalOrBuilder(
+      public BoostEvalOrBuilder getTreeEvalOrBuilder(
           int index) {
         if (treeEvalBuilder_ == null) {
           return treeEval_.get(index);  } else {
@@ -10738,7 +10738,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+      public java.util.List<? extends BoostEvalOrBuilder>
            getTreeEvalOrBuilderList() {
         if (treeEvalBuilder_ != null) {
           return treeEvalBuilder_.getMessageOrBuilderList();
@@ -10749,31 +10749,31 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder addTreeEvalBuilder() {
+      public BoostEval.Builder addTreeEvalBuilder() {
         return getTreeEvalFieldBuilder().addBuilder(
-            com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.getDefaultInstance());
+            BoostEval.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder addTreeEvalBuilder(
+      public BoostEval.Builder addTreeEvalBuilder(
           int index) {
         return getTreeEvalFieldBuilder().addBuilder(
-            index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.getDefaultInstance());
+            index, BoostEval.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder> 
+      public java.util.List<BoostEval.Builder>
            getTreeEvalBuilderList() {
         return getTreeEvalFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+          BoostEval, BoostEval.Builder, BoostEvalOrBuilder>
           getTreeEvalFieldBuilder() {
         if (treeEvalBuilder_ == null) {
           treeEvalBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder>(
+              BoostEval, BoostEval.Builder, BoostEvalOrBuilder>(
                   treeEval_,
                   ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
@@ -10823,12 +10823,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.EvaluateRequest)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest DEFAULT_INSTANCE;
+    private static final EvaluateRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest();
+      DEFAULT_INSTANCE = new EvaluateRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest getDefaultInstance() {
+    public static EvaluateRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -10846,12 +10846,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<EvaluateRequest> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest getDefaultInstanceForType() {
+    public EvaluateRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -10864,7 +10864,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string response = 1;</code>
      */
-    java.lang.String getResponse();
+    String getResponse();
     /**
      * <code>optional string response = 1;</code>
      */
@@ -10872,17 +10872,17 @@ public final class FGBoostServiceProto {
         getResponseBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional int32 code = 3;</code>
@@ -10892,7 +10892,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string message = 4;</code>
      */
-    java.lang.String getMessage();
+    String getMessage();
     /**
      * <code>optional string message = 4;</code>
      */
@@ -10916,7 +10916,7 @@ public final class FGBoostServiceProto {
       message_ = "";
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -10942,17 +10942,17 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               response_ = s;
               break;
             }
             case 18: {
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -10966,7 +10966,7 @@ public final class FGBoostServiceProto {
               break;
             }
             case 34: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               message_ = s;
               break;
@@ -10984,29 +10984,29 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse.Builder.class);
+              EvaluateResponse.class, Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object response_;
+    private volatile Object response_;
     /**
      * <code>optional string response = 1;</code>
      */
-    public java.lang.String getResponse() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getResponse() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         response_ = s;
         return s;
       }
@@ -11016,11 +11016,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getResponseBytes() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
+      Object ref = response_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         response_ = b;
         return b;
       } else {
@@ -11029,23 +11029,23 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData() {
-      return data_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -11059,18 +11059,18 @@ public final class FGBoostServiceProto {
     }
 
     public static final int MESSAGE_FIELD_NUMBER = 4;
-    private volatile java.lang.Object message_;
+    private volatile Object message_;
     /**
      * <code>optional string message = 4;</code>
      */
-    public java.lang.String getMessage() {
-      java.lang.Object ref = message_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getMessage() {
+      Object ref = message_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         message_ = s;
         return s;
       }
@@ -11080,11 +11080,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getMessageBytes() {
-      java.lang.Object ref = message_;
-      if (ref instanceof java.lang.String) {
+      Object ref = message_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         message_ = b;
         return b;
       } else {
@@ -11142,15 +11142,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse)) {
+      if (!(obj instanceof EvaluateResponse)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse) obj;
+      EvaluateResponse other = (EvaluateResponse) obj;
 
       boolean result = true;
       result = result && getResponse()
@@ -11167,7 +11167,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -11189,58 +11189,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseFrom(
+    public static EvaluateResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseFrom(
+    public static EvaluateResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseFrom(byte[] data)
+    public static EvaluateResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseFrom(
+    public static EvaluateResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseFrom(java.io.InputStream input)
+    public static EvaluateResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseFrom(
+    public static EvaluateResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseDelimitedFrom(java.io.InputStream input)
+    public static EvaluateResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseDelimitedFrom(
+    public static EvaluateResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseFrom(
+    public static EvaluateResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parseFrom(
+    public static EvaluateResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -11252,7 +11252,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse prototype) {
+    public static Builder newBuilder(EvaluateResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -11260,7 +11260,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -11272,17 +11272,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.EvaluateResponse)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponseOrBuilder {
+        EvaluateResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse.Builder.class);
+                EvaluateResponse.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse.newBuilder()
@@ -11319,23 +11319,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse.getDefaultInstance();
+      public EvaluateResponse getDefaultInstanceForType() {
+        return EvaluateResponse.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse result = buildPartial();
+      public EvaluateResponse build() {
+        EvaluateResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse(this);
+      public EvaluateResponse buildPartial() {
+        EvaluateResponse result = new EvaluateResponse(this);
         result.response_ = response_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -11375,16 +11375,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse)other);
+        if (other instanceof EvaluateResponse) {
+          return mergeFrom((EvaluateResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(EvaluateResponse other) {
+        if (other == EvaluateResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -11411,11 +11411,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse parsedMessage = null;
+        EvaluateResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse) e.getUnfinishedMessage();
+          parsedMessage = (EvaluateResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -11425,20 +11425,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object response_ = "";
+      private Object response_ = "";
       /**
        * <code>optional string response = 1;</code>
        */
-      public java.lang.String getResponse() {
-        java.lang.Object ref = response_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getResponse() {
+        Object ref = response_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           response_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -11446,11 +11446,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
-        java.lang.Object ref = response_;
+        Object ref = response_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           response_ = b;
           return b;
         } else {
@@ -11461,7 +11461,7 @@ public final class FGBoostServiceProto {
        * <code>optional string response = 1;</code>
        */
       public Builder setResponse(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -11494,29 +11494,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -11530,10 +11530,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -11544,13 +11544,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -11562,7 +11562,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -11576,33 +11576,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder> 
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -11637,20 +11637,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object message_ = "";
+      private Object message_ = "";
       /**
        * <code>optional string message = 4;</code>
        */
-      public java.lang.String getMessage() {
-        java.lang.Object ref = message_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getMessage() {
+        Object ref = message_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           message_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -11658,11 +11658,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getMessageBytes() {
-        java.lang.Object ref = message_;
+        Object ref = message_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           message_ = b;
           return b;
         } else {
@@ -11673,7 +11673,7 @@ public final class FGBoostServiceProto {
        * <code>optional string message = 4;</code>
        */
       public Builder setMessage(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -11720,12 +11720,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.EvaluateResponse)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse DEFAULT_INSTANCE;
+    private static final EvaluateResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse();
+      DEFAULT_INSTANCE = new EvaluateResponse();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse getDefaultInstance() {
+    public static EvaluateResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -11743,12 +11743,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<EvaluateResponse> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse getDefaultInstanceForType() {
+    public EvaluateResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -11761,7 +11761,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    java.lang.String getClientuuid();
+    String getClientuuid();
     /**
      * <code>optional string clientuuid = 1;</code>
      */
@@ -11771,12 +11771,12 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> 
+    java.util.List<BoostEval>
         getTreeEvalList();
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getTreeEval(int index);
+    BoostEval getTreeEval(int index);
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
@@ -11784,13 +11784,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+    java.util.List<? extends BoostEvalOrBuilder>
         getTreeEvalOrBuilderList();
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder getTreeEvalOrBuilder(
-        int index);
+    BoostEvalOrBuilder getTreeEvalOrBuilder(
+            int index);
 
     /**
      * <code>optional int32 bsVersion = 3;</code>
@@ -11814,7 +11814,7 @@ public final class FGBoostServiceProto {
       bsVersion_ = 0;
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -11840,18 +11840,18 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               clientuuid_ = s;
               break;
             }
             case 18: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                treeEval_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval>();
+                treeEval_ = new java.util.ArrayList<BoostEval>();
                 mutable_bitField0_ |= 0x00000002;
               }
               treeEval_.add(
-                  input.readMessage(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.parser(), extensionRegistry));
+                  input.readMessage(BoostEval.parser(), extensionRegistry));
               break;
             }
             case 24: {
@@ -11875,30 +11875,30 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest.Builder.class);
+              PredictRequest.class, Builder.class);
     }
 
     private int bitField0_;
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private volatile Object clientuuid_;
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getClientuuid() {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         clientuuid_ = s;
         return s;
       }
@@ -11908,11 +11908,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         clientuuid_ = b;
         return b;
       } else {
@@ -11921,17 +11921,17 @@ public final class FGBoostServiceProto {
     }
 
     public static final int TREEEVAL_FIELD_NUMBER = 2;
-    private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> treeEval_;
+    private java.util.List<BoostEval> treeEval_;
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> getTreeEvalList() {
+    public java.util.List<BoostEval> getTreeEvalList() {
       return treeEval_;
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+    public java.util.List<? extends BoostEvalOrBuilder>
         getTreeEvalOrBuilderList() {
       return treeEval_;
     }
@@ -11944,13 +11944,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getTreeEval(int index) {
+    public BoostEval getTreeEval(int index) {
       return treeEval_.get(index);
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder getTreeEvalOrBuilder(
+    public BoostEvalOrBuilder getTreeEvalOrBuilder(
         int index) {
       return treeEval_.get(index);
     }
@@ -12008,15 +12008,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest)) {
+      if (!(obj instanceof PredictRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest) obj;
+      PredictRequest other = (PredictRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
@@ -12028,7 +12028,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -12048,58 +12048,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseFrom(
+    public static PredictRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseFrom(
+    public static PredictRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseFrom(byte[] data)
+    public static PredictRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseFrom(
+    public static PredictRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseFrom(java.io.InputStream input)
+    public static PredictRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseFrom(
+    public static PredictRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseDelimitedFrom(java.io.InputStream input)
+    public static PredictRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseDelimitedFrom(
+    public static PredictRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseFrom(
+    public static PredictRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parseFrom(
+    public static PredictRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -12111,7 +12111,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest prototype) {
+    public static Builder newBuilder(PredictRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -12119,7 +12119,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -12131,17 +12131,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.PredictRequest)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequestOrBuilder {
+        PredictRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest.Builder.class);
+                PredictRequest.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest.newBuilder()
@@ -12177,23 +12177,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest.getDefaultInstance();
+      public PredictRequest getDefaultInstanceForType() {
+        return PredictRequest.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest result = buildPartial();
+      public PredictRequest build() {
+        PredictRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest(this);
+      public PredictRequest buildPartial() {
+        PredictRequest result = new PredictRequest(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.clientuuid_ = clientuuid_;
@@ -12239,16 +12239,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest)other);
+        if (other instanceof PredictRequest) {
+          return mergeFrom((PredictRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(PredictRequest other) {
+        if (other == PredictRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -12294,11 +12294,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest parsedMessage = null;
+        PredictRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest) e.getUnfinishedMessage();
+          parsedMessage = (PredictRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -12309,20 +12309,20 @@ public final class FGBoostServiceProto {
       }
       private int bitField0_;
 
-      private java.lang.Object clientuuid_ = "";
+      private Object clientuuid_ = "";
       /**
        * <code>optional string clientuuid = 1;</code>
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getClientuuid() {
+        Object ref = clientuuid_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           clientuuid_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -12330,11 +12330,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
+        Object ref = clientuuid_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           clientuuid_ = b;
           return b;
         } else {
@@ -12345,7 +12345,7 @@ public final class FGBoostServiceProto {
        * <code>optional string clientuuid = 1;</code>
        */
       public Builder setClientuuid(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -12378,22 +12378,22 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> treeEval_ =
+      private java.util.List<BoostEval> treeEval_ =
         java.util.Collections.emptyList();
       private void ensureTreeEvalIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          treeEval_ = new java.util.ArrayList<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval>(treeEval_);
+          treeEval_ = new java.util.ArrayList<BoostEval>(treeEval_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> treeEvalBuilder_;
+          BoostEval, BoostEval.Builder, BoostEvalOrBuilder> treeEvalBuilder_;
 
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> getTreeEvalList() {
+      public java.util.List<BoostEval> getTreeEvalList() {
         if (treeEvalBuilder_ == null) {
           return java.util.Collections.unmodifiableList(treeEval_);
         } else {
@@ -12413,7 +12413,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval getTreeEval(int index) {
+      public BoostEval getTreeEval(int index) {
         if (treeEvalBuilder_ == null) {
           return treeEval_.get(index);
         } else {
@@ -12424,7 +12424,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder setTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval value) {
+          int index, BoostEval value) {
         if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -12441,7 +12441,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder setTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder builderForValue) {
+          int index, BoostEval.Builder builderForValue) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           treeEval_.set(index, builderForValue.build());
@@ -12454,7 +12454,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public Builder addTreeEval(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval value) {
+      public Builder addTreeEval(BoostEval value) {
         if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -12471,7 +12471,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder addTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval value) {
+          int index, BoostEval value) {
         if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -12488,7 +12488,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder addTreeEval(
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder builderForValue) {
+          BoostEval.Builder builderForValue) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           treeEval_.add(builderForValue.build());
@@ -12502,7 +12502,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder addTreeEval(
-          int index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder builderForValue) {
+          int index, BoostEval.Builder builderForValue) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           treeEval_.add(index, builderForValue.build());
@@ -12516,7 +12516,7 @@ public final class FGBoostServiceProto {
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
       public Builder addAllTreeEval(
-          java.lang.Iterable<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval> values) {
+          Iterable<? extends BoostEval> values) {
         if (treeEvalBuilder_ == null) {
           ensureTreeEvalIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -12556,14 +12556,14 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder getTreeEvalBuilder(
+      public BoostEval.Builder getTreeEvalBuilder(
           int index) {
         return getTreeEvalFieldBuilder().getBuilder(index);
       }
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder getTreeEvalOrBuilder(
+      public BoostEvalOrBuilder getTreeEvalOrBuilder(
           int index) {
         if (treeEvalBuilder_ == null) {
           return treeEval_.get(index);  } else {
@@ -12573,7 +12573,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public java.util.List<? extends com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+      public java.util.List<? extends BoostEvalOrBuilder>
            getTreeEvalOrBuilderList() {
         if (treeEvalBuilder_ != null) {
           return treeEvalBuilder_.getMessageOrBuilderList();
@@ -12584,31 +12584,31 @@ public final class FGBoostServiceProto {
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder addTreeEvalBuilder() {
+      public BoostEval.Builder addTreeEvalBuilder() {
         return getTreeEvalFieldBuilder().addBuilder(
-            com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.getDefaultInstance());
+            BoostEval.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder addTreeEvalBuilder(
+      public BoostEval.Builder addTreeEvalBuilder(
           int index) {
         return getTreeEvalFieldBuilder().addBuilder(
-            index, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.getDefaultInstance());
+            index, BoostEval.getDefaultInstance());
       }
       /**
        * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public java.util.List<com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder> 
+      public java.util.List<BoostEval.Builder>
            getTreeEvalBuilderList() {
         return getTreeEvalFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder> 
+          BoostEval, BoostEval.Builder, BoostEvalOrBuilder>
           getTreeEvalFieldBuilder() {
         if (treeEvalBuilder_ == null) {
           treeEvalBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEvalOrBuilder>(
+              BoostEval, BoostEval.Builder, BoostEvalOrBuilder>(
                   treeEval_,
                   ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
@@ -12658,12 +12658,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.PredictRequest)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest DEFAULT_INSTANCE;
+    private static final PredictRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest();
+      DEFAULT_INSTANCE = new PredictRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest getDefaultInstance() {
+    public static PredictRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -12681,12 +12681,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<PredictRequest> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest getDefaultInstanceForType() {
+    public PredictRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -12699,7 +12699,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    java.lang.String getClientuuid();
+    String getClientuuid();
     /**
      * <code>optional string clientuuid = 1;</code>
      */
@@ -12713,11 +12713,11 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional .fgboost.DataSplit split = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit getSplit();
+    DataSplit getSplit();
     /**
      * <code>optional .fgboost.DataSplit split = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder getSplitOrBuilder();
+    DataSplitOrBuilder getSplitOrBuilder();
   }
   /**
    * Protobuf type {@code fgboost.SplitRequest}
@@ -12734,7 +12734,7 @@ public final class FGBoostServiceProto {
       clientuuid_ = "";
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -12760,17 +12760,17 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               clientuuid_ = s;
               break;
             }
             case 18: {
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder subBuilder = null;
+              DataSplit.Builder subBuilder = null;
               if (split_ != null) {
                 subBuilder = split_.toBuilder();
               }
-              split_ = input.readMessage(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.parser(), extensionRegistry);
+              split_ = input.readMessage(DataSplit.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(split_);
                 split_ = subBuilder.buildPartial();
@@ -12791,29 +12791,29 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.Builder.class);
+              SplitRequest.class, Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
-    private volatile java.lang.Object clientuuid_;
+    private volatile Object clientuuid_;
     /**
      * <code>optional string clientuuid = 1;</code>
      */
-    public java.lang.String getClientuuid() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getClientuuid() {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         clientuuid_ = s;
         return s;
       }
@@ -12823,11 +12823,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
-      java.lang.Object ref = clientuuid_;
-      if (ref instanceof java.lang.String) {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         clientuuid_ = b;
         return b;
       } else {
@@ -12836,7 +12836,7 @@ public final class FGBoostServiceProto {
     }
 
     public static final int SPLIT_FIELD_NUMBER = 2;
-    private com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit split_;
+    private DataSplit split_;
     /**
      * <code>optional .fgboost.DataSplit split = 2;</code>
      */
@@ -12846,13 +12846,13 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional .fgboost.DataSplit split = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit getSplit() {
-      return split_ == null ? com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.getDefaultInstance() : split_;
+    public DataSplit getSplit() {
+      return split_ == null ? DataSplit.getDefaultInstance() : split_;
     }
     /**
      * <code>optional .fgboost.DataSplit split = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder getSplitOrBuilder() {
+    public DataSplitOrBuilder getSplitOrBuilder() {
       return getSplit();
     }
 
@@ -12893,15 +12893,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest)) {
+      if (!(obj instanceof SplitRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest) obj;
+      SplitRequest other = (SplitRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
@@ -12914,7 +12914,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -12932,58 +12932,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseFrom(
+    public static SplitRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseFrom(
+    public static SplitRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseFrom(byte[] data)
+    public static SplitRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseFrom(
+    public static SplitRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseFrom(java.io.InputStream input)
+    public static SplitRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseFrom(
+    public static SplitRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseDelimitedFrom(java.io.InputStream input)
+    public static SplitRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseDelimitedFrom(
+    public static SplitRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseFrom(
+    public static SplitRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parseFrom(
+    public static SplitRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -12995,7 +12995,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest prototype) {
+    public static Builder newBuilder(SplitRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -13003,7 +13003,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -13015,17 +13015,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.SplitRequest)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequestOrBuilder {
+        SplitRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.Builder.class);
+                SplitRequest.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.newBuilder()
@@ -13058,23 +13058,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.getDefaultInstance();
+      public SplitRequest getDefaultInstanceForType() {
+        return SplitRequest.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest result = buildPartial();
+      public SplitRequest build() {
+        SplitRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest(this);
+      public SplitRequest buildPartial() {
+        SplitRequest result = new SplitRequest(this);
         result.clientuuid_ = clientuuid_;
         if (splitBuilder_ == null) {
           result.split_ = split_;
@@ -13112,16 +13112,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest)other);
+        if (other instanceof SplitRequest) {
+          return mergeFrom((SplitRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(SplitRequest other) {
+        if (other == SplitRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -13141,11 +13141,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest parsedMessage = null;
+        SplitRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest) e.getUnfinishedMessage();
+          parsedMessage = (SplitRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -13155,20 +13155,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object clientuuid_ = "";
+      private Object clientuuid_ = "";
       /**
        * <code>optional string clientuuid = 1;</code>
        */
-      public java.lang.String getClientuuid() {
-        java.lang.Object ref = clientuuid_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getClientuuid() {
+        Object ref = clientuuid_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           clientuuid_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -13176,11 +13176,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
-        java.lang.Object ref = clientuuid_;
+        Object ref = clientuuid_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           clientuuid_ = b;
           return b;
         } else {
@@ -13191,7 +13191,7 @@ public final class FGBoostServiceProto {
        * <code>optional string clientuuid = 1;</code>
        */
       public Builder setClientuuid(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -13224,9 +13224,9 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit split_ = null;
+      private DataSplit split_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder> splitBuilder_;
+          DataSplit, DataSplit.Builder, DataSplitOrBuilder> splitBuilder_;
       /**
        * <code>optional .fgboost.DataSplit split = 2;</code>
        */
@@ -13236,9 +13236,9 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit getSplit() {
+      public DataSplit getSplit() {
         if (splitBuilder_ == null) {
-          return split_ == null ? com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.getDefaultInstance() : split_;
+          return split_ == null ? DataSplit.getDefaultInstance() : split_;
         } else {
           return splitBuilder_.getMessage();
         }
@@ -13246,7 +13246,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 2;</code>
        */
-      public Builder setSplit(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit value) {
+      public Builder setSplit(DataSplit value) {
         if (splitBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -13263,7 +13263,7 @@ public final class FGBoostServiceProto {
        * <code>optional .fgboost.DataSplit split = 2;</code>
        */
       public Builder setSplit(
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder builderForValue) {
+          DataSplit.Builder builderForValue) {
         if (splitBuilder_ == null) {
           split_ = builderForValue.build();
           onChanged();
@@ -13276,11 +13276,11 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 2;</code>
        */
-      public Builder mergeSplit(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit value) {
+      public Builder mergeSplit(DataSplit value) {
         if (splitBuilder_ == null) {
           if (split_ != null) {
             split_ =
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.newBuilder(split_).mergeFrom(value).buildPartial();
+              DataSplit.newBuilder(split_).mergeFrom(value).buildPartial();
           } else {
             split_ = value;
           }
@@ -13308,7 +13308,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder getSplitBuilder() {
+      public DataSplit.Builder getSplitBuilder() {
         
         onChanged();
         return getSplitFieldBuilder().getBuilder();
@@ -13316,23 +13316,23 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder getSplitOrBuilder() {
+      public DataSplitOrBuilder getSplitOrBuilder() {
         if (splitBuilder_ != null) {
           return splitBuilder_.getMessageOrBuilder();
         } else {
           return split_ == null ?
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.getDefaultInstance() : split_;
+              DataSplit.getDefaultInstance() : split_;
         }
       }
       /**
        * <code>optional .fgboost.DataSplit split = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder> 
+          DataSplit, DataSplit.Builder, DataSplitOrBuilder>
           getSplitFieldBuilder() {
         if (splitBuilder_ == null) {
           splitBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder>(
+              DataSplit, DataSplit.Builder, DataSplitOrBuilder>(
                   getSplit(),
                   getParentForChildren(),
                   isClean());
@@ -13355,12 +13355,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.SplitRequest)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest DEFAULT_INSTANCE;
+    private static final SplitRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest();
+      DEFAULT_INSTANCE = new SplitRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest getDefaultInstance() {
+    public static SplitRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -13378,12 +13378,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<SplitRequest> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest getDefaultInstanceForType() {
+    public SplitRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -13396,7 +13396,7 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional string response = 1;</code>
      */
-    java.lang.String getResponse();
+    String getResponse();
     /**
      * <code>optional string response = 1;</code>
      */
@@ -13404,17 +13404,17 @@ public final class FGBoostServiceProto {
         getResponseBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional int32 code = 3;</code>
@@ -13437,7 +13437,7 @@ public final class FGBoostServiceProto {
       code_ = 0;
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -13463,17 +13463,17 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               response_ = s;
               break;
             }
             case 18: {
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -13499,29 +13499,29 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse.Builder.class);
+              PredictResponse.class, Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object response_;
+    private volatile Object response_;
     /**
      * <code>optional string response = 1;</code>
      */
-    public java.lang.String getResponse() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getResponse() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         response_ = s;
         return s;
       }
@@ -13531,11 +13531,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getResponseBytes() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
+      Object ref = response_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         response_ = b;
         return b;
       } else {
@@ -13544,23 +13544,23 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData() {
-      return data_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -13617,15 +13617,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse)) {
+      if (!(obj instanceof PredictResponse)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse) obj;
+      PredictResponse other = (PredictResponse) obj;
 
       boolean result = true;
       result = result && getResponse()
@@ -13640,7 +13640,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -13660,58 +13660,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseFrom(
+    public static PredictResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseFrom(
+    public static PredictResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseFrom(byte[] data)
+    public static PredictResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseFrom(
+    public static PredictResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseFrom(java.io.InputStream input)
+    public static PredictResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseFrom(
+    public static PredictResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseDelimitedFrom(java.io.InputStream input)
+    public static PredictResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseDelimitedFrom(
+    public static PredictResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseFrom(
+    public static PredictResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parseFrom(
+    public static PredictResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -13723,7 +13723,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse prototype) {
+    public static Builder newBuilder(PredictResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -13731,7 +13731,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -13743,17 +13743,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.PredictResponse)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponseOrBuilder {
+        PredictResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse.Builder.class);
+                PredictResponse.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse.newBuilder()
@@ -13788,23 +13788,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse.getDefaultInstance();
+      public PredictResponse getDefaultInstanceForType() {
+        return PredictResponse.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse result = buildPartial();
+      public PredictResponse build() {
+        PredictResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse(this);
+      public PredictResponse buildPartial() {
+        PredictResponse result = new PredictResponse(this);
         result.response_ = response_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -13843,16 +13843,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse)other);
+        if (other instanceof PredictResponse) {
+          return mergeFrom((PredictResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(PredictResponse other) {
+        if (other == PredictResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -13875,11 +13875,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse parsedMessage = null;
+        PredictResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse) e.getUnfinishedMessage();
+          parsedMessage = (PredictResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -13889,20 +13889,20 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.lang.Object response_ = "";
+      private Object response_ = "";
       /**
        * <code>optional string response = 1;</code>
        */
-      public java.lang.String getResponse() {
-        java.lang.Object ref = response_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getResponse() {
+        Object ref = response_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           response_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -13910,11 +13910,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
-        java.lang.Object ref = response_;
+        Object ref = response_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           response_ = b;
           return b;
         } else {
@@ -13925,7 +13925,7 @@ public final class FGBoostServiceProto {
        * <code>optional string response = 1;</code>
        */
       public Builder setResponse(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -13958,29 +13958,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -13994,10 +13994,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -14008,13 +14008,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -14026,7 +14026,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -14040,33 +14040,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder> 
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.Builder, com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -14115,12 +14115,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.PredictResponse)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse DEFAULT_INSTANCE;
+    private static final PredictResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse();
+      DEFAULT_INSTANCE = new PredictResponse();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse getDefaultInstance() {
+    public static PredictResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -14138,12 +14138,12 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<PredictResponse> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse getDefaultInstanceForType() {
+    public PredictResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -14160,16 +14160,16 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional .fgboost.DataSplit split = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit getSplit();
+    DataSplit getSplit();
     /**
      * <code>optional .fgboost.DataSplit split = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder getSplitOrBuilder();
+    DataSplitOrBuilder getSplitOrBuilder();
 
     /**
      * <code>optional string response = 2;</code>
      */
-    java.lang.String getResponse();
+    String getResponse();
     /**
      * <code>optional string response = 2;</code>
      */
@@ -14197,7 +14197,7 @@ public final class FGBoostServiceProto {
       code_ = 0;
     }
 
-    @java.lang.Override
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
@@ -14223,11 +14223,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder subBuilder = null;
+              DataSplit.Builder subBuilder = null;
               if (split_ != null) {
                 subBuilder = split_.toBuilder();
               }
-              split_ = input.readMessage(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.parser(), extensionRegistry);
+              split_ = input.readMessage(DataSplit.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(split_);
                 split_ = subBuilder.buildPartial();
@@ -14236,7 +14236,7 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
+              String s = input.readStringRequireUtf8();
 
               response_ = s;
               break;
@@ -14259,18 +14259,18 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse.Builder.class);
+              SplitResponse.class, Builder.class);
     }
 
     public static final int SPLIT_FIELD_NUMBER = 1;
-    private com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit split_;
+    private DataSplit split_;
     /**
      * <code>optional .fgboost.DataSplit split = 1;</code>
      */
@@ -14280,29 +14280,29 @@ public final class FGBoostServiceProto {
     /**
      * <code>optional .fgboost.DataSplit split = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit getSplit() {
-      return split_ == null ? com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.getDefaultInstance() : split_;
+    public DataSplit getSplit() {
+      return split_ == null ? DataSplit.getDefaultInstance() : split_;
     }
     /**
      * <code>optional .fgboost.DataSplit split = 1;</code>
      */
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder getSplitOrBuilder() {
+    public DataSplitOrBuilder getSplitOrBuilder() {
       return getSplit();
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 2;
-    private volatile java.lang.Object response_;
+    private volatile Object response_;
     /**
      * <code>optional string response = 2;</code>
      */
-    public java.lang.String getResponse() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
+    public String getResponse() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        return (String) ref;
       } else {
         com.google.protobuf.ByteString bs = 
             (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
+        String s = bs.toStringUtf8();
         response_ = s;
         return s;
       }
@@ -14312,11 +14312,11 @@ public final class FGBoostServiceProto {
      */
     public com.google.protobuf.ByteString
         getResponseBytes() {
-      java.lang.Object ref = response_;
-      if (ref instanceof java.lang.String) {
+      Object ref = response_;
+      if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
+                (String) ref);
         response_ = b;
         return b;
       } else {
@@ -14377,15 +14377,15 @@ public final class FGBoostServiceProto {
     }
 
     private static final long serialVersionUID = 0L;
-    @java.lang.Override
-    public boolean equals(final java.lang.Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse)) {
+      if (!(obj instanceof SplitResponse)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse other = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse) obj;
+      SplitResponse other = (SplitResponse) obj;
 
       boolean result = true;
       result = result && (hasSplit() == other.hasSplit());
@@ -14400,7 +14400,7 @@ public final class FGBoostServiceProto {
       return result;
     }
 
-    @java.lang.Override
+    @Override
     public int hashCode() {
       if (memoizedHashCode != 0) {
         return memoizedHashCode;
@@ -14420,58 +14420,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseFrom(
+    public static SplitResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseFrom(
+    public static SplitResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseFrom(byte[] data)
+    public static SplitResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseFrom(
+    public static SplitResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseFrom(java.io.InputStream input)
+    public static SplitResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseFrom(
+    public static SplitResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseDelimitedFrom(java.io.InputStream input)
+    public static SplitResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseDelimitedFrom(
+    public static SplitResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseFrom(
+    public static SplitResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parseFrom(
+    public static SplitResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -14483,7 +14483,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse prototype) {
+    public static Builder newBuilder(SplitResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -14491,7 +14491,7 @@ public final class FGBoostServiceProto {
           ? new Builder() : new Builder().mergeFrom(this);
     }
 
-    @java.lang.Override
+    @Override
     protected Builder newBuilderForType(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
@@ -14503,17 +14503,17 @@ public final class FGBoostServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:fgboost.SplitResponse)
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponseOrBuilder {
+        SplitResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse.class, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse.Builder.class);
+                SplitResponse.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse.newBuilder()
@@ -14548,23 +14548,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse getDefaultInstanceForType() {
-        return com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse.getDefaultInstance();
+      public SplitResponse getDefaultInstanceForType() {
+        return SplitResponse.getDefaultInstance();
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse build() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse result = buildPartial();
+      public SplitResponse build() {
+        SplitResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse buildPartial() {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse result = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse(this);
+      public SplitResponse buildPartial() {
+        SplitResponse result = new SplitResponse(this);
         if (splitBuilder_ == null) {
           result.split_ = split_;
         } else {
@@ -14603,16 +14603,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse)other);
+        if (other instanceof SplitResponse) {
+          return mergeFrom((SplitResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse other) {
-        if (other == com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(SplitResponse other) {
+        if (other == SplitResponse.getDefaultInstance()) return this;
         if (other.hasSplit()) {
           mergeSplit(other.getSplit());
         }
@@ -14635,11 +14635,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse parsedMessage = null;
+        SplitResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse) e.getUnfinishedMessage();
+          parsedMessage = (SplitResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -14649,9 +14649,9 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit split_ = null;
+      private DataSplit split_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder> splitBuilder_;
+          DataSplit, DataSplit.Builder, DataSplitOrBuilder> splitBuilder_;
       /**
        * <code>optional .fgboost.DataSplit split = 1;</code>
        */
@@ -14661,9 +14661,9 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit getSplit() {
+      public DataSplit getSplit() {
         if (splitBuilder_ == null) {
-          return split_ == null ? com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.getDefaultInstance() : split_;
+          return split_ == null ? DataSplit.getDefaultInstance() : split_;
         } else {
           return splitBuilder_.getMessage();
         }
@@ -14671,7 +14671,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 1;</code>
        */
-      public Builder setSplit(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit value) {
+      public Builder setSplit(DataSplit value) {
         if (splitBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -14688,7 +14688,7 @@ public final class FGBoostServiceProto {
        * <code>optional .fgboost.DataSplit split = 1;</code>
        */
       public Builder setSplit(
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder builderForValue) {
+          DataSplit.Builder builderForValue) {
         if (splitBuilder_ == null) {
           split_ = builderForValue.build();
           onChanged();
@@ -14701,11 +14701,11 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 1;</code>
        */
-      public Builder mergeSplit(com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit value) {
+      public Builder mergeSplit(DataSplit value) {
         if (splitBuilder_ == null) {
           if (split_ != null) {
             split_ =
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.newBuilder(split_).mergeFrom(value).buildPartial();
+              DataSplit.newBuilder(split_).mergeFrom(value).buildPartial();
           } else {
             split_ = value;
           }
@@ -14733,7 +14733,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder getSplitBuilder() {
+      public DataSplit.Builder getSplitBuilder() {
         
         onChanged();
         return getSplitFieldBuilder().getBuilder();
@@ -14741,23 +14741,23 @@ public final class FGBoostServiceProto {
       /**
        * <code>optional .fgboost.DataSplit split = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder getSplitOrBuilder() {
+      public DataSplitOrBuilder getSplitOrBuilder() {
         if (splitBuilder_ != null) {
           return splitBuilder_.getMessageOrBuilder();
         } else {
           return split_ == null ?
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.getDefaultInstance() : split_;
+              DataSplit.getDefaultInstance() : split_;
         }
       }
       /**
        * <code>optional .fgboost.DataSplit split = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder> 
+          DataSplit, DataSplit.Builder, DataSplitOrBuilder>
           getSplitFieldBuilder() {
         if (splitBuilder_ == null) {
           splitBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.Builder, com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplitOrBuilder>(
+              DataSplit, DataSplit.Builder, DataSplitOrBuilder>(
                   getSplit(),
                   getParentForChildren(),
                   isClean());
@@ -14766,20 +14766,20 @@ public final class FGBoostServiceProto {
         return splitBuilder_;
       }
 
-      private java.lang.Object response_ = "";
+      private Object response_ = "";
       /**
        * <code>optional string response = 2;</code>
        */
-      public java.lang.String getResponse() {
-        java.lang.Object ref = response_;
-        if (!(ref instanceof java.lang.String)) {
+      public String getResponse() {
+        Object ref = response_;
+        if (!(ref instanceof String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
+          String s = bs.toStringUtf8();
           response_ = s;
           return s;
         } else {
-          return (java.lang.String) ref;
+          return (String) ref;
         }
       }
       /**
@@ -14787,11 +14787,11 @@ public final class FGBoostServiceProto {
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
-        java.lang.Object ref = response_;
+        Object ref = response_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
+                  (String) ref);
           response_ = b;
           return b;
         } else {
@@ -14802,7 +14802,7 @@ public final class FGBoostServiceProto {
        * <code>optional string response = 2;</code>
        */
       public Builder setResponse(
-          java.lang.String value) {
+          String value) {
         if (value == null) {
     throw new NullPointerException();
   }
@@ -14875,12 +14875,12 @@ public final class FGBoostServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:fgboost.SplitResponse)
-    private static final com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse DEFAULT_INSTANCE;
+    private static final SplitResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse();
+      DEFAULT_INSTANCE = new SplitResponse();
     }
 
-    public static com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse getDefaultInstance() {
+    public static SplitResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -14898,27 +14898,27 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
-    @java.lang.Override
+    @Override
     public com.google.protobuf.Parser<SplitResponse> getParserForType() {
       return PARSER;
     }
 
-    public com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse getDefaultInstanceForType() {
+    public SplitResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_fgboost_UploadTableRequest_descriptor;
+    internal_static_fgboost_UploadLabelRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_fgboost_UploadTableRequest_fieldAccessorTable;
+      internal_static_fgboost_UploadLabelRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_fgboost_DownloadTableRequest_descriptor;
+    internal_static_fgboost_DownloadLabelRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_fgboost_DownloadTableRequest_fieldAccessorTable;
+      internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_fgboost_DownloadResponse_descriptor;
   private static final 
@@ -15012,60 +15012,60 @@ public final class FGBoostServiceProto {
   private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
-    java.lang.String[] descriptorData = {
+    String[] descriptorData = {
       "\n\025fgboost_service.proto\022\007fgboost\032\rfl_bas" +
-      "e.proto\"Q\n\022UploadTableRequest\022\022\n\nclientu" +
-      "uid\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Table\022\021\n\talgor" +
-      "ithm\030\003 \001(\t\"K\n\024DownloadTableRequest\022 \n\010me" +
-      "taData\030\001 \001(\0132\016.TableMetaData\022\021\n\talgorith" +
-      "m\030\002 \001(\t\"H\n\020DownloadResponse\022\024\n\004data\030\001 \001(" +
-      "\0132\006.Table\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003 \001(" +
-      "\005\"C\n\nTreeLeaves\022\016\n\006treeID\030\001 \001(\t\022\021\n\tleafI" +
-      "ndex\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\"V\n\027Upload" +
-      "TreeLeavesRequest\022\022\n\nclientuuid\030\001 \001(\t\022\'\n",
-      "\ntreeLeaves\030\002 \001(\0132\023.fgboost.TreeLeaves\"\227" +
-      "\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t\022\016\n\006nodeID\030\002" +
-      " \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\nsplitValue\030\004 " +
-      "\001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLength\030\006 \001(\005\022\017\n\007" +
-      "itemSet\030\007 \003(\005\022\021\n\tclientUid\030\010 \001(\t\"0\n\016Uplo" +
-      "adResponse\022\020\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001" +
-      "(\005\"/\n\013TreePredict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010pre" +
-      "dicts\030\002 \003(\010\"6\n\014BoostPredict\022&\n\010predicts\030" +
-      "\001 \003(\0132\024.fgboost.TreePredict\"4\n\tBoostEval" +
-      "\022\'\n\tevaluates\030\001 \003(\0132\024.fgboost.TreePredic",
-      "t\"4\n\017RegisterRequest\022\022\n\nclientuuid\030\001 \001(\t" +
-      "\022\r\n\005token\030\002 \001(\t\"2\n\020RegisterResponse\022\020\n\010r" +
-      "esponse\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"b\n\025UploadTre" +
-      "eEvalRequest\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007vers" +
-      "ion\030\002 \001(\005\022$\n\010treeEval\030\003 \003(\0132\022.fgboost.Bo" +
-      "ostEval\"^\n\017EvaluateRequest\022\022\n\nclientuuid" +
-      "\030\001 \001(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.Boost" +
-      "Eval\022\021\n\tbsVersion\030\003 \001(\005\"Y\n\020EvaluateRespo" +
-      "nse\022\020\n\010response\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Ta" +
-      "ble\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"]\n\016Pr",
-      "edictRequest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010tree" +
-      "Eval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n\tbsVers" +
-      "ion\030\003 \001(\005\"E\n\014SplitRequest\022\022\n\nclientuuid\030" +
-      "\001 \001(\t\022!\n\005split\030\002 \001(\0132\022.fgboost.DataSplit" +
-      "\"G\n\017PredictResponse\022\020\n\010response\030\001 \001(\t\022\024\n" +
-      "\004data\030\002 \001(\0132\006.Table\022\014\n\004code\030\003 \001(\005\"R\n\rSpl" +
-      "itResponse\022!\n\005split\030\001 \001(\0132\022.fgboost.Data" +
-      "Split\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003 \001(\0052\365\003" +
-      "\n\016FGBoostService\022E\n\013uploadTable\022\033.fgboos" +
-      "t.UploadTableRequest\032\027.fgboost.UploadRes",
-      "ponse\"\000\022K\n\rdownloadTable\022\035.fgboost.Downl" +
-      "oadTableRequest\032\031.fgboost.DownloadRespon" +
-      "se\"\000\0228\n\005split\022\025.fgboost.SplitRequest\032\026.f" +
-      "gboost.SplitResponse\"\000\022A\n\010register\022\030.fgb" +
-      "oost.RegisterRequest\032\031.fgboost.RegisterR" +
-      "esponse\"\000\022O\n\020uploadTreeLeaves\022 .fgboost." +
-      "UploadTreeLeavesRequest\032\027.fgboost.Upload" +
-      "Response\"\000\022A\n\010evaluate\022\030.fgboost.Evaluat" +
-      "eRequest\032\031.fgboost.EvaluateResponse\"\000\022>\n" +
-      "\007predict\022\027.fgboost.PredictRequest\032\030.fgbo",
-      "ost.PredictResponse\"\000B?\n(com.intel.analy" +
-      "tics.bigdl.ppml.generatedB\023FGBoostServic" +
-      "eProtob\006proto3"
+      "e.proto\"U\n\022UploadLabelRequest\022\022\n\nclientu" +
+      "uid\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\021\n\ta" +
+      "lgorithm\030\003 \001(\t\"F\n\024DownloadLabelRequest\022\033" +
+      "\n\010metaData\030\001 \001(\0132\t.MetaData\022\021\n\talgorithm" +
+      "\030\002 \001(\t\"L\n\020DownloadResponse\022\030\n\004data\030\001 \001(\013" +
+      "2\n.TensorMap\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003" +
+      " \001(\005\"C\n\nTreeLeaves\022\016\n\006treeID\030\001 \001(\t\022\021\n\tle" +
+      "afIndex\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\"V\n\027Upl" +
+      "oadTreeLeavesRequest\022\022\n\nclientuuid\030\001 \001(\t",
+      "\022\'\n\ntreeLeaves\030\002 \001(\0132\023.fgboost.TreeLeave" +
+      "s\"\227\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t\022\016\n\006nodeI" +
+      "D\030\002 \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\nsplitValue" +
+      "\030\004 \001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLength\030\006 \001(\005\022" +
+      "\017\n\007itemSet\030\007 \003(\005\022\021\n\tclientUid\030\010 \001(\t\"0\n\016U" +
+      "ploadResponse\022\020\n\010response\030\001 \001(\t\022\014\n\004code\030" +
+      "\002 \001(\005\"/\n\013TreePredict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010" +
+      "predicts\030\002 \003(\010\"6\n\014BoostPredict\022&\n\010predic" +
+      "ts\030\001 \003(\0132\024.fgboost.TreePredict\"4\n\tBoostE" +
+      "val\022\'\n\tevaluates\030\001 \003(\0132\024.fgboost.TreePre",
+      "dict\"4\n\017RegisterRequest\022\022\n\nclientuuid\030\001 " +
+      "\001(\t\022\r\n\005token\030\002 \001(\t\"2\n\020RegisterResponse\022\020" +
+      "\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"b\n\025Upload" +
+      "TreeEvalRequest\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007v" +
+      "ersion\030\002 \001(\005\022$\n\010treeEval\030\003 \003(\0132\022.fgboost" +
+      ".BoostEval\"^\n\017EvaluateRequest\022\022\n\nclientu" +
+      "uid\030\001 \001(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.Bo" +
+      "ostEval\022\021\n\tbsVersion\030\003 \001(\005\"]\n\020EvaluateRe" +
+      "sponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n" +
+      ".TensorMap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(",
+      "\t\"]\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001(\t\022" +
+      "$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n" +
+      "\tbsVersion\030\003 \001(\005\"E\n\014SplitRequest\022\022\n\nclie" +
+      "ntuuid\030\001 \001(\t\022!\n\005split\030\002 \001(\0132\022.fgboost.Da" +
+      "taSplit\"K\n\017PredictResponse\022\020\n\010response\030\001" +
+      " \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n\004code\030\003" +
+      " \001(\005\"R\n\rSplitResponse\022!\n\005split\030\001 \001(\0132\022.f" +
+      "gboost.DataSplit\022\020\n\010response\030\002 \001(\t\022\014\n\004co" +
+      "de\030\003 \001(\0052\365\003\n\016FGBoostService\022E\n\013uploadLab" +
+      "el\022\033.fgboost.UploadLabelRequest\032\027.fgboos",
+      "t.UploadResponse\"\000\022K\n\rdownloadLabel\022\035.fg" +
+      "boost.DownloadLabelRequest\032\031.fgboost.Dow" +
+      "nloadResponse\"\000\0228\n\005split\022\025.fgboost.Split" +
+      "Request\032\026.fgboost.SplitResponse\"\000\022A\n\010reg" +
+      "ister\022\030.fgboost.RegisterRequest\032\031.fgboos" +
+      "t.RegisterResponse\"\000\022O\n\020uploadTreeLeaves" +
+      "\022 .fgboost.UploadTreeLeavesRequest\032\027.fgb" +
+      "oost.UploadResponse\"\000\022A\n\010evaluate\022\030.fgbo" +
+      "ost.EvaluateRequest\032\031.fgboost.EvaluateRe" +
+      "sponse\"\000\022>\n\007predict\022\027.fgboost.PredictReq",
+      "uest\032\030.fgboost.PredictResponse\"\000B?\n(com." +
+      "intel.analytics.bigdl.ppml.generatedB\023FG" +
+      "BoostServiceProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -15078,123 +15078,123 @@ public final class FGBoostServiceProto {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          com.intel.analytics.bigdl.ppml.generated.FlBaseProto.getDescriptor(),
+          FlBaseProto.getDescriptor(),
         }, assigner);
-    internal_static_fgboost_UploadTableRequest_descriptor =
+    internal_static_fgboost_UploadLabelRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_fgboost_UploadTableRequest_fieldAccessorTable = new
+    internal_static_fgboost_UploadLabelRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_fgboost_UploadTableRequest_descriptor,
-        new java.lang.String[] { "Clientuuid", "Data", "Algorithm", });
-    internal_static_fgboost_DownloadTableRequest_descriptor =
+        internal_static_fgboost_UploadLabelRequest_descriptor,
+        new String[] { "Clientuuid", "Data", "Algorithm", });
+    internal_static_fgboost_DownloadLabelRequest_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_fgboost_DownloadTableRequest_fieldAccessorTable = new
+    internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_fgboost_DownloadTableRequest_descriptor,
-        new java.lang.String[] { "MetaData", "Algorithm", });
+        internal_static_fgboost_DownloadLabelRequest_descriptor,
+        new String[] { "MetaData", "Algorithm", });
     internal_static_fgboost_DownloadResponse_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_fgboost_DownloadResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_DownloadResponse_descriptor,
-        new java.lang.String[] { "Data", "Response", "Code", });
+        new String[] { "Data", "Response", "Code", });
     internal_static_fgboost_TreeLeaves_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_fgboost_TreeLeaves_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_TreeLeaves_descriptor,
-        new java.lang.String[] { "TreeID", "LeafIndex", "LeafOutput", });
+        new String[] { "TreeID", "LeafIndex", "LeafOutput", });
     internal_static_fgboost_UploadTreeLeavesRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_UploadTreeLeavesRequest_descriptor,
-        new java.lang.String[] { "Clientuuid", "TreeLeaves", });
+        new String[] { "Clientuuid", "TreeLeaves", });
     internal_static_fgboost_DataSplit_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_fgboost_DataSplit_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_DataSplit_descriptor,
-        new java.lang.String[] { "TreeID", "NodeID", "FeatureID", "SplitValue", "Gain", "SetLength", "ItemSet", "ClientUid", });
+        new String[] { "TreeID", "NodeID", "FeatureID", "SplitValue", "Gain", "SetLength", "ItemSet", "ClientUid", });
     internal_static_fgboost_UploadResponse_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_fgboost_UploadResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_UploadResponse_descriptor,
-        new java.lang.String[] { "Response", "Code", });
+        new String[] { "Response", "Code", });
     internal_static_fgboost_TreePredict_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_fgboost_TreePredict_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_TreePredict_descriptor,
-        new java.lang.String[] { "TreeID", "Predicts", });
+        new String[] { "TreeID", "Predicts", });
     internal_static_fgboost_BoostPredict_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_fgboost_BoostPredict_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_BoostPredict_descriptor,
-        new java.lang.String[] { "Predicts", });
+        new String[] { "Predicts", });
     internal_static_fgboost_BoostEval_descriptor =
       getDescriptor().getMessageTypes().get(9);
     internal_static_fgboost_BoostEval_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_BoostEval_descriptor,
-        new java.lang.String[] { "Evaluates", });
+        new String[] { "Evaluates", });
     internal_static_fgboost_RegisterRequest_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_fgboost_RegisterRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_RegisterRequest_descriptor,
-        new java.lang.String[] { "Clientuuid", "Token", });
+        new String[] { "Clientuuid", "Token", });
     internal_static_fgboost_RegisterResponse_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_fgboost_RegisterResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_RegisterResponse_descriptor,
-        new java.lang.String[] { "Response", "Code", });
+        new String[] { "Response", "Code", });
     internal_static_fgboost_UploadTreeEvalRequest_descriptor =
       getDescriptor().getMessageTypes().get(12);
     internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_UploadTreeEvalRequest_descriptor,
-        new java.lang.String[] { "Clientuuid", "Version", "TreeEval", });
+        new String[] { "Clientuuid", "Version", "TreeEval", });
     internal_static_fgboost_EvaluateRequest_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_fgboost_EvaluateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_EvaluateRequest_descriptor,
-        new java.lang.String[] { "Clientuuid", "TreeEval", "BsVersion", });
+        new String[] { "Clientuuid", "TreeEval", "BsVersion", });
     internal_static_fgboost_EvaluateResponse_descriptor =
       getDescriptor().getMessageTypes().get(14);
     internal_static_fgboost_EvaluateResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_EvaluateResponse_descriptor,
-        new java.lang.String[] { "Response", "Data", "Code", "Message", });
+        new String[] { "Response", "Data", "Code", "Message", });
     internal_static_fgboost_PredictRequest_descriptor =
       getDescriptor().getMessageTypes().get(15);
     internal_static_fgboost_PredictRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_PredictRequest_descriptor,
-        new java.lang.String[] { "Clientuuid", "TreeEval", "BsVersion", });
+        new String[] { "Clientuuid", "TreeEval", "BsVersion", });
     internal_static_fgboost_SplitRequest_descriptor =
       getDescriptor().getMessageTypes().get(16);
     internal_static_fgboost_SplitRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_SplitRequest_descriptor,
-        new java.lang.String[] { "Clientuuid", "Split", });
+        new String[] { "Clientuuid", "Split", });
     internal_static_fgboost_PredictResponse_descriptor =
       getDescriptor().getMessageTypes().get(17);
     internal_static_fgboost_PredictResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_PredictResponse_descriptor,
-        new java.lang.String[] { "Response", "Data", "Code", });
+        new String[] { "Response", "Data", "Code", });
     internal_static_fgboost_SplitResponse_descriptor =
       getDescriptor().getMessageTypes().get(18);
     internal_static_fgboost_SplitResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_SplitResponse_descriptor,
-        new java.lang.String[] { "Split", "Response", "Code", });
-    com.intel.analytics.bigdl.ppml.generated.FlBaseProto.getDescriptor();
+        new String[] { "Split", "Response", "Code", });
+    FlBaseProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

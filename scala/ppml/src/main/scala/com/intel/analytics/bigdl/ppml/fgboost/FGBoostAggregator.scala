@@ -48,8 +48,8 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   // wrapper methods to simplify data access
   def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTableStorage()
   def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
-  def getTreeLeaveStorage() = aggregateTypeMap.get(FLPhase.LEAF).getLeafStorage()
-  def getBranchStorage() = aggregateTypeMap.get(FLPhase.BRANCH).getBranchStorage()
+  def getTreeLeaveStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAVES).getLeafStorage()
+  def getBranchStorage() = aggregateTypeMap.get(FLPhase.TREE_EVAL).getBranchStorage()
   def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTableStorage()
 
   override def initStorage(): Unit = {
@@ -63,7 +63,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     flPhase match {
       case FLPhase.LABEL => initGradient()
       case FLPhase.SPLIT => aggregateSplit()
-      case FLPhase.LEAF => aggregateTreeLeaves()
+      case FLPhase.TREE_LEAVES => aggregateTreeLeaves()
       case FLPhase.EVAL => aggEvaluate()
       case FLPhase.PREDICT => aggPredict()
       case _ => throw new NotImplementedError()
@@ -97,7 +97,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
 
   def initGradient(): Unit = {
     val labelClientData = getLabelStorage().clientData
-    val aggData = labelClientData.mapValues(_.getTableMap).values.flatMap(_.asScala)
+    val aggData = labelClientData.mapValues(_.getTensorsMap).values.flatMap(_.asScala)
       .map { data =>
         (data._1, data._2.getTensorList.asScala.toArray.map(_.toFloat))
       }.toMap
@@ -116,16 +116,16 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     logger.info(s"====Loss ${loss} ====")
     logger.info("Label" + label.mkString("Array(", ", ", ")"))
 
-    val metaData = TableMetaData.newBuilder()
+    val metaData = MetaData.newBuilder()
       .setName("xgboost_grad")
       .setVersion(0)
       .build()
-    val aggregatedModel = Table.newBuilder()
+    val aggregatedModel = TensorMap.newBuilder()
       .setMetaData(metaData)
-      .putTable("grad", toFloatTensor(grad))
-      .putTable("hess", toFloatTensor(hess))
-      .putTable("predict", toFloatTensor(basePrediction))
-      .putTable("label", toFloatTensor(label))
+      .putTensors("grad", toFloatTensor(grad))
+      .putTensors("hess", toFloatTensor(hess))
+      .putTensors("predict", toFloatTensor(basePrediction))
+      .putTensors("label", toFloatTensor(label))
       .build()
     // Update gradient
     getLabelStorage().clearClientAndUpdateServer(aggregatedModel)
@@ -208,7 +208,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     // g = y' - y, h = 1
     logger.info("Updating Gradient with new Predict")
     val tableStorage = getLabelStorage()
-    val gradTable = tableStorage.serverData.getTableMap
+    val gradTable = tableStorage.serverData.getTensorsMap
     val predict = gradTable.get("predict").getTensorList.asScala.toArray.map(_.toFloat)
     val label = gradTable.get("label").getTensorList.asScala.toArray.map(_.toFloat)
 
@@ -226,16 +226,16 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     logger.debug("New Predict" + predict.mkString("Array(", ", ", ")"))
     logger.debug("New Grad" + gradients(0).mkString("Array(", ", ", ")"))
 
-    val metaData = TableMetaData.newBuilder()
+    val metaData = MetaData.newBuilder()
       .setName("xgboost_grad")
       .setVersion(tableStorage.version + 1)
       .build()
-    val aggregatedModel = Table.newBuilder()
+    val aggregatedModel = TensorMap.newBuilder()
       .setMetaData(metaData)
-      .putTable("grad", toFloatTensor(gradients(0)))
-      .putTable("predict", toFloatTensor(predict))
-      .putTable("hess", toFloatTensor(gradients(1)))
-      .putTable("label", toFloatTensor(label))
+      .putTensors("grad", toFloatTensor(gradients(0)))
+      .putTensors("predict", toFloatTensor(predict))
+      .putTensors("hess", toFloatTensor(gradients(1)))
+      .putTensors("label", toFloatTensor(label))
       .build()
     // Update gradient
     tableStorage.clearClientAndUpdateServer(aggregatedModel)
@@ -292,13 +292,13 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       // Predict value of each boosting tree
       p._1.map(x => predictWithEncoding(x._2, x._1.toInt)).sum + p._2
     )
-    val metaData = TableMetaData.newBuilder()
+    val metaData = MetaData.newBuilder()
       .setName("predictResult")
       .setVersion(tableStorage.version)
       .build()
-    val aggResult = Table.newBuilder()
+    val aggResult = TensorMap.newBuilder()
       .setMetaData(metaData)
-      .putTable("predictResult", toFloatTensor(newPredict)).build()
+      .putTensors("predictResult", toFloatTensor(newPredict)).build()
     tableStorage.clearClientAndUpdateServer(aggResult)
   }
 }
