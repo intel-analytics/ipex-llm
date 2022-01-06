@@ -88,7 +88,7 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     val hasReturn = request.getReturn
     val aggregator = aggregatorMap.get(request.getAlgorithm)
     try {
-      aggregator.setHasReturn(hasReturn)
+      aggregator.setShouldReturn(hasReturn)
       aggregator.putClientData(EVAL, clientUUID, version, new DataHolder(data))
       val responseData = aggregator.getStorage(EVAL).serverData
       if (responseData == null) {
