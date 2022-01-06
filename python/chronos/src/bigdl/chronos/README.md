@@ -1,13 +1,11 @@
-## Project Chronos: BigDL Time Series for Telco 
+## Project Chronos: Application Framework for Building Large-scale Time Series Analysis Applications
 
-Time series prediction takes observations from previous time steps as input and predicts the values at future time steps. The Chronos library makes it easy to build end-to-end time series analysis by applying AutoML to extremely large-scale time series prediction, including:
+You can use _Chronos_ to do:
 
-* **_Use case_** - reference time series use cases in the Telco industry (such as network traffic forcasting, etc.)
-* **_Model_** - built-in deep learning models for time series analysis, for example
-     * LSTM - suitable for univarient forecasting
-     * [MTNet](https://arxiv.org/abs/1809.02105) - suitable for both univarient and multivarient forecasting
-     * TCMF - suitable for very high dimensional multivarient forecasting
-* **_AutoTS_** - AutoML support for building end-to-end time series analysis pipelines (including automatic feature generation, model selection and hyperparameter tuning).
+- **Data pre/post-processing and feature generation** (using _TSDataset_)
+- **Time Series Forecasting** (using _Standalone Forecasters_, _Auto Models_(with HPO) or _AutoTS_ (full AutoML enabled pipelines))
+- **Anomaly Detection** (using _Anomaly Detectors_)
+- **Synthetic Data Generation** (using _Simulators_)
 
 For more details about how to use, tutorials and API docs, please refer to the [Chronos User Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html) 
 
