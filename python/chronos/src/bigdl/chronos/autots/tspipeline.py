@@ -95,10 +95,10 @@ class TSPipeline:
             yhat_list, y_list = [], []
             self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
-                yhat = self._best_model.inference(x, backend=None).numpy()
+                yhat = self._best_model.inference(x, backend=None)
                 yhat_list.append(yhat)
                 y_list.append(y)
-            yhat = np.concatenate(yhat_list, axis=0)
+            yhat = torch.cat(yhat_list, dim=0).numpy()
             y = torch.cat(y_list, dim=0).numpy()
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
