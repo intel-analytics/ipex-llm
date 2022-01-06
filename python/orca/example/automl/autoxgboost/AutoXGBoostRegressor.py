@@ -26,7 +26,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='AutoXGBRegressor example')
     parser.add_argument('-p', '--path', type=str,
-                        default="~/data/incd.csv",
+                        default="./data/incd.csv",
                         help='Training data path')
     parser.add_argument('--cluster_mode',
                         type=str,
