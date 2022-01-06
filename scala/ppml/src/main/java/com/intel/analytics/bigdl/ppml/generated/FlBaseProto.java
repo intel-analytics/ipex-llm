@@ -274,7 +274,7 @@ public final class FlBaseProto {
       return FlBaseProto.internal_static_FloatTensor_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FlBaseProto.internal_static_FloatTensor_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -502,7 +502,7 @@ public final class FlBaseProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -518,7 +518,7 @@ public final class FlBaseProto {
         return FlBaseProto.internal_static_FloatTensor_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FlBaseProto.internal_static_FloatTensor_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -531,7 +531,7 @@ public final class FlBaseProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -865,38 +865,38 @@ public final class FlBaseProto {
     MetaDataOrBuilder getMetaDataOrBuilder();
 
     /**
-     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
      */
-    int getTensorMapCount();
+    int getTensorsCount();
     /**
-     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
      */
-    boolean containsTensorMap(
-            String key);
+    boolean containsTensors(
+        String key);
     /**
-     * Use {@link #getTensorMapMap()} instead.
+     * Use {@link #getTensorsMap()} instead.
      */
     @Deprecated
     java.util.Map<String, FloatTensor>
-    getTensorMap();
+    getTensors();
     /**
-     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
      */
     java.util.Map<String, FloatTensor>
-    getTensorMapMap();
+    getTensorsMap();
     /**
-     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
      */
 
-    FloatTensor getTensorMapOrDefault(
-            String key,
-            FloatTensor defaultValue);
+    FloatTensor getTensorsOrDefault(
+        String key,
+        FloatTensor defaultValue);
     /**
-     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
      */
 
-    FloatTensor getTensorMapOrThrow(
-            String key);
+    FloatTensor getTensorsOrThrow(
+        String key);
   }
   /**
    * <pre>
@@ -955,14 +955,14 @@ public final class FlBaseProto {
             }
             case 18: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                tensorMap_ = com.google.protobuf.MapField.newMapField(
-                    TensorMapDefaultEntryHolder.defaultEntry);
+                tensors_ = com.google.protobuf.MapField.newMapField(
+                    TensorsDefaultEntryHolder.defaultEntry);
                 mutable_bitField0_ |= 0x00000002;
               }
               com.google.protobuf.MapEntry<String, FloatTensor>
-              tensorMap = input.readMessage(
-                  TensorMapDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              tensorMap_.getMutableMap().put(tensorMap.getKey(), tensorMap.getValue());
+              tensors = input.readMessage(
+                  TensorsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              tensors_.getMutableMap().put(tensors.getKey(), tensors.getValue());
               break;
             }
           }
@@ -986,13 +986,13 @@ public final class FlBaseProto {
         int number) {
       switch (number) {
         case 2:
-          return internalGetTensorMap();
+          return internalGetTensors();
         default:
           throw new RuntimeException(
               "Invalid map field number: " + number);
       }
     }
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FlBaseProto.internal_static_TensorMap_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1021,76 +1021,76 @@ public final class FlBaseProto {
       return getMetaData();
     }
 
-    public static final int TENSORMAP_FIELD_NUMBER = 2;
-    private static final class TensorMapDefaultEntryHolder {
+    public static final int TENSORS_FIELD_NUMBER = 2;
+    private static final class TensorsDefaultEntryHolder {
       static final com.google.protobuf.MapEntry<
           String, FloatTensor> defaultEntry =
               com.google.protobuf.MapEntry
               .<String, FloatTensor>newDefaultInstance(
-                  FlBaseProto.internal_static_TensorMap_TensorMapEntry_descriptor,
+                  FlBaseProto.internal_static_TensorMap_TensorsEntry_descriptor,
                   com.google.protobuf.WireFormat.FieldType.STRING,
                   "",
                   com.google.protobuf.WireFormat.FieldType.MESSAGE,
                   FloatTensor.getDefaultInstance());
     }
     private com.google.protobuf.MapField<
-        String, FloatTensor> tensorMap_;
+        String, FloatTensor> tensors_;
     private com.google.protobuf.MapField<String, FloatTensor>
-    internalGetTensorMap() {
-      if (tensorMap_ == null) {
+    internalGetTensors() {
+      if (tensors_ == null) {
         return com.google.protobuf.MapField.emptyMapField(
-            TensorMapDefaultEntryHolder.defaultEntry);
+            TensorsDefaultEntryHolder.defaultEntry);
       }
-      return tensorMap_;
+      return tensors_;
     }
 
-    public int getTensorMapCount() {
-      return internalGetTensorMap().getMap().size();
+    public int getTensorsCount() {
+      return internalGetTensors().getMap().size();
     }
     /**
-     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
      */
 
-    public boolean containsTensorMap(
+    public boolean containsTensors(
         String key) {
       if (key == null) { throw new NullPointerException(); }
-      return internalGetTensorMap().getMap().containsKey(key);
+      return internalGetTensors().getMap().containsKey(key);
     }
     /**
-     * Use {@link #getTensorMapMap()} instead.
+     * Use {@link #getTensorsMap()} instead.
      */
     @Deprecated
-    public java.util.Map<String, FloatTensor> getTensorMap() {
-      return getTensorMapMap();
+    public java.util.Map<String, FloatTensor> getTensors() {
+      return getTensorsMap();
     }
     /**
-     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
      */
 
-    public java.util.Map<String, FloatTensor> getTensorMapMap() {
-      return internalGetTensorMap().getMap();
+    public java.util.Map<String, FloatTensor> getTensorsMap() {
+      return internalGetTensors().getMap();
     }
     /**
-     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
      */
 
-    public FloatTensor getTensorMapOrDefault(
+    public FloatTensor getTensorsOrDefault(
         String key,
         FloatTensor defaultValue) {
       if (key == null) { throw new NullPointerException(); }
       java.util.Map<String, FloatTensor> map =
-          internalGetTensorMap().getMap();
+          internalGetTensors().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
     /**
-     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
      */
 
-    public FloatTensor getTensorMapOrThrow(
+    public FloatTensor getTensorsOrThrow(
         String key) {
       if (key == null) { throw new NullPointerException(); }
       java.util.Map<String, FloatTensor> map =
-          internalGetTensorMap().getMap();
+          internalGetTensors().getMap();
       if (!map.containsKey(key)) {
         throw new IllegalArgumentException();
       }
@@ -1113,13 +1113,13 @@ public final class FlBaseProto {
         output.writeMessage(1, getMetaData());
       }
       for (java.util.Map.Entry<String, FloatTensor> entry
-           : internalGetTensorMap().getMap().entrySet()) {
+           : internalGetTensors().getMap().entrySet()) {
         com.google.protobuf.MapEntry<String, FloatTensor>
-        tensorMap = TensorMapDefaultEntryHolder.defaultEntry.newBuilderForType()
+        tensors = TensorsDefaultEntryHolder.defaultEntry.newBuilderForType()
             .setKey(entry.getKey())
             .setValue(entry.getValue())
             .build();
-        output.writeMessage(2, tensorMap);
+        output.writeMessage(2, tensors);
       }
     }
 
@@ -1133,14 +1133,14 @@ public final class FlBaseProto {
           .computeMessageSize(1, getMetaData());
       }
       for (java.util.Map.Entry<String, FloatTensor> entry
-           : internalGetTensorMap().getMap().entrySet()) {
+           : internalGetTensors().getMap().entrySet()) {
         com.google.protobuf.MapEntry<String, FloatTensor>
-        tensorMap = TensorMapDefaultEntryHolder.defaultEntry.newBuilderForType()
+        tensors = TensorsDefaultEntryHolder.defaultEntry.newBuilderForType()
             .setKey(entry.getKey())
             .setValue(entry.getValue())
             .build();
         size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(2, tensorMap);
+            .computeMessageSize(2, tensors);
       }
       memoizedSize = size;
       return size;
@@ -1163,8 +1163,8 @@ public final class FlBaseProto {
         result = result && getMetaData()
             .equals(other.getMetaData());
       }
-      result = result && internalGetTensorMap().equals(
-          other.internalGetTensorMap());
+      result = result && internalGetTensors().equals(
+          other.internalGetTensors());
       return result;
     }
 
@@ -1179,9 +1179,9 @@ public final class FlBaseProto {
         hash = (37 * hash) + METADATA_FIELD_NUMBER;
         hash = (53 * hash) + getMetaData().hashCode();
       }
-      if (!internalGetTensorMap().getMap().isEmpty()) {
-        hash = (37 * hash) + TENSORMAP_FIELD_NUMBER;
-        hash = (53 * hash) + internalGetTensorMap().hashCode();
+      if (!internalGetTensors().getMap().isEmpty()) {
+        hash = (37 * hash) + TENSORS_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetTensors().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -1261,7 +1261,7 @@ public final class FlBaseProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1285,7 +1285,7 @@ public final class FlBaseProto {
           int number) {
         switch (number) {
           case 2:
-            return internalGetTensorMap();
+            return internalGetTensors();
           default:
             throw new RuntimeException(
                 "Invalid map field number: " + number);
@@ -1296,13 +1296,13 @@ public final class FlBaseProto {
           int number) {
         switch (number) {
           case 2:
-            return internalGetMutableTensorMap();
+            return internalGetMutableTensors();
           default:
             throw new RuntimeException(
                 "Invalid map field number: " + number);
         }
       }
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FlBaseProto.internal_static_TensorMap_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1315,7 +1315,7 @@ public final class FlBaseProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1332,7 +1332,7 @@ public final class FlBaseProto {
           metaData_ = null;
           metaDataBuilder_ = null;
         }
-        internalGetMutableTensorMap().clear();
+        internalGetMutableTensors().clear();
         return this;
       }
 
@@ -1362,8 +1362,8 @@ public final class FlBaseProto {
         } else {
           result.metaData_ = metaDataBuilder_.build();
         }
-        result.tensorMap_ = internalGetTensorMap();
-        result.tensorMap_.makeImmutable();
+        result.tensors_ = internalGetTensors();
+        result.tensors_.makeImmutable();
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1409,8 +1409,8 @@ public final class FlBaseProto {
         if (other.hasMetaData()) {
           mergeMetaData(other.getMetaData());
         }
-        internalGetMutableTensorMap().mergeFrom(
-            other.internalGetTensorMap());
+        internalGetMutableTensors().mergeFrom(
+            other.internalGetTensors());
         onChanged();
         return this;
       }
@@ -1556,93 +1556,93 @@ public final class FlBaseProto {
       }
 
       private com.google.protobuf.MapField<
-          String, FloatTensor> tensorMap_;
+          String, FloatTensor> tensors_;
       private com.google.protobuf.MapField<String, FloatTensor>
-      internalGetTensorMap() {
-        if (tensorMap_ == null) {
+      internalGetTensors() {
+        if (tensors_ == null) {
           return com.google.protobuf.MapField.emptyMapField(
-              TensorMapDefaultEntryHolder.defaultEntry);
+              TensorsDefaultEntryHolder.defaultEntry);
         }
-        return tensorMap_;
+        return tensors_;
       }
       private com.google.protobuf.MapField<String, FloatTensor>
-      internalGetMutableTensorMap() {
+      internalGetMutableTensors() {
         onChanged();;
-        if (tensorMap_ == null) {
-          tensorMap_ = com.google.protobuf.MapField.newMapField(
-              TensorMapDefaultEntryHolder.defaultEntry);
+        if (tensors_ == null) {
+          tensors_ = com.google.protobuf.MapField.newMapField(
+              TensorsDefaultEntryHolder.defaultEntry);
         }
-        if (!tensorMap_.isMutable()) {
-          tensorMap_ = tensorMap_.copy();
+        if (!tensors_.isMutable()) {
+          tensors_ = tensors_.copy();
         }
-        return tensorMap_;
+        return tensors_;
       }
 
-      public int getTensorMapCount() {
-        return internalGetTensorMap().getMap().size();
+      public int getTensorsCount() {
+        return internalGetTensors().getMap().size();
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
        */
 
-      public boolean containsTensorMap(
+      public boolean containsTensors(
           String key) {
         if (key == null) { throw new NullPointerException(); }
-        return internalGetTensorMap().getMap().containsKey(key);
+        return internalGetTensors().getMap().containsKey(key);
       }
       /**
-       * Use {@link #getTensorMapMap()} instead.
+       * Use {@link #getTensorsMap()} instead.
        */
       @Deprecated
-      public java.util.Map<String, FloatTensor> getTensorMap() {
-        return getTensorMapMap();
+      public java.util.Map<String, FloatTensor> getTensors() {
+        return getTensorsMap();
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
        */
 
-      public java.util.Map<String, FloatTensor> getTensorMapMap() {
-        return internalGetTensorMap().getMap();
+      public java.util.Map<String, FloatTensor> getTensorsMap() {
+        return internalGetTensors().getMap();
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
        */
 
-      public FloatTensor getTensorMapOrDefault(
+      public FloatTensor getTensorsOrDefault(
           String key,
           FloatTensor defaultValue) {
         if (key == null) { throw new NullPointerException(); }
         java.util.Map<String, FloatTensor> map =
-            internalGetTensorMap().getMap();
+            internalGetTensors().getMap();
         return map.containsKey(key) ? map.get(key) : defaultValue;
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
        */
 
-      public FloatTensor getTensorMapOrThrow(
+      public FloatTensor getTensorsOrThrow(
           String key) {
         if (key == null) { throw new NullPointerException(); }
         java.util.Map<String, FloatTensor> map =
-            internalGetTensorMap().getMap();
+            internalGetTensors().getMap();
         if (!map.containsKey(key)) {
           throw new IllegalArgumentException();
         }
         return map.get(key);
       }
 
-      public Builder clearTensorMap() {
-        getMutableTensorMap().clear();
+      public Builder clearTensors() {
+        getMutableTensors().clear();
         return this;
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
        */
 
-      public Builder removeTensorMap(
+      public Builder removeTensors(
           String key) {
         if (key == null) { throw new NullPointerException(); }
-        getMutableTensorMap().remove(key);
+        getMutableTensors().remove(key);
         return this;
       }
       /**
@@ -1650,27 +1650,27 @@ public final class FlBaseProto {
        */
       @Deprecated
       public java.util.Map<String, FloatTensor>
-      getMutableTensorMap() {
-        return internalGetMutableTensorMap().getMutableMap();
+      getMutableTensors() {
+        return internalGetMutableTensors().getMutableMap();
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
        */
-      public Builder putTensorMap(
+      public Builder putTensors(
           String key,
           FloatTensor value) {
         if (key == null) { throw new NullPointerException(); }
         if (value == null) { throw new NullPointerException(); }
-        getMutableTensorMap().put(key, value);
+        getMutableTensors().put(key, value);
         return this;
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensors = 2;</code>
        */
 
-      public Builder putAllTensorMap(
+      public Builder putAllTensors(
           java.util.Map<String, FloatTensor> values) {
-        getMutableTensorMap().putAll(values);
+        getMutableTensors().putAll(values);
         return this;
       }
       public final Builder setUnknownFields(
@@ -1812,7 +1812,7 @@ public final class FlBaseProto {
       return FlBaseProto.internal_static_MetaData_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FlBaseProto.internal_static_MetaData_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2006,7 +2006,7 @@ public final class FlBaseProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2025,7 +2025,7 @@ public final class FlBaseProto {
         return FlBaseProto.internal_static_MetaData_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FlBaseProto.internal_static_MetaData_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -2038,7 +2038,7 @@ public final class FlBaseProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2305,10 +2305,10 @@ public final class FlBaseProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_TensorMap_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_TensorMap_TensorMapEntry_descriptor;
+    internal_static_TensorMap_TensorsEntry_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_TensorMap_TensorMapEntry_fieldAccessorTable;
+      internal_static_TensorMap_TensorsEntry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MetaData_descriptor;
   private static final 
@@ -2324,15 +2324,15 @@ public final class FlBaseProto {
   static {
     String[] descriptorData = {
       "\n\rfl_base.proto\",\n\013FloatTensor\022\r\n\005shape\030" +
-      "\001 \003(\005\022\016\n\006tensor\030\002 \003(\002\"\226\001\n\tTensorMap\022\033\n\010m" +
-      "etaData\030\001 \001(\0132\t.MetaData\022,\n\ttensorMap\030\002 " +
-      "\003(\0132\031.TensorMap.TensorMapEntry\032>\n\016Tensor" +
-      "MapEntry\022\013\n\003key\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132\014.F" +
-      "loatTensor:\0028\001\")\n\010MetaData\022\014\n\004name\030\001 \001(\t" +
-      "\022\017\n\007version\030\002 \001(\005*H\n\006SIGNAL\022\013\n\007SUCCESS\020\000" +
-      "\022\010\n\004WAIT\020\001\022\013\n\007TIMEOUT\020\002\022\017\n\013EMPTY_INPUT\020\003" +
-      "\022\t\n\005ERROR\020\004B7\n(com.intel.analytics.bigdl" +
-      ".ppml.generatedB\013FlBaseProtob\006proto3"
+      "\001 \003(\005\022\016\n\006tensor\030\002 \003(\002\"\220\001\n\tTensorMap\022\033\n\010m" +
+      "etaData\030\001 \001(\0132\t.MetaData\022(\n\007tensors\030\002 \003(" +
+      "\0132\027.TensorMap.TensorsEntry\032<\n\014TensorsEnt" +
+      "ry\022\013\n\003key\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132\014.FloatTe" +
+      "nsor:\0028\001\")\n\010MetaData\022\014\n\004name\030\001 \001(\t\022\017\n\007ve" +
+      "rsion\030\002 \001(\005*H\n\006SIGNAL\022\013\n\007SUCCESS\020\000\022\010\n\004WA" +
+      "IT\020\001\022\013\n\007TIMEOUT\020\002\022\017\n\013EMPTY_INPUT\020\003\022\t\n\005ER" +
+      "ROR\020\004B7\n(com.intel.analytics.bigdl.ppml." +
+      "generatedB\013FlBaseProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2357,12 +2357,12 @@ public final class FlBaseProto {
     internal_static_TensorMap_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_TensorMap_descriptor,
-        new String[] { "MetaData", "TensorMap", });
-    internal_static_TensorMap_TensorMapEntry_descriptor =
+        new String[] { "MetaData", "Tensors", });
+    internal_static_TensorMap_TensorsEntry_descriptor =
       internal_static_TensorMap_descriptor.getNestedTypes().get(0);
-    internal_static_TensorMap_TensorMapEntry_fieldAccessorTable = new
+    internal_static_TensorMap_TensorsEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_TensorMap_TensorMapEntry_descriptor,
+        internal_static_TensorMap_TensorsEntry_descriptor,
         new String[] { "Key", "Value", });
     internal_static_MetaData_descriptor =
       getDescriptor().getMessageTypes().get(2);

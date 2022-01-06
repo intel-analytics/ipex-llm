@@ -43,14 +43,14 @@ object ProtoUtils {
     val tensorProto = toFloatTensor(output.toTensor[Float])
 
     val builder = TensorMap.newBuilder
-      .putTable("output", tensorProto)
+      .putTensors("output", tensorProto)
     if (meta != null) {
       builder.setMetaData(meta)
     }
 
     if (target != null) {
       val targetTensor = toFloatTensor(target.toTensor[Float])
-      builder.putTable("target", targetTensor)
+      builder.putTensors("target", targetTensor)
     }
     builder.build()
   }
@@ -69,7 +69,7 @@ object ProtoUtils {
   }
   def protoTableMapToTensorIterableMap(inputMap: java.util.Map[String, FlBaseProto.TensorMap]):
     Map[String, Iterable[Tensor[Float]]] = {
-    inputMap.asScala.mapValues(_.getTableMap).values
+    inputMap.asScala.mapValues(_.getTensorsMap).values
       .flatMap(_.asScala).groupBy(_._1)
       .map{data =>
         (data._1, data._2.map {v =>
@@ -116,7 +116,7 @@ object ProtoUtils {
         .addAllShape(weights.size.toList.map(v => int2Integer(v)))
         .build()
     val metamodel = TensorMap.newBuilder
-      .putTable("weights", tensor)
+      .putTensors("weights", tensor)
       .setMetaData(metadata)
       .build
     metamodel
@@ -125,7 +125,7 @@ object ProtoUtils {
 
   def updateModel(model: Module[Float],
                   modelData: TensorMap): Unit = {
-    val weigthBias = modelData.getTableMap.get("weights")
+    val weigthBias = modelData.getTensorsMap.get("weights")
     val data = weigthBias.getTensorList.asScala.map(v => Float2float(v)).toArray
     val shape = weigthBias.getShapeList.asScala.map(v => Integer2int(v)).toArray
     val tensor = Tensor(data, shape)
@@ -133,7 +133,7 @@ object ProtoUtils {
   }
 
   def getTensor(name: String, modelData: TensorMap): Tensor[Float] = {
-    val dataMap = modelData.getTableMap.get(name)
+    val dataMap = modelData.getTensorsMap.get(name)
     val data = dataMap.getTensorList.asScala.map(Float2float).toArray
     val shape = dataMap.getShapeList.asScala.map(Integer2int).toArray
     Tensor[Float](data, shape)
@@ -173,7 +173,7 @@ object ProtoUtils {
     }.toList
   }
   def toArrayFloat(response: PredictResponse): Array[Float] = {
-    response.getData.getTableMap.get("predictResult")
+    response.getData.getTensorsMap.get("predictResult")
       .getTensorList.asScala.toArray.map(_.toFloat)
   }
 

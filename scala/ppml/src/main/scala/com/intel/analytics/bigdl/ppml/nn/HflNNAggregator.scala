@@ -41,7 +41,7 @@ class HflNNAggregator extends NNAggregator {
     val storage = aggregateTypeMap.get(flPhase).getTableStorage()
     val dataMap = storage.clientData
     for (model <- dataMap.asScala.values) {
-      val modelMap = model.getTableMap
+      val modelMap = model.getTensorsMap
 
       for (tensorName <- modelMap.keySet.asScala) {
         val shapeList = modelMap.get(tensorName).getShapeList

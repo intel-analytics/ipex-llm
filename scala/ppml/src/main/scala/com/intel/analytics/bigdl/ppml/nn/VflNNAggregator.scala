@@ -68,8 +68,8 @@ class VflNNAggregator(model: Module[Float],
 
         aggregatedTable = TensorMap.newBuilder()
           .setMetaData(meta)
-          .putTable("gradInput", toFloatTensor(grad.toTable.apply[Tensor[Float]](1)))
-          .putTable("loss", toFloatTensor(Tensor[Float](T(loss))))
+          .putTensors("gradInput", toFloatTensor(grad.toTable.apply[Tensor[Float]](1)))
+          .putTensors("loss", toFloatTensor(Tensor[Float](T(loss))))
           .build()
 
       case FLPhase.EVAL =>
@@ -94,7 +94,7 @@ class VflNNAggregator(model: Module[Float],
         val meta = metaBuilder.setName("predictResult").setVersion(storage.version).build()
         aggregatedTable = TensorMap.newBuilder()
           .setMetaData(meta)
-          .putTable("predictOutput", toFloatTensor(output.toTensor[Float]))
+          .putTensors("predictOutput", toFloatTensor(output.toTensor[Float]))
           .build()
     }
     storage.clearClientAndUpdateServer(aggregatedTable)

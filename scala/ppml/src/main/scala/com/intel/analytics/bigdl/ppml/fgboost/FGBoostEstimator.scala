@@ -205,7 +205,7 @@ class FGBoostEstimator(continuous: Boolean,
 
     if (label != null && label.nonEmpty) {
       // party with label
-      gradData.putTable("label", toFloatTensor(label))
+      gradData.putTensors("label", toFloatTensor(label))
     }
     // Upload
     flClient.fgbostStub.uploadLabel(gradData.build)
