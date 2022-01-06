@@ -23,6 +23,7 @@ class AutoXGBClassifier(AutoEstimator):
                  logs_dir="/tmp/auto_xgb_classifier_logs",
                  cpus_per_trial=1,
                  name=None,
+                 remote_dir=None,
                  **xgb_configs
                  ):
         """
@@ -49,6 +50,9 @@ class AutoXGBClassifier(AutoEstimator):
             The value will also be assigned to n_jobs in xgboost,
             which is the number of parallel threads used to run xgboost.
         :param name: Name of the auto xgboost classifier.
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+            defaults to None and doesn't take effects while running in local. While running in
+            cluster, it defaults to "hdfs:///tmp/{name}".
         :param xgb_configs: Other scikit learn xgboost parameters. You may refer to
            https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn
            for the parameter names to specify. Note that we will directly use cpus_per_trial value
@@ -61,6 +65,7 @@ class AutoXGBClassifier(AutoEstimator):
         super().__init__(model_builder=xgb_model_builder,
                          logs_dir=logs_dir,
                          resources_per_trial=resources_per_trial,
+                         remote_dir=remote_dir,
                          name=name)
 
     def fit(self,
@@ -140,6 +145,7 @@ class AutoXGBRegressor(AutoEstimator):
                  logs_dir="/tmp/auto_xgb_regressor_logs",
                  cpus_per_trial=1,
                  name=None,
+                 remote_dir=None,
                  **xgb_configs
                  ):
         """
@@ -166,6 +172,9 @@ class AutoXGBRegressor(AutoEstimator):
         :param cpus_per_trial: Int. Number of cpus for each trial. The value will also be assigned
             to n_jobs, which is the number of parallel threads used to run xgboost.
         :param name: Name of the auto xgboost classifier.
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+            defaults to None and doesn't take effects while running in local. While running in
+            cluster, it defaults to "hdfs:///tmp/{name}".
         :param xgb_configs: Other scikit learn xgboost parameters. You may refer to
            https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn
            for the parameter names to specify. Note that we will directly use cpus_per_trial value
@@ -178,6 +187,7 @@ class AutoXGBRegressor(AutoEstimator):
         super().__init__(model_builder=xgb_model_builder,
                          logs_dir=logs_dir,
                          resources_per_trial=resources_per_trial,
+                         remote_dir=remote_dir,
                          name=name)
 
     def fit(self,
