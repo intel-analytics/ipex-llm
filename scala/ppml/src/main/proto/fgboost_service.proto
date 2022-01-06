@@ -32,16 +32,16 @@ service FGBoostService {
 
 message UploadLabelRequest {
     string clientuuid = 1;
-    Table data = 2;
+    TensorMap data = 2;
     string algorithm = 3;
 }
 message DownloadLabelRequest {
-    TableMetaData metaData = 1;
+    MetaData metaData = 1;
     string algorithm = 2;
 }
 
 message DownloadResponse {
-    Table data = 1;
+    TensorMap data = 1;
     string response = 2;
     int32 code = 3;
 }
@@ -109,7 +109,7 @@ message EvaluateRequest {
 
 message EvaluateResponse {
     string response = 1;
-    Table data = 2;
+    TensorMap data = 2;
     int32 code = 3;
     string message = 4;
 }
@@ -124,7 +124,7 @@ message SplitRequest {
 }
 message PredictResponse {
     string response = 1;
-    Table data = 2;
+    TensorMap data = 2;
     int32 code = 3;
 }
 

@@ -274,7 +274,7 @@ public final class FlBaseProto {
       return FlBaseProto.internal_static_FloatTensor_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FlBaseProto.internal_static_FloatTensor_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -502,7 +502,7 @@ public final class FlBaseProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -518,7 +518,7 @@ public final class FlBaseProto {
         return FlBaseProto.internal_static_FloatTensor_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FlBaseProto.internal_static_FloatTensor_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -531,7 +531,7 @@ public final class FlBaseProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -847,72 +847,72 @@ public final class FlBaseProto {
 
   }
 
-  public interface TableOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:Table)
+  public interface TensorMapOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:TensorMap)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
     boolean hasMetaData();
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    TableMetaData getMetaData();
+    MetaData getMetaData();
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    TableMetaDataOrBuilder getMetaDataOrBuilder();
+    MetaDataOrBuilder getMetaDataOrBuilder();
 
     /**
-     * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
-    int getTableCount();
+    int getTensorMapCount();
     /**
-     * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
-    boolean containsTable(
-        String key);
+    boolean containsTensorMap(
+            String key);
     /**
-     * Use {@link #getTableMap()} instead.
+     * Use {@link #getTensorMapMap()} instead.
      */
     @Deprecated
     java.util.Map<String, FloatTensor>
-    getTable();
+    getTensorMap();
     /**
-     * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
     java.util.Map<String, FloatTensor>
-    getTableMap();
+    getTensorMapMap();
     /**
-     * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
 
-    FloatTensor getTableOrDefault(
-        String key,
-        FloatTensor defaultValue);
+    FloatTensor getTensorMapOrDefault(
+            String key,
+            FloatTensor defaultValue);
     /**
-     * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
 
-    FloatTensor getTableOrThrow(
-        String key);
+    FloatTensor getTensorMapOrThrow(
+            String key);
   }
   /**
    * <pre>
    * </pre>
    *
-   * Protobuf type {@code Table}
+   * Protobuf type {@code TensorMap}
    */
-  public  static final class Table extends
+  public  static final class TensorMap extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:Table)
-      TableOrBuilder {
-    // Use Table.newBuilder() to construct.
-    private Table(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:TensorMap)
+      TensorMapOrBuilder {
+    // Use TensorMap.newBuilder() to construct.
+    private TensorMap(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private Table() {
+    private TensorMap() {
     }
 
     @Override
@@ -920,7 +920,7 @@ public final class FlBaseProto {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private Table(
+    private TensorMap(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -941,11 +941,11 @@ public final class FlBaseProto {
               break;
             }
             case 10: {
-              TableMetaData.Builder subBuilder = null;
+              MetaData.Builder subBuilder = null;
               if (metaData_ != null) {
                 subBuilder = metaData_.toBuilder();
               }
-              metaData_ = input.readMessage(TableMetaData.parser(), extensionRegistry);
+              metaData_ = input.readMessage(MetaData.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(metaData_);
                 metaData_ = subBuilder.buildPartial();
@@ -955,14 +955,14 @@ public final class FlBaseProto {
             }
             case 18: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                table_ = com.google.protobuf.MapField.newMapField(
-                    TableDefaultEntryHolder.defaultEntry);
+                tensorMap_ = com.google.protobuf.MapField.newMapField(
+                    TensorMapDefaultEntryHolder.defaultEntry);
                 mutable_bitField0_ |= 0x00000002;
               }
               com.google.protobuf.MapEntry<String, FloatTensor>
-              table = input.readMessage(
-                  TableDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              table_.getMutableMap().put(table.getKey(), table.getValue());
+              tensorMap = input.readMessage(
+                  TensorMapDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              tensorMap_.getMutableMap().put(tensorMap.getKey(), tensorMap.getValue());
               break;
             }
           }
@@ -978,7 +978,7 @@ public final class FlBaseProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return FlBaseProto.internal_static_Table_descriptor;
+      return FlBaseProto.internal_static_TensorMap_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -986,111 +986,111 @@ public final class FlBaseProto {
         int number) {
       switch (number) {
         case 2:
-          return internalGetTable();
+          return internalGetTensorMap();
         default:
           throw new RuntimeException(
               "Invalid map field number: " + number);
       }
     }
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return FlBaseProto.internal_static_Table_fieldAccessorTable
+      return FlBaseProto.internal_static_TensorMap_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              Table.class, Builder.class);
+              TensorMap.class, Builder.class);
     }
 
     private int bitField0_;
     public static final int METADATA_FIELD_NUMBER = 1;
-    private TableMetaData metaData_;
+    private MetaData metaData_;
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
     public boolean hasMetaData() {
       return metaData_ != null;
     }
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    public TableMetaData getMetaData() {
-      return metaData_ == null ? TableMetaData.getDefaultInstance() : metaData_;
+    public MetaData getMetaData() {
+      return metaData_ == null ? MetaData.getDefaultInstance() : metaData_;
     }
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    public TableMetaDataOrBuilder getMetaDataOrBuilder() {
+    public MetaDataOrBuilder getMetaDataOrBuilder() {
       return getMetaData();
     }
 
-    public static final int TABLE_FIELD_NUMBER = 2;
-    private static final class TableDefaultEntryHolder {
+    public static final int TENSORMAP_FIELD_NUMBER = 2;
+    private static final class TensorMapDefaultEntryHolder {
       static final com.google.protobuf.MapEntry<
           String, FloatTensor> defaultEntry =
               com.google.protobuf.MapEntry
               .<String, FloatTensor>newDefaultInstance(
-                  FlBaseProto.internal_static_Table_TableEntry_descriptor,
+                  FlBaseProto.internal_static_TensorMap_TensorMapEntry_descriptor,
                   com.google.protobuf.WireFormat.FieldType.STRING,
                   "",
                   com.google.protobuf.WireFormat.FieldType.MESSAGE,
                   FloatTensor.getDefaultInstance());
     }
     private com.google.protobuf.MapField<
-        String, FloatTensor> table_;
+        String, FloatTensor> tensorMap_;
     private com.google.protobuf.MapField<String, FloatTensor>
-    internalGetTable() {
-      if (table_ == null) {
+    internalGetTensorMap() {
+      if (tensorMap_ == null) {
         return com.google.protobuf.MapField.emptyMapField(
-            TableDefaultEntryHolder.defaultEntry);
+            TensorMapDefaultEntryHolder.defaultEntry);
       }
-      return table_;
+      return tensorMap_;
     }
 
-    public int getTableCount() {
-      return internalGetTable().getMap().size();
+    public int getTensorMapCount() {
+      return internalGetTensorMap().getMap().size();
     }
     /**
-     * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
 
-    public boolean containsTable(
+    public boolean containsTensorMap(
         String key) {
       if (key == null) { throw new NullPointerException(); }
-      return internalGetTable().getMap().containsKey(key);
+      return internalGetTensorMap().getMap().containsKey(key);
     }
     /**
-     * Use {@link #getTableMap()} instead.
+     * Use {@link #getTensorMapMap()} instead.
      */
     @Deprecated
-    public java.util.Map<String, FloatTensor> getTable() {
-      return getTableMap();
+    public java.util.Map<String, FloatTensor> getTensorMap() {
+      return getTensorMapMap();
     }
     /**
-     * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
 
-    public java.util.Map<String, FloatTensor> getTableMap() {
-      return internalGetTable().getMap();
+    public java.util.Map<String, FloatTensor> getTensorMapMap() {
+      return internalGetTensorMap().getMap();
     }
     /**
-     * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
 
-    public FloatTensor getTableOrDefault(
+    public FloatTensor getTensorMapOrDefault(
         String key,
         FloatTensor defaultValue) {
       if (key == null) { throw new NullPointerException(); }
       java.util.Map<String, FloatTensor> map =
-          internalGetTable().getMap();
+          internalGetTensorMap().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
     /**
-     * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+     * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
 
-    public FloatTensor getTableOrThrow(
+    public FloatTensor getTensorMapOrThrow(
         String key) {
       if (key == null) { throw new NullPointerException(); }
       java.util.Map<String, FloatTensor> map =
-          internalGetTable().getMap();
+          internalGetTensorMap().getMap();
       if (!map.containsKey(key)) {
         throw new IllegalArgumentException();
       }
@@ -1113,13 +1113,13 @@ public final class FlBaseProto {
         output.writeMessage(1, getMetaData());
       }
       for (java.util.Map.Entry<String, FloatTensor> entry
-           : internalGetTable().getMap().entrySet()) {
+           : internalGetTensorMap().getMap().entrySet()) {
         com.google.protobuf.MapEntry<String, FloatTensor>
-        table = TableDefaultEntryHolder.defaultEntry.newBuilderForType()
+        tensorMap = TensorMapDefaultEntryHolder.defaultEntry.newBuilderForType()
             .setKey(entry.getKey())
             .setValue(entry.getValue())
             .build();
-        output.writeMessage(2, table);
+        output.writeMessage(2, tensorMap);
       }
     }
 
@@ -1133,14 +1133,14 @@ public final class FlBaseProto {
           .computeMessageSize(1, getMetaData());
       }
       for (java.util.Map.Entry<String, FloatTensor> entry
-           : internalGetTable().getMap().entrySet()) {
+           : internalGetTensorMap().getMap().entrySet()) {
         com.google.protobuf.MapEntry<String, FloatTensor>
-        table = TableDefaultEntryHolder.defaultEntry.newBuilderForType()
+        tensorMap = TensorMapDefaultEntryHolder.defaultEntry.newBuilderForType()
             .setKey(entry.getKey())
             .setValue(entry.getValue())
             .build();
         size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(2, table);
+            .computeMessageSize(2, tensorMap);
       }
       memoizedSize = size;
       return size;
@@ -1152,10 +1152,10 @@ public final class FlBaseProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof Table)) {
+      if (!(obj instanceof TensorMap)) {
         return super.equals(obj);
       }
-      Table other = (Table) obj;
+      TensorMap other = (TensorMap) obj;
 
       boolean result = true;
       result = result && (hasMetaData() == other.hasMetaData());
@@ -1163,8 +1163,8 @@ public final class FlBaseProto {
         result = result && getMetaData()
             .equals(other.getMetaData());
       }
-      result = result && internalGetTable().equals(
-          other.internalGetTable());
+      result = result && internalGetTensorMap().equals(
+          other.internalGetTensorMap());
       return result;
     }
 
@@ -1179,67 +1179,67 @@ public final class FlBaseProto {
         hash = (37 * hash) + METADATA_FIELD_NUMBER;
         hash = (53 * hash) + getMetaData().hashCode();
       }
-      if (!internalGetTable().getMap().isEmpty()) {
-        hash = (37 * hash) + TABLE_FIELD_NUMBER;
-        hash = (53 * hash) + internalGetTable().hashCode();
+      if (!internalGetTensorMap().getMap().isEmpty()) {
+        hash = (37 * hash) + TENSORMAP_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetTensorMap().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static Table parseFrom(
+    public static TensorMap parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static Table parseFrom(
+    public static TensorMap parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static Table parseFrom(byte[] data)
+    public static TensorMap parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static Table parseFrom(
+    public static TensorMap parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static Table parseFrom(java.io.InputStream input)
+    public static TensorMap parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static Table parseFrom(
+    public static TensorMap parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static Table parseDelimitedFrom(java.io.InputStream input)
+    public static TensorMap parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static Table parseDelimitedFrom(
+    public static TensorMap parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static Table parseFrom(
+    public static TensorMap parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static Table parseFrom(
+    public static TensorMap parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1251,7 +1251,7 @@ public final class FlBaseProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(Table prototype) {
+    public static Builder newBuilder(TensorMap prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1261,7 +1261,7 @@ public final class FlBaseProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1269,15 +1269,15 @@ public final class FlBaseProto {
      * <pre>
      * </pre>
      *
-     * Protobuf type {@code Table}
+     * Protobuf type {@code TensorMap}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:Table)
-        TableOrBuilder {
+        // @@protoc_insertion_point(builder_implements:TensorMap)
+        TensorMapOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return FlBaseProto.internal_static_Table_descriptor;
+        return FlBaseProto.internal_static_TensorMap_descriptor;
       }
 
       @SuppressWarnings({"rawtypes"})
@@ -1285,7 +1285,7 @@ public final class FlBaseProto {
           int number) {
         switch (number) {
           case 2:
-            return internalGetTable();
+            return internalGetTensorMap();
           default:
             throw new RuntimeException(
                 "Invalid map field number: " + number);
@@ -1296,26 +1296,26 @@ public final class FlBaseProto {
           int number) {
         switch (number) {
           case 2:
-            return internalGetMutableTable();
+            return internalGetMutableTensorMap();
           default:
             throw new RuntimeException(
                 "Invalid map field number: " + number);
         }
       }
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return FlBaseProto.internal_static_Table_fieldAccessorTable
+        return FlBaseProto.internal_static_TensorMap_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                Table.class, Builder.class);
+                TensorMap.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TensorMap.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1332,29 +1332,29 @@ public final class FlBaseProto {
           metaData_ = null;
           metaDataBuilder_ = null;
         }
-        internalGetMutableTable().clear();
+        internalGetMutableTensorMap().clear();
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return FlBaseProto.internal_static_Table_descriptor;
+        return FlBaseProto.internal_static_TensorMap_descriptor;
       }
 
-      public Table getDefaultInstanceForType() {
-        return Table.getDefaultInstance();
+      public TensorMap getDefaultInstanceForType() {
+        return TensorMap.getDefaultInstance();
       }
 
-      public Table build() {
-        Table result = buildPartial();
+      public TensorMap build() {
+        TensorMap result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public Table buildPartial() {
-        Table result = new Table(this);
+      public TensorMap buildPartial() {
+        TensorMap result = new TensorMap(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (metaDataBuilder_ == null) {
@@ -1362,8 +1362,8 @@ public final class FlBaseProto {
         } else {
           result.metaData_ = metaDataBuilder_.build();
         }
-        result.table_ = internalGetTable();
-        result.table_.makeImmutable();
+        result.tensorMap_ = internalGetTensorMap();
+        result.tensorMap_.makeImmutable();
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1396,21 +1396,21 @@ public final class FlBaseProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof Table) {
-          return mergeFrom((Table)other);
+        if (other instanceof TensorMap) {
+          return mergeFrom((TensorMap)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(Table other) {
-        if (other == Table.getDefaultInstance()) return this;
+      public Builder mergeFrom(TensorMap other) {
+        if (other == TensorMap.getDefaultInstance()) return this;
         if (other.hasMetaData()) {
           mergeMetaData(other.getMetaData());
         }
-        internalGetMutableTable().mergeFrom(
-            other.internalGetTable());
+        internalGetMutableTensorMap().mergeFrom(
+            other.internalGetTensorMap());
         onChanged();
         return this;
       }
@@ -1423,11 +1423,11 @@ public final class FlBaseProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        Table parsedMessage = null;
+        TensorMap parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (Table) e.getUnfinishedMessage();
+          parsedMessage = (TensorMap) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1438,29 +1438,29 @@ public final class FlBaseProto {
       }
       private int bitField0_;
 
-      private TableMetaData metaData_ = null;
+      private MetaData metaData_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          TableMetaData, TableMetaData.Builder, TableMetaDataOrBuilder> metaDataBuilder_;
+          MetaData, MetaData.Builder, MetaDataOrBuilder> metaDataBuilder_;
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public boolean hasMetaData() {
         return metaDataBuilder_ != null || metaData_ != null;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public TableMetaData getMetaData() {
+      public MetaData getMetaData() {
         if (metaDataBuilder_ == null) {
-          return metaData_ == null ? TableMetaData.getDefaultInstance() : metaData_;
+          return metaData_ == null ? MetaData.getDefaultInstance() : metaData_;
         } else {
           return metaDataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public Builder setMetaData(TableMetaData value) {
+      public Builder setMetaData(MetaData value) {
         if (metaDataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1474,10 +1474,10 @@ public final class FlBaseProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public Builder setMetaData(
-          TableMetaData.Builder builderForValue) {
+          MetaData.Builder builderForValue) {
         if (metaDataBuilder_ == null) {
           metaData_ = builderForValue.build();
           onChanged();
@@ -1488,13 +1488,13 @@ public final class FlBaseProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public Builder mergeMetaData(TableMetaData value) {
+      public Builder mergeMetaData(MetaData value) {
         if (metaDataBuilder_ == null) {
           if (metaData_ != null) {
             metaData_ =
-              TableMetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
+              MetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
           } else {
             metaData_ = value;
           }
@@ -1506,7 +1506,7 @@ public final class FlBaseProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public Builder clearMetaData() {
         if (metaDataBuilder_ == null) {
@@ -1520,33 +1520,33 @@ public final class FlBaseProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public TableMetaData.Builder getMetaDataBuilder() {
+      public MetaData.Builder getMetaDataBuilder() {
         
         onChanged();
         return getMetaDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public TableMetaDataOrBuilder getMetaDataOrBuilder() {
+      public MetaDataOrBuilder getMetaDataOrBuilder() {
         if (metaDataBuilder_ != null) {
           return metaDataBuilder_.getMessageOrBuilder();
         } else {
           return metaData_ == null ?
-              TableMetaData.getDefaultInstance() : metaData_;
+              MetaData.getDefaultInstance() : metaData_;
         }
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          TableMetaData, TableMetaData.Builder, TableMetaDataOrBuilder>
+          MetaData, MetaData.Builder, MetaDataOrBuilder>
           getMetaDataFieldBuilder() {
         if (metaDataBuilder_ == null) {
           metaDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              TableMetaData, TableMetaData.Builder, TableMetaDataOrBuilder>(
+              MetaData, MetaData.Builder, MetaDataOrBuilder>(
                   getMetaData(),
                   getParentForChildren(),
                   isClean());
@@ -1556,93 +1556,93 @@ public final class FlBaseProto {
       }
 
       private com.google.protobuf.MapField<
-          String, FloatTensor> table_;
+          String, FloatTensor> tensorMap_;
       private com.google.protobuf.MapField<String, FloatTensor>
-      internalGetTable() {
-        if (table_ == null) {
+      internalGetTensorMap() {
+        if (tensorMap_ == null) {
           return com.google.protobuf.MapField.emptyMapField(
-              TableDefaultEntryHolder.defaultEntry);
+              TensorMapDefaultEntryHolder.defaultEntry);
         }
-        return table_;
+        return tensorMap_;
       }
       private com.google.protobuf.MapField<String, FloatTensor>
-      internalGetMutableTable() {
+      internalGetMutableTensorMap() {
         onChanged();;
-        if (table_ == null) {
-          table_ = com.google.protobuf.MapField.newMapField(
-              TableDefaultEntryHolder.defaultEntry);
+        if (tensorMap_ == null) {
+          tensorMap_ = com.google.protobuf.MapField.newMapField(
+              TensorMapDefaultEntryHolder.defaultEntry);
         }
-        if (!table_.isMutable()) {
-          table_ = table_.copy();
+        if (!tensorMap_.isMutable()) {
+          tensorMap_ = tensorMap_.copy();
         }
-        return table_;
+        return tensorMap_;
       }
 
-      public int getTableCount() {
-        return internalGetTable().getMap().size();
+      public int getTensorMapCount() {
+        return internalGetTensorMap().getMap().size();
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
        */
 
-      public boolean containsTable(
+      public boolean containsTensorMap(
           String key) {
         if (key == null) { throw new NullPointerException(); }
-        return internalGetTable().getMap().containsKey(key);
+        return internalGetTensorMap().getMap().containsKey(key);
       }
       /**
-       * Use {@link #getTableMap()} instead.
+       * Use {@link #getTensorMapMap()} instead.
        */
       @Deprecated
-      public java.util.Map<String, FloatTensor> getTable() {
-        return getTableMap();
+      public java.util.Map<String, FloatTensor> getTensorMap() {
+        return getTensorMapMap();
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
        */
 
-      public java.util.Map<String, FloatTensor> getTableMap() {
-        return internalGetTable().getMap();
+      public java.util.Map<String, FloatTensor> getTensorMapMap() {
+        return internalGetTensorMap().getMap();
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
        */
 
-      public FloatTensor getTableOrDefault(
+      public FloatTensor getTensorMapOrDefault(
           String key,
           FloatTensor defaultValue) {
         if (key == null) { throw new NullPointerException(); }
         java.util.Map<String, FloatTensor> map =
-            internalGetTable().getMap();
+            internalGetTensorMap().getMap();
         return map.containsKey(key) ? map.get(key) : defaultValue;
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
        */
 
-      public FloatTensor getTableOrThrow(
+      public FloatTensor getTensorMapOrThrow(
           String key) {
         if (key == null) { throw new NullPointerException(); }
         java.util.Map<String, FloatTensor> map =
-            internalGetTable().getMap();
+            internalGetTensorMap().getMap();
         if (!map.containsKey(key)) {
           throw new IllegalArgumentException();
         }
         return map.get(key);
       }
 
-      public Builder clearTable() {
-        getMutableTable().clear();
+      public Builder clearTensorMap() {
+        getMutableTensorMap().clear();
         return this;
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
        */
 
-      public Builder removeTable(
+      public Builder removeTensorMap(
           String key) {
         if (key == null) { throw new NullPointerException(); }
-        getMutableTable().remove(key);
+        getMutableTensorMap().remove(key);
         return this;
       }
       /**
@@ -1650,27 +1650,27 @@ public final class FlBaseProto {
        */
       @Deprecated
       public java.util.Map<String, FloatTensor>
-      getMutableTable() {
-        return internalGetMutableTable().getMutableMap();
+      getMutableTensorMap() {
+        return internalGetMutableTensorMap().getMutableMap();
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
        */
-      public Builder putTable(
+      public Builder putTensorMap(
           String key,
           FloatTensor value) {
         if (key == null) { throw new NullPointerException(); }
         if (value == null) { throw new NullPointerException(); }
-        getMutableTable().put(key, value);
+        getMutableTensorMap().put(key, value);
         return this;
       }
       /**
-       * <code>map&lt;string, .FloatTensor&gt; table = 2;</code>
+       * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
        */
 
-      public Builder putAllTable(
+      public Builder putAllTensorMap(
           java.util.Map<String, FloatTensor> values) {
-        getMutableTable().putAll(values);
+        getMutableTensorMap().putAll(values);
         return this;
       }
       public final Builder setUnknownFields(
@@ -1684,46 +1684,46 @@ public final class FlBaseProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:Table)
+      // @@protoc_insertion_point(builder_scope:TensorMap)
     }
 
-    // @@protoc_insertion_point(class_scope:Table)
-    private static final Table DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:TensorMap)
+    private static final TensorMap DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new Table();
+      DEFAULT_INSTANCE = new TensorMap();
     }
 
-    public static Table getDefaultInstance() {
+    public static TensorMap getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<Table>
-        PARSER = new com.google.protobuf.AbstractParser<Table>() {
-      public Table parsePartialFrom(
+    private static final com.google.protobuf.Parser<TensorMap>
+        PARSER = new com.google.protobuf.AbstractParser<TensorMap>() {
+      public TensorMap parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Table(input, extensionRegistry);
+          return new TensorMap(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<Table> parser() {
+    public static com.google.protobuf.Parser<TensorMap> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<Table> getParserForType() {
+    public com.google.protobuf.Parser<TensorMap> getParserForType() {
       return PARSER;
     }
 
-    public Table getDefaultInstanceForType() {
+    public TensorMap getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface TableMetaDataOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:TableMetaData)
+  public interface MetaDataOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:MetaData)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -1745,17 +1745,17 @@ public final class FlBaseProto {
    * <pre>
    * </pre>
    *
-   * Protobuf type {@code TableMetaData}
+   * Protobuf type {@code MetaData}
    */
-  public  static final class TableMetaData extends
+  public  static final class MetaData extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:TableMetaData)
-      TableMetaDataOrBuilder {
-    // Use TableMetaData.newBuilder() to construct.
-    private TableMetaData(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:MetaData)
+      MetaDataOrBuilder {
+    // Use MetaData.newBuilder() to construct.
+    private MetaData(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private TableMetaData() {
+    private MetaData() {
       name_ = "";
       version_ = 0;
     }
@@ -1765,7 +1765,7 @@ public final class FlBaseProto {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private TableMetaData(
+    private MetaData(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1809,14 +1809,14 @@ public final class FlBaseProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return FlBaseProto.internal_static_TableMetaData_descriptor;
+      return FlBaseProto.internal_static_MetaData_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return FlBaseProto.internal_static_TableMetaData_fieldAccessorTable
+      return FlBaseProto.internal_static_MetaData_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TableMetaData.class, Builder.class);
+              MetaData.class, Builder.class);
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
@@ -1904,10 +1904,10 @@ public final class FlBaseProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof TableMetaData)) {
+      if (!(obj instanceof MetaData)) {
         return super.equals(obj);
       }
-      TableMetaData other = (TableMetaData) obj;
+      MetaData other = (MetaData) obj;
 
       boolean result = true;
       result = result && getName()
@@ -1933,58 +1933,58 @@ public final class FlBaseProto {
       return hash;
     }
 
-    public static TableMetaData parseFrom(
+    public static MetaData parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TableMetaData parseFrom(
+    public static MetaData parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TableMetaData parseFrom(byte[] data)
+    public static MetaData parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TableMetaData parseFrom(
+    public static MetaData parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TableMetaData parseFrom(java.io.InputStream input)
+    public static MetaData parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TableMetaData parseFrom(
+    public static MetaData parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TableMetaData parseDelimitedFrom(java.io.InputStream input)
+    public static MetaData parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static TableMetaData parseDelimitedFrom(
+    public static MetaData parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TableMetaData parseFrom(
+    public static MetaData parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TableMetaData parseFrom(
+    public static MetaData parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1996,7 +1996,7 @@ public final class FlBaseProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(TableMetaData prototype) {
+    public static Builder newBuilder(MetaData prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -2006,7 +2006,7 @@ public final class FlBaseProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2014,31 +2014,31 @@ public final class FlBaseProto {
      * <pre>
      * </pre>
      *
-     * Protobuf type {@code TableMetaData}
+     * Protobuf type {@code MetaData}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:TableMetaData)
-        TableMetaDataOrBuilder {
+        // @@protoc_insertion_point(builder_implements:MetaData)
+        MetaDataOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return FlBaseProto.internal_static_TableMetaData_descriptor;
+        return FlBaseProto.internal_static_MetaData_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return FlBaseProto.internal_static_TableMetaData_fieldAccessorTable
+        return FlBaseProto.internal_static_MetaData_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                TableMetaData.class, Builder.class);
+                MetaData.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TableMetaData.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FlBaseProto.MetaData.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2058,23 +2058,23 @@ public final class FlBaseProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return FlBaseProto.internal_static_TableMetaData_descriptor;
+        return FlBaseProto.internal_static_MetaData_descriptor;
       }
 
-      public TableMetaData getDefaultInstanceForType() {
-        return TableMetaData.getDefaultInstance();
+      public MetaData getDefaultInstanceForType() {
+        return MetaData.getDefaultInstance();
       }
 
-      public TableMetaData build() {
-        TableMetaData result = buildPartial();
+      public MetaData build() {
+        MetaData result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public TableMetaData buildPartial() {
-        TableMetaData result = new TableMetaData(this);
+      public MetaData buildPartial() {
+        MetaData result = new MetaData(this);
         result.name_ = name_;
         result.version_ = version_;
         onBuilt();
@@ -2108,16 +2108,16 @@ public final class FlBaseProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof TableMetaData) {
-          return mergeFrom((TableMetaData)other);
+        if (other instanceof MetaData) {
+          return mergeFrom((MetaData)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(TableMetaData other) {
-        if (other == TableMetaData.getDefaultInstance()) return this;
+      public Builder mergeFrom(MetaData other) {
+        if (other == MetaData.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
           onChanged();
@@ -2137,11 +2137,11 @@ public final class FlBaseProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        TableMetaData parsedMessage = null;
+        MetaData parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (TableMetaData) e.getUnfinishedMessage();
+          parsedMessage = (MetaData) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2256,39 +2256,39 @@ public final class FlBaseProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:TableMetaData)
+      // @@protoc_insertion_point(builder_scope:MetaData)
     }
 
-    // @@protoc_insertion_point(class_scope:TableMetaData)
-    private static final TableMetaData DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:MetaData)
+    private static final MetaData DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new TableMetaData();
+      DEFAULT_INSTANCE = new MetaData();
     }
 
-    public static TableMetaData getDefaultInstance() {
+    public static MetaData getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<TableMetaData>
-        PARSER = new com.google.protobuf.AbstractParser<TableMetaData>() {
-      public TableMetaData parsePartialFrom(
+    private static final com.google.protobuf.Parser<MetaData>
+        PARSER = new com.google.protobuf.AbstractParser<MetaData>() {
+      public MetaData parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TableMetaData(input, extensionRegistry);
+          return new MetaData(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<TableMetaData> parser() {
+    public static com.google.protobuf.Parser<MetaData> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<TableMetaData> getParserForType() {
+    public com.google.protobuf.Parser<MetaData> getParserForType() {
       return PARSER;
     }
 
-    public TableMetaData getDefaultInstanceForType() {
+    public MetaData getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2300,20 +2300,20 @@ public final class FlBaseProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_FloatTensor_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_Table_descriptor;
+    internal_static_TensorMap_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_Table_fieldAccessorTable;
+      internal_static_TensorMap_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_Table_TableEntry_descriptor;
+    internal_static_TensorMap_TensorMapEntry_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_Table_TableEntry_fieldAccessorTable;
+      internal_static_TensorMap_TensorMapEntry_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_TableMetaData_descriptor;
+    internal_static_MetaData_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_TableMetaData_fieldAccessorTable;
+      internal_static_MetaData_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -2324,15 +2324,15 @@ public final class FlBaseProto {
   static {
     String[] descriptorData = {
       "\n\rfl_base.proto\",\n\013FloatTensor\022\r\n\005shape\030" +
-      "\001 \003(\005\022\016\n\006tensor\030\002 \003(\002\"\207\001\n\005Table\022 \n\010metaD" +
-      "ata\030\001 \001(\0132\016.TableMetaData\022 \n\005table\030\002 \003(\013" +
-      "2\021.Table.TableEntry\032:\n\nTableEntry\022\013\n\003key" +
-      "\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132\014.FloatTensor:\0028\001\"" +
-      ".\n\rTableMetaData\022\014\n\004name\030\001 \001(\t\022\017\n\007versio" +
-      "n\030\002 \001(\005*H\n\006SIGNAL\022\013\n\007SUCCESS\020\000\022\010\n\004WAIT\020\001" +
-      "\022\013\n\007TIMEOUT\020\002\022\017\n\013EMPTY_INPUT\020\003\022\t\n\005ERROR\020" +
-      "\004B7\n(com.intel.analytics.bigdl.ppml.gene" +
-      "ratedB\013FlBaseProtob\006proto3"
+      "\001 \003(\005\022\016\n\006tensor\030\002 \003(\002\"\226\001\n\tTensorMap\022\033\n\010m" +
+      "etaData\030\001 \001(\0132\t.MetaData\022,\n\ttensorMap\030\002 " +
+      "\003(\0132\031.TensorMap.TensorMapEntry\032>\n\016Tensor" +
+      "MapEntry\022\013\n\003key\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132\014.F" +
+      "loatTensor:\0028\001\")\n\010MetaData\022\014\n\004name\030\001 \001(\t" +
+      "\022\017\n\007version\030\002 \001(\005*H\n\006SIGNAL\022\013\n\007SUCCESS\020\000" +
+      "\022\010\n\004WAIT\020\001\022\013\n\007TIMEOUT\020\002\022\017\n\013EMPTY_INPUT\020\003" +
+      "\022\t\n\005ERROR\020\004B7\n(com.intel.analytics.bigdl" +
+      ".ppml.generatedB\013FlBaseProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2352,23 +2352,23 @@ public final class FlBaseProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_FloatTensor_descriptor,
         new String[] { "Shape", "Tensor", });
-    internal_static_Table_descriptor =
+    internal_static_TensorMap_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_Table_fieldAccessorTable = new
+    internal_static_TensorMap_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_Table_descriptor,
-        new String[] { "MetaData", "Table", });
-    internal_static_Table_TableEntry_descriptor =
-      internal_static_Table_descriptor.getNestedTypes().get(0);
-    internal_static_Table_TableEntry_fieldAccessorTable = new
+        internal_static_TensorMap_descriptor,
+        new String[] { "MetaData", "TensorMap", });
+    internal_static_TensorMap_TensorMapEntry_descriptor =
+      internal_static_TensorMap_descriptor.getNestedTypes().get(0);
+    internal_static_TensorMap_TensorMapEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_Table_TableEntry_descriptor,
+        internal_static_TensorMap_TensorMapEntry_descriptor,
         new String[] { "Key", "Value", });
-    internal_static_TableMetaData_descriptor =
+    internal_static_MetaData_descriptor =
       getDescriptor().getMessageTypes().get(2);
-    internal_static_TableMetaData_fieldAccessorTable = new
+    internal_static_MetaData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_TableMetaData_descriptor,
+        internal_static_MetaData_descriptor,
         new String[] { "Name", "Version", });
   }
 

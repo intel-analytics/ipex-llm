@@ -29,17 +29,17 @@ public final class FGBoostServiceProto {
         getClientuuidBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional string algorithm = 3;</code>
@@ -99,11 +99,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -133,7 +133,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -175,23 +175,23 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -388,7 +388,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -404,7 +404,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -417,7 +417,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -614,29 +614,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -650,10 +650,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -664,13 +664,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -682,7 +682,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -696,33 +696,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -853,17 +853,17 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
     boolean hasMetaData();
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    FlBaseProto.TableMetaData getMetaData();
+    FlBaseProto.MetaData getMetaData();
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    FlBaseProto.TableMetaDataOrBuilder getMetaDataOrBuilder();
+    FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder();
 
     /**
      * <code>optional string algorithm = 2;</code>
@@ -916,11 +916,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              FlBaseProto.TableMetaData.Builder subBuilder = null;
+              FlBaseProto.MetaData.Builder subBuilder = null;
               if (metaData_ != null) {
                 subBuilder = metaData_.toBuilder();
               }
-              metaData_ = input.readMessage(FlBaseProto.TableMetaData.parser(), extensionRegistry);
+              metaData_ = input.readMessage(FlBaseProto.MetaData.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(metaData_);
                 metaData_ = subBuilder.buildPartial();
@@ -950,7 +950,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -958,23 +958,23 @@ public final class FGBoostServiceProto {
     }
 
     public static final int METADATA_FIELD_NUMBER = 1;
-    private FlBaseProto.TableMetaData metaData_;
+    private FlBaseProto.MetaData metaData_;
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
     public boolean hasMetaData() {
       return metaData_ != null;
     }
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    public FlBaseProto.TableMetaData getMetaData() {
-      return metaData_ == null ? FlBaseProto.TableMetaData.getDefaultInstance() : metaData_;
+    public FlBaseProto.MetaData getMetaData() {
+      return metaData_ == null ? FlBaseProto.MetaData.getDefaultInstance() : metaData_;
     }
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    public FlBaseProto.TableMetaDataOrBuilder getMetaDataOrBuilder() {
+    public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
       return getMetaData();
     }
 
@@ -1161,7 +1161,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1177,7 +1177,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1190,7 +1190,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1311,29 +1311,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TableMetaData metaData_ = null;
+      private FlBaseProto.MetaData metaData_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TableMetaData, FlBaseProto.TableMetaData.Builder, FlBaseProto.TableMetaDataOrBuilder> metaDataBuilder_;
+          FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder> metaDataBuilder_;
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public boolean hasMetaData() {
         return metaDataBuilder_ != null || metaData_ != null;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public FlBaseProto.TableMetaData getMetaData() {
+      public FlBaseProto.MetaData getMetaData() {
         if (metaDataBuilder_ == null) {
-          return metaData_ == null ? FlBaseProto.TableMetaData.getDefaultInstance() : metaData_;
+          return metaData_ == null ? FlBaseProto.MetaData.getDefaultInstance() : metaData_;
         } else {
           return metaDataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public Builder setMetaData(FlBaseProto.TableMetaData value) {
+      public Builder setMetaData(FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1347,10 +1347,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public Builder setMetaData(
-          FlBaseProto.TableMetaData.Builder builderForValue) {
+          FlBaseProto.MetaData.Builder builderForValue) {
         if (metaDataBuilder_ == null) {
           metaData_ = builderForValue.build();
           onChanged();
@@ -1361,13 +1361,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public Builder mergeMetaData(FlBaseProto.TableMetaData value) {
+      public Builder mergeMetaData(FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
           if (metaData_ != null) {
             metaData_ =
-              FlBaseProto.TableMetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
+              FlBaseProto.MetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
           } else {
             metaData_ = value;
           }
@@ -1379,7 +1379,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public Builder clearMetaData() {
         if (metaDataBuilder_ == null) {
@@ -1393,33 +1393,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public FlBaseProto.TableMetaData.Builder getMetaDataBuilder() {
+      public FlBaseProto.MetaData.Builder getMetaDataBuilder() {
         
         onChanged();
         return getMetaDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public FlBaseProto.TableMetaDataOrBuilder getMetaDataOrBuilder() {
+      public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
         if (metaDataBuilder_ != null) {
           return metaDataBuilder_.getMessageOrBuilder();
         } else {
           return metaData_ == null ?
-              FlBaseProto.TableMetaData.getDefaultInstance() : metaData_;
+              FlBaseProto.MetaData.getDefaultInstance() : metaData_;
         }
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TableMetaData, FlBaseProto.TableMetaData.Builder, FlBaseProto.TableMetaDataOrBuilder>
+          FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder>
           getMetaDataFieldBuilder() {
         if (metaDataBuilder_ == null) {
           metaDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TableMetaData, FlBaseProto.TableMetaData.Builder, FlBaseProto.TableMetaDataOrBuilder>(
+              FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder>(
                   getMetaData(),
                   getParentForChildren(),
                   isClean());
@@ -1550,17 +1550,17 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional string response = 2;</code>
@@ -1619,11 +1619,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1658,7 +1658,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1666,23 +1666,23 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 1;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -1889,7 +1889,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1905,7 +1905,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1918,7 +1918,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2045,29 +2045,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2081,10 +2081,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -2095,13 +2095,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -2113,7 +2113,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -2127,33 +2127,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -2457,7 +2457,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2730,7 +2730,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2746,7 +2746,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -2759,7 +2759,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3255,7 +3255,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -3466,7 +3466,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3482,7 +3482,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -3495,7 +3495,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4042,7 +4042,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -4442,7 +4442,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4458,7 +4458,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -4471,7 +4471,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5149,7 +5149,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5343,7 +5343,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5359,7 +5359,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5372,7 +5372,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5742,7 +5742,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5965,7 +5965,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5981,7 +5981,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5994,7 +5994,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -6331,7 +6331,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
     TreePredictOrBuilder getPredictsOrBuilder(
-        int index);
+            int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostPredict}
@@ -6401,7 +6401,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -6579,7 +6579,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -6595,7 +6595,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -6608,7 +6608,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -7066,7 +7066,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
     TreePredictOrBuilder getEvaluatesOrBuilder(
-        int index);
+            int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostEval}
@@ -7136,7 +7136,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -7314,7 +7314,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -7330,7 +7330,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -7343,7 +7343,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -7868,7 +7868,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -8086,7 +8086,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8102,7 +8102,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8115,7 +8115,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -8502,7 +8502,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -8696,7 +8696,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8712,7 +8712,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8725,7 +8725,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -9022,7 +9022,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-        int index);
+            int index);
   }
   /**
    * Protobuf type {@code fgboost.UploadTreeEvalRequest}
@@ -9105,7 +9105,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -9348,7 +9348,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -9364,7 +9364,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -9377,7 +9377,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -9955,7 +9955,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-        int index);
+            int index);
 
     /**
      * <code>optional int32 bsVersion = 3;</code>
@@ -10043,7 +10043,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -10286,7 +10286,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -10302,7 +10302,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -10315,7 +10315,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -10872,17 +10872,17 @@ public final class FGBoostServiceProto {
         getResponseBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional int32 code = 3;</code>
@@ -10948,11 +10948,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -10987,7 +10987,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -11029,23 +11029,23 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -11262,7 +11262,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -11278,7 +11278,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -11291,7 +11291,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -11494,29 +11494,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -11530,10 +11530,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -11544,13 +11544,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -11562,7 +11562,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -11576,33 +11576,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -11790,7 +11790,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-        int index);
+            int index);
 
     /**
      * <code>optional int32 bsVersion = 3;</code>
@@ -11878,7 +11878,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -12121,7 +12121,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -12137,7 +12137,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -12150,7 +12150,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -12794,7 +12794,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -13005,7 +13005,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -13021,7 +13021,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -13034,7 +13034,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -13404,17 +13404,17 @@ public final class FGBoostServiceProto {
         getResponseBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional int32 code = 3;</code>
@@ -13469,11 +13469,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -13502,7 +13502,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -13544,23 +13544,23 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -13733,7 +13733,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -13749,7 +13749,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -13762,7 +13762,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -13958,29 +13958,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -13994,10 +13994,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -14008,13 +14008,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -14026,7 +14026,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -14040,33 +14040,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -14262,7 +14262,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -14493,7 +14493,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -14509,7 +14509,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -14522,7 +14522,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -15014,58 +15014,58 @@ public final class FGBoostServiceProto {
   static {
     String[] descriptorData = {
       "\n\025fgboost_service.proto\022\007fgboost\032\rfl_bas" +
-      "e.proto\"Q\n\022UploadLabelRequest\022\022\n\nclientu" +
-      "uid\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Table\022\021\n\talgor" +
-      "ithm\030\003 \001(\t\"K\n\024DownloadLabelRequest\022 \n\010me" +
-      "taData\030\001 \001(\0132\016.TableMetaData\022\021\n\talgorith" +
-      "m\030\002 \001(\t\"H\n\020DownloadResponse\022\024\n\004data\030\001 \001(" +
-      "\0132\006.Table\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003 \001(" +
-      "\005\"C\n\nTreeLeaves\022\016\n\006treeID\030\001 \001(\t\022\021\n\tleafI" +
-      "ndex\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\"V\n\027Upload" +
-      "TreeLeavesRequest\022\022\n\nclientuuid\030\001 \001(\t\022\'\n",
-      "\ntreeLeaves\030\002 \001(\0132\023.fgboost.TreeLeaves\"\227" +
-      "\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t\022\016\n\006nodeID\030\002" +
-      " \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\nsplitValue\030\004 " +
-      "\001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLength\030\006 \001(\005\022\017\n\007" +
-      "itemSet\030\007 \003(\005\022\021\n\tclientUid\030\010 \001(\t\"0\n\016Uplo" +
-      "adResponse\022\020\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001" +
-      "(\005\"/\n\013TreePredict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010pre" +
-      "dicts\030\002 \003(\010\"6\n\014BoostPredict\022&\n\010predicts\030" +
-      "\001 \003(\0132\024.fgboost.TreePredict\"4\n\tBoostEval" +
-      "\022\'\n\tevaluates\030\001 \003(\0132\024.fgboost.TreePredic",
-      "t\"4\n\017RegisterRequest\022\022\n\nclientuuid\030\001 \001(\t" +
-      "\022\r\n\005token\030\002 \001(\t\"2\n\020RegisterResponse\022\020\n\010r" +
-      "esponse\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"b\n\025UploadTre" +
-      "eEvalRequest\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007vers" +
-      "ion\030\002 \001(\005\022$\n\010treeEval\030\003 \003(\0132\022.fgboost.Bo" +
-      "ostEval\"^\n\017EvaluateRequest\022\022\n\nclientuuid" +
-      "\030\001 \001(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.Boost" +
-      "Eval\022\021\n\tbsVersion\030\003 \001(\005\"Y\n\020EvaluateRespo" +
-      "nse\022\020\n\010response\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Ta" +
-      "ble\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"]\n\016Pr",
-      "edictRequest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010tree" +
-      "Eval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n\tbsVers" +
-      "ion\030\003 \001(\005\"E\n\014SplitRequest\022\022\n\nclientuuid\030" +
-      "\001 \001(\t\022!\n\005split\030\002 \001(\0132\022.fgboost.DataSplit" +
-      "\"G\n\017PredictResponse\022\020\n\010response\030\001 \001(\t\022\024\n" +
-      "\004data\030\002 \001(\0132\006.Table\022\014\n\004code\030\003 \001(\005\"R\n\rSpl" +
-      "itResponse\022!\n\005split\030\001 \001(\0132\022.fgboost.Data" +
-      "Split\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003 \001(\0052\365\003" +
-      "\n\016FGBoostService\022E\n\013uploadLabel\022\033.fgboos" +
-      "t.UploadLabelRequest\032\027.fgboost.UploadRes",
-      "ponse\"\000\022K\n\rdownloadLabel\022\035.fgboost.Downl" +
-      "oadLabelRequest\032\031.fgboost.DownloadRespon" +
-      "se\"\000\0228\n\005split\022\025.fgboost.SplitRequest\032\026.f" +
-      "gboost.SplitResponse\"\000\022A\n\010register\022\030.fgb" +
-      "oost.RegisterRequest\032\031.fgboost.RegisterR" +
-      "esponse\"\000\022O\n\020uploadTreeLeaves\022 .fgboost." +
-      "UploadTreeLeavesRequest\032\027.fgboost.Upload" +
-      "Response\"\000\022A\n\010evaluate\022\030.fgboost.Evaluat" +
-      "eRequest\032\031.fgboost.EvaluateResponse\"\000\022>\n" +
-      "\007predict\022\027.fgboost.PredictRequest\032\030.fgbo",
-      "ost.PredictResponse\"\000B?\n(com.intel.analy" +
-      "tics.bigdl.ppml.generatedB\023FGBoostServic" +
-      "eProtob\006proto3"
+      "e.proto\"U\n\022UploadLabelRequest\022\022\n\nclientu" +
+      "uid\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\021\n\ta" +
+      "lgorithm\030\003 \001(\t\"F\n\024DownloadLabelRequest\022\033" +
+      "\n\010metaData\030\001 \001(\0132\t.MetaData\022\021\n\talgorithm" +
+      "\030\002 \001(\t\"L\n\020DownloadResponse\022\030\n\004data\030\001 \001(\013" +
+      "2\n.TensorMap\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003" +
+      " \001(\005\"C\n\nTreeLeaves\022\016\n\006treeID\030\001 \001(\t\022\021\n\tle" +
+      "afIndex\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\"V\n\027Upl" +
+      "oadTreeLeavesRequest\022\022\n\nclientuuid\030\001 \001(\t",
+      "\022\'\n\ntreeLeaves\030\002 \001(\0132\023.fgboost.TreeLeave" +
+      "s\"\227\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t\022\016\n\006nodeI" +
+      "D\030\002 \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\nsplitValue" +
+      "\030\004 \001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLength\030\006 \001(\005\022" +
+      "\017\n\007itemSet\030\007 \003(\005\022\021\n\tclientUid\030\010 \001(\t\"0\n\016U" +
+      "ploadResponse\022\020\n\010response\030\001 \001(\t\022\014\n\004code\030" +
+      "\002 \001(\005\"/\n\013TreePredict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010" +
+      "predicts\030\002 \003(\010\"6\n\014BoostPredict\022&\n\010predic" +
+      "ts\030\001 \003(\0132\024.fgboost.TreePredict\"4\n\tBoostE" +
+      "val\022\'\n\tevaluates\030\001 \003(\0132\024.fgboost.TreePre",
+      "dict\"4\n\017RegisterRequest\022\022\n\nclientuuid\030\001 " +
+      "\001(\t\022\r\n\005token\030\002 \001(\t\"2\n\020RegisterResponse\022\020" +
+      "\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"b\n\025Upload" +
+      "TreeEvalRequest\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007v" +
+      "ersion\030\002 \001(\005\022$\n\010treeEval\030\003 \003(\0132\022.fgboost" +
+      ".BoostEval\"^\n\017EvaluateRequest\022\022\n\nclientu" +
+      "uid\030\001 \001(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.Bo" +
+      "ostEval\022\021\n\tbsVersion\030\003 \001(\005\"]\n\020EvaluateRe" +
+      "sponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n" +
+      ".TensorMap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(",
+      "\t\"]\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001(\t\022" +
+      "$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n" +
+      "\tbsVersion\030\003 \001(\005\"E\n\014SplitRequest\022\022\n\nclie" +
+      "ntuuid\030\001 \001(\t\022!\n\005split\030\002 \001(\0132\022.fgboost.Da" +
+      "taSplit\"K\n\017PredictResponse\022\020\n\010response\030\001" +
+      " \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n\004code\030\003" +
+      " \001(\005\"R\n\rSplitResponse\022!\n\005split\030\001 \001(\0132\022.f" +
+      "gboost.DataSplit\022\020\n\010response\030\002 \001(\t\022\014\n\004co" +
+      "de\030\003 \001(\0052\365\003\n\016FGBoostService\022E\n\013uploadLab" +
+      "el\022\033.fgboost.UploadLabelRequest\032\027.fgboos",
+      "t.UploadResponse\"\000\022K\n\rdownloadLabel\022\035.fg" +
+      "boost.DownloadLabelRequest\032\031.fgboost.Dow" +
+      "nloadResponse\"\000\0228\n\005split\022\025.fgboost.Split" +
+      "Request\032\026.fgboost.SplitResponse\"\000\022A\n\010reg" +
+      "ister\022\030.fgboost.RegisterRequest\032\031.fgboos" +
+      "t.RegisterResponse\"\000\022O\n\020uploadTreeLeaves" +
+      "\022 .fgboost.UploadTreeLeavesRequest\032\027.fgb" +
+      "oost.UploadResponse\"\000\022A\n\010evaluate\022\030.fgbo" +
+      "ost.EvaluateRequest\032\031.fgboost.EvaluateRe" +
+      "sponse\"\000\022>\n\007predict\022\027.fgboost.PredictReq",
+      "uest\032\030.fgboost.PredictResponse\"\000B?\n(com." +
+      "intel.analytics.bigdl.ppml.generatedB\023FG" +
+      "BoostServiceProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
