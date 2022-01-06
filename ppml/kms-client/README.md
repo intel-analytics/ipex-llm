@@ -57,7 +57,7 @@ Pay attention to the variables and set them to correct values according to your 
 A file encryption/decryption example is used to illustrate the KMS, in which the decryption process is done as a spark job in SGX. Its workflow can be seen as below:
 
 <div align="center">
-<p align="center"> <img src="../../docs/readthedocs/image/KMS_End-to-end_Example_Flow_Chart.png" height="200px"><br></p>
+<p align="center"> <img src="../../docs/readthedocs/image/KMS_End-to-end_Example_Flow_Chart.png" height="150px"><br></p>
 </div>
 
 
