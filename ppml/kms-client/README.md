@@ -29,7 +29,6 @@ export DATA_PATH=YOUR_LOCAL_DATA_PATH
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
-export KMS_CLIENT_DIR_PATH=YOUR_LOCAL_PATH_TO_BigDL/ppml/kms-client
 
 sudo docker pull $DOCKER_IMAGE
 
@@ -68,7 +67,7 @@ Enter the client container deployed in the previous step and run the shell scrip
 ```bash
 sudo docker exec -it kms-client bash
 cd /ppml/trusted-big-data-ml
-bash bash work/test-suites/kms-e2e-example.sh
+bash work/test-suites/kms-e2e-example.sh
 ```
 
 Then it takes a little time to operate in SGX, and you are expected to get output as below:

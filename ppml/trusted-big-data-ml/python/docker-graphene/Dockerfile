@@ -85,9 +85,6 @@ RUN cd /opt && \
     mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
 
 ADD spark-example-sql-e2e.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
-ADD sparkdecryptfiles_2.12-0.1.0.jar /opt/spark-${SPARK_VERSION}/examples/jars/sparkdecryptfiles_2.12-0.1.0.jar
-ADD fernet-java8-1.4.2.jar /opt/spark-${SPARK_VERSION}/examples/jars/fernet-java8-1.4.2.jar
-ADD kms-requirement.yml /ppml/trusted-big-data-ml/work/kms-requirement.yml
 
 # hadoop
 RUN cd /opt && \
