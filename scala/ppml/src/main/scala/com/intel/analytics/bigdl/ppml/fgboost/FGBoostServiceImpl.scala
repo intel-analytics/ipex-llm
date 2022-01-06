@@ -52,7 +52,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val version = data.getMetaData.getVersion
     try {
       aggregator.putClientData(FLPhase.LABEL, clientUUID, version, new DataHolder(data))
-      val response = s"Table uploaded to server at clientID: $clientUUID, version: $version"
+      val response = s"TensorMap uploaded to server at clientID: $clientUUID, version: $version"
       responseObserver.onNext(UploadResponse.newBuilder.setResponse(response).setCode(0).build)
     } catch {
       case e: Exception =>

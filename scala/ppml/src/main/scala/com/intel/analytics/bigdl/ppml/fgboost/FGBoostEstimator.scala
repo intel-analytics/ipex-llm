@@ -198,10 +198,10 @@ class FGBoostEstimator(continuous: Boolean,
     logger.info("Initializing VFL Boost...")
     // Init predict, grad & hess
     // only call in party with y
-    val metadata = TableMetaData.newBuilder
+    val metadata = MetaData.newBuilder
       .setName(s"xgboost_grad").setVersion(0).build
 
-    val gradData = Table.newBuilder.setMetaData(metadata)
+    val gradData = TensorMap.newBuilder.setMetaData(metadata)
 
     if (label != null && label.nonEmpty) {
       // party with label

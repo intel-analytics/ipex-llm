@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.nn
 import com.intel.analytics.bigdl.ppml.base.StorageHolder
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, FLPhase}
 import com.intel.analytics.bigdl.ppml.common.FLPhase.{EVAL, PREDICT, TRAIN}
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, Table, TableMetaData}
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, TensorMap, MetaData}
 
 import scala.collection.JavaConverters._
 
@@ -76,9 +76,9 @@ class HflNNAggregator extends NNAggregator {
       averagedDataMap.put(tensorName, averagedFloatTensor)
     }
 
-    val metaData = TableMetaData.newBuilder
+    val metaData = MetaData.newBuilder
       .setName(modelName).setVersion(storage.version + 1).build
-    val aggregatedTable = Table.newBuilder.setMetaData(metaData).putAllTable(averagedDataMap).build
+    val aggregatedTable = TensorMap.newBuilder.setMetaData(metaData).putAllTable(averagedDataMap).build
     storage.clearClientAndUpdateServer(aggregatedTable)
   }
 }

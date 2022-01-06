@@ -22,7 +22,7 @@ import java.util.HashMap
 import com.intel.analytics.bigdl.ppml.base.StorageHolder
 import com.intel.analytics.bigdl.ppml.common.FLPhase.{EVAL, PREDICT, TRAIN}
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLDataType, FLPhase, Storage}
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.Table
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TensorMap
 
 abstract class NNAggregator extends Aggregator {
   protected var shouldReturn = false

@@ -78,7 +78,7 @@ class VflNNEstimator(algorithm: String,
         val output = model.forward(input)
 
         // Upload to PS
-        val metadata = TableMetaData.newBuilder
+        val metadata = MetaData.newBuilder
               .setName(s"${model.getName()}_output").setVersion(iteration).build
         val tableProto = outputTargetToTableProto(model.output, target, metadata)
         model.zeroGradParameters()
@@ -125,7 +125,7 @@ class VflNNEstimator(algorithm: String,
       val target = miniBatch.getTarget()
       val output = model.forward(input)
 
-      val metadata = TableMetaData.newBuilder
+      val metadata = MetaData.newBuilder
         .setName(s"${model.getName()}_output").setVersion(iteration).build
       val tableProto = outputTargetToTableProto(model.output, target, metadata)
       val hasReturn = if (!data.hasNext) true else false
@@ -157,7 +157,7 @@ class VflNNEstimator(algorithm: String,
       val target = miniBatch.getTarget()
       val output = model.forward(input)
 
-      val metadata = TableMetaData.newBuilder
+      val metadata = MetaData.newBuilder
         .setName(s"${model.getName()}_output").setVersion(iteration).build
       val tableProto = outputTargetToTableProto(model.output, target, metadata)
       val result = flClient.nnStub.predict(tableProto, algorithm).getData

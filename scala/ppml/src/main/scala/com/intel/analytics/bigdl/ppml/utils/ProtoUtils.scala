@@ -39,10 +39,10 @@ object ProtoUtils {
   private val logger = LogManager.getLogger(getClass)
   def outputTargetToTableProto(output: Activity,
                                target: Activity,
-                               meta: TableMetaData = null): Table = {
+                               meta: MetaData = null): TensorMap = {
     val tensorProto = toFloatTensor(output.toTensor[Float])
 
-    val builder = Table.newBuilder
+    val builder = TensorMap.newBuilder
       .putTable("output", tensorProto)
     if (meta != null) {
       builder.setMetaData(meta)
@@ -54,7 +54,7 @@ object ProtoUtils {
     }
     builder.build()
   }
-  def tableProtoToOutputTarget(storage: Storage[Table]): (DllibTable, Tensor[Float]) = {
+  def tableProtoToOutputTarget(storage: Storage[TensorMap]): (DllibTable, Tensor[Float]) = {
     val aggData = protoTableMapToTensorIterableMap(storage.clientData)
     val target = Tensor[Float]()
     if (aggData.contains("target")) {
@@ -67,7 +67,7 @@ object ProtoUtils {
 
     (T.seq(outputs.values.head.toSeq), target)
   }
-  def protoTableMapToTensorIterableMap(inputMap: java.util.Map[String, FlBaseProto.Table]):
+  def protoTableMapToTensorIterableMap(inputMap: java.util.Map[String, FlBaseProto.TensorMap]):
     Map[String, Iterable[Tensor[Float]]] = {
     inputMap.asScala.mapValues(_.getTableMap).values
       .flatMap(_.asScala).groupBy(_._1)
@@ -104,7 +104,7 @@ object ProtoUtils {
 
   def getModelWeightTable(model: Module[Float], version: Int, name: String = "test") = {
     val weights = getParametersFromModel(model)._1
-    val metadata = TableMetaData.newBuilder
+    val metadata = MetaData.newBuilder
       .setName(name).setVersion(version).build
     FloatTensor.newBuilder()
       .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
@@ -115,7 +115,7 @@ object ProtoUtils {
         .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
         .addAllShape(weights.size.toList.map(v => int2Integer(v)))
         .build()
-    val metamodel = Table.newBuilder
+    val metamodel = TensorMap.newBuilder
       .putTable("weights", tensor)
       .setMetaData(metadata)
       .build
@@ -124,7 +124,7 @@ object ProtoUtils {
 
 
   def updateModel(model: Module[Float],
-                  modelData: Table): Unit = {
+                  modelData: TensorMap): Unit = {
     val weigthBias = modelData.getTableMap.get("weights")
     val data = weigthBias.getTensorList.asScala.map(v => Float2float(v)).toArray
     val shape = weigthBias.getShapeList.asScala.map(v => Integer2int(v)).toArray
@@ -132,7 +132,7 @@ object ProtoUtils {
     getParametersFromModel(model)._1.copy(tensor)
   }
 
-  def getTensor(name: String, modelData: Table): Tensor[Float] = {
+  def getTensor(name: String, modelData: TensorMap): Tensor[Float] = {
     val dataMap = modelData.getTableMap.get(name)
     val data = dataMap.getTensorList.asScala.map(Float2float).toArray
     val shape = dataMap.getShapeList.asScala.map(Integer2int).toArray
