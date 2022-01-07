@@ -1,61 +1,70 @@
----
-## **Setup Deep Learning Project using BigDL DLLib**
+# DLLib Getting Start Tutorial
+
+## 1. Creating dev environment
+
+#### Scala project (maven & sbt)
+
+- **Maven**
 
 To use BigDL DLLib to build your own deep learning application, you can use maven to create your project and add bigdl-dllib to your dependency. Please add below code to your pom.xml to add BigDL DLLib as your dependency:
 ```
 <dependency>
     <groupId>com.intel.analytics.bigdl</groupId>
     <artifactId>bigdl-dllib-spark_2.4.6</artifactId>
-    <version>0.14.0-SNAPSHOT</version>
+    <version>0.14.0</version>
 </dependency>
 ```
 
-For more information about how to use BigDL to build your applications, please refer https://github.com/intel-analytics/BigDL/tree/branch-2.0/apps/SimpleMlp
----
-
-## **Dowload the Data**
-
-We used [Pima Indians onset of diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) as dataset for the demo. It's a standard machine learning dataset from the UCI Machine Learning repository. It describes patient medical record data for Pima Indians and whether they had an onset of diabetes within five years.
-
-For more details about the data, please refer [here](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.names)
-
+- **SBT**
 ```
-wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
+libraryDependencies += "com.intel.analytics.bigdl" % "bigdl-dllib-spark_2.4.6" % "0.14.0"
 ```
----
+For more information about how to add BigDL dependency, please refer https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html#build-a-scala-project
 
-After the data is ready, we can now write the deep learning code with DLLib
+#### IDE (Intelij)
+Open up IntelliJ and click File => Open
 
-## **Initialize DLLib NNContext**
+Navigate to your project. If you have add BigDL DLLib as dependency in your pom.xml.
+The IDE will automatically download it from maven and you are able to run your application.
 
-We need do some initialization at first
+
+## 2. Code initialization
+```NNContext``` is the main entry for provisioning the dllib program on the underlying cluster (such as K8s or Hadoop cluster), or just on a single laptop.
+
+We usually do some initialization at first
 ```
 import com.intel.analytics.bigdl.dllib.NNContext
 
 val sc = NNContext.initNNContext("dllib_demo")
 ```
+For more information about ```NNContext```, please refer to [NNContext](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html#nn-context)
 
-Then create Spark session so we can use Spark API to load and process the data
-```
-import org.apache.spark.sql.SQLContext
-val spark = new SQLContext(sc)
-```
+## 3. Distributed Data Processing
 
-## **Load and Process data using Spark API**
-
+#### Using Spark Dataframe APIs
 DLlib supports Spark Dataframes as the input to the distributed training, and as
 the input/output of the distributed inference. Consequently, the user can easily
 process large-scale dataset using Apache Spark, and directly apply AI models on
 the distributed (and possibly in-memory) Dataframes without data conversion or serialization
 
-#### Load the data into Spark DataFrame
+We used [Pima Indians onset of diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) as dataset for the demo. It's a standard machine learning dataset from the UCI Machine Learning repository. It describes patient medical record data for Pima Indians and whether they had an onset of diabetes within five years.
+The dataset can be download with:
+```
+wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
+```
+
+We create Spark session so we can use Spark API to load and process the data
+```
+import org.apache.spark.sql.SQLContext
+val spark = new SQLContext(sc)
+```
+
+Load the data into Spark DataFrame
 ```
 val path = "pima-indians-diabetes.data.csv"
 val df = spark.read.options(Map("inferSchema"->"true","delimiter"->",")).csv(path)
       .toDF("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age", "class")
 ```
-
-#### Process Spark DataFrame
 
 Process the DataFrame to create the label and split it into traing part and validation part
 
@@ -66,16 +75,11 @@ val Array(trainDF, valDF) = df2.randomSplit(Array(0.8, 0.2))
 
 Now we have got the data which is ready to train. Next we will build a deep learning model using DLLib Keras API
 
-## **Define Deep Learning Model**
+## 4. Model Definition
 
-The procedure of training a model from scratch usually involves following steps:
+#### Using Keras-like APIs
 
-1. define your model (by connecting layers/activations into a network)
-2. decide your loss function (which function to optimize)
-3. train (choose a proper algorithm and hyper parameters, and train)
-4. evaluation (evaluate your model)
-
-To define a model, you can use the [Keras Style API](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/keras). You may want to refer to [Lenet](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/models/lenet/LeNet5.scala#L59) for how to define models.
+To define a model, you can use the [Keras Style API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html).
 ```
 import com.intel.analytics.bigdl.dllib.keras.layers._
 val x1 = Input[Float](Shape(8))
@@ -85,7 +89,7 @@ val dense3 = Dense[Float](2).inputs(dense2)
 val dmodel = Model(x1, dense3)
 ```
 
-After creating the model, you will have to decide which loss function to use in training. For a list of loss functions, refer to [loss function](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/keras/objectives)
+After creating the model, you will have to decide which loss function to use in training.
 
 Now you can use `compile` function of the model to set the loss function, optimization method.
 ```
@@ -95,7 +99,7 @@ dmodel.compile(optimizer = new Adam[Float](),
 
 Now the model is built and ready to train.
 
-## **Train Deep Learning Model**
+## 5. Distributed Model Training
 Now you can use 'fit' begin the training, please set the feature columns and label columns. Model Evaluation can be performed periodically during a training.
 ```
 dmodel.fit(x=trainDF, batchSize=4, nbEpoch = 2,
@@ -105,46 +109,139 @@ dmodel.fit(x=trainDF, batchSize=4, nbEpoch = 2,
 )
 ```
 
-## **Inference**
-After `fit` finishes, you can then use the trained model for prediction or evaluation.
+## 6. Model saving and loading
+When training is finished, you may need to save the final model for later use.
+
+BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s3.
+- **save**
+```
+val modelPath = "/tmp/keras.model"
+dmodel.saveModel(modelPath)
+```
+
+- **load**
+```
+val loadModel = Models.loadModel[Float](modelPath)
+```
+
+You may want to refer [Save/Load](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html#save)
+
+## 7. Distributed evaluation and inference
+After training finishes, you can then use the trained model for prediction or evaluation.
+
+- **inference**
 ```
 dmodel.predict(df, featureCols = Array("num_times_pregrant", "plasma_glucose", "blood_pressure",
   "skin_fold_thickness", "2-hour_insulin", "body_mass_index",
   "diabetes_pedigree_function", "age"), predictionCol = "predict")
 ```
 
-## **Save a Model**
-
-When training is finished, you may need to save the final model for later use. 
-
-BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s3.
+- **evaluation**
 ```
-val modelPath = "/tmp/keras.model"
-dmodel.saveModel(modelPath)
-```
----
-
-## **Use Pre-trained Models/Layers**
-
-Pre-train is a useful strategy when training deep learning models. You may use the pre-trained features (e.g. embeddings) in your model, or do a fine-tuning for a different dataset or target.
-
-To use a learnt model as a whole, you can use `Models.loadModel` to load the entire model.
-
-```
-val loadModel = Models.loadModel[Float](modelPath)
+dmodel.evaluate(df, featureCols = Array("num_times_pregrant", "plasma_glucose", "blood_pressure",
+    "skin_fold_thickness", "2-hour_insulin", "body_mass_index",
+    "diabetes_pedigree_function", "age"))
 ```
 
-## **Monitor your training**
+## 8. Running program
+You can run a bigdl-dllib program as a standard Spark program (running on either a local machine or a distributed cluster) as follows:
+```
+# Spark local mode
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
+  --master local[2] \
+  --class class_name \
+  jar_path
 
-BigDL provides a convenient way to monitor/visualize your training progress. It writes the statistics collected during training/validation and they can be visualized in real-time using tensorboard. These statistics can also be retrieved into readable data structures later and visualized in other tools (e.g. Jupyter notebook).
+# Spark standalone mode
+## ${SPARK_HOME}/sbin/start-master.sh
+## check master URL from http://localhost:8080
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
+  --master spark://... \
+  --executor-cores cores_per_executor \
+  --total-executor-cores total_cores_for_the_job \
+  --class class_name \
+  jar_path
+
+# Spark yarn client mode
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
+ --master yarn \
+ --deploy-mode client \
+ --executor-cores cores_per_executor \
+ --num-executors executors_number \
+ --class class_name \
+ jar_path
+
+# Spark yarn cluster mode
+${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
+ --master yarn \
+ --deploy-mode cluster \
+ --executor-cores cores_per_executor \
+ --num-executors executors_number \
+ --class class_name
+ jar_path
+```
+For more detail about how to run BigDL scala application, please refer https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html
+
+## 9. Checkpointing and resuming training
+You can configure periodically taking snapshots of the model.
+```
+dmodel.setCheckpoint(path, overWrite=False)
+```
+You can also set ```overWrite``` to ```True``` to enable overwriting any existing snapshot files
+
+After training stops, you can resume from any saved point. Choose one of the model snapshots to resume (saved in checkpoint path, details see Checkpointing). Use Models.loadModel to load the model snapshot into an model object.
+```
+val loadModel = Models.loadModel[Float](path)
+```
+
+## 10. Monitor your training
+
+- **Tensorboard**
+
+BigDL provides a convenient way to monitor/visualize your training progress. It writes the statistics collected during training/validation. Saved summary can be viewed via TensorBoard.
+
+In order to take effect, it needs to be called before fit.
 ```
 dmodel.setTensorBoard("./", "dllib_demo")
-dmodel.fit(x=trainDF, batchSize=4, nbEpoch = 2,
-  featureCols = Array("num_times_pregrant", "plasma_glucose", "blood_pressure",
-    "skin_fold_thickness", "2-hour_insulin", "body_mass_index",
-    "diabetes_pedigree_function", "age"), labelCols = Array("label"), valX = valDF
-)
-val rawTrain = dmodel.getTrainSummary("Loss")
-val rawVal = dmodel.getValidationSummary("Loss")
 ```
----
+For more details, please refer [visulization](visualization.md)
+
+## 11. Transfer learning and finetuning
+
+- **freeze and trainable**
+BigDL DLLib supports exclude some layers of model from training.
+```
+dmodel.freeze(layer_names)
+```
+Layers that match the given names will be freezed. If a layer is freezed, its parameters(weight/bias, if exists) are not changed in training process.
+
+BigDL DLLib also support unFreeze operations. The parameters for the layers that match the given names will be trained(updated) in training process
+```
+dmodel.unFreeze(layer_names)
+```
+For more information, you may refer [freeze](freeze.md)
+
+## 12. Hyperparameter tuning
+- **optimizer**
+
+DLLib supports a list of optimization methods.
+For more details, please refer [optimization](optim-Methods.md)
+
+- **learning rate scheduler**
+
+DLLib supports a list of learning rate scheduler.
+For more details, please refer [lr_scheduler](learningrate-Scheduler.md)
+
+- **batch size**
+
+DLLib supports set batch size during training and prediction. We can adjust the batch size to tune the model's accuracy.
+
+- **regularizer**
+
+DLLib supports a list of regularizers.
+For more details, please refer [regularizer](regularizers.md)
+
+- **clipping**
+
+DLLib supports gradient clipping operations.
+For more details, please refer [gradient_clip](clipping.md)
