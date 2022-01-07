@@ -1,4 +1,4 @@
-## Project Chronos: Application Framework for Building Large-scale Time Series Analysis Applications
+## Project Chronos: Application Framework for Large-scale Time Series Analysis
 
 You can use _Chronos_ to do:
 
