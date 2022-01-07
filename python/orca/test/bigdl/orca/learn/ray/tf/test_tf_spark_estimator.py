@@ -151,6 +151,52 @@ class TestTFEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_checkpoint_weights(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark",
+                model_dir=temp_dir)
+
+            callbacks = [
+                tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "ckpt_{epoch}"),
+                                                   save_weights_only=True)
+            ]
+
+            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
+                              callbacks=callbacks,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+            latest_checkpoint = Estimator.latest_checkpoint(temp_dir)
+            trainer.load_weights(latest_checkpoint)
+            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            res = trainer.predict(df, feature_cols=["feature"]).collect()
+            print("predict result: ", res)
+        finally:
+            shutil.rmtree(temp_dir)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
