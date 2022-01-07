@@ -66,13 +66,9 @@ WORKDIR /tmp
 ARG CONDA_MIRROR=https://repo.anaconda.com/miniconda
 # ARG CONDA_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda
 
-# ---- Miniforge installer ----
-# Check https://github.com/conda-forge/miniforge/releases
-# Package Manager and Python implementation to use (https://github.com/conda-forge/miniforge)
-# We're using Mambaforge installer, possible options:
-# - conda only: either Miniforge3 to use Python or Miniforge-pypy3 to use PyPy
-# - conda + mamba: either Mambaforge to use Python or Mambaforge-pypy3 to use PyPy
-# Installation: conda, mamba, pip
+# ---- Miniconda installer ----
+# Check https://docs.conda.io/en/latest/miniconda.html
+# Package Manager and Python implementation to use (https://docs.conda.io/en/latest/miniconda.html)
 RUN set -x && \
     # Miniconda3 installer
     mkdir -p "${CONDA_DIR}" && \
