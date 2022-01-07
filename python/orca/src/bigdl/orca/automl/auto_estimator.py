@@ -134,6 +134,8 @@ class AutoEstimator:
             search_alg_params=None,
             scheduler=None,
             scheduler_params=None,
+            feature_cols=None,
+            target_cols=None,
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -172,6 +174,8 @@ class AutoEstimator:
             metric and searcher mode
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
+        :param feature_cols: feature column names if data is Spark DataFrame.
+        :param target_cols: target column names if data is Spark DataFrame.
         """
         if self._fitted:
             raise RuntimeError(
@@ -191,7 +195,9 @@ class AutoEstimator:
                               search_alg=search_alg,
                               search_alg_params=search_alg_params,
                               scheduler=scheduler,
-                              scheduler_params=scheduler_params)
+                              scheduler_params=scheduler_params,
+                              feature_cols=feature_cols,
+                              target_cols=target_cols)
         self.searcher.run()
         self._fitted = True
 
