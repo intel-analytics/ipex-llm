@@ -150,8 +150,8 @@ class Trainer(pl.Trainer):
                 from bigdl.nano.pytorch.onnx.onnxrt_inference import bind_onnxrt_methods
                 return bind_onnxrt_methods(pl_model)
             except ImportError:
-                warnings.warn("You should install onnx and onnxruntime to set `onnx=True`")
-                return pl_model
+                raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
+                                   "or just set `onnx=False`.")
         else:
             return pl_model
 
