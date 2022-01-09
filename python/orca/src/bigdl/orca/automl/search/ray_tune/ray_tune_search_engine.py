@@ -391,6 +391,7 @@ class TrialStopper(Stopper):
     def stop_all(self):
         return False
 
+
 class CustomProgressCallback(TrialProgressCallback):
     # Only remove redundant log output
     def log_result(self, trial, result, error: bool = False):
