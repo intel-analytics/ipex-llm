@@ -1,0 +1,111 @@
+
+ader.preload = "file:$(GRAPHENEDIR)/Runtime/libsysdb.so"
+libos.entrypoint = "file:$(JDK_HOME)/bin/java"
+
+loader.log_level = "error"
+
+loader.insecure_disable_aslr = 1
+loader.insecure__use_cmdline_argv = 1
+
+loader.pal_internal_mem_size = "512M"
+
+#sgx.file_check_policy = "allow_all_but_log"
+sgx.static_address = 1
+sgx.debug = 0
+sgx.isvprodid = 2
+sgx.isvsvn = 1
+
+loader.env.LD_LIBRARY_PATH = "/lib:$(ARCH_LIBDIR):/usr/$(ARCH_LIBDIR):$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli"
+loader.env.PATH = "/:$(JDK_HOME)/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+loader.env.JAVA_HOME = "$(JDK_HOME)"
+loader.env.JAVA_OPTS = "'-Djava.library.path=$(JDK_HOME)/lib -Dsun.boot.library.path=$(JDK_HOME)/lib'"
+loader.env.OMP_NUM_THREADS = "24"
+loader.env.TF_MKL_ALLOC_MAX_BYTES = "10737418240"
+
+fs.mount.lib.type = "chroot"
+fs.mount.lib.path = "/lib"
+fs.mount.lib.uri = "file:$(GRAPHENEDIR)/Runtime"
+
+fs.mount.lib2.type = "chroot"
+fs.mount.lib2.path = "$(ARCH_LIBDIR)"
+fs.mount.lib2.uri = "file:$(ARCH_LIBDIR)"
+
+fs.mount.lib3.type = "chroot"
+fs.mount.lib3.path = "/usr$(ARCH_LIBDIR)"
+fs.mount.lib3.uri = "file:/usr$(ARCH_LIBDIR)"
+
+fs.mount.usrbin.type = "chroot"
+fs.mount.usrbin.path = "/usr/bin"
+fs.mount.usrbin.uri = "file:/usr/bin"
+
+fs.mount.etc.type = "chroot"
+fs.mount.etc.path = "/etc"
+fs.mount.etc.uri = "file:/etc"
+
+fs.mount.opt.type = "chroot"
+fs.mount.opt.path = "/opt"
+fs.mount.opt.uri = "file:/opt"
+
+fs.mount.bin.type = "chroot"
+fs.mount.bin.path = "/bin"
+fs.mount.bin.uri = "file:/bin"
+
+fs.mount.tmp.type = "chroot"
+fs.mount.tmp.path = "/tmp"
+fs.mount.tmp.uri = "file:/tmp"
+
+fs.mount.work.type = "chroot"
+fs.mount.tmp.path = "/tmp"
+fs.mount.tmp.uri = "file:/tmp"
+
+fs.mount.work.type = "chroot"
+fs.mount.work.path = "$(WORK_DIR)"
+fs.mount.work.uri = "file:$(WORK_DIR)"
+
+fs.mount.redis.type = "chroot"
+fs.mount.redis.path = "/ppml/trusted-realtime-ml/redis"
+fs.mount.redis.uri = "file:/ppml/trusted-realtime-ml/redis"
+
+sgx.enclave_size = "$(G_SGX_SIZE)"
+sgx.thread_num = 1024
+
+sgx.allow_file_creation   = 1
+
+# trusted files java date setsid bash rm chmod
+sgx.trusted_files.java = "file:$(JDK_HOME)/bin/java"
+sgx.trusted_files.date = "file:/bin/date"
+sgx.trusted_files.setsid = "file:/usr/bin/setsid"
+sgx.trusted_files.bash = "file:/bin/bash"
+sgx.trusted_files.rm    = "file:/bin/rm"
+sgx.trusted_files.chmod    = "file:/bin/chmod"
+
+# Glibc libraries
+sgx.trusted_files.ld = "file:$(GRAPHENEDIR)/Runtime/ld-linux-x86-64.so.2"
+sgx.trusted_files.libc = "file:$(GRAPHENEDIR)/Runtime/libc.so.6"
+sgx.trusted_files.libm = "file:$(GRAPHENEDIR)/Runtime/libm.so.6"
+sgx.trusted_files.libdl = "file:$(GRAPHENEDIR)/Runtime/libdl.so.2"
+sgx.trusted_files.librt = "file:$(GRAPHENEDIR)/Runtime/librt.so.1"
+sgx.trusted_files.libpthread = "file:$(GRAPHENEDIR)/Runtime/libpthread.so.0"
+sgx.trusted_files.dns ="file:$(GRAPHENEDIR)/Runtime/libnss_dns.so.2"
+sgx.trusted_files.libresolv="file:$(GRAPHENEDIR)/Runtime/libresolv.so.2"
+
+# Name Service Switch (NSS) libraries (Glibc dependencies)
+sgx.trusted_files.libnsscompat = "file:$(ARCH_LIBDIR)/libnss_compat.so.2"
+sgx.trusted_files.libnssfiles  = "file:$(ARCH_LIBDIR)/libnss_files.so.2"
+sgx.trusted_files.libnssnis  = "file:$(ARCH_LIBDIR)/libnss_nis.so.2"
+
+# libNSL is a dependency of libnss_compat above.
+sgx.trusted_files.libnsl = "file:$(ARCH_LIBDIR)/libnsl.so.1"
+
+sgx.trusted_files.libz  = "file:$(ARCH_LIBDIR)/libz.so.1"
+sgx.trusted_files.libgcc_s = "file:/lib/x86_64-linux-gnu/libgcc_s.so.1"
+sgx.trusted_files.libstdcpp = "file:/usr/lib/x86_64-linux-gnu/libstdc++.so.6"
+
+sgx.allowed_files.etc       = "file:/etc"
+sgx.allowed_files.tmp       = "file:/tmp"
+sgx.allowed_files.jdk       = "file:$(JDK_HOME)"
+sgx.allowed_files.redis     = "file:/ppml/trusted-realtime-ml/redis"
+sgx.allowed_files.work      = "file:/ppml/trusted-realtime-ml/java"
+
+sgx.nonpie_binary = 1
+
