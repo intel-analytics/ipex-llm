@@ -192,7 +192,7 @@ class RayTuneSearchEngine(SearchEngine):
             callbacks=[CustomProgressCallback()],
             scheduler=self._scheduler,
             resources_per_trial=self.resources_per_trial,
-            verbose=2,
+            verbose=3,
             reuse_actors=True
         )
         self.trials = analysis.trials
@@ -393,9 +393,8 @@ class TrialStopper(Stopper):
 
 
 class CustomProgressCallback(TrialProgressCallback):
-    # Only remove redundant log output
+    # for a clearer log in tuning
     def log_result(self, trial, result, error: bool = False):
-        result.pop('node_ip')
         pass
 
 
