@@ -82,7 +82,7 @@ class AutoXGBClassifier(AutoEstimator):
             scheduler=None,
             scheduler_params=None,
             feature_cols=None,
-            target_cols=None,
+            label_cols=None,
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -119,12 +119,12 @@ class AutoXGBClassifier(AutoEstimator):
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         :param feature_cols: feature column names if data is Spark DataFrame.
-        :param target_cols: target column names if data is Spark DataFrame.
+        :param label_cols: target column names if data is Spark DataFrame.
         """
-        data, validation_data, feature_cols, target_cols = _merge_cols_for_spark_df(data,
-                                                                                    validation_data,
-                                                                                    feature_cols,
-                                                                                    target_cols)
+        data, validation_data, feature_cols, label_cols = _merge_cols_for_spark_df(data,
+                                                                                   validation_data,
+                                                                                   feature_cols,
+                                                                                   label_cols)
 
         super().fit(data=data,
                     epochs=epochs,
@@ -139,7 +139,7 @@ class AutoXGBClassifier(AutoEstimator):
                     scheduler=scheduler,
                     scheduler_params=scheduler_params,
                     feature_cols=feature_cols,
-                    target_cols=target_cols)
+                    label_cols=label_cols)
 
 
 class AutoXGBRegressor(AutoEstimator):
@@ -206,7 +206,7 @@ class AutoXGBRegressor(AutoEstimator):
             scheduler=None,
             scheduler_params=None,
             feature_cols=None,
-            target_cols=None,
+            label_cols=None,
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -243,12 +243,12 @@ class AutoXGBRegressor(AutoEstimator):
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         :param feature_cols: feature column names if data is Spark DataFrame.
-        :param target_cols: target column names if data is Spark DataFrame.
+        :param label_cols: target column names if data is Spark DataFrame.
         """
-        data, validation_data, feature_cols, target_cols = _merge_cols_for_spark_df(data,
-                                                                                    validation_data,
-                                                                                    feature_cols,
-                                                                                    target_cols)
+        data, validation_data, feature_cols, label_cols = _merge_cols_for_spark_df(data,
+                                                                                   validation_data,
+                                                                                   feature_cols,
+                                                                                   label_cols)
 
         super().fit(data=data,
                     epochs=epochs,
@@ -263,35 +263,35 @@ class AutoXGBRegressor(AutoEstimator):
                     scheduler=scheduler,
                     scheduler_params=scheduler_params,
                     feature_cols=feature_cols,
-                    target_cols=target_cols)
+                    label_cols=label_cols)
 
 
 def _merge_cols_for_spark_df(data,
                              validation_data,
                              feature_cols,
-                             target_cols):
-    # merge feature_cols/target_cols to one column, to adapt to the meanings of feature_cols and
-    # target_cols in AutoEstimator, which correspond to the model inputs/outputs.
+                             label_cols):
+    # merge feature_cols/label_cols to one column, to adapt to the meanings of feature_cols and
+    # label_cols in AutoEstimator, which correspond to the model inputs/outputs.
     from pyspark.sql import DataFrame
     from pyspark.sql.functions import array
 
-    def concat_cols(data, feature_cols, target_cols):
+    def concat_cols(data, feature_cols, label_cols):
         combined_feature_name = "combined_features"
         combined_target_name = "combined_targets"
         data = data.select(array(*feature_cols).alias(combined_feature_name),
-                           array(*target_cols).alias(combined_target_name))
+                           array(*label_cols).alias(combined_target_name))
         return data, combined_feature_name, combined_target_name
 
-    feature_cols, target_cols = AutoEstimator._check_spark_dataframe_input(data,
-                                                                           validation_data,
-                                                                           feature_cols,
-                                                                           target_cols)
+    feature_cols, label_cols = AutoEstimator._check_spark_dataframe_input(data,
+                                                                          validation_data,
+                                                                          feature_cols,
+                                                                          label_cols)
     if isinstance(data, DataFrame):
         data, combined_feature_name, combined_target_name = concat_cols(data,
                                                                         feature_cols,
-                                                                        target_cols)
+                                                                        label_cols)
         if validation_data is not None:
-            validation_data, _, _ = concat_cols(validation_data, feature_cols, target_cols)
+            validation_data, _, _ = concat_cols(validation_data, feature_cols, label_cols)
         feature_cols = [combined_feature_name]
-        target_cols = [combined_target_name]
-    return data, validation_data, feature_cols, target_cols
+        label_cols = [combined_target_name]
+    return data, validation_data, feature_cols, label_cols

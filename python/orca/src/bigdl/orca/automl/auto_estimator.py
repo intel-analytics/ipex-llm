@@ -136,7 +136,7 @@ class AutoEstimator:
             scheduler=None,
             scheduler_params=None,
             feature_cols=None,
-            target_cols=None,
+            label_cols=None,
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -176,17 +176,17 @@ class AutoEstimator:
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         :param feature_cols: feature column names if data is Spark DataFrame.
-        :param target_cols: target column names if data is Spark DataFrame.
+        :param label_cols: target column names if data is Spark DataFrame.
         """
         if self._fitted:
             raise RuntimeError(
                 "This AutoEstimator has already been fitted and cannot fit again.")
 
         metric_mode = AutoEstimator._validate_metric_mode(metric, metric_mode)
-        feature_cols, target_cols = AutoEstimator._check_spark_dataframe_input(data,
-                                                                               validation_data,
-                                                                               feature_cols,
-                                                                               target_cols)
+        feature_cols, label_cols = AutoEstimator._check_spark_dataframe_input(data,
+                                                                              validation_data,
+                                                                              feature_cols,
+                                                                              label_cols)
 
         self.searcher.compile(data=data,
                               model_builder=self.model_builder,
@@ -202,7 +202,7 @@ class AutoEstimator:
                               scheduler=scheduler,
                               scheduler_params=scheduler_params,
                               feature_cols=feature_cols,
-                              target_cols=target_cols)
+                              label_cols=label_cols)
         self.searcher.run()
         self._fitted = True
 
@@ -267,7 +267,7 @@ class AutoEstimator:
     def _check_spark_dataframe_input(data,
                                      validation_data,
                                      feature_cols,
-                                     target_cols
+                                     label_cols
                                      ):
 
         def check_cols(cols, cols_name):
@@ -283,9 +283,9 @@ class AutoEstimator:
         from pyspark.sql import DataFrame
         if isinstance(data, DataFrame):
             feature_cols = check_cols(feature_cols, cols_name="feature_cols")
-            target_cols = check_cols(target_cols, cols_name="target_cols")
+            label_cols = check_cols(label_cols, cols_name="label_cols")
             if validation_data:
                 if not isinstance(validation_data, DataFrame):
                     raise ValueError(f"data and validation_data should be both Spark DataFrame, "
                                      f"but got validation_data of type {type(data)}")
-        return feature_cols, target_cols
+        return feature_cols, label_cols
