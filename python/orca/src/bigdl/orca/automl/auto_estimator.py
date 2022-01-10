@@ -48,6 +48,7 @@ class AutoEstimator:
             remote_dir=remote_dir,
             name=name)
         self._fitted = False
+        self.best_trial = None
 
     @staticmethod
     def from_torch(*,
@@ -207,9 +208,10 @@ class AutoEstimator:
 
         :return: the best model instance
         """
-        best_trial = self.searcher.get_best_trial()
-        best_model_path = best_trial.model_path
-        best_config = best_trial.config
+        if not self.best_trial:
+            self.best_trial = self.searcher.get_best_trial()
+        best_model_path = self.best_trial.model_path
+        best_config = self.best_trial.config
         best_automl_model = self.model_builder.build(best_config)
         best_automl_model.restore(best_model_path)
         return best_automl_model.model
@@ -220,8 +222,9 @@ class AutoEstimator:
 
         :return: A dictionary of best hyper parameters
         """
-        best_trial = self.searcher.get_best_trial()
-        best_config = best_trial.config
+        if not self.best_trial:
+            self.best_trial = self.searcher.get_best_trial()
+        best_config = self.best_trial.config
         return best_config
 
     def _get_best_automl_model(self):
@@ -231,9 +234,10 @@ class AutoEstimator:
 
         :return: an automl base model instance
         """
-        best_trial = self.searcher.get_best_trial()
-        best_model_path = best_trial.model_path
-        best_config = best_trial.config
+        if not self.best_trial:
+            self.best_trial = self.searcher.get_best_trial()
+        best_model_path = self.best_trial.model_path
+        best_config = self.best_trial.config
         best_automl_model = self.model_builder.build(best_config)
         best_automl_model.restore(best_model_path)
         return best_automl_model
