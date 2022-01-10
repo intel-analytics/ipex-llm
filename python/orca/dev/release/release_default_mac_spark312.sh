@@ -43,11 +43,11 @@ upload=$3
 if [ "${version}" == "default" ]; then
     version=$(cat $ORCA_DIR/../version.txt | head -1)
 fi
-if [[ "${version}" == *"spark3" ]]; then
+if [[ "${version}" == *".spark3" ]]; then
     # Ignore if the version already has spark3 suffix modified by other modules.
     spark3_version="${version}"
 else
-    spark3_version="${version}spark3"
+    spark3_version="${version}.spark3"
 fi
 
 bash ${RUN_SCRIPT_DIR}/release.sh mac ${spark3_version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x
