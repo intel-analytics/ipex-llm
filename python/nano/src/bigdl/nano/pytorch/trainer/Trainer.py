@@ -180,7 +180,7 @@ class Trainer(pl.Trainer):
                                     Required for static quantization.
         :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
-        :param backend:             'inc' or 'nncf'('nncf' is not supported yet). Default: 'inc'.
+        :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
         :param framework:   'pytorch', 'pytorch_fx', 'pytorch_ipex'. Default: 'pytorch_fx'.
