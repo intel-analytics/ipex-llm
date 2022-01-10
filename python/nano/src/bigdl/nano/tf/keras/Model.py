@@ -104,7 +104,7 @@ class Model(tf.keras.Model):
                 quantizer.metric = common.Metric(KerasINCMetric, metric=metric)
             if approach == 'post_training_static_quant':
                 assert calib_dataset, "calib_dataset must not be None when approach is " \
-                                         "post-training static quantization."
+                                      "post-training static quantization."
             quantized = quantizer()
             if quantized:
                 return quantized
