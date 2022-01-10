@@ -1,4 +1,4 @@
-# Windows development guide
+# Windows User Guide (WSL2)
 
 ## Step 1: Install WSL2
 
@@ -41,4 +41,16 @@ You can install BigDL nano from Pypi with `pip`.
 
 ```
 pip install bigdl-nano
+```
+
+Specifically, for PyTroch extensions, please run:
+
+```
+pip install bigdl-nano[pytorch]
+```
+
+For Tensorflow:
+
+```
+pip install bigdl-nano[tensorflow]
 ```
