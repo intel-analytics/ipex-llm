@@ -13,11 +13,99 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from typing import List
 
 import tensorflow as tf
+from neural_compressor.model.model import TensorflowBaseModel
+from tensorflow.keras.metrics import Metric
 
 
 class Model(tf.keras.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def quantize(self,
+                 calib_dataset: tf.data.Dataset = None,
+                 val_dataset: tf.data.Dataset = None,
+                 batch=1,
+                 metric: Metric = None,
+                 backend='inc',
+                 conf=None,
+                 approach='static',
+                 tuning_strategy='bayesian',
+                 accuracy_criterion: dict = None,
+                 timeout=0,
+                 max_trials=1,
+                 inputs: List[str] = None,
+                 outputs: List[str] = None) -> TensorflowBaseModel:
+        """
+         Post-training quantization on a keras model.
+
+         :param calib_dataset:  A tf.data.Dataset object for calibration. Required for
+                                    static quantization.
+         :param val_dataset:    A tf.data.Dataset object for evaluation.
+         :param batch:          Batch size of dataloader for both calib_dataset and val_dataset.
+         :param metric:         A Metric object for evaluation.
+         :param backend:        Only support 'inc' for now. Default: 'inc'.
+         :param conf:           A path to conf yaml file for quantization.
+                                Default: None, using default config.
+         :param approach:       'static' or 'dynamic'.
+                                'static': post_training_static_quant,
+                                'dynamic': post_training_dynamic_quant.
+                                Default: 'static'.
+         :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
+         :param accuracy_criterion:  Tolerable accuracy drop.
+                                     accuracy_criterion = {'relative': 0.1, higher_is_better: True}
+                                     allows relative accuracy loss: 1%. accuracy_criterion =
+                                     {'absolute': 0.99, higher_is_better:False} means accuracy <
+                                     0.99 must be satisfied.
+         :param timeout:    Tuning timeout (seconds). Default: 0,  which means early stop.
+                            Combine with max_trials field to decide when to exit.
+         :param max_trials: Max tune times. Default: 1.
+                            Combine with timeout field to decide when to exit.
+                            "timeout=0, max_trials=1" means it will try quantization only once and
+                            return satisfying best model.
+         :param inputs:     A list of input names.
+                            Default: None, automatically get names from graph.
+         :param outputs:    A list of output names.
+                            Default: None, automatically get names from graph.
+         :return:           A TensorflowBaseModel. If there is no model found, return None.
+         """
+        if backend == 'inc':
+            from bigdl.nano.quantization import QuantizationINC
+            from neural_compressor.experimental import common
+            from bigdl.nano.quantization.quantization_inc import KerasINCMetric
+
+            def get_tensors_name(tensors):
+                return [tensor.name for tensor in tensors]
+
+            if approach not in ['static', 'dynamic']:
+                raise ValueError("Approach should be 'static' or 'dynamic', "
+                                 "{} is invalid.".format(approach))
+            approach_map = {
+                'static': 'post_training_static_quant',
+                'dynamic': 'post_training_dynamic_quant'
+            }
+            approach = approach_map.get(approach)
+
+            quantizer = QuantizationINC(
+                framework='tensorflow', conf=conf, approach=approach,
+                tuning_strategy=tuning_strategy,
+                accuracy_criterion=accuracy_criterion,
+                timeout=timeout, max_trials=max_trials,
+                inputs=inputs if inputs else get_tensors_name(self.inputs),
+                outputs=outputs if outputs else get_tensors_name(self.outputs)
+            )
+            quantizer.model = self
+            quantizer.calib_dataloader = common.DataLoader(calib_dataset, batch)
+
+            if val_dataset and metric:
+                quantizer.eval_dataloader = common.DataLoader(val_dataset, batch)
+                quantizer.metric = common.Metric(KerasINCMetric, metric=metric)
+
+            quantized = quantizer()
+            if quantized:
+                return quantized
+            return None
+        else:
+            raise NotImplementedError("Backend {} is not implemented.".format(backend))
