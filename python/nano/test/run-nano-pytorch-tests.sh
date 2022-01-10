@@ -2,14 +2,14 @@
 
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
-export PYTORCH_NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test
+export PYTORCH_NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/pytorch
 
 wget -nv ${FTP_URI}/analytics-zoo-data/cifar-10-python.tar.gz -P ${PYTORCH_NANO_TEST_DIR}/data
 
 set -e
 echo "# Start testing"
 start=$(date "+%s")
-python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/pytorch/tests/
+python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/tests/
 
 now=$(date "+%s")
 time=$((now-start))
