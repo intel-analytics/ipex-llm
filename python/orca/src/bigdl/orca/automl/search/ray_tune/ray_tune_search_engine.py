@@ -81,7 +81,7 @@ class RayTuneSearchEngine(SearchEngine):
                 scheduler_params=None,
                 mc=False,
                 feature_cols=None,
-                target_cols=None,
+                label_cols=None,
                 ):
         """
         Do necessary preparations for the engine
@@ -112,7 +112,7 @@ class RayTuneSearchEngine(SearchEngine):
         :param scheduler_params: parameters for scheduler
         :param mc: if calculate uncertainty
         :param feature_cols: feature column names if data is Spark DataFrame.
-        :param target_cols: target column names if data is Spark DataFrame.
+        :param label_cols: target column names if data is Spark DataFrame.
         """
         # metric and metric's mode
         self.metric_name = metric.__name__ if callable(metric) else (metric or DEFAULT_METRIC_NAME)
@@ -139,7 +139,7 @@ class RayTuneSearchEngine(SearchEngine):
                                                    remote_dir=self.remote_dir,
                                                    resources_per_trial=self.resources_per_trial,
                                                    feature_cols=feature_cols,
-                                                   target_cols=target_cols,
+                                                   label_cols=label_cols,
                                                    )
 
     @staticmethod
@@ -281,7 +281,7 @@ class RayTuneSearchEngine(SearchEngine):
                             remote_dir=None,
                             resources_per_trial=None,
                             feature_cols=None,
-                            target_cols=None,
+                            label_cols=None,
                             ):
         """
         Prepare the train function for ray tune
@@ -305,7 +305,7 @@ class RayTuneSearchEngine(SearchEngine):
             spark_xshards, val_spark_xshards = dataframe_to_xshards(data,
                                                                     validation_data=validation_data,
                                                                     feature_cols=feature_cols,
-                                                                    label_cols=target_cols,
+                                                                    label_cols=label_cols,
                                                                     mode="fit",
                                                                     num_workers=num_workers)
             ray_xshards = process_spark_xshards(spark_xshards, num_workers=num_workers)
