@@ -43,7 +43,7 @@ class QuantizationINC(Quantization):
                             Default: 'pytorch_fx'. Consistent with Intel Neural Compressor
                             Quantization.
         :param conf:        A path to conf yaml file for quantization.
-                            Default: '', use default config.
+                            Default: None, using default config.
         :param approach:    'post_training_static_quant', 'post_training_dynamic_quant',
                             'quant_aware_training'.
                             Default: 'post_training_static_quant'.
@@ -60,21 +60,18 @@ class QuantizationINC(Quantization):
         :param inputs:      For tensorflow to specify names of inputs. e.g. inputs=['img',]
         :param outputs:     For tensorflow to specify names of outputs. e.g. outputs=['logits',]
         """
-        if conf:
-            qconf = Quantization_Conf(conf)
-        else:
-            qconf = Quantization_Conf('')
-            cfg = qconf.usr_cfg
-            # Override default config
-            cfg.model.framework = framework
-            cfg.quantization.approach = approach
-            cfg.tuning.strategy.name = tuning_strategy
-            if accuracy_criterion:
-                cfg.tuning.accuracy_criterion = accuracy_criterion
-            cfg.tuning.exit_policy.timeout = timeout
-            cfg.tuning.exit_policy.max_trials = max_trials
-            cfg.model.inputs = inputs
-            cfg.model.outputs = outputs
+        qconf = Quantization_Conf(conf)
+        cfg = qconf.usr_cfg
+        # Override default config
+        cfg.model.framework = framework
+        cfg.quantization.approach = approach
+        cfg.tuning.strategy.name = tuning_strategy
+        if accuracy_criterion:
+            cfg.tuning.accuracy_criterion = accuracy_criterion
+        cfg.tuning.exit_policy.timeout = timeout
+        cfg.tuning.exit_policy.max_trials = max_trials
+        cfg.model.inputs = inputs
+        cfg.model.outputs = outputs
         super().__init__(qconf)
 
 

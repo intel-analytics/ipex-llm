@@ -163,7 +163,7 @@ class Trainer(pl.Trainer):
                  val_dataloader: DataLoader = None,
                  metric: Metric = None,
                  backend='inc',
-                 conf='',
+                 conf=None,
                  framework='pytorch_fx',
                  approach='static',
                  tuning_strategy='bayesian',
@@ -182,7 +182,7 @@ class Trainer(pl.Trainer):
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param backend:             'inc' or 'nncf'('nncf' is not supported yet). Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
-                            Default: '', use default config.
+                            Default: None, using default config.
         :param framework:   'pytorch', 'pytorch_fx', 'pytorch_ipex'. Default: 'pytorch_fx'.
                             Consistent with Intel Neural Compressor.
         :param approach:    'static' or 'dynamic'.
