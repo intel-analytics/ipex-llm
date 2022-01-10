@@ -48,7 +48,7 @@ if [[ "${version}" == *"spark3" ]]; then
     # Ignore if the version already has spark3 suffix modified by other modules.
     spark3_version="${version}"
 else
-    spark3_version="0.14.0+spark3b20220110"
+    spark3_version="1.0+abc.5"
 fi
 
 sed -i "s/pyspark==2.4.6/pyspark==3.1.2/g" $DLLIB_DIR/src/setup.py
