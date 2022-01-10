@@ -70,4 +70,3 @@ class Embedding(tf.keras.layers.Embedding):
                               mask_zero=mask_zero,
                               input_length=input_length,
                               **kwargs)
-    
