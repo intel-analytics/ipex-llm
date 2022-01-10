@@ -102,10 +102,13 @@ class Model(tf.keras.Model):
             if val_dataset and metric:
                 quantizer.eval_dataloader = common.DataLoader(val_dataset, batch)
                 quantizer.metric = common.Metric(KerasINCMetric, metric=metric)
-
+            if approach == 'post_training_static_quant':
+                assert calib_dataset, "calib_dataset must not be None when approach is " \
+                                         "post-training static quantization."
             quantized = quantizer()
             if quantized:
                 return quantized
-            return None
+            else:
+                raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
