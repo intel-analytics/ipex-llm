@@ -22,8 +22,6 @@ from functools import reduce
 
 import numpy as np
 import pyspark.sql.functions as F
-from bigdl.friesian.feature.utils import *
-from bigdl.orca import OrcaContext
 from py4j.protocol import Py4JError
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler, VectorAssembler, Bucketizer
@@ -32,6 +30,8 @@ from pyspark.sql.column import Column
 from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadcast, \
     lit, rank, monotonically_increasing_id, row_number, desc
 from pyspark.sql.types import ArrayType, DataType, StructType, StringType, StructField
+from bigdl.friesian.feature.utils import *
+from bigdl.orca import OrcaContext
 
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
