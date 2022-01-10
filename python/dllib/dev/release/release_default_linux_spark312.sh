@@ -53,4 +53,4 @@ fi
 
 sed -i "s/pyspark==2.4.6/pyspark==3.1.2/g" $DLLIB_DIR/src/setup.py
 
-bash ${RUN_SCRIPT_DIR}/release.sh linux ${spark3_version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x ${profiles}
+bash ${RUN_SCRIPT_DIR}/release.sh linux ${spark3_version} true ${upload} -Dspark.version=3.1.2 -P spark_3.x ${profiles}
