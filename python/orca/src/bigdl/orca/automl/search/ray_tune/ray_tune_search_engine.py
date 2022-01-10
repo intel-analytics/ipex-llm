@@ -395,7 +395,8 @@ def trial_dirname_creator(trial):
 
 
 def get_data_from_part_refs(part_refs):
-    import numpy as np
+    from bigdl.orca.data.utils import ray_partitions_get_data_label
+
     partitions = ray.get(part_refs)
 
     # convert list of dicts to one dict
@@ -405,9 +406,9 @@ def get_data_from_part_refs(part_refs):
 
     # reorder dict with partition index
     parts = [result[idx] for idx in range(len(result.keys()))]
-    shards = [item for part in parts for item in part]
 
-    X = np.concatenate([np.stack(shard["x"], axis=1) for shard in shards], axis=0)
-    y = np.concatenate([shard["y"] for shard in shards], axis=0)
-
-    return X, y
+    data, label = ray_partitions_get_data_label(parts,
+                                                allow_tuple=True,
+                                                allow_list=False,
+                                                )
+    return data, label

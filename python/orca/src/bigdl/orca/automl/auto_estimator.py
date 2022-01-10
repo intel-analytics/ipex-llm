@@ -183,7 +183,10 @@ class AutoEstimator:
                 "This AutoEstimator has already been fitted and cannot fit again.")
 
         metric_mode = AutoEstimator._validate_metric_mode(metric, metric_mode)
-        AutoEstimator._check_spark_dataframe_input(data, validation_data, feature_cols, target_cols)
+        feature_cols, target_cols = AutoEstimator._check_spark_dataframe_input(data,
+                                                                               validation_data,
+                                                                               feature_cols,
+                                                                               target_cols)
 
         self.searcher.compile(data=data,
                               model_builder=self.model_builder,
@@ -285,3 +288,4 @@ class AutoEstimator:
                 if not isinstance(validation_data, DataFrame):
                     raise ValueError(f"data and validation_data should be both Spark DataFrame, "
                                      f"but got validation_data of type {type(data)}")
+        return feature_cols, target_cols
