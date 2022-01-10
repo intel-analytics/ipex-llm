@@ -104,6 +104,23 @@ COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION} /opt/work/bigdl-${BIGDL_VERSION}
 ADD ./install-python-env.sh /opt
 RUN chmod a+x /opt/install-python-env.sh
 
+RUN apt-get install build-essential devscripts && \
+    apt-get build-dep systemd && \
+    mkdir systemd && \
+    cd systemd/ && \
+    wget http://www.freedesktop.org/software/systemd/systemd-221.tar.xz && \
+    wget http://archive.ubuntu.com/ubuntu/pool/main/s/systemd/systemd_249.5-2ubuntu3.dsc && \
+    wget http://archive.ubuntu.com/ubuntu/pool/main/s/systemd/systemd_249.5.orig.tar.gz && \
+    wget http://archive.ubuntu.com/ubuntu/pool/main/s/systemd/systemd_249.5-2ubuntu3.debian.tar.xz && \
+    tar xvJf systemd_249.5.orig.tar.gz && \
+    cd systemd_249.5 && \
+    tar xvJf ../systemd_249.5-2ubuntu3.debian.tar.xz && \
+    uupdate ../systemd-221.tar.xz 221 && \
+    cd ../systemd-221 && \
+    dpkg-buildpackage -us -uc && \
+    cd .. && \
+    dpkg -i *.deb 
+
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git && \
     apt-get install -y gcc g++ make && \
