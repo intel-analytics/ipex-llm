@@ -121,10 +121,6 @@ class AutoXGBClassifier(AutoEstimator):
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param target_cols: target column names if data is Spark DataFrame.
         """
-        data, validation_data = _maybe_convert_spark_df_to_ndarray(data,
-                                                                   validation_data,
-                                                                   feature_cols,
-                                                                   target_cols)
         super().fit(data=data,
                     epochs=epochs,
                     validation_data=validation_data,
@@ -137,7 +133,8 @@ class AutoXGBClassifier(AutoEstimator):
                     search_alg_params=search_alg_params,
                     scheduler=scheduler,
                     scheduler_params=scheduler_params,
-                    )
+                    feature_cols=feature_cols,
+                    target_cols=target_cols)
 
 
 class AutoXGBRegressor(AutoEstimator):
@@ -257,41 +254,3 @@ class AutoXGBRegressor(AutoEstimator):
                     scheduler_params=scheduler_params,
                     feature_cols=feature_cols,
                     target_cols=target_cols)
-
-
-def _maybe_convert_spark_df_to_ndarray(data,
-                                       validation_data,
-                                       feature_cols,
-                                       target_cols):
-    def convert_df_to_ndarray(data, feature_cols, target_cols):
-        df = data.toPandas()
-        X = df[feature_cols]
-        y = df[target_cols]
-        arrays = (X, y)
-        return arrays
-
-    def check_cols(cols, cols_name):
-        if not cols:
-            raise ValueError(f"You must input valid {cols_name} for Spark DataFrame data input")
-        if isinstance(cols, list):
-            return cols
-        if not isinstance(cols, str):
-            raise ValueError(f"{cols_name} should be a string or a list of strings, "
-                             f"but got {type(cols)}")
-        return [cols]
-
-    from pyspark.sql import DataFrame
-    if isinstance(data, DataFrame):
-        feature_cols = check_cols(feature_cols, cols_name="feature_cols")
-        target_cols = check_cols(target_cols, cols_name="target_cols")
-        train_arrays = convert_df_to_ndarray(data, feature_cols, target_cols)
-        if validation_data:
-            if not isinstance(validation_data, DataFrame):
-                raise ValueError(f"data and validation_data should be both Spark DataFrame, "
-                                 f"but got validation_data of type {type(data)}")
-            val_arrays = convert_df_to_ndarray(validation_data, feature_cols, target_cols)
-        else:
-            val_arrays = None
-        return train_arrays, val_arrays
-    else:
-        return data, validation_data
