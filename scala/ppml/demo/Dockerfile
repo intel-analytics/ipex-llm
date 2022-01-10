@@ -64,3 +64,10 @@ ADD runVflClient2.sh /opt
 ADD ./data /opt/data
 ADD ppml-conf.yaml /opt
 ADD java.manifest.sgx /opt
+ADD Makefile /opt
+
+RUN chmod a+x runFlserver.sh && \
+    chmod a+x runHflClient1.sh && \
+    chmod a+x runHflClient2.sh && \
+    chmod a+x runVflClient1.sh && \
+    chmod a+x runVflClient2.sh
