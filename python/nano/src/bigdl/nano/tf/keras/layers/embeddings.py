@@ -65,11 +65,11 @@ class Embedding(TFEmbedding):
         '''
 
         super().__init__(input_dim=input_dim,
-                              output_dim=output_dim,
-                              embeddings_initializer=embeddings_initializer,
-                              embeddings_regularizer=None,
-                              embeddings_constraint=embeddings_constraint,
-                              activity_regularizer=regularizer,
-                              mask_zero=mask_zero,
-                              input_length=input_length,
-                              **kwargs)
+                         output_dim=output_dim,
+                         embeddings_initializer=embeddings_initializer,
+                         embeddings_regularizer=None,
+                         embeddings_constraint=embeddings_constraint,
+                         activity_regularizer=regularizer,
+                         mask_zero=mask_zero,
+                         input_length=input_length,
+                         **kwargs)
