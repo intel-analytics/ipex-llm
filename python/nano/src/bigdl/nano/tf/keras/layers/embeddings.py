@@ -15,9 +15,10 @@
 #
 
 import tensorflow as tf
+from tensorflow.keras.layers import Embedding as TFEmbedding
 
 
-class Embedding(tf.keras.layers.Embedding):
+class Embedding(TFEmbedding):
 
     def __init__(self,
                  input_dim,
@@ -63,12 +64,12 @@ class Embedding(tf.keras.layers.Embedding):
             (without it, the shape of the dense outputs cannot be computed).
         '''
 
-    super(Embedding).__init__(input_dim=input_dim,
+        super().__init__(input_dim=input_dim,
                               output_dim=output_dim,
                               embeddings_initializer=embeddings_initializer,
-                              embeddings_regularizer=regularizer,
+                              embeddings_regularizer=None,
                               embeddings_constraint=embeddings_constraint,
-                              activity_regularizer=None,
+                              activity_regularizer=regularizer,
                               mask_zero=mask_zero,
                               input_length=input_length,
                               **kwargs)

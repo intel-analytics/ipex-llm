@@ -15,13 +15,16 @@
 #
 
 
+import numpy as np
+
+
 def test_embedding_gradient_sparse():
 
-    import bigdl.nano.tf.keras.layers.Embeddings
-    import bigdl.nano.tf.keras.Sequential
+    from bigdl.nano.tf.keras.layers import Embedding
+    from bigdl.nano.tf.keras import Sequential
     import tensorflow as tf
     model = Sequential()
-    model.add(Embedding(1000, 64, input_length=10, regularizer=tf.keras.regularizer.L2()))
+    model.add(Embedding(1000, 64, input_length=10, regularizer=tf.keras.regularizers.L2()))
     model.compile('rmsprop', 'mse')
     input_array = np.random.randint(1000, size=(32, 10))
 
@@ -31,5 +34,6 @@ def test_embedding_gradient_sparse():
         loss_value = model.compiled_loss(output, labels, regularization_losses=model.losses)
         grads = tape.gradient(loss_value, model.trainable_variables)
 
+        print(grads)
         for grad in grads:
             assert isinstance(grad, tf.IndexedSlices)

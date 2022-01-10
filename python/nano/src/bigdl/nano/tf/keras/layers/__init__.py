@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from embeddings import Embedding
+from bigdl.nano.tf.keras.layers.embeddings import Embedding
