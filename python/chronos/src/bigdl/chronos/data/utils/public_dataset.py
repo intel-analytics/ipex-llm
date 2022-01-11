@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os, re, tarfile, zipfile
+import os
+import re
+import zipfile
+import tarfile
 import requests
 
 import tqdm
@@ -114,7 +117,7 @@ class PublicDataset:
         tar_file = DATASET_NAME[self.name][0].split('.')[0] + '.csv'
         tar_file = os.path.join(self.dir_path, tar_file)
         columns_list = ["id", "time_step", "cpu_usage", "mem_usage"]
-        
+
         if not os.path.exists(self.final_file_path):
             if not os.path.exists(tar_file):
                 tar = tarfile.open(file_path, 'r:gz')
@@ -148,8 +151,8 @@ class PublicDataset:
         """
         if not os.path.exists(self.final_file_path):
             zip_file = zipfile.ZipFile(os.path.join(
-                                        os.path.expanduser(self.dir_path),
-                                        DATASET_NAME[self.name][0]))
+                                       os.path.expanduser(self.dir_path),
+                                       DATASET_NAME[self.name][0]))
             zip_file.extractall(os.path.join(os.path.expanduser(self.dir_path)))
             download_file = os.path.join(self.dir_path, DATASET_NAME[self.name][0].split('.')[0])
             local_file_list = os.listdir(download_file)
