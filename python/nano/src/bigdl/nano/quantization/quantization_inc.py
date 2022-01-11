@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from abc import ABC, abstractmethod
+from typing import Any
 
 try:
     from neural_compressor.conf.config import Quantization_Conf
@@ -78,7 +79,7 @@ class QuantizationINC(Quantization):
 
 
 class INCMetric(ABC):
-    metric = None
+    metric: Any = None
 
     def __init__(self):
         assert self.metric, "Class variable 'metric' must not be None.'"
