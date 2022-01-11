@@ -21,7 +21,7 @@ ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 
 # stage.1 jdk & spark
-FROM ubuntu:18.04 as spark
+FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
@@ -54,7 +54,7 @@ RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
     fi
 
 # stage.2 bigdl
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 ARG SPARK_VERSION
 ARG BIGDL_VERSION
 ENV SPARK_VERSION               ${SPARK_VERSION}
@@ -71,7 +71,7 @@ RUN /opt/download-bigdl.sh && \
     rm bigdl*.zip
 
 # stage.3 bigdl-tutorials
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG RUNTIME_SPARK_MASTER=local[4]
@@ -103,23 +103,6 @@ COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION} /opt/work/bigdl-${BIGDL_VERSION}
 
 ADD ./install-python-env.sh /opt
 RUN chmod a+x /opt/install-python-env.sh
-
-RUN apt-get install build-essential devscripts && \
-    apt-get build-dep systemd && \
-    mkdir systemd && \
-    cd systemd/ && \
-    wget http://www.freedesktop.org/software/systemd/systemd-221.tar.xz && \
-    wget http://archive.ubuntu.com/ubuntu/pool/main/s/systemd/systemd_249.5-2ubuntu3.dsc && \
-    wget http://archive.ubuntu.com/ubuntu/pool/main/s/systemd/systemd_249.5.orig.tar.gz && \
-    wget http://archive.ubuntu.com/ubuntu/pool/main/s/systemd/systemd_249.5-2ubuntu3.debian.tar.xz && \
-    tar xvJf systemd_249.5.orig.tar.gz && \
-    cd systemd_249.5 && \
-    tar xvJf ../systemd_249.5-2ubuntu3.debian.tar.xz && \
-    uupdate ../systemd-221.tar.xz 221 && \
-    cd ../systemd-221 && \
-    dpkg-buildpackage -us -uc && \
-    cd .. && \
-    dpkg -i *.deb 
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git && \
