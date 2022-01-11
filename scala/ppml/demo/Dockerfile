@@ -30,13 +30,13 @@ RUN cd /graphene && \
 RUN /graphene/Scripts/download --output redis.tar.gz --sha256 f7ded6c27d48c20bc78e797046c79b6bc411121f0c2d7eead9fea50d6b0b6290 --url https://github.com/antirez/redis/archive/6.0.5.tar.gz
 RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
 
-# stage.2 jdk &
+# stage.2 jdk & spark
 FROM ubuntu:18.04 as spark
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils wget unzip
-# java
+
 RUN wget $JDK_URL -O jdk-$JDK_VERSION-linux-x64.tar.gz && \
     gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
     tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
