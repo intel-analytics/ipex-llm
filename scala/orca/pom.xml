@@ -94,6 +94,10 @@
                     <groupId>org.codehaus.jackson</groupId>
                     <artifactId>jackson-mapper-asl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -101,6 +105,20 @@
             <artifactId>spark-mllib_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.jersey.media</groupId>
+                    <artifactId>jersey-media-jaxb</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
