@@ -97,7 +97,6 @@ class Model(tf.keras.Model):
                 outputs=outputs if outputs else get_tensors_name(self.outputs)
             )
             quantizer.model = self
-            quantizer.calib_dataloader = common.DataLoader(calib_dataset, batch)
 
             if val_dataset and metric:
                 KerasINCMetric.metric = metric
@@ -106,6 +105,8 @@ class Model(tf.keras.Model):
             if approach == 'post_training_static_quant':
                 assert calib_dataset, "calib_dataset must not be None when approach is " \
                                       "post-training static quantization."
+                quantizer.calib_dataloader = common.DataLoader(calib_dataset, batch)
+
             quantized = quantizer()
             if quantized:
                 return quantized
