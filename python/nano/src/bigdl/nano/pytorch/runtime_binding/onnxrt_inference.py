@@ -189,12 +189,12 @@ def bind_onnxrt_methods(pl_model: LightningModule):
         pl_model._forward_args = inspect.getfullargspec(pl_model.forward).args[1:]
 
     # additional methods
-    pl_model._build_ortsess = partial(_build_ortsess, pl_model)  # onnx specified
-    pl_model.update_ortsess = partial(update_ortsess, pl_model)  # onnx specified
-    pl_model._onnx_on_fit_start = partial(_onnx_on_fit_start, pl_model)      # onnx specified
-    pl_model.eval_onnx = partial(eval_onnx, pl_model)            # onnx specified
-    pl_model._forward_onnx = partial(_forward_onnx, pl_model)    # onnx specified
-    pl_model.exit_onnx = partial(exit_onnx, pl_model)            # onnx specified
-    pl_model._onnx_on_train = partial(_onnx_on_train, pl_model)  # general
+    pl_model._build_ortsess = partial(_build_ortsess, pl_model)
+    pl_model.update_ortsess = partial(update_ortsess, pl_model)
+    pl_model._onnx_on_fit_start = partial(_onnx_on_fit_start, pl_model)
+    pl_model.eval_onnx = partial(eval_onnx, pl_model)
+    pl_model._forward_onnx = partial(_forward_onnx, pl_model)
+    pl_model.exit_onnx = partial(exit_onnx, pl_model)
+    pl_model._onnx_on_train = partial(_onnx_on_train, pl_model)
 
     return pl_model

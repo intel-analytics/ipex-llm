@@ -29,7 +29,6 @@ BASE_BINDED_COMPONENTS = ['_on_fit_start_old',
                           'inference']
 
 
-# on_fit_start (LightningModule method overwrite)
 def on_fit_start(self):
     if "_onnx_on_fit_start" in self.__dict__:
         self._onnx_on_fit_start()
@@ -45,6 +44,7 @@ def train(self, mode=True):
         if "_fx_quantize_on_train" in self.__dict__:
             self._fx_quantize_on_train(mode)
     return self._train_old(mode)
+
 
 def eval(self, quantize=False):
     # Note: this order should not be changed
@@ -142,17 +142,18 @@ def inference(self,
 
 def bind_base_inference_rt_methods(pl_model: LightningModule):
 
+    # if all needed method has been binded, return the same model
     if set(BASE_BINDED_COMPONENTS) <= set(dir(pl_model)):
         return pl_model
 
-    pl_model._on_fit_start_old = pl_model.on_fit_start           # general
-    pl_model._train_old = pl_model.train                         # general
-    pl_model._torch_forward = pl_model.forward                   # general
+    pl_model._on_fit_start_old = pl_model.on_fit_start
+    pl_model._train_old = pl_model.train
+    pl_model._torch_forward = pl_model.forward
     pl_model._eval_old = pl_model.eval
 
     pl_model.eval = partial(eval, pl_model)
-    pl_model.on_fit_start = partial(on_fit_start, pl_model)      # general
-    pl_model.inference = partial(inference, pl_model)            # general
-    pl_model.train = partial(train, pl_model)                    # general
+    pl_model.on_fit_start = partial(on_fit_start, pl_model)
+    pl_model.inference = partial(inference, pl_model)
+    pl_model.train = partial(train, pl_model)
 
     return pl_model

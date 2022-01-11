@@ -29,8 +29,9 @@ def _forward_fx_quantize(self, *args):
 
 
 def _fx_quantize_on_train(self, mode=True):
-    self.forward = self._torch_forward
     self._quantized_model_up_to_date = False
+    self._quantized_model = None
+    self.forward = self._torch_forward
 
 
 def _fx_quantize_on_fit_start(self):
