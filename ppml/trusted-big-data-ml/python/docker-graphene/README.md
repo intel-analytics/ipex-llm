@@ -526,7 +526,26 @@ cd /ppml/trusted-big-data-ml
 ./start-spark-standalone-driver-sgx.sh
 ```
 
-#### 2. Safety configurations in standalone mode
+#### 2. Run pyspark examples
+
+To run the pyspark examples in spark standalone mode, you only need to replace the following command in spark local mode command:
+
+```bash
+--master 'local[4]' \
+```
+
+with
+
+```bash
+--master 'spark://your_master_url' \
+--conf spark.authenticate=true \
+--conf spark.authenticate.secret=your_secret_key \
+```
+
+and  replace `your_master_url` with your own master url and `your_secret_key` with your own secret key.
+
+## Safety configurations in standalone mode
+### Safety Pamameters
 The security configuration in the following section ensures that tasks submitted by Spark run safely in standalone mode. These security configurations include:
 
     a. Authentication for RPC channels
@@ -535,7 +554,14 @@ The security configuration in the following section ensures that tasks submitted
     d. Local Storage Encryption
     e. SSL configuration
 
-##### a. Authentication for RPC channels
+First, we create a secret on k8s, and `YOUR_SECRET` needed user defined.  
+`kubectl create secret generic spark-secret --from-literal secret=$YOUR_SECRET`
+
+Next, we need to create a `secured_password`  
+```bash
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt < /ppml/trusted-big-data-ml/work/password/output.bin`
+```
+#### a. Authentication for RPC channels
 For Spark on YARN, Spark will automatically handle generating and distributing the shared secret, in other mechanisms, the `spark.authenticate.secret` parameter needs to be specified.  
 `spark.authenticate`: whether Spark authenticates its internal connections.  
 `spark.authenticate.secret`: The secret key used authentication  
@@ -548,7 +574,7 @@ For Spark on YARN, Spark will automatically handle generating and distributing t
     --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" 
 ```
 
-##### b. AES-based encryption for RPC connections
+#### b. AES-based encryption for RPC connections
 `spark.network.crypto.enabled`: enable AES-based RPC encryption.  
 `spark.network.crypto.keyLength`: The length in bits of the encryption key to generate.  
 `spark.network.crypto.keyFactoryAlgorithm`: The key factory algorithm to use when generating encryption keys.  
@@ -557,12 +583,12 @@ For Spark on YARN, Spark will automatically handle generating and distributing t
     --conf spark.network.crypto.keyLength=128 
     --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1
 ```
-##### c. SASL-based encrypted communication
+#### c. SASL-based encrypted communication
 `spark.authenticate.enableSaslEncryption`: enable SASL-based encrypted communication.  
 ```bash
     --conf spark.authenticate.enableSaslEncryption=true
 ```
-##### d. Local Storage Encryption
+#### d. Local Storage Encryption
 `spark.io.encryption.enabled`: enable local disk I/O encryption. Currently supported by all modes except Mesos.  
 `spark.io.encryption.keySizeBits`: IO encryption key size in bits.  
 `spark.io.encryption.keygen.algorithm`: The algorithm to use when generating the IO encryption key  
@@ -571,7 +597,7 @@ For Spark on YARN, Spark will automatically handle generating and distributing t
     --conf spark.io.encryption.keySizeBits=128
     --conf spark.io.encryption.keygen.algorithm=HmacSHA1
 ```
-##### e. SSL Configuration
+#### e. SSL Configuration
 `spark.ssl.enabled`: enable SSL.  
 `spark.ssl.port`: the port where the SSL service will listen on.  
 `spark.ssl.keyPassword`: the password to the private key in the key store.  
@@ -593,21 +619,73 @@ For Spark on YARN, Spark will automatically handle generating and distributing t
       --conf spark.ssl.trustStoreType=JKS 
 ```
 
-#### 3. Run pyspark examples 
-
-To run the pyspark examples in spark standalone mode, you only need to replace the following command in spark local mode command:
-
-```bash
---master 'local[4]' \
-```
-
-with 
+### Driver on SGX
+Traditionally, only the executor runs in sgx mode, the following parameters can make the driver also run in sgx mode.
+`spark.kubernetes.sgx.enabled`: enable driver on SGX.  
+`spark.kubernetes.sgx.mem`: set `SGX_MEM_SIZE` for driver.  
+`spark.kubernetes.sgx.jvm.mem`: set jvm memory for driver.
 
 ```bash
---master 'spark://your_master_url' \
---conf spark.authenticate=true \
---conf spark.authenticate.secret=your_secret_key \
+    --conf spark.kubernetes.sgx.enabled=true
+    --conf spark.kubernetes.sgx.mem=32g
+    --conf spark.kubernetes.sgx.jvm.mem=16g
 ```
+### Run Spark-Pi on k8s with Safety Parameters
+The following gives an example of running spark-pi on k8s, and references all security configuration parameters.
 
-and  replace `your_master_url` with your own master url and `your_secret_key` with your own secret key.
+```bash
+#!/bin/bash
 
+secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
+export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+  export SPARK_LOCAL_IP=$LOCAL_IP && \
+  /opt/jdk8/bin/java \
+    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+    -Xmx10g \
+    org.apache.spark.deploy.SparkSubmit \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode client \
+    --name spark-pi-sgx \
+    --conf spark.driver.host=$SPARK_LOCAL_IP \
+    --conf spark.driver.port=54321 \
+    --conf spark.driver.memory=10g \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+    --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+    --conf spark.kubernetes.executor.deleteOnTermination=false \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.python.use.daemon=false \
+    --conf spark.python.worker.reuse=false \
+    --executor-cores 8 \
+    --total-executor-cores 16 \
+    --executor-memory 32G \
+    --jars local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar \
+    --conf spark.kubernetes.sgx.enabled=true \
+    --conf spark.kubernetes.sgx.mem=32g \
+    --conf spark.kubernetes.sgx.jvm.mem=16g \
+    --conf spark.kubernetes.sgx.log.level=error \
+    --conf spark.authenticate=true \
+    --conf spark.authenticate.secret=$secure_password \
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+    --conf spark.authenticate.enableSaslEncryption=true \
+    --conf spark.network.crypto.enabled=true \
+    --conf spark.network.crypto.keyLength=128 \
+    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
+    --conf spark.io.encryption.enabled=true \
+    --conf spark.io.encryption.keySizeBits=128 \
+    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
+    --conf spark.ssl.enabled=true \
+    --conf spark.ssl.port=8043 \
+    --conf spark.ssl.keyPassword=$secure_password \
+    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.keyStorePassword=$secure_password \
+    --conf spark.ssl.keyStoreType=JKS \
+    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStorePassword=$secure_password \
+    --conf spark.ssl.trustStoreType=JKS \
+    --class org.apache.spark.examples.SparkPi \
+    --verbose \
+    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100 2>&1 | tee spark-pi-sgx.log
+```
