@@ -528,6 +528,7 @@ cd /ppml/trusted-big-data-ml
 
 #### 2. Safety configurations in standalone mode
 The security configuration in the following section ensures that tasks submitted by Spark run safely in standalone mode. These security configurations include:
+
     a. Authentication for RPC channels
     b. AES-based encryption for RPC connections
     c. SASL-based encrypted communication
