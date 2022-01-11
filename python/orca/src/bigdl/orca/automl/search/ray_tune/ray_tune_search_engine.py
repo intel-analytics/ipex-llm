@@ -25,6 +25,7 @@ from bigdl.orca.automl.search import TensorboardLogger
 from ray.tune import Stopper
 from bigdl.orca.automl.model.abstract import ModelBuilder
 from bigdl.orca.data import ray_xshards
+from ray.tune.progress_reporter import TrialProgressCallback
 
 
 class RayTuneSearchEngine(SearchEngine):
@@ -188,9 +189,10 @@ class RayTuneSearchEngine(SearchEngine):
             search_alg=self._search_alg,
             num_samples=self.num_samples,
             trial_dirname_creator=trial_dirname_creator,
+            callbacks=[CustomProgressCallback()],
             scheduler=self._scheduler,
             resources_per_trial=self.resources_per_trial,
-            verbose=1,
+            verbose=3,
             reuse_actors=True
         )
         self.trials = analysis.trials
@@ -388,6 +390,12 @@ class TrialStopper(Stopper):
 
     def stop_all(self):
         return False
+
+
+class CustomProgressCallback(TrialProgressCallback):
+    # for a clearer log in tuning
+    def log_result(self, trial, result, error: bool = False):
+        pass
 
 
 def trial_dirname_creator(trial):
