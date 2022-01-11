@@ -6,14 +6,16 @@ ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG TINI_VERSION=v0.18.0
 ARG PYTHON_ENV_NAME=tf1
+ARG DEBIAN_FRONTEND=noninteractive
 
 # stage.1 jdk & spark
-FROM ubuntu:18.04 as spark
+FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_HOME
+ARG DEBIAN_FRONTEND
 ARG TINI_VERSION
 ENV TINI_VERSION                        ${TINI_VERSION}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
@@ -47,9 +49,10 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 RUN git clone https://github.com/tensorflow/models/ /opt/models
 
 # stage.2 bigdl
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 ARG SPARK_VERSION
 ARG BIGDL_VERSION
+ARG DEBIAN_FRONTEND
 ENV SPARK_VERSION               ${SPARK_VERSION}
 ENV BIGDL_VERSION               ${BIGDL_VERSION}
 ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
@@ -64,8 +67,9 @@ RUN /opt/download-bigdl.sh && \
     rm bigdl*.zip
 
 # stage.3 copies layer
-FROM ubuntu:18.04 as copies-layer
+FROM ubuntu:20.04 as copies-layer
 ARG BIGDL_VERSION
+ARG DEBIAN_FRONTEND
 
 COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION} /opt/bigdl-${BIGDL_VERSION}
 COPY --from=spark /opt/jdk /opt/jdk
@@ -74,13 +78,14 @@ COPY --from=spark /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt
 
 
 # stage.4
-FROM ubuntu:18.04
-MAINTAINER The Analytics-Zoo Authors https://github.com/intel-analytics/analytics-zoo
+FROM ubuntu:20.04
+MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG SPARK_HOME
 ARG TINI_VERSION
 ARG PYTHON_ENV_NAME
+ARG DEBIAN_FRONTEND
 
 ENV BIGDL_HOME                          /opt/bigdl-${BIGDL_VERSION}
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
