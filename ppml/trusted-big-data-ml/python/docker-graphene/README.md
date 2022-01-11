@@ -555,7 +555,9 @@ The security configuration in the following section ensures that tasks submitted
     e. SSL configuration
 
 First, we create a secret on k8s, and `YOUR_SECRET` needed user defined.  
-`kubectl create secret generic spark-secret --from-literal secret=$YOUR_SECRET`
+```bash
+kubectl create secret generic spark-secret --from-literal secret=$YOUR_SECRET
+```
 
 Next, we need to create a `secured_password`  
 ```bash
