@@ -231,7 +231,8 @@ class Trainer(pl.Trainer):
             if val_dataloader and metric:
                 from bigdl.nano.quantization.quantization_inc import TorchINCMetric
                 quantizer.eval_dataloader = val_dataloader
-                quantizer.metric = common.Metric(TorchINCMetric, metric=metric)
+                TorchINCMetric.metric = metric
+                quantizer.metric = common.Metric(TorchINCMetric, name=type(metric).__name__)
             if approach == 'post_training_static_quant':
                 assert calib_dataloader, "calib_dataloader must not be None when approach is " \
                                          "post-training static quantization."

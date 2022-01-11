@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from abc import ABC, abstractmethod
+
 try:
     from neural_compressor.conf.config import Quantization_Conf
     from neural_compressor.experimental import Quantization
@@ -75,14 +77,13 @@ class QuantizationINC(Quantization):
         super().__init__(qconf)
 
 
-class INCMetric:
-    def __init__(self, metric):
-        self._metric = metric
+class INCMetric(ABC):
+    metric = None
+
+    def __init__(self):
+        assert self.metric, "Class variable 'metric' must not be None.'"
         self.pred_list = []
         self.label_list = []
-
-    def __call__(self, *args, **kwargs):
-        return self
 
     def update(self, preds, labels):
         # add preds and labels to storage
@@ -90,31 +91,34 @@ class INCMetric:
         self.label_list.extend(labels)
 
     def reset(self):
-        """clear preds and labels storage"""
+        # clear preds and labels storage
         self.pred_list = []
         self.label_list = []
+
+    def result(self):
+        # calculate accuracy
+        preds, labels = self.stack(self.pred_list, self.label_list)
+        accuracy = self.metric(preds, labels)
+        return accuracy.item()
+
+    @abstractmethod
+    def stack(self, preds, labels):
+        pass
 
 
 class TorchINCMetric(INCMetric):
-    def reset(self):
-        """clear preds and labels storage"""
-        self.pred_list = []
-        self.label_list = []
-
-    def result(self):
+    def stack(self, preds, labels):
         import torch
         # calculate accuracy
-        preds = torch.stack(self.pred_list)
-        labels = torch.stack(self.label_list)
-        accuracy = self._metric(preds, labels)
-        return accuracy.item()
+        preds = torch.stack(preds)
+        labels = torch.stack(labels)
+        return preds, labels
 
 
 class KerasINCMetric(INCMetric):
-    def result(self):
+    def stack(self, preds, labels):
         import tensorflow as tf
         # calculate accuracy
-        preds = tf.stack(self.pred_list)
-        labels = tf.stack(self.label_list)
-        accuracy = self._metric(preds, labels)
-        return accuracy.numpy()
+        preds = tf.stack(preds)
+        labels = tf.stack(labels)
+        return preds, labels
