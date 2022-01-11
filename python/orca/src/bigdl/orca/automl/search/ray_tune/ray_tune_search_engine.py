@@ -178,11 +178,13 @@ class RayTuneSearchEngine(SearchEngine):
         Run trials
         :return: trials result
         """
+        metric = self.metric_name if not self._scheduler else None
+        mode = self.mode if not self._scheduler else None
         analysis = tune.run(
             self.train_func,
             local_dir=self.logs_dir,
-            metric=self.metric_name,
-            mode=self.mode,
+            metric=metric,
+            mode=mode,
             name=self.name,
             stop=self.stopper,
             config=self.search_space,

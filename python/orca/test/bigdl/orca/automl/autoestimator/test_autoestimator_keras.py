@@ -129,7 +129,29 @@ class TestTFKerasAutoEstimator(TestCase):
                      search_space=create_linear_search_space(),
                      n_sampling=2,
                      epochs=2,
-                     metric="mse")
+                     metric="mse",
+                     )
+        assert auto_est.get_best_model()
+        best_config = auto_est.get_best_config()
+        assert "hidden_size" in best_config
+        assert all(k in best_config.keys() for k in create_linear_search_space().keys())
+
+    def test_fit_search_alg_schduler(self):
+        auto_est = AutoEstimator.from_keras(model_creator=model_creator,
+                                            logs_dir="/tmp/zoo_automl_logs",
+                                            resources_per_trial={"cpu": 2},
+                                            name="test_fit")
+
+        data, validation_data = get_train_val_data()
+        auto_est.fit(data=data,
+                     validation_data=validation_data,
+                     search_space=create_linear_search_space(),
+                     n_sampling=2,
+                     epochs=2,
+                     metric="mse",
+                     search_alg="skopt",
+                     scheduler="AsyncHyperBand",
+                     )
         assert auto_est.get_best_model()
         best_config = auto_est.get_best_config()
         assert "hidden_size" in best_config
