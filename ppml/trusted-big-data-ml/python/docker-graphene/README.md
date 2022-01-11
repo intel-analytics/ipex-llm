@@ -526,7 +526,84 @@ cd /ppml/trusted-big-data-ml
 ./start-spark-standalone-driver-sgx.sh
 ```
 
-#### 2. Run pyspark examples 
+#### 2. Safety configurations in standalone mode
+The security configuration in the following section ensures that tasks submitted by Spark run safely in standalone mode. These security configurations include: `authentication for RPC channels`, `encrypted connections for RPC`, `SASL-based encrypted communication`, `Local Storage Encryption`, and `SSL configuration`
+
+
+##### a. Authentication for RPC channels
+`spark.authenticate`: whether Spark authenticates its internal connections.
+
+`spark.authenticate.secret`: The secret key used authentication
+
+> For Spark on YARN, Spark will automatically handle generating and distributing the shared secret, in other mechanisms, the `spark.authenticate.secret` parameter needs to be specified. 
+
+`spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.
+
+```bash
+    --conf spark.authenticate=true
+    --conf spark.authenticate.secret=$secure_password
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" 
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" 
+```
+
+##### b. AES-based encryption for RPC connections
+`spark.network.crypto.enabled`: enable AES-based RPC encryption.
+
+`spark.network.crypto.keyLength`: The length in bits of the encryption key to generate.
+
+`spark.network.crypto.keyFactoryAlgorithm`: The key factory algorithm to use when generating encryption keys.
+```bash
+    --conf spark.network.crypto.enabled=true 
+    --conf spark.network.crypto.keyLength=128 
+    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1
+```
+##### c. SASL-based encrypted communication
+`spark.authenticate.enableSaslEncryption`: enable SASL-based encrypted communication.
+```bash
+    --conf spark.authenticate.enableSaslEncryption=true
+```
+##### d. Local Storage Encryption
+`spark.io.encryption.enabled`: enable local disk I/O encryption. Currently supported by all modes except Mesos.
+
+`spark.io.encryption.keySizeBits`: IO encryption key size in bits.
+
+`spark.io.encryption.keygen.algorithm`: The algorithm to use when generating the IO encryption key
+```bash
+    --conf spark.io.encryption.enabled=true
+    --conf spark.io.encryption.keySizeBits=128
+    --conf spark.io.encryption.keygen.algorithm=HmacSHA1
+```
+##### e. SSL Configuration
+`spark.ssl.enabled`: enable SSL.
+
+`spark.ssl.port`: the port where the SSL service will listen on.
+
+`spark.ssl.keyPassword`: the password to the private key in the key store.
+
+`spark.ssl.keyStore`: path to the key store file.
+
+`spark.ssl.keyStorePassword`: password to the key store.
+
+`spark.ssl.keyStoreType`: the type of the key store.
+
+`spark.ssl.trustStore`: path to the trust store file.
+
+`spark.ssl.trustStorePassword`: password for the trust store.
+
+`spark.ssl.trustStoreType`: the type of the trust store.
+```bash
+      --conf spark.ssl.enabled=true
+      --conf spark.ssl.port=8043
+      --conf spark.ssl.keyPassword=$secure_password
+      --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks 
+      --conf spark.ssl.keyStorePassword=$secure_password
+      --conf spark.ssl.keyStoreType=JKS
+      --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks
+      --conf spark.ssl.trustStorePassword=$secure_password  
+      --conf spark.ssl.trustStoreType=JKS 
+```
+
+#### 3. Run pyspark examples 
 
 To run the pyspark examples in spark standalone mode, you only need to replace the following command in spark local mode command:
 
@@ -543,3 +620,4 @@ with
 ```
 
 and  replace `your_master_url` with your own master url and `your_secret_key` with your own secret key.
+
