@@ -101,7 +101,8 @@ class Model(tf.keras.Model):
 
             if val_dataset and metric:
                 KerasINCMetric.metric = metric
-                quantizer.metric = common.Metric(KerasINCMetric, name=type(metric).__name__)
+                quantizer.metric = common.Metric(KerasINCMetric,
+                                                 name='INC_' + type(metric).__name__)
             if approach == 'post_training_static_quant':
                 assert calib_dataset, "calib_dataset must not be None when approach is " \
                                       "post-training static quantization."
