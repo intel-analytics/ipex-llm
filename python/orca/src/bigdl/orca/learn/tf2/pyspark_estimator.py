@@ -87,6 +87,7 @@ class SparkTFEstimator():
 
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
+        print("cluster info is: ", cluster_info)
         return cluster_info
 
     def fit(self, data, epochs=1, batch_size=32, verbose=1,

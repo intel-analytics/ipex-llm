@@ -191,6 +191,7 @@ class LocalDatasetHandler(DatasetHandler):
 def find_ip_and_port(pre_iter):
     tc = BarrierTaskContext().get()
     print("taskcontext type is: ", type(tc))
+    return [type(tc)]
     free_port = find_free_port(tc)
     return [free_port]
 
