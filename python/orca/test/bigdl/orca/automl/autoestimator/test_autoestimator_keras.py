@@ -46,13 +46,13 @@ def model_creator_multi_inputs_outputs(config):
     combined = Concatenate(axis=1)([x.output, y.output])
 
     z = Dense(config["dense_2"], activation="relu")(combined)
-    z = Dense(1, activation="linear", name="output")(z)
+    z = Dense(1, activation="sigmoid", name="output")(z)
 
     model = Model(inputs=[x.input, y.input], outputs=[middle, z])
 
-    model.compile(loss={"middle": "mse", "output": "mse"},
+    model.compile(loss={"middle": "mse", "output": 'binary_crossentropy'},
                  optimizer=tf.keras.optimizers.Adam(config["lr"]),
-                 metrics={"output": "mape"})
+                 metrics={"output": "accuracy"})
 
     return model
 
@@ -197,9 +197,10 @@ class TestTFKerasAutoEstimator(TestCase):
                      validation_data=validation_data,
                      search_space=get_search_space_multi_inputs_outputs(),
                      n_sampling=2,
-                     epochs=2,
-                     metric='output_mean_absolute_percentage_error',
-                     metric_mode="min",
+                     epochs=5,
+                     metric='output_acc',
+                     metric_threshold=0.7,
+                     metric_mode="max",
                      feature_cols=feature_cols,
                      label_cols=label_cols,
                      )
