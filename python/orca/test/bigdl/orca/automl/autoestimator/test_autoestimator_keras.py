@@ -128,7 +128,7 @@ class TestTFKerasAutoEstimator(TestCase):
                      validation_data=validation_data,
                      search_space=create_linear_search_space(),
                      n_sampling=2,
-                     epochs=1,
+                     epochs=2,
                      metric="mse")
         assert auto_est.get_best_model()
         best_config = auto_est.get_best_config()
@@ -146,14 +146,14 @@ class TestTFKerasAutoEstimator(TestCase):
                      validation_data=validation_data,
                      search_space=create_linear_search_space(),
                      n_sampling=2,
-                     epochs=1,
+                     epochs=2,
                      metric="mse")
         with pytest.raises(RuntimeError):
             auto_est.fit(data=data,
                          validation_data=validation_data,
                          search_space=create_linear_search_space(),
                          n_sampling=2,
-                         epochs=1,
+                         epochs=2,
                          metric="mse")
 
     def test_fit_metric_func(self):
@@ -174,7 +174,7 @@ class TestTFKerasAutoEstimator(TestCase):
                          validation_data=validation_data,
                          search_space=create_linear_search_space(),
                          n_sampling=2,
-                         epochs=1,
+                         epochs=2,
                          metric=pyrmsle)
         assert "metric_mode" in str(exeinfo)
 
@@ -182,7 +182,7 @@ class TestTFKerasAutoEstimator(TestCase):
                      validation_data=validation_data,
                      search_space=create_linear_search_space(),
                      n_sampling=2,
-                     epochs=1,
+                     epochs=2,
                      metric=pyrmsle,
                      metric_mode="min")
 
@@ -197,7 +197,7 @@ class TestTFKerasAutoEstimator(TestCase):
                      validation_data=validation_data,
                      search_space=get_search_space_multi_inputs_outputs(),
                      n_sampling=2,
-                     epochs=1,
+                     epochs=2,
                      metric='output_mean_absolute_percentage_error',
                      metric_mode="min",
                      feature_cols=feature_cols,
