@@ -52,7 +52,7 @@ object TrainImageNet {
       val validateSet = Utils.valDataSet(folder + "/val", sc, imageSize, batchSize)
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         Engine.getEngineType() match {
           case MklBlas =>

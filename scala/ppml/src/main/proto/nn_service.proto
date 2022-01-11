@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 syntax = 'proto3';
-
+package nn;
 import "fl_base.proto";
 //option java_multiple_files = true;
 option java_package = "com.intel.analytics.bigdl.ppml.generated";
@@ -28,34 +28,36 @@ service NNService {
 
 message TrainRequest {
     string clientuuid = 1;
-    Table data = 2;
+    TensorMap data = 2;
     string algorithm = 3;
 }
 message TrainResponse {
     string response = 1;
-    Table data = 2;
+    TensorMap data = 2;
     int32 code = 3;
 }
 
 message EvaluateRequest {
     string clientuuid = 1;
-    Table data = 2;
+    TensorMap data = 2;
     string algorithm = 3;
+    bool return = 4;
 }
 message EvaluateResponse {
     string response = 1;
-    Table data = 2;
+    TensorMap data = 2;
     int32 code = 3;
+    string message = 4;
 }
 
 message PredictRequest {
     string clientuuid = 1;
-    Table data = 2;
+    TensorMap data = 2;
     string algorithm = 3;
 }
 message PredictResponse {
     string response = 1;
-    Table data = 2;
+    TensorMap data = 2;
     int32 code = 3;
 }
 

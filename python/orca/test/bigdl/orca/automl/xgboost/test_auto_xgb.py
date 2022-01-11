@@ -50,6 +50,26 @@ def get_data_creators():
     return train_data_creator, val_data_creator
 
 
+def get_spark_df():
+    def get_df(size):
+        import pandas as pd
+        values = np.random.randn(size, 4)
+        df = pd.DataFrame(values, columns=["f1", "f2", "f3", "t"])
+        spark_df = spark.createDataFrame(df)
+        return spark_df
+
+    from bigdl.orca import OrcaContext
+    from pyspark.sql import SparkSession
+    sc = OrcaContext.get_spark_context()
+    spark = SparkSession(sc)
+
+    feature_cols = ["f1", "f2", "f3"]
+    label_cols = ["t"]
+    train_df = get_df(size=100)
+    val_df = get_df(size=30)
+    return train_df, val_df, feature_cols, label_cols
+
+
 def get_xgb_search_space():
     return {
         "n_estimators": hp.randint(5, 10),
@@ -153,3 +173,25 @@ class TestAutoXGBRegressor(TestCase):
         best_config = auto_xgb_reg.get_best_config()
         assert all(k in best_config.keys() for k in search_space.keys())
         assert len(best_config["features"]) == 2
+
+    def test_spark_df(self):
+        df, val_df, feature_cols, label_cols = get_spark_df()
+        auto_xgb_reg = AutoXGBRegressor(cpus_per_trial=2,
+                                        name="auto_xgb_regressor",
+                                        tree_method='hist')
+        search_space = get_xgb_search_space()
+        auto_xgb_reg.fit(data=df,
+                         epochs=1,
+                         validation_data=val_df,
+                         metric="logloss",
+                         metric_mode="min",
+                         search_space=search_space,
+                         n_sampling=2,
+                         feature_cols=feature_cols,
+                         label_cols=label_cols,
+                         )
+        best_model = auto_xgb_reg.get_best_model()
+        assert 5 <= best_model.n_estimators <= 10
+        assert 2 <= best_model.max_depth <= 5
+        best_config = auto_xgb_reg.get_best_config()
+        assert all(k in best_config.keys() for k in search_space.keys())

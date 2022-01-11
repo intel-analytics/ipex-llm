@@ -131,7 +131,13 @@ if __name__ == '__main__':
         scheduler = None
         scheduler_params = None
 
-    auto_xgb_clf = AutoXGBClassifier(cpus_per_trial=4, name="auto_xgb_classifier", **config)
+    remote_dir = "hdfs:///tmp/auto_xgb_regressor" if opt.cluster_mode == "yarn" else None
+
+    auto_xgb_clf = AutoXGBClassifier(cpus_per_trial=4,
+                                     name="auto_xgb_classifier",
+                                     remote_dir=remote_dir,
+                                     **config)
+
     import time
     start = time.time()
     auto_xgb_clf.fit(data=(X_train, y_train),

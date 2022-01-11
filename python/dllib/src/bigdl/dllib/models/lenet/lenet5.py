@@ -125,7 +125,7 @@ if __name__ == "__main__":
             .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TEST_MEAN, mnist.TEST_STD),
                                     rec_tuple[1])) \
             .map(lambda t: Sample.from_ndarray(t[0], t[1]))
-        model = Model.load(options.modelPath)
+        model = Model.loadModel(options.modelPath)
         results = model.evaluate(test_data, options.batchSize, [Top1Accuracy()])
         for result in results:
             print(result)

@@ -1041,7 +1041,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
             cachedModels.unpersist()
             val newModel = if (modelFile != null) {
               DistriOptimizer.logger.info("Model recover from last snapshot")
-              Module.load[T](modelFile)
+              Module.loadModule[T](modelFile)
             } else {
               DistriOptimizer.logger.info("Model recover from origin model")
               trainingModel
@@ -1670,6 +1670,13 @@ object InternalDistriOptimizerV2 {
       iter
     }.count()
     models.unpersist()
+  }
+}
+
+object Models {
+  def loadModel[T: ClassTag](path: String)(implicit ev: TensorNumeric[T]): KerasNet[T] = {
+    val model = Net.load[T](path)
+    return model
   }
 }
 
