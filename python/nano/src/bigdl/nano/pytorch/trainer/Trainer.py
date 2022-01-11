@@ -147,8 +147,9 @@ class Trainer(pl.Trainer):
 
         if onnx:
             try:
-                from bigdl.nano.pytorch.onnx.onnxrt_inference import bind_onnxrt_methods
-                return bind_onnxrt_methods(pl_model)
+                from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import bind_onnxrt_methods
+                from bigdl.nano.pytorch.runtime_binding.base_inference import bind_base_inference_rt_methods
+                return bind_onnxrt_methods(bind_base_inference_rt_methods(pl_model))
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
@@ -166,8 +167,9 @@ class Trainer(pl.Trainer):
                  tuning_strategy='bayesian',
                  accuracy_criterion: dict = None,
                  timeout=0,
-                 max_trials=1
-                 ) -> GraphModule:
+                 max_trials=1,
+                 raw_return=False
+                 ):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
@@ -197,6 +199,8 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
+        :param raw_return:  Decide which type to return. If set to True, a GraphModule will be
+                            returned. If set to False, a pytorch lightning module will be returned.
         :return:            A GraphModule. If there is no model found, return None.
         """
         if backend == 'inc':
@@ -232,7 +236,12 @@ class Trainer(pl.Trainer):
                 quantizer.calib_dataloader = calib_dataloader
             quantized = quantizer()
             if quantized:
-                return quantized.model
+                if raw_return:
+                    return quantized.model
+                else:
+                    from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
+                        bind_quantize_methods
+                    return bind_quantize_methods(pl_model, quantized.model)
             else:
                 raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
         else:
