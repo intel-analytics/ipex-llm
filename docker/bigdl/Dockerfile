@@ -19,13 +19,15 @@ ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ARG DEBIAN_FRONTEND=noninteractive
 
 # stage.1 jdk & spark
-FROM ubuntu:18.04 as spark
+FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_HOME
+ARG DEBIAN_FRONTEND
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
 RUN apt-get update --fix-missing && \
@@ -54,9 +56,10 @@ RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
     fi
 
 # stage.2 bigdl
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 ARG SPARK_VERSION
 ARG BIGDL_VERSION
+ARG DEBIAN_FRONTEND
 ENV SPARK_VERSION               ${SPARK_VERSION}
 ENV BIGDL_VERSION               ${BIGDL_VERSION}
 ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
@@ -71,7 +74,7 @@ RUN /opt/download-bigdl.sh && \
     rm bigdl*.zip
 
 # stage.3 bigdl-tutorials
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG RUNTIME_SPARK_MASTER=local[4]
@@ -80,6 +83,7 @@ ARG RUNTIME_DRIVER_MEMORY=20g
 ARG RUNTIME_EXECUTOR_CORES=4
 ARG RUNTIME_EXECUTOR_MEMORY=20g
 ARG RUNTIME_TOTAL_EXECUTOR_CORES=4
+ARG DEBIAN_FRONTEND
 ENV SPARK_VERSION                   ${SPARK_VERSION}
 ENV BIGDL_VERSION                   ${BIGDL_VERSION}
 ENV NOTEBOOK_PORT                   12345
