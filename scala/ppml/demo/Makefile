@@ -1,13 +1,13 @@
 GRAPHENEDIR ?= /graphene
-SGX_SIGNER_KEY ?= $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem
-
-G_JAVA_XMX ?= 2G
-G_SGX_SIZE ?= 8G
-G_SGX_THREAD_NUM ?= 256
+SGX_SIGNER_KEY ?= /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
 
 THIS_DIR ?= /opt
-JDK_HOME ?= /usr/lib/jvm/java-11-openjdk-amd64/
-WORK_DIR ?= $(THIS_DIR)/work
+JDK_HOME ?= /opt/jdk8
+
+G_JAVA_XMX ?= 2G
+G_SGX_SIZE ?= 65536M
+G_SGX_THREAD_NUM ?= 256
 
 ifeq ($(DEBUG),1)
 GRAPHENE_LOG_LEVEL = debug
@@ -16,48 +16,44 @@ GRAPHENE_LOG_LEVEL = error
 endif
 
 .PHONY: all
-all: java.manifest | pal_loader
+all: bash.manifest
 ifeq ($(SGX),1)
-all: java.token
+all: bash.manifest.sgx bash.sig bash.token
 endif
 
-include $(GRAPHENEDIR)/Scripts/Makefile.configs
+bash.manifest: bash.manifest.template
+        /graphene/meson_build_output/bin/graphene-manifest \
+                -Dsgx_enclave_size=$(G_SGX_SIZE) \
+                -Dlog_level=$(GRAPHENE_LOG_LEVEL) \
+                -Dexecdir=$(shell dirname $(shell which bash)) \
+                -Darch_libdir=$(ARCH_LIBDIR) \
+                -Djdk_home=$(JDK_HOME) \
+                $< >$@
 
-#### java
-java.manifest: java.manifest.template
-        sed -e 's|$$(GRAPHENEDIR)|'"$(GRAPHENEDIR)"'|g' \
-                -e 's|$$(GRAPHENEDEBUG)|'"$(GRAPHENEDEBUG)"'|g' \
-                -e 's|$$(ARGV0_OVERRIDE)|java|g' \
-                -e 's|$$(EXECPATH)|'"$(shell which java)"'|g' \
-                -e 's|$$(EXECDIR)|'"$(shell dirname $(shell which java))"'|g' \
-                -e 's|$$(ARCH_LIBDIR)|'"$(ARCH_LIBDIR)"'|g' \
-                -e 's|$$(JDK_HOME)|'"$(JDK_HOME)"'|g' \
-                -e 's|$$(SPARK_LOCAL_IP)|'"$(SPARK_LOCAL_IP)"'|g' \
-                -e 's|$$(SPARK_USER)|'"$(SPARK_USER)"'|g' \
-                -e 's|$$(SPARK_HOME)|'"$(SPARK_HOME)"'|g' \
-                -e 's|$$(WORK_DIR)|'"$(WORK_DIR)"'|g' \
-                -e 's|$$(G_SGX_SIZE)|'"$(G_SGX_SIZE)"'|g' \
-                $< > $@
+bash.manifest.sgx: bash.manifest
+        @test -s $(SGX_SIGNER_KEY) || \
+            { echo "SGX signer private key was not found, please specify SGX_SIGNER_KEY!"; exit 1; }
+        /graphene/meson_build_output/bin/graphene-sgx-sign \
+                --key $(SGX_SIGNER_KEY) \
+                --libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
+                --manifest bash.manifest \
+                --output $@
 
-java.manifest.sgx: java.manifest
-        $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
-                -libpal $(GRAPHENEDIR)/Runtime/libpal-Linux-SGX.so \
-                -key $(SGX_SIGNER_KEY) \
-                -manifest java.manifest -output $@
+bash.sig: bash.manifest.sgx
 
-java.sig: java.manifest.sgx
+bash.token: bash.sig
+        /graphene/meson_build_output/bin/graphene-sgx-get-token --output bash.token --sig bash.sig
 
-java.token: java.sig
-        $(GRAPHENEDIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token \
-                -output java.token -sig java.sig
-
-pal_loader:
-	ln -s $(GRAPHENEDIR)/Runtime/pal_loader $@
+ifeq ($(SGX),)
+GRAPHENE = graphene-direct
+else
+GRAPHENE = graphene-sgx
+endif
 
 .PHONY: clean
 clean:
-	$(RM) *.manifest *.manifest.sgx *.token *.sig trusted-libs pal_loader OUTPUT scripts/testdir/*
+        $(RM) *.manifest *.manifest.sgx *.token *.sig OUTPUT scripts/testdir/*
 
 .PHONY: distclean
 distclean: clean
-
+ss
