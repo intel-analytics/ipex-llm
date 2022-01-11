@@ -527,15 +527,19 @@ cd /ppml/trusted-big-data-ml
 ```
 
 #### 2. Safety configurations in standalone mode
-The security configuration in the following section ensures that tasks submitted by Spark run safely in standalone mode. These security configurations include: `authentication for RPC channels`, `encrypted connections for RPC`, `SASL-based encrypted communication`, `Local Storage Encryption`, and `SSL configuration`
-
+The security configuration in the following section ensures that tasks submitted by Spark run safely in standalone mode. These security configurations include:
+    a. Authentication for RPC channels
+    b. AES-based encryption for RPC connections
+    c. SASL-based encrypted communication
+    d. Local Storage Encryption
+    e. SSL configuration
 
 ##### a. Authentication for RPC channels
+For Spark on YARN, Spark will automatically handle generating and distributing the shared secret, in other mechanisms, the `spark.authenticate.secret` parameter needs to be specified.
+
 `spark.authenticate`: whether Spark authenticates its internal connections.
 
 `spark.authenticate.secret`: The secret key used authentication
-
-> For Spark on YARN, Spark will automatically handle generating and distributing the shared secret, in other mechanisms, the `spark.authenticate.secret` parameter needs to be specified. 
 
 `spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.
 
