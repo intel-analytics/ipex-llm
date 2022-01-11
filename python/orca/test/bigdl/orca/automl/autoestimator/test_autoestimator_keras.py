@@ -30,7 +30,7 @@ def model_creator(config):
     return model
 
 
-def model_creator_multi_inputs(config):
+def model_creator_multi_inputs_outputs(config):
     from tensorflow.keras.layers import Input, Dense, Concatenate
     from tensorflow.keras.models import Model
     input_1 = Input(shape=(32,))
@@ -39,24 +39,25 @@ def model_creator_multi_inputs(config):
     x = Dense(config["dense_1"], activation="relu")(input_1)
     x = Model(inputs=input_1, outputs=x)
 
-    y = Dense(config["dense_1"], activation="relu")(input_2)
+    middle = Dense(32, activation="relu", name="middle")(input_2)
+    y = Dense(config["dense_1"], activation="relu")(middle)
     y = Model(inputs=input_2, outputs=y)
 
     combined = Concatenate(axis=1)([x.output, y.output])
 
     z = Dense(config["dense_2"], activation="relu")(combined)
-    z = Dense(1, activation="linear")(z)
+    z = Dense(1, activation="linear", name="output")(z)
 
-    model = Model(inputs=[x.input, y.input], outputs=z)
+    model = Model(inputs=[x.input, y.input], outputs=[middle, z])
 
-    model.compile(loss="mse",
+    model.compile(loss={"middle": "mse", "output": "mse"},
                  optimizer=tf.keras.optimizers.Adam(config["lr"]),
-                 metrics=["mse"])
+                 metrics={"output": "mape"})
 
     return model
 
 
-def get_search_space_multi_inputs():
+def get_search_space_multi_inputs_outputs():
     from bigdl.orca.automl import hp
     return {
         "dense_1": hp.choice([8, 16]),
@@ -66,12 +67,12 @@ def get_search_space_multi_inputs():
     }
 
 
-def get_multi_inputs_data():
+def get_multi_inputs_outputs_data():
     def get_df(size):
         rdd = sc.parallelize(range(size))
-        df = rdd.map(lambda x: ([float(x)] * 32, [float(x)] * 64,
+        df = rdd.map(lambda x: ([float(x)] * 32, [float(x)] * 64, [float(x)] * 32,
                         [int(np.random.randint(0, 2, size=()))])
-                ).toDF(["f1", "f2", "label"])
+                ).toDF(["f1", "f2", "middle", "label"])
         return df
 
     from pyspark.sql import SparkSession
@@ -79,7 +80,7 @@ def get_multi_inputs_data():
     sc = OrcaContext.get_spark_context()
     spark = SparkSession(sc)
     feature_cols = ["f1", "f2"]
-    label_cols = ["label"]
+    label_cols = ["middle","label"]
     train_df = get_df(size=100)
     val_df = get_df(size=30)
     return train_df, val_df, feature_cols, label_cols
@@ -186,25 +187,26 @@ class TestTFKerasAutoEstimator(TestCase):
                      metric_mode="min")
 
     def test_multiple_inputs_model(self):
-        auto_est = AutoEstimator.from_keras(model_creator=model_creator_multi_inputs,
+        auto_est = AutoEstimator.from_keras(model_creator=model_creator_multi_inputs_outputs,
                                             logs_dir="/tmp/zoo_automl_logs",
                                             resources_per_trial={"cpu": 2},
                                             name="test_fit")
 
-        data, validation_data, feature_cols, label_cols = get_multi_inputs_data()
+        data, validation_data, feature_cols, label_cols = get_multi_inputs_outputs_data()
         auto_est.fit(data=data,
                      validation_data=validation_data,
-                     search_space=get_search_space_multi_inputs(),
+                     search_space=get_search_space_multi_inputs_outputs(),
                      n_sampling=2,
                      epochs=1,
-                     metric="mse",
+                     metric='output_mean_absolute_percentage_error',
+                     metric_mode="min",
                      feature_cols=feature_cols,
                      label_cols=label_cols,
                      )
         assert auto_est.get_best_model()
         best_config = auto_est.get_best_config()
         assert "lr" in best_config
-        assert all(k in best_config.keys() for k in get_search_space_multi_inputs().keys())
+        assert all(k in best_config.keys() for k in get_search_space_multi_inputs_outputs().keys())
 
 
 if __name__ == "__main__":
