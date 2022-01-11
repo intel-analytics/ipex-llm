@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List
+from typing import List, Optional
 
 import tensorflow as tf
 from neural_compressor.model.model import TensorflowBaseModel
@@ -28,9 +28,9 @@ class Model(tf.keras.Model):
                  calib_dataset: tf.data.Dataset = None,
                  val_dataset: tf.data.Dataset = None,
                  batch=1,
-                 metric: Metric = None,
+                 metric: Optional[Metric] = None,
                  backend='inc',
-                 conf=None,
+                 conf: Optional[str] = None,
                  approach='static',
                  tuning_strategy='bayesian',
                  accuracy_criterion: dict = None,
