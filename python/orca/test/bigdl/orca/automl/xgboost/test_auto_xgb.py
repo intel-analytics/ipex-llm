@@ -188,7 +188,7 @@ class TestAutoXGBRegressor(TestCase):
                          search_space=search_space,
                          n_sampling=2,
                          feature_cols=feature_cols,
-                         target_cols=label_cols,
+                         label_cols=label_cols,
                          )
         best_model = auto_xgb_reg.get_best_model()
         assert 5 <= best_model.n_estimators <= 10

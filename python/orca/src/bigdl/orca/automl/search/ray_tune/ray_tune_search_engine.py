@@ -25,6 +25,7 @@ from bigdl.orca.automl.search import TensorboardLogger
 from ray.tune import Stopper
 from bigdl.orca.automl.model.abstract import ModelBuilder
 from bigdl.orca.data import ray_xshards
+from ray.tune.progress_reporter import TrialProgressCallback
 
 
 class RayTuneSearchEngine(SearchEngine):
@@ -81,7 +82,7 @@ class RayTuneSearchEngine(SearchEngine):
                 scheduler_params=None,
                 mc=False,
                 feature_cols=None,
-                target_cols=None,
+                label_cols=None,
                 ):
         """
         Do necessary preparations for the engine
@@ -112,7 +113,7 @@ class RayTuneSearchEngine(SearchEngine):
         :param scheduler_params: parameters for scheduler
         :param mc: if calculate uncertainty
         :param feature_cols: feature column names if data is Spark DataFrame.
-        :param target_cols: target column names if data is Spark DataFrame.
+        :param label_cols: target column names if data is Spark DataFrame.
         """
         # metric and metric's mode
         self.metric_name = metric.__name__ if callable(metric) else (metric or DEFAULT_METRIC_NAME)
@@ -139,7 +140,7 @@ class RayTuneSearchEngine(SearchEngine):
                                                    remote_dir=self.remote_dir,
                                                    resources_per_trial=self.resources_per_trial,
                                                    feature_cols=feature_cols,
-                                                   target_cols=target_cols,
+                                                   label_cols=label_cols,
                                                    )
 
     @staticmethod
@@ -188,9 +189,10 @@ class RayTuneSearchEngine(SearchEngine):
             search_alg=self._search_alg,
             num_samples=self.num_samples,
             trial_dirname_creator=trial_dirname_creator,
+            callbacks=[CustomProgressCallback()],
             scheduler=self._scheduler,
             resources_per_trial=self.resources_per_trial,
-            verbose=1,
+            verbose=3,
             reuse_actors=True
         )
         self.trials = analysis.trials
@@ -281,7 +283,7 @@ class RayTuneSearchEngine(SearchEngine):
                             remote_dir=None,
                             resources_per_trial=None,
                             feature_cols=None,
-                            target_cols=None,
+                            label_cols=None,
                             ):
         """
         Prepare the train function for ray tune
@@ -305,7 +307,7 @@ class RayTuneSearchEngine(SearchEngine):
             spark_xshards, val_spark_xshards = dataframe_to_xshards(data,
                                                                     validation_data=validation_data,
                                                                     feature_cols=feature_cols,
-                                                                    label_cols=target_cols,
+                                                                    label_cols=label_cols,
                                                                     mode="fit",
                                                                     num_workers=num_workers)
             ray_xshards = process_spark_xshards(spark_xshards, num_workers=num_workers)
@@ -390,12 +392,19 @@ class TrialStopper(Stopper):
         return False
 
 
+class CustomProgressCallback(TrialProgressCallback):
+    # for a clearer log in tuning
+    def log_result(self, trial, result, error: bool = False):
+        pass
+
+
 def trial_dirname_creator(trial):
     return f"{trial.trainable_name}_{trial.trial_id}"
 
 
 def get_data_from_part_refs(part_refs):
-    import numpy as np
+    from bigdl.orca.data.utils import ray_partitions_get_data_label
+
     partitions = ray.get(part_refs)
 
     # convert list of dicts to one dict
@@ -405,9 +414,9 @@ def get_data_from_part_refs(part_refs):
 
     # reorder dict with partition index
     parts = [result[idx] for idx in range(len(result.keys()))]
-    shards = [item for part in parts for item in part]
 
-    X = np.concatenate([np.stack(shard["x"], axis=1) for shard in shards], axis=0)
-    y = np.concatenate([shard["y"] for shard in shards], axis=0)
-
-    return X, y
+    data, label = ray_partitions_get_data_label(parts,
+                                                allow_tuple=True,
+                                                allow_list=False,
+                                                )
+    return data, label
