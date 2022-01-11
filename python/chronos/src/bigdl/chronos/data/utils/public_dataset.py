@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
+import os, re, tarfile, zipfile
 import requests
 
 import tqdm
@@ -85,7 +85,6 @@ class PublicDataset:
         columns_name = ['StartTime', 'EndTime', 'AvgRate', 'total']
 
         if not os.path.exists(self.final_file_path):
-            import re
             for val in DATASET_NAME[self.name]:
                 with open(os.path.join(self.dir_path, val), 'r') as f:
                     content = f.read()
@@ -111,70 +110,62 @@ class PublicDataset:
         '''
         return data that meets the minimum requirements of tsdata.
         '''
-        _is_first_columns = True
         file_path = os.path.join(os.path.expanduser(self.dir_path), DATASET_NAME[self.name][0])
-        download_csv_name = DATASET_NAME[self.name][0].split('.')[0] + '.csv'
-
-        try:
-            if not os.path.exists(os.path.join(self.dir_path, download_csv_name)):
-                import tarfile
+        tar_file = DATASET_NAME[self.name][0].split('.')[0] + '.csv'
+        tar_file = os.path.join(self.dir_path, tar_file)
+        columns_list = ["id", "time_step", "cpu_usage", "mem_usage"]
+        
+        if not os.path.exists(self.final_file_path):
+            if not os.path.exists(tar_file):
                 tar = tarfile.open(file_path, 'r:gz')
                 tar.extractall(os.path.expanduser(self.dir_path))
-        except Exception:
-            raise FileExistsError('file extractall failure, set redownload=True.')
-
-        aio_raw_df = pd.read_csv(os.path.join(self.dir_path,
-                                              download_csv_name),
+            raw_df = pd.read_csv(tar_file,
                                  header=None,
                                  usecols=[0, 1, 2, 3],
-                                 names=["id", "time_step", "cpu_usage", "mem_usage"],
+                                 names=columns_list,
                                  na_filter=False,
                                  chunksize=4096,
                                  low_memory=False)
-
-        if not os.path.exists(self.final_file_path):
-            for val in aio_raw_df:
-                val.loc[val.id.eq('m_1932')].\
-                    to_csv(self.final_file_path,
+            for val in raw_df:
+                val.loc[val.id.eq('m_1932')]\
+                   .to_csv(self.final_file_path,
                            mode='a',
-                           header=["id", "time_step", "cpu_usage", "mem_usage"]
-                           if _is_first_columns else None,
+                           header=columns_name,
                            index=False)
-                _is_first_columns = False
+                columns_name = None
 
         self.df = pd.read_csv(self.final_file_path, usecols=[1, 2, 3])
         self.df.sort_values(by="time_step", inplace=True)
         self.df.reset_index(inplace=True, drop=True)
-        self.df["time_step"] = \
-            pd.to_datetime(self.df["time_step"], unit='s', origin=pd.Timestamp('2018-01-01'))
+        self.df["time_step"] = pd.to_datetime(self.df["time_step"],
+                                              unit='s',
+                                              origin=pd.Timestamp('2018-01-01'))
         return self
 
     def preprocess_fsi(self):
         """
         return data that meets the minimum requirements of tsdata.
         """
-        _is_first_columns = True
         if not os.path.exists(self.final_file_path):
-            import zipfile
             zip_file = zipfile.ZipFile(os.path.join(
-                                       os.path.expanduser(self.dir_path),
-                                       DATASET_NAME[self.name][0]))
+                                        os.path.expanduser(self.dir_path),
+                                        DATASET_NAME[self.name][0]))
             zip_file.extractall(os.path.join(os.path.expanduser(self.dir_path)))
             download_file = os.path.join(self.dir_path, DATASET_NAME[self.name][0].split('.')[0])
             local_file_list = os.listdir(download_file)
+            columns_list = ['ds', 'open', 'high', 'low', 'close', 'y', 'Name']
 
             for val in local_file_list:
                 fsi_raw_df = pd.read_csv(os.path.join(download_file, val),
                                          names=['date', 'open', 'high',
-                                                'low', 'close', 'volume', 'Name'])
+                                                'low', 'close', 'volume', 'Name'],
+                                         encoding='latin1')
                 fsi_raw_df = fsi_raw_df.loc[fsi_raw_df.Name.eq('MMM')]
                 fsi_raw_df.to_csv(self.final_file_path,
-                                  header=['ds', 'open', 'high',
-                                          'low', 'close', 'y', 'Name']
-                                  if _is_first_columns else None,
+                                  header=columns_list,
                                   index=False,
                                   mode='a')
-                _is_first_columns = False
+                columns_list = None
 
         self.df = pd.read_csv(self.final_file_path, usecols=[0, 5], parse_dates=[0])
         self.df.ds = pd.to_datetime(self.df.ds)
@@ -197,7 +188,6 @@ class PublicDataset:
         return data that meets the minimum requirements of tsdata.
         '''
         if not os.path.exists(self.final_file_path):
-            import zipfile
             zip_file = zipfile.ZipFile(os.path.join(
                                        os.path.expanduser(self.dir_path),
                                        DATASET_NAME[self.name][0]))
