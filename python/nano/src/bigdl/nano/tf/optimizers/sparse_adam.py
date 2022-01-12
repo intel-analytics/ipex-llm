@@ -22,33 +22,20 @@ import tensorflow
 
 
 class SparseAdam(tensorflow.keras.optimizers.Adam):
-    r"""Optimizer that implements the SparseAdam algorithm.
+    """
+    Variant of the Adam optimizer that handles sparse updates more
+    efficiently.
 
-  Args:
-    learning_rate: A `Tensor`, floating point value, or a schedule that is a
-      `tf.keras.optimizers.schedules.LearningRateSchedule`, or a callable
-      that takes no arguments and returns the actual value to use, The
-      learning rate. Defaults to 0.001.
-    beta_1: A float value or a constant float tensor, or a callable
-      that takes no arguments and returns the actual value to use. The
-      exponential decay rate for the 1st moment estimates. Defaults to 0.9.
-    beta_2: A float value or a constant float tensor, or a callable
-      that takes no arguments and returns the actual value to use, The
-      exponential decay rate for the 2nd moment estimates. Defaults to 0.999.
-    epsilon: A small constant for numerical stability. This epsilon is
-      "epsilon hat" in the Kingma and Ba paper (in the formula just before
-      Section 2.1), not the epsilon in Algorithm 1 of the paper. Defaults to
-      1e-7.
-    amsgrad: Boolean. Whether to apply AMSGrad variant of this algorithm from
-      the paper "On the Convergence of Adam and beyond". Defaults to `False`.
-    name: Optional name for the operations created when applying gradients.
-      Defaults to `"Adam"`.
-    **kwargs: Keyword arguments. Allowed to be one of
-      `"clipnorm"` or `"clipvalue"`.
-      `"clipnorm"` (float) clips gradients by norm; `"clipvalue"` (float) clips
-      gradients by value.
-  """
+    The original Adam algorithm maintains two moving-average accumulators for
+    each trainable variable; the accumulators are updated at every step.
+    In this variant, only moments that show up in the gradient get updated,
+    and only those portions of the gradient get applied to the parameters.
+    Compared with the original Adam optimizer, it can provide large improvements in
+    model training throughput for some applications.
 
+    Note, :pram amsgrad is currently not supported and the argument can only be set to
+    False.
+    """
     _HAS_AGGREGATE_GRAD = True
 
     def __init__(self,
@@ -59,7 +46,33 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
                  amsgrad=False,
                  name='SparseAdam',
                  **kwargs):
-
+        '''
+        This is a slightly modified version of tf.keras.Embedding,
+        which only apply regularizer to the output of the embedding
+        layers, such that the gradient to embeddings is sparse.
+        :param learning_rate: A `Tensor`, floating point value, or a schedule that is a
+            `tf.keras.optimizers.schedules.LearningRateSchedule`, or a callable
+            that takes no arguments and returns the actual value to use, The
+            learning rate. Defaults to 0.001.
+        :param beta_1: A float value or a constant float tensor, or a callable
+            that takes no arguments and returns the actual value to use. The
+            exponential decay rate for the 1st moment estimates. Defaults to 0.9.
+        :param beta_2: A float value or a constant float tensor, or a callable
+            that takes no arguments and returns the actual value to use, The
+            exponential decay rate for the 2nd moment estimates. Defaults to 0.999.
+        :param epsilon: A small constant for numerical stability. This epsilon is
+            "epsilon hat" in the Kingma and Ba paper (in the formula just before
+            Section 2.1), not the epsilon in Algorithm 1 of the paper. Defaults to
+            1e-7.
+        :param amsgrad: Boolean. Whether to apply AMSGrad variant of this algorithm from
+            the paper "On the Convergence of Adam and beyond". Defaults to `False`.
+        :param name: Optional name for the operations created when applying gradients.
+            Defaults to `"Adam"`.
+        :param kwargs: Keyword arguments. Allowed to be one of
+            `"clipnorm"` or `"clipvalue"`.
+            `"clipnorm"` (float) clips gradients by norm; `"clipvalue"` (float) clips
+            gradients by value.
+        '''
         super().__init__(
             learning_rate=learning_rate,
             beta_1=beta_1,
