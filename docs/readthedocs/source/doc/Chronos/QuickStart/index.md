@@ -91,8 +91,8 @@
     We demonstrates how to leverage Chronos's built-in models ie. MTNet, to do time series forecasting. Then perform anomaly detection on predicted value with [ThresholdDetector][Threshold].
 
 
-[DBScan]: <../anomaly_detectors.html#dbscandetector>
-[AE]: <../anomaly_detectors.html#aedetector>
-[Threshold]: <../anomaly_detectors.html#thresholddetector>
+[DBScan]: <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#dbscandetector>
+[AE]: <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#aedetector>
+[Threshold]: <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#thresholddetector>
 [4]: <https://github.com/intel-analytics/bigdl/tree/branch-2.0/python/chronos/src/bigdl/chronos>
 
