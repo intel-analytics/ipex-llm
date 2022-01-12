@@ -79,8 +79,8 @@ class Model(tf.keras.Model):
             def get_tensors_name(tensors):
                 return [tensor.name for tensor in tensors]
 
-            if approach not in ['static', 'dynamic']:
-                raise ValueError("Approach should be 'static' or 'dynamic', "
+            if approach not in ['static']:
+                raise ValueError("Approach should be 'static', "
                                  "{} is invalid.".format(approach))
             approach_map = {
                 'static': 'post_training_static_quant',

@@ -38,18 +38,8 @@ class TestKerasModel(TestCase):
                               feed_dict={q_model.input_tensor[0]: train_examples[0:10]})  # output
         assert output[0].shape == (10, 10)
 
-        # Case 3: Dynamic quantization
-        q_model = model.quantize(approach='dynamic')
-        assert q_model
-        with q_model.sess as sess:
-            output = sess.run(q_model.output_tensor,
-                              feed_dict={q_model.input_tensor[0]: train_examples[0:10]})  # output
-
-        print(output[0].shape)
-        assert output[0].shape == (10, 10)
-
-        # Case 4: Invalid approach
-        invalid_approach = 'qat'
+        # Case 3: Invalid approach, dynamic or qat is not supported
+        invalid_approach = 'dynamic'
         with pytest.raises(ValueError, match="Approach should be 'static' or 'dynamic', "
                                              "{} is invalid.".format(invalid_approach)):
             model.quantize(approach=invalid_approach)
