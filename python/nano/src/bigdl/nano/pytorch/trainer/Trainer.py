@@ -222,7 +222,7 @@ class Trainer(pl.Trainer):
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
-            model = pl_model
+            model: nn.Module = pl_model
             if isinstance(pl_model, LightningModuleFromTorch):
                 # LightningModuleFromTorch.forward fails to trace in FX, so replace it temporarily
                 model = pl_model.model
