@@ -22,6 +22,7 @@ from pyspark.ml.feature import VectorAssembler
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from bigdl.dllib.nnframes.nn_classifier import *
+from pyspark.sql.functions import col
 import argparse
 
 spark_conf = {"spark.network.timeout": "10000000",
@@ -54,7 +55,7 @@ if __name__ == '__main__':
                         help='The number of executor.')
     parser.add_argument('--driver_cores', type=int, default=4,
                         help='The driver core number.')
-    parser.add_argument('--driver_memory', type=str, default="36g",
+    parser.add_argument('--dricver_memory', type=str, default="36g",
                         help='The driver memory.')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
@@ -64,7 +65,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
-        sc = init_orca_context("local")
+        sc = init_orca_context("local", 4)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executor, memory=args.executor_memory,
@@ -80,6 +81,8 @@ if __name__ == '__main__':
                 "tweet_type", "language", 'present_media_language']
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
+    cat_cols = ['present_media_language']
+    embed_cols = []
     features = num_cols + [col + "_te_label" for col in cat_cols] +\
                [col + "_te_label" for col in embed_cols]
 
@@ -93,31 +96,49 @@ if __name__ == '__main__':
     reindex_tbls = full.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     full, min_max_dict = full.min_max_scale(num_cols)
     full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols="label")
+    print(len(target_codes))
+    print("full **", full.size())
+    for i in range(len(target_codes)):
+        target_codes[i].show(2, False)
+        print(target_codes[i].size())
+
+    for c in cat_cols + embed_cols:
+        print("************: ", c)
+        count = train.df.groupBy(c).count().orderBy(col("count").desc())
+        count.show(2, False)
 
     train = train.transform_min_max_scale(num_cols, min_max_dict) \
         .reindex(embed_cols, reindex_tbls)\
-        .encode_target(target_cols="label", targets=target_codes) \
-        .merge_cols(features, "features") \
-        .select(["label", "features"])\
-        .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
+        .encode_target(target_cols="label", targets=target_codes)
+        # .merge_cols(features, "features") \
+        # .select(["label", "features"])\
+        # .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
+    train.select(["label"]+features).show(2, False)
+    print(train.size())
+
+    import sys
+    sys.exit()
 
     test = test.transform_min_max_scale(num_cols, min_max_dict) \
         .reindex(embed_cols, reindex_tbls)\
         .encode_target(target_cols="label", targets=target_codes)\
         .df
 
+    import time
+    begin = time.time()
     classifier = XGBClassifier()
     classifier.setNthread(1)
+    #classifier.setNumWorkers(4)
     model = classifier.fit(train.df)
-
     xgbmodel = XGBClassifierModel(model)
     xgbmodel.setFeaturesCol(features)
     predicts = xgbmodel.transform(test)
 
     gr = [row.label for row in test.select("label").collect()]
-    predicts =[row.prediction for row in  predicts.select("prediction").collect()]
+    predicts = [row.prediction for row in predicts.select("prediction").collect()]
     accuracy = accuracy_score(gr, predicts)
 
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
-
+    end = time.time()
+    print(end - begin)
     stop_orca_context()
