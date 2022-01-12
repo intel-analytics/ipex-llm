@@ -205,8 +205,7 @@ class Trainer(pl.Trainer):
         :return:            A GraphModule. If there is no model found, return None.
         """
         if backend == 'inc':
-            from bigdl.nano.quantization import QuantizationINC
-            from bigdl.nano.quantization.quantization_inc import TorchINCMetric
+            from bigdl.nano.quantization.neural_compressor import QuantizationINC
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "
@@ -226,9 +225,8 @@ class Trainer(pl.Trainer):
                 # LightningModuleFromTorch.forward fails to trace in FX, so replace it temporarily
                 model = pl_model.model
 
-            TorchINCMetric.metric = metric
             quantized = quantizer.post_training_quantize(model, calib_dataloader, val_dataloader,
-                                                         TorchINCMetric)
+                                                         metric)
             if raw_return:
                 return quantized.model
             else:
@@ -238,6 +236,5 @@ class Trainer(pl.Trainer):
                     bind_quantize_methods
                 return bind_quantize_methods(
                     bind_base_inference_rt_methods(pl_model), quantized.model)
-
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))

@@ -72,9 +72,8 @@ class Model(tf.keras.Model):
          :return:           A TensorflowBaseModel. If there is no model found, return None.
          """
         if backend == 'inc':
-            from bigdl.nano.quantization import QuantizationINC
+            from bigdl.nano.quantization.neural_compressor import QuantizationINC
             from neural_compressor.experimental import common
-            from bigdl.nano.quantization.quantization_inc import KerasINCMetric
 
             def get_tensors_name(tensors):
                 return [tensor.name for tensor in tensors]
@@ -97,7 +96,6 @@ class Model(tf.keras.Model):
                 outputs=outputs if outputs else get_tensors_name(self.outputs)
             )
 
-            KerasINCMetric.metric = metric
             val_loader = None
             if val_dataset:
                 val_loader = common.DataLoader(val_dataset, batch)
@@ -105,7 +103,7 @@ class Model(tf.keras.Model):
             if calib_dataset:
                 calib_loader = common.DataLoader(calib_dataset, batch)
             quantized = quantizer.post_training_quantize(self, calib_loader, val_loader,
-                                                         KerasINCMetric)
+                                                         metric)
             return quantized
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
