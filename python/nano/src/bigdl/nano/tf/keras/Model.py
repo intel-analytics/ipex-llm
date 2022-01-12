@@ -104,7 +104,8 @@ class Model(tf.keras.Model):
             calib_loader = None
             if calib_dataset:
                 calib_loader = common.DataLoader(calib_dataset, batch)
-            quantizer.post_training_quantize(self, calib_loader, val_loader, KerasINCMetric)
-            return quantizer()
+            quantized = quantizer.post_training_quantize(self, calib_loader, val_loader,
+                                                         KerasINCMetric)
+            return quantized
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
