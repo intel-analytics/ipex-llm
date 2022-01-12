@@ -72,8 +72,8 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
         var_device, var_dtype = var.device, var.dtype.base_dtype
-        coefficients = ((apply_state or {}).get((var_device, var_dtype)) or 
-                        self._fallback_apply_state(var_device, var_dtype))
+        coefficients = ((apply_state or {}).get((var_device, var_dtype))
+                        or self._fallback_apply_state(var_device, var_dtype))
 
         import tensorflow as tf
 
@@ -101,8 +101,8 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
             with tf.name_scope("update_sparse_var"):
                 v_sqrt_sparse = tf.sqrt(v_t_sparse)
                 var_update = self._resource_scatter_add(
-                    var, indices, -1 * coefficients['lr'] * m_t_sparse / 
-                    (v_sqrt_sparse + coefficients['epsilon']))
+                    var, indices, -1 * coefficients['lr'] * m_t_sparse 
+                    /(v_sqrt_sparse + coefficients['epsilon']))
                 return tf.group(*[var_update, m_t, v_t])
         else:
             raise ValueError("do not support amsgrad for now")
