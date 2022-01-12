@@ -544,100 +544,141 @@ with
 
 and  replace `your_master_url` with your own master url and `your_secret_key` with your own secret key.
 
-## Safety configurations in standalone mode
-### Safety Pamameters
-The security configuration in the following section ensures that tasks submitted by Spark run safely in standalone mode. These security configurations include:
-
-    a. Authentication for RPC channels
-    b. AES-based encryption for RPC connections
-    c. SASL-based encrypted communication
-    d. Local Storage Encryption
-    e. SSL configuration
-
-First, we create a secret on k8s, and `YOUR_SECRET` needed user defined.  
+## Run as Spark on Kubernetes Mode
+### 1. Start the spark client as Docker container
+### 1.1 Prepare the keys/password/data/enclave-key.pem
+please reference ...
+the user defined `/YOUR_DIR/data` for data storage.
+### 1.2 Prepare the k8s configurations
+#### 1.2.1 Get k8s master as spark master
 ```bash
-kubectl create secret generic spark-secret --from-literal secret=$YOUR_SECRET
+kubectl cluster-info
+```
+the result as below:  
+> Kubernetes control plane is running at https://master_ip:master_port
+
+and the Spark master config is like `--master k8s://https://master_ip:master_port`
+#### 1.2.2 Create the RBAC
+```bash
+kubectl create serviceaccount spark
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+```
+#### 1.2.3 Generate k8s config file
+```bash
+kubectl config view --flatten --minify > /YOUR_DIR/kuberconfig
+```
+#### 1.2.4 Create k8s secret 
+```bash
+kubectl create secret generic spark-secret --from-literal secret=1234qwer
+```
+**the secret created keep same as `secure_password`**
+
+### 1.3 start the client container
+```bash
+export ENCLAVE_KEY=/YOUR_DIR/enclave-key.pem
+export DATA_PATH=/YOUR_DIR/data
+export KEYS_PATH=/YOUR_DIR/keys
+export SECURE_PASSWORD_PATH=/YOUR_DIR/password
+export KUBECONFIG_PATH=/YOUR_DIR/kuberconfig
+export LOCAL_IP=$LOCAL_IP
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
+sudo docker run -itd \
+    --privileged \
+    --net=host \
+    --name=spark-local-k8s-client \
+    --cpuset-cpus="0-4" \
+    --oom-kill-disable \
+    --device=/dev/sgx/enclave \
+    --device=/dev/sgx/provision \
+    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+    -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+    -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
+    -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+    -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+    -v $KUBECONFIG_PATH:/root/.kube/config \
+    -e RUNTIME_SPARK_MASTER=k8s://https://master_ip:master_port \
+    -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+    -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
+    -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
+    -e RUNTIME_DRIVER_PORT=54321 \
+    -e RUNTIME_EXECUTOR_INSTANCES=1 \
+    -e RUNTIME_EXECUTOR_CORES=4 \
+    -e RUNTIME_EXECUTOR_MEMORY=20g \
+    -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+    -e RUNTIME_DRIVER_CORES=4 \
+    -e RUNTIME_DRIVER_MEMORY=10g \
+    -e SGX_MEM_SIZE=32G \
+    -e SGX_LOG_LEVEL=error \
+    -e LOCAL_IP=$LOCAL_IP \
+    $DOCKER_IMAGE bash
 ```
 
-Next, we need to create a `secured_password`  
+### 1.4 Init the client and config the spark-executor-template
+First, execute the `docker exec -it spark-local-k8s-client bash` command to entry container.  
+#### 1.4.1 Init the Spark local k8s client
 ```bash
-export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt < /ppml/trusted-big-data-ml/work/password/output.bin`
+./init.sh
 ```
-#### a. Authentication for RPC channels
-For Spark on YARN, Spark will automatically handle generating and distributing the shared secret, in other mechanisms, the `spark.authenticate.secret` parameter needs to be specified.  
-`spark.authenticate`: whether Spark authenticates its internal connections.  
-`spark.authenticate.secret`: The secret key used authentication  
-`spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.
-
+#### 1.4.2 Configure spark-executor-template.yaml
+This step is to configure `/ppml/trusted-big-data-ml/spark-executor-template.yaml` file.  
+`cat /ppml/trusted-big-data-ml/spark-executor-template.yaml`  
 ```bash
-    --conf spark.authenticate=true
-    --conf spark.authenticate.secret=$secure_password
-    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" 
-    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" 
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-executor
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: enclave-key
+        mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+      - name: dev-gsgx
+        mountPath: /dev/gsgx
+      - name: device-plugin
+        mountPath: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        mountPath: /var/run/aesmd/aesm.socket
+      - name: data
+        mountPath: /ppml/trusted-big-data-ml/work/data
+      - name: kubeconf
+        mountPath: /root/.kube/config
+    #resources:
+      #requests:
+        #cpu: 16
+        #memory: 128Gi
+        #sgx.intel.com/epc: 133258905600
+        #sgx.intel.com/enclave: 10
+        #sgx.intel.com/provision: 10
+      #limits:
+        #cpu: 16
+        #memory: 128Gi
+        #sgx.intel.com/epc: 133258905600
+        #sgx.intel.com/enclave: 10
+        #sgx.intel.com/provision: 10
+  volumes:
+    - name: enclave-key
+      hostPath:
+        path:  /YOUR_DIR/enclave-key.pem
+    - name: dev-gsgx
+      hostPath:
+        path: /dev/gsgx
+    - name: device-plugin
+      hostPath:
+        path: /var/lib/kubelet/device-plugins
+    - name: aesm-socket
+      hostPath:
+        path: /var/run/aesmd/aesm.socket
+    - name: data
+      hostPath:
+        path: /YOUR_DIR/data
+    - name: kubeconf
+      hostPath:
+        path: /YOUR_DIR/kuberconfig
 ```
-
-#### b. AES-based encryption for RPC connections
-`spark.network.crypto.enabled`: enable AES-based RPC encryption.  
-`spark.network.crypto.keyLength`: The length in bits of the encryption key to generate.  
-`spark.network.crypto.keyFactoryAlgorithm`: The key factory algorithm to use when generating encryption keys.  
+### 1.5 Run Spark applications on k8s
+#### Spark-Pi example
 ```bash
-    --conf spark.network.crypto.enabled=true 
-    --conf spark.network.crypto.keyLength=128 
-    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1
-```
-#### c. SASL-based encrypted communication
-`spark.authenticate.enableSaslEncryption`: enable SASL-based encrypted communication.  
-```bash
-    --conf spark.authenticate.enableSaslEncryption=true
-```
-#### d. Local Storage Encryption
-`spark.io.encryption.enabled`: enable local disk I/O encryption. Currently supported by all modes except Mesos.  
-`spark.io.encryption.keySizeBits`: IO encryption key size in bits.  
-`spark.io.encryption.keygen.algorithm`: The algorithm to use when generating the IO encryption key  
-```bash
-    --conf spark.io.encryption.enabled=true
-    --conf spark.io.encryption.keySizeBits=128
-    --conf spark.io.encryption.keygen.algorithm=HmacSHA1
-```
-#### e. SSL Configuration
-`spark.ssl.enabled`: enable SSL.  
-`spark.ssl.port`: the port where the SSL service will listen on.  
-`spark.ssl.keyPassword`: the password to the private key in the key store.  
-`spark.ssl.keyStore`: path to the key store file.  
-`spark.ssl.keyStorePassword`: password to the key store.  
-`spark.ssl.keyStoreType`: the type of the key store.  
-`spark.ssl.trustStore`: path to the trust store file.  
-`spark.ssl.trustStorePassword`: password for the trust store.  
-`spark.ssl.trustStoreType`: the type of the trust store.  
-```bash
-      --conf spark.ssl.enabled=true
-      --conf spark.ssl.port=8043
-      --conf spark.ssl.keyPassword=$secure_password
-      --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks 
-      --conf spark.ssl.keyStorePassword=$secure_password
-      --conf spark.ssl.keyStoreType=JKS
-      --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks
-      --conf spark.ssl.trustStorePassword=$secure_password  
-      --conf spark.ssl.trustStoreType=JKS 
-```
-
-### Driver on SGX
-Traditionally, only the executor runs in sgx mode, the following parameters can make the driver also run in sgx mode.
-`spark.kubernetes.sgx.enabled`: enable driver on SGX.  
-`spark.kubernetes.sgx.mem`: set `SGX_MEM_SIZE` for driver.  
-`spark.kubernetes.sgx.jvm.mem`: set jvm memory for driver.
-
-```bash
-    --conf spark.kubernetes.sgx.enabled=true
-    --conf spark.kubernetes.sgx.mem=32g
-    --conf spark.kubernetes.sgx.jvm.mem=16g
-```
-### Run Spark-Pi on k8s with Safety Parameters
-The following gives an example of running spark-pi on k8s, and references all security configuration parameters.
-
-```bash
-#!/bin/bash
-
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$LOCAL_IP && \
@@ -690,4 +731,75 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --class org.apache.spark.examples.SparkPi \
     --verbose \
     local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100 2>&1 | tee spark-pi-sgx.log
+```
+You can run your own Spark Appliction after change `--class` and jar path.
+1. `local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar` => `your_jar_path`
+2. `--class org.apache.spark.examples.SparkPi` => `--calss your_class_path`
+
+### Configuration Explainations
+#### 1. Bigdl ppml SGX related configurations
+The following parameters enable spark executor running on SGX.
+`spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s withour SGX.
+`spark.kubernetes.sgx.mem`: Spark executor SGX epc memeory.
+`spark.kubernetes.sgx.jvm.mem`: Spark executor JVM memory, Recommended setting is half of epc memory.
+
+```bash
+    --conf spark.kubernetes.sgx.enabled=true
+    --conf spark.kubernetes.sgx.mem=32g
+    --conf spark.kubernetes.sgx.jvm.mem=16g
+```
+#### 2. Spark security configurations
+Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html#ssl-configuration) for detial.  
+##### 2.1 Spark RPC
+###### 2.1.1 Authentication
+`spark.authenticate`: true -> Spark authenticates its internal connections, default is false.
+`spark.authenticate.secret`: The secret key used authentication.
+`spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.  
+`spark.authenticate.enableSaslEncryption`: true -> enable SASL-based encrypted communication, default is false.  
+```bash
+    --conf spark.authenticate=true
+    --conf spark.authenticate.secret=$secure_password
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" 
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" 
+    --conf spark.authenticate.enableSaslEncryption=true
+```
+
+###### 2.1.2 Encryption
+`spark.network.crypto.enabled`: true -> enable AES-based RPC encryption, default is false.  
+`spark.network.crypto.keyLength`: The length in bits of the encryption key to generate.  
+`spark.network.crypto.keyFactoryAlgorithm`: The key factory algorithm to use when generating encryption keys.  
+```bash
+    --conf spark.network.crypto.enabled=true 
+    --conf spark.network.crypto.keyLength=128 
+    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1
+```
+###### 2.1.3. Local Storage Encryption
+`spark.io.encryption.enabled`: true -> enable local disk I/O encryption, default is false.  
+`spark.io.encryption.keySizeBits`: IO encryption key size in bits.  
+`spark.io.encryption.keygen.algorithm`: The algorithm to use when generating the IO encryption key.  
+```bash
+    --conf spark.io.encryption.enabled=true
+    --conf spark.io.encryption.keySizeBits=128
+    --conf spark.io.encryption.keygen.algorithm=HmacSHA1
+```
+###### 2.1.4 SSL Configuration
+`spark.ssl.enabled`: true -> enable SSL.  
+`spark.ssl.port`: the port where the SSL service will listen on.  
+`spark.ssl.keyPassword`: the password to the private key in the key store.  
+`spark.ssl.keyStore`: path to the key store file.  
+`spark.ssl.keyStorePassword`: password to the key store.  
+`spark.ssl.keyStoreType`: the type of the key store.  
+`spark.ssl.trustStore`: path to the trust store file.  
+`spark.ssl.trustStorePassword`: password for the trust store.  
+`spark.ssl.trustStoreType`: the type of the trust store.  
+```bash
+      --conf spark.ssl.enabled=true
+      --conf spark.ssl.port=8043
+      --conf spark.ssl.keyPassword=$secure_password
+      --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks 
+      --conf spark.ssl.keyStorePassword=$secure_password
+      --conf spark.ssl.keyStoreType=JKS
+      --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks
+      --conf spark.ssl.trustStorePassword=$secure_password  
+      --conf spark.ssl.trustStoreType=JKS 
 ```
