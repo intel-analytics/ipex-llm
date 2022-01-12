@@ -54,11 +54,11 @@ class Model(tf.keras.Model):
                                 'dynamic': post_training_dynamic_quant.
                                 Default: 'static'.
          :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
-         :param accuracy_criterion:  Tolerable accuracy drop.
-                                     accuracy_criterion = {'relative': 0.1, higher_is_better: True}
-                                     allows relative accuracy loss: 1%. accuracy_criterion =
-                                     {'absolute': 0.99, higher_is_better:False} means accuracy <
-                                     0.99 must be satisfied.
+         :param accuracy_criterion: Tolerable accuracy drop.
+                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
+                                    allows relative accuracy loss: 1%. accuracy_criterion =
+                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
+                                    < 0.99  must be satisfied.
          :param timeout:    Tuning timeout (seconds). Default: 0,  which means early stop.
                             Combine with max_trials field to decide when to exit.
          :param max_trials: Max tune times. Default: 1.
