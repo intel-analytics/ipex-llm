@@ -24,7 +24,7 @@
 
 ---------------------------
 
-- [**AutoTSEstimator with customized model**](../Overview/forecasting.html)
+- [**Tune a Customized Time Series Forecasting Model with AutoTSEstimator.**](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb)
 
@@ -32,31 +32,31 @@
 
 ---------------------------
 
-- [**Network Traffic Forecasting with AutoTSEstimator**](../Overview/forecasting.html)
+- [**Auto Tune the Prediction of Network Traffic at the Transit Link of WIDE**](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb)
 
-    In this notebook, We demostrate how to use _AutoTS_ in project [Chronos][4] to do time series forecasting in an automated and distributed way.
+    In this notebook, we demostrate a reference use case where we use the network traffic KPI(s) in the past to predict traffic KPI(s) in the future. We demostrate how to use _AutoTS_ in project [Chronos][4] to do time series forecasting in an automated and distributed way.
 
 ---------------------------
 
-- [**Univariate and Multivariate Forecasting**](../Overview/forecasting.html#time-series-forecasting-concepts)
+- [**Multivariate Forecasting of Network Traffic at the Transit Link of WIDE**](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb)
 
-    In this notebook, We demostrate how to do univariate forecasting (predict only 1 series), and multivariate forecasting (predicts more than 1 series at the same time) using Project Chronos.
+    In this notebook, we demonstrate a reference use case where we use the network traffic KPI(s) in the past to predict traffic KPI(s) in the future. We demostrate how to do univariate forecasting (predict only 1 series), and multivariate forecasting (predicts more than 1 series at the same time) using Project [Chronos][4].
 
 ---------------------------
 
-- [**Multivariate Multistep Forecasting**](../Overview/forecasting.html#time-series-forecasting-concepts)
+- [**Multistep Forecasting of Network Traffic at the Transit Link of WIDE**](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb)
 
-    In this notebook, We demostrate how to do multivariate multistep forecasting using Project Chronos.
+    In this notebook, we demonstrate a reference use case where we use the network traffic KPI(s) in the past to predict traffic KPI(s) in the future. We demostrate how to do multivariate multistep forecasting using Project [Chronos][4].
 
 ---------------------------
 
-- [**Stock Price Prediction**](../Overview/forecasting.html)
+- [**Stock Price Prediction with LSTMForecaster**](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction.ipynb)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction.ipynb)
 
@@ -66,7 +66,7 @@
 
 ---------------------------
 
-- [**Stock Price Prediction with ProphetForecaster and AutoProphet**](../Overview/forecasting.html)
+- [**Stock Price Prediction with ProphetForecaster and AutoProphet**](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb)
 
@@ -76,7 +76,7 @@
 
 ---------------------------
 
-- [**Unsupervised Anomaly Detection**](../Overview/anomaly_detection.html)
+- [**Unsupervised Anomaly Detection for CPU Usage**](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)
 
@@ -84,7 +84,7 @@
 
 ---------------------------
 
-- [**Unsupervised Anomaly Detection based on Forecasts**](../Overview/anomaly_detection.html)
+- [**Anomaly Detection for CPU Usage Based on Forecasters**](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)
 
