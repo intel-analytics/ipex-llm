@@ -113,6 +113,7 @@ class QuantizationINC(Quantization):
         if metric.metric and not val_dataloader:
             raise RuntimeError("val_dataloader must be specified when metric is not None.")
 
+
 class INCMetric(ABC):
     metric: Any = None
 
