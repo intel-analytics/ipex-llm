@@ -135,10 +135,14 @@ class INCMetric(ABC):
         # calculate accuracy
         preds, labels = self.stack(self.pred_list, self.label_list)
         accuracy = self.metric(preds, labels)
-        return accuracy.item()
+        return self.to_scalar(accuracy)
 
     @abstractmethod
     def stack(self, preds, labels):
+        pass
+
+    @abstractmethod
+    def to_scalar(self, tensor):
         pass
 
 
@@ -150,6 +154,9 @@ class TorchINCMetric(INCMetric):
         labels = torch.stack(labels)
         return preds, labels
 
+    def to_scalar(self, tensor):
+        return tensor.item()
+
 
 class KerasINCMetric(INCMetric):
     def stack(self, preds, labels):
@@ -158,3 +165,6 @@ class KerasINCMetric(INCMetric):
         preds = tf.stack(preds)
         labels = tf.stack(labels)
         return preds, labels
+
+    def to_scalar(self, tensor):
+        return tensor.numpy()
