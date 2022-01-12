@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from abc import ABC, abstractmethod
-from typing import Any
 from neural_compressor.experimental.common import Metric
+
+from .metric import METRICS
 
 try:
     from neural_compressor.conf.config import Quantization_Conf
@@ -86,8 +86,20 @@ class QuantizationINC(Quantization):
             self.calib_dataloader = calib_dataloader
         if val_dataloader:
             self.eval_dataloader = val_dataloader
-            if metric.metric:
-                self.metric = Metric(metric, name='INC_' + type(metric).__name__)
+            if metric:
+                framework = self.cfg.model.framework
+                if 'pytorch' in framework:
+                    framework_metric = METRICS['pytorch']
+                else:
+                    framework_metric = METRICS[framework]
+
+                class MyMetric(framework_metric):
+                    def __init__(self):
+                        self.metric = metric
+                self.metric = Metric(
+                    MyMetric,
+                    name="%s_%s" % (framework_metric.__name__, type(metric).__name__)
+                )
 
         quantized = self()
         if quantized:
@@ -110,62 +122,5 @@ class QuantizationINC(Quantization):
                 "calib_calib_dataloader must be None when approach is " \
                 "post-training dynamic quantization."
 
-        if metric.metric and not val_dataloader:
+        if metric and not val_dataloader:
             raise RuntimeError("val_dataloader must be specified when metric is not None.")
-
-
-class INCMetric(ABC):
-    metric: Any = None
-
-    def __init__(self):
-        assert self.metric, "Class variable 'metric' must not be None.'"
-        self.pred_list = []
-        self.label_list = []
-
-    def update(self, preds, labels):
-        # add preds and labels to storage
-        self.pred_list.extend(preds)
-        self.label_list.extend(labels)
-
-    def reset(self):
-        # clear preds and labels storage
-        self.pred_list = []
-        self.label_list = []
-
-    def result(self):
-        # calculate accuracy
-        preds, labels = self.stack(self.pred_list, self.label_list)
-        accuracy = self.metric(preds, labels)
-        return self.to_scalar(accuracy)
-
-    @abstractmethod
-    def stack(self, preds, labels):
-        pass
-
-    @abstractmethod
-    def to_scalar(self, tensor):
-        pass
-
-
-class TorchINCMetric(INCMetric):
-    def stack(self, preds, labels):
-        import torch
-        # calculate accuracy
-        preds = torch.stack(preds)
-        labels = torch.stack(labels)
-        return preds, labels
-
-    def to_scalar(self, tensor):
-        return tensor.item()
-
-
-class KerasINCMetric(INCMetric):
-    def stack(self, preds, labels):
-        import tensorflow as tf
-        # calculate accuracy
-        preds = tf.stack(preds)
-        labels = tf.stack(labels)
-        return preds, labels
-
-    def to_scalar(self, tensor):
-        return tensor.numpy()
