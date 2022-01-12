@@ -14,7 +14,7 @@ Before running the following command, please modify the paths in `build-docker-i
 ./build-docker-image.sh
 ```
 
-#### 2. Prepare data, key and password
+#### <span id="prepare-data">2. Prepare data, key and password</span>
 
 *  ##### Prepare the Data
 
@@ -547,8 +547,8 @@ and  replace `your_master_url` with your own master url and `your_secret_key` wi
 ## Run as Spark on Kubernetes Mode
 ### 1. Start the spark client as Docker container
 ### 1.1 Prepare the keys/password/data/enclave-key.pem
-please reference ...
-the user defined `/YOUR_DIR/data` for data storage.
+please refer to [2. Prepare data, key and password](#prepare-data)
+
 ### 1.2 Prepare the k8s configurations
 #### 1.2.1 Get k8s master as spark master
 ```bash
@@ -569,7 +569,7 @@ kubectl config view --flatten --minify > /YOUR_DIR/kuberconfig
 ```
 #### 1.2.4 Create k8s secret 
 ```bash
-kubectl create secret generic spark-secret --from-literal secret=1234qwer
+kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ```
 **the secret created keep same as `secure_password`**
 
@@ -738,22 +738,23 @@ You can run your own Spark Appliction after change `--class` and jar path.
 
 ### Configuration Explainations
 #### 1. Bigdl ppml SGX related configurations
-The following parameters enable spark executor running on SGX.
-`spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s withour SGX.
-`spark.kubernetes.sgx.mem`: Spark executor SGX epc memeory.
-`spark.kubernetes.sgx.jvm.mem`: Spark executor JVM memory, Recommended setting is half of epc memory.
-
+The following parameters enable spark executor running on SGX.  
+`spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s withour SGX.  
+`spark.kubernetes.sgx.mem`: Spark executor SGX epc memeory.  
+`spark.kubernetes.sgx.jvm.mem`: Spark executor JVM memory, Recommended setting is half of epc memory.  
+`spark.kubernetes.sgx.log.level`: Spark executor on SGX log level, Supported values are error,all and debug.  
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
     --conf spark.kubernetes.sgx.mem=32g
     --conf spark.kubernetes.sgx.jvm.mem=16g
+    --conf spark.kubernetes.sgx.log.level=error
 ```
 #### 2. Spark security configurations
-Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html#ssl-configuration) for detial.  
+Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detial.  
 ##### 2.1 Spark RPC
 ###### 2.1.1 Authentication
-`spark.authenticate`: true -> Spark authenticates its internal connections, default is false.
-`spark.authenticate.secret`: The secret key used authentication.
+`spark.authenticate`: true -> Spark authenticates its internal connections, default is false.  
+`spark.authenticate.secret`: The secret key used authentication.  
 `spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.  
 `spark.authenticate.enableSaslEncryption`: true -> enable SASL-based encrypted communication, default is false.  
 ```bash
