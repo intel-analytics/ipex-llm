@@ -131,7 +131,7 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 	let sockets_=${max_cpu_info[1]}+1
 	let core_=${max_cpu_info[2]}+1
 	let threads_per_core=$cpu_/$core_
-	let cores_per_socket=$core_/$socket_
+	let cores_per_socket=$core_/$sockets_
 
 
 	# set env variables
