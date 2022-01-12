@@ -207,7 +207,7 @@ class Trainer(pl.Trainer):
         """
         if backend == 'inc':
             from bigdl.nano.quantization import QuantizationINC
-            from neural_compressor.experimental import common
+            from bigdl.nano.quantization.quantization_inc import TorchINCMetric
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "
@@ -222,34 +222,23 @@ class Trainer(pl.Trainer):
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
+            model = pl_model
             if isinstance(pl_model, LightningModuleFromTorch):
                 # LightningModuleFromTorch.forward fails to trace in FX, so replace it temporarily
-                quantizer.model = pl_model.model
-            else:
-                quantizer.model = pl_model
+                model = pl_model.model
 
-            if val_dataloader and metric:
-                from bigdl.nano.quantization.quantization_inc import TorchINCMetric
-                quantizer.eval_dataloader = val_dataloader
-                TorchINCMetric.metric = metric
-                quantizer.metric = common.Metric(TorchINCMetric,
-                                                 name='INC_' + type(metric).__name__)
-            if approach == 'post_training_static_quant':
-                assert calib_dataloader, "calib_dataloader must not be None when approach is " \
-                                         "post-training static quantization."
-                quantizer.calib_dataloader = calib_dataloader
-            quantized = quantizer()
-            if quantized:
-                if raw_return:
-                    return quantized.model
-                else:
-                    from bigdl.nano.pytorch.runtime_binding.base_inference import\
-                        bind_base_inference_rt_methods
-                    from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
-                        bind_quantize_methods
-                    return bind_quantize_methods(
-                        bind_base_inference_rt_methods(pl_model), quantized.model)
+            TorchINCMetric.metric = metric
+            quantized = quantizer.post_training_quantize(model, calib_dataloader, val_dataloader,
+                                                         TorchINCMetric)
+            if raw_return:
+                return quantized.model
             else:
-                raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
+                from bigdl.nano.pytorch.runtime_binding.base_inference import \
+                    bind_base_inference_rt_methods
+                from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
+                    bind_quantize_methods
+                return bind_quantize_methods(
+                    bind_base_inference_rt_methods(pl_model), quantized.model)
+
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
