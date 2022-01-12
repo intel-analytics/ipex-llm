@@ -15,6 +15,7 @@
 #
 from abc import ABC, abstractmethod
 from typing import Any
+from neural_compressor.experimental.common import Metric
 
 try:
     from neural_compressor.conf.config import Quantization_Conf
@@ -77,6 +78,40 @@ class QuantizationINC(Quantization):
         cfg.model.outputs = outputs
         super().__init__(qconf)
 
+    def post_training_quantize(self, model, calib_dataloader=None, val_dataloader=None,
+                               metric=None):
+        self.check(calib_dataloader, val_dataloader, metric)
+        self.model = model
+        if calib_dataloader:
+            self.calib_dataloader = calib_dataloader
+        if val_dataloader:
+            self.eval_dataloader = val_dataloader
+            if metric.metric:
+                self.metric = Metric(metric, name='INC_' + type(metric).__name__)
+
+        quantized = self()
+        if quantized:
+            return quantized
+        else:
+            raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
+
+    def check(self, calib_dataloader, val_dataloader, metric):
+        """
+        Call before self.__call__() to check if the object is well-initialized
+        for quantization.
+        """
+        if self.cfg.quantization.approach == 'post_training_static_quant':
+            assert calib_dataloader, \
+                "calib_calib_dataloader must not be None when approach is " \
+                "post-training static quantization."
+
+        if self.cfg.quantization.approach == 'post_training_dynamic_quant':
+            assert calib_dataloader is None, \
+                "calib_calib_dataloader must be None when approach is " \
+                "post-training dynamic quantization."
+
+        if metric.metric and not val_dataloader:
+            raise RuntimeError("val_dataloader must be specified when metric is not None.")
 
 class INCMetric(ABC):
     metric: Any = None
