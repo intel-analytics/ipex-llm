@@ -189,11 +189,17 @@ class LocalDatasetHandler(DatasetHandler):
 
 
 def find_ip_and_port(pre_iter):
-    tc = BarrierTaskContext().get()
-    print("taskcontext type is: ", type(tc))
-    return [type(tc)]
-    free_port = find_free_port(tc)
-    return [free_port]
+    # tc = BarrierTaskContext().get()
+    # print("taskcontext type is: ", type(tc))
+    # return [type(tc)]
+    # free_port = find_free_port(tc)
+    from bigdl.dllib.utils.utils import get_node_ip
+    from bigdl.orca.learn.utils import find_free_port
+    # ip = get_node_ip()
+    # print("ip type is: ", type(ip))
+    # port = find_free_port()
+    # print("port type is: ", type(port))
+    return [f"{get_node_ip()}:{find_free_port()}"]
 
 
 class SparkRunner:
