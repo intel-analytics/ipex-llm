@@ -24,7 +24,7 @@
 
 ---------------------------
 
-- [**AutoTSEstimator with customized model**](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html)
+- [**AutoTSEstimator with customized model**](../Overview/forecasting.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb)
 
@@ -32,7 +32,7 @@
 
 ---------------------------
 
-- [**Network Traffic Forecasting with AutoTSEstimator**](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#)
+- [**Network Traffic Forecasting with AutoTSEstimator**](../Overview/forecasting.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb)
 
@@ -40,7 +40,7 @@
 
 ---------------------------
 
-- [**Univariate and Multivariate Forecasting**](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#time-series-forecasting-concepts)
+- [**Univariate and Multivariate Forecasting**](../Overview/forecasting.html#time-series-forecasting-concepts)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb)
 
@@ -48,7 +48,7 @@
 
 ---------------------------
 
-- [**Multivariate Multistep Forecasting)**](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#time-series-forecasting-concepts)
+- [**Multivariate Multistep Forecasting)**](../Overview/forecasting.html#time-series-forecasting-concepts)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb)
 
@@ -56,7 +56,7 @@
 
 ---------------------------
 
-- [**Stock Price Prediction**](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html)
+- [**Stock Price Prediction**](../Overview/forecasting.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction.ipynb)
 
@@ -64,7 +64,7 @@
 
 ---------------------------
 
-- [**Stock Price Prediction with ProphetForecaster and AutoProphet**](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html)
+- [**Stock Price Prediction with ProphetForecaster and AutoProphet**](../Overview/forecasting.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb)
 
@@ -74,7 +74,7 @@
 
 ---------------------------
 
-- [**Unsupervised Anomaly Detection**]https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/anomaly_detection.html)
+- [**Unsupervised Anomaly Detection**](../Overview/anomaly_detection.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)
 
@@ -82,15 +82,15 @@
 
 ---------------------------
 
-- [**Unsupervised Anomaly Detection based on Forecasts**](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/anomaly_detection.html)
+- [**Unsupervised Anomaly Detection based on Forecasts**](../Overview/anomaly_detection.html)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)
 
     We demonstrates how to leverage Chronos's built-in models ie. MTNet, to do time series forecasting. Then perform anomaly detection on predicted value with [ThresholdDetector][Threshold].
 
 
-[DBScan]: <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#dbscandetector>
-[AE]: <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#aedetector>
-[Threshold]: <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html#thresholddetector>
+[DBScan]: <../anomaly_detectors.html#dbscandetector>
+[AE]: <../anomaly_detectors.html#aedetector>
+[Threshold]: <../anomaly_detectors.html#thresholddetector>
 [4]: <https://github.com/intel-analytics/bigdl/tree/branch-2.0/python/chronos/src/bigdl/chronos>
 
