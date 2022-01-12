@@ -571,7 +571,7 @@ kubectl config view --flatten --minify > /YOUR_DIR/kuberconfig
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ```
-**the secret created keep same as `secure_password`**. (See secure_password in example in [section 1.5](#spark-example))
+**the secret created keep same as `secure_password`**. (See secure_password in [Run Spark applications on k8s](#spark-example))
 
 ### 1.3 start the client container
 ```bash
