@@ -571,7 +571,7 @@ kubectl config view --flatten --minify > /YOUR_DIR/kuberconfig
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ```
-**the secret created keep same as `secure_password`**
+**the secret created keep same as `secure_password`**. (See secure_password in example in [section 1.5](#spark-example))
 
 ### 1.3 start the client container
 ```bash
@@ -676,7 +676,7 @@ spec:
       hostPath:
         path: /YOUR_DIR/kuberconfig
 ```
-### 1.5 Run Spark applications on k8s
+### <span id="spark-example">1.5 Run Spark applications on k8s</span>
 #### Spark-Pi example
 ```bash
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
@@ -750,7 +750,7 @@ The following parameters enable spark executor running on SGX.
     --conf spark.kubernetes.sgx.log.level=error
 ```
 #### 2. Spark security configurations
-Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detial.  
+Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.  
 ##### 2.1 Spark RPC
 ###### 2.1.1 Authentication
 `spark.authenticate`: true -> Spark authenticates its internal connections, default is false.  
