@@ -14,7 +14,7 @@ class TestKerasModel(TestCase):
                       loss=tf.keras.losses.BinaryCrossentropy(),
                       metrics=[tf.keras.metrics.CategoricalAccuracy()],)
         train_examples = np.random.random((100, 224, 224, 3))
-        train_labels = np.random.random_integers(0, 9, size=(100,))
+        train_labels = np.random.randint(0, 10, size=(100,))
         train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
         # Case 1: Default
         q_model = model.quantize(calib_dataset=train_dataset)
