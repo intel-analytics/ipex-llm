@@ -48,7 +48,7 @@
 
 ---------------------------
 
-- [**Multivariate Multistep Forecasting)**](../Overview/forecasting.html#time-series-forecasting-concepts)
+- [**Multivariate Multistep Forecasting**](../Overview/forecasting.html#time-series-forecasting-concepts)
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb)
 
