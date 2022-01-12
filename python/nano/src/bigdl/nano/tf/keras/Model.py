@@ -96,21 +96,15 @@ class Model(tf.keras.Model):
                 inputs=inputs if inputs else get_tensors_name(self.inputs),
                 outputs=outputs if outputs else get_tensors_name(self.outputs)
             )
-            quantizer.model = self
 
-            if val_dataset and metric:
-                KerasINCMetric.metric = metric
-                quantizer.metric = common.Metric(KerasINCMetric,
-                                                 name='INC_' + type(metric).__name__)
-            if approach == 'post_training_static_quant':
-                assert calib_dataset, "calib_dataset must not be None when approach is " \
-                                      "post-training static quantization."
-                quantizer.calib_dataloader = common.DataLoader(calib_dataset, batch)
-
-            quantized = quantizer()
-            if quantized:
-                return quantized
-            else:
-                raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
+            KerasINCMetric.metric = metric
+            val_loader = None
+            if val_dataset:
+                val_loader = common.DataLoader(val_dataset, batch)
+            calib_loader = None
+            if calib_dataset:
+                calib_loader = common.DataLoader(calib_dataset, batch)
+            quantizer.post_training_quantize(self, calib_loader, val_loader, KerasINCMetric)
+            return quantizer()
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
