@@ -33,6 +33,7 @@ import com.intel.analytics.bigdl.friesian.serving.utils.recommender.RecommenderU
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import io.grpc.*;
+import io.grpc.services.HealthStatusManager;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
 import me.dinowernli.grpc.prometheus.Configuration;
@@ -56,6 +57,7 @@ public class RecommenderServer extends GrpcServerBase {
 
     public RecommenderServer(String[] args) {
         super(args);
+        port = 8980;
         configPath = "config_recommender.yaml";
         Configurator.setLevel("org", Level.ERROR);
     }
@@ -64,8 +66,10 @@ public class RecommenderServer extends GrpcServerBase {
     public void parseConfig() throws IOException, InstantiationException, IllegalAccessException {
         Utils.helper_$eq(getConfigFromYaml(gRPCHelper.class, configPath));
         Utils.helper().parseConfigStrings();
-        if (Utils.helper() != null) {
+        if (Utils.helper() != null && Utils.helper().getServicePort() != -1) {
             port = Utils.helper().getServicePort();
+        } else if (cmd.getOptionValue("port") != null) {
+            port = Integer.parseInt(cmd.getOptionValue("port"));
         }
 
         if (Utils.runMonitor()) {
@@ -78,6 +82,7 @@ public class RecommenderServer extends GrpcServerBase {
         } else {
             serverServices.add(new RecommenderService());
         }
+        serverServices.add(new HealthStatusManager().getHealthService());
     }
 
     /**
