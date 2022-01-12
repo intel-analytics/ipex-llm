@@ -2,29 +2,29 @@
 # At /ppml/trusted-big-data-ml
 
 #set -x
+# Modify Below Variables According To Your Environment
 KEYWHIZ_SERVER_IP=192.168.0.112
+INPUT_DB_PATH=/ppml/trusted-big-data-ml/1m.db
 LOCAL_IP=192.168.0.112
-INPUT_DIR_PATH=/ppml/trusted-big-data-ml/work/input
-ENCRYPTED_SAVE_DIR_PATH=/ppml/trusted-big-data-ml/work/encrypted_output
 
-# Step 1. Data Preparation
-mkdir $INPUT_DIR_PATH
-cp /ppml/trusted-big-data-ml/work/data/kms-example/* $INPUT_DIR_PATH
-mkdir $ENCRYPTED_SAVE_DIR_PATH
+# Step 1. Generate Keys And Use Them to Encyypt Files Outside SGX With KMS
+echo "[INFO] Start To Convert DB to CSVs And Encrypt..."
+python /ppml/trusted-big-data-ml/work/kms-client/EncryptDBAutomation.py \
+  --ip $KEYWHIZ_SERVER_IP  --dbp $INPUT_DB_PATH
+csv_path=$INPUT_DB_PATH.encrypted
+echo "[INFO] The DB Is Transformed And Encrypted, Saved At $csv_path"
+rm $csv_path/tmp_mock_a_table.csv.encrypted
 
-# Step 2. Generate Keys And Use Them to Encyypt Files Outside SGX With KMS 
-echo "[INFO] Start To Process Outside SGX..."
-# Files Under INPUT_DIR_PATH Will Be Encrypted And Saved In SAVE_DIR_PATH
-python ./work/kms-client/EncryptFilesAutomation.py -ip $KEYWHIZ_SERVER_IP -input_dir $INPUT_DIR_PATH -save_dir $ENCRYPTED_SAVE_DIR_PATH
-echo "[INFO] Encrypted Files Are Saved Under $ENCRYPTED_SAVE_DIR_PATH."
-
-# Step 3. Decrypt The Encrypted File As A Spark Job Inside SGX
+# Step 2. Decrypt The Encrypted Files As A Spark Job Inside SGX And Then Encrypt Columns
 status_8_scala_e2e=1
 echo "[INFO] Decrypt The Ciphere Files Inside SGX..."
 if [ $status_8_scala_e2e -ne 0 ]; then
-SGX=1 ./pal_loader bash -c "bash ./work/kms-client/DecryptFilesWithSpark.sh $KEYWHIZ_SERVER_IP $LOCAL_IP" 2>&1 > spark-inside-sgx.log
+#SGX=1 ./pal_loader bash -c "bash ./work/kms-client/DecryptFilesWithSpark.sh $csv_path $KEYWHIZ_SERVER_IP $LOCAL_IP" 2>&1 > spark-inside-sgx.log
+bash ./work/kms-client/DecryptFilesWithSpark.sh $csv_path $KEYWHIZ_SERVER_IP $LOCAL_IP
 fi
 status_8_scala_e2e=$(echo $?)
 
-echo "[INFO] The Result Of Decrypted CSV Files Content Queried By Spark Is As Below:"
-cat spark-inside-sgx.log | grep "|"
+# Step 3. Decrypt The colums And Ouput With Kms API
+echo "[INFO] Retrieve Output At Client Side."
+echo "[INFO] Start To Decrypt Columns..."
+python /ppml/trusted-big-data-ml/work/kms-client/DecryptColumnsWithCSV.py -path $csv_path.col_encrypted

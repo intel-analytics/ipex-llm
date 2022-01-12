@@ -1,11 +1,10 @@
-set -x
-FERNET_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/fernet-java8-1.4.2.jar
-SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/sparkdecryptfiles_2.12-0.1.0.jar
-ENCRYPTED_SAVE_DIR_PATH=/ppml/trusted-big-data-ml/work/encrypted_output
-KEYWHIZ_SERVER_IP=$1
-KMS_CLIENT_DIR_PAHT=/ppml/trusted-big-data-ml/work/kms-client
-LOCAL_IP=$2
+#set -x
+SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/sparkcryptofiles-1.0-SNAPSHOT-jar-with-dependencies.jar
+CSV_DIR_PATH=$1
+KEYWHIZ_SERVER_IP=$2
+LOCAL_IP=$3
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+data_key=$(python /ppml/trusted-big-data-ml/work/kms-client/GetDataKeyPlaintext.py -ip $KEYWHIZ_SERVER_IP -pkp ./encrypted_primary_key -dkp ./encrypted_data_key)
 
 /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar' \
@@ -24,8 +23,9 @@ secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/k
   --conf spark.ssl.trustStorePassword=$secure_password \
   --conf spark.ssl.trustStoreType=JKS \
   --executor-memory 8g \
-  --class sparkDecryptFiles.decryptFiles \
-  --jars $FERNET_JAR_PATH \
+  --class sparkCryptoFiles.encryptColumn \
   $SPARK_DECRYPT_JAR_PATH \
-  $ENCRYPTED_SAVE_DIR_PATH \
-  Fernet $(python $KMS_CLIENT_DIR_PAHT/GetDataKeyPlaintext.py -ip $KEYWHIZ_SERVER_IP -pkp ./encrypted_primary_key -dkp ./encrypted_data_key)
+  $CSV_DIR_PATH \
+  AESCBC \
+  $data_key \
+  $CSV_DIR_PATH.col_encrypted
