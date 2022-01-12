@@ -547,7 +547,7 @@ and  replace `your_master_url` with your own master url and `your_secret_key` wi
 ## Run as Spark on Kubernetes Mode
 ### 1. Start the spark client as Docker container
 ### 1.1 Prepare the keys/password/data/enclave-key.pem
-please refer to [2. Prepare data, key and password](#prepare-data)
+please refer to [Prepare data, key and password](#prepare-data)
 
 ### 1.2 Prepare the k8s configurations
 #### 1.2.1 Get k8s master as spark master
