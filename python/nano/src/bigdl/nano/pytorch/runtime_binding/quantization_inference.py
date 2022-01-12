@@ -42,7 +42,13 @@ def _fx_quantize_on_fit_start(self):
 
 def _fx_quantize_eval(self, quantize=False):
     if quantize:
-        self.forward = self._forward_fx_quantize
+        if self._quantized_model_up_to_date:
+            self.forward = self._forward_fx_quantize
+        else:
+            raise RuntimeError("Please call trainer.quantize again since the quantized model is"
+                               "not up-to-date")
+    else:
+        self.forward = self._torch_forward
 
 
 def bind_quantize_methods(pl_model, q_model):

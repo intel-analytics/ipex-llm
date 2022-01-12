@@ -146,7 +146,8 @@ def bind_base_inference_rt_methods(pl_model: LightningModule):
     if set(BASE_BINDED_COMPONENTS) <= set(dir(pl_model)):
         return pl_model
 
-    pl_model._on_fit_start_old = pl_model.on_fit_start
+    if "on_fit_start" in dir(pl_model):
+        pl_model._on_fit_start_old = pl_model.on_fit_start
     pl_model._train_old = pl_model.train
     pl_model._torch_forward = pl_model.forward
     pl_model._eval_old = pl_model.eval

@@ -241,9 +241,12 @@ class Trainer(pl.Trainer):
                 if raw_return:
                     return quantized.model
                 else:
+                    from bigdl.nano.pytorch.runtime_binding.base_inference import\
+                        bind_base_inference_rt_methods
                     from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
                         bind_quantize_methods
-                    return bind_quantize_methods(pl_model, quantized.model)
+                    return bind_quantize_methods(
+                        bind_base_inference_rt_methods(pl_model), quantized.model)
             else:
                 raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
         else:
