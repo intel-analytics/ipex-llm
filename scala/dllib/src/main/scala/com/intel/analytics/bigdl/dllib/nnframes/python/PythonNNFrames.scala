@@ -258,6 +258,30 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     model.setMissing(value)
   }
 
+  def setXGBClassifierMaxDepth(model: XGBClassifier, value: Int): Unit = {
+    model.setMaxDepth(value)
+  }
+
+  def setXGBClassifierEta(model: XGBClassifier, value: Double): Unit = {
+    model.setEta(value)
+  }
+
+  def setXGBClassifierGamma(model: XGBClassifier, value: Int): Unit = {
+    model.setGamma(value)
+  }
+
+  def setXGBClassifierTreeMethod(model: XGBClassifier, value: String): Unit = {
+    model.setTreeMethod(value)
+  }
+
+  def setXGBClassifierObjective(model: XGBClassifier, value: String): Unit = {
+    model.setObjective(value)
+  }
+
+  def setXGBClassifierNumClass(model: XGBClassifier, value: Int): Unit = {
+    model.setNumClass(value)
+  }
+
   def loadXGBClassifierModel(path: String, numClasses: Int): XGBClassifierModel = {
     XGBClassifierModel.load(path, numClasses)
   }
@@ -270,6 +294,11 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   def setPredictionXGBClassifierModel(model: XGBClassifierModel,
                                             prediction: String): Unit = {
     model.setPredictionCol(prediction)
+  }
+
+  def setInferBatchSizeXGBClassifierModel(model: XGBClassifierModel,
+                                          batchSize: Int): Unit = {
+    model.setInferBatchSize(batchSize)
   }
 
   def transformXGBClassifierModel(model: XGBClassifierModel,

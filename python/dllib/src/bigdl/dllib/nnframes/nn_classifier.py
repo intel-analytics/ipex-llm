@@ -705,6 +705,25 @@ class XGBClassifier():
     def setMissing(self, value: int):
         return callZooFunc("float", "setXGBClassifierMissing", self.value, value)
 
+    def setMaxDepth(self, value: int):
+        return callZooFunc("float", "setXGBClassifierMaxDepth", self.value, value)
+
+    def setEta(self, value: float):
+        return callZooFunc("float", "setXGBClassifierEta", self.value, value)
+
+    def setGamma(self, value: int):
+        return callZooFunc("float", "setXGBClassifierGamma", self.value, value)
+
+    def setTreeMethod(self, value: str):
+        return callZooFunc("float", "setXGBClassifierTreeMethod", self.value, value)
+
+    def setObjective(self, value: str):
+        return callZooFunc("float", "setXGBClassifierObjective", self.value, value)
+
+    def setNumClass(self, value: str):
+        return callZooFunc("float", "setXGBClassifierNumClass", self.value, value)
+
+
 
 class XGBClassifierModel:
     '''
@@ -722,6 +741,9 @@ class XGBClassifierModel:
 
     def setPredictionCol(self, prediction):
         callZooFunc("float", "setPredictionXGBClassifierModel", self.value, prediction)
+
+    def setInferBatchSize(self, batch_size):
+        callZooFunc("float", "setInferBatchSizeXGBClassifierModel", self.value, batch_size)
 
     def transform(self, dataset):
         df = callZooFunc("float", "transformXGBClassifierModel", self.value, dataset)
