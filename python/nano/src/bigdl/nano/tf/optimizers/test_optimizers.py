@@ -16,6 +16,7 @@
 import numpy as np
 from sparse_adam import SparseAdam
 
+
 def test_optimizer_sparseadam():
 
     from bigdl.nano.tf.keras.layers import Embedding
@@ -28,7 +29,7 @@ def test_optimizer_sparseadam():
     input_array = np.random.randint(1000, size=(32, 10))
 
     ids = tf.constant([0, 10, 20, 30])
-    test_array = tf.nn.embedding_lookup(input_array,ids)
+    test_array = tf.nn.embedding_lookup(input_array, ids)
     print(test_array)
     with tf.GradientTape() as tape:
         output = model(test_array)
@@ -36,5 +37,5 @@ def test_optimizer_sparseadam():
         loss_value = model.compiled_loss(output, labels, regularization_losses=model.losses)
         grads = tape.gradient(loss_value, model.trainable_variables)
         for grad in grads:
-            print("grad:",grad)
+            print("grad:", grad)
             assert isinstance(grad, tf.IndexedSlices)
