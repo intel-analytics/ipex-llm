@@ -38,7 +38,7 @@ class TestKerasModel(TestCase):
         assert q_model
         with q_model.sess as sess:
             output = sess.run(q_model.output_tensor,
-                              feed_dict={q_model.input_tensor[0]: train_examples[0:10]})  # output
+                              feed_dict={q_model.input_tensor[0]: train_examples[0:10]})
         assert output[0].shape == (10, 10)
 
         # Case 2: Override by arguments
@@ -52,7 +52,7 @@ class TestKerasModel(TestCase):
         assert q_model
         with q_model.sess as sess:
             output = sess.run(q_model.output_tensor,
-                              feed_dict={q_model.input_tensor[0]: train_examples[0:10]})  # output
+                              feed_dict={q_model.input_tensor[0]: train_examples[0:10]})
         assert output[0].shape == (10, 10)
 
         # Case 3: Invalid approach, dynamic or qat is not supported
