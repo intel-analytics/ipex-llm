@@ -274,13 +274,16 @@ class SparkRunner:
         print("infos is: ", infos)
         # infos = tc.getTaskInfos()
         idx = tc.partitionId()
+        print("idx is: ", idx)
         # local_ip = infos[idx].address.split(":")[0]
         local_ip = infos[idx].split(":")[0]
+        print("local_ip is: ", local_ip)
         local_rank = 0
         for i in range(0, idx):
             # if infos[i].address.startswith(local_ip):
             if infos[i].startswith(local_ip):
                 local_rank += 1
+        print("local_rank is: ", local_rank)
         global_rank = -1
         local_count = 0
         for node in cluster_info:
@@ -289,6 +292,7 @@ class SparkRunner:
             global_rank += 1
             if local_count == local_rank + 1:
                 break
+        print("local_count is: ", local_count)
         print("global rank is: ", global_rank)
         return global_rank
 
