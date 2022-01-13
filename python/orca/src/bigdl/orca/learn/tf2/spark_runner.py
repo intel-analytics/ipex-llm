@@ -25,23 +25,14 @@ import socket
 
 from pyspark import BarrierTaskContext, TaskContext
 
+from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.data.file import put_local_dir_to_remote
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
-    get_specific_object_from_callbacks, get_replaced_path
+    get_specific_object_from_callbacks, get_replaced_path, find_free_port
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
-
-
-def find_free_port(tc):
-    address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind(("", 0))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        tc.barrier()
-        return f"{address}:{s.getsockname()[1]}"
-
 
 def handle_datasets_train(data_creator, validation_data_creator):
         train_dataset = data_creator()
@@ -195,8 +186,6 @@ def find_ip_and_port(pre_iter):
     # print("taskcontext type is: ", type(tc))
     # return [type(tc)]
     # free_port = find_free_port(tc)
-    from bigdl.dllib.utils.utils import get_node_ip
-    from bigdl.orca.learn.utils import find_free_port
     return [f"{get_node_ip()}:{find_free_port()}"]
 
 

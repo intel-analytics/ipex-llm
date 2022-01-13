@@ -349,57 +349,6 @@ def data_length(data):
         return x[0].shape[0]
 
 
-# def save_weights_tf(model, path, overwrite=True, save_format=None):
-#     import tempfile
-#     import os
-#     filename = os.path.basename(path)
-#     tmp_dir = tempfile.mkdtemp()
-#     tmp_file = os.path.join(tmp_dir, filename)
-#     model.save_weights(tmp_file, overwrite=overwrite, save_format=save_format)
-#     if save_format is None:
-#         if (path.endswith('.h5') or path.endswith('.keras') or
-#                 path.endswith('.hdf5')):
-#             save_format = 'h5'
-#         else:
-#             save_format = 'tf'
-#     else:
-#         user_format = save_format.lower().strip()
-#         if user_format in ('tensorflow', 'tf'):
-#             save_format = 'tf'
-#         elif user_format in ('hdf5', 'h5', 'keras'):
-#             save_format = 'h5'
-#     if save_format == 'tf':
-#         raise Exception("Cannot save to tensorflow format at this time")
-#
-#     with open(tmp_file, "rb") as f:
-#         content = f.read()
-#     if path.startswith("hdfs"):  # hdfs://url:port/file_path
-#         import pyarrow as pa
-#         fs = pa.hdfs.connect()
-#         with fs.open(path, 'wb') as f:
-#             result = f.write(content)
-#             f.close()
-#             return result
-#     elif path.startswith("s3"):  # s3://bucket/file_path
-#         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
-#         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
-#         import boto3
-#         s3_client = boto3.Session(
-#             aws_access_key_id=access_key_id,
-#             aws_secret_access_key=secret_access_key).client('s3', verify=False)
-#         path_parts = path.split("://")[1].split('/')
-#         bucket = path_parts.pop(0)
-#         key = "/".join(path_parts)
-#         return s3_client.put_object(Bucket=bucket, Key=key, Body=content)
-#     else:
-#         if path.startswith("file://"):
-#             path = path[len("file://"):]
-#         with open(path, 'wb') as f:
-#             result = f.write(content)
-#             f.close()
-#             return result
-
-
 def save_pkl(data, path):
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
         import pyarrow as pa
