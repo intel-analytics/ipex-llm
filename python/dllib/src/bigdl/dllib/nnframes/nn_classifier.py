@@ -724,7 +724,6 @@ class XGBClassifier():
         return callZooFunc("float", "setXGBClassifierNumClass", self.value, value)
 
 
-
 class XGBClassifierModel:
     '''
     XGBClassifierModel is a trained XGBoost classification model. The prediction column
