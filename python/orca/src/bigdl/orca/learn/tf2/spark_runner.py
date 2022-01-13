@@ -289,6 +289,7 @@ class SparkRunner:
             global_rank += 1
             if local_count == local_rank + 1:
                 break
+        print("global rank is: ", global_rank)
         return global_rank
 
     def setup_distributed(self, cluster):
