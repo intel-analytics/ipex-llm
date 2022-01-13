@@ -16,8 +16,8 @@
 
 
 import tensorflow as tf
+from bigdl.nano.tf.quantization import Quantization
 
-
-class Sequential(tf.keras.Sequential):
+class Sequential(Quantization, tf.keras.Sequential):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
