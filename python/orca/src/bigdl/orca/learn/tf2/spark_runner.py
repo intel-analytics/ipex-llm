@@ -270,7 +270,7 @@ class SparkRunner:
         # We then use the local rank to find the right slot in cluster_info to find
         # the right global_rank.
         tc = BarrierTaskContext().get()
-        infos = tc.getLocalProperty("addresses")
+        infos = tc.getLocalProperty("addresses").split(",")
         print("infos is: ", infos)
         # infos = tc.getTaskInfos()
         idx = tc.partitionId()
