@@ -1,6 +1,6 @@
 ######## Recall Service
 
-# Default: 8980, which port to create the server
+# Default: 8084, which port to create the server
 servicePort: 8084
 
 # Default: null, open a port for prometheus monitoring tool, if set, user can check the
