@@ -16,8 +16,8 @@
 import tensorflow as tf
 
 try:
-    from ..quantization import Quantization
-    tf.keras.Model.quantize = Quantization.quantize
+    from ..quantization import quantize
+    tf.keras.Model.quantize = quantize
 except ImportError:
     print("Warning: Intel Neural Compressor should be installed if you need quantization.")
 from .Sequential import Sequential
