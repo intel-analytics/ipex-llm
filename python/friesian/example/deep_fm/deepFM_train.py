@@ -138,7 +138,8 @@ if __name__ == '__main__':
 
     train = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
-
+    train.show()
+    test.show()
     test_user_ids = test.select("engaged_with_user_id").cast("engaged_with_user_id", "str").\
         to_list("engaged_with_user_id")
     test_labels = test.select("label").to_list("label")
