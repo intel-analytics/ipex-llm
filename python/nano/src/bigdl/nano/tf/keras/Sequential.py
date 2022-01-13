@@ -13,12 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
 import tensorflow as tf
-from bigdl.nano.tf.quantization import Quantization
 
 
-class Sequential(Quantization, tf.keras.Sequential):
+class Sequential(tf.keras.Sequential):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

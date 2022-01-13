@@ -13,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import tensorflow as tf
-from bigdl.nano.tf.quantization import Quantization
 
 
-class Model(Quantization, tf.keras.Model):
+class Model(tf.keras.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
