@@ -18,8 +18,7 @@ echo "[INFO] The DB Is Transformed And Encrypted, Saved At $csv_path"
 status_8_scala_e2e=1
 echo "[INFO] Decrypt The Ciphere Files Inside SGX..."
 if [ $status_8_scala_e2e -ne 0 ]; then
-#SGX=1 ./pal_loader bash -c "bash ./work/kms-client/DecryptFilesWithSpark.sh $csv_path $KMS_SERVER_IP $LOCAL_IP" 2>&1 > spark-inside-sgx.log
-bash ./work/kms-client/DecryptFilesWithSpark.sh $csv_path $KMS_SERVER_IP $LOCAL_IP
+SGX=1 ./pal_loader bash -c "bash ./work/kms-client/DecryptFilesWithSpark.sh $csv_path $KMS_SERVER_IP $LOCAL_IP"
 fi
 status_8_scala_e2e=$(echo $?)
 
