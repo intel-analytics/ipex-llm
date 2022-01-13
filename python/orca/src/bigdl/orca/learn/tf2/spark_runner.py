@@ -195,10 +195,6 @@ def find_ip_and_port(pre_iter):
     # free_port = find_free_port(tc)
     from bigdl.dllib.utils.utils import get_node_ip
     from bigdl.orca.learn.utils import find_free_port
-    # ip = get_node_ip()
-    # print("ip type is: ", type(ip))
-    # port = find_free_port()
-    # print("port type is: ", type(port))
     return [f"{get_node_ip()}:{find_free_port()}"]
 
 
@@ -274,12 +270,16 @@ class SparkRunner:
         # We then use the local rank to find the right slot in cluster_info to find
         # the right global_rank.
         tc = BarrierTaskContext().get()
-        infos = tc.getTaskInfos()
+        infos = tc.getLocalProperty("addresses")
+        print("infos is: ", infos)
+        # infos = tc.getTaskInfos()
         idx = tc.partitionId()
-        local_ip = infos[idx].address.split(":")[0]
+        # local_ip = infos[idx].address.split(":")[0]
+        local_ip = infos[idx].split(":")[0]
         local_rank = 0
         for i in range(0, idx):
-            if infos[i].address.startswith(local_ip):
+            # if infos[i].address.startswith(local_ip):
+            if infos[i].startswith(local_ip):
                 local_rank += 1
         global_rank = -1
         local_count = 0
