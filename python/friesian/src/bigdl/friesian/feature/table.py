@@ -1731,7 +1731,8 @@ class FeatureTable(Table):
                                            all_func(cat_col_name + "_all_sum_" + target_col,
                                                     cat_col_name + "_all_count")) \
                     .drop(cat_col_name + "_all_sum_" + target_col)
-            all_df = all_df.drop(cat_col_name + "_all_count")
+            # keep count in the target code
+            all_df = all_df.withColumnRenamed(cat_col_name + "_all_count", "count")
 
             if kfold == 1:
                 fold_df = all_df
@@ -1760,8 +1761,8 @@ class FeatureTable(Table):
                     )
                     fold_df = fold_df.drop(cat_col_name + "_sum_" + target_col,
                                            cat_col_name + "_all_sum_" + target_col)
-                fold_df = fold_df.drop(cat_col_name + "_count", cat_col_name + "_all_count")
-                fold_df = fold_df.withColumnRenamed(fold_col, fold_col)
+                fold_df = fold_df.drop(cat_col_name + "_count")\
+                    .withColumnRenamed(cat_col_name + "_all_count", "count")
 
             out_target_mean_dict = {
                 out_col: (target_col, target_mean_dict[target_col])
@@ -1771,6 +1772,7 @@ class FeatureTable(Table):
                 TargetCode(all_df, cat_col, out_target_mean_dict)
 
         targets = list(map(gen_target_code, zip(cat_cols, out_cols)))
+
         fold_targets = [t[0] for t in targets]
         all_targets = [t[1] for t in targets]
 

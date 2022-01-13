@@ -17,6 +17,7 @@
 from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
     DoubleType
+from pyspark.sql.functions import broadcast
 
 
 def compute(df):
@@ -137,12 +138,15 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
 
         join_tbl = tbl._clone(target_code.df)
 
+        assert "count" in target_code.df.columns + " should be in target_code"
+
         # (keys of out_target_mean) should include (output columns)
         output_columns = list(filter(lambda x:
                                      ((isinstance(cat_col, str) and x != cat_col) or
                                       (isinstance(cat_col, list) and x not in cat_col)) and
-                                     (fold_col is not None and x != fold_col),
+                                     (fold_col is not None and x != fold_col) and (x != "count"),
                                      join_tbl.df.columns))
+
         for column in output_columns:
             assert column in out_target_mean, column + " should be in out_target_mean"
             column_mean = out_target_mean[column][1]
@@ -160,13 +164,23 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
                     new_out_target_mean[out_col] = target_mean
             out_target_mean = new_out_target_mean
 
+        all_size = target_code.size()
+        limit_size = 1000000
+        t_df = target_code.df
+        top_df = t_df if all_size < limit_size else t_df.sort(t_df.count.desc()).limit(limit_size)
+        br_df = broadcast(top_df)
+
         if fold_col is None:
-            tbl = tbl.join(join_tbl, on=cat_col, how="left")
+            join_key = cat_col
         else:
-            if isinstance(cat_col, str):
-                tbl = tbl.join(join_tbl, on=[cat_col, fold_col], how="left")
-            else:
-                tbl = tbl.join(join_tbl, on=cat_col + [fold_col], how="left")
+            join_key = [cat_col, fold_col] if isinstance(cat_col, str) else cat_col + [fold_col]
+
+        joined = tbl.df.join(br_df, on=join_key)
+        if all_size > limit_size:
+            joined2 = tbl.df.join(t_df.subtract(br_df), on=join_key, how="left")
+            joined = joined.union(joined2)
+
+        tbl = tbl._clone(joined)
 
         # for new columns, fill na with mean
         for out_col, target_mean in out_target_mean.items():
