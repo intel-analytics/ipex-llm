@@ -138,8 +138,8 @@ if __name__ == '__main__':
 
     train = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
-    train.df.select("engaged_with_user_id").rdd.flatMap(lambda x: x).show()
-    test.df.select("engaged_with_user_id").rdd.flatMap(lambda x: x).show()
+    print(train.df.select("engaged_with_user_id").rdd.flatMap(lambda x: x).collect())
+    print(test.df.select("engaged_with_user_id").rdd.flatMap(lambda x: x).collect())
     
     test_user_ids = test.select("engaged_with_user_id").cast("engaged_with_user_id", "str").\
         to_list("engaged_with_user_id")
