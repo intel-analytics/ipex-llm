@@ -28,34 +28,24 @@ EXT = "*.csv"
 all_csv_files = [file
                  for p, subdir, files in os.walk(path)
                  for file in glob(os.path.join(p, EXT))]
-path = all_csv_files[0]
-
-data = csv.reader(open(path,'r'))
-
-csvWriter = csv.writer(open(path + '.col_decrypted', 'w', newline='\n')) #Save Path
 
 print('[INFO] Decryption Start...')
-print('[INFO] If The First Line In Input CSV Is Not A Headr, The 18th Line Should Be Annotated')
-
-# If The First Line In Input CSV Is The Header, Write The Header Directly. Otherwise, The Below Line Should Be Annotated
-csvWriter.writerow(next(data))
 
 data_key = get_data_key_plaintext(ip, port, pkp, dkp) # Request Data Key For Decryption
-
 fernet = Fernet(data_key) # Generate Decryption Method
 
-for row in data:
-    write_buffer = []
-    for i in range(len(row)):
-        if i == 3:
-            write_buffer.append(row[i])
-        else:
-            plaintext = fernet.decrypt(row[i].encode('ascii')).decode("utf-8")
-            dpt = fernet.decrypt(plaintext.encode('ascii')).decode("utf-8")
-        write_buffer.append(dpt)
-    csvWriter.writerow(write_buffer)
+for csv_file in all_csv_files:
+    data = csv.reader(open(csv_file,'r'))
+    csvWriter = csv.writer(open(csv_file + '.col_decrypted', 'w', newline='\n')) #Save Path
+    csvWriter.writerow(next(data)) # Write CSV Header
+    for row in data:
+        write_buffer = []
+        for field in row:
+            plaintext = fernet.decrypt(field.encode('ascii')).decode("utf-8")
+            write_buffer.append(plaintext)
+        csvWriter.writerow(write_buffer)
+    print('[INFO] One CSV File Decryption Finished. Current Output Is ' + csv_file + '.col_decrypted')
 
 end = time.time()
 
-print('[INFO] Total Elapsed Time For Columns Decrytion: ' + str(end - start) + ' s')
-print('[INFO] Decryption Finished. The Output Is ' + path + '.col_decrypted')
+print('[INFO] All Finished Successfully. Total Elapsed Time For Columns Decrytion: ' + str(end - start) + ' s')

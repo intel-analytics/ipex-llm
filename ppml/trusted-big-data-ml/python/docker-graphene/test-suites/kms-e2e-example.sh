@@ -13,7 +13,6 @@ python /ppml/trusted-big-data-ml/work/kms-client/EncryptDBAutomation.py \
   --ip $KMS_SERVER_IP  --dbp $INPUT_DB_PATH
 csv_path=$INPUT_DB_PATH.encrypted
 echo "[INFO] The DB Is Transformed And Encrypted, Saved At $csv_path"
-rm $csv_path/tmp_mock_a_table.csv.encrypted
 
 # Step 2. Decrypt The Encrypted Files As A Spark Job Inside SGX And Then Encrypt Columns
 status_8_scala_e2e=1

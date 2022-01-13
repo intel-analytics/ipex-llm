@@ -8,11 +8,14 @@ data_key=$(python /ppml/trusted-big-data-ml/work/kms-client/GetDataKeyPlaintext.
 
 /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar' \
-  -Xmx2g \
+  -Xmx12g \
   org.apache.spark.deploy.SparkSubmit \
   --master local[2] \
   --conf spark.driver.host=$LOCAL_IP \
-  --conf spark.driver.memory=8g \
+  --conf spark.driver.memory=16g \
+  --num-executors 10 \
+  --executor-cores 8 \
+  --executor-memory 16g \
   --conf spark.ssl.enabled=true \
   --conf spark.ssl.port=8043 \
   --conf spark.ssl.keyPassword=$secure_password \
@@ -22,10 +25,8 @@ data_key=$(python /ppml/trusted-big-data-ml/work/kms-client/GetDataKeyPlaintext.
   --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
   --conf spark.ssl.trustStorePassword=$secure_password \
   --conf spark.ssl.trustStoreType=JKS \
-  --executor-memory 8g \
-  --class sparkCryptoFiles.encryptColumn \
+  --class sparkCryptoFiles.encryptColumnFromDifferentTables \
   $SPARK_DECRYPT_JAR_PATH \
   $CSV_DIR_PATH \
-  AESCBC \
   $data_key \
   $CSV_DIR_PATH.col_encrypted
