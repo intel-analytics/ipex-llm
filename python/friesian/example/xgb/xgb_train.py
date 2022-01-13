@@ -16,14 +16,11 @@
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.friesian.feature import FeatureTable
-from pyspark.ml.linalg import DenseVector, SparseVector, Vectors, VectorUDT
+from pyspark.ml.linalg import DenseVector, VectorUDT
 from sklearn.metrics import accuracy_score
-from pyspark.ml.feature import VectorAssembler
-from pyspark.sql import functions as F
-from pyspark.sql import types as T
 from bigdl.dllib.nnframes.nn_classifier import *
-from pyspark.sql.functions import col
 import argparse
+import time
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
@@ -47,11 +44,11 @@ if __name__ == '__main__':
                         help='The cluster mode, such as local, yarn or standalone.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
-    parser.add_argument('--executor_cores', type=int, default=8,
+    parser.add_argument('--executor_cores', type=int, default=4,
                         help='The executor core number.')
     parser.add_argument('--executor_memory', type=str, default="160g",
                         help='The executor memory.')
-    parser.add_argument('--num_executor', type=int, default=8,
+    parser.add_argument('--num_executor', type=int, default=1,
                         help='The number of executor.')
     parser.add_argument('--driver_cores', type=int, default=4,
                         help='The driver core number.')
@@ -63,7 +60,6 @@ if __name__ == '__main__':
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
 
     args = parser.parse_args()
-
     if args.cluster_mode == "local":
         sc = init_orca_context("local", 4)
     elif args.cluster_mode == "yarn":
@@ -81,10 +77,11 @@ if __name__ == '__main__':
                 "tweet_type", "language", 'present_media_language']
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
-    cat_cols = ['present_media_language']
-    embed_cols = []
+
     features = num_cols + [col + "_te_label" for col in cat_cols] +\
                [col + "_te_label" for col in embed_cols]
+
+    begin = time.time()
 
     train = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
@@ -93,42 +90,19 @@ if __name__ == '__main__':
     test_labels = test.select("label").to_list("label")
 
     full = train.concat(test)
-    reindex_tbls = full.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
-    full, min_max_dict = full.min_max_scale(num_cols)
     full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols="label")
-    print(len(target_codes))
-    print("full **", full.size())
-    for i in range(len(target_codes)):
-        target_codes[i].show(2, False)
-        print(target_codes[i].size())
 
-    for c in cat_cols + embed_cols:
-        print("************: ", c)
-        count = train.df.groupBy(c).count().orderBy(col("count").desc())
-        count.show(2, False)
+    train = train.encode_target(target_cols="label", targets=target_codes) \
+        .merge_cols(features, "features") \
+        .select(["label", "features"])\
+        .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
 
-    train = train.transform_min_max_scale(num_cols, min_max_dict) \
-        .reindex(embed_cols, reindex_tbls)\
-        .encode_target(target_cols="label", targets=target_codes)
-        # .merge_cols(features, "features") \
-        # .select(["label", "features"])\
-        # .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
-    train.select(["label"]+features).show(2, False)
-    print(train.size())
+    test = test.encode_target(target_cols="label", targets=target_codes).df
 
-    import sys
-    sys.exit()
-
-    test = test.transform_min_max_scale(num_cols, min_max_dict) \
-        .reindex(embed_cols, reindex_tbls)\
-        .encode_target(target_cols="label", targets=target_codes)\
-        .df
-
-    import time
-    begin = time.time()
     classifier = XGBClassifier()
     classifier.setNthread(1)
-    #classifier.setNumWorkers(4)
+    classifier.setNumWorkers(args.executor_cores * args.num_executor)
+    classifier.setNumRound(5)
     model = classifier.fit(train.df)
     xgbmodel = XGBClassifierModel(model)
     xgbmodel.setFeaturesCol(features)
@@ -137,8 +111,8 @@ if __name__ == '__main__':
     gr = [row.label for row in test.select("label").collect()]
     predicts = [row.prediction for row in predicts.select("prediction").collect()]
     accuracy = accuracy_score(gr, predicts)
+    end = time.time()
 
     print("Accuracy: %.2f%%" % (accuracy * 100.0))
-    end = time.time()
-    print(end - begin)
+    print("processing time: %.2f%%" % (end - begin))
     stop_orca_context()
