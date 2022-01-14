@@ -51,13 +51,14 @@ def encrypt_files_automation(ip, port, input_dir, encrypted_primary_key_path, en
     print('[INFO] Encrypt Files Start...')
     if save_dir is None:
         save_dir = input_dir+'.encrypted'
+    os.mkdir(save_dir)
     data_key = retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
     fernet = Fernet(data_key)
     for file_name in os.listdir(input_dir):
         input_path = os.path.join(input_dir, file_name)
-        encrypted = fernet.encrypt(read_data_file(data_file_path))
-        save_path = os.path.join(save_dir, filename + '.encrypted')
-        write_data_file(data_file_path, encrypted)
+        encrypted = fernet.encrypt(read_data_file(input_path))
+        save_path = os.path.join(save_dir, file_name + '.encrypted')
+        write_data_file(save_path, encrypted)
         print('[INFO] Encrypt Successfully! Encrypted Output Is ' + save_path)
     print('[INFO] Encrypted Files.')
 
@@ -65,14 +66,14 @@ def decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypt
     from glob import glob
     import time
     print('[INFO] Column Decryption Start...')
-    start = time.start()
+    start = time.time()
     EXT = "*.csv"
     all_csv_files = [file
                      for p, subdir, files in os.walk(input_dir)
                      for file in glob(os.path.join(p, EXT))]
-    data_key = KeyManager.retrieve_data_key_plaintext(ip, port,encrypted_primary_key_path, encrypted_data_key_path)
+    data_key = retrieve_data_key_plaintext(ip, port,encrypted_primary_key_path, encrypted_data_key_path)
     fernet = Fernet(data_key)
-    
+
     for csv_file in all_csv_files:
         data = csv.reader(open(csv_file,'r'))
         csvWriter = csv.writer(open(csv_file + '.col_decrypted', 'w', newline='\n'))
@@ -84,7 +85,6 @@ def decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypt
                 write_buffer.append(plaintext)
             csvWriter.writerow(write_buffer)
         print('[INFO] Decryption Finished. The Output Is ' + csv_file + '.col_decrypted')
-    
+
     end = time.time()
     print('[INFO] Total Elapsed Time For Columns Decrytion: ' + str(end - start) + ' s')
-    
