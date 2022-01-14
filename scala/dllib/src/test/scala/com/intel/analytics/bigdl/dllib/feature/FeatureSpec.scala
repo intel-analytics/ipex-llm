@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.dllib.feature.common.{BigDLAdapter, Preprocessing}
 import com.intel.analytics.bigdl.dllib.feature.image._
 import org.apache.commons.io.FileUtils
-import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}

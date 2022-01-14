@@ -16,8 +16,10 @@
 
 package com.intel.analytics.bigdl.ppml.common;
 
-import com.intel.analytics.bigdl.ppml.generated.FLProto.Table;
-import org.apache.log4j.Logger;
+import com.intel.analytics.bigdl.ppml.base.DataHolder;
+import com.intel.analytics.bigdl.ppml.base.StorageHolder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,60 +27,73 @@ import java.util.Map;
 import static com.intel.analytics.bigdl.ppml.common.FLPhase.*;
 
 
-public abstract class Aggregator<T> {
+public abstract class Aggregator {
     /**
      * aggregateTypeMap is a map to map to simplify the operations of the storage
      * it maps the enum type: TRAIN, EVAL, PREDICT to corresponded storage
      */
-    private Logger logger = Logger.getLogger(getClass());
-    public Map<FLPhase, Storage<T>> aggregateTypeMap;
+    private Logger logger = LogManager.getLogger(getClass());
+    public Map<FLPhase, StorageHolder> aggregateTypeMap;
+
+    protected String returnMessage = "";
 
     public Aggregator() {
         aggregateTypeMap = new HashMap<>();
-        aggregateTypeMap.put(TRAIN, trainStorage);
-        aggregateTypeMap.put(EVAL, evalStorage);
-        aggregateTypeMap.put(PREDICT, predictStorage);
         initStorage();
+    }
+
+
+    public void setReturnMessage(String returnMessage) {
+        this.returnMessage = returnMessage;
+    }
+
+    public String getReturnMessage() {
+        return returnMessage;
     }
 
     public void setClientNum(Integer clientNum) {
         this.clientNum = clientNum;
     }
 
-    public Storage<T> trainStorage;
-    public Storage<T> evalStorage;
-    public Storage<T> predictStorage;
 
-    public void initStorage() {
-        trainStorage = new Storage<>("train");
-        evalStorage = new Storage<>("eval");
-        predictStorage = new Storage<>("predict");
-    }
+    abstract public void initStorage();
 
     protected Integer clientNum;
+
+
     public abstract void aggregate(FLPhase flPhase);
 
-    public Storage<T> getServerData(FLPhase type) {
-        Storage<T> storage = null;
-        switch (type) {
-            case TRAIN: storage = trainStorage; break;
-            case EVAL: storage = evalStorage; break;
-            case PREDICT: storage = predictStorage; break;
-            default: break;
+    public void putClientData(FLPhase flPhase,
+                                  String clientUUID, int version, DataHolder dataHolder)
+            throws IllegalArgumentException, InterruptedException {
+        logger.debug(clientUUID + " getting data to update from server: " + flPhase.toString());
+        StorageHolder storageHolder = aggregateTypeMap.get(flPhase);
+        if (version != -1) checkVersion(storageHolder.getVersion(), version);
+
+        logger.debug(clientUUID + " version check pass, version: " + version);
+
+
+        synchronized (this) {
+            storageHolder.putClientData(clientUUID, dataHolder);
+            logger.debug(clientUUID + " client data uploaded to server: " + flPhase.toString());
+            logger.debug("Server received data " +
+                    storageHolder.getClientDataSize() + "/" + clientNum);
+            if (storageHolder.getClientDataSize() >= clientNum) {
+                logger.debug("Server received all client data, start aggregate.");
+                aggregate(flPhase);
+                notifyAll();
+            } else {
+                wait();
+            }
         }
-        return storage;
+
     }
-    public <T> void putClientData(FLPhase type, String clientUUID, int version, T data)
+    protected void checkVersion(int serverVersion, int clientVersion)
             throws IllegalArgumentException {
-        Storage storage = getServerData(type);
-        storage.put(clientUUID, data);
-
-        // Aggregate when buffer is full
-        if (storage.size() >= clientNum) {
-            aggregate(type);
+        if (serverVersion != clientVersion) {
+            throw new IllegalArgumentException("Version miss match, got server version: " +
+                    serverVersion + ", client version: " + clientVersion);
         }
     }
-
-
 
 }

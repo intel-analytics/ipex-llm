@@ -19,33 +19,32 @@ package com.intel.analytics.bigdl.ppml.algorithms
 import java.util
 import java.util.concurrent.TimeoutException
 
+import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.psi.HashingUtils
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
-import com.intel.analytics.bigdl.ppml.vfl.utils.FLClientClosable
-import org.apache.log4j.Logger
+import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
+import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
+
 import collection.JavaConverters._
 import collection.JavaConversions._
-
 import scala.util.control.Breaks._
 
 class PSI() extends FLClientClosable {
-  val logger = Logger.getLogger(getClass)
+  private var hashIdToId: Map[String, String] = Map[String, String]()
+  val logger = LogManager.getLogger(getClass)
 
-  def getSalt(): String = {
-    flClient.psiStub.getSalt()
-  }
-  def getSalt(name: String, clientNum: Int, secureCode: String): String = {
-    flClient.psiStub.getSalt(name, clientNum, secureCode)
+  def getSalt(secureCode: String = ""): String = {
+    flClient.psiStub.getSalt(secureCode)
   }
 
   def uploadSet(ids: util.List[String], salt: String): Unit = {
     val hashedIdArray = HashingUtils.parallelToSHAHexString(ids, salt)
+    hashIdToId = hashedIdArray.zip(ids).toMap
     flClient.psiStub.uploadSet(hashedIdArray)
   }
 
 
-  def downloadIntersection(maxTry: Int = 5, retry: Long = 3000): util.List[String] = {
+  def downloadIntersection(maxTry: Int = 100, retry: Long = 3000): util.List[String] = {
     var intersection: util.List[String] = null
     breakable {
       for (i <- 0 until maxTry) {
@@ -74,14 +73,15 @@ class PSI() extends FLClientClosable {
   }
   def uploadSetAndDownloadIntersection(df: DataFrame,
                                        salt: String,
-                                       rowKeyName: String = "IDS",
-                                       maxTry: Int = 5,
+                                       rowKeyName: String = "ID",
+                                       maxTry: Int = 100,
                                        retry: Long = 3000): DataFrame = {
-    val spark = VflContext.getSparkSession()
+    val spark = FLContext.getSparkSession()
     import spark.implicits._
     val ids = df.select(rowKeyName).as[String].collect().toList
     uploadSet(ids, salt)
-    val intersection = downloadIntersection(maxTry, retry)
+    val hashIntersection = downloadIntersection(maxTry, retry)
+    val intersection = hashIntersection.map(h => hashIdToId(h))
     getIntersectionSet(df, rowKeyName, intersection)
   }
 }

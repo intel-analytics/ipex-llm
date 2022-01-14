@@ -341,7 +341,7 @@ if __name__ == "__main__":
     # build model
     if options.model != "":
         # load model snapshot
-        inception_model = Model.load(options.model)
+        inception_model = Model.loadModel(options.model)
     else:
         inception_model = inception_v1_no_aux_classifier(options.classNum)
 

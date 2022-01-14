@@ -582,6 +582,9 @@ class NNModel(JavaTransformer, MLWritable, MLReadable, HasFeaturesCol, HasPredic
         """
         return self._set(predictionCol=value)
 
+    def getModel(self):
+        return self.model
+
 
 class NNModelWriter(JavaMLWriter):
     def __init__(self, instance):

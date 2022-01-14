@@ -97,15 +97,20 @@ class KerasBaseModel(BaseModel):
                     raise ValueError(f"Got multiple metrics in compile: {compiled_metric_names}. "
                                      f"Please choose one target metric for automl optimization")
             else:
-                hist_metric_name = tf.keras.metrics.get(metric).__name__
-                if hist_metric_name in compiled_metric_names:
-                    metric_name = hist_metric_name
-                elif metric in compiled_metric_names:
+                if metric in compiled_metric_names:
                     metric_name = metric
                 else:
-                    raise ValueError(f"Input metric in fit_eval should be one of the metrics that "
-                                     f"are used to compile the model. Got metric value of {metric} "
-                                     f"and the metrics in compile are {compiled_metric_names}")
+                    try:
+                        hist_metric_name = tf.keras.metrics.get(metric).__name__
+                    except:
+                        raise ValueError(f"get invalid metric name {metric} for tf.keras")
+                    if hist_metric_name in compiled_metric_names:
+                        metric_name = hist_metric_name
+                    else:
+                        raise ValueError(f"Input metric in fit_eval should be one of the metrics "
+                                         f"that are used to compile the model. Got metric value of "
+                                         f"{metric} and the metrics in compile are "
+                                         f"{compiled_metric_names}")
             if validation_data is None:
                 result = hist.history.get(metric_name)[-1]
             else:

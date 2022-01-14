@@ -48,7 +48,7 @@ def train_data_creator(config={}, batch_size=4, download=True, data_dir='./data'
                                                  train=True,
                                                  transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                              shuffle=True, num_workers=2)
+                                              shuffle=True, num_workers=0)
     return trainloader
 
 
@@ -59,7 +59,7 @@ def validation_data_creator(config={}, batch_size=4, download=True, data_dir='./
     testset = torchvision.datasets.FashionMNIST(root=data_dir, train=False,
                                                 download=download, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                             shuffle=False, num_workers=2)
+                                             shuffle=False, num_workers=0)
     return testloader
 
 

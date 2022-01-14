@@ -24,7 +24,7 @@ import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.source.{RichParallelSourceFunction, SourceFunction}
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecords, KafkaConsumer}
 import org.apache.kafka.common.TopicPartition
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
@@ -38,7 +38,7 @@ class FlinkKafkaSource()
   var consumer: KafkaConsumer[String, String] = null
   var helper: ClusterServingHelper = null
   override def open(parameters: Configuration): Unit = {
-    logger = Logger.getLogger(getClass)
+    logger = LogManager.getLogger(getClass)
     helper = ClusterServing.helper
     val props = new Properties()
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, helper.kafkaUrl)

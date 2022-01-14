@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator, optimizer_creator, loss_creator
 
@@ -118,10 +119,10 @@ class LSTMForecaster(BasePytorchForecaster):
         self.seed = seed
 
         # nano setting
-        self.num_processes = 1
-        # ipex only available for lstm layer without dropout
-        dropout_sum = sum(dropout) if isinstance(dropout, list) else dropout
-        self.use_ipex = True if dropout_sum == 0 else False
+        current_num_threads = torch.get_num_threads()
+        self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
+        self.use_ipex = False
         self.onnx_available = True
+        self.checkpoint_callback = False
 
         super().__init__()

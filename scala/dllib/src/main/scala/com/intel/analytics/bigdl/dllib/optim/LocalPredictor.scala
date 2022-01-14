@@ -25,15 +25,15 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.dllib.utils.Util._
 import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils
-import com.intel.analytics.bigdl.dllib.utils.{Util}
+import com.intel.analytics.bigdl.dllib.utils.Util
 import com.intel.analytics.bigdl.dllib.utils.{Engine, MklBlas, MklDnn}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 
 object LocalPredictor {
 
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply[T: ClassTag](model: Module[T],
     featurePaddingParam: Option[PaddingParam[T]] = None,
@@ -112,7 +112,6 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
   def predict(dataSet: LocalDataSet[MiniBatch[T]]): Array[Activity] = {
     val dataIter = dataSet.data(train = false)
     dataIter.map(batch => {
-      println("Enter map")
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber

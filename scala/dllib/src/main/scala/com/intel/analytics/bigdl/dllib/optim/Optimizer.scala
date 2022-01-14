@@ -22,12 +22,11 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, SampleToMiniBatch, _}
 
 import scala.collection.mutable
-import com.intel.analytics.bigdl.dllib.optim.parameters.{ConstantClippingProcessor,
-  L2NormClippingProcessor, ParameterProcessor}
+import com.intel.analytics.bigdl.dllib.optim.parameters.{ConstantClippingProcessor, L2NormClippingProcessor, ParameterProcessor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
@@ -478,7 +477,7 @@ abstract class Optimizer[T: ClassTag, D](
 }
 
 object Optimizer {
-  private val logger: Logger = Logger.getLogger(getClass)
+  private val logger: Logger = LogManager.getLogger(getClass)
 
   private[bigdl] def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
   : String = {
@@ -552,7 +551,7 @@ object Optimizer {
   private[bigdl] def saveModel[T](model: Module[T], checkpointPath : Option[String],
     overWrite : Boolean, postfix: String = ""): Unit = {
     if (checkpointPath.isDefined) {
-      model.save(s"${checkpointPath.get}/model$postfix", overWrite)
+      model.save(s"${checkpointPath.get}/model$postfix", overWrite = overWrite)
     }
   }
 

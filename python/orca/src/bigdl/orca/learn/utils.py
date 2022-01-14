@@ -14,6 +14,11 @@
 # limitations under the License.
 #
 
+from contextlib import closing
+import socket
+import sys
+import tempfile
+
 from bigdl.dllib.utils.file_utils import get_file_list
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
@@ -422,3 +427,30 @@ def save_pkl(data, path):
             path = path[len("file://"):]
         with open(path, 'wb') as f:
             pickle.dump(data, f)
+
+
+def find_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
+
+
+def duplicate_stdout_stderr_to_file(log_path):
+    tee = subprocess.Popen(["tee", log_path], stdin=subprocess.PIPE)
+    os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
+    os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
+
+
+def get_specific_object_from_callbacks(class_type, callbacks):
+    for c in callbacks:
+        if isinstance(c, class_type):
+            return c
+    return None
+
+
+def get_replaced_path(original_filepath):
+    base_name = os.path.basename(original_filepath)
+    print("base name is: ", base_name)
+    temp_dir = tempfile.mkdtemp()
+    return os.path.join(temp_dir, base_name)

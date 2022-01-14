@@ -30,12 +30,12 @@ import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSu
 import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
 import com.intel.analytics.bigdl.dllib.feature.{DRAM, FeatureSet, MemoryType}
 import com.intel.analytics.bigdl.dllib.feature.common.{Preprocessing, _}
+import org.apache.logging.log4j.LogManager
 // import com.intel.analytics.zoo.feature.pmem.{DRAM, MemoryType}
  import com.intel.analytics.bigdl.dllib.keras.Net
 // import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 import com.intel.analytics.bigdl.dllib.keras.models.InternalDistriOptimizer
 import org.apache.hadoop.fs.Path
-import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
 import org.apache.spark.ml.param._
@@ -685,7 +685,7 @@ class NNModel[T: ClassTag] private[bigdl](
     with HasBatchSize with MLWritable {
 
   @transient
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   setDefault(this.batchSize, Engine.coreNumber() * Engine.nodeNumber() * 4)
 

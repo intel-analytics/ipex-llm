@@ -17,22 +17,35 @@
 package com.intel.analytics.bigdl.ppml.utils
 
 
+import com.intel.analytics.bigdl
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.ppml.vfl.VflContext
-import com.intel.analytics.bigdl
+import com.intel.analytics.bigdl.ppml.FLContext
+import org.apache.logging.log4j.LogManager
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{ArrayType, DataType, FloatType, MapType, StringType, StructType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import collection.JavaConverters._
 import collection.JavaConversions._
 
 object DataFrameUtils {
-  def dataFrameToSample(df: DataFrame,
-                        featureColumn: Array[String] = null,
-                        labelColumn: Array[String] = null,
-                        isTrain: Boolean = true,
-                        batchSize: Int = 4): bigdl.DataSet[MiniBatch[Float]] = {
-    val spark = VflContext.getSparkSession()
+  val logger = LogManager.getLogger(getClass)
+  def dataFrameToMiniBatch(df: DataFrame,
+                           featureColumn: Array[String] = null,
+                           labelColumn: Array[String] = null,
+                           hasLabel: Boolean = true,
+                           batchSize: Int = 4): bigdl.DataSet[MiniBatch[Float]] = {
+    val samples = dataFrameToSampleRDD(df, featureColumn, labelColumn, hasLabel, batchSize)
+    DataSet.array(samples.collect()) ->
+      SampleToMiniBatch(batchSize, parallelizing = false)
+  }
+  def dataFrameToSampleRDD(df: DataFrame,
+                           featureColumn: Array[String] = null,
+                           labelColumn: Array[String] = null,
+                           hasLabel: Boolean = true,
+                           batchSize: Int = 4): RDD[Sample[Float]] = {
+    val spark = FLContext.getSparkSession()
     import spark.implicits._
     var fDf: DataFrame = df
     if (featureColumn != null) {
@@ -52,23 +65,37 @@ object DataFrameUtils {
       var labelMum: Int = 0
       val inputList = new java.util.ArrayList[Float]()
       val arr = if (featureColumn != null || labelColumn != null) {
-        require(featureColumn != null && labelColumn != null,
-          "You must provide both featureColumn and labelColumn or neither," +
-          "if neither, the last would be used as label and the rest are the features")
         featureColumn.foreach(f => inputList.add(r.getAs[Float](f)))
-        labelColumn.foreach(f => inputList.add(r.getAs[Float](f)))
+        if (hasLabel) {
+          require(featureColumn != null && labelColumn != null,
+            "You must provide both featureColumn and labelColumn " +
+              "or neither in training or evaluation.\n" +
+              "If neither, the last would be used as label and the rest are the features")
+          labelColumn.foreach(f => inputList.add(r.getAs[Float](f)))
+
+        } else {
+          require(featureColumn != null, "You must provide featureColumn in predict")
+        }
+
         featureNum = featureColumn.length
         labelMum = labelColumn.length
         inputList.asScala.toArray[Float]
       } else {
-        featureNum = r.size - 1
-        labelMum = 1
+        logger.warn("featureColumn and labelColumn are not provided, would take the last" +
+          "column as label column, and others would be feature columns")
+        if (hasLabel) {
+          featureNum = r.size - 1
+          labelMum = 1
+        } else {
+          featureNum = r.size
+        }
+
         (0 until r.size).map(i => r.getAs[Float](i)).toArray
       }
 
 
 
-      if (isTrain) {
+      if (hasLabel) {
         require(featureNum + labelMum == r.size, "size mismatch")
         val features = Tensor[Float](arr.slice(0, featureNum), Array(featureNum))
         val target = Tensor[Float](arr.slice(featureNum, r.size), Array(labelMum))
@@ -79,8 +106,7 @@ object DataFrameUtils {
         Sample(features)
       }
     })
-    DataSet.array(samples.collect()) ->
-      SampleToMiniBatch(batchSize, parallelizing = false)
+    samples
   }
   def getGenericType(dataType: DataType): String = {
     dataType match {

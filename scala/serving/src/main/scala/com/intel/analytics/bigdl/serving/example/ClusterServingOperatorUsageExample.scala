@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.serving.utils.Conventions
 import org.apache.flink.streaming.api.functions.sink.{RichSinkFunction, SinkFunction}
 import org.apache.flink.streaming.api.functions.source.{RichParallelSourceFunction, SourceFunction}
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import scopt.OptionParser
 
 object ClusterServingOperatorUsageExample {
@@ -34,7 +35,7 @@ object ClusterServingOperatorUsageExample {
       .action((x, params) => params.copy(modelPath = x))
       .required()
   }
-  Logger.getLogger("org").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
   def main(args: Array[String]): Unit = {
     val arg = parser.parse(args, ExampleParams()).head
 

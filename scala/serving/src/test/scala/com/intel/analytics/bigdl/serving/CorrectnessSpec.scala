@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.serving.postprocessing.PostProcessing
 import com.intel.analytics.bigdl.serving.utils.DeprecatedUtils
 import javax.imageio.ImageIO
 import org.apache.commons.io.FileUtils
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -42,7 +42,7 @@ class CorrectnessSpec extends FlatSpec with Matchers {
 //  val configPath = "/home/litchy/pro/analytics-zoo/config.yaml"
   var redisHost: String = "localhost"
   var redisPort: Int = 6379
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   def resize(p: String): String = {
     val source = ImageIO.read(new File(p))
     val outputImage: BufferedImage = new BufferedImage(224, 224, source.getType)
@@ -76,8 +76,8 @@ class CorrectnessSpec extends FlatSpec with Matchers {
 //  }
   "Cluster Serving result" should "be correct" in {
 
-    ("wget -O /tmp/serving_val.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/imagenet_1k.tar").!
+    ("wget --no-check-certificate -O /tmp/serving_val.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/serving_val.tar").!
     "tar -xvf /tmp/serving_val.tar -C /tmp/".!
     ClusterServing.helper = new ClusterServingHelper()
     val helper = ClusterServing.helper
@@ -148,8 +148,8 @@ class CorrectnessSpec extends FlatSpec with Matchers {
 
   "Cluster Serving batch inference result" should "be correct" in {
 
-    ("wget -O /tmp/serving_val.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/imagenet_1k.tar").!
+    ("wget --no-check-certificate -O /tmp/serving_val.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/serving_val.tar").!
     "tar -xvf /tmp/serving_val.tar -C /tmp/".!
     ClusterServing.helper = new ClusterServingHelper()
 val helper = ClusterServing.helper

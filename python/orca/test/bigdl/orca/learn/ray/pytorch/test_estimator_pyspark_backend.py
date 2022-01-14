@@ -31,6 +31,8 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
 
+import tempfile
+import shutil
 
 np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(
@@ -153,20 +155,27 @@ def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
 
-def get_estimator(workers_per_node=1, model_fn=get_model):
+def get_estimator(workers_per_node=1, model_fn=get_model, model_dir=None):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=nn.BCELoss(),
                                      metrics=Accuracy(),
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
-                                     backend="spark")
+                                     backend="spark",
+                                     model_dir=model_dir)
     return estimator
 
 
 class TestPyTorchEstimator(TestCase):
+    def setUp(self) -> None:
+        self.model_dir = tempfile.mkdtemp()
+
+    def tearDown(self) -> None:
+        shutil.rmtree(self.model_dir)
+
     def test_data_creator_convergence(self):
-        estimator = get_estimator(workers_per_node=2)
+        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(start_val_stats)
         train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128)
@@ -187,7 +196,7 @@ class TestPyTorchEstimator(TestCase):
     def test_spark_xshards(self):
         from bigdl.dllib.nncontext import init_nncontext
         from bigdl.orca.data import SparkXShards
-        estimator = get_estimator(workers_per_node=1)
+        estimator = get_estimator(workers_per_node=1, model_dir=self.model_dir)
         sc = init_nncontext()
         x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
         # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
@@ -209,7 +218,7 @@ class TestPyTorchEstimator(TestCase):
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
 
-        estimator = get_estimator(workers_per_node=2)
+        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         estimator.fit(df, batch_size=4, epochs=2,
                       feature_cols=["feature"],
                       label_cols=["label"])
@@ -226,7 +235,7 @@ class TestPyTorchEstimator(TestCase):
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
 
-        estimator = get_estimator(workers_per_node=2)
+        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         estimator.fit(df, batch_size=4, epochs=2,
                       feature_cols=["feature"],
                       label_cols=["label"])
@@ -241,7 +250,7 @@ class TestPyTorchEstimator(TestCase):
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
 
-        estimator = get_estimator(workers_per_node=2)
+        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
         assert df.rdd.getNumPartitions() < estimator.num_workers
 
         estimator.fit(df, batch_size=4, epochs=2,
@@ -261,7 +270,8 @@ class TestPyTorchEstimator(TestCase):
                      ).toDF(["feature", "label"])
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet())
+                                  model_fn=lambda config: IdentityNet(),
+                                  model_dir=self.model_dir)
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["feature"])
         expr = "sum(cast(feature <> to_array(prediction) as int)) as error"
@@ -275,7 +285,8 @@ class TestPyTorchEstimator(TestCase):
         shards = SparkXShards(shards)
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: IdentityNet())
+                                  model_fn=lambda config: IdentityNet(),
+                                  model_dir=self.model_dir)
         result_shards = estimator.predict(shards, batch_size=4)
         result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
         expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
@@ -324,7 +335,8 @@ class TestPyTorchEstimator(TestCase):
                      ).toDF(["f1", "f2", "label"])
 
         estimator = get_estimator(workers_per_node=2,
-                                  model_fn=lambda config: MultiInputNet())
+                                  model_fn=lambda config: MultiInputNet(),
+                                  model_dir=self.model_dir)
         estimator.fit(df, batch_size=4, epochs=2,
                       feature_cols=["f1", "f2"],
                       label_cols=["label"])
@@ -368,7 +380,8 @@ class TestPyTorchEstimator(TestCase):
                                          config={},
                                          workers_per_node=2,
                                          backend="spark",
-                                         sync_stats=False)
+                                         sync_stats=False,
+                                         model_dir=self.model_dir)
 
         stats = estimator.fit(df, batch_size=4, epochs=2,
                               feature_cols=["feature"],

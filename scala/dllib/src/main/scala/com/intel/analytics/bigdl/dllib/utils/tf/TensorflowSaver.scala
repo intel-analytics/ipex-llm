@@ -24,12 +24,12 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{File, FileWriter, T}
-import org.apache.log4j.Logger
 import org.tensorflow.framework._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow._
+import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 
@@ -165,7 +165,7 @@ object TensorflowSaver {
     maps(className) = saver
   }
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   private val maps = mutable.Map[String, BigDLToTensorflow](
     getNameFromObj(TemporalConvolution.getClass.getName) -> TemporalConvolutionToTF,

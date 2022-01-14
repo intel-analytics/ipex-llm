@@ -125,10 +125,15 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 	OPENMP=1
 
 	# detect number of physical cores
-	cores_per_socket=$(lscpu | grep "Core(s) per socket" | sed "s/.*://g" | sed -r "s/\s+//g")
-	threads_per_core=$(lscpu | grep "Thread(s) per core" | sed "s/.*://g" | sed -r "s/\s+//g")
-	sockets_=$(lscpu | grep "Socket(s)" | sed "s/.*://g" | sed -r "s/\s+//g")
-	
+	cpu_infos=($(lscpu -p=CPU,Socket,Core | grep -P '^(\d*),(\d*),(\d*)$'))
+	max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g')) 
+	let cpu_=${max_cpu_info[0]}+1
+	let sockets_=${max_cpu_info[1]}+1
+	let core_=${max_cpu_info[2]}+1
+	let threads_per_core=$cpu_/$core_
+	let cores_per_socket=$core_/$sockets_
+
+
 	# set env variables
 	echo "Setting OMP_NUM_THREADS..."
 

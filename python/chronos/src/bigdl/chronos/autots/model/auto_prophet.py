@@ -17,10 +17,9 @@
 #
 
 import pandas as pd
-
-from bigdl.orca.automl.auto_estimator import AutoEstimator
-import bigdl.orca.automl.hp as hp
-from bigdl.chronos.model.prophet import ProphetBuilder
+import warnings
+from bigdl.chronos.model.prophet import ProphetBuilder, ProphetModel
+from bigdl.chronos.autots.utils import recalculate_n_sampling
 
 
 # -
@@ -28,16 +27,17 @@ from bigdl.chronos.model.prophet import ProphetBuilder
 class AutoProphet:
 
     def __init__(self,
-                 changepoint_prior_scale=hp.grid_search([0.005, 0.05, 0.1, 0.5]),
-                 seasonality_prior_scale=hp.grid_search([0.01, 0.1, 1.0, 10.0]),
-                 holidays_prior_scale=hp.loguniform(0.01, 10),
-                 seasonality_mode=hp.choice(['additive', 'multiplicative']),
-                 changepoint_range=hp.uniform(0.8, 0.95),
+                 changepoint_prior_scale=None,
+                 seasonality_prior_scale=None,
+                 holidays_prior_scale=None,
+                 seasonality_mode=None,
+                 changepoint_range=None,
                  metric='mse',
                  logs_dir="/tmp/auto_prophet_logs",
                  cpus_per_trial=1,
                  name="auto_prophet",
                  remote_dir=None,
+                 load_dir=None,
                  **prophet_config
                  ):
         """
@@ -70,24 +70,43 @@ class AutoProphet:
         :param remote_dir: String. Remote directory to sync training results and checkpoints. It
             defaults to None and doesn't take effects while running in local. While running in
             cluster, it defaults to "hdfs:///tmp/{name}".
+        :param load_dir: Load the ckpt from load_dir. The value defaults to None.
 
         :param prophet_config: Other Prophet hyperparameters.
         """
-        self.search_space = {
-            "changepoint_prior_scale": changepoint_prior_scale,
-            "seasonality_prior_scale": seasonality_prior_scale,
-            "holidays_prior_scale": holidays_prior_scale,
-            "seasonality_mode": seasonality_mode,
-            "changepoint_range": changepoint_range
-        }
-        self.search_space.update(prophet_config)  # update other configs
-        self.metric = metric
-        model_builder = ProphetBuilder()
-        self.auto_est = AutoEstimator(model_builder=model_builder,
-                                      logs_dir=logs_dir,
-                                      resources_per_trial={"cpu": cpus_per_trial},
-                                      remote_dir=remote_dir,
-                                      name=name)
+        if load_dir:
+            self.best_model = ProphetModel()
+            self.best_model.restore(load_dir)
+        try:
+            from bigdl.orca.automl.auto_estimator import AutoEstimator
+            import bigdl.orca.automl.hp as hp
+            self.search_space = {
+                "changepoint_prior_scale": hp.grid_search([0.005, 0.05, 0.1, 0.5])
+                if changepoint_prior_scale is None
+                else changepoint_prior_scale,
+                "seasonality_prior_scale": hp.grid_search([0.01, 0.1, 1.0, 10.0])
+                if seasonality_prior_scale is None
+                else seasonality_prior_scale,
+                "holidays_prior_scale": hp.loguniform(0.01, 10)
+                if holidays_prior_scale is None
+                else holidays_prior_scale,
+                "seasonality_mode": hp.choice(['additive', 'multiplicative'])
+                if seasonality_mode is None
+                else seasonality_mode,
+                "changepoint_range": hp.uniform(0.8, 0.95)
+                if changepoint_range is None
+                else changepoint_range
+            }
+            self.search_space.update(prophet_config)  # update other configs
+            self.metric = metric
+            model_builder = ProphetBuilder()
+            self.auto_est = AutoEstimator(model_builder=model_builder,
+                                          logs_dir=logs_dir,
+                                          resources_per_trial={"cpu": cpus_per_trial},
+                                          remote_dir=remote_dir,
+                                          name=name)
+        except ImportError:
+            warnings.warn("You need to install `bigdl-orca[automl]` to use `fit` function.")
 
     def fit(self,
             data,
@@ -95,7 +114,7 @@ class AutoProphet:
             expect_horizon=None,
             freq=None,
             metric_threshold=None,
-            n_sampling=50,
+            n_sampling=16,
             search_alg=None,
             search_alg_params=None,
             scheduler=None,
@@ -119,8 +138,9 @@ class AutoProphet:
                https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#timeseries-offset-aliasesDefaulted
                to None, where an unreliable frequency will be infer implicitly.
         :param metric_threshold: a trial will be terminated when metric threshold is met
-        :param n_sampling: Number of times to sample from the search_space. Defaults to 50.
-               If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
+        :param n_sampling: Number of trials to evaluate in total. Defaults to 16.
+               If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+               and round up n_sampling according to hp.grid_search.
                If this is -1, (virtually) infinite samples are generated
                until a stopping condition is met.
         :param search_alg: str, all supported searcher provided by ray tune
@@ -146,6 +166,8 @@ class AutoProphet:
                                   "cross_validation": cross_validation})
         train_data = data if cross_validation else data[:len(data)-expect_horizon]
         validation_data = None if cross_validation else data[len(data)-expect_horizon:]
+        n_sampling = recalculate_n_sampling(self.search_space,
+                                            n_sampling) if n_sampling != -1 else -1
         self.auto_est.fit(data=train_data,
                           validation_data=validation_data,
                           metric=self.metric,

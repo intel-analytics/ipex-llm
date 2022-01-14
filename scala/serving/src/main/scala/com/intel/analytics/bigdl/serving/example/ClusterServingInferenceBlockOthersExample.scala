@@ -21,7 +21,8 @@ import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.sink.{RichSinkFunction, SinkFunction}
 import org.apache.flink.streaming.api.functions.source.{RichParallelSourceFunction, SourceFunction}
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 
 object ClusterServingInferenceBlockOthersExample {
   class MySource extends RichParallelSourceFunction[String] {
@@ -78,7 +79,7 @@ object ClusterServingInferenceBlockOthersExample {
       println(s"value $value written to sink.")
     }
   }
-  Logger.getLogger("org").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
   def main(args: Array[String]): Unit = {
     val serving = StreamExecutionEnvironment.getExecutionEnvironment
     serving.addSource(new MySource())
