@@ -1,4 +1,4 @@
-# Anomaly Detector Quickstart
+# Detect Anomaly Point in Real Time Traffic Data
 
 ---
 
