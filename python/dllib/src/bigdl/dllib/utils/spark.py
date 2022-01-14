@@ -363,15 +363,13 @@ class SparkRunner:
                 conf["spark.driver.host"] = get_node_ip()
             if "spark.driver.port" not in conf:
                 conf["spark.driver.port"] = random.randint(10000, 65535)
-            if "BIGDL_CLASSPATH" in os.environ:
-                zoo_bigdl_jar_path = os.environ["BIGDL_CLASSPATH"]
-            else:
-                zoo_bigdl_jar_path = get_zoo_bigdl_classpath_on_driver()
+            zoo_bigdl_path_on_executor = ":".join(
+                list(get_executor_conda_zoo_classpath(executor_python_env)))
             if "spark.executor.extraClassPath" in conf:
                 conf["spark.executor.extraClassPath"] = "{}:{}".format(
-                    zoo_bigdl_jar_path, conf["spark.executor.extraClassPath"])
+                    zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
             else:
-                conf["spark.executor.extraClassPath"] = zoo_bigdl_jar_path
+                conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
 
             sc = self.create_sc(submit_args, conf)
         finally:
