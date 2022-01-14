@@ -65,14 +65,8 @@ BigDL Documentation
    :caption: Chronos Overview
 
    doc/Chronos/Overview/chronos.md
-   doc/Chronos/Overview/data_processing_feature_engineering.md
-   doc/Chronos/Overview/forecasting.md
-   doc/Chronos/Overview/anomaly_detection.md
-   doc/Chronos/Overview/simulation.md
-   doc/Chronos/Overview/useful_functionalities.md
-   doc/Chronos/QuickStart/chronos-autotsest-quickstart.md
-   doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.md
-   doc/Chronos/QuickStart/chronos-anomaly-detector.md
+   doc/Chronos/Overview/deep_dive.rst
+   doc/Chronos/QuickStart/index.md
 
 .. toctree::
    :maxdepth: 1
@@ -121,4 +115,6 @@ BigDL Documentation
    :caption: Real-World Application
    
    doc/Application/presentations.md
+   doc/Application/blogs.md
    doc/Application/powered-by.md  
+

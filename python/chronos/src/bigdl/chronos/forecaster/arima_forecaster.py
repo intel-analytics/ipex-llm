@@ -77,7 +77,7 @@ class ARIMAForecaster(Forecaster):
         """
         self._check_data(data, validation_data)
         data = data.reshape(-1, 1)
-        validation_data = validation_data.reshape(-1, 1)
+        # validation_data = validation_data.reshape(-1, 1)
         return self.internal.fit_eval(data=data,
                                       validation_data=validation_data,
                                       **self.model_config)

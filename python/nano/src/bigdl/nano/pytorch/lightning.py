@@ -24,7 +24,7 @@ from torch.optim import Optimizer
 
 
 class LightningModuleFromTorch(LightningModule):
-    def __init__(self, model: nn.Module, loss: _Loss, optimizer: Optimizer,
+    def __init__(self, model: nn.Module, loss: _Loss = None, optimizer: Optimizer = None,
                  metrics: List[Metric] = None):
         """
         Integrate pytorch modules, loss, optimizer to pytorch-lightning model.

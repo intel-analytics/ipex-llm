@@ -3,6 +3,6 @@ clientNum: 2
 # serverPort:
 
 ##### Client property
-# clientTarget:
+clientTarget: localhost:8980
 # taskID:
 

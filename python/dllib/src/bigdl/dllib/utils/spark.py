@@ -77,7 +77,8 @@ class SparkRunner:
                            hadoop_user_name="root",
                            spark_yarn_archive=None,
                            conf=None,
-                           jars=None):
+                           jars=None,
+                           py_files=None):
         print("Initializing SparkContext for yarn-client mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -98,6 +99,8 @@ class SparkRunner:
                 archive = archive + "," + additional_archive
             submit_args = "--master yarn --deploy-mode client"
             submit_args = submit_args + " --archives {}".format(archive)
+            if py_files:
+                submit_args = submit_args + " --py-files {}".format(py_files)
             submit_args = submit_args + gen_submit_args(
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
@@ -146,7 +149,8 @@ class SparkRunner:
                                    hadoop_user_name="root",
                                    spark_yarn_archive=None,
                                    conf=None,
-                                   jars=None):
+                                   jars=None,
+                                   py_files=None):
         print("Initializing job for yarn-cluster mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -171,6 +175,8 @@ class SparkRunner:
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
             submit_args = submit_args + " --jars " + ",".join(get_bigdl_jars())
+            if py_files:
+                submit_args = submit_args + " --py-files {}".format(py_files)
 
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                          executor_cores, executor_memory,

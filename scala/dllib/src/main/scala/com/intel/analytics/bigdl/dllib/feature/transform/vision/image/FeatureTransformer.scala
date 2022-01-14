@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.feature.transform.vision.image
 import com.intel.analytics.bigdl.dllib.feature.dataset.{ChainedTransformer, Transformer}
 import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  * FeatureTransformer is a transformer that transform ImageFeature
@@ -117,7 +117,7 @@ abstract class FeatureTransformer()
 }
 
 object FeatureTransformer {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 }
 
 /**

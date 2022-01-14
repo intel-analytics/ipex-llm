@@ -18,18 +18,24 @@ package com.intel.analytics.bigdl.dllib.keras
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib._
-import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer}
+import com.intel.analytics.bigdl.dllib.feature.common.{FeatureLabelPreprocessing, Preprocessing, ScalarToTensor, SeqToTensor}
+import com.intel.analytics.bigdl.dllib.feature.dataset._
 import com.intel.analytics.bigdl.dllib.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.LocalPredictor
-import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
 import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+import org.apache.spark.ml.VectorCompatibility
+import org.apache.spark.ml.adapter.SchemaUtils
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.types.{ArrayType, DataType, DoubleType => sqlDoubleType, FloatType => sqlFloatType}
+import org.apache.spark.sql.{DataFrame, Row}
 
 import scala.collection.Iterator
 import scala.reflect.ClassTag
@@ -224,7 +230,7 @@ object Predictor {
   }
 }
 
-trait Predictable[T]  {
+trait Predictable[T] extends VectorCompatibility{
 
   protected val module: Module[T]
 
@@ -350,6 +356,93 @@ trait Predictable[T]  {
   def predict(
                x: ImageSet): ImageSet = {
     predict(x, batchPerThread = 4)
+  }
+
+  def unwrapVectorAsNecessary(colType: DataType): (Row, Int) => Any = {
+    // to support both ML Vector and MLlib Vector
+    if (colType.typeName.contains("vector")) {
+      (row: Row, index: Int) => getVectorSeq(row, colType, index)
+    } else {
+      (row: Row, index: Int) => row.get(index)
+    }
+  }
+
+  var predictTransformer: Preprocessing[Any, Sample[T]] = null
+
+  def outputToPrediction(output: Tensor[T]): Any = {
+    output.clone().storage().array()
+  }
+
+  def predict(x: DataFrame,
+              featureCols: Array[String],
+              predictionCol: String,
+              batchPerThread: Int): DataFrame = {
+    require(predictTransformer!=null, "Must train the model before call predcition")
+
+    val guid = java.util.UUID.randomUUID.toString
+    val internalFeatureCol = "features" + guid
+    val df = if (featureCols.size > 1) {
+      val assembler = new VectorAssembler()
+        .setInputCols(featureCols)
+        .setOutputCol(internalFeatureCol)
+      assembler.transform(x)
+    } else {
+      x.withColumnRenamed(featureCols.head, internalFeatureCol)
+    }
+
+    val featureColIndex = df.schema.fieldIndex(internalFeatureCol)
+    val featureType = df.schema(internalFeatureCol).dataType
+    val featureFunc = unwrapVectorAsNecessary(featureType)
+
+    val sc = x.sqlContext.sparkContext
+    val modelBroadCast = ModelBroadcast[T]().broadcast(sc, module.evaluate())
+
+    val featureTransformersBC = sc.broadcast(predictTransformer)
+    val toBatchBC = sc.broadcast(SampleToMiniBatch[T](batchPerThread, partitionNum = Some(1)))
+
+    // concat the prediction and other columns in DF. avoid zip between RDD
+    val resultRDD = df.rdd.mapPartitions { rowIter =>
+      val localModel = modelBroadCast.value()
+      localModel.evaluate()
+      val featureSteps = featureTransformersBC.value.cloneTransformer()
+      val toBatch = toBatchBC.value.cloneTransformer()
+
+      rowIter.grouped(batchPerThread).flatMap { rowBatch =>
+        val featureSeq = rowBatch.map(r => featureFunc(r, featureColIndex))
+        val samples = featureSteps(featureSeq.iterator)
+        val predictions = toBatch(samples).flatMap { batch =>
+          val batchResult = localModel.forward(batch.getInput()).toTensor
+          if (batchResult.size().length == 2) {
+            batchResult.split(1).map(outputToPrediction)
+          } else if (batchResult.size().length == 1) {
+            Array(outputToPrediction(batchResult))
+          } else {
+            throw new RuntimeException(
+              "unexpected batchResult dimension: " + batchResult.size().mkString(", "))
+          }
+        }
+        rowBatch.toIterator.zip(predictions).map { case (row, predict) =>
+          Row.fromSeq(row.toSeq ++ Seq(predict))
+        }
+      }
+    }
+
+    val resultSchema =
+      ev.getType() match {
+      case DoubleType =>
+        SchemaUtils.appendColumn(df.schema, predictionCol, ArrayType(sqlDoubleType, false))
+      case FloatType =>
+        SchemaUtils.appendColumn(df.schema, predictionCol, ArrayType(sqlFloatType, false))
+      case _ => throw new Exception("Only support Double and Float for now")
+    }
+
+    x.sqlContext.createDataFrame(resultRDD, resultSchema)
+  }
+
+  def predict(x: DataFrame,
+              featureCols: Array[String],
+              predictionCol: String): DataFrame = {
+    predict(x, featureCols, predictionCol, batchPerThread = 4)
   }
 
   /**

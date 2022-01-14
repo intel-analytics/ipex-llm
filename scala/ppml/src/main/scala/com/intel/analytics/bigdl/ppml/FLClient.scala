@@ -18,12 +18,12 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.grpc.GrpcClientBase
 import com.intel.analytics.bigdl.ppml.psi.PSIStub
-import com.intel.analytics.bigdl.ppml.vfl.NNStub
+import com.intel.analytics.bigdl.ppml.vfl.{FGBoostStub, NNStub}
 import java.io.{File, IOException}
 import java.util
 import java.util.concurrent.TimeUnit
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 
 /**
@@ -31,23 +31,24 @@ import org.apache.log4j.Logger
  * @param _args
  */
 class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   configPath = "ppml-conf.yaml"
   protected var taskID: String = "taskID"
   var psiStub: PSIStub = null
   var nnStub: NNStub = null
-
+  var fgbostStub: FGBoostStub = null
   def this() {
     this(null)
   }
 
   @throws[IOException]
   override protected def parseConfig(): Unit = {
-    val f = new File(configPath)
-    if (f.exists()) {
-      val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
+    val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
+    if (flHelper != null) {
       target = flHelper.clientTarget
+      logger.debug(s"Loading target: $target")
       taskID = flHelper.taskID
+      logger.debug(s"Loading taskID: $taskID")
     }
     super.parseConfig()
   }
@@ -55,6 +56,7 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   override def loadServices(): Unit = {
     psiStub = new PSIStub(channel)
     nnStub = new NNStub(channel, clientUUID)
+    fgbostStub = new FGBoostStub(channel, clientUUID)
   }
 
   override def shutdown(): Unit = {

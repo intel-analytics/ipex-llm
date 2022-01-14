@@ -32,7 +32,7 @@ public class NNStub {
         stub = NNServiceGrpc.newBlockingStub(channel);
     }
 
-    public TrainResponse train(Table data, String algorithm) {
+    public TrainResponse train(TensorMap data, String algorithm) {
         TrainRequest trainRequest = TrainRequest
                 .newBuilder()
                 .setData(data)
@@ -44,10 +44,11 @@ public class NNStub {
     }
 
 
-    public EvaluateResponse evaluate(Table data, String algorithm) {
+    public EvaluateResponse evaluate(TensorMap data, String algorithm, Boolean hasReturn) {
         EvaluateRequest evaluateRequest = EvaluateRequest
                 .newBuilder()
                 .setData(data)
+                .setReturn(hasReturn)
                 .setClientuuid(clientID)
                 .setAlgorithm(algorithm)
                 .build();
@@ -55,7 +56,7 @@ public class NNStub {
         return stub.evaluate(evaluateRequest);
     }
 
-    public PredictResponse predict(Table data, String algorithm) {
+    public PredictResponse predict(TensorMap data, String algorithm) {
         PredictRequest predictRequest = PredictRequest
                 .newBuilder()
                 .setData(data)
@@ -66,11 +67,11 @@ public class NNStub {
         return stub.predict(predictRequest);
     }
 
-    private void logDebugMessage(Table data) {
+    private void logDebugMessage(TensorMap data) {
         logger.debug("Upload the following data:");
         logger.debug("Upload Data Name:" + data.getMetaData().getName());
         logger.debug("Upload Data Version:" + data.getMetaData().getVersion());
-        logger.debug("Upload Data" + data.getTableMap());
-        ;
+        logger.debug("Upload Data:");
+        logger.debug(data.getTensorsMap().toString());
     }
 }

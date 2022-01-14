@@ -11,7 +11,7 @@ public final class NNServiceGrpc {
 
   private NNServiceGrpc() {}
 
-  public static final String SERVICE_NAME = "NNService";
+  public static final String SERVICE_NAME = "nn.NNService";
 
   // Static method descriptors that strictly reflect the proto.
   private static volatile io.grpc.MethodDescriptor<NNServiceProto.TrainRequest,

@@ -16,7 +16,7 @@
 
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import\
-    np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard
+    np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard, loader_to_creator
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 import numpy as np
@@ -144,6 +144,7 @@ class BasePytorchForecaster(Forecaster):
 
             # Trainer init and fitting
             self.trainer = Trainer(logger=False, max_epochs=epochs,
+                                   checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex)
             self.trainer.fit(self.internal, data)
             self.fitted = True

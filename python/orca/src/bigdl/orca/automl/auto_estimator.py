@@ -48,6 +48,7 @@ class AutoEstimator:
             remote_dir=remote_dir,
             name=name)
         self._fitted = False
+        self.best_trial = None
 
     @staticmethod
     def from_torch(*,
@@ -134,6 +135,8 @@ class AutoEstimator:
             search_alg_params=None,
             scheduler=None,
             scheduler_params=None,
+            feature_cols=None,
+            label_cols=None,
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -172,12 +175,18 @@ class AutoEstimator:
             metric and searcher mode
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
+        :param feature_cols: feature column names if data is Spark DataFrame.
+        :param label_cols: target column names if data is Spark DataFrame.
         """
         if self._fitted:
             raise RuntimeError(
                 "This AutoEstimator has already been fitted and cannot fit again.")
 
         metric_mode = AutoEstimator._validate_metric_mode(metric, metric_mode)
+        feature_cols, label_cols = AutoEstimator._check_spark_dataframe_input(data,
+                                                                              validation_data,
+                                                                              feature_cols,
+                                                                              label_cols)
 
         self.searcher.compile(data=data,
                               model_builder=self.model_builder,
@@ -191,7 +200,9 @@ class AutoEstimator:
                               search_alg=search_alg,
                               search_alg_params=search_alg_params,
                               scheduler=scheduler,
-                              scheduler_params=scheduler_params)
+                              scheduler_params=scheduler_params,
+                              feature_cols=feature_cols,
+                              label_cols=label_cols)
         self.searcher.run()
         self._fitted = True
 
@@ -201,9 +212,10 @@ class AutoEstimator:
 
         :return: the best model instance
         """
-        best_trial = self.searcher.get_best_trial()
-        best_model_path = best_trial.model_path
-        best_config = best_trial.config
+        if not self.best_trial:
+            self.best_trial = self.searcher.get_best_trial()
+        best_model_path = self.best_trial.model_path
+        best_config = self.best_trial.config
         best_automl_model = self.model_builder.build(best_config)
         best_automl_model.restore(best_model_path)
         return best_automl_model.model
@@ -214,8 +226,9 @@ class AutoEstimator:
 
         :return: A dictionary of best hyper parameters
         """
-        best_trial = self.searcher.get_best_trial()
-        best_config = best_trial.config
+        if not self.best_trial:
+            self.best_trial = self.searcher.get_best_trial()
+        best_config = self.best_trial.config
         return best_config
 
     def _get_best_automl_model(self):
@@ -225,9 +238,10 @@ class AutoEstimator:
 
         :return: an automl base model instance
         """
-        best_trial = self.searcher.get_best_trial()
-        best_model_path = best_trial.model_path
-        best_config = best_trial.config
+        if not self.best_trial:
+            self.best_trial = self.searcher.get_best_trial()
+        best_model_path = self.best_trial.model_path
+        best_config = self.best_trial.config
         best_automl_model = self.model_builder.build(best_config)
         best_automl_model.restore(best_model_path)
         return best_automl_model
@@ -248,3 +262,30 @@ class AutoEstimator:
         if mode not in ["min", "max"]:
             raise ValueError("`mode` has to be one of ['min', 'max']")
         return mode
+
+    @staticmethod
+    def _check_spark_dataframe_input(data,
+                                     validation_data,
+                                     feature_cols,
+                                     label_cols
+                                     ):
+
+        def check_cols(cols, cols_name):
+            if not cols:
+                raise ValueError(f"You must input valid {cols_name} for Spark DataFrame data input")
+            if isinstance(cols, list):
+                return cols
+            if not isinstance(cols, str):
+                raise ValueError(f"{cols_name} should be a string or a list of strings, "
+                                 f"but got {type(cols)}")
+            return [cols]
+
+        from pyspark.sql import DataFrame
+        if isinstance(data, DataFrame):
+            feature_cols = check_cols(feature_cols, cols_name="feature_cols")
+            label_cols = check_cols(label_cols, cols_name="label_cols")
+            if validation_data:
+                if not isinstance(validation_data, DataFrame):
+                    raise ValueError(f"data and validation_data should be both Spark DataFrame, "
+                                     f"but got validation_data of type {type(data)}")
+        return feature_cols, label_cols

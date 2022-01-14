@@ -43,8 +43,9 @@ fi
 
 if [ $RUN_PART1 = 1 ]; then
 echo "Running chronos tests Part 1"
-python -m pytest -v test/bigdl/chronos/model\
+python -m pytest -v test/bigdl/chronos/model \
                     test/bigdl/chronos/forecaster \
+                    test/bigdl/chronos/metric \
        -k "not test_forecast_tcmf_distributed"
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];

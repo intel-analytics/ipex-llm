@@ -15,7 +15,7 @@ public final class NNServiceProto {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   public interface TrainRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:TrainRequest)
+      // @@protoc_insertion_point(interface_extends:nn.TrainRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -29,17 +29,17 @@ public final class NNServiceProto {
         getClientuuidBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional string algorithm = 3;</code>
@@ -52,11 +52,11 @@ public final class NNServiceProto {
         getAlgorithmBytes();
   }
   /**
-   * Protobuf type {@code TrainRequest}
+   * Protobuf type {@code nn.TrainRequest}
    */
   public  static final class TrainRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:TrainRequest)
+      // @@protoc_insertion_point(message_implements:nn.TrainRequest)
       TrainRequestOrBuilder {
     // Use TrainRequest.newBuilder() to construct.
     private TrainRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -99,11 +99,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -130,12 +130,12 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_TrainRequest_descriptor;
+      return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_TrainRequest_fieldAccessorTable
+      return NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               TrainRequest.class, Builder.class);
     }
@@ -175,23 +175,23 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -388,25 +388,25 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code TrainRequest}
+     * Protobuf type {@code nn.TrainRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:TrainRequest)
+        // @@protoc_insertion_point(builder_implements:nn.TrainRequest)
         TrainRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_TrainRequest_descriptor;
+        return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_TrainRequest_fieldAccessorTable
+        return NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 TrainRequest.class, Builder.class);
       }
@@ -417,7 +417,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -443,7 +443,7 @@ public final class NNServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_TrainRequest_descriptor;
+        return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
       }
 
       public TrainRequest getDefaultInstanceForType() {
@@ -614,29 +614,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -650,10 +650,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -664,13 +664,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -682,7 +682,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -696,33 +696,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -810,10 +810,10 @@ public final class NNServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:TrainRequest)
+      // @@protoc_insertion_point(builder_scope:nn.TrainRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:TrainRequest)
+    // @@protoc_insertion_point(class_scope:nn.TrainRequest)
     private static final TrainRequest DEFAULT_INSTANCE;
     static {
       DEFAULT_INSTANCE = new TrainRequest();
@@ -849,7 +849,7 @@ public final class NNServiceProto {
   }
 
   public interface TrainResponseOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:TrainResponse)
+      // @@protoc_insertion_point(interface_extends:nn.TrainResponse)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -863,17 +863,17 @@ public final class NNServiceProto {
         getResponseBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional int32 code = 3;</code>
@@ -881,11 +881,11 @@ public final class NNServiceProto {
     int getCode();
   }
   /**
-   * Protobuf type {@code TrainResponse}
+   * Protobuf type {@code nn.TrainResponse}
    */
   public  static final class TrainResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:TrainResponse)
+      // @@protoc_insertion_point(message_implements:nn.TrainResponse)
       TrainResponseOrBuilder {
     // Use TrainResponse.newBuilder() to construct.
     private TrainResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -928,11 +928,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -958,12 +958,12 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_TrainResponse_descriptor;
+      return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_TrainResponse_fieldAccessorTable
+      return NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               TrainResponse.class, Builder.class);
     }
@@ -1003,23 +1003,23 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -1192,25 +1192,25 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code TrainResponse}
+     * Protobuf type {@code nn.TrainResponse}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:TrainResponse)
+        // @@protoc_insertion_point(builder_implements:nn.TrainResponse)
         TrainResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_TrainResponse_descriptor;
+        return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_TrainResponse_fieldAccessorTable
+        return NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 TrainResponse.class, Builder.class);
       }
@@ -1221,7 +1221,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1247,7 +1247,7 @@ public final class NNServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_TrainResponse_descriptor;
+        return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
       }
 
       public TrainResponse getDefaultInstanceForType() {
@@ -1417,29 +1417,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1453,10 +1453,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -1467,13 +1467,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -1485,7 +1485,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -1499,33 +1499,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -1570,10 +1570,10 @@ public final class NNServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:TrainResponse)
+      // @@protoc_insertion_point(builder_scope:nn.TrainResponse)
     }
 
-    // @@protoc_insertion_point(class_scope:TrainResponse)
+    // @@protoc_insertion_point(class_scope:nn.TrainResponse)
     private static final TrainResponse DEFAULT_INSTANCE;
     static {
       DEFAULT_INSTANCE = new TrainResponse();
@@ -1609,7 +1609,7 @@ public final class NNServiceProto {
   }
 
   public interface EvaluateRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:EvaluateRequest)
+      // @@protoc_insertion_point(interface_extends:nn.EvaluateRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -1623,17 +1623,17 @@ public final class NNServiceProto {
         getClientuuidBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional string algorithm = 3;</code>
@@ -1644,13 +1644,18 @@ public final class NNServiceProto {
      */
     com.google.protobuf.ByteString
         getAlgorithmBytes();
+
+    /**
+     * <code>optional bool return = 4;</code>
+     */
+    boolean getReturn();
   }
   /**
-   * Protobuf type {@code EvaluateRequest}
+   * Protobuf type {@code nn.EvaluateRequest}
    */
   public  static final class EvaluateRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:EvaluateRequest)
+      // @@protoc_insertion_point(message_implements:nn.EvaluateRequest)
       EvaluateRequestOrBuilder {
     // Use EvaluateRequest.newBuilder() to construct.
     private EvaluateRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -1659,6 +1664,7 @@ public final class NNServiceProto {
     private EvaluateRequest() {
       clientuuid_ = "";
       algorithm_ = "";
+      return_ = false;
     }
 
     @Override
@@ -1693,11 +1699,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1709,6 +1715,11 @@ public final class NNServiceProto {
               String s = input.readStringRequireUtf8();
 
               algorithm_ = s;
+              break;
+            }
+            case 32: {
+
+              return_ = input.readBool();
               break;
             }
           }
@@ -1724,12 +1735,12 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_EvaluateRequest_descriptor;
+      return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_EvaluateRequest_fieldAccessorTable
+      return NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               EvaluateRequest.class, Builder.class);
     }
@@ -1769,23 +1780,23 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -1823,6 +1834,15 @@ public final class NNServiceProto {
       }
     }
 
+    public static final int RETURN_FIELD_NUMBER = 4;
+    private boolean return_;
+    /**
+     * <code>optional bool return = 4;</code>
+     */
+    public boolean getReturn() {
+      return return_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -1844,6 +1864,9 @@ public final class NNServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, algorithm_);
       }
+      if (return_ != false) {
+        output.writeBool(4, return_);
+      }
     }
 
     public int getSerializedSize() {
@@ -1860,6 +1883,10 @@ public final class NNServiceProto {
       }
       if (!getAlgorithmBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, algorithm_);
+      }
+      if (return_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, return_);
       }
       memoizedSize = size;
       return size;
@@ -1886,6 +1913,8 @@ public final class NNServiceProto {
       }
       result = result && getAlgorithm()
           .equals(other.getAlgorithm());
+      result = result && (getReturn()
+          == other.getReturn());
       return result;
     }
 
@@ -1904,6 +1933,9 @@ public final class NNServiceProto {
       }
       hash = (37 * hash) + ALGORITHM_FIELD_NUMBER;
       hash = (53 * hash) + getAlgorithm().hashCode();
+      hash = (37 * hash) + RETURN_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getReturn());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1982,25 +2014,25 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code EvaluateRequest}
+     * Protobuf type {@code nn.EvaluateRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:EvaluateRequest)
+        // @@protoc_insertion_point(builder_implements:nn.EvaluateRequest)
         EvaluateRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_EvaluateRequest_descriptor;
+        return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_EvaluateRequest_fieldAccessorTable
+        return NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 EvaluateRequest.class, Builder.class);
       }
@@ -2011,7 +2043,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2032,12 +2064,14 @@ public final class NNServiceProto {
         }
         algorithm_ = "";
 
+        return_ = false;
+
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_EvaluateRequest_descriptor;
+        return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
       }
 
       public EvaluateRequest getDefaultInstanceForType() {
@@ -2061,6 +2095,7 @@ public final class NNServiceProto {
           result.data_ = dataBuilder_.build();
         }
         result.algorithm_ = algorithm_;
+        result.return_ = return_;
         onBuilt();
         return result;
       }
@@ -2112,6 +2147,9 @@ public final class NNServiceProto {
         if (!other.getAlgorithm().isEmpty()) {
           algorithm_ = other.algorithm_;
           onChanged();
+        }
+        if (other.getReturn() != false) {
+          setReturn(other.getReturn());
         }
         onChanged();
         return this;
@@ -2208,29 +2246,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2244,10 +2282,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -2258,13 +2296,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -2276,7 +2314,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -2290,33 +2328,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -2393,6 +2431,32 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
+
+      private boolean return_ ;
+      /**
+       * <code>optional bool return = 4;</code>
+       */
+      public boolean getReturn() {
+        return return_;
+      }
+      /**
+       * <code>optional bool return = 4;</code>
+       */
+      public Builder setReturn(boolean value) {
+        
+        return_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool return = 4;</code>
+       */
+      public Builder clearReturn() {
+        
+        return_ = false;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -2404,10 +2468,10 @@ public final class NNServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:EvaluateRequest)
+      // @@protoc_insertion_point(builder_scope:nn.EvaluateRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:EvaluateRequest)
+    // @@protoc_insertion_point(class_scope:nn.EvaluateRequest)
     private static final EvaluateRequest DEFAULT_INSTANCE;
     static {
       DEFAULT_INSTANCE = new EvaluateRequest();
@@ -2443,7 +2507,7 @@ public final class NNServiceProto {
   }
 
   public interface EvaluateResponseOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:EvaluateResponse)
+      // @@protoc_insertion_point(interface_extends:nn.EvaluateResponse)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -2457,29 +2521,39 @@ public final class NNServiceProto {
         getResponseBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional int32 code = 3;</code>
      */
     int getCode();
+
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    String getMessage();
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getMessageBytes();
   }
   /**
-   * Protobuf type {@code EvaluateResponse}
+   * Protobuf type {@code nn.EvaluateResponse}
    */
   public  static final class EvaluateResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:EvaluateResponse)
+      // @@protoc_insertion_point(message_implements:nn.EvaluateResponse)
       EvaluateResponseOrBuilder {
     // Use EvaluateResponse.newBuilder() to construct.
     private EvaluateResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -2488,6 +2562,7 @@ public final class NNServiceProto {
     private EvaluateResponse() {
       response_ = "";
       code_ = 0;
+      message_ = "";
     }
 
     @Override
@@ -2522,11 +2597,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -2537,6 +2612,12 @@ public final class NNServiceProto {
             case 24: {
 
               code_ = input.readInt32();
+              break;
+            }
+            case 34: {
+              String s = input.readStringRequireUtf8();
+
+              message_ = s;
               break;
             }
           }
@@ -2552,12 +2633,12 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_EvaluateResponse_descriptor;
+      return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_EvaluateResponse_fieldAccessorTable
+      return NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               EvaluateResponse.class, Builder.class);
     }
@@ -2597,23 +2678,23 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -2624,6 +2705,40 @@ public final class NNServiceProto {
      */
     public int getCode() {
       return code_;
+    }
+
+    public static final int MESSAGE_FIELD_NUMBER = 4;
+    private volatile Object message_;
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    public String getMessage() {
+      Object ref = message_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        message_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      Object ref = message_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2647,6 +2762,9 @@ public final class NNServiceProto {
       if (code_ != 0) {
         output.writeInt32(3, code_);
       }
+      if (!getMessageBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, message_);
+      }
     }
 
     public int getSerializedSize() {
@@ -2664,6 +2782,9 @@ public final class NNServiceProto {
       if (code_ != 0) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, code_);
+      }
+      if (!getMessageBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, message_);
       }
       memoizedSize = size;
       return size;
@@ -2690,6 +2811,8 @@ public final class NNServiceProto {
       }
       result = result && (getCode()
           == other.getCode());
+      result = result && getMessage()
+          .equals(other.getMessage());
       return result;
     }
 
@@ -2708,6 +2831,8 @@ public final class NNServiceProto {
       }
       hash = (37 * hash) + CODE_FIELD_NUMBER;
       hash = (53 * hash) + getCode();
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2786,25 +2911,25 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code EvaluateResponse}
+     * Protobuf type {@code nn.EvaluateResponse}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:EvaluateResponse)
+        // @@protoc_insertion_point(builder_implements:nn.EvaluateResponse)
         EvaluateResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_EvaluateResponse_descriptor;
+        return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_EvaluateResponse_fieldAccessorTable
+        return NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 EvaluateResponse.class, Builder.class);
       }
@@ -2815,7 +2940,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2836,12 +2961,14 @@ public final class NNServiceProto {
         }
         code_ = 0;
 
+        message_ = "";
+
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_EvaluateResponse_descriptor;
+        return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
       }
 
       public EvaluateResponse getDefaultInstanceForType() {
@@ -2865,6 +2992,7 @@ public final class NNServiceProto {
           result.data_ = dataBuilder_.build();
         }
         result.code_ = code_;
+        result.message_ = message_;
         onBuilt();
         return result;
       }
@@ -2915,6 +3043,10 @@ public final class NNServiceProto {
         }
         if (other.getCode() != 0) {
           setCode(other.getCode());
+        }
+        if (!other.getMessage().isEmpty()) {
+          message_ = other.message_;
+          onChanged();
         }
         onChanged();
         return this;
@@ -3011,29 +3143,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3047,10 +3179,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -3061,13 +3193,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -3079,7 +3211,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -3093,33 +3225,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -3153,6 +3285,75 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
+
+      private Object message_ = "";
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public String getMessage() {
+        Object ref = message_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          message_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        Object ref = message_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public Builder setMessage(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public Builder clearMessage() {
+        
+        message_ = getDefaultInstance().getMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public Builder setMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        message_ = value;
+        onChanged();
+        return this;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -3164,10 +3365,10 @@ public final class NNServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:EvaluateResponse)
+      // @@protoc_insertion_point(builder_scope:nn.EvaluateResponse)
     }
 
-    // @@protoc_insertion_point(class_scope:EvaluateResponse)
+    // @@protoc_insertion_point(class_scope:nn.EvaluateResponse)
     private static final EvaluateResponse DEFAULT_INSTANCE;
     static {
       DEFAULT_INSTANCE = new EvaluateResponse();
@@ -3203,7 +3404,7 @@ public final class NNServiceProto {
   }
 
   public interface PredictRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:PredictRequest)
+      // @@protoc_insertion_point(interface_extends:nn.PredictRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -3217,17 +3418,17 @@ public final class NNServiceProto {
         getClientuuidBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional string algorithm = 3;</code>
@@ -3240,11 +3441,11 @@ public final class NNServiceProto {
         getAlgorithmBytes();
   }
   /**
-   * Protobuf type {@code PredictRequest}
+   * Protobuf type {@code nn.PredictRequest}
    */
   public  static final class PredictRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:PredictRequest)
+      // @@protoc_insertion_point(message_implements:nn.PredictRequest)
       PredictRequestOrBuilder {
     // Use PredictRequest.newBuilder() to construct.
     private PredictRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -3287,11 +3488,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -3318,12 +3519,12 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_PredictRequest_descriptor;
+      return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_PredictRequest_fieldAccessorTable
+      return NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               PredictRequest.class, Builder.class);
     }
@@ -3363,23 +3564,23 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -3576,25 +3777,25 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code PredictRequest}
+     * Protobuf type {@code nn.PredictRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:PredictRequest)
+        // @@protoc_insertion_point(builder_implements:nn.PredictRequest)
         PredictRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_PredictRequest_descriptor;
+        return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_PredictRequest_fieldAccessorTable
+        return NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 PredictRequest.class, Builder.class);
       }
@@ -3605,7 +3806,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3631,7 +3832,7 @@ public final class NNServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_PredictRequest_descriptor;
+        return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
       }
 
       public PredictRequest getDefaultInstanceForType() {
@@ -3802,29 +4003,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3838,10 +4039,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -3852,13 +4053,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -3870,7 +4071,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -3884,33 +4085,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -3998,10 +4199,10 @@ public final class NNServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:PredictRequest)
+      // @@protoc_insertion_point(builder_scope:nn.PredictRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:PredictRequest)
+    // @@protoc_insertion_point(class_scope:nn.PredictRequest)
     private static final PredictRequest DEFAULT_INSTANCE;
     static {
       DEFAULT_INSTANCE = new PredictRequest();
@@ -4037,7 +4238,7 @@ public final class NNServiceProto {
   }
 
   public interface PredictResponseOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:PredictResponse)
+      // @@protoc_insertion_point(interface_extends:nn.PredictResponse)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -4051,17 +4252,17 @@ public final class NNServiceProto {
         getResponseBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional int32 code = 3;</code>
@@ -4069,11 +4270,11 @@ public final class NNServiceProto {
     int getCode();
   }
   /**
-   * Protobuf type {@code PredictResponse}
+   * Protobuf type {@code nn.PredictResponse}
    */
   public  static final class PredictResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:PredictResponse)
+      // @@protoc_insertion_point(message_implements:nn.PredictResponse)
       PredictResponseOrBuilder {
     // Use PredictResponse.newBuilder() to construct.
     private PredictResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -4116,11 +4317,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -4146,12 +4347,12 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_PredictResponse_descriptor;
+      return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_PredictResponse_fieldAccessorTable
+      return NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               PredictResponse.class, Builder.class);
     }
@@ -4191,23 +4392,23 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -4380,25 +4581,25 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code PredictResponse}
+     * Protobuf type {@code nn.PredictResponse}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:PredictResponse)
+        // @@protoc_insertion_point(builder_implements:nn.PredictResponse)
         PredictResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_PredictResponse_descriptor;
+        return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_PredictResponse_fieldAccessorTable
+        return NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 PredictResponse.class, Builder.class);
       }
@@ -4409,7 +4610,7 @@ public final class NNServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4435,7 +4636,7 @@ public final class NNServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_PredictResponse_descriptor;
+        return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
       }
 
       public PredictResponse getDefaultInstanceForType() {
@@ -4605,29 +4806,29 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4641,10 +4842,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -4655,13 +4856,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -4673,7 +4874,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -4687,33 +4888,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -4758,10 +4959,10 @@ public final class NNServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:PredictResponse)
+      // @@protoc_insertion_point(builder_scope:nn.PredictResponse)
     }
 
-    // @@protoc_insertion_point(class_scope:PredictResponse)
+    // @@protoc_insertion_point(class_scope:nn.PredictResponse)
     private static final PredictResponse DEFAULT_INSTANCE;
     static {
       DEFAULT_INSTANCE = new PredictResponse();
@@ -4797,35 +4998,35 @@ public final class NNServiceProto {
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_TrainRequest_descriptor;
+    internal_static_nn_TrainRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_TrainRequest_fieldAccessorTable;
+      internal_static_nn_TrainRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_TrainResponse_descriptor;
+    internal_static_nn_TrainResponse_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_TrainResponse_fieldAccessorTable;
+      internal_static_nn_TrainResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_EvaluateRequest_descriptor;
+    internal_static_nn_EvaluateRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_EvaluateRequest_fieldAccessorTable;
+      internal_static_nn_EvaluateRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_EvaluateResponse_descriptor;
+    internal_static_nn_EvaluateResponse_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_EvaluateResponse_fieldAccessorTable;
+      internal_static_nn_EvaluateResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_PredictRequest_descriptor;
+    internal_static_nn_PredictRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_PredictRequest_fieldAccessorTable;
+      internal_static_nn_PredictRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_PredictResponse_descriptor;
+    internal_static_nn_PredictResponse_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_PredictResponse_fieldAccessorTable;
+      internal_static_nn_PredictResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -4835,24 +5036,26 @@ public final class NNServiceProto {
       descriptor;
   static {
     String[] descriptorData = {
-      "\n\020nn_service.proto\032\rfl_base.proto\"K\n\014Tra" +
-      "inRequest\022\022\n\nclientuuid\030\001 \001(\t\022\024\n\004data\030\002 " +
-      "\001(\0132\006.Table\022\021\n\talgorithm\030\003 \001(\t\"E\n\rTrainR" +
-      "esponse\022\020\n\010response\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132" +
-      "\006.Table\022\014\n\004code\030\003 \001(\005\"N\n\017EvaluateRequest" +
-      "\022\022\n\nclientuuid\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Tab" +
-      "le\022\021\n\talgorithm\030\003 \001(\t\"H\n\020EvaluateRespons" +
-      "e\022\020\n\010response\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Tabl" +
-      "e\022\014\n\004code\030\003 \001(\005\"M\n\016PredictRequest\022\022\n\ncli" +
-      "entuuid\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Table\022\021\n\ta",
-      "lgorithm\030\003 \001(\t\"G\n\017PredictResponse\022\020\n\010res" +
-      "ponse\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Table\022\014\n\004cod" +
-      "e\030\003 \001(\0052\230\001\n\tNNService\022(\n\005train\022\r.TrainRe" +
-      "quest\032\016.TrainResponse\"\000\0221\n\010evaluate\022\020.Ev" +
-      "aluateRequest\032\021.EvaluateResponse\"\000\022.\n\007pr" +
-      "edict\022\017.PredictRequest\032\020.PredictResponse" +
-      "\"\000B:\n(com.intel.analytics.bigdl.ppml.gen" +
-      "eratedB\016NNServiceProtob\006proto3"
+      "\n\020nn_service.proto\022\002nn\032\rfl_base.proto\"O\n" +
+      "\014TrainRequest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004dat" +
+      "a\030\002 \001(\0132\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\"I" +
+      "\n\rTrainResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004dat" +
+      "a\030\002 \001(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\"b\n\017Eva" +
+      "luateRequest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004data" +
+      "\030\002 \001(\0132\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\022\016\n" +
+      "\006return\030\004 \001(\010\"]\n\020EvaluateResponse\022\020\n\010res" +
+      "ponse\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n" +
+      "\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"Q\n\016PredictR",
+      "equest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004data\030\002 \001(\013" +
+      "2\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\"K\n\017Predi" +
+      "ctResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001" +
+      "(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\0052\252\001\n\tNNServi" +
+      "ce\022.\n\005train\022\020.nn.TrainRequest\032\021.nn.Train" +
+      "Response\"\000\0227\n\010evaluate\022\023.nn.EvaluateRequ" +
+      "est\032\024.nn.EvaluateResponse\"\000\0224\n\007predict\022\022" +
+      ".nn.PredictRequest\032\023.nn.PredictResponse\"" +
+      "\000B:\n(com.intel.analytics.bigdl.ppml.gene" +
+      "ratedB\016NNServiceProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4867,41 +5070,41 @@ public final class NNServiceProto {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           FlBaseProto.getDescriptor(),
         }, assigner);
-    internal_static_TrainRequest_descriptor =
+    internal_static_nn_TrainRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_TrainRequest_fieldAccessorTable = new
+    internal_static_nn_TrainRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_TrainRequest_descriptor,
+        internal_static_nn_TrainRequest_descriptor,
         new String[] { "Clientuuid", "Data", "Algorithm", });
-    internal_static_TrainResponse_descriptor =
+    internal_static_nn_TrainResponse_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_TrainResponse_fieldAccessorTable = new
+    internal_static_nn_TrainResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_TrainResponse_descriptor,
+        internal_static_nn_TrainResponse_descriptor,
         new String[] { "Response", "Data", "Code", });
-    internal_static_EvaluateRequest_descriptor =
+    internal_static_nn_EvaluateRequest_descriptor =
       getDescriptor().getMessageTypes().get(2);
-    internal_static_EvaluateRequest_fieldAccessorTable = new
+    internal_static_nn_EvaluateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_EvaluateRequest_descriptor,
-        new String[] { "Clientuuid", "Data", "Algorithm", });
-    internal_static_EvaluateResponse_descriptor =
+        internal_static_nn_EvaluateRequest_descriptor,
+        new String[] { "Clientuuid", "Data", "Algorithm", "Return", });
+    internal_static_nn_EvaluateResponse_descriptor =
       getDescriptor().getMessageTypes().get(3);
-    internal_static_EvaluateResponse_fieldAccessorTable = new
+    internal_static_nn_EvaluateResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_EvaluateResponse_descriptor,
-        new String[] { "Response", "Data", "Code", });
-    internal_static_PredictRequest_descriptor =
+        internal_static_nn_EvaluateResponse_descriptor,
+        new String[] { "Response", "Data", "Code", "Message", });
+    internal_static_nn_PredictRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
-    internal_static_PredictRequest_fieldAccessorTable = new
+    internal_static_nn_PredictRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_PredictRequest_descriptor,
+        internal_static_nn_PredictRequest_descriptor,
         new String[] { "Clientuuid", "Data", "Algorithm", });
-    internal_static_PredictResponse_descriptor =
+    internal_static_nn_PredictResponse_descriptor =
       getDescriptor().getMessageTypes().get(5);
-    internal_static_PredictResponse_fieldAccessorTable = new
+    internal_static_nn_PredictResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_PredictResponse_descriptor,
+        internal_static_nn_PredictResponse_descriptor,
         new String[] { "Response", "Data", "Code", });
     FlBaseProto.getDescriptor();
   }
