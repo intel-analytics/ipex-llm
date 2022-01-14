@@ -1,12 +1,12 @@
 from RestCaller import request_parimary_key_ciphertext,request_data_key_ciphertext, request_data_key_plaintext
 
 def read_encrypted_key_file(encrypted_key_path):
-    with open(encrypted_key_path, 'rb') as file:
+    with open(encrypted_key_path, 'r') as file:
         original = file.readlines()
     return original[0]
 
 def write_encrypted_key_file(encrypted_key_path, content):
-    with open(encrypted_key_path, 'wb') as file:
+    with open(encrypted_key_path, 'w') as file:
         file.write(content)
 
 def retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path):
