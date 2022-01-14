@@ -66,10 +66,14 @@ val df = spark.read.options(Map("inferSchema"->"true","delimiter"->",")).csv(pat
       .toDF("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age", "class")
 ```
 
-Process the DataFrame to create the label and split it into traing part and validation part
+Process the DataFrame to create the label and features. Then split it into traing part and validation part
 
 ```
-val df2 = df.withColumn("label",col("class").cast(DoubleType) + lit(1))
+val assembler = new VectorAssembler()
+  .setInputCols(Array("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age"))
+  .setOutputCol("features")
+val assembleredDF = assembler.transform(df)
+val df2 = assembleredDF.withColumn("label",col("class").cast(DoubleType) + lit(1))
 val Array(trainDF, valDF) = df2.randomSplit(Array(0.8, 0.2))
 ```
 
@@ -103,9 +107,7 @@ Now the model is built and ready to train.
 Now you can use 'fit' begin the training, please set the feature columns and label columns. Model Evaluation can be performed periodically during a training.
 ```
 dmodel.fit(x=trainDF, batchSize=4, nbEpoch = 2,
-  featureCols = Array("num_times_pregrant", "plasma_glucose", "blood_pressure",
-    "skin_fold_thickness", "2-hour_insulin", "body_mass_index",
-    "diabetes_pedigree_function", "age"), labelCols = Array("label"), valX = valDF
+  featureCols = Array("features"), labelCols = Array("label"), valX = valDF
 )
 ```
 
@@ -131,16 +133,12 @@ After training finishes, you can then use the trained model for prediction or ev
 
 - **inference**
 ```
-dmodel.predict(df, featureCols = Array("num_times_pregrant", "plasma_glucose", "blood_pressure",
-  "skin_fold_thickness", "2-hour_insulin", "body_mass_index",
-  "diabetes_pedigree_function", "age"), predictionCol = "predict")
+dmodel.predict(df, featureCols = Array("features"), predictionCol = "predict")
 ```
 
 - **evaluation**
 ```
-dmodel.evaluate(df, featureCols = Array("num_times_pregrant", "plasma_glucose", "blood_pressure",
-    "skin_fold_thickness", "2-hour_insulin", "body_mass_index",
-    "diabetes_pedigree_function", "age"))
+dmodel.evaluate(df, featureCols = Array("features"))
 ```
 
 ## 8. Running program
