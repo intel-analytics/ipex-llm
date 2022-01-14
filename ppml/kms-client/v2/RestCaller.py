@@ -7,6 +7,7 @@ import hmac
 from hashlib import sha256
 import os
 from collections import OrderedDict
+import urllib.parse
 
 # default app auth conf
 appid = '202112101919'
@@ -32,8 +33,8 @@ def post_request(ip, port, action, payload):
     url = construct_url(ip, port, action)
     params = request_params(payload)
     create_resp = requests.post(url=url, data=json.dumps(params), headers=headers, timeout=100)
-    key = json.loads(create_resp.text)['result']['cmk_base64']
-    return key
+    result = json.loads(create_resp.text)['result']
+    return result
 
 def request_parimary_key_ciphertext(ip, port):
     action = "CreateKey"
@@ -41,7 +42,7 @@ def request_parimary_key_ciphertext(ip, port):
         "keyspec":"EH_AES_GCM_128",
         "origin":"EH_INTERNAL_KEY"
     }
-    primary_key_ciphertext = post_request(ip, port, action, payload)
+    primary_key_ciphertext = post_request(ip, port, action, payload)['cmk_base64']
     return primary_key_ciphertext
 
 def request_data_key_ciphertext(ip, port, encrypted_primary_key):
@@ -51,7 +52,7 @@ def request_data_key_ciphertext(ip, port, encrypted_primary_key):
         "keylen": 32,
         "aad": "test",
     }
-    data_key_ciphertext = post_request(ip, port, action, payload)
+    data_key_ciphertext = post_request(ip, port, action, payload)['ciphertext_base64']
     return data_key_ciphertext
 
 def request_data_key_plaintext(ip, port, encrypted_primary_key, encrypted_data_key):
@@ -61,5 +62,5 @@ def request_data_key_plaintext(ip, port, encrypted_primary_key, encrypted_data_k
         "ciphertext":encrypted_data_key,
         "aad":"test",
     }
-    data_key_plaintext = post_request(ip, port, action, payload)
+    data_key_plaintext = post_request(ip, port, action, payload)['plaintext_base64']
     return data_key_plaintext
