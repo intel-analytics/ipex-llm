@@ -95,6 +95,12 @@ class QuantizationINC(Quantization):
 
                 class MyMetric(framework_metric):
                     def __init__(self):
+                        """
+                        This local class is to resolve dumping issue in tensorflow.
+                        In tensorflow, INC will try to dump the metric to yaml which
+                        somehow causes unexpected error. So we moved metric assignment
+                        to the new local class to avoid that.
+                        """
                         self.metric = metric
                 self.metric = Metric(
                     MyMetric,
