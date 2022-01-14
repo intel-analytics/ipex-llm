@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.algorithms.vfl
 import com.intel.analytics.bigdl.dllib.nn.{Linear, Sequential}
 import com.intel.analytics.bigdl.dllib.optim.Adam
 import com.intel.analytics.bigdl.ppml.FLModel
-import com.intel.analytics.bigdl.ppml.vfl.nn.VflNNEstimator
+import com.intel.analytics.bigdl.ppml.nn.VflNNEstimator
 import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 
 /**

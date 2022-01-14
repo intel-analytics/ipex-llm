@@ -14,8 +14,8 @@ public final class FGBoostServiceProto {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
-  public interface UploadTableRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:fgboost.UploadTableRequest)
+  public interface UploadLabelRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.UploadLabelRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -29,17 +29,17 @@ public final class FGBoostServiceProto {
         getClientuuidBytes();
 
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional string algorithm = 3;</code>
@@ -52,17 +52,17 @@ public final class FGBoostServiceProto {
         getAlgorithmBytes();
   }
   /**
-   * Protobuf type {@code fgboost.UploadTableRequest}
+   * Protobuf type {@code fgboost.UploadLabelRequest}
    */
-  public  static final class UploadTableRequest extends
+  public  static final class UploadLabelRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:fgboost.UploadTableRequest)
-      UploadTableRequestOrBuilder {
-    // Use UploadTableRequest.newBuilder() to construct.
-    private UploadTableRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:fgboost.UploadLabelRequest)
+      UploadLabelRequestOrBuilder {
+    // Use UploadLabelRequest.newBuilder() to construct.
+    private UploadLabelRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private UploadTableRequest() {
+    private UploadLabelRequest() {
       clientuuid_ = "";
       algorithm_ = "";
     }
@@ -72,7 +72,7 @@ public final class FGBoostServiceProto {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private UploadTableRequest(
+    private UploadLabelRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -99,11 +99,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -130,14 +130,14 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              UploadTableRequest.class, Builder.class);
+              UploadLabelRequest.class, Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
@@ -175,23 +175,23 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 2;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -277,10 +277,10 @@ public final class FGBoostServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof UploadTableRequest)) {
+      if (!(obj instanceof UploadLabelRequest)) {
         return super.equals(obj);
       }
-      UploadTableRequest other = (UploadTableRequest) obj;
+      UploadLabelRequest other = (UploadLabelRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
@@ -315,58 +315,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadTableRequest parseFrom(byte[] data)
+    public static UploadLabelRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadTableRequest parseFrom(java.io.InputStream input)
+    public static UploadLabelRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadTableRequest parseDelimitedFrom(java.io.InputStream input)
+    public static UploadLabelRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static UploadTableRequest parseDelimitedFrom(
+    public static UploadLabelRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadTableRequest parseFrom(
+    public static UploadLabelRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -378,7 +378,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(UploadTableRequest prototype) {
+    public static Builder newBuilder(UploadLabelRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -388,36 +388,36 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code fgboost.UploadTableRequest}
+     * Protobuf type {@code fgboost.UploadLabelRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:fgboost.UploadTableRequest)
-        UploadTableRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:fgboost.UploadLabelRequest)
+        UploadLabelRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                UploadTableRequest.class, Builder.class);
+                UploadLabelRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTableRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadLabelRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -443,23 +443,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return FGBoostServiceProto.internal_static_fgboost_UploadTableRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
       }
 
-      public UploadTableRequest getDefaultInstanceForType() {
-        return UploadTableRequest.getDefaultInstance();
+      public UploadLabelRequest getDefaultInstanceForType() {
+        return UploadLabelRequest.getDefaultInstance();
       }
 
-      public UploadTableRequest build() {
-        UploadTableRequest result = buildPartial();
+      public UploadLabelRequest build() {
+        UploadLabelRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public UploadTableRequest buildPartial() {
-        UploadTableRequest result = new UploadTableRequest(this);
+      public UploadLabelRequest buildPartial() {
+        UploadLabelRequest result = new UploadLabelRequest(this);
         result.clientuuid_ = clientuuid_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -498,16 +498,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof UploadTableRequest) {
-          return mergeFrom((UploadTableRequest)other);
+        if (other instanceof UploadLabelRequest) {
+          return mergeFrom((UploadLabelRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(UploadTableRequest other) {
-        if (other == UploadTableRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(UploadLabelRequest other) {
+        if (other == UploadLabelRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -531,11 +531,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        UploadTableRequest parsedMessage = null;
+        UploadLabelRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (UploadTableRequest) e.getUnfinishedMessage();
+          parsedMessage = (UploadLabelRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -614,29 +614,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -650,10 +650,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -664,13 +664,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -682,7 +682,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -696,33 +696,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 2;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -810,60 +810,60 @@ public final class FGBoostServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:fgboost.UploadTableRequest)
+      // @@protoc_insertion_point(builder_scope:fgboost.UploadLabelRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:fgboost.UploadTableRequest)
-    private static final UploadTableRequest DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:fgboost.UploadLabelRequest)
+    private static final UploadLabelRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new UploadTableRequest();
+      DEFAULT_INSTANCE = new UploadLabelRequest();
     }
 
-    public static UploadTableRequest getDefaultInstance() {
+    public static UploadLabelRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<UploadTableRequest>
-        PARSER = new com.google.protobuf.AbstractParser<UploadTableRequest>() {
-      public UploadTableRequest parsePartialFrom(
+    private static final com.google.protobuf.Parser<UploadLabelRequest>
+        PARSER = new com.google.protobuf.AbstractParser<UploadLabelRequest>() {
+      public UploadLabelRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UploadTableRequest(input, extensionRegistry);
+          return new UploadLabelRequest(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<UploadTableRequest> parser() {
+    public static com.google.protobuf.Parser<UploadLabelRequest> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<UploadTableRequest> getParserForType() {
+    public com.google.protobuf.Parser<UploadLabelRequest> getParserForType() {
       return PARSER;
     }
 
-    public UploadTableRequest getDefaultInstanceForType() {
+    public UploadLabelRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface DownloadTableRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:fgboost.DownloadTableRequest)
+  public interface DownloadLabelRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.DownloadLabelRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
     boolean hasMetaData();
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    FlBaseProto.TableMetaData getMetaData();
+    FlBaseProto.MetaData getMetaData();
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    FlBaseProto.TableMetaDataOrBuilder getMetaDataOrBuilder();
+    FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder();
 
     /**
      * <code>optional string algorithm = 2;</code>
@@ -876,17 +876,17 @@ public final class FGBoostServiceProto {
         getAlgorithmBytes();
   }
   /**
-   * Protobuf type {@code fgboost.DownloadTableRequest}
+   * Protobuf type {@code fgboost.DownloadLabelRequest}
    */
-  public  static final class DownloadTableRequest extends
+  public  static final class DownloadLabelRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:fgboost.DownloadTableRequest)
-      DownloadTableRequestOrBuilder {
-    // Use DownloadTableRequest.newBuilder() to construct.
-    private DownloadTableRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:fgboost.DownloadLabelRequest)
+      DownloadLabelRequestOrBuilder {
+    // Use DownloadLabelRequest.newBuilder() to construct.
+    private DownloadLabelRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private DownloadTableRequest() {
+    private DownloadLabelRequest() {
       algorithm_ = "";
     }
 
@@ -895,7 +895,7 @@ public final class FGBoostServiceProto {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private DownloadTableRequest(
+    private DownloadLabelRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -916,11 +916,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              FlBaseProto.TableMetaData.Builder subBuilder = null;
+              FlBaseProto.MetaData.Builder subBuilder = null;
               if (metaData_ != null) {
                 subBuilder = metaData_.toBuilder();
               }
-              metaData_ = input.readMessage(FlBaseProto.TableMetaData.parser(), extensionRegistry);
+              metaData_ = input.readMessage(FlBaseProto.MetaData.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(metaData_);
                 metaData_ = subBuilder.buildPartial();
@@ -947,34 +947,34 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              DownloadTableRequest.class, Builder.class);
+              DownloadLabelRequest.class, Builder.class);
     }
 
     public static final int METADATA_FIELD_NUMBER = 1;
-    private FlBaseProto.TableMetaData metaData_;
+    private FlBaseProto.MetaData metaData_;
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
     public boolean hasMetaData() {
       return metaData_ != null;
     }
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    public FlBaseProto.TableMetaData getMetaData() {
-      return metaData_ == null ? FlBaseProto.TableMetaData.getDefaultInstance() : metaData_;
+    public FlBaseProto.MetaData getMetaData() {
+      return metaData_ == null ? FlBaseProto.MetaData.getDefaultInstance() : metaData_;
     }
     /**
-     * <code>optional .TableMetaData metaData = 1;</code>
+     * <code>optional .MetaData metaData = 1;</code>
      */
-    public FlBaseProto.TableMetaDataOrBuilder getMetaDataOrBuilder() {
+    public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
       return getMetaData();
     }
 
@@ -1054,10 +1054,10 @@ public final class FGBoostServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof DownloadTableRequest)) {
+      if (!(obj instanceof DownloadLabelRequest)) {
         return super.equals(obj);
       }
-      DownloadTableRequest other = (DownloadTableRequest) obj;
+      DownloadLabelRequest other = (DownloadLabelRequest) obj;
 
       boolean result = true;
       result = result && (hasMetaData() == other.hasMetaData());
@@ -1088,58 +1088,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static DownloadTableRequest parseFrom(byte[] data)
+    public static DownloadLabelRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static DownloadTableRequest parseFrom(java.io.InputStream input)
+    public static DownloadLabelRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static DownloadTableRequest parseDelimitedFrom(java.io.InputStream input)
+    public static DownloadLabelRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static DownloadTableRequest parseDelimitedFrom(
+    public static DownloadLabelRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static DownloadTableRequest parseFrom(
+    public static DownloadLabelRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1151,7 +1151,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(DownloadTableRequest prototype) {
+    public static Builder newBuilder(DownloadLabelRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1161,36 +1161,36 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code fgboost.DownloadTableRequest}
+     * Protobuf type {@code fgboost.DownloadLabelRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:fgboost.DownloadTableRequest)
-        DownloadTableRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:fgboost.DownloadLabelRequest)
+        DownloadLabelRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                DownloadTableRequest.class, Builder.class);
+                DownloadLabelRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadTableRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadLabelRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1214,23 +1214,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return FGBoostServiceProto.internal_static_fgboost_DownloadTableRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
       }
 
-      public DownloadTableRequest getDefaultInstanceForType() {
-        return DownloadTableRequest.getDefaultInstance();
+      public DownloadLabelRequest getDefaultInstanceForType() {
+        return DownloadLabelRequest.getDefaultInstance();
       }
 
-      public DownloadTableRequest build() {
-        DownloadTableRequest result = buildPartial();
+      public DownloadLabelRequest build() {
+        DownloadLabelRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public DownloadTableRequest buildPartial() {
-        DownloadTableRequest result = new DownloadTableRequest(this);
+      public DownloadLabelRequest buildPartial() {
+        DownloadLabelRequest result = new DownloadLabelRequest(this);
         if (metaDataBuilder_ == null) {
           result.metaData_ = metaData_;
         } else {
@@ -1268,16 +1268,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof DownloadTableRequest) {
-          return mergeFrom((DownloadTableRequest)other);
+        if (other instanceof DownloadLabelRequest) {
+          return mergeFrom((DownloadLabelRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(DownloadTableRequest other) {
-        if (other == DownloadTableRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(DownloadLabelRequest other) {
+        if (other == DownloadLabelRequest.getDefaultInstance()) return this;
         if (other.hasMetaData()) {
           mergeMetaData(other.getMetaData());
         }
@@ -1297,11 +1297,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        DownloadTableRequest parsedMessage = null;
+        DownloadLabelRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (DownloadTableRequest) e.getUnfinishedMessage();
+          parsedMessage = (DownloadLabelRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1311,29 +1311,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TableMetaData metaData_ = null;
+      private FlBaseProto.MetaData metaData_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TableMetaData, FlBaseProto.TableMetaData.Builder, FlBaseProto.TableMetaDataOrBuilder> metaDataBuilder_;
+          FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder> metaDataBuilder_;
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public boolean hasMetaData() {
         return metaDataBuilder_ != null || metaData_ != null;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public FlBaseProto.TableMetaData getMetaData() {
+      public FlBaseProto.MetaData getMetaData() {
         if (metaDataBuilder_ == null) {
-          return metaData_ == null ? FlBaseProto.TableMetaData.getDefaultInstance() : metaData_;
+          return metaData_ == null ? FlBaseProto.MetaData.getDefaultInstance() : metaData_;
         } else {
           return metaDataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public Builder setMetaData(FlBaseProto.TableMetaData value) {
+      public Builder setMetaData(FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1347,10 +1347,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public Builder setMetaData(
-          FlBaseProto.TableMetaData.Builder builderForValue) {
+          FlBaseProto.MetaData.Builder builderForValue) {
         if (metaDataBuilder_ == null) {
           metaData_ = builderForValue.build();
           onChanged();
@@ -1361,13 +1361,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public Builder mergeMetaData(FlBaseProto.TableMetaData value) {
+      public Builder mergeMetaData(FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
           if (metaData_ != null) {
             metaData_ =
-              FlBaseProto.TableMetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
+              FlBaseProto.MetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
           } else {
             metaData_ = value;
           }
@@ -1379,7 +1379,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       public Builder clearMetaData() {
         if (metaDataBuilder_ == null) {
@@ -1393,33 +1393,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public FlBaseProto.TableMetaData.Builder getMetaDataBuilder() {
+      public FlBaseProto.MetaData.Builder getMetaDataBuilder() {
         
         onChanged();
         return getMetaDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
-      public FlBaseProto.TableMetaDataOrBuilder getMetaDataOrBuilder() {
+      public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
         if (metaDataBuilder_ != null) {
           return metaDataBuilder_.getMessageOrBuilder();
         } else {
           return metaData_ == null ?
-              FlBaseProto.TableMetaData.getDefaultInstance() : metaData_;
+              FlBaseProto.MetaData.getDefaultInstance() : metaData_;
         }
       }
       /**
-       * <code>optional .TableMetaData metaData = 1;</code>
+       * <code>optional .MetaData metaData = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TableMetaData, FlBaseProto.TableMetaData.Builder, FlBaseProto.TableMetaDataOrBuilder>
+          FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder>
           getMetaDataFieldBuilder() {
         if (metaDataBuilder_ == null) {
           metaDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TableMetaData, FlBaseProto.TableMetaData.Builder, FlBaseProto.TableMetaDataOrBuilder>(
+              FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder>(
                   getMetaData(),
                   getParentForChildren(),
                   isClean());
@@ -1507,39 +1507,39 @@ public final class FGBoostServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:fgboost.DownloadTableRequest)
+      // @@protoc_insertion_point(builder_scope:fgboost.DownloadLabelRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:fgboost.DownloadTableRequest)
-    private static final DownloadTableRequest DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:fgboost.DownloadLabelRequest)
+    private static final DownloadLabelRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new DownloadTableRequest();
+      DEFAULT_INSTANCE = new DownloadLabelRequest();
     }
 
-    public static DownloadTableRequest getDefaultInstance() {
+    public static DownloadLabelRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<DownloadTableRequest>
-        PARSER = new com.google.protobuf.AbstractParser<DownloadTableRequest>() {
-      public DownloadTableRequest parsePartialFrom(
+    private static final com.google.protobuf.Parser<DownloadLabelRequest>
+        PARSER = new com.google.protobuf.AbstractParser<DownloadLabelRequest>() {
+      public DownloadLabelRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new DownloadTableRequest(input, extensionRegistry);
+          return new DownloadLabelRequest(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<DownloadTableRequest> parser() {
+    public static com.google.protobuf.Parser<DownloadLabelRequest> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<DownloadTableRequest> getParserForType() {
+    public com.google.protobuf.Parser<DownloadLabelRequest> getParserForType() {
       return PARSER;
     }
 
-    public DownloadTableRequest getDefaultInstanceForType() {
+    public DownloadLabelRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1550,17 +1550,17 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
     boolean hasData();
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    FlBaseProto.Table getData();
+    FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    FlBaseProto.TableOrBuilder getDataOrBuilder();
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>optional string response = 2;</code>
@@ -1619,11 +1619,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              FlBaseProto.Table.Builder subBuilder = null;
+              FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1658,7 +1658,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1666,23 +1666,23 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 1;
-    private FlBaseProto.Table data_;
+    private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    public FlBaseProto.Table getData() {
-      return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .Table data = 1;</code>
+     * <code>optional .TensorMap data = 1;</code>
      */
-    public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -1889,7 +1889,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1905,7 +1905,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1918,7 +1918,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2045,29 +2045,29 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table data_ = null;
+      private FlBaseProto.TensorMap data_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> dataBuilder_;
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public FlBaseProto.Table getData() {
+      public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.Table.getDefaultInstance() : data_;
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public Builder setData(FlBaseProto.Table value) {
+      public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2081,10 +2081,10 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       public Builder setData(
-          FlBaseProto.Table.Builder builderForValue) {
+          FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -2095,13 +2095,13 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public Builder mergeData(FlBaseProto.Table value) {
+      public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.Table.newBuilder(data_).mergeFrom(value).buildPartial();
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -2113,7 +2113,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -2127,33 +2127,33 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public FlBaseProto.Table.Builder getDataBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
-      public FlBaseProto.TableOrBuilder getDataOrBuilder() {
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : data_;
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table data = 1;</code>
+       * <code>optional .TensorMap data = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -2457,7 +2457,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2730,7 +2730,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2746,7 +2746,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -2759,7 +2759,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3255,7 +3255,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -3466,7 +3466,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3482,7 +3482,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -3495,7 +3495,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4042,7 +4042,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -4442,7 +4442,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4458,7 +4458,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -4471,7 +4471,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5149,7 +5149,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5343,7 +5343,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5359,7 +5359,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5372,7 +5372,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5742,7 +5742,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5965,7 +5965,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5981,7 +5981,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5994,7 +5994,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -6331,7 +6331,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
     TreePredictOrBuilder getPredictsOrBuilder(
-        int index);
+            int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostPredict}
@@ -6401,7 +6401,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -6579,7 +6579,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -6595,7 +6595,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -6608,7 +6608,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -7066,7 +7066,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
     TreePredictOrBuilder getEvaluatesOrBuilder(
-        int index);
+            int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostEval}
@@ -7136,7 +7136,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -7314,7 +7314,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -7330,7 +7330,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -7343,7 +7343,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -7868,7 +7868,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -8086,7 +8086,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8102,7 +8102,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8115,7 +8115,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -8502,7 +8502,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -8696,7 +8696,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8712,7 +8712,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8725,7 +8725,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -9022,7 +9022,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-        int index);
+            int index);
   }
   /**
    * Protobuf type {@code fgboost.UploadTreeEvalRequest}
@@ -9105,7 +9105,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -9348,7 +9348,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -9364,7 +9364,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -9377,7 +9377,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -9919,8 +9919,8 @@ public final class FGBoostServiceProto {
 
   }
 
-  public interface SplitRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:fgboost.SplitRequest)
+  public interface EvaluateRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.EvaluateRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -9934,31 +9934,49 @@ public final class FGBoostServiceProto {
         getClientuuidBytes();
 
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    boolean hasSplit();
+    java.util.List<BoostEval>
+        getTreeEvalList();
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    DataSplit getSplit();
+    BoostEval getTreeEval(int index);
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    DataSplitOrBuilder getSplitOrBuilder();
+    int getTreeEvalCount();
+    /**
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+     */
+    java.util.List<? extends BoostEvalOrBuilder>
+        getTreeEvalOrBuilderList();
+    /**
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+     */
+    BoostEvalOrBuilder getTreeEvalOrBuilder(
+            int index);
+
+    /**
+     * <code>optional int32 bsVersion = 3;</code>
+     */
+    int getBsVersion();
   }
   /**
-   * Protobuf type {@code fgboost.SplitRequest}
+   * Protobuf type {@code fgboost.EvaluateRequest}
    */
-  public  static final class SplitRequest extends
+  public  static final class EvaluateRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:fgboost.SplitRequest)
-      SplitRequestOrBuilder {
-    // Use SplitRequest.newBuilder() to construct.
-    private SplitRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:fgboost.EvaluateRequest)
+      EvaluateRequestOrBuilder {
+    // Use EvaluateRequest.newBuilder() to construct.
+    private EvaluateRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private SplitRequest() {
+    private EvaluateRequest() {
       clientuuid_ = "";
+      treeEval_ = java.util.Collections.emptyList();
+      bsVersion_ = 0;
     }
 
     @Override
@@ -9966,7 +9984,7 @@ public final class FGBoostServiceProto {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private SplitRequest(
+    private EvaluateRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -9993,16 +10011,17 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              DataSplit.Builder subBuilder = null;
-              if (split_ != null) {
-                subBuilder = split_.toBuilder();
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                treeEval_ = new java.util.ArrayList<BoostEval>();
+                mutable_bitField0_ |= 0x00000002;
               }
-              split_ = input.readMessage(DataSplit.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(split_);
-                split_ = subBuilder.buildPartial();
-              }
+              treeEval_.add(
+                  input.readMessage(BoostEval.parser(), extensionRegistry));
+              break;
+            }
+            case 24: {
 
+              bsVersion_ = input.readInt32();
               break;
             }
           }
@@ -10013,21 +10032,25 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          treeEval_ = java.util.Collections.unmodifiableList(treeEval_);
+        }
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              SplitRequest.class, Builder.class);
+              EvaluateRequest.class, Builder.class);
     }
 
+    private int bitField0_;
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
@@ -10062,25 +10085,48 @@ public final class FGBoostServiceProto {
       }
     }
 
-    public static final int SPLIT_FIELD_NUMBER = 2;
-    private DataSplit split_;
+    public static final int TREEEVAL_FIELD_NUMBER = 2;
+    private java.util.List<BoostEval> treeEval_;
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public boolean hasSplit() {
-      return split_ != null;
+    public java.util.List<BoostEval> getTreeEvalList() {
+      return treeEval_;
     }
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public DataSplit getSplit() {
-      return split_ == null ? DataSplit.getDefaultInstance() : split_;
+    public java.util.List<? extends BoostEvalOrBuilder>
+        getTreeEvalOrBuilderList() {
+      return treeEval_;
     }
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
-    public DataSplitOrBuilder getSplitOrBuilder() {
-      return getSplit();
+    public int getTreeEvalCount() {
+      return treeEval_.size();
+    }
+    /**
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+     */
+    public BoostEval getTreeEval(int index) {
+      return treeEval_.get(index);
+    }
+    /**
+     * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+     */
+    public BoostEvalOrBuilder getTreeEvalOrBuilder(
+        int index) {
+      return treeEval_.get(index);
+    }
+
+    public static final int BSVERSION_FIELD_NUMBER = 3;
+    private int bsVersion_;
+    /**
+     * <code>optional int32 bsVersion = 3;</code>
+     */
+    public int getBsVersion() {
+      return bsVersion_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -10098,8 +10144,11 @@ public final class FGBoostServiceProto {
       if (!getClientuuidBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
       }
-      if (split_ != null) {
-        output.writeMessage(2, getSplit());
+      for (int i = 0; i < treeEval_.size(); i++) {
+        output.writeMessage(2, treeEval_.get(i));
+      }
+      if (bsVersion_ != 0) {
+        output.writeInt32(3, bsVersion_);
       }
     }
 
@@ -10111,9 +10160,13 @@ public final class FGBoostServiceProto {
       if (!getClientuuidBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
       }
-      if (split_ != null) {
+      for (int i = 0; i < treeEval_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, getSplit());
+          .computeMessageSize(2, treeEval_.get(i));
+      }
+      if (bsVersion_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, bsVersion_);
       }
       memoizedSize = size;
       return size;
@@ -10125,19 +10178,18 @@ public final class FGBoostServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof SplitRequest)) {
+      if (!(obj instanceof EvaluateRequest)) {
         return super.equals(obj);
       }
-      SplitRequest other = (SplitRequest) obj;
+      EvaluateRequest other = (EvaluateRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
           .equals(other.getClientuuid());
-      result = result && (hasSplit() == other.hasSplit());
-      if (hasSplit()) {
-        result = result && getSplit()
-            .equals(other.getSplit());
-      }
+      result = result && getTreeEvalList()
+          .equals(other.getTreeEvalList());
+      result = result && (getBsVersion()
+          == other.getBsVersion());
       return result;
     }
 
@@ -10150,67 +10202,69 @@ public final class FGBoostServiceProto {
       hash = (19 * hash) + getDescriptorForType().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
-      if (hasSplit()) {
-        hash = (37 * hash) + SPLIT_FIELD_NUMBER;
-        hash = (53 * hash) + getSplit().hashCode();
+      if (getTreeEvalCount() > 0) {
+        hash = (37 * hash) + TREEEVAL_FIELD_NUMBER;
+        hash = (53 * hash) + getTreeEvalList().hashCode();
       }
+      hash = (37 * hash) + BSVERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getBsVersion();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static SplitRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static SplitRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SplitRequest parseFrom(byte[] data)
+    public static EvaluateRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static SplitRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static SplitRequest parseFrom(java.io.InputStream input)
+    public static EvaluateRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static SplitRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static SplitRequest parseDelimitedFrom(java.io.InputStream input)
+    public static EvaluateRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static SplitRequest parseDelimitedFrom(
+    public static EvaluateRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static SplitRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static SplitRequest parseFrom(
+    public static EvaluateRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -10222,7 +10276,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(SplitRequest prototype) {
+    public static Builder newBuilder(EvaluateRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -10232,82 +10286,93 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code fgboost.SplitRequest}
+     * Protobuf type {@code fgboost.EvaluateRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:fgboost.SplitRequest)
-        SplitRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:fgboost.EvaluateRequest)
+        EvaluateRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                SplitRequest.class, Builder.class);
+                EvaluateRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getTreeEvalFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
 
-        if (splitBuilder_ == null) {
-          split_ = null;
+        if (treeEvalBuilder_ == null) {
+          treeEval_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
-          split_ = null;
-          splitBuilder_ = null;
+          treeEvalBuilder_.clear();
         }
+        bsVersion_ = 0;
+
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
       }
 
-      public SplitRequest getDefaultInstanceForType() {
-        return SplitRequest.getDefaultInstance();
+      public EvaluateRequest getDefaultInstanceForType() {
+        return EvaluateRequest.getDefaultInstance();
       }
 
-      public SplitRequest build() {
-        SplitRequest result = buildPartial();
+      public EvaluateRequest build() {
+        EvaluateRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public SplitRequest buildPartial() {
-        SplitRequest result = new SplitRequest(this);
+      public EvaluateRequest buildPartial() {
+        EvaluateRequest result = new EvaluateRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
         result.clientuuid_ = clientuuid_;
-        if (splitBuilder_ == null) {
-          result.split_ = split_;
+        if (treeEvalBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            treeEval_ = java.util.Collections.unmodifiableList(treeEval_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.treeEval_ = treeEval_;
         } else {
-          result.split_ = splitBuilder_.build();
+          result.treeEval_ = treeEvalBuilder_.build();
         }
+        result.bsVersion_ = bsVersion_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -10339,22 +10404,48 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof SplitRequest) {
-          return mergeFrom((SplitRequest)other);
+        if (other instanceof EvaluateRequest) {
+          return mergeFrom((EvaluateRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(SplitRequest other) {
-        if (other == SplitRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(EvaluateRequest other) {
+        if (other == EvaluateRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
         }
-        if (other.hasSplit()) {
-          mergeSplit(other.getSplit());
+        if (treeEvalBuilder_ == null) {
+          if (!other.treeEval_.isEmpty()) {
+            if (treeEval_.isEmpty()) {
+              treeEval_ = other.treeEval_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureTreeEvalIsMutable();
+              treeEval_.addAll(other.treeEval_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.treeEval_.isEmpty()) {
+            if (treeEvalBuilder_.isEmpty()) {
+              treeEvalBuilder_.dispose();
+              treeEvalBuilder_ = null;
+              treeEval_ = other.treeEval_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              treeEvalBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getTreeEvalFieldBuilder() : null;
+            } else {
+              treeEvalBuilder_.addAllMessages(other.treeEval_);
+            }
+          }
+        }
+        if (other.getBsVersion() != 0) {
+          setBsVersion(other.getBsVersion());
         }
         onChanged();
         return this;
@@ -10368,11 +10459,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        SplitRequest parsedMessage = null;
+        EvaluateRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (SplitRequest) e.getUnfinishedMessage();
+          parsedMessage = (EvaluateRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -10381,6 +10472,7 @@ public final class FGBoostServiceProto {
         }
         return this;
       }
+      private int bitField0_;
 
       private Object clientuuid_ = "";
       /**
@@ -10451,121 +10543,270 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private DataSplit split_ = null;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          DataSplit, DataSplit.Builder, DataSplitOrBuilder> splitBuilder_;
-      /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
-       */
-      public boolean hasSplit() {
-        return splitBuilder_ != null || split_ != null;
+      private java.util.List<BoostEval> treeEval_ =
+        java.util.Collections.emptyList();
+      private void ensureTreeEvalIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          treeEval_ = new java.util.ArrayList<BoostEval>(treeEval_);
+          bitField0_ |= 0x00000002;
+         }
       }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          BoostEval, BoostEval.Builder, BoostEvalOrBuilder> treeEvalBuilder_;
+
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public DataSplit getSplit() {
-        if (splitBuilder_ == null) {
-          return split_ == null ? DataSplit.getDefaultInstance() : split_;
+      public java.util.List<BoostEval> getTreeEvalList() {
+        if (treeEvalBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(treeEval_);
         } else {
-          return splitBuilder_.getMessage();
+          return treeEvalBuilder_.getMessageList();
         }
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public Builder setSplit(DataSplit value) {
-        if (splitBuilder_ == null) {
+      public int getTreeEvalCount() {
+        if (treeEvalBuilder_ == null) {
+          return treeEval_.size();
+        } else {
+          return treeEvalBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public BoostEval getTreeEval(int index) {
+        if (treeEvalBuilder_ == null) {
+          return treeEval_.get(index);
+        } else {
+          return treeEvalBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public Builder setTreeEval(
+          int index, BoostEval value) {
+        if (treeEvalBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          split_ = value;
+          ensureTreeEvalIsMutable();
+          treeEval_.set(index, value);
           onChanged();
         } else {
-          splitBuilder_.setMessage(value);
+          treeEvalBuilder_.setMessage(index, value);
         }
-
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public Builder setSplit(
-          DataSplit.Builder builderForValue) {
-        if (splitBuilder_ == null) {
-          split_ = builderForValue.build();
+      public Builder setTreeEval(
+          int index, BoostEval.Builder builderForValue) {
+        if (treeEvalBuilder_ == null) {
+          ensureTreeEvalIsMutable();
+          treeEval_.set(index, builderForValue.build());
           onChanged();
         } else {
-          splitBuilder_.setMessage(builderForValue.build());
+          treeEvalBuilder_.setMessage(index, builderForValue.build());
         }
-
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public Builder mergeSplit(DataSplit value) {
-        if (splitBuilder_ == null) {
-          if (split_ != null) {
-            split_ =
-              DataSplit.newBuilder(split_).mergeFrom(value).buildPartial();
-          } else {
-            split_ = value;
+      public Builder addTreeEval(BoostEval value) {
+        if (treeEvalBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
           }
+          ensureTreeEvalIsMutable();
+          treeEval_.add(value);
           onChanged();
         } else {
-          splitBuilder_.mergeFrom(value);
+          treeEvalBuilder_.addMessage(value);
         }
-
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public Builder clearSplit() {
-        if (splitBuilder_ == null) {
-          split_ = null;
+      public Builder addTreeEval(
+          int index, BoostEval value) {
+        if (treeEvalBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTreeEvalIsMutable();
+          treeEval_.add(index, value);
           onChanged();
         } else {
-          split_ = null;
-          splitBuilder_ = null;
+          treeEvalBuilder_.addMessage(index, value);
         }
-
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public DataSplit.Builder getSplitBuilder() {
-        
-        onChanged();
-        return getSplitFieldBuilder().getBuilder();
+      public Builder addTreeEval(
+          BoostEval.Builder builderForValue) {
+        if (treeEvalBuilder_ == null) {
+          ensureTreeEvalIsMutable();
+          treeEval_.add(builderForValue.build());
+          onChanged();
+        } else {
+          treeEvalBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      public DataSplitOrBuilder getSplitOrBuilder() {
-        if (splitBuilder_ != null) {
-          return splitBuilder_.getMessageOrBuilder();
+      public Builder addTreeEval(
+          int index, BoostEval.Builder builderForValue) {
+        if (treeEvalBuilder_ == null) {
+          ensureTreeEvalIsMutable();
+          treeEval_.add(index, builderForValue.build());
+          onChanged();
         } else {
-          return split_ == null ?
-              DataSplit.getDefaultInstance() : split_;
+          treeEvalBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public Builder addAllTreeEval(
+          Iterable<? extends BoostEval> values) {
+        if (treeEvalBuilder_ == null) {
+          ensureTreeEvalIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, treeEval_);
+          onChanged();
+        } else {
+          treeEvalBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public Builder clearTreeEval() {
+        if (treeEvalBuilder_ == null) {
+          treeEval_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          treeEvalBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public Builder removeTreeEval(int index) {
+        if (treeEvalBuilder_ == null) {
+          ensureTreeEvalIsMutable();
+          treeEval_.remove(index);
+          onChanged();
+        } else {
+          treeEvalBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public BoostEval.Builder getTreeEvalBuilder(
+          int index) {
+        return getTreeEvalFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public BoostEvalOrBuilder getTreeEvalOrBuilder(
+          int index) {
+        if (treeEvalBuilder_ == null) {
+          return treeEval_.get(index);  } else {
+          return treeEvalBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
        */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          DataSplit, DataSplit.Builder, DataSplitOrBuilder>
-          getSplitFieldBuilder() {
-        if (splitBuilder_ == null) {
-          splitBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              DataSplit, DataSplit.Builder, DataSplitOrBuilder>(
-                  getSplit(),
+      public java.util.List<? extends BoostEvalOrBuilder>
+           getTreeEvalOrBuilderList() {
+        if (treeEvalBuilder_ != null) {
+          return treeEvalBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(treeEval_);
+        }
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public BoostEval.Builder addTreeEvalBuilder() {
+        return getTreeEvalFieldBuilder().addBuilder(
+            BoostEval.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public BoostEval.Builder addTreeEvalBuilder(
+          int index) {
+        return getTreeEvalFieldBuilder().addBuilder(
+            index, BoostEval.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
+       */
+      public java.util.List<BoostEval.Builder>
+           getTreeEvalBuilderList() {
+        return getTreeEvalFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          BoostEval, BoostEval.Builder, BoostEvalOrBuilder>
+          getTreeEvalFieldBuilder() {
+        if (treeEvalBuilder_ == null) {
+          treeEvalBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              BoostEval, BoostEval.Builder, BoostEvalOrBuilder>(
+                  treeEval_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
                   isClean());
-          split_ = null;
+          treeEval_ = null;
         }
-        return splitBuilder_;
+        return treeEvalBuilder_;
+      }
+
+      private int bsVersion_ ;
+      /**
+       * <code>optional int32 bsVersion = 3;</code>
+       */
+      public int getBsVersion() {
+        return bsVersion_;
+      }
+      /**
+       * <code>optional int32 bsVersion = 3;</code>
+       */
+      public Builder setBsVersion(int value) {
+        
+        bsVersion_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 bsVersion = 3;</code>
+       */
+      public Builder clearBsVersion() {
+        
+        bsVersion_ = 0;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -10578,39 +10819,936 @@ public final class FGBoostServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:fgboost.SplitRequest)
+      // @@protoc_insertion_point(builder_scope:fgboost.EvaluateRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:fgboost.SplitRequest)
-    private static final SplitRequest DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:fgboost.EvaluateRequest)
+    private static final EvaluateRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new SplitRequest();
+      DEFAULT_INSTANCE = new EvaluateRequest();
     }
 
-    public static SplitRequest getDefaultInstance() {
+    public static EvaluateRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<SplitRequest>
-        PARSER = new com.google.protobuf.AbstractParser<SplitRequest>() {
-      public SplitRequest parsePartialFrom(
+    private static final com.google.protobuf.Parser<EvaluateRequest>
+        PARSER = new com.google.protobuf.AbstractParser<EvaluateRequest>() {
+      public EvaluateRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new SplitRequest(input, extensionRegistry);
+          return new EvaluateRequest(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<SplitRequest> parser() {
+    public static com.google.protobuf.Parser<EvaluateRequest> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<SplitRequest> getParserForType() {
+    public com.google.protobuf.Parser<EvaluateRequest> getParserForType() {
       return PARSER;
     }
 
-    public SplitRequest getDefaultInstanceForType() {
+    public EvaluateRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface EvaluateResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.EvaluateResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string response = 1;</code>
+     */
+    String getResponse();
+    /**
+     * <code>optional string response = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getResponseBytes();
+
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    boolean hasData();
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    FlBaseProto.TensorMap getData();
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+
+    /**
+     * <code>optional int32 code = 3;</code>
+     */
+    int getCode();
+
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    String getMessage();
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getMessageBytes();
+  }
+  /**
+   * Protobuf type {@code fgboost.EvaluateResponse}
+   */
+  public  static final class EvaluateResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:fgboost.EvaluateResponse)
+      EvaluateResponseOrBuilder {
+    // Use EvaluateResponse.newBuilder() to construct.
+    private EvaluateResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private EvaluateResponse() {
+      response_ = "";
+      code_ = 0;
+      message_ = "";
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private EvaluateResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              String s = input.readStringRequireUtf8();
+
+              response_ = s;
+              break;
+            }
+            case 18: {
+              FlBaseProto.TensorMap.Builder subBuilder = null;
+              if (data_ != null) {
+                subBuilder = data_.toBuilder();
+              }
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(data_);
+                data_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 24: {
+
+              code_ = input.readInt32();
+              break;
+            }
+            case 34: {
+              String s = input.readStringRequireUtf8();
+
+              message_ = s;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              EvaluateResponse.class, Builder.class);
+    }
+
+    public static final int RESPONSE_FIELD_NUMBER = 1;
+    private volatile Object response_;
+    /**
+     * <code>optional string response = 1;</code>
+     */
+    public String getResponse() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        response_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string response = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getResponseBytes() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        response_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int DATA_FIELD_NUMBER = 2;
+    private FlBaseProto.TensorMap data_;
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    public boolean hasData() {
+      return data_ != null;
+    }
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    }
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      return getData();
+    }
+
+    public static final int CODE_FIELD_NUMBER = 3;
+    private int code_;
+    /**
+     * <code>optional int32 code = 3;</code>
+     */
+    public int getCode() {
+      return code_;
+    }
+
+    public static final int MESSAGE_FIELD_NUMBER = 4;
+    private volatile Object message_;
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    public String getMessage() {
+      Object ref = message_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        message_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string message = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      Object ref = message_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!getResponseBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, response_);
+      }
+      if (data_ != null) {
+        output.writeMessage(2, getData());
+      }
+      if (code_ != 0) {
+        output.writeInt32(3, code_);
+      }
+      if (!getMessageBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, message_);
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!getResponseBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, response_);
+      }
+      if (data_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getData());
+      }
+      if (code_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, code_);
+      }
+      if (!getMessageBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, message_);
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @Override
+    public boolean equals(final Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof EvaluateResponse)) {
+        return super.equals(obj);
+      }
+      EvaluateResponse other = (EvaluateResponse) obj;
+
+      boolean result = true;
+      result = result && getResponse()
+          .equals(other.getResponse());
+      result = result && (hasData() == other.hasData());
+      if (hasData()) {
+        result = result && getData()
+            .equals(other.getData());
+      }
+      result = result && (getCode()
+          == other.getCode());
+      result = result && getMessage()
+          .equals(other.getMessage());
+      return result;
+    }
+
+    @Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
+      hash = (53 * hash) + getResponse().hashCode();
+      if (hasData()) {
+        hash = (37 * hash) + DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getData().hashCode();
+      }
+      hash = (37 * hash) + CODE_FIELD_NUMBER;
+      hash = (53 * hash) + getCode();
+      hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getMessage().hashCode();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static EvaluateResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static EvaluateResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static EvaluateResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static EvaluateResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static EvaluateResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static EvaluateResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static EvaluateResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static EvaluateResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static EvaluateResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static EvaluateResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(EvaluateResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code fgboost.EvaluateResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:fgboost.EvaluateResponse)
+        EvaluateResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                EvaluateResponse.class, Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        response_ = "";
+
+        if (dataBuilder_ == null) {
+          data_ = null;
+        } else {
+          data_ = null;
+          dataBuilder_ = null;
+        }
+        code_ = 0;
+
+        message_ = "";
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
+      }
+
+      public EvaluateResponse getDefaultInstanceForType() {
+        return EvaluateResponse.getDefaultInstance();
+      }
+
+      public EvaluateResponse build() {
+        EvaluateResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public EvaluateResponse buildPartial() {
+        EvaluateResponse result = new EvaluateResponse(this);
+        result.response_ = response_;
+        if (dataBuilder_ == null) {
+          result.data_ = data_;
+        } else {
+          result.data_ = dataBuilder_.build();
+        }
+        result.code_ = code_;
+        result.message_ = message_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof EvaluateResponse) {
+          return mergeFrom((EvaluateResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(EvaluateResponse other) {
+        if (other == EvaluateResponse.getDefaultInstance()) return this;
+        if (!other.getResponse().isEmpty()) {
+          response_ = other.response_;
+          onChanged();
+        }
+        if (other.hasData()) {
+          mergeData(other.getData());
+        }
+        if (other.getCode() != 0) {
+          setCode(other.getCode());
+        }
+        if (!other.getMessage().isEmpty()) {
+          message_ = other.message_;
+          onChanged();
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        EvaluateResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (EvaluateResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private Object response_ = "";
+      /**
+       * <code>optional string response = 1;</code>
+       */
+      public String getResponse() {
+        Object ref = response_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          response_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <code>optional string response = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getResponseBytes() {
+        Object ref = response_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          response_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string response = 1;</code>
+       */
+      public Builder setResponse(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        response_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string response = 1;</code>
+       */
+      public Builder clearResponse() {
+        
+        response_ = getDefaultInstance().getResponse();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string response = 1;</code>
+       */
+      public Builder setResponseBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        response_ = value;
+        onChanged();
+        return this;
+      }
+
+      private FlBaseProto.TensorMap data_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public boolean hasData() {
+        return dataBuilder_ != null || data_ != null;
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public FlBaseProto.TensorMap getData() {
+        if (dataBuilder_ == null) {
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+        } else {
+          return dataBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public Builder setData(FlBaseProto.TensorMap value) {
+        if (dataBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          data_ = value;
+          onChanged();
+        } else {
+          dataBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public Builder setData(
+          FlBaseProto.TensorMap.Builder builderForValue) {
+        if (dataBuilder_ == null) {
+          data_ = builderForValue.build();
+          onChanged();
+        } else {
+          dataBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public Builder mergeData(FlBaseProto.TensorMap value) {
+        if (dataBuilder_ == null) {
+          if (data_ != null) {
+            data_ =
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+          } else {
+            data_ = value;
+          }
+          onChanged();
+        } else {
+          dataBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public Builder clearData() {
+        if (dataBuilder_ == null) {
+          data_ = null;
+          onChanged();
+        } else {
+          data_ = null;
+          dataBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+        
+        onChanged();
+        return getDataFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+        if (dataBuilder_ != null) {
+          return dataBuilder_.getMessageOrBuilder();
+        } else {
+          return data_ == null ?
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+        }
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          getDataFieldBuilder() {
+        if (dataBuilder_ == null) {
+          dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+                  getData(),
+                  getParentForChildren(),
+                  isClean());
+          data_ = null;
+        }
+        return dataBuilder_;
+      }
+
+      private int code_ ;
+      /**
+       * <code>optional int32 code = 3;</code>
+       */
+      public int getCode() {
+        return code_;
+      }
+      /**
+       * <code>optional int32 code = 3;</code>
+       */
+      public Builder setCode(int value) {
+        
+        code_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 code = 3;</code>
+       */
+      public Builder clearCode() {
+        
+        code_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private Object message_ = "";
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public String getMessage() {
+        Object ref = message_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          message_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        Object ref = message_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public Builder setMessage(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public Builder clearMessage() {
+        
+        message_ = getDefaultInstance().getMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 4;</code>
+       */
+      public Builder setMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:fgboost.EvaluateResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:fgboost.EvaluateResponse)
+    private static final EvaluateResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new EvaluateResponse();
+    }
+
+    public static EvaluateResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<EvaluateResponse>
+        PARSER = new com.google.protobuf.AbstractParser<EvaluateResponse>() {
+      public EvaluateResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new EvaluateResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<EvaluateResponse> parser() {
+      return PARSER;
+    }
+
+    @Override
+    public com.google.protobuf.Parser<EvaluateResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public EvaluateResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -10652,7 +11790,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-        int index);
+            int index);
 
     /**
      * <code>optional int32 bsVersion = 3;</code>
@@ -10740,7 +11878,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -10983,7 +12121,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -10999,7 +12137,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -11012,7 +12150,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -11554,22 +12692,734 @@ public final class FGBoostServiceProto {
 
   }
 
+  public interface SplitRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.SplitRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string clientuuid = 1;</code>
+     */
+    String getClientuuid();
+    /**
+     * <code>optional string clientuuid = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getClientuuidBytes();
+
+    /**
+     * <code>optional .fgboost.DataSplit split = 2;</code>
+     */
+    boolean hasSplit();
+    /**
+     * <code>optional .fgboost.DataSplit split = 2;</code>
+     */
+    DataSplit getSplit();
+    /**
+     * <code>optional .fgboost.DataSplit split = 2;</code>
+     */
+    DataSplitOrBuilder getSplitOrBuilder();
+  }
+  /**
+   * Protobuf type {@code fgboost.SplitRequest}
+   */
+  public  static final class SplitRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:fgboost.SplitRequest)
+      SplitRequestOrBuilder {
+    // Use SplitRequest.newBuilder() to construct.
+    private SplitRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private SplitRequest() {
+      clientuuid_ = "";
+    }
+
+    @Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private SplitRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              String s = input.readStringRequireUtf8();
+
+              clientuuid_ = s;
+              break;
+            }
+            case 18: {
+              DataSplit.Builder subBuilder = null;
+              if (split_ != null) {
+                subBuilder = split_.toBuilder();
+              }
+              split_ = input.readMessage(DataSplit.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(split_);
+                split_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              SplitRequest.class, Builder.class);
+    }
+
+    public static final int CLIENTUUID_FIELD_NUMBER = 1;
+    private volatile Object clientuuid_;
+    /**
+     * <code>optional string clientuuid = 1;</code>
+     */
+    public String getClientuuid() {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        clientuuid_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string clientuuid = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getClientuuidBytes() {
+      Object ref = clientuuid_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        clientuuid_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SPLIT_FIELD_NUMBER = 2;
+    private DataSplit split_;
+    /**
+     * <code>optional .fgboost.DataSplit split = 2;</code>
+     */
+    public boolean hasSplit() {
+      return split_ != null;
+    }
+    /**
+     * <code>optional .fgboost.DataSplit split = 2;</code>
+     */
+    public DataSplit getSplit() {
+      return split_ == null ? DataSplit.getDefaultInstance() : split_;
+    }
+    /**
+     * <code>optional .fgboost.DataSplit split = 2;</code>
+     */
+    public DataSplitOrBuilder getSplitOrBuilder() {
+      return getSplit();
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (!getClientuuidBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
+      }
+      if (split_ != null) {
+        output.writeMessage(2, getSplit());
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (!getClientuuidBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
+      }
+      if (split_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getSplit());
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @Override
+    public boolean equals(final Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof SplitRequest)) {
+        return super.equals(obj);
+      }
+      SplitRequest other = (SplitRequest) obj;
+
+      boolean result = true;
+      result = result && getClientuuid()
+          .equals(other.getClientuuid());
+      result = result && (hasSplit() == other.hasSplit());
+      if (hasSplit()) {
+        result = result && getSplit()
+            .equals(other.getSplit());
+      }
+      return result;
+    }
+
+    @Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
+      hash = (53 * hash) + getClientuuid().hashCode();
+      if (hasSplit()) {
+        hash = (37 * hash) + SPLIT_FIELD_NUMBER;
+        hash = (53 * hash) + getSplit().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static SplitRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static SplitRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static SplitRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static SplitRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static SplitRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static SplitRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static SplitRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static SplitRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static SplitRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static SplitRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(SplitRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code fgboost.SplitRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:fgboost.SplitRequest)
+        SplitRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                SplitRequest.class, Builder.class);
+      }
+
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        clientuuid_ = "";
+
+        if (splitBuilder_ == null) {
+          split_ = null;
+        } else {
+          split_ = null;
+          splitBuilder_ = null;
+        }
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
+      }
+
+      public SplitRequest getDefaultInstanceForType() {
+        return SplitRequest.getDefaultInstance();
+      }
+
+      public SplitRequest build() {
+        SplitRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public SplitRequest buildPartial() {
+        SplitRequest result = new SplitRequest(this);
+        result.clientuuid_ = clientuuid_;
+        if (splitBuilder_ == null) {
+          result.split_ = split_;
+        } else {
+          result.split_ = splitBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof SplitRequest) {
+          return mergeFrom((SplitRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(SplitRequest other) {
+        if (other == SplitRequest.getDefaultInstance()) return this;
+        if (!other.getClientuuid().isEmpty()) {
+          clientuuid_ = other.clientuuid_;
+          onChanged();
+        }
+        if (other.hasSplit()) {
+          mergeSplit(other.getSplit());
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        SplitRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (SplitRequest) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private Object clientuuid_ = "";
+      /**
+       * <code>optional string clientuuid = 1;</code>
+       */
+      public String getClientuuid() {
+        Object ref = clientuuid_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          clientuuid_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      /**
+       * <code>optional string clientuuid = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getClientuuidBytes() {
+        Object ref = clientuuid_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          clientuuid_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string clientuuid = 1;</code>
+       */
+      public Builder setClientuuid(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        clientuuid_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string clientuuid = 1;</code>
+       */
+      public Builder clearClientuuid() {
+        
+        clientuuid_ = getDefaultInstance().getClientuuid();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string clientuuid = 1;</code>
+       */
+      public Builder setClientuuidBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        clientuuid_ = value;
+        onChanged();
+        return this;
+      }
+
+      private DataSplit split_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          DataSplit, DataSplit.Builder, DataSplitOrBuilder> splitBuilder_;
+      /**
+       * <code>optional .fgboost.DataSplit split = 2;</code>
+       */
+      public boolean hasSplit() {
+        return splitBuilder_ != null || split_ != null;
+      }
+      /**
+       * <code>optional .fgboost.DataSplit split = 2;</code>
+       */
+      public DataSplit getSplit() {
+        if (splitBuilder_ == null) {
+          return split_ == null ? DataSplit.getDefaultInstance() : split_;
+        } else {
+          return splitBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .fgboost.DataSplit split = 2;</code>
+       */
+      public Builder setSplit(DataSplit value) {
+        if (splitBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          split_ = value;
+          onChanged();
+        } else {
+          splitBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .fgboost.DataSplit split = 2;</code>
+       */
+      public Builder setSplit(
+          DataSplit.Builder builderForValue) {
+        if (splitBuilder_ == null) {
+          split_ = builderForValue.build();
+          onChanged();
+        } else {
+          splitBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .fgboost.DataSplit split = 2;</code>
+       */
+      public Builder mergeSplit(DataSplit value) {
+        if (splitBuilder_ == null) {
+          if (split_ != null) {
+            split_ =
+              DataSplit.newBuilder(split_).mergeFrom(value).buildPartial();
+          } else {
+            split_ = value;
+          }
+          onChanged();
+        } else {
+          splitBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .fgboost.DataSplit split = 2;</code>
+       */
+      public Builder clearSplit() {
+        if (splitBuilder_ == null) {
+          split_ = null;
+          onChanged();
+        } else {
+          split_ = null;
+          splitBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .fgboost.DataSplit split = 2;</code>
+       */
+      public DataSplit.Builder getSplitBuilder() {
+        
+        onChanged();
+        return getSplitFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .fgboost.DataSplit split = 2;</code>
+       */
+      public DataSplitOrBuilder getSplitOrBuilder() {
+        if (splitBuilder_ != null) {
+          return splitBuilder_.getMessageOrBuilder();
+        } else {
+          return split_ == null ?
+              DataSplit.getDefaultInstance() : split_;
+        }
+      }
+      /**
+       * <code>optional .fgboost.DataSplit split = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          DataSplit, DataSplit.Builder, DataSplitOrBuilder>
+          getSplitFieldBuilder() {
+        if (splitBuilder_ == null) {
+          splitBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              DataSplit, DataSplit.Builder, DataSplitOrBuilder>(
+                  getSplit(),
+                  getParentForChildren(),
+                  isClean());
+          split_ = null;
+        }
+        return splitBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:fgboost.SplitRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:fgboost.SplitRequest)
+    private static final SplitRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new SplitRequest();
+    }
+
+    public static SplitRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<SplitRequest>
+        PARSER = new com.google.protobuf.AbstractParser<SplitRequest>() {
+      public SplitRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new SplitRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<SplitRequest> parser() {
+      return PARSER;
+    }
+
+    @Override
+    public com.google.protobuf.Parser<SplitRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public SplitRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface PredictResponseOrBuilder extends
       // @@protoc_insertion_point(interface_extends:fgboost.PredictResponse)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .Table result = 1;</code>
+     * <code>optional string response = 1;</code>
      */
-    boolean hasResult();
+    String getResponse();
     /**
-     * <code>optional .Table result = 1;</code>
+     * <code>optional string response = 1;</code>
      */
-    FlBaseProto.Table getResult();
+    com.google.protobuf.ByteString
+        getResponseBytes();
+
     /**
-     * <code>optional .Table result = 1;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    FlBaseProto.TableOrBuilder getResultOrBuilder();
+    boolean hasData();
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    FlBaseProto.TensorMap getData();
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+
+    /**
+     * <code>optional int32 code = 3;</code>
+     */
+    int getCode();
   }
   /**
    * Protobuf type {@code fgboost.PredictResponse}
@@ -11583,6 +13433,8 @@ public final class FGBoostServiceProto {
       super(builder);
     }
     private PredictResponse() {
+      response_ = "";
+      code_ = 0;
     }
 
     @Override
@@ -11611,16 +13463,27 @@ public final class FGBoostServiceProto {
               break;
             }
             case 10: {
-              FlBaseProto.Table.Builder subBuilder = null;
-              if (result_ != null) {
-                subBuilder = result_.toBuilder();
+              String s = input.readStringRequireUtf8();
+
+              response_ = s;
+              break;
+            }
+            case 18: {
+              FlBaseProto.TensorMap.Builder subBuilder = null;
+              if (data_ != null) {
+                subBuilder = data_.toBuilder();
               }
-              result_ = input.readMessage(FlBaseProto.Table.parser(), extensionRegistry);
+              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(result_);
-                result_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(data_);
+                data_ = subBuilder.buildPartial();
               }
 
+              break;
+            }
+            case 24: {
+
+              code_ = input.readInt32();
               break;
             }
           }
@@ -11639,32 +13502,75 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               PredictResponse.class, Builder.class);
     }
 
-    public static final int RESULT_FIELD_NUMBER = 1;
-    private FlBaseProto.Table result_;
+    public static final int RESPONSE_FIELD_NUMBER = 1;
+    private volatile Object response_;
     /**
-     * <code>optional .Table result = 1;</code>
+     * <code>optional string response = 1;</code>
      */
-    public boolean hasResult() {
-      return result_ != null;
+    public String getResponse() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        response_ = s;
+        return s;
+      }
     }
     /**
-     * <code>optional .Table result = 1;</code>
+     * <code>optional string response = 1;</code>
      */
-    public FlBaseProto.Table getResult() {
-      return result_ == null ? FlBaseProto.Table.getDefaultInstance() : result_;
+    public com.google.protobuf.ByteString
+        getResponseBytes() {
+      Object ref = response_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        response_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int DATA_FIELD_NUMBER = 2;
+    private FlBaseProto.TensorMap data_;
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    public boolean hasData() {
+      return data_ != null;
     }
     /**
-     * <code>optional .Table result = 1;</code>
+     * <code>optional .TensorMap data = 2;</code>
      */
-    public FlBaseProto.TableOrBuilder getResultOrBuilder() {
-      return getResult();
+    public FlBaseProto.TensorMap getData() {
+      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    }
+    /**
+     * <code>optional .TensorMap data = 2;</code>
+     */
+    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      return getData();
+    }
+
+    public static final int CODE_FIELD_NUMBER = 3;
+    private int code_;
+    /**
+     * <code>optional int32 code = 3;</code>
+     */
+    public int getCode() {
+      return code_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -11679,8 +13585,14 @@ public final class FGBoostServiceProto {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (result_ != null) {
-        output.writeMessage(1, getResult());
+      if (!getResponseBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, response_);
+      }
+      if (data_ != null) {
+        output.writeMessage(2, getData());
+      }
+      if (code_ != 0) {
+        output.writeInt32(3, code_);
       }
     }
 
@@ -11689,9 +13601,16 @@ public final class FGBoostServiceProto {
       if (size != -1) return size;
 
       size = 0;
-      if (result_ != null) {
+      if (!getResponseBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, response_);
+      }
+      if (data_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getResult());
+          .computeMessageSize(2, getData());
+      }
+      if (code_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, code_);
       }
       memoizedSize = size;
       return size;
@@ -11709,11 +13628,15 @@ public final class FGBoostServiceProto {
       PredictResponse other = (PredictResponse) obj;
 
       boolean result = true;
-      result = result && (hasResult() == other.hasResult());
-      if (hasResult()) {
-        result = result && getResult()
-            .equals(other.getResult());
+      result = result && getResponse()
+          .equals(other.getResponse());
+      result = result && (hasData() == other.hasData());
+      if (hasData()) {
+        result = result && getData()
+            .equals(other.getData());
       }
+      result = result && (getCode()
+          == other.getCode());
       return result;
     }
 
@@ -11724,10 +13647,14 @@ public final class FGBoostServiceProto {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasResult()) {
-        hash = (37 * hash) + RESULT_FIELD_NUMBER;
-        hash = (53 * hash) + getResult().hashCode();
+      hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
+      hash = (53 * hash) + getResponse().hashCode();
+      if (hasData()) {
+        hash = (37 * hash) + DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getData().hashCode();
       }
+      hash = (37 * hash) + CODE_FIELD_NUMBER;
+      hash = (53 * hash) + getCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -11806,7 +13733,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -11822,7 +13749,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -11835,7 +13762,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -11846,12 +13773,16 @@ public final class FGBoostServiceProto {
       }
       public Builder clear() {
         super.clear();
-        if (resultBuilder_ == null) {
-          result_ = null;
+        response_ = "";
+
+        if (dataBuilder_ == null) {
+          data_ = null;
         } else {
-          result_ = null;
-          resultBuilder_ = null;
+          data_ = null;
+          dataBuilder_ = null;
         }
+        code_ = 0;
+
         return this;
       }
 
@@ -11874,11 +13805,13 @@ public final class FGBoostServiceProto {
 
       public PredictResponse buildPartial() {
         PredictResponse result = new PredictResponse(this);
-        if (resultBuilder_ == null) {
-          result.result_ = result_;
+        result.response_ = response_;
+        if (dataBuilder_ == null) {
+          result.data_ = data_;
         } else {
-          result.result_ = resultBuilder_.build();
+          result.data_ = dataBuilder_.build();
         }
+        result.code_ = code_;
         onBuilt();
         return result;
       }
@@ -11920,8 +13853,15 @@ public final class FGBoostServiceProto {
 
       public Builder mergeFrom(PredictResponse other) {
         if (other == PredictResponse.getDefaultInstance()) return this;
-        if (other.hasResult()) {
-          mergeResult(other.getResult());
+        if (!other.getResponse().isEmpty()) {
+          response_ = other.response_;
+          onChanged();
+        }
+        if (other.hasData()) {
+          mergeData(other.getData());
+        }
+        if (other.getCode() != 0) {
+          setCode(other.getCode());
         }
         onChanged();
         return this;
@@ -11949,121 +13889,216 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.Table result_ = null;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder> resultBuilder_;
+      private Object response_ = "";
       /**
-       * <code>optional .Table result = 1;</code>
+       * <code>optional string response = 1;</code>
        */
-      public boolean hasResult() {
-        return resultBuilder_ != null || result_ != null;
-      }
-      /**
-       * <code>optional .Table result = 1;</code>
-       */
-      public FlBaseProto.Table getResult() {
-        if (resultBuilder_ == null) {
-          return result_ == null ? FlBaseProto.Table.getDefaultInstance() : result_;
+      public String getResponse() {
+        Object ref = response_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          response_ = s;
+          return s;
         } else {
-          return resultBuilder_.getMessage();
+          return (String) ref;
         }
       }
       /**
-       * <code>optional .Table result = 1;</code>
+       * <code>optional string response = 1;</code>
        */
-      public Builder setResult(FlBaseProto.Table value) {
-        if (resultBuilder_ == null) {
+      public com.google.protobuf.ByteString
+          getResponseBytes() {
+        Object ref = response_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          response_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string response = 1;</code>
+       */
+      public Builder setResponse(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        response_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string response = 1;</code>
+       */
+      public Builder clearResponse() {
+        
+        response_ = getDefaultInstance().getResponse();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string response = 1;</code>
+       */
+      public Builder setResponseBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        response_ = value;
+        onChanged();
+        return this;
+      }
+
+      private FlBaseProto.TensorMap data_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public boolean hasData() {
+        return dataBuilder_ != null || data_ != null;
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public FlBaseProto.TensorMap getData() {
+        if (dataBuilder_ == null) {
+          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+        } else {
+          return dataBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .TensorMap data = 2;</code>
+       */
+      public Builder setData(FlBaseProto.TensorMap value) {
+        if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          result_ = value;
+          data_ = value;
           onChanged();
         } else {
-          resultBuilder_.setMessage(value);
+          dataBuilder_.setMessage(value);
         }
 
         return this;
       }
       /**
-       * <code>optional .Table result = 1;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder setResult(
-          FlBaseProto.Table.Builder builderForValue) {
-        if (resultBuilder_ == null) {
-          result_ = builderForValue.build();
+      public Builder setData(
+          FlBaseProto.TensorMap.Builder builderForValue) {
+        if (dataBuilder_ == null) {
+          data_ = builderForValue.build();
           onChanged();
         } else {
-          resultBuilder_.setMessage(builderForValue.build());
+          dataBuilder_.setMessage(builderForValue.build());
         }
 
         return this;
       }
       /**
-       * <code>optional .Table result = 1;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder mergeResult(FlBaseProto.Table value) {
-        if (resultBuilder_ == null) {
-          if (result_ != null) {
-            result_ =
-              FlBaseProto.Table.newBuilder(result_).mergeFrom(value).buildPartial();
+      public Builder mergeData(FlBaseProto.TensorMap value) {
+        if (dataBuilder_ == null) {
+          if (data_ != null) {
+            data_ =
+              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
-            result_ = value;
+            data_ = value;
           }
           onChanged();
         } else {
-          resultBuilder_.mergeFrom(value);
+          dataBuilder_.mergeFrom(value);
         }
 
         return this;
       }
       /**
-       * <code>optional .Table result = 1;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public Builder clearResult() {
-        if (resultBuilder_ == null) {
-          result_ = null;
+      public Builder clearData() {
+        if (dataBuilder_ == null) {
+          data_ = null;
           onChanged();
         } else {
-          result_ = null;
-          resultBuilder_ = null;
+          data_ = null;
+          dataBuilder_ = null;
         }
 
         return this;
       }
       /**
-       * <code>optional .Table result = 1;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.Table.Builder getResultBuilder() {
+      public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
-        return getResultFieldBuilder().getBuilder();
+        return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .Table result = 1;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
-      public FlBaseProto.TableOrBuilder getResultOrBuilder() {
-        if (resultBuilder_ != null) {
-          return resultBuilder_.getMessageOrBuilder();
+      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+        if (dataBuilder_ != null) {
+          return dataBuilder_.getMessageOrBuilder();
         } else {
-          return result_ == null ?
-              FlBaseProto.Table.getDefaultInstance() : result_;
+          return data_ == null ?
+              FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .Table result = 1;</code>
+       * <code>optional .TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>
-          getResultFieldBuilder() {
-        if (resultBuilder_ == null) {
-          resultBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.Table, FlBaseProto.Table.Builder, FlBaseProto.TableOrBuilder>(
-                  getResult(),
+          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          getDataFieldBuilder() {
+        if (dataBuilder_ == null) {
+          dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+                  getData(),
                   getParentForChildren(),
                   isClean());
-          result_ = null;
+          data_ = null;
         }
-        return resultBuilder_;
+        return dataBuilder_;
+      }
+
+      private int code_ ;
+      /**
+       * <code>optional int32 code = 3;</code>
+       */
+      public int getCode() {
+        return code_;
+      }
+      /**
+       * <code>optional int32 code = 3;</code>
+       */
+      public Builder setCode(int value) {
+        
+        code_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 code = 3;</code>
+       */
+      public Builder clearCode() {
+        
+        code_ = 0;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -12227,7 +14262,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -12458,7 +14493,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -12474,7 +14509,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -12487,7 +14522,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -12875,15 +14910,15 @@ public final class FGBoostServiceProto {
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_fgboost_UploadTableRequest_descriptor;
+    internal_static_fgboost_UploadLabelRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_fgboost_UploadTableRequest_fieldAccessorTable;
+      internal_static_fgboost_UploadLabelRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_fgboost_DownloadTableRequest_descriptor;
+    internal_static_fgboost_DownloadLabelRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_fgboost_DownloadTableRequest_fieldAccessorTable;
+      internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_fgboost_DownloadResponse_descriptor;
   private static final 
@@ -12940,15 +14975,25 @@ public final class FGBoostServiceProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_fgboost_SplitRequest_descriptor;
+    internal_static_fgboost_EvaluateRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_fgboost_SplitRequest_fieldAccessorTable;
+      internal_static_fgboost_EvaluateRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_fgboost_EvaluateResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_fgboost_EvaluateResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_fgboost_PredictRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_fgboost_PredictRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_fgboost_SplitRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_fgboost_SplitRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_fgboost_PredictResponse_descriptor;
   private static final 
@@ -12969,53 +15014,58 @@ public final class FGBoostServiceProto {
   static {
     String[] descriptorData = {
       "\n\025fgboost_service.proto\022\007fgboost\032\rfl_bas" +
-      "e.proto\"Q\n\022UploadTableRequest\022\022\n\nclientu" +
-      "uid\030\001 \001(\t\022\024\n\004data\030\002 \001(\0132\006.Table\022\021\n\talgor" +
-      "ithm\030\003 \001(\t\"K\n\024DownloadTableRequest\022 \n\010me" +
-      "taData\030\001 \001(\0132\016.TableMetaData\022\021\n\talgorith" +
-      "m\030\002 \001(\t\"H\n\020DownloadResponse\022\024\n\004data\030\001 \001(" +
-      "\0132\006.Table\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003 \001(" +
-      "\005\"C\n\nTreeLeaves\022\016\n\006treeID\030\001 \001(\t\022\021\n\tleafI" +
-      "ndex\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\"V\n\027Upload" +
-      "TreeLeavesRequest\022\022\n\nclientuuid\030\001 \001(\t\022\'\n",
-      "\ntreeLeaves\030\002 \001(\0132\023.fgboost.TreeLeaves\"\227" +
-      "\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t\022\016\n\006nodeID\030\002" +
-      " \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\nsplitValue\030\004 " +
-      "\001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLength\030\006 \001(\005\022\017\n\007" +
-      "itemSet\030\007 \003(\005\022\021\n\tclientUid\030\010 \001(\t\"0\n\016Uplo" +
-      "adResponse\022\020\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001" +
-      "(\005\"/\n\013TreePredict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010pre" +
-      "dicts\030\002 \003(\010\"6\n\014BoostPredict\022&\n\010predicts\030" +
-      "\001 \003(\0132\024.fgboost.TreePredict\"4\n\tBoostEval" +
-      "\022\'\n\tevaluates\030\001 \003(\0132\024.fgboost.TreePredic",
-      "t\"4\n\017RegisterRequest\022\022\n\nclientuuid\030\001 \001(\t" +
-      "\022\r\n\005token\030\002 \001(\t\"2\n\020RegisterResponse\022\020\n\010r" +
-      "esponse\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"b\n\025UploadTre" +
-      "eEvalRequest\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007vers" +
-      "ion\030\002 \001(\005\022$\n\010treeEval\030\003 \003(\0132\022.fgboost.Bo" +
-      "ostEval\"E\n\014SplitRequest\022\022\n\nclientuuid\030\001 " +
-      "\001(\t\022!\n\005split\030\002 \001(\0132\022.fgboost.DataSplit\"]" +
-      "\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010" +
-      "treeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n\tbs" +
-      "Version\030\003 \001(\005\")\n\017PredictResponse\022\026\n\006resu",
-      "lt\030\001 \001(\0132\006.Table\"R\n\rSplitResponse\022!\n\005spl" +
-      "it\030\001 \001(\0132\022.fgboost.DataSplit\022\020\n\010response" +
-      "\030\002 \001(\t\022\014\n\004code\030\003 \001(\0052\377\003\n\016FGBoostService\022" +
-      "E\n\013uploadTable\022\033.fgboost.UploadTableRequ" +
-      "est\032\027.fgboost.UploadResponse\"\000\022K\n\rdownlo" +
-      "adTable\022\035.fgboost.DownloadTableRequest\032\031" +
-      ".fgboost.DownloadResponse\"\000\0228\n\005split\022\025.f" +
-      "gboost.SplitRequest\032\026.fgboost.SplitRespo" +
-      "nse\"\000\022A\n\010register\022\030.fgboost.RegisterRequ" +
-      "est\032\031.fgboost.RegisterResponse\"\000\022O\n\020uplo",
-      "adTreeLeaves\022 .fgboost.UploadTreeLeavesR" +
-      "equest\032\027.fgboost.UploadResponse\"\000\022K\n\016upl" +
-      "oadTreeEval\022\036.fgboost.UploadTreeEvalRequ" +
-      "est\032\027.fgboost.UploadResponse\"\000\022>\n\007predic" +
-      "t\022\027.fgboost.PredictRequest\032\030.fgboost.Pre" +
-      "dictResponse\"\000B?\n(com.intel.analytics.bi" +
-      "gdl.ppml.generatedB\023FGBoostServiceProtob" +
-      "\006proto3"
+      "e.proto\"U\n\022UploadLabelRequest\022\022\n\nclientu" +
+      "uid\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\021\n\ta" +
+      "lgorithm\030\003 \001(\t\"F\n\024DownloadLabelRequest\022\033" +
+      "\n\010metaData\030\001 \001(\0132\t.MetaData\022\021\n\talgorithm" +
+      "\030\002 \001(\t\"L\n\020DownloadResponse\022\030\n\004data\030\001 \001(\013" +
+      "2\n.TensorMap\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003" +
+      " \001(\005\"C\n\nTreeLeaves\022\016\n\006treeID\030\001 \001(\t\022\021\n\tle" +
+      "afIndex\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\"V\n\027Upl" +
+      "oadTreeLeavesRequest\022\022\n\nclientuuid\030\001 \001(\t",
+      "\022\'\n\ntreeLeaves\030\002 \001(\0132\023.fgboost.TreeLeave" +
+      "s\"\227\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t\022\016\n\006nodeI" +
+      "D\030\002 \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\nsplitValue" +
+      "\030\004 \001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLength\030\006 \001(\005\022" +
+      "\017\n\007itemSet\030\007 \003(\005\022\021\n\tclientUid\030\010 \001(\t\"0\n\016U" +
+      "ploadResponse\022\020\n\010response\030\001 \001(\t\022\014\n\004code\030" +
+      "\002 \001(\005\"/\n\013TreePredict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010" +
+      "predicts\030\002 \003(\010\"6\n\014BoostPredict\022&\n\010predic" +
+      "ts\030\001 \003(\0132\024.fgboost.TreePredict\"4\n\tBoostE" +
+      "val\022\'\n\tevaluates\030\001 \003(\0132\024.fgboost.TreePre",
+      "dict\"4\n\017RegisterRequest\022\022\n\nclientuuid\030\001 " +
+      "\001(\t\022\r\n\005token\030\002 \001(\t\"2\n\020RegisterResponse\022\020" +
+      "\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"b\n\025Upload" +
+      "TreeEvalRequest\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007v" +
+      "ersion\030\002 \001(\005\022$\n\010treeEval\030\003 \003(\0132\022.fgboost" +
+      ".BoostEval\"^\n\017EvaluateRequest\022\022\n\nclientu" +
+      "uid\030\001 \001(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.Bo" +
+      "ostEval\022\021\n\tbsVersion\030\003 \001(\005\"]\n\020EvaluateRe" +
+      "sponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n" +
+      ".TensorMap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(",
+      "\t\"]\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001(\t\022" +
+      "$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n" +
+      "\tbsVersion\030\003 \001(\005\"E\n\014SplitRequest\022\022\n\nclie" +
+      "ntuuid\030\001 \001(\t\022!\n\005split\030\002 \001(\0132\022.fgboost.Da" +
+      "taSplit\"K\n\017PredictResponse\022\020\n\010response\030\001" +
+      " \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n\004code\030\003" +
+      " \001(\005\"R\n\rSplitResponse\022!\n\005split\030\001 \001(\0132\022.f" +
+      "gboost.DataSplit\022\020\n\010response\030\002 \001(\t\022\014\n\004co" +
+      "de\030\003 \001(\0052\365\003\n\016FGBoostService\022E\n\013uploadLab" +
+      "el\022\033.fgboost.UploadLabelRequest\032\027.fgboos",
+      "t.UploadResponse\"\000\022K\n\rdownloadLabel\022\035.fg" +
+      "boost.DownloadLabelRequest\032\031.fgboost.Dow" +
+      "nloadResponse\"\000\0228\n\005split\022\025.fgboost.Split" +
+      "Request\032\026.fgboost.SplitResponse\"\000\022A\n\010reg" +
+      "ister\022\030.fgboost.RegisterRequest\032\031.fgboos" +
+      "t.RegisterResponse\"\000\022O\n\020uploadTreeLeaves" +
+      "\022 .fgboost.UploadTreeLeavesRequest\032\027.fgb" +
+      "oost.UploadResponse\"\000\022A\n\010evaluate\022\030.fgbo" +
+      "ost.EvaluateRequest\032\031.fgboost.EvaluateRe" +
+      "sponse\"\000\022>\n\007predict\022\027.fgboost.PredictReq",
+      "uest\032\030.fgboost.PredictResponse\"\000B?\n(com." +
+      "intel.analytics.bigdl.ppml.generatedB\023FG" +
+      "BoostServiceProtob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -13030,17 +15080,17 @@ public final class FGBoostServiceProto {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           FlBaseProto.getDescriptor(),
         }, assigner);
-    internal_static_fgboost_UploadTableRequest_descriptor =
+    internal_static_fgboost_UploadLabelRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_fgboost_UploadTableRequest_fieldAccessorTable = new
+    internal_static_fgboost_UploadLabelRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_fgboost_UploadTableRequest_descriptor,
+        internal_static_fgboost_UploadLabelRequest_descriptor,
         new String[] { "Clientuuid", "Data", "Algorithm", });
-    internal_static_fgboost_DownloadTableRequest_descriptor =
+    internal_static_fgboost_DownloadLabelRequest_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_fgboost_DownloadTableRequest_fieldAccessorTable = new
+    internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_fgboost_DownloadTableRequest_descriptor,
+        internal_static_fgboost_DownloadLabelRequest_descriptor,
         new String[] { "MetaData", "Algorithm", });
     internal_static_fgboost_DownloadResponse_descriptor =
       getDescriptor().getMessageTypes().get(2);
@@ -13108,26 +15158,38 @@ public final class FGBoostServiceProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_UploadTreeEvalRequest_descriptor,
         new String[] { "Clientuuid", "Version", "TreeEval", });
-    internal_static_fgboost_SplitRequest_descriptor =
+    internal_static_fgboost_EvaluateRequest_descriptor =
       getDescriptor().getMessageTypes().get(13);
-    internal_static_fgboost_SplitRequest_fieldAccessorTable = new
+    internal_static_fgboost_EvaluateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_fgboost_SplitRequest_descriptor,
-        new String[] { "Clientuuid", "Split", });
-    internal_static_fgboost_PredictRequest_descriptor =
+        internal_static_fgboost_EvaluateRequest_descriptor,
+        new String[] { "Clientuuid", "TreeEval", "BsVersion", });
+    internal_static_fgboost_EvaluateResponse_descriptor =
       getDescriptor().getMessageTypes().get(14);
+    internal_static_fgboost_EvaluateResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_fgboost_EvaluateResponse_descriptor,
+        new String[] { "Response", "Data", "Code", "Message", });
+    internal_static_fgboost_PredictRequest_descriptor =
+      getDescriptor().getMessageTypes().get(15);
     internal_static_fgboost_PredictRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_PredictRequest_descriptor,
         new String[] { "Clientuuid", "TreeEval", "BsVersion", });
+    internal_static_fgboost_SplitRequest_descriptor =
+      getDescriptor().getMessageTypes().get(16);
+    internal_static_fgboost_SplitRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_fgboost_SplitRequest_descriptor,
+        new String[] { "Clientuuid", "Split", });
     internal_static_fgboost_PredictResponse_descriptor =
-      getDescriptor().getMessageTypes().get(15);
+      getDescriptor().getMessageTypes().get(17);
     internal_static_fgboost_PredictResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_PredictResponse_descriptor,
-        new String[] { "Result", });
+        new String[] { "Response", "Data", "Code", });
     internal_static_fgboost_SplitResponse_descriptor =
-      getDescriptor().getMessageTypes().get(16);
+      getDescriptor().getMessageTypes().get(18);
     internal_static_fgboost_SplitResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_SplitResponse_descriptor,

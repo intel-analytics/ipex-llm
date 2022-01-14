@@ -327,6 +327,12 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
 
         self.estimator = SparkEstimator(self.model, self.optimizer, self.model_dir)
 
+    def __load_bigdl_model(self, path, bigdl_type="float"):
+        from bigdl.dllib.utils.common import callBigDlFunc
+        from bigdl.dllib.nn.layer import Layer
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
+        return Layer.of(jmodel)
+
     def load_orca_checkpoint(self, path, version=None, prefix=None):
         """
         Load existing checkpoint. To load a specific checkpoint, please provide both `version` and
@@ -355,7 +361,7 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                                        "for example 'optimMethod-TorchModelf53bddcc'"
 
         try:
-            loaded_model = Model.load(os.path.join(path, "model.{}".format(version)))
+            loaded_model = self.__load_bigdl_model(os.path.join(path, "model.{}".format(version)))
             self.model = TorchModel.from_value(loaded_model.value)
             self.optimizer = OptimMethod.load(os.path.join(path, "{}.{}".format(prefix, version)))
         except Exception as e:
