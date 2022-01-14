@@ -10,7 +10,7 @@ BigDL Documentation
 * `RayOnSpark <doc/Ray/Overview/ray.html>`_: run Ray programs directly on Big Data clusters
 * `Chronos <doc/Chronos/Overview/chronos.html>`_: scalable time series analysis using AutoML
 * `PPML <doc/PPML/Overview/ppml.html>`_: privacy preserving big data analysis and machine learning (*experimental*)
-
+* `Serving <doc/Serving/Overview/serving.html>`_: distributed and automated model inference on Big Data streaming frameworks
  
 -------
 
@@ -65,14 +65,8 @@ BigDL Documentation
    :caption: Chronos Overview
 
    doc/Chronos/Overview/chronos.md
-   doc/Chronos/Overview/data_processing_feature_engineering.md
-   doc/Chronos/Overview/forecasting.md
-   doc/Chronos/Overview/anomaly_detection.md
-   doc/Chronos/Overview/simulation.md
-   doc/Chronos/Overview/useful_functionalities.md
-   doc/Chronos/QuickStart/chronos-autotsest-quickstart.md
-   doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.md
-   doc/Chronos/QuickStart/chronos-anomaly-detector.md
+   doc/Chronos/Overview/deep_dive.rst
+   doc/Chronos/QuickStart/index.md
 
 .. toctree::
    :maxdepth: 1
@@ -84,6 +78,19 @@ BigDL Documentation
    doc/PPML/QuickStart/build_kernel_with_sgx.md
    doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.md
    doc/PPML/QuickStart/trusted-serving-on-k8s-guide.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Serving Overview
+
+   doc/Serving/Overview/serving.md
+   doc/Serving/QuickStart/serving-quickstart.md
+   doc/Serving/ProgrammingGuide/serving-installation.md
+   doc/Serving/ProgrammingGuide/serving-start.md
+   doc/Serving/ProgrammingGuide/serving-inference.md
+   doc/Serving/Example/example.md
+   doc/Serving/FAQ/faq.md
+   doc/Serving/FAQ/contribute-guide.md
 
 .. toctree::
    :maxdepth: 1
@@ -108,4 +115,6 @@ BigDL Documentation
    :caption: Real-World Application
    
    doc/Application/presentations.md
+   doc/Application/blogs.md
    doc/Application/powered-by.md  
+

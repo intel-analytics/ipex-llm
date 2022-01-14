@@ -18,6 +18,8 @@ BigDL makes it easy for data scientists and data engineers to build end-to-end, 
  * [Chronos](#getting-started-with-chronos): scalable time series analysis using AutoML
  
  * [PPML](#ppml-privacy-preserving-machine-learning): privacy preserving big data analysis and machine learning (*experimental*)
+ 
+ * [Cluster Serving](https://bigdl.readthedocs.io/en/latest/doc/Serving/Overview/serving.html): distributed, real-time model serving
 
 For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 

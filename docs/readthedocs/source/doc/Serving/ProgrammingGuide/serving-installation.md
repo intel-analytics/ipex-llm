@@ -1,4 +1,4 @@
-# BigDL Cluster Serving Programming Guide
+# Install Cluster Serving
 
 ## Installation
 It is recommended to install Cluster Serving by pulling the pre-built Docker image to your local node, which have packaged all the required dependencies. Alternatively, you may also manually install Cluster Serving (through either pip or direct downloading), Redis on the local node.

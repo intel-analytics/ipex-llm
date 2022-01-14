@@ -21,33 +21,42 @@ torch_available = False
 tf_available = False
 prophet_available = False
 arima_available = False
+orca_available = False
 try:
     import torch
     torch_available = True
 except:
-    warnings.warn("Please install `torch` to use full collection of forecasters.")
+    warnings.warn("Please install `torch` to use forecasters, including TCMFForecaster, "
+                  "TCNForecaster, LSTMForecaster, Seq2SeqForecaster.")
 try:
     import tensorflow as tf
+    assert tf.__version__ < "2.0.0"
     tf_available = True
 except:
-    warnings.warn("Please install `tensorflow` to use full collection of forecasters.")
+    warnings.warn("Please install `tensorflow<2.0.0` to use MTNetForecaster.")
 try:
     import prophet
     prophet_available = True
 except:
-    warnings.warn("Please install `prophet` to use full collection of forecasters.")
+    warnings.warn("Please install `prophet` to use ProphetForecaster.")
 try:
     import pmdarima
     arima_available = True
 except:
-    warnings.warn("Please install `pmdarima` to use full collection of forecasters.")
+    warnings.warn("Please install `pmdarima` to use ARIMAForecaster.")
+try:
+    import bigdl.orca
+    orca_available = True
+except:
+    warnings.warn("Please install `bigdl-orca` to use full collection of forecasters.")
 
 # import forecasters
 if torch_available:
     from .lstm_forecaster import LSTMForecaster
     from .tcn_forecaster import TCNForecaster
     from .seq2seq_forecaster import Seq2SeqForecaster
-    from .tcmf_forecaster import TCMFForecaster
+    if orca_available:
+        from .tcmf_forecaster import TCMFForecaster
 if tf_available:
     from .mtnet_forecaster import MTNetForecaster
 if prophet_available:

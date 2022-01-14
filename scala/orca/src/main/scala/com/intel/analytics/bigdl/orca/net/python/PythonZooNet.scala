@@ -21,20 +21,19 @@ import java.util.{ArrayList, List => JList}
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.utils.python.api.JTensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.utils.python.api.EvaluatedResult
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.net.NetUtils
-import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch}
+import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
 import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, ValidationMethod, _}
 import com.intel.analytics.bigdl.orca.net._
 import com.intel.analytics.bigdl.dllib.utils.Engine
-
-import org.apache.log4j.{Level, Logger}
-
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.api.java.JavaRDD
 
 import scala.collection.JavaConverters._
@@ -121,8 +120,8 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
   }
 
   private def registerKiller(): Unit = {
-    Logger.getLogger("py4j.reflection.ReflectionEngine").setLevel(Level.ERROR)
-    Logger.getLogger("py4j.GatewayConnection").setLevel(Level.ERROR)
+    Configurator.setLevel("py4j.reflection.ReflectionEngine", Level.ERROR)
+    Configurator.setLevel("py4j.GatewayConnection", Level.ERROR)
     Runtime.getRuntime().addShutdownHook(new Thread {
       override def run(): Unit = {
         if (processGpToBeKill == "") return

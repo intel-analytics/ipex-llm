@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.{RandomNormal, StaticGraph}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.nn.keras.{KerasLayer, KerasLayerSerializable}
+import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, KerasLayerSerializable}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Variable}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.{GraphRef, KerasUtils}
 import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.Model.{apply => _, _}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -113,7 +113,7 @@ object BERT extends KerasLayerSerializable {
     "com.intel.analytics.bigdl.dllib.keras.layers.BERT",
     BERT)
 
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   /**
    * [[BERT]] A self attention keras like layer

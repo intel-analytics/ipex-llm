@@ -131,13 +131,19 @@ class RayXShards(XShards):
         return len(self.partition2ip)
 
     def collect(self):
+        # return a list of shards
         partitions = self.collect_partitions()
         data = [item for part in partitions for item in part]
         return data
 
-    def collect_partitions(self):
+    def get_partition_refs(self):
         part_refs = [local_store.get_partitions.remote()
                      for local_store in self.partition_stores.values()]
+        return part_refs
+
+    def collect_partitions(self):
+        # return a list of partitions, each partition is a list of shards
+        part_refs = self.get_partition_refs()
         partitions = ray.get(part_refs)
 
         result = {}

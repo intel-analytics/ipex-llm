@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.dllib.nn.keras.{Masking => BigDLMasking}
+import com.intel.analytics.bigdl.dllib.nn.internal.{Masking => BigDLMasking}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.keras.Net

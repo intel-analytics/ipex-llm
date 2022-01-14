@@ -23,17 +23,19 @@ import com.intel.analytics.bigdl.dllib.nn.{CrossEntropyCriterion, Module, TimeDi
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.dllib.example.languagemodel.Utils._
 import com.intel.analytics.bigdl.dllib.models.rnn.SequencePreprocess
+import org.apache.logging.log4j.{Level, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
 
 object PTBWordLM {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.dllib.example").setLevel(Level.INFO)
-  val logger = Logger.getLogger(getClass)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
+  Configurator.setLevel("com.intel.analytics.bigdl.dllib.example", Level.INFO)
+
+  val logger = LogManager.getLogger(getClass)
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
 

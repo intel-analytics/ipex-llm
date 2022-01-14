@@ -102,7 +102,10 @@ class TorchRunner:
                  scheduler_step_freq=None,
                  sync_stats=True,
                  log_level=logging.INFO):
-        logging.basicConfig(level=log_level)
+        logging.basicConfig(level=log_level,
+                            format='[%(asctime)s] %(levelname)-8s %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S'
+                            )
         self.logger = logging.getLogger(__name__)
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
@@ -124,6 +127,7 @@ class TorchRunner:
         self.use_tqdm = use_tqdm
         self.scheduler_step_freq = scheduler_step_freq
         self.sync_stats = sync_stats
+        self.epochs_stats = None  # The state saved in every epoch
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -195,7 +199,7 @@ class TorchRunner:
         else:
             dist_backend = TorchDistBackend()
 
-        self.training_operator =\
+        self.training_operator = \
             self.training_operator_cls(
                 self.config,
                 models=training_models,
@@ -237,7 +241,7 @@ class TorchRunner:
                 and not_iterable)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None):
+                     info=None, wrap_dataloader=None, callbacks=None):
         config = self.config.copy()
         if OrcaContext.serialize_data_creator:
             with FileLock(
@@ -251,23 +255,44 @@ class TorchRunner:
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
+        if callbacks is not None:
+            for callback in callbacks:
+                callback.set_model(self.models)
+                callback.on_train_begin()
         stats_list = list()
         for i in range(epochs):
-            stats = self.train_epoch(loader, profile=profile, info=info)
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_epoch_begin(epoch=self.epochs)
+            stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks)
             if self.rank == 0:
-                self.logger.info(f"Finished training epoch {i + 1}, stats: {stats}")
+                if self.sync_stats:
+                    self.logger.info(f"Finished training epoch {i + 1}, " +
+                                     f"stats averaged over workers: {stats}")
+                else:
+                    self.logger.info(f"Finished training epoch {i + 1}, " +
+                                     f"stats on rank 0: {stats}")
             stats_list.append(stats)
+            self.epochs_stats = stats
+            if callbacks is not None:
+                for callback in callbacks:
+                    callback.on_epoch_end(epoch=self.epochs)
+        if callbacks is not None:
+            for callback in callbacks:
+                callback.on_train_end()
         return stats_list
 
     def train_epoch(self,
                     data_loader,
                     profile=False,
-                    info=None):
+                    info=None,
+                    callbacks=None):
         """Runs a training epoch and updates the model parameters."""
         if hasattr(self.train_loader, "sampler") and hasattr(
                 self.train_loader.sampler, "set_epoch"):
             self.train_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
+
         info = info or {}
         self._toggle_profiling(profile=profile)
 
@@ -276,13 +301,14 @@ class TorchRunner:
         })
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
-            train_stats = self.training_operator.train_epoch(data_loader, info)
-
+            train_stats = self.training_operator.train_epoch(data_loader, info, callbacks)
         self.epochs += 1
         # This is so that `epochs` is first in ordering.
         stats = dict(epoch=self.epochs, **train_stats)
+
         if profile:
             stats.update(profile=self.timers.stats())
+
         return stats
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,

@@ -33,6 +33,7 @@ class Criterion(JavaValue):
     Criterion is helpful to train a neural network.
     Given an input and a target, they compute a gradient according to a given loss function.
     """
+
     def __init__(self, jvalue, bigdl_type, *args):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
@@ -97,7 +98,6 @@ class Criterion(JavaValue):
 
 
 class ClassNLLCriterion(Criterion):
-
     '''
     The negative log likelihood criterion. It is useful to train a classification problem with n
     classes. If provided, the optional argument weights should be a 1D Tensor assigning weight to
@@ -153,7 +153,6 @@ class ClassNLLCriterion(Criterion):
 
 
 class MSECriterion(Criterion):
-
     '''
     Creates a criterion that measures the mean squared error between n elements
     in the input x and output y:
@@ -179,7 +178,6 @@ class MSECriterion(Criterion):
 
 
 class AbsCriterion(Criterion):
-
     '''
     measures the mean absolute value of the element-wise difference between input
 
@@ -196,7 +194,6 @@ class AbsCriterion(Criterion):
 
 
 class ClassSimplexCriterion(Criterion):
-
     '''
     ClassSimplexCriterion implements a criterion for classification.
     It learns an embedding per class, where each class' embedding is a
@@ -217,7 +214,6 @@ class ClassSimplexCriterion(Criterion):
 
 
 class CosineDistanceCriterion(Criterion):
-
     """
     Creates a criterion that measures the loss given an input and target,
     Loss = 1 - cos(x, y)
@@ -238,7 +234,6 @@ class CosineDistanceCriterion(Criterion):
 
 
 class CosineEmbeddingCriterion(Criterion):
-
     """
     Creates a criterion that measures the loss given an input x = {x1, x2},
     a table of two Tensors, and a Tensor label y with values 1 or -1.
@@ -265,7 +260,6 @@ class CosineEmbeddingCriterion(Criterion):
 
 
 class DistKLDivCriterion(Criterion):
-
     '''
     The Kullback-Leibler divergence criterion
 
@@ -283,6 +277,7 @@ class DistKLDivCriterion(Criterion):
         super(DistKLDivCriterion, self).__init__(None, bigdl_type,
                                                  size_average)
 
+
 class CategoricalCrossEntropy(Criterion):
     """
     This criterion is same with cross entropy criterion, except it takes a one-hot format target
@@ -290,11 +285,12 @@ class CategoricalCrossEntropy(Criterion):
     >>> cce = CategoricalCrossEntropy()
     creating: createCategoricalCrossEntropy
     """
+
     def __init__(self, bigdl_type="float"):
         super(CategoricalCrossEntropy, self).__init__(None, bigdl_type)
 
-class HingeEmbeddingCriterion(Criterion):
 
+class HingeEmbeddingCriterion(Criterion):
     '''
     Creates a criterion that measures the loss given an
     input x which is a 1-dimensional vector and a label y (1 or -1).
@@ -324,7 +320,6 @@ class HingeEmbeddingCriterion(Criterion):
 
 
 class L1HingeEmbeddingCriterion(Criterion):
-
     '''
     Creates a criterion that measures the loss given an input x = {x1, x2},
     a table of two Tensors, and a label y (1 or -1):
@@ -354,13 +349,14 @@ class L1HingeEmbeddingCriterion(Criterion):
 
 
 class MarginCriterion(Criterion):
-
     '''
     Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss)
     between input x (a Tensor of dimension 1) and output y.
 
-    When margin = 1, size_average = True and squared = False, this is the same as hinge loss in keras;
-    When margin = 1, size_average = False and squared = True, this is the same as squared_hinge loss in keras.
+    When margin = 1, size_average = True and squared = False, this is the same as hinge loss in
+    keras;
+    When margin = 1, size_average = False and squared = True, this is the same as squared_hinge loss
+    in keras.
 
     :param margin: if unspecified, is by default 1.
     :param size_average: size average in a mini-batch
@@ -383,7 +379,6 @@ class MarginCriterion(Criterion):
 
 
 class MarginRankingCriterion(Criterion):
-
     '''
     Creates a criterion that measures the loss given an input x = {x1, x2},
     a table of two Tensors of size 1 (they contain only scalars), and a label y (1 or -1).
@@ -410,7 +405,6 @@ class MarginRankingCriterion(Criterion):
 
 
 class MultiCriterion(Criterion):
-
     '''
     a weighted sum of other criterions each applied to the same input and target
 
@@ -433,7 +427,6 @@ class MultiCriterion(Criterion):
 
 
 class MultiLabelMarginCriterion(Criterion):
-
     '''
     Creates a criterion that optimizes a multi-class multi-classification hinge loss (
     margin-based loss) between input x and output y (which is a Tensor of target class indices)
@@ -454,7 +447,6 @@ class MultiLabelMarginCriterion(Criterion):
 
 
 class ParallelCriterion(Criterion):
-
     '''
     ParallelCriterion is a weighted sum of other criterions each applied to a different input
     and target. Set repeatTarget = true to share the target for criterions.
@@ -484,8 +476,8 @@ class ParallelCriterion(Criterion):
         self.value.add(criterion.value, weight)
         return self
 
-class KLDCriterion(Criterion):
 
+class KLDCriterion(Criterion):
     '''
     Computes the KL-divergence of the input normal distribution to a standard normal distribution.
     The input has to be a table. The first element of input is the mean of the distribution,
@@ -500,7 +492,6 @@ class KLDCriterion(Criterion):
 
 
 class GaussianCriterion(Criterion):
-
     '''
     Computes the log-likelihood of a sample x given a Gaussian distribution p.
     >>> GaussianCriterion = GaussianCriterion()
@@ -510,8 +501,8 @@ class GaussianCriterion(Criterion):
     def __init__(self, bigdl_type="float"):
         super(GaussianCriterion, self).__init__(None, bigdl_type)
 
-class SmoothL1Criterion(Criterion):
 
+class SmoothL1Criterion(Criterion):
     '''
     Creates a criterion that can be thought of as a smooth version of the AbsCriterion.
     It uses a squared term if the absolute element-wise error falls below 1.
@@ -542,7 +533,6 @@ class SmoothL1Criterion(Criterion):
 
 
 class SmoothL1CriterionWithWeights(Criterion):
-
     '''
     a smooth version of the AbsCriterion
     It uses a squared term if the absolute element-wise error falls below 1.
@@ -571,14 +561,15 @@ class SmoothL1CriterionWithWeights(Criterion):
 
 
 class SoftmaxWithCriterion(Criterion):
-
     '''
     Computes the multinomial logistic loss for a one-of-many classification task,
-    passing real-valued predictions through a softmax to get a probability distribution over classes.
+    passing real-valued predictions through a softmax to get a probability distribution over
+    classes.
     It should be preferred over separate SoftmaxLayer + MultinomialLogisticLossLayer
     as its gradient computation is more numerically stable.
 
-    :param ignoreLabel:   (optional) Specify a label value thatshould be ignored when computing the loss.
+    :param ignoreLabel:   (optional) Specify a label value thatshould be ignored when computing the
+     loss.
     :param normalizeMode: How to normalize the output loss.
 
 
@@ -595,6 +586,7 @@ class SoftmaxWithCriterion(Criterion):
         super(SoftmaxWithCriterion, self).__init__(None, bigdl_type,
                                                    ignore_label,
                                                    normalize_mode)
+
 
 class TimeDistributedMaskCriterion(Criterion):
     '''
@@ -619,6 +611,7 @@ class TimeDistributedMaskCriterion(Criterion):
     def __init__(self, criterion, padding_value=0, bigdl_type="float"):
         super(TimeDistributedMaskCriterion, self).__init__(
             None, bigdl_type, criterion, padding_value)
+
 
 class TimeDistributedCriterion(Criterion):
     '''
@@ -766,7 +759,8 @@ class SoftMarginCriterion(Criterion):
            loss(x, y) = sum_i (log(1 + exp(-y[i]*x[i]))) / x:nElement()
 ```
 
-    :param sizeaverage: The normalization by the number of elements in the inputcan be disabled by setting
+    :param sizeaverage: The normalization by the number of elements in the inputcan be disabled by
+     setting
 
 
     >>> softMarginCriterion = SoftMarginCriterion(False)
@@ -782,7 +776,6 @@ class SoftMarginCriterion(Criterion):
 
 
 class DiceCoefficientCriterion(Criterion):
-
     '''
     The Dice-Coefficient criterion
     input: Tensor,target: Tensor
@@ -807,8 +800,8 @@ class DiceCoefficientCriterion(Criterion):
                                                        size_average,
                                                        epsilon)
 
-class L1Cost(Criterion):
 
+class L1Cost(Criterion):
     '''
     compute L1 norm for input, and sign of input
 
@@ -820,8 +813,8 @@ class L1Cost(Criterion):
                  bigdl_type="float"):
         super(L1Cost, self).__init__(None, bigdl_type)
 
-class CosineProximityCriterion(Criterion):
 
+class CosineProximityCriterion(Criterion):
     '''
     compute the negative of the mean cosine proximity between predictions and targets.
 ```
@@ -838,8 +831,8 @@ class CosineProximityCriterion(Criterion):
                  bigdl_type="float"):
         super(CosineProximityCriterion, self).__init__(None, bigdl_type)
 
-class MeanAbsolutePercentageCriterion(Criterion):
 
+class MeanAbsolutePercentageCriterion(Criterion):
     '''
     This method is same as `mean_absolute_percentage_error` loss in keras.
     It caculates diff = K.abs((y - x) / K.clip(K.abs(y), K.epsilon(), Double.MaxValue))
@@ -852,13 +845,14 @@ class MeanAbsolutePercentageCriterion(Criterion):
                  bigdl_type="float"):
         super(MeanAbsolutePercentageCriterion, self).__init__(None, bigdl_type)
 
-class MeanSquaredLogarithmicCriterion(Criterion):
 
+class MeanSquaredLogarithmicCriterion(Criterion):
     '''
     This method is same as `mean_squared_logarithmic_error` loss in keras.
     It calculates: first_log = K.log(K.clip(y, K.epsilon(),  Double.MaxValue) + 1.)
     second_log = K.log(K.clip(x, K.epsilon(),  Double.MaxValue) + 1.)
-    and output K.mean(K.square(first_log - second_log)). Here, the x and y can have or not have a batch.
+    and output K.mean(K.square(first_log - second_log)). Here, the x and y can have or not have a
+    batch.
     >>> error = MeanSquaredLogarithmicCriterion()
     creating: createMeanSquaredLogarithmicCriterion
     '''
@@ -867,8 +861,8 @@ class MeanSquaredLogarithmicCriterion(Criterion):
                  bigdl_type="float"):
         super(MeanSquaredLogarithmicCriterion, self).__init__(None, bigdl_type)
 
-class KullbackLeiblerDivergenceCriterion(Criterion):
 
+class KullbackLeiblerDivergenceCriterion(Criterion):
     '''
     compute Kullback Leibler DivergenceCriterion error for intput and target
     This method is same as `kullback_leibler_divergence` loss in keras. Loss calculated as:
@@ -884,8 +878,8 @@ class KullbackLeiblerDivergenceCriterion(Criterion):
                  bigdl_type="float"):
         super(KullbackLeiblerDivergenceCriterion, self).__init__(None, bigdl_type)
 
-class PoissonCriterion(Criterion):
 
+class PoissonCriterion(Criterion):
     '''
     compute Poisson error for input and target, loss calculated as:
     mean(input - target * K.log(input + K.epsilon()), axis=-1)
@@ -897,18 +891,19 @@ class PoissonCriterion(Criterion):
                  bigdl_type="float"):
         super(PoissonCriterion, self).__init__(None, bigdl_type)
 
+
 class TransformerCriterion(Criterion):
     '''
     The criterion that takes two modules to transform input and target, and take
     one criterion to compute the loss with the transformed input and target.
-    
+
     This criterion can be used to construct complex criterion. For example, the
     `inputTransformer` and `targetTransformer` can be pre-trained CNN networks,
     and we can use the networks' output to compute the high-level feature
     reconstruction loss, which is commonly used in areas like neural style transfer
     (https://arxiv.org/abs/1508.06576), texture synthesis (https://arxiv.org/abs/1505.07376),
     .etc.
-    
+
     >>> trans = TransformerCriterion(MSECriterion())
     creating: createMSECriterion
     creating: createTransformerCriterion
@@ -916,8 +911,8 @@ class TransformerCriterion(Criterion):
 
     def __init__(self,
                  criterion,
-                 input_transformer = None,
-                 target_transformer = None,
+                 input_transformer=None,
+                 target_transformer=None,
                  bigdl_type="float"):
         super(TransformerCriterion, self).__init__(None,
                                                    bigdl_type,
@@ -925,22 +920,24 @@ class TransformerCriterion(Criterion):
                                                    input_transformer,
                                                    target_transformer)
 
+
 class DotProductCriterion(Criterion):
     '''
     Compute the dot product of input and target tensor.
     Input and target are required to have the same size.
     :param size_average: whether to average over each observations in the same batch
-    
+
     >>> dp =DotProductCriterion(False)
     creating: createDotProductCriterion
     '''
 
     def __init__(self,
-                 size_average = False,
+                 size_average=False,
                  bigdl_type="float"):
         super(DotProductCriterion, self).__init__(None,
                                                   bigdl_type,
                                                   size_average)
+
 
 class PGCriterion(Criterion):
     '''
@@ -954,7 +951,7 @@ class PGCriterion(Criterion):
     represents the sampled action and the non-zero element itself represents
     the reward. If the action is space is large, you should consider using
     SparseTensor for target.
-    
+
     The loss computed is simple the standard policy gradient,
 
       loss = - 1/n * sum(R_{n} dot_product log(P_{n}))
@@ -962,13 +959,13 @@ class PGCriterion(Criterion):
     where R_{n} is the reward vector, and P_{n} is the input distribution.
 
     :param sizeAverage whether to average over each observations in the same batch
-                           
+
     >>> pg = PGCriterion()
     creating: createPGCriterion
     '''
 
     def __init__(self,
-                 sizeAverage = False,
+                 sizeAverage=False,
                  bigdl_type="float"):
         super(PGCriterion, self).__init__(None,
                                           bigdl_type,

@@ -48,8 +48,8 @@ def build_model(class_num):
 
         # The format index of input or output format can be checked
         # in: ${BigDL-core}/native-dnn/src/main/java/com/intel/analytics/bigdl/mkl/Memory.java
-        model.set_input_formats([7]) # Set input format to nchw
-        model.set_output_formats([4]) # Set output format to nc
+        model.set_input_formats([7])  # Set input format to nchw
+        model.set_output_formats([4])  # Set output format to nc
 
     return model
 
@@ -65,18 +65,19 @@ if __name__ == "__main__":
     parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
     parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
     parser.add_option("--cluster-mode", dest="clusterMode", default="local")
-    parser.add_option("--mkl-dnn", action="store_true", dest="mklDnn", default=False, help="if enable mkldnn")
+    parser.add_option("--mkl-dnn", action="store_true", dest="mklDnn", default=False,
+                      help="if enable mkldnn")
 
     (options, args) = parser.parse_args(sys.argv)
 
-    conf={}
+    conf = {}
     if options.mklDnn:
         conf["spark.driver.extraJavaOptions"] = "-Dbigdl.engineType=mkldnn"
         conf["spark.executor.extraJavaOptions"] = "-Dbigdl.engineType=mkldnn"
     if options.clusterMode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-                "set the environment variable HADOOP_CONF_DIR"
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please" \
+                            "set the environment variable HADOOP_CONF_DIR"
         spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
             .set("spark.executor.cores", 2) \
             .set("spark.executor.instances", 2) \
@@ -88,7 +89,7 @@ if __name__ == "__main__":
         else:
             sc = init_nncontext(spark_conf, cluster_mode="yarn-cluster", hadoop_conf=hadoop_conf)
     elif options.clusterMode == "local":
-        spark_conf = SparkConf().set("spark.driver.memory", "10g")\
+        spark_conf = SparkConf().set("spark.driver.memory", "10g") \
             .set("spark.driver.cores", 4)
         sc = init_nncontext(spark_conf, cluster_mode="local")
     else:
@@ -97,7 +98,8 @@ if __name__ == "__main__":
     set_optimizer_version(options.optimizerVersion)
 
     # In order to use MklDnn as the backend, you should:
-    # 1. Define a graph model with Model(graph container) or convert a sequential model to a graph model
+    # 1. Define a graph model with Model(graph container) or convert a sequential model to a graph
+    # model
     # 2. Specify the input and output formats of it.
     #    BigDL needs these format information to build a graph running with MKL-DNN backend
     # 3. Run spark-submit command with correct configurations
@@ -123,7 +125,7 @@ if __name__ == "__main__":
             .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TEST_MEAN, mnist.TEST_STD),
                                     rec_tuple[1])) \
             .map(lambda t: Sample.from_ndarray(t[0], t[1]))
-        model = Model.load(options.modelPath)
+        model = Model.loadModel(options.modelPath)
         results = model.evaluate(test_data, options.batchSize, [Top1Accuracy()])
         for result in results:
             print(result)

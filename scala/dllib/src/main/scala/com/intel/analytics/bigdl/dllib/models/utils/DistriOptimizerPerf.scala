@@ -24,16 +24,17 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim.{Optimizer, Trigger}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Engine
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import scopt.OptionParser
 
 object DistriOptimizerPerf {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.dllib.optim").setLevel(Level.DEBUG)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
+  Configurator.setLevel("com.intel.analytics.bigdl.dllib.optim", Level.DEBUG)
 
   val parser = new OptionParser[DistriOptimizerPerfParam]("BigDL Distribute Performance Test") {
     head("Performance Test of Distribute Optimizer")

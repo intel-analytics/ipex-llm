@@ -25,7 +25,6 @@ import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
 import com.intel.analytics.bigdl.dllib.models.lenet.LeNet5
-import org.apache.log4j.{Level, Logger}
 
 
 object Train {
@@ -47,7 +46,7 @@ object Train {
       val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         LeNet5(classNum = 10)
       }

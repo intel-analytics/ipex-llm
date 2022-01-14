@@ -19,6 +19,9 @@
 #
 
 from __future__ import print_function
+import os
+from os.path import exists
+from os import makedirs
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
@@ -38,22 +41,25 @@ from bigdl.orca.learn.trigger import EveryEpoch
 
 parser = argparse.ArgumentParser(description='PyTorch Cifar10 Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The cluster mode, such as local, yarn, spark-submit or k8s.')
+                    help='The cluster mode, such as local, yarn-client, yarn-cluster, spark-submit or k8s.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
                          'bigdl, torch_distributed and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
+parser.add_argument('--data_dir', type=str, default="./data", help='The path to dataset')
+parser.add_argument('--download', type=bool, default=True, help='Download dataset or not')
+parser.add_argument("--executor_memory", type=str, default="5g", help="executor memory")
+parser.add_argument("--driver_memory", type=str, default="5g", help="driver memory")
 args = parser.parse_args()
 
 if args.cluster_mode == "local":
     init_orca_context(memory="4g")
-elif args.cluster_mode == "yarn":
-    init_orca_context(
-        cluster_mode="yarn-client", num_nodes=2, driver_memory="4g",
-        conf={"spark.rpc.message.maxSize": "1024",
-              "spark.task.maxFailures": "1",
-              "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+elif args.cluster_mode.startswith("yarn"):
+    if args.cluster_mode == "yarn-client":
+        init_orca_context(cluster_mode="yarn-client")
+    elif args.cluster_mode == "yarn-cluster":
+        init_orca_context(cluster_mode="yarn-cluster", memory=args.executor_memory, driver_memory=args.driver_memory)
 elif args.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 
@@ -64,17 +70,17 @@ transform = transforms.Compose(
 
 def train_loader_creator(config, batch_size):
     trainset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=True,
-                                            download=True, transform=transform)
+                                            download=args.download, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                              shuffle=True, num_workers=2)
+                                              shuffle=True, num_workers=0)
     return trainloader
 
 
 def test_loader_creator(config, batch_size):
     testset = torchvision.datasets.CIFAR10(root=config.get("root", "./data"), train=False,
-                                           download=True, transform=transform)
+                                           download=args.download, transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                             shuffle=False, num_workers=2)
+                                             shuffle=False, num_workers=0)
     return testloader
 
 
@@ -123,7 +129,9 @@ def optim_creator(model, config):
 
 criterion = nn.CrossEntropyLoss()
 batch_size = args.batch_size
-root_dir = "./data"
+root_dir = args.data_dir
+if not exists(root_dir):
+    makedirs(root_dir)
 
 train_loader = train_loader_creator(config={"root": root_dir}, batch_size=batch_size)
 test_loader = test_loader_creator(config={"root": root_dir}, batch_size=batch_size)

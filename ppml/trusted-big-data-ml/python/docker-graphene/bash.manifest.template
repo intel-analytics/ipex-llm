@@ -1,9 +1,7 @@
 loader.preload = "file:$(GRAPHENEDIR)/Runtime/libsysdb.so"
 libos.entrypoint = "file:$(EXECDIR)/bash"
 
-loader.log_level = "debug"
-#loader.log_level = "error"
-#loader.log_level = "all"
+loader.log_level = "$(G_LOG_LEVEL)"
 
 loader.insecure_disable_aslr = 1
 loader.insecure__use_cmdline_argv = 1
@@ -16,10 +14,10 @@ sgx.debug = 0
 sgx.isvprodid = 1
 sgx.isvsvn = 3
 
-loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.6/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
-loader.env.PATH = "/usr/lib/python3.6/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
-loader.env.PYTHONHOME = "/usr/lib/python3.6"
-loader.env.PYTHONPATH = "/usr/lib/python3.6:/usr/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/dist-packages:/usr/lib/python3/dist-packages"
+loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.8/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
+loader.env.PATH = "/usr/lib/python3.8/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
+loader.env.PYTHONHOME = "/usr/lib/python3.8"
+loader.env.PYTHONPATH = "/usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages"
 loader.env.JAVA_HOME = "$(JDK_HOME)"
 loader.env.JAVA_OPTS = "'-Djava.library.path=$(JDK_HOME)/lib -Dsun.boot.library.path=$(JDK_HOME)/lib'"
 loader.env.SPARK_LOCAL_IP = "$(SPARK_LOCAL_IP)"
@@ -65,8 +63,8 @@ fs.mount.tmp.path = "/tmp"
 fs.mount.tmp.uri = "file:/tmp"
 
 fs.mount.pyhome.type = "chroot"
-fs.mount.pyhome.path = "/usr/lib/python3.6"
-fs.mount.pyhome.uri = "file:/usr/lib/python3.6"
+fs.mount.pyhome.path = "/usr/lib/python3.8"
+fs.mount.pyhome.uri = "file:/usr/lib/python3.8"
 
 fs.mount.pydisthome.type = "chroot"
 fs.mount.pydisthome.path = "/usr/lib/python3/dist-packages"
@@ -140,7 +138,7 @@ sgx.trusted_files.libnssnis  = "file:$(ARCH_LIBDIR)/libnss_nis.so.2"
 
 # libNSL is a dependency of libnss_compat above.
 sgx.trusted_files.libnsl = "file:$(ARCH_LIBDIR)/libnsl.so.1"
-sgx.trusted_files.libtinfo = "file:/lib/x86_64-linux-gnu/libtinfo.so.5"
+sgx.trusted_files.libtinfo = "file:/lib/x86_64-linux-gnu/libtinfo.so.6"
 sgx.trusted_files.libselinux = "file:/lib/x86_64-linux-gnu/libselinux.so.1"
 sgx.trusted_files.libpcre = "file:/lib/x86_64-linux-gnu/libpcre.so.3"
 
@@ -152,8 +150,8 @@ sgx.allowed_files.etc       = "file:/etc"
 sgx.allowed_files.tmp       = "file:/tmp"
 sgx.allowed_files.jdk       = "file:$(JDK_HOME)"
 sgx.allowed_files.current   = "file:/ppml/trusted-big-data-ml"
-sgx.allowed_files.pyhome    = "file:/usr/lib/python3.6"
-sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.6/dist-packages"
+sgx.allowed_files.pyhome    = "file:/usr/lib/python3.8"
+sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.8/dist-packages"
 sgx.allowed_files.kerasdatas = "file:/root/.keras"
 sgx.allowed_files.m2        = "file:/root/.m2"
 sgx.allowed_files.zinc      = "file:/root/.zinc"

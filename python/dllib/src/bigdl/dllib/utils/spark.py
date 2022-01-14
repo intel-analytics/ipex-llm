@@ -22,7 +22,8 @@ import platform
 from pyspark import SparkContext
 from bigdl.dllib.nncontext import init_internal_nncontext, init_spark_conf
 from bigdl.dllib.utils.utils import detect_python_location, pack_penv, get_node_ip
-from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath, get_zoo_bigdl_classpath_on_driver
+from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath
+from bigdl.dllib.utils.utils import get_zoo_bigdl_classpath_on_driver
 from bigdl.dllib.utils.engine import get_bigdl_jars
 
 
@@ -46,7 +47,7 @@ class SparkRunner:
         os.environ["PYSPARK_SUBMIT_ARGS"] = submit_args
         spark_conf = init_spark_conf(conf)
         sc = init_internal_nncontext(conf=spark_conf, spark_log_level=self.spark_log_level,
-                            redirect_spark_log=self.redirect_spark_log)
+                                     redirect_spark_log=self.redirect_spark_log)
         return sc
 
     def init_spark_on_local(self, cores, conf=None, python_location=None):
@@ -57,7 +58,7 @@ class SparkRunner:
         master = "local[{}]".format(cores)
         zoo_conf = init_spark_conf(conf).setMaster(master)
         sc = init_internal_nncontext(conf=zoo_conf, spark_log_level=self.spark_log_level,
-                            redirect_spark_log=self.redirect_spark_log)
+                                     redirect_spark_log=self.redirect_spark_log)
         print("Successfully got a SparkContext")
         return sc
 
@@ -76,7 +77,8 @@ class SparkRunner:
                            hadoop_user_name="root",
                            spark_yarn_archive=None,
                            conf=None,
-                           jars=None):
+                           jars=None,
+                           py_files=None):
         print("Initializing SparkContext for yarn-client mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -97,6 +99,8 @@ class SparkRunner:
                 archive = archive + "," + additional_archive
             submit_args = "--master yarn --deploy-mode client"
             submit_args = submit_args + " --archives {}".format(archive)
+            if py_files:
+                submit_args = submit_args + " --py-files {}".format(py_files)
             submit_args = submit_args + gen_submit_args(
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
@@ -131,21 +135,22 @@ class SparkRunner:
         return sc
 
     def init_spark_on_yarn_cluster(self,
-                           hadoop_conf,
-                           conda_name,
-                           num_executors,
-                           executor_cores,
-                           executor_memory="2g",
-                           driver_cores=4,
-                           driver_memory="1g",
-                           extra_executor_memory_for_ray=None,
-                           extra_python_lib=None,
-                           penv_archive=None,
-                           additional_archive=None,
-                           hadoop_user_name="root",
-                           spark_yarn_archive=None,
-                           conf=None,
-                           jars=None):
+                                   hadoop_conf,
+                                   conda_name,
+                                   num_executors,
+                                   executor_cores,
+                                   executor_memory="2g",
+                                   driver_cores=4,
+                                   driver_memory="1g",
+                                   extra_executor_memory_for_ray=None,
+                                   extra_python_lib=None,
+                                   penv_archive=None,
+                                   additional_archive=None,
+                                   hadoop_user_name="root",
+                                   spark_yarn_archive=None,
+                                   conf=None,
+                                   jars=None,
+                                   py_files=None):
         print("Initializing job for yarn-cluster mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -154,6 +159,7 @@ class SparkRunner:
         pack_env = False
         assert penv_archive or conda_name, \
             "You should either specify penv_archive or conda_name explicitly"
+        return_value = 1
         try:
 
             if not penv_archive:
@@ -169,11 +175,14 @@ class SparkRunner:
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
             submit_args = submit_args + " --jars " + ",".join(get_bigdl_jars())
+            if py_files:
+                submit_args = submit_args + " --py-files {}".format(py_files)
 
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                          executor_cores, executor_memory,
                                          extra_executor_memory_for_ray)
-            conf["spark.yarn.appMasterEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
+            conf["spark.yarn.appMasterEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(
+                executor_python_env)
             conf["spark.yarn.appMasterEnv.OnAppMaster"] = "True"
             conf["spark.yarn.appMasterEnv.PYTHONHOME"] = executor_python_env
             conf["spark.executorEnv.PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
@@ -187,6 +196,7 @@ class SparkRunner:
                          "spark.executorEnv.PYTHONHOME": executor_python_env,
                          "spark.executor.extraLibraryPath": ld_path,
                          "spark.executorEnv.LD_PRELOAD": preload_so})
+            conf["spark.yarn.appMasterEnv.LD_PRELOAD"] = preload_so
             if spark_yarn_archive:
                 conf["spark.yarn.archive"] = spark_yarn_archive
             zoo_bigdl_path_on_executor = ":".join(
@@ -205,11 +215,11 @@ class SparkRunner:
             print(sys_args)
             submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
             print(submit_commnad)
-            return os.system(submit_commnad)
+            return_value = os.system(submit_commnad)
         finally:
             if conda_name and penv_archive and pack_env:
                 os.remove(penv_archive)
-            return 1
+            return return_value
 
     def init_spark_standalone(self,
                               num_executors,
@@ -336,8 +346,7 @@ class SparkRunner:
                                      executor_cores, executor_memory, extra_executor_memory_for_ray)
         py_version = ".".join(platform.python_version().split(".")[0:2])
         preload_so = python_env + "/lib/libpython" + py_version + "m.so"
-        ld_path = python_env + "/lib:" + python_env + "/lib/python" +\
-            py_version + "/lib-dynload"
+        ld_path = python_env + "/lib:" + python_env + "/lib/python" + py_version + "/lib-dynload"
         if "spark.executor.extraLibraryPath" in conf:
             ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
         conf.update({"spark.cores.max": num_executors * executor_cores,

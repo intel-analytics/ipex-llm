@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.dllib.feature.image
 
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, PixelBytesToMat, augmentation}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  * Transform byte array(pixels in byte) to OpenCVMat
@@ -37,7 +37,7 @@ class ImagePixelBytesToMat(
 }
 
 object ImagePixelBytesToMat {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   def apply(byteKey: String = ImageFeature.bytes): ImagePixelBytesToMat = {
     new ImagePixelBytesToMat(byteKey)
   }

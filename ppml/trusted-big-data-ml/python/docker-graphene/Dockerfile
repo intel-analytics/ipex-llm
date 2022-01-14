@@ -6,14 +6,14 @@ ARG JDK_URL=your_jdk_url
 ARG SPARK_JAR_REPO_URL=your_spark_jar_repo_url
 
 # stage.1 graphene
-FROM ubuntu:18.04 AS graphene
+FROM ubuntu:20.04 AS graphene
 
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
 RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
-    git fetch origin branch-0.4 && \
-    git checkout branch-0.4
+    git fetch origin branch-0.5 && \
+    git checkout branch-0.5
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
@@ -24,7 +24,7 @@ RUN cd /graphene && \
 RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
 
 # stage.2 jdk & scala & spark & hadoop
-FROM ubuntu:18.04 as spark
+FROM ubuntu:20.04 as spark
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
@@ -38,7 +38,7 @@ ENV JAVA_HOME           /opt/jdk$JDK_VERSION
 ENV PATH                ${JAVA_HOME}/bin:${PATH}
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils wget unzip patch zip git maven
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip patch zip git maven
 ADD hadoop-common-shell.patch /opt/hadoop-common-shell.patch
 
 # java
@@ -125,7 +125,7 @@ RUN cd /opt && \
     mv /opt/hive/ql/target/hive-exec-2.3.7-core.jar /opt/spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
 
 # stage.3 bigdl
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ENV SPARK_VERSION               ${SPARK_VERSION}
@@ -139,7 +139,7 @@ RUN ./download-bigdl.sh && \
     rm bigdl*.zip
 
 # stage.4 ppml
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG TINI_VERSION
@@ -151,6 +151,7 @@ ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                /graphene/meson_build_output/bin:${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP                            127.0.0.1
 ENV SGX_MEM_SIZE                        32G
+ENV SGX_LOG_LEVEL                       error
 ENV SPARK_MASTER_IP                     127.0.0.1
 ENV SPARK_MASTER_PORT                   7077
 ENV SPARK_MASTER_WEBUI_PORT             8080
@@ -200,6 +201,7 @@ COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
 RUN apt-get update --fix-missing && \
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree zip && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
@@ -212,17 +214,18 @@ RUN apt-get install -y python3-minimal && \
     pip install setuptools==58.4.0 && \
     pip install --no-cache-dir numpy scipy && \
     pip install --no-cache-dir --no-binary pandas -I pandas && \
-    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15.0 && \
+    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow && \
     pip install --no-cache-dir torch==1.8.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
     pip uninstall -y -q tornado && \
     pip install --no-cache-dir tornado && \
     pip install --no-cache-dir filelock && \
-    pip install --no-cache-dir tensorflow_datasets==3.2.0 h5py==2.10.0 && \
+    pip install --no-cache-dir tensorflow_datasets h5py==2.10.0 && \
     pip install --no-cache-dir pyarrow && \
     pip install --no-cache-dir ninja meson && \
     pip install --no-cache-dir psutil && \
+    pip install --no-cache-dir dill==0.3.4 && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec
 
@@ -242,13 +245,15 @@ ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
 ADD ./_dill.py.patch ./_dill.py.patch
 ADD ./python-uuid.patch ./python-uuid.patch
+ADD ./python-pslinux.patch ./python-pslinux.patch
 
 
 RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
-    patch /usr/local/lib/python3.6/dist-packages/dill/_dill.py ./_dill.py.patch && \
-    patch /usr/lib/python3.6/uuid.py ./python-uuid.patch && \
+    patch /usr/local/lib/python3.8/dist-packages/dill/_dill.py ./_dill.py.patch && \
+    patch /usr/lib/python3.8/uuid.py ./python-uuid.patch && \
+    patch /usr/local/lib/python3.8/dist-packages/psutil/_pslinux.py ./python-pslinux.patch && \
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
-    cp /usr/lib/x86_64-linux-gnu/libpython3.6m.so /usr/lib/libpython3.6m.so && \
+    cp /usr/lib/x86_64-linux-gnu/libpython3.8.so /usr/lib/libpython3.8.so && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \

@@ -25,9 +25,13 @@ echo "BIGDL_HOME: $BIGDL_HOME"
 echo "SPARK_HOME": $SPARK_HOME
 echo "DL_PYTHON_HOME": $DL_PYTHON_HOME
 
-if [ -z ${SPARK_HOME+x} ]; then echo "SPARK_HOME is unset"; exit 1; else echo "SPARK_HOME is set to '$SPARK_HOME'"; fi
-
-export PYSPARK_ZIP=`find $SPARK_HOME/python/lib  -type f -iname '*.zip' | tr "\n" ":"`
+PYSPARK_PIP=`pip list | grep pyspark`
+if [ -z "${PYSPARK_PIP}" ]
+then
+	echo "pyspark is not installed, checking SPARK_HOME"
+	if [ -z ${SPARK_HOME+x} ]; then echo "SPARK_HOME is unset"; exit 1; else echo "SPARK_HOME is set to '$SPARK_HOME'"; fi
+	export PYSPARK_ZIP=`find $SPARK_HOME/python/lib  -type f -iname '*.zip' | tr "\n" ":"`
+fi
 
 export PYTHONPATH=$PYTHONPATH:$DL_PYTHON_HOME:$DL_PYTHON_DLLIB_HOME:$PYSPARK_ZIP:$DL_PYTHON_ORCA_HOME:$PYSPARK_ZIP:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf
 echo "PYTHONPATH": $PYTHONPATH

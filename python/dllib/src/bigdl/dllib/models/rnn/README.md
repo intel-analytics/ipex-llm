@@ -131,6 +131,8 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
    --conf "spark.executor.extraJavaOptions=-Dbigdl.engineType=mkldnn"
    ```
 
+   Note that `mkldnn` is not supported on macOS.
+
 ## Expected Training Output
 Users can see the Loss of the model printed by the program. The Loss, in this case, is the perplexity of the language model. The lower, the better.
 ```

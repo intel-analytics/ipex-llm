@@ -28,7 +28,8 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 
 import scala.reflect.ClassTag
@@ -47,9 +48,10 @@ class toAutoencoderBatch[T: ClassTag](implicit ev: TensorNumeric[T]
 }
 
 object Train {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
+
 
 
   import Utils._
@@ -69,7 +71,7 @@ object Train {
         GreyImgToBatch(param.batchSize) -> toAutoencoderBatch()
 
       val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+        Module.loadModule[Float](param.modelSnapshot.get)
       } else {
         if (param.graphModel) Autoencoder.graph(classNum = 32) else Autoencoder(classNum = 32)
       }
