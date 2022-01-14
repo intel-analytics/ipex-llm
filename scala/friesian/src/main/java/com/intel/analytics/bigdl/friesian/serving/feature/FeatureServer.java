@@ -32,9 +32,11 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.Feature
 import io.grpc.ServerInterceptors;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import io.grpc.services.HealthStatusManager;
 import io.prometheus.client.exporter.HTTPServer;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
+import org.apache.commons.cli.Option;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +64,10 @@ public class FeatureServer extends GrpcServerBase {
     /** Create a Feature server. */
     public FeatureServer(String[] args) {
         super(args);
+        port = 8082;
         configPath = "config_feature.yaml";
+        options.addOption(new Option("p", "port", true,
+                "The port to create the server"));
         Configurator.setLevel("org", Level.ERROR);
     }
 
@@ -70,8 +75,10 @@ public class FeatureServer extends GrpcServerBase {
     public void parseConfig() throws Exception {
         Utils.helper_$eq(getConfigFromYaml(gRPCHelper.class, configPath));
         Utils.helper().parseConfigStrings();
-        if (Utils.helper() != null) {
+        if (Utils.helper() != null && Utils.helper().getServicePort() != -1) {
             port = Utils.helper().getServicePort();
+        } else if (cmd.getOptionValue("port") != null) {
+            port = Integer.parseInt(cmd.getOptionValue("port"));
         }
 
         if (Utils.runMonitor()) {
@@ -84,6 +91,7 @@ public class FeatureServer extends GrpcServerBase {
         } else {
             serverServices.add(new FeatureService());
         }
+        serverServices.add(new HealthStatusManager().getHealthService());
     }
 
     /**

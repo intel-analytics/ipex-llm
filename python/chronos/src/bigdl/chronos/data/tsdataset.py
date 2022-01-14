@@ -363,9 +363,13 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        from tsfresh import extract_features
-        from tsfresh.feature_extraction import ComprehensiveFCParameters, \
-            MinimalFCParameters, EfficientFCParameters
+        try:
+            from tsfresh import extract_features
+            from tsfresh.feature_extraction import ComprehensiveFCParameters, \
+                MinimalFCParameters, EfficientFCParameters
+        except ImportError:
+            raise ImportError("Please install tsfresh by `pip install tsfresh` to use "
+                              "`gen_global_feature` method.")
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
                           "minimal": MinimalFCParameters(),
@@ -426,11 +430,15 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        from tsfresh.utilities.dataframe_functions import roll_time_series
-        from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
-        from tsfresh import extract_features
-        from tsfresh.feature_extraction import ComprehensiveFCParameters, \
-            MinimalFCParameters, EfficientFCParameters
+        try:
+            from tsfresh.utilities.dataframe_functions import roll_time_series
+            from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
+            from tsfresh import extract_features
+            from tsfresh.feature_extraction import ComprehensiveFCParameters, \
+                MinimalFCParameters, EfficientFCParameters
+        except ImportError:
+            raise ImportError("Please install tsfresh by `pip install tsfresh` to use "
+                              "`gen_rolling_feature` method.")
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
                           "minimal": MinimalFCParameters(),

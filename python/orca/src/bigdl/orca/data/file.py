@@ -15,6 +15,7 @@
 #
 
 import os
+import subprocess
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 
@@ -217,3 +218,36 @@ def write_text(path, text):
             result = f.write(text)
             f.close()
             return result
+
+
+def put_local_dir_to_remote(local_dir, remote_dir):
+    if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        host_port = remote_dir.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if not fs.exists(remote_dir):
+            fs.mkdir(remote_dir)
+        for file in os.listdir(local_dir):
+            with open(os.path.join(local_dir, file), "rb") as f:
+                fs.upload(os.path.join(remote_dir, file), f)
+    elif remote_dir.startswith("s3"):  # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = remote_dir.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        prefix = "/".join(path_parts)
+        for file in os.listdir(local_dir):
+            with open(os.path.join(local_dir, file), "rb") as f:
+                s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix+'/'+file)
+    else:
+        if remote_dir.startswith("file://"):
+            remote_dir = remote_dir[len("file://"):]
+        from distutils.dir_util import copy_tree
+        copy_tree(local_dir, remote_dir)

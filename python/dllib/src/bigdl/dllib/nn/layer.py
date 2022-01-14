@@ -65,18 +65,6 @@ class Node(JavaValue):
 
 
 class SharedStaticUtils():
-
-    # @staticmethod
-    # def load(path, bigdl_type="float"):
-    #     """
-    #     Load a pre-trained Bigdl model.
-    #
-    #     :param path: The path containing the pre-trained model.
-    #     :return: A pre-trained model.
-    #     """
-    #     jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
-    #     return Layer.of(jmodel)
-
     @staticmethod
     def of(jvalue, bigdl_type="float"):
         """

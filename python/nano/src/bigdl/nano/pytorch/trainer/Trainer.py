@@ -150,8 +150,8 @@ class Trainer(pl.Trainer):
                 from bigdl.nano.pytorch.onnx.onnxrt_inference import bind_onnxrt_methods
                 return bind_onnxrt_methods(pl_model)
             except ImportError:
-                warnings.warn("You should install onnx and onnxruntime to set `onnx=True`")
-                return pl_model
+                raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
+                                   "or just set `onnx=False`.")
         else:
             return pl_model
 
@@ -187,9 +187,9 @@ class Trainer(pl.Trainer):
                             Default: 'static'.
         :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
         :param accuracy_criterion:  Tolerable accuracy drop.
-                                    accuracy_criterion = {'relative': 0.1, higher_is_better=True}
+                                    accuracy_criterion = {'relative': 0.1, higher_is_better: True}
                                     allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, higher_is_better=False} means accuracy < 0.99
+                                    {'absolute': 0.99, higher_is_better:False} means accuracy < 0.99
                                      must be satisfied.
         :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
                             Combine with max_trials field to decide when to exit.

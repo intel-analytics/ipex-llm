@@ -1673,6 +1673,13 @@ object InternalDistriOptimizerV2 {
   }
 }
 
+object Models {
+  def loadModel[T: ClassTag](path: String)(implicit ev: TensorNumeric[T]): KerasNet[T] = {
+    val model = Net.load[T](path)
+    return model
+  }
+}
+
 object Model {
   /**
    * Build a multiple-input, multiple-output graph container.
