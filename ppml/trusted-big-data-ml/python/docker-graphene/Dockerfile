@@ -85,6 +85,7 @@ RUN cd /opt && \
     mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
 
 ADD spark-example-sql-e2e.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
+ADD sparkcryptofiles.jar /opt/spark-${SPARK_VERSION}/examples/jars/sparkcryptofiles.jar
 
 # hadoop
 RUN cd /opt && \
