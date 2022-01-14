@@ -22,8 +22,6 @@ def convert_db_to_csv(db_path):
         c.execute('select * from ' + table_name + ';')
         rows = c.fetchall()
         csvWriter.writerows(rows)
-        #for row in rows:
-        #    csvWriter.writerow(row)
 
 def encrypt_files(ip, port, pkp, dkp, input_dir, save_dir):
     for filename in os.listdir(input_dir):
