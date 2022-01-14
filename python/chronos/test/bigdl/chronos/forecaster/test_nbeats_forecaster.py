@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import os
 import tempfile
 import torch
 import numpy as np
@@ -22,7 +23,6 @@ import pytest
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.chronos.forecaster.nbeats_forecaster import NBeatsForecaster
-from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 
 def create_data(loader=False):
@@ -57,7 +57,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-class TestChronosNbeatsForecaster(TestCase):
+class TestChronosNBeatsForecaster(TestCase):
     def setUp(self):
         pass
 
@@ -82,11 +82,141 @@ class TestChronosNbeatsForecaster(TestCase):
 
     def test_nbeats_forecaster_data_loader(self):
         train_loader, _, _ = create_data(loader=True)
-        init_orca_context(cores=4, memory="4g", init_ray_on_spark=True)
+        init_orca_context(cores=4, memory="4g")
         forecater = NBeatsForecaster(past_seq_len=24,
                                      future_seq_len=5,
-                                     distributed=True)
+                                     loss='mae',
+                                     lr=0.01)
         forecater.fit(train_loader, epochs=2)
         stop_orca_context()
 
+    def test_nbeats_forecaster_onnx_methods(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mae',
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            import onnx
+            import onnxruntime
+            pred = forecaster.predict(test_data[0])
+            pred_onnx = forecaster.predict_with_onnx(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
+            mse = forecaster.evaluate(test_data, multioutput='raw_values')
+            mse_onnx = forecaster.evaluate_with_onnx(test_data,
+                                                     multioutput='raw_values')
+            np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
+            with pytest.raises(RuntimeError):
+                forecaster.build_onnx(sess_options=1)
+            forecaster.build_onnx(thread_num=1)
+            mse = forecaster.evaluate(test_data)
+            mse_onnx = forecaster.evaluate_with_onnx(test_data)
+            np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
+        except ImportError:
+            pass
 
+    def test_nbeats_forecaster_save_load(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mae',
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
+    def test_nbeats_forecaster_runtime_error(self):
+        _, _, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss="mae",
+                                      lr=0.01)
+        with pytest.raises(RuntimeError):
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+                forecaster.save(ckpt_name)
+        with pytest.raises(RuntimeError):
+            forecaster.predict(test_data[0])
+        with pytest.raises(RuntimeError):
+            forecaster.evaluate(test_data)
+    
+    def test_nbeats_forecaster_xshard_input(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mae',
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            import onnx
+            import onnxruntime
+            pred = forecaster.predict(test_data[0])
+            pred_onnx = forecaster.predict_with_onnx(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
+            mse = forecaster.evaluate(test_data, multioutput="raw_values")
+            mse_onnx = forecaster.evaluate_with_onnx(test_data,
+                                                     multioutput="raw_values")
+            np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
+            with pytest.raises(RuntimeError):
+                forecaster.build_onnx(sess_options=1)
+            sess_options = onnxruntime.SessionOptions()
+            sess_options.intra_op_num_threads = 1
+            forecaster.build_onnx(sess_options=sess_options)
+            mse = forecaster.evaluate(test_data)
+            mse_onnx = forecaster.evaluate_with_onnx(test_data)
+            np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
+        except ImportError:
+            pass
+        
+    def test_nbeats_forecaster_distributed(self):
+        train_data, _, test_data = create_data()
+        init_orca_context(cores=4, memory="4g")
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'seasonality'),
+                                      loss="mae",
+                                      lr=0.01,
+                                      distributed=True)
+        forecaster.fit(train_data, epochs=2)
+        distributed_pred = forecaster.predict(test_data[0])
+        distributed_eval = forecaster.evaluate(test_data)
+
+        model = forecaster.get_model()
+        assert isinstance(model, torch.nn.Module)
+
+        forecaster.to_local()
+        local_pred = forecaster.predict(test_data[0])
+        local_eval = forecaster.evaluate(test_data)
+
+        np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
+
+        try:
+            import onnx
+            import onnxruntime
+            local_pred_onnx = forecaster.predict_with_onnx(test_data[0])
+            local_eval_onnx = forecaster.evaluate_with_onnx(test_data)
+            np.testing.assert_almost_equal(distributed_pred, local_pred_onnx, decimal=5)
+        except ImportError:
+            pass
+        
+        model = forecaster.get_model()
+        assert isinstance(model, torch.nn.Module)
+
+        stop_orca_context()
+
+    def test_nbeats_forecaster_dataloader_distributed(self):
+        train_data, _, _ = create_data(loader=True)
+        init_orca_context(cores=4, memory="4g")
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss="mae",
+                                      lr=0.01,
+                                      distributed=False)
+        forecaster.fit(train_data, epochs=2)
+        stop_orca_context()
