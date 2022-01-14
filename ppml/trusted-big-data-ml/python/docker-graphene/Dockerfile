@@ -285,6 +285,8 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-sql-examples.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/kms-e2e-example.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/kms-e2e-example-v2.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/DecryptFilesWithSpark-v2.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/kms-client/*
 
 # kuberenetes support
