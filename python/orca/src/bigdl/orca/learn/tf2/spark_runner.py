@@ -32,6 +32,7 @@ from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
 
+
 def handle_datasets_train(data_creator, validation_data_creator):
         train_dataset = data_creator()
         if validation_data_creator is not None:
