@@ -14,21 +14,23 @@ def decrypt_file(data_file_path, ip, port, encrypted_primary_key_path, encrypted
 
 def encrypt_db_automation(db_path, ip, port):
     import shutil
-    FileOperator.convert_db_to_csv(dp_path)
+    FileOperator.convert_db_to_csv(db_path)
     KeyManager.generate_primary_key_ciphertext(ip, port)
-    KeyManager.generate_data_key_ciphertext(ip, port, '.\encrypted_primary_key')
-    encrypted_dir = db_path + '.encrypted'
-    os.mkdir(encrypted_dir)
-    FileOperator.encrypt_files_automation(ip, port, input_dir, encrypted_primary_key_path, encrypted_data_key_path)
+    KeyManager.generate_data_key_ciphertext(ip, port, './encrypted_primary_key')
+    csv_dir = db_path + '.csv'
+    FileOperator.encrypt_files_automation(ip, port, csv_dir, './encrypted_primary_key', './encrypted_data_key')
     shutil.rmtree(db_path + '.csv')
 
 def get_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path):
-    return KeyManager.retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
+    data_key_plaintext = KeyManager.retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
+    print(data_key_plaintext)
+    return data_key_plaintext
 
 def decrypt_csv_columns(ip, port, encrypted_primary_key_path, encrypted_data_key_path, input_dir):
     FileOperator.decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypted_data_key_path, input_dir)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
     parser.add_argument('-api', '--api', type=str, help='name of the API to use', required=True)
     parser.add_argument('-ip', '--ip', type=str, help='ip address of the ehsm_kms_server', required=True)
     parser.add_argument('-port', '--port', type=str, help='port of the ehsm_kms_server',default='3000', required=False)
@@ -38,11 +40,11 @@ if __name__ == "__main__":
     parser.add_argument('-dbp', '--dbp', type=str, help='path of the .db file to be processed', required=False)
     parser.add_argument('-dir', '--dir', type=str, help='path of the directory containing column-encrypted CSVs', required=False)
     args = parser.parse_args()
-    
+
     api = args.api
     ip = args.ip
     port = args.port
-    
+
     if api == 'encrypt_file_without_key':
         data_file_path = args.dfp
         encrypt_file_without_key(data_file_path, ip, port)
@@ -57,7 +59,7 @@ if __name__ == "__main__":
         encrypted_data_key_path = args.dkp
         decrypt_file(data_file_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path)
     elif api == 'encrypt_db_automation':
-        db_path = agrs.dbp
+        db_path = args.dbp
         encrypt_db_automation(db_path, ip, port)
     elif api == 'get_data_key_plaintext':
         encrypted_primary_key_path = args.pkp
