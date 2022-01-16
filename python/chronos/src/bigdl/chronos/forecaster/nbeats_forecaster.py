@@ -55,12 +55,14 @@ class NBeatsForecaster(BasePytorchForecaster):
                This value defaults to ("generic", "generic").
         :param nb_blocks_per_stack: Blocks contained in the stack,
                This value defaults to 3.
-        :param thetas_dim: 
+        :param thetas_dim: Number of fully connected layers
+               with ReLu activation per block.
         :param share_weigets_in_stack: Shared weights between stacks,
                This value defaults to False.
         :param hidden_layer_units: The number of layers in a fully
                connected neural network, This values defaults to 256.
-        :param nb_harmonics: 
+        :param nb_harmonics: Number of fully connected layers
+               with ReLu activation per block.
         :param dropout: Specify the dropout close possibility
                (i.e. the close possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
@@ -104,7 +106,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         self.loss_config = {
             "loss": loss
         }
-        
+
         self.optim_config = {
             "lr": lr,
             "optim": optimizer
@@ -124,10 +126,10 @@ class NBeatsForecaster(BasePytorchForecaster):
         self.lr = lr
         self.seed = seed
         self.metrics = metircs
-        
+
         # nano settings
         current_num_threads = torch.get_num_threads()
-        self.num_processes = max(1, current_num_threads//8) # 8 is a magic num
+        self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
         self.use_ipex = False
         self.onnx_available = True
         self.checkpoint_callback = False
