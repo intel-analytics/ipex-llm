@@ -17,7 +17,7 @@
 import bigdl.orca.automl.hp as hp
 
 
-AUTO_MODEL_SUPPORT_LIST = ["lstm", "tcn", "seq2seq"]
+AUTO_MODEL_SUPPORT_LIST = ["lstm", "tcn", "seq2seq", "nbeats"]
 
 AUTO_MODEL_DEFAULT_SEARCH_SPACE = {
     "lstm": {"minimal": {"hidden_dim": hp.grid_search([16, 32]),
@@ -84,6 +84,9 @@ class AutoModelFactory:
         if name == "seq2seq":
             from .auto_seq2seq import AutoSeq2Seq
             return AutoSeq2Seq(**search_space)
+        if name == "nbeats":
+            from .auto_nbeats import AutoNbeats
+            return AutoNbeats(**search_space)
         return NotImplementedError(f"{AUTO_MODEL_SUPPORT_LIST} are supported for auto model,\
                                     but get {name}.")
 
