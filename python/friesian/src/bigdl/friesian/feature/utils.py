@@ -135,11 +135,9 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
     for target_code in targets:
         cat_col = target_code.cat_col
         out_target_mean = target_code.out_target_mean
-
         join_tbl = tbl._clone(target_code.df)
 
-        assert "count" in target_code.df.columns + " should be in target_code"
-
+        assert "count" in target_code.df.columns, "count should be in target_code"
         # (keys of out_target_mean) should include (output columns)
         output_columns = list(filter(lambda x:
                                      ((isinstance(cat_col, str) and x != cat_col) or
@@ -169,16 +167,22 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         t_df = target_code.df
         top_df = t_df if all_size < limit_size else t_df.sort(t_df.count.desc()).limit(limit_size)
         br_df = broadcast(top_df)
+        keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
+        filter_udf = lambda key: key in keyset
 
         if fold_col is None:
             join_key = cat_col
         else:
             join_key = [cat_col, fold_col] if isinstance(cat_col, str) else cat_col + [fold_col]
 
-        joined = tbl.df.join(br_df, on=join_key)
-        if all_size > limit_size:
-            joined2 = tbl.df.join(t_df.subtract(br_df), on=join_key, how="left")
-            joined = joined.union(joined2)
+        if all_size < limit_size:
+            joined = tbl.df.join(br_df, on=join_key, how="left")
+        else:
+            df1 = tbl.df.filter(filter_udf(cat_col))
+            df2 = tbl.df.subtract(df1)
+            joined1 = df1.join(br_df, on=join_key)
+            joined2 = df2.join(t_df.subtract(br_df), on=join_key, how="left")
+            joined = joined1.union(joined2)
 
         tbl = tbl._clone(joined)
 
