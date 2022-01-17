@@ -104,7 +104,6 @@ ENV RUNTIME_TOTAL_EXECUTOR_CORES        4
 ENV RUNTIME_DRIVER_CORES                4
 ENV RUNTIME_DRIVER_MEMORY               10g
 ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
-ENV SPARK_HOME                          /opt/spark
 ENV JAVA_HOME                           /opt/jdk
 ENV PATH ${BIGDL_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}
 ENV TINI_VERSION                        ${TINI_VERSION}
