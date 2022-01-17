@@ -165,9 +165,10 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         all_size = target_code.size()
         limit_size = 1000000
         t_df = target_code.df
-        top_df = t_df if all_size < limit_size else t_df.sort(t_df.count.desc()).limit(limit_size)
+        top_df = t_df if all_size <= limit_size else t_df.sort(t_df.count.desc()).limit(limit_size)
         br_df = broadcast(top_df)
         keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
+        print(keyset)
         filter_udf = lambda key: key in keyset
 
         if fold_col is None:
@@ -175,7 +176,7 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         else:
             join_key = [cat_col, fold_col] if isinstance(cat_col, str) else cat_col + [fold_col]
 
-        if all_size < limit_size:
+        if all_size <= limit_size:
             joined = tbl.df.join(br_df, on=join_key, how="left")
         else:
             df1 = tbl.df.filter(filter_udf(cat_col))

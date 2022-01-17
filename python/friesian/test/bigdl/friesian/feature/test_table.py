@@ -1238,7 +1238,7 @@ class TestTable(TestCase):
 
         target_tbl3, target_list3 = feature_tbl.target_encode([["col_4", "col_5"]], "target",
                                                               kfold=2, drop_cat=False)
-        assert len(target_tbl3.columns) == len(feature_tbl.columns) + 1, \
+        assert len(target_tbl3.columns) == len(feature_tbl.columns) + 2, \
             "target_tbl3 should have one more column col_4_col_5_te_target"
 
     def test_encode_target(self):
