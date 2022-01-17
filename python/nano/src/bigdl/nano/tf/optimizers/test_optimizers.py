@@ -29,15 +29,15 @@ def test_optimizer_sparseadam():
 
     input_array = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
 
-    print("before_weight:",model.get_weights())
+    print("before_weight:", model.get_weights())
     before_weights = model.get_weights()
 
     output = model(input_array)
     labels = np.random.randint(30, size=output.shape)
 
-    y_pred = model.train_on_batch(input_array,labels)
+    y_pred = model.train_on_batch(input_array, labels)
 
-    print("after_weight:",model.get_weights())
+    print("after_weight:", model.get_weights())
     after_weights = model.get_weights()
 
-    assert (before_weights[0][0:10,:].all() != after_weights[0][0:10,:].all())
+    assert (before_weights[0][0:10, :].all() != after_weights[0][0:10, :].all())
