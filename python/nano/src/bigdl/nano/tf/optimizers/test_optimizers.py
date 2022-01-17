@@ -16,26 +16,28 @@
 import numpy as np
 from sparse_adam import SparseAdam
 
-
 def test_optimizer_sparseadam():
 
     from bigdl.nano.tf.keras.layers import Embedding
     from bigdl.nano.tf.keras import Sequential
     import tensorflow as tf
     model = Sequential()
-    model.add(Embedding(1000, 64, input_length=10, regularizer=tf.keras.regularizers.L2()))
+    model.add(Embedding(30, 16, input_length=5))
+
     sparse_optim = SparseAdam()
     model.compile(sparse_optim, 'mse')
-    input_array = np.random.randint(1000, size=(32, 10))
 
-    ids = tf.constant([0, 10, 20, 30])
-    test_array = tf.nn.embedding_lookup(input_array, ids)
-    print(test_array)
-    with tf.GradientTape() as tape:
-        output = model(test_array)
-        labels = tf.zeros_like(output)
-        loss_value = model.compiled_loss(output, labels, regularization_losses=model.losses)
-        grads = tape.gradient(loss_value, model.trainable_variables)
-        for grad in grads:
-            print("grad:", grad)
-            assert isinstance(grad, tf.IndexedSlices)
+    input_array = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
+
+    print("before_weight:",model.get_weights())
+    before_weights = model.get_weights()
+
+    output = model(input_array)
+    labels = np.random.randint(30, size=output.shape)
+
+    y_pred = model.train_on_batch(input_array,labels)
+
+    print("after_weight:",model.get_weights())
+    after_weights = model.get_weights()
+
+    assert (before_weights[0][0:10,:].all() != after_weights[0][0:10,:].all())
