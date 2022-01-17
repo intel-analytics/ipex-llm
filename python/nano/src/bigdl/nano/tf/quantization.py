@@ -16,7 +16,6 @@
 from typing import List, Optional
 
 import tensorflow as tf
-from neural_compressor.model.model import TensorflowBaseModel
 from tensorflow.keras.metrics import Metric
 
 
@@ -33,7 +32,7 @@ def quantize(self,
              timeout=0,
              max_trials=1,
              inputs: List[str] = None,
-             outputs: List[str] = None) -> TensorflowBaseModel:
+             outputs: List[str] = None):
     """
      Post-training quantization on a keras model.
 
@@ -65,11 +64,12 @@ def quantize(self,
                         Default: None, automatically get names from graph.
      :param outputs:    A list of output names.
                         Default: None, automatically get names from graph.
-     :return:           A TensorflowBaseModel. If there is no model found, return None.
+     :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
      """
     if backend == 'inc':
         from bigdl.nano.quantization.neural_compressor import QuantizationINC
         from neural_compressor.experimental import common
+        from neural_compressor.model.model import TensorflowBaseModel
 
         def get_tensors_name(tensors):
             return [tensor.name for tensor in tensors]
@@ -98,8 +98,8 @@ def quantize(self,
         calib_loader = None
         if calib_dataset:
             calib_loader = common.DataLoader(calib_dataset, batch)
-        quantized = quantizer.post_training_quantize(self, calib_loader, val_loader,
-                                                     metric)
+        quantized: TensorflowBaseModel = quantizer.post_training_quantize(self, calib_loader,
+                                                                          val_loader, metric)
         return quantized
     else:
         raise NotImplementedError("Backend {} is not implemented.".format(backend))
