@@ -48,8 +48,8 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
                  **kwargs):
         '''
         This is a slightly modified version of tf.keras.optimizers.Adam,
-        which only apply resource_apply_sparse to the output of the embedding
-        layers, when the gradient to embeddings is sparse.
+        which only update moving-average accumulators for sparse variable
+        indices that appear in the current batch.
         :param learning_rate: A `Tensor`, floating point value, or a schedule that is a
             `tf.keras.optimizers.schedules.LearningRateSchedule`, or a callable
             that takes no arguments and returns the actual value to use, The
