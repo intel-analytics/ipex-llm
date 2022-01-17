@@ -207,7 +207,6 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     import atexit
     atexit.register(stop_orca_context)
     if cluster_mode == "ray":
-        import ray
         from bigdl.orca.ray import RayContext
         ray_ctx = RayContext(cluster_mode="ray", cores=cores, num_nodes=num_nodes,
                              **kwargs)
