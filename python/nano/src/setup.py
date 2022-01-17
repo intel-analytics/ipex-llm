@@ -70,7 +70,9 @@ def setup_package(plat_name):
     install_requires = ["intel-openmp"]
 
     tensorflow_requires = ["intel-tensorflow==2.6.0",
-                           "keras==2.6.0"]
+                           "keras==2.6.0",
+                           "tensorflow-estimator==2.6.0"
+                           ]
 
     pytorch_requires = ["torch==1.9.0",
                         "torchvision==0.10.0",

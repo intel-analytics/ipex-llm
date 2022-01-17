@@ -8,10 +8,10 @@ wget -nv ${FTP_URI}/analytics-zoo-data/cifar-10-python.tar.gz -P ${PYTORCH_NANO_
 
 set -e
 
-# ipex is not installed here. Any tests needs ipex should be moved to next pytest command.
-echo "# Start testing"
+# Install ipex to test IPEX related modules
+echo "# Start testing IPEX"
 start=$(date "+%s")
-python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/tests/ -k 'not ipex'
+python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/tests/ -k 'ipex'
 
 now=$(date "+%s")
 time=$((now-start))
