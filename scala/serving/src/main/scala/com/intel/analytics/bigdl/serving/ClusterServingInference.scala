@@ -68,9 +68,7 @@ class ClusterServingInference(modelKey: String = null) {
         val result = if (modelKey != null) {
           ClusterServing.jobModelMap(modelKey).doPredict(t)
         } else ClusterServing.model.doPredict(t)
-        dimCheck(result, "remove", helper.modelType)
-        val resultIndex = if (helper.inputAlreadyBatched) -1 else 1
-        val value = PostProcessing(result.toTensor[Float], helper.postProcessing, resultIndex)
+        val value = PostProcessing(result.toTensor[Float], helper.postProcessing, -1)
         (pathByte._1, value)
       } catch {
         case e: Exception =>
@@ -122,6 +120,7 @@ class ClusterServingInference(modelKey: String = null) {
     val postProcessed = in.grouped(helper.threadPerModel).flatMap(itemBatch => {
       try {
         val size = itemBatch.size
+
         val t =
           batchInput(itemBatch, helper.threadPerModel, true, helper.resize)
 
@@ -130,12 +129,9 @@ class ClusterServingInference(modelKey: String = null) {
          * original Tensor, thus if reuse of Tensor is needed,
          * have to squeeze it back.
          */
-        // dimCheck(t, "add", modelType)
         val result = if (modelKey != null) {
           ClusterServing.jobModelMap(ClusterServing.helper.modelPath).doPredict(t)
         } else ClusterServing.model.doPredict(t)
-//        dimCheck(result, "remove", helper.modelType)
-        // dimCheck(t, "remove", modelType)
         val kvResult =
           (0 until size).toParArray.map(i => {
             val value = PostProcessing(result, helper.postProcessing, i + 1)
@@ -208,6 +204,7 @@ class ClusterServingInference(modelKey: String = null) {
    * @param modelType model type
    * @return input with dimension changed
    */
+  @deprecated
   def dimCheck(input: Activity, op: String, modelType: String): Activity = {
     if (modelType == "openvino") {
       if (input.isTensor) {
@@ -238,23 +235,16 @@ class ClusterServingInference(modelKey: String = null) {
    * @return input with single element batch constructed
    */
   def typeCheck(input: Activity): Activity = {
-    if (helper.inputAlreadyBatched) {
-      return input
-    }
     if (input.isTable) {
       if (input.toTable.keySet.size == 1) {
-        input.toTable.keySet.foreach(key => {
-          return input.toTable(key).asInstanceOf[Tensor[Float]].addSingletonDimension()
-        })
+        val key = input.toTable.keySet.head
+        input.toTable(key).asInstanceOf[Tensor[Float]]
       }
       else {
-        input.toTable.keySet.foreach(key => {
-          input.toTable(key).asInstanceOf[Tensor[Float]].addSingletonDimension()
-        })
+        input.toTable
       }
-      input.toTable
     } else if (input.isTensor) {
-      input.toTensor[Float].addSingletonDimension()
+      input.toTensor[Float]
     } else {
       logger.error("Your input of Inference is neither Table nor Tensor, please check.")
       throw new Error("Your input is invalid, skipped.")
