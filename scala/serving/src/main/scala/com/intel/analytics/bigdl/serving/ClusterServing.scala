@@ -72,7 +72,7 @@ object ClusterServing {
 
 
     logger.info(s"Cluster Serving Flink job graph details \n${streamingEnv.getExecutionPlan}")
-    streamingEnv.executeAsync()
+    streamingEnv.execute()
   }
   def initializeRedis(): Unit = {
     val params = ClusterServing.helper
