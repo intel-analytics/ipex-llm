@@ -57,13 +57,15 @@ def quantized_state_dict(self):
         return self._quantized_model.state_dict()
     else:
         raise RuntimeError("Please call trainer.quantize again since the quantized model is"
-                           "not up-to-date")
+                           "not up-to-date.")
 
 
 def load_quantized_state_dict(self, state_dict):
     import torch
     from torch.quantization.quantize_fx import prepare_fx, convert_fx
-    self.eval()  # TODO: put back to it's original state
+    back_to_train = self.training
+
+    self.eval()
     qconfig = torch.quantization.get_default_qconfig('fbgemm')
     if isinstance(self, LightningModuleFromTorch):
         prepared_model = prepare_fx(self.model, {"": qconfig})
@@ -71,7 +73,11 @@ def load_quantized_state_dict(self, state_dict):
         prepared_model = prepare_fx(self, {"": qconfig})
     qmodel = convert_fx(prepared_model)
     qmodel.load_state_dict(state_dict)
+
+    if back_to_train:
+        self.train()
     self._quantized_model = qmodel
+    self._quantized_model_up_to_date = True  # set to true
 
 
 def bind_quantize_methods(pl_model, q_model):
