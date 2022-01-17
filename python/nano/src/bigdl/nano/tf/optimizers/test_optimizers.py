@@ -26,18 +26,15 @@ def test_optimizer_sparseadam():
 
     sparse_optim = SparseAdam()
     model.compile(sparse_optim, 'mse')
-
     input_array = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
-
-    print("before_weight:", model.get_weights())
-    before_weights = model.get_weights()
-
     output = model(input_array)
     labels = np.random.randint(30, size=output.shape)
 
-    y_pred = model.train_on_batch(input_array, labels)
-
-    print("after_weight:", model.get_weights())
+    before_weights = model.get_weights()
+    model.fit(input_array, labels, epochs=4, batch_size=4)
     after_weights = model.get_weights()
 
-    assert (before_weights[0][0:10, :].all() != after_weights[0][0:10, :].all())
+    # check if only the 0-10 cows of weights
+    # have changed after training
+    assert ((before_weights[0][0:10, :] != after_weights[0][0:10, :]).all())
+    assert ((before_weights[0][10:30, :] == after_weights[0][10:30, :]).all())
