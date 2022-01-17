@@ -13,17 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+try:
+    import neural_compressor
+except ImportError:
+    ImportError("Intel Neural Compressor must be installed to use quantization."
+                "Please install INC by: pip install neural-compressor.")
+
+from neural_compressor.conf.config import Quantization_Conf
+from neural_compressor.experimental import Quantization
 from neural_compressor.experimental.common import Metric
 
 from .metric import METRICS
-
-try:
-    from neural_compressor.conf.config import Quantization_Conf
-    from neural_compressor.experimental import Quantization
-except ImportError:
-    raise ImportError(
-        "Module neural_compressor is not installed. Please install it by command: \"pip install "
-        "neural-compressor\"")
 
 
 class QuantizationINC(Quantization):
@@ -102,6 +102,7 @@ class QuantizationINC(Quantization):
                         to the new local class to avoid that.
                         """
                         self.metric = metric
+
                 self.metric = Metric(
                     MyMetric,
                     name="%s_%s" % (framework_metric.__name__, type(metric).__name__)
