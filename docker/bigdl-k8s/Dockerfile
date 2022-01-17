@@ -126,6 +126,7 @@ RUN mkdir -p /opt/bigdl-examples/python && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 
+RUN chmod +x /sbin/tini
 RUN cp /sbin/tini /usr/bin/tini
 
 WORKDIR /opt/spark/work-dir
