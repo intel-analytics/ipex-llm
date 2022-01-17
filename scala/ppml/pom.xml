@@ -249,7 +249,6 @@
                           	    <shadedPattern>shaded.com.google.protobuf</shadedPattern>
                                 </relocation>
 			    </relocations>
-
                         </configuration>
                     </execution>
                 </executions>
