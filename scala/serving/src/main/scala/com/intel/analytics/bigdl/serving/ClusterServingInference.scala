@@ -68,7 +68,7 @@ class ClusterServingInference(modelKey: String = null) {
         val result = if (modelKey != null) {
           ClusterServing.jobModelMap(modelKey).doPredict(t)
         } else ClusterServing.model.doPredict(t)
-        val value = PostProcessing(result.toTensor[Float], helper.postProcessing, -1)
+        val value = PostProcessing(result, helper.postProcessing, -1)
         (pathByte._1, value)
       } catch {
         case e: Exception =>
