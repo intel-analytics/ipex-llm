@@ -340,4 +340,3 @@ def stop_orca_context():
             from bigdl.dllib.nncontext import stop_spark_standalone
             stop_spark_standalone()
         sc.stop()
-
