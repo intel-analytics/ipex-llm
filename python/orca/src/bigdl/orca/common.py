@@ -321,11 +321,11 @@ def stop_orca_context():
     Stop the SparkContext (and stop Ray services across the cluster if necessary).
     """
     from pyspark import SparkContext
-    from bigdl.orca.ray import RayContext
+    from python.orca.src.bigdl.orca.ray import RayContext
     # If users successfully call stop_orca_context after the program finishes,
     # namely when there is no active SparkContext, the registered exit function
     # should do nothing.
-    if RayContext._active_spark_context is not None:
+    if RayContext._active_ray_context is not None:
         print("Stopping ray_orca context")
         ray_ctx = RayContext.get(init_orca_context)
         if ray_ctx.initialized:
