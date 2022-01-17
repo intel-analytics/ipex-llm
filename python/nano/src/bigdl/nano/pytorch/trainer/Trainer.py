@@ -193,7 +193,7 @@ class Trainer(pl.Trainer):
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
                                     allows relative accuracy loss: 1%. accuracy_criterion =
                                     {'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                    must be smaller than 0.99..
+                                    must be smaller than 0.99.
         :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
                             Combine with max_trials field to decide when to exit.
         :param max_trials:  Max tune times. Default: 1.
