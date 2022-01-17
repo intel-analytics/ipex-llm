@@ -57,7 +57,12 @@ class RayContext(object):
         return results
 
     def stop(self):
-        pass
+        if not self.initialized:
+            print("The Ray cluster has not been launched.")
+            return
+        import ray
+        ray.shutdown()
+        self.initialized = False
 
     @classmethod
     def get(cls, initialize=True):
