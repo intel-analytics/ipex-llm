@@ -168,7 +168,6 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         top_df = t_df if all_size <= limit_size else t_df.sort(t_df.count.desc()).limit(limit_size)
         br_df = broadcast(top_df)
         keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
-        print(keyset)
         filter_udf = lambda key: key in keyset
 
         if fold_col is None:
