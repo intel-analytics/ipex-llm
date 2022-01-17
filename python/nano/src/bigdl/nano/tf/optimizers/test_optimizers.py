@@ -16,8 +16,8 @@
 import numpy as np
 from sparse_adam import SparseAdam
 
-def test_optimizer_sparseadam():
 
+def test_optimizer_sparseadam():
     from bigdl.nano.tf.keras.layers import Embedding
     from bigdl.nano.tf.keras import Sequential
     import tensorflow as tf
