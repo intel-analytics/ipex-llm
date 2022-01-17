@@ -242,13 +242,13 @@
                             <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-			     </transformers>
-			     <relocations>
+			    </transformers>
+			    <relocations>
                           	<relocation>
                           	    <pattern>com.google.protobuf</pattern>
                           	    <shadedPattern>shaded.com.google.protobuf</shadedPattern>
                                 </relocation>
-			     </relocations>
+			    </relocations>
                         </configuration>
                     </execution>
                 </executions>
