@@ -208,7 +208,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     atexit.register(stop_orca_context)
     if cluster_mode == "ray":
         import ray
-        from bigdl.orca.ray import RayContext
+        from python.orca.src.bigdl.orca.ray import RayContext
         ray_ctx = RayContext(cluster_mode="ray", cores=cores, num_nodes=num_nodes,
                              **kwargs)
         assert "address" in kwargs, "address must be specified if cluster_mode is ray"
@@ -321,7 +321,7 @@ def stop_orca_context():
     Stop the SparkContext (and stop Ray services across the cluster if necessary).
     """
     from pyspark import SparkContext
-    from python.orca.src.bigdl.orca.ray import RayContext
+    from bigdl.orca.ray import RayContext
     # If users successfully call stop_orca_context after the program finishes,
     # namely when there is no active SparkContext, the registered exit function
     # should do nothing.
