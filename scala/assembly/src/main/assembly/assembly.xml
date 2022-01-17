@@ -130,7 +130,6 @@
         <exclude>org.apache.spark:*:jar</exclude>
         <exclude>*:commons*:jar</exclude>
         <exclude>*:slf4j*:jar</exclude>
-        <exclude>*:log4j*:jar</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>
