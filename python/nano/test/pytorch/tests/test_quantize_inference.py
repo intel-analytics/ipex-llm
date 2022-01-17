@@ -17,6 +17,7 @@
 
 import pytest
 import os
+import tempfile
 from unittest import TestCase
 
 import torch
@@ -53,7 +54,7 @@ class TestQuantizeInference(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
 
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        pl_model = Trainer.compile(model, loss, optimizer)
         train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
@@ -73,3 +74,15 @@ class TestQuantizeInference(TestCase):
 
         pl_model = trainer.quantize(pl_model, train_loader)
         assert pl_model._quantized_model_up_to_date is True  # qmodel is up-to-date after building
+
+        model_load = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        pl_model_load = Trainer.compile(model_load)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, ".ckpt")
+            torch.save(pl_model.quantized_state_dict(), ckpt_name)
+            pl_model_load.load_quantized_state_dict(torch.load(ckpt_name))
+        
+        for x, y in train_loader:
+            quantized_res = pl_model.inference(x, backend=None, quantize=True).numpy()  # quantized
+            quantized_res_load = pl_model_load.inference(x, backend=None, quantize=True).numpy()  # quantized
+            np.testing.assert_almost_equal(quantized_res, quantized_res_load, decimal=5)  # same result

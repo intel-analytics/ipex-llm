@@ -16,6 +16,7 @@
 
 import warnings
 from functools import partial
+from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 
 QUANTIZATION_BINDED_COMPONENTS = ['_quantized_model',
                                   '_quantized_model_up_to_date',
@@ -51,6 +52,28 @@ def _fx_quantize_eval(self, quantize=False):
         self.forward = self._torch_forward
 
 
+def quantized_state_dict(self):
+    if self._quantized_model_up_to_date:
+        return self._quantized_model.state_dict()
+    else:
+        raise RuntimeError("Please call trainer.quantize again since the quantized model is"
+                           "not up-to-date")
+
+
+def load_quantized_state_dict(self, state_dict):
+    import torch
+    from torch.quantization.quantize_fx import prepare_fx, convert_fx
+    self.eval()  # TODO: put back to it's original state
+    qconfig = torch.quantization.get_default_qconfig('fbgemm')
+    if isinstance(self, LightningModuleFromTorch):
+        prepared_model = prepare_fx(self.model, {"": qconfig})
+    else:
+        prepared_model = prepare_fx(self, {"": qconfig})
+    qmodel = convert_fx(prepared_model)
+    qmodel.load_state_dict(state_dict)
+    self._quantized_model = qmodel
+
+
 def bind_quantize_methods(pl_model, q_model):
     # check conflicts
     for component in QUANTIZATION_BINDED_COMPONENTS:
@@ -65,5 +88,7 @@ def bind_quantize_methods(pl_model, q_model):
     pl_model._fx_quantize_eval = partial(_fx_quantize_eval, pl_model)
     pl_model._fx_quantize_on_train = partial(_fx_quantize_on_train, pl_model)
     pl_model._fx_quantize_on_fit_start = partial(_fx_quantize_on_fit_start, pl_model)
+    pl_model.quantized_state_dict = partial(quantized_state_dict, pl_model)
+    pl_model.load_quantized_state_dict = partial(load_quantized_state_dict, pl_model)
 
     return pl_model
