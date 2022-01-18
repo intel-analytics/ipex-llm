@@ -32,7 +32,6 @@ from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_s
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
-# from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator
