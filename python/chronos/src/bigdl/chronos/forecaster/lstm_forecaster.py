@@ -15,7 +15,7 @@
 #
 
 import torch
-from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
+from bigdl.chronos.forecaster.base_pytorch_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator, optimizer_creator, loss_creator
 
 
