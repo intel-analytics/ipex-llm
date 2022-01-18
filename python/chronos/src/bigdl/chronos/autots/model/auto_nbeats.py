@@ -35,8 +35,8 @@ class AutoNbeats(BasePytorchAutomodel):
                  optimizer,
                  loss,
                  metric,
-                 input_feature_num=1,
-                 output_target_num=1,
+                 input_feature_num,
+                 output_target_num,
                  lr=0.001,
                  dropout=0.2,
                  backend="torch",
@@ -70,6 +70,15 @@ class AutoNbeats(BasePytorchAutomodel):
                forecasting. You may only choose from "mse" and "mae" for a
                distributed forecaster. You may choose from "mse", "mae",
                "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
+        :param input_feature_num: Int. The number of features in the input
+        :param output_target_num: Int. The number of targets in the output
+        :param backend: The backend of the nbeats model. We only support backend as "torch" for now.
+        :param logs_dir: Local directory to save logs and results. It defaults to "/tmp/auto_nbeats"
+        :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
+        :param name: name of the AutoNBeats. It defaults to "auto_nbeats"
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+               defaults to None and doesn't take effects while running in local. While running in
+               cluster, it defaults to "hdfs:///tmp/{name}".
         """
         super().__init__()
 
@@ -89,8 +98,8 @@ class AutoNbeats(BasePytorchAutomodel):
                                  dropout=dropout,
                                  past_seq_len=past_seq_len,
                                  future_seq_len=future_seq_len,
-                                 input_feature_num=input_feature_num,
-                                 output_feature_num=output_target_num)
+                                 input_feature_num=1,
+                                 output_feature_num=1)
 
         self.metric = metric
         model_builder = PytorchModelBuilder(model_creator=model_creator,
