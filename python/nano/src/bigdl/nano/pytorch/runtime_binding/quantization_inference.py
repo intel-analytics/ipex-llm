@@ -47,7 +47,7 @@ def _fx_quantize_eval(self, quantize=False):
             self.forward = self._forward_fx_quantize
         else:
             raise RuntimeError("Please call trainer.quantize again since the quantized model is"
-                               "not up-to-date")
+                               " not up-to-date")
     else:
         self.forward = self._torch_forward
 
@@ -57,7 +57,7 @@ def quantized_state_dict(self):
         return self._quantized_model.state_dict()
     else:
         raise RuntimeError("Please call trainer.quantize again since the quantized model is"
-                           "not up-to-date.")
+                           " not up-to-date.")
 
 
 def load_quantized_state_dict(self, state_dict):
@@ -77,8 +77,7 @@ def load_quantized_state_dict(self, state_dict):
     if back_to_train:
         self.train()
     self._quantized_model = qmodel
-    self._quantized_model_up_to_date = True  # set to true
-
+    self._quantized_model_up_to_date = True  # set to true before training next time
 
 def bind_quantize_methods(pl_model, q_model):
     # check conflicts
