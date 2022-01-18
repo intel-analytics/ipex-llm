@@ -98,7 +98,7 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
             m_sparse_scaled = m_sparse * (coefficients['beta_1_t'] - 1)
 
             m_t = self._resource_scatter_add(m, indices, m_scaled_g_values + m_sparse_scaled)
-            m_t_sparse = m_sparse * coefficients['beta_1_t'] + m_sparse_scaled
+            m_t_sparse = m_sparse * coefficients['beta_1_t'] + m_scaled_g_values
 
         with tf.name_scope("update_sparse_vt"):
             v = self.get_slot(var, 'v')
