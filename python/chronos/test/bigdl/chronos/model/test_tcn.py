@@ -15,7 +15,7 @@
 #
 
 from unittest import TestCase
-from bigdl.chronos.model.tcn import TCNPytorch
+from bigdl.chronos.model.tcn_pytorch import TCNPytorch
 import numpy as np
 import tempfile
 import os

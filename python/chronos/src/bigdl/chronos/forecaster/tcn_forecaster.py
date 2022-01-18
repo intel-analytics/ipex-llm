@@ -16,7 +16,7 @@
 
 import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
-from bigdl.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
+from bigdl.chronos.model.tcn_pytorch import model_creator, optimizer_creator, loss_creator
 
 
 class TCNForecaster(BasePytorchForecaster):
