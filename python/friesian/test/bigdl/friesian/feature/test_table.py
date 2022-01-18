@@ -1238,7 +1238,7 @@ class TestTable(TestCase):
 
         target_tbl3, target_list3 = feature_tbl.target_encode([["col_4", "col_5"]], "target",
                                                               kfold=2, drop_cat=False)
-        assert len(target_tbl3.columns) == len(feature_tbl.columns) + 2, \
+        assert len(target_tbl3.columns) == len(feature_tbl.columns) + 1, \
             "target_tbl3 should have one more column col_4_col_5_te_target"
 
     def test_encode_target(self):
@@ -1246,11 +1246,12 @@ class TestTable(TestCase):
         feature_tbl = FeatureTable.read_parquet(file_path)
         spark = OrcaContext.get_spark_session()
 
-        data = [("aa", 1.0),
-                ("bb", 2.0),
-                ("cc", 3.0),
-                ("dd", 4.0)]
+        data = [("aa", 2, 1.0),
+                ("bb", 4, 2.0),
+                ("cc", 6, 3.0),
+                ("dd", 8, 4.0)]
         schema = StructType([StructField("unknown", StringType(), True),
+                             StructField("target_encode_count", IntegerType(), True),
                              StructField("col_5_te_col_1", DoubleType(), True)])
         df0 = spark.createDataFrame(data, schema)
         target_code0 = TargetCode(df0,
