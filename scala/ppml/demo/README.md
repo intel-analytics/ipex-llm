@@ -43,6 +43,7 @@ java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/di
 ### Build Image
 #### Get jar ready
 run:
+
 ```bash
 cd .. && mvn clean package -DskipTests -Pspark_3.x
 mv target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar demo
@@ -51,6 +52,7 @@ cd demo
 
 #### Build
 Modify your `http_proxy` in `build-image.sh` then run:
+
 ```bash
 ./build-image.sh
 ```
@@ -83,6 +85,7 @@ Then modify these path and your local ip in `deploy-local-spark-sgx.sh`.
 
 ## Start container
 run:
+
 ```bash
 ./deploy-local-spark-sgx.sh
 sudo exec -it flDemo bash
@@ -91,34 +94,45 @@ sudo exec -it flDemo bash
 
 ## Start FLServer
 In container run:
+
 ```bash
 ./runFlServer.sh
 ```
 
-## Run HFL Demo
+## Run Horizontal FL Demo
 Open two new terminals, run:
+
 ```bash
 sudo exec -it flDemo bash
 ```
+
 to enter the container, then in a terminal run:
+
 ```bash
 ./runHflClient1.sh
 ```
+
 in another terminal run:
+
 ```bash
 ./runHflClient2.sh
 ```
 
-## Run VFL Demo
+## Run Vertical FL Demo
 Open two new windows, run:
+
 ```bash
 sudo exec -it flDemo bash
 ```
+
 to enter the container, then in a terminal run:
+
 ```bash
 ./runVflClient1.sh
 ```
+
 in another terminal run:
+
 ```bash
 ./runVflClient2.sh
 ```
