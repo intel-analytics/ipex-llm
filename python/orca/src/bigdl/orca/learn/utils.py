@@ -385,6 +385,46 @@ def find_free_port():
         return s.getsockname()[1]
 
 
+def find_ip_and_free_port(pre_iter):
+    from pyspark import BarrierTaskContext
+    tc = BarrierTaskContext().get()
+    infos = tc.getLocalProperty("addresses").split(",")
+    address = infos[tc.partitionId()].split(":")[0]
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        tc.barrier()
+        return [f"{address}:{s.getsockname()[1]}"]
+
+
+def get_rank(cluster_info):
+    # As task placement may not be identical between two different jobs,
+    # we cannot simply index cluster_info using partitionId to get current
+    # ip and port.
+    # The approach here is to first get all tasks' ip in this job and compute
+    # a local rank by counting how many tasks has the same ip but with lower id.
+    # We then use the local rank to find the right slot in cluster_info to find
+    # the right global_rank.
+    from pyspark import BarrierTaskContext
+    tc = BarrierTaskContext().get()
+    infos = tc.getLocalProperty("addresses").split(",")
+    idx = tc.partitionId()
+    local_ip = infos[idx].split(":")[0]
+    local_rank = 0
+    for i in range(0, idx):
+        if infos[i].startswith(local_ip):
+            local_rank += 1
+    global_rank = -1
+    local_count = 0
+    for node in cluster_info:
+        if node.startswith(local_ip):
+            local_count += 1
+        global_rank += 1
+        if local_count == local_rank + 1:
+            break
+    return global_rank
+
+
 def duplicate_stdout_stderr_to_file(log_path):
     tee = subprocess.Popen(["tee", log_path], stdin=subprocess.PIPE)
     os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
