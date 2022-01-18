@@ -72,6 +72,7 @@ class TestQuantizeInference(TestCase):
         trainer.fit(pl_model, train_loader)
         assert pl_model._quantized_model_up_to_date is False  # qmodel is not up-to-date after training
 
+        # test save/load dict
         pl_model = trainer.quantize(pl_model, train_loader)
         assert pl_model._quantized_model_up_to_date is True  # qmodel is up-to-date after building
 
