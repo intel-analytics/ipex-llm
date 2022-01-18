@@ -40,9 +40,8 @@ java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/di
 
 ## Before running code
 
-### Build Image
-#### Get jar ready
-run:
+### Prepare Docker Image
+#### Build jar from Source
 
 ```bash
 cd .. && mvn clean package -DskipTests -Pspark_3.x
@@ -50,7 +49,7 @@ mv target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar demo
 cd demo
 ```
 
-#### Build
+#### Build Image
 Modify your `http_proxy` in `build-image.sh` then run:
 
 ```bash
