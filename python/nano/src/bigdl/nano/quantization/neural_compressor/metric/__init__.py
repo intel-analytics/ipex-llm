@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import tensorflow as tf
 
+from .metrics import *
 
-class Model(tf.keras.Model):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+METRICS = {
+    'pytorch': PytorchINCMetric,
+    'tensorflow': TensorflowINCMetric
+}

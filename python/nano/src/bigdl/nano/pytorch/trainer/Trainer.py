@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import warnings
 from logging import warning
 from typing import Any, List, Optional
 
@@ -147,8 +146,11 @@ class Trainer(pl.Trainer):
 
         if onnx:
             try:
-                from bigdl.nano.pytorch.onnx.onnxrt_inference import bind_onnxrt_methods
-                return bind_onnxrt_methods(pl_model)
+                from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
+                    bind_onnxrt_methods
+                from bigdl.nano.pytorch.runtime_binding.base_inference import\
+                    bind_base_inference_rt_methods
+                return bind_onnxrt_methods(bind_base_inference_rt_methods(pl_model))
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
@@ -158,16 +160,17 @@ class Trainer(pl.Trainer):
     def quantize(self, pl_model: LightningModule,
                  calib_dataloader: DataLoader = None,
                  val_dataloader: DataLoader = None,
-                 metric: Metric = None,
+                 metric: Optional[Metric] = None,
                  backend='inc',
-                 conf='',
+                 conf: Optional[str] = None,
                  framework='pytorch_fx',
                  approach='static',
                  tuning_strategy='bayesian',
                  accuracy_criterion: dict = None,
                  timeout=0,
-                 max_trials=1
-                 ) -> GraphModule:
+                 max_trials=1,
+                 raw_return=False
+                 ):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
@@ -176,9 +179,9 @@ class Trainer(pl.Trainer):
                                     Required for static quantization.
         :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
-        :param backend:             'inc' or 'nncf'('nncf' is not supported yet). Default: 'inc'.
+        :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
-                            Default: '', use default config.
+                            Default: None, using default config.
         :param framework:   'pytorch', 'pytorch_fx', 'pytorch_ipex'. Default: 'pytorch_fx'.
                             Consistent with Intel Neural Compressor.
         :param approach:    'static' or 'dynamic'.
@@ -187,21 +190,22 @@ class Trainer(pl.Trainer):
                             Default: 'static'.
         :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
         :param accuracy_criterion:  Tolerable accuracy drop.
-                                    accuracy_criterion = {'relative': 0.1, higher_is_better: True}
+                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
                                     allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, higher_is_better:False} means accuracy < 0.99
-                                     must be satisfied.
+                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
+                                    must be smaller than 0.99.
         :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
                             Combine with max_trials field to decide when to exit.
         :param max_trials:  Max tune times. Default: 1.
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
+        :param raw_return:  Decide which type to return. If set to True, a GraphModule will be
+                            returned. If set to False, a pytorch lightning module will be returned.
         :return:            A GraphModule. If there is no model found, return None.
         """
         if backend == 'inc':
-            from bigdl.nano.quantization import QuantizationINC
-            from neural_compressor.experimental import common
+            from bigdl.nano.quantization.neural_compressor import QuantizationINC
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "
@@ -216,24 +220,21 @@ class Trainer(pl.Trainer):
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
+            model: nn.Module = pl_model
             if isinstance(pl_model, LightningModuleFromTorch):
                 # LightningModuleFromTorch.forward fails to trace in FX, so replace it temporarily
-                quantizer.model = pl_model.model
-            else:
-                quantizer.model = pl_model
+                model = pl_model.model
 
-            if val_dataloader and metric:
-                from bigdl.nano.quantization.quantization_inc import TorchMetricForINC
-                quantizer.eval_dataloader = val_dataloader
-                quantizer.metric = common.Metric(TorchMetricForINC, metric=metric)
-            if approach == 'post_training_static_quant':
-                assert calib_dataloader, "calib_dataloader must not be None when approach is " \
-                                         "post-training static quantization."
-                quantizer.calib_dataloader = calib_dataloader
-            quantized = quantizer()
-            if quantized:
+            quantized = quantizer.post_training_quantize(model, calib_dataloader, val_dataloader,
+                                                         metric)
+            if raw_return:
                 return quantized.model
             else:
-                raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
+                from bigdl.nano.pytorch.runtime_binding.base_inference import \
+                    bind_base_inference_rt_methods
+                from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
+                    bind_quantize_methods
+                return bind_quantize_methods(
+                    bind_base_inference_rt_methods(pl_model), quantized.model)
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))

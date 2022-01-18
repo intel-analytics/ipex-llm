@@ -5,7 +5,6 @@ ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG TINI_VERSION=v0.18.0
-ARG PYTHON_ENV_NAME=tf1
 ARG DEBIAN_FRONTEND=noninteractive
 
 # stage.1 jdk & spark
@@ -84,7 +83,6 @@ ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG SPARK_HOME
 ARG TINI_VERSION
-ARG PYTHON_ENV_NAME
 ARG DEBIAN_FRONTEND
 
 ENV BIGDL_HOME                          /opt/bigdl-${BIGDL_VERSION}
@@ -108,9 +106,6 @@ ENV RUNTIME_DRIVER_MEMORY               10g
 ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
 ENV SPARK_HOME                          /opt/spark
 ENV JAVA_HOME                           /opt/jdk
-ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/*
-ENV PYTHON_ENV_NAME                     ${PYTHON_ENV_NAME}
-ENV PYTHONPATH                          ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/conf/spark-bigdl.conf:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:/opt/models/research/slim
 ENV PATH ${BIGDL_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}
 ENV TINI_VERSION                        ${TINI_VERSION}
 ENV LC_ALL                              C.UTF-8
@@ -131,24 +126,7 @@ RUN mkdir -p /opt/bigdl-examples/python && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 
-# python
-# Install Miniconda
-RUN wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh && \
-    chmod +x Miniconda3-4.5.4-Linux-x86_64.sh && \
-    ./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local 
-
-ADD ./install-python-env1.sh /opt
-ADD ./install-python-env2.sh /opt
-RUN chmod a+x /opt/install-python-env1.sh && \
-    chmod a+x /opt/install-python-env2.sh && \
-    chmod +x /sbin/tini
-RUN if [ $PYTHON_ENV_NAME = "tf1" ]; then \
-        rm /opt/install-python-env2.sh && \
-        /opt/install-python-env1.sh; \
-    elif [ $PYTHON_ENV_NAME = "tf2" ]; then \
-        rm /opt/install-python-env1.sh && \
-        /opt/install-python-env2.sh; \
-    fi
+RUN chmod +x /sbin/tini
 RUN cp /sbin/tini /usr/bin/tini
 
 WORKDIR /opt/spark/work-dir

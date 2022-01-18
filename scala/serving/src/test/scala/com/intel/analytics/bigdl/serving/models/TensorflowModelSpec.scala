@@ -45,12 +45,12 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -74,12 +74,12 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -104,12 +104,12 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -134,12 +134,12 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1000, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -162,13 +162,14 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
     Seq("sh", "-c", "rm -rf /tmp/tensorflow_tfauto*").!
 
     val inference = new ClusterServingInference()
-    val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
-
+    val in = List(
+      ("1", Tensor[Float](1, 128).rand()),
+      ("2", Tensor[Float](1, 128).rand()))
+    val postProcessed = inference.singleThreadInference(in)
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 128, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -192,12 +193,12 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1000, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -221,7 +222,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
