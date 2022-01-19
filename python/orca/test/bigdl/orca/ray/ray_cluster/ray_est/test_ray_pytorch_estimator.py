@@ -85,7 +85,7 @@ def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
 
-class TestTF2Estimator(TestCase):
+class TestPytorchEstimator(TestCase):
     def setUp(self):
         init_orca_context("ray", address="localhost:6379")
     
@@ -101,15 +101,39 @@ class TestTF2Estimator(TestCase):
                                         workers_per_node=2,
                                         backend="torch_distributed",
                                         sync_stats=False)
+        
+        start_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
+        print(start_val_stats)
 
-        train_results = estimator.fit(data=train_data_loader,
-            epochs=1,
-            batch_size=32)
-        print("This is Train Results:", train_results)
+        train_stats = estimator.fit(train_data_loader, epochs=1, batch_size=32)
+        print(train_stats)
 
-        val_results = estimator.evaluate(data=val_data_loader,
-            batch_size=32)
-        print("This is Val Results:", val_results)
+        end_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
+        print(end_val_stats)
+
+        assert 0 < end_val_stats["Accuracy"] < 1
+        assert estimator.get_model()
+
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] -
+                start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
+
+        # Verify syncing weights, i.e. the two workers have the same weights after training
+        import ray
+        import numpy as np
+        remote_workers = estimator.remote_workers
+        state_dicts = ray.get([worker.get_state_dict.remote() for worker in remote_workers])
+        weights = [state["models"] for state in state_dicts]
+        worker1_weights = weights[0][0]
+        worker2_weights = weights[1][0]
+        for layer in list(worker1_weights.keys()):
+            assert np.allclose(worker1_weights[layer].numpy(),
+                               worker2_weights[layer].numpy())
+        estimator.shutdown()
 
 
 if __name__ == "__main__":

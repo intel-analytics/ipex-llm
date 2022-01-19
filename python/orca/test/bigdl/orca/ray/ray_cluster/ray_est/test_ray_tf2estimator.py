@@ -73,9 +73,9 @@ def model_creator(config):
     model.compile(**compile_args(config))
     return model
 
-class TestPytorchEstimator(TestCase):
+class TestTF2Estimator(TestCase):
     def setUp(self):
-        init_orca_context("ray", address="localhost:6379")
+        init_orca_context(runtime="ray", address="localhost:6379")
     
     def tearDown(self):
         stop_orca_context()
@@ -86,13 +86,24 @@ class TestPytorchEstimator(TestCase):
                                             config=None,
                                             backend="tf2",
                                             workers_per_node=2)
+        
+        start_stats = estimator.evaluate(create_test_dataset, batch_size=32)
+        print(start_stats)
 
-        train_stats = estimator.fit(create_train_datasets, epochs=1, batch_size=32,
-                        steps_per_epoch=10)
+        train_stats = estimator.fit(create_train_datasets, epochs=1, batch_size=32)
         print("This is Train Results:", train_stats)
 
-        val_stats = estimator.evaluate(create_test_dataset, batch_size=32)
-        print("This is Val Results:", val_stats)
+        end_stats = estimator.evaluate(create_test_dataset, batch_size=32)
+        print("This is Val Results:", end_stats)
+        assert estimator.get_model()
+
+        dloss = end_stats["validation_loss"] - start_stats["validation_loss"]
+        dmse = (end_stats["validation_mean_squared_error"] -
+                start_stats["validation_mean_squared_error"])
+        print(f"dLoss: {dloss}, dMSE: {dmse}")
+
+        assert dloss < 0 and dmse < 0, "training sanity check failed. loss increased!"
+        
 
 if __name__ == "__main__":
     pytest.main([__file__])
