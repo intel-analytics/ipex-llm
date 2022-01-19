@@ -212,6 +212,6 @@ RUN chmod a+x /ppml/trusted-realtime-ml/redis/init.sh && \
     chmod a+x /ppml/trusted-realtime-ml/check-status.sh && \
     chmod a+x /ppml/trusted-realtime-ml/start-all.sh
 
-ENV PYTHONPATH	${PYTHONPATH}:/graphene/meson_build_output/lib/python3.6/site-packages
+ENV PYTHONPATH	${PYTHONPATH}:/graphene/meson_build_output/lib/python3.8/site-packages
 ENV LC_ALL	C.UTF-8
 ENV LANG	C.UTF-8
