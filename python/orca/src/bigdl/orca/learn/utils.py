@@ -392,8 +392,6 @@ def find_ip_and_free_port(pre_iter):
     address = infos[tc.partitionId()].split(":")[0]
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(("", 0))
-        # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # tc.barrier()
         return [f"{address}:{s.getsockname()[1]}"]
 
 
