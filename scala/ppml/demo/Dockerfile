@@ -1,4 +1,4 @@
-FROM 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
+FROM intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
 
 ADD bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar $BIGDL_HOME/jars
 ADD ppml-conf.yaml /ppml/trusted-big-data-ml
