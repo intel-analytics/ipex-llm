@@ -454,7 +454,8 @@ class RayOnSparkContext(object):
                 ray_ctx.init()
             return ray_ctx
         else:
-            raise Exception("No active RayOnSparkContext. Please create a RayOnSparkContext and init it first")
+            raise Exception("No active RayOnSparkContext. " 
+                            "Please create a RayOnSparkContext and init it first")
 
     def _gather_cluster_ips(self):
         """

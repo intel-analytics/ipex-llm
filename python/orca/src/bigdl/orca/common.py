@@ -209,7 +209,7 @@ def init_orca_context(runtime="spark", cluster_mode=None, cores=2, memory="2g", 
     import atexit
     atexit.register(stop_orca_context)
     if runtime == "ray":
-        assert cluster_mode == None, "cluster mode should be None"
+        assert cluster_mode is None, "cluster mode should be None"
         from bigdl.orca.ray import RayContext
         ray_ctx = RayContext(runtime="ray", cores=cores, num_nodes=num_nodes,
                              **kwargs)
@@ -312,7 +312,7 @@ def init_orca_context(runtime="spark", cluster_mode=None, cores=2, memory="2g", 
                     ray_args[key] = kwargs[key]
             from bigdl.orca.ray import RayOnSparkContext
             ray_ctx = RayOnSparkContext(runtime="ray_on_spark", cores=cores, num_nodes=num_nodes,
-                                sc=sc, **ray_args)
+                                        sc=sc, **ray_args)
             if init_ray_on_spark:
                 driver_cores = 0  # This is the default value.
                 ray_ctx.init(driver_cores=driver_cores)
