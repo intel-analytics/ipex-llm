@@ -71,7 +71,7 @@ class StorageHolder(flDataType: FLDataType) {
       throw new IllegalArgumentException("Data is empty, could not uploaded to server.")
     }
   }
-  def getTableStorage() = this.tensorMapStorage
+  def getTensorMapStorage() = this.tensorMapStorage
   def getSplitStorage() = this.treeSplitStorage
   def getLeafStorage() = this.treeLeavesStorage
   def getBranchStorage() = this.treeEvalStorage

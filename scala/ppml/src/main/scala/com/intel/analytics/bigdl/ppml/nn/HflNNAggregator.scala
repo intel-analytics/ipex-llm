@@ -38,7 +38,7 @@ class HflNNAggregator extends NNAggregator {
     val sumedDataMap = new java.util.HashMap[String, FloatTensor]()
     // sum
     // to do: concurrent hashmap
-    val storage = aggregateTypeMap.get(flPhase).getTableStorage()
+    val storage = aggregateTypeMap.get(flPhase).getTensorMapStorage()
     val dataMap = storage.clientData
     for (model <- dataMap.asScala.values) {
       val modelMap = model.getTensorsMap
