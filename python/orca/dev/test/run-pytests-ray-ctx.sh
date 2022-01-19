@@ -39,6 +39,8 @@ fi
 
 ray stop -f
 
+ray start --head
+
 echo "Running Ray Estimator tests"
 python -m pytest -v test/bigdl/orca/ray/ray_cluster/ray_est
 exit_status_1=$?
