@@ -29,25 +29,7 @@ def decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encr
     write_data_file(data_file_path, decrypted)
     print('[INFO] Decrypt Successfully! Decrypted Output Is ' + save_path)
 
-def convert_db_to_csv(db_path):
-    save_dir = db_path + '.csv'
-    os.mkdir(save_dir)
-    conn = sqlite3.connect(db_path)
-    c = conn.cursor()
-    query = c.execute("select name from sqlite_master where type='table' order by name;")
-    tables = [table[0] for table in query.fetchall()]
-    for table_name in tables:
-        columns = c.execute('PRAGMA table_info("' + table_name + '")')
-        header = []
-        for column in columns:
-            header.append(column[1])
-        csvWriter = csv.writer(open(os.path.join(save_dir,table_name + '.csv'), 'w', newline='\n'))
-        csvWriter.writerow(header)
-        c.execute('select * from ' + table_name + ';')
-        rows = c.fetchall()
-        csvWriter.writerows(rows)
-
-def encrypt_files_automation(ip, port, input_dir, encrypted_primary_key_path, encrypted_data_key_path, save_dir=None):
+def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path, encrypted_data_key_path, save_dir=None):
     print('[INFO] Encrypt Files Start...')
     if save_dir is None:
         save_dir = input_dir+'.encrypted'

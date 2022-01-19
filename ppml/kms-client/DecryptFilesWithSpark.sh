@@ -1,10 +1,10 @@
-#set -x
-SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/sparkcryptofiles.jar
+set -x
+SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/sparkcryptofiles-1.0-SNAPSHOT.jar
 CSV_DIR_PATH=$1
-KEYWHIZ_SERVER_IP=$2
+KMS_SERVER_IP=$2
 LOCAL_IP=$3
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
-data_key=$(python /ppml/trusted-big-data-ml/work/kms-client/GetDataKeyPlaintext.py -ip $KEYWHIZ_SERVER_IP -pkp ./encrypted_primary_key -dkp ./encrypted_data_key)
+data_key=$(python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py -api get_data_key_plaintext -ip $KMS_SERVER_IP -pkp ./encrypted_primary_key -dkp ./encrypted_data_key)
 
 /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar' \

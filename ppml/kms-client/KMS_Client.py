@@ -12,14 +12,10 @@ def encrypt_file_with_key(data_file_path, ip, port, encrypted_primary_key_path, 
 def decrypt_file(data_file_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path):
     FileOperator.decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path)
 
-def encrypt_db_automation(db_path, ip, port):
-    import shutil
-    FileOperator.convert_db_to_csv(db_path)
+def encrypt_directory(dir_path, ip, port):
     KeyManager.generate_primary_key_ciphertext(ip, port)
     KeyManager.generate_data_key_ciphertext(ip, port, './encrypted_primary_key')
-    csv_dir = db_path + '.csv'
-    FileOperator.encrypt_files_automation(ip, port, csv_dir, './encrypted_primary_key', './encrypted_data_key')
-    shutil.rmtree(db_path + '.csv')
+    FileOperator.encrypt_directory_automation(ip, port, dir_path, './encrypted_primary_key', './encrypted_data_key')
 
 def get_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path):
     data_key_plaintext = KeyManager.retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
@@ -37,8 +33,7 @@ if __name__ == "__main__":
     parser.add_argument('-pkp', '--pkp', type=str, help='path of the primary key storage file', required=False)
     parser.add_argument('-dkp', '--dkp', type=str, help='path of the data key storage file', required=False)
     parser.add_argument('-dfp', '--dfp', type=str, help='path of the data file to encrypt', required=False)
-    parser.add_argument('-dbp', '--dbp', type=str, help='path of the .db file to be processed', required=False)
-    parser.add_argument('-dir', '--dir', type=str, help='path of the directory containing column-encrypted CSVs', required=False)
+    parser.add_argument('-dir', '--dir', type=str, help='path of the directory containing column-encrypted CSVs or the directory to be encrypted', required=False)
     args = parser.parse_args()
 
     api = args.api
@@ -58,9 +53,9 @@ if __name__ == "__main__":
         encrypted_primary_key_path = args.pkp
         encrypted_data_key_path = args.dkp
         decrypt_file(data_file_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path)
-    elif api == 'encrypt_db_automation':
-        db_path = args.dbp
-        encrypt_db_automation(db_path, ip, port)
+    elif api == 'encrypt_directory':
+        dir_path = args.dir
+        encrypt_directory(dir_path, ip, port)
     elif api == 'get_data_key_plaintext':
         encrypted_primary_key_path = args.pkp
         encrypted_data_key_path = args.dkp
