@@ -97,8 +97,8 @@ public class RecallService {
         longArray I = new longArray(k);
         floatArray D = new floatArray(k);
         index.search(1, query.cast(), k, D.cast(), I.cast());
-        logger.info(show(I, 1, k));
-        logger.info(show(D, 1, k));
+//        logger.info(show(I, 1, k));
+//        logger.info(show(D, 1, k));
         int[] candidates = new int[k];
         for (int i = 0; i < k; i ++) {
             candidates[i] = I.getitem(i);

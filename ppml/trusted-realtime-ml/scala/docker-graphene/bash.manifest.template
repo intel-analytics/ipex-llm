@@ -99,7 +99,7 @@ sgx.trusted_files.execs_bin = "file:/bin/"
 sgx.trusted_files.execs_userbin = "file:/usr/bin/"
 sgx.trusted_files.execs_userlocalbin = "file:/usr/local/bin/"
 sgx.trusted_files.java = "file:/opt/jdk8/bin/java"
-sgx.trusted_files.scala = "file:/opt/scala-2.11.8/bin/scala"
+sgx.trusted_files.scala = "file:/opt/scala-2.12.10/bin/scala"
 sgx.trusted_files.ldconfig = "file:/sbin/ldconfig"
 
 # Glibc libraries

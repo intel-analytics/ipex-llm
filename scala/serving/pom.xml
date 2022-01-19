@@ -69,7 +69,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.16</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -274,6 +273,9 @@
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>3.4.1</version>
+                <configuration>
+                    <addScalacArgs>-target:jvm-1.8</addScalacArgs>
+                </configuration>
                 <executions>
                     <execution>
                         <id>scala-compile-first</id>

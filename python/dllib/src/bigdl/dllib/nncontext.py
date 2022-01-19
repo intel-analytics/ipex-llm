@@ -279,6 +279,7 @@ def init_spark_standalone(num_executors,
 
 def init_spark_on_k8s(master,
                       container_image,
+                      conda_name,
                       num_executors,
                       executor_cores,
                       executor_memory="2g",
@@ -286,20 +287,22 @@ def init_spark_on_k8s(master,
                       driver_cores=4,
                       extra_executor_memory_for_ray=None,
                       extra_python_lib=None,
+                      penv_archive=None,
                       spark_log_level="WARN",
                       redirect_spark_log=True,
                       jars=None,
                       conf=None,
                       python_location=None):
     """
-    Create a SparkContext with Analytics Zoo configurations on Kubernetes cluster for k8s client
-    mode. You are recommended to use the Docker image intelanalytics/hyperzoo:latest.
-    You can refer to https://github.com/intel-analytics/analytics-zoo/tree/master/docker/hyperzoo
+    Create a SparkContext with BigDL configurations on Kubernetes cluster for k8s client
+    mode. You are recommended to use the Docker image intelanalytics/bigdl-k8s:latest.
+    You can refer to https://github.com/intel-analytics/BigDL/tree/branch-2.0/docker/bigdl-k8s
     to build your own Docker image.
 
     :param master: The master address of your k8s cluster.
     :param container_image: The name of the docker container image for Spark executors.
-           For example, intelanalytics/hyperzoo:latest
+           For example, intelanalytics/bigdl-k8s:latest
+    :param conda_name: The name of the conda environment.
     :param num_executors: The number of Spark executors.
     :param executor_cores: The number of cores for each executor.
     :param executor_memory: The memory for each executor. Default to be '2g'.
@@ -307,6 +310,9 @@ def init_spark_on_k8s(master,
     :param driver_memory: The memory for the Spark driver. Default to be '1g'.
     :param extra_executor_memory_for_ray: The extra memory for Ray services. Default to be None.
     :param extra_python_lib: Extra python files or packages needed for distribution.
+           Default to be None.
+    :param penv_archive: Ideally, the program would auto-pack the conda environment specified by
+           'conda_name', but you can also pass the path to a packed file in "tar.gz" format here.
            Default to be None.
     :param spark_log_level: The log level for Spark. Default to be 'WARN'.
     :param redirect_spark_log: Whether to redirect the Spark log to local file. Default to be True.
@@ -326,6 +332,7 @@ def init_spark_on_k8s(master,
     sc = runner.init_spark_on_k8s(
         master=master,
         container_image=container_image,
+        conda_name=conda_name,
         num_executors=num_executors,
         executor_cores=executor_cores,
         executor_memory=executor_memory,
@@ -333,6 +340,7 @@ def init_spark_on_k8s(master,
         driver_cores=driver_cores,
         extra_executor_memory_for_ray=extra_executor_memory_for_ray,
         extra_python_lib=extra_python_lib,
+        penv_archive=penv_archive,
         jars=jars,
         conf=conf,
         python_location=python_location)
@@ -506,13 +514,16 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
         assert "master" in kwargs, "Please specify master for k8s-client mode"
         assert "container_image" in kwargs, "Please specify container_image for k8s-client mode"
         for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
-                    "extra_python_lib", "jars", "python_location"]:
+                    "extra_python_lib", "penv_archive", "jars", "python_location"]:
             if key in kwargs:
                 spark_args[key] = kwargs[key]
         from bigdl.dllib.nncontext import init_spark_on_k8s
+        from bigdl.dllib.utils.utils import detect_conda_env_name
 
+        conda_env_name = detect_conda_env_name()
         sc = init_spark_on_k8s(master=kwargs["master"],
                                container_image=kwargs["container_image"],
+                               conda_name=conda_env_name,
                                num_executors=num_nodes, executor_cores=cores,
                                executor_memory=memory, **spark_args)
     elif cluster_mode == "standalone":
