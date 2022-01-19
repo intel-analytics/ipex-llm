@@ -87,7 +87,7 @@ run:
 
 ```bash
 ./deploy-local-spark-sgx.sh
-sudo exec -it flDemo bash
+sudo docker exec -it flDemo bash
 ./init.sh
 ```
 
@@ -102,7 +102,7 @@ In container run:
 Open two new terminals, run:
 
 ```bash
-sudo exec -it flDemo bash
+sudo docker exec -it flDemo bash
 ```
 
 to enter the container, then in a terminal run:
@@ -121,7 +121,7 @@ in another terminal run:
 Open two new windows, run:
 
 ```bash
-sudo exec -it flDemo bash
+sudo docker exec -it flDemo bash
 ```
 
 to enter the container, then in a terminal run:
