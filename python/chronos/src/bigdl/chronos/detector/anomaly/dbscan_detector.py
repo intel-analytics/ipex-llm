@@ -15,9 +15,9 @@
 #
 
 from bigdl.chronos.detector.anomaly.abstract import AnomalyDetector
+from bigdl.chronos.detector.anomaly.util import CHR_DBSCAN
 
 import numpy as np
-from sklearn.cluster import DBSCAN
 
 
 class DBScanDetector(AnomalyDetector):
@@ -57,16 +57,23 @@ class DBScanDetector(AnomalyDetector):
         if len(arr.shape) > 1:
             raise ValueError("Only univariate time series is supported")
 
-    def fit(self, y):
+    def fit(self, y, use_sklearnex=True, algorithm_list=['DBSCAN']):
         """
         Fit the model
 
         :param y: the input time series. y must be 1-D numpy array.
+        :param use_sklearnex: bool, Whether to enable scikit-learn-intelex,
+               This default value is True.
+        :param algorithm_list: list, Select the accelerated algorithm name,
+               This default value is ['DBSCAN'].
         """
         self.check_data(y)
         self.anomaly_scores_ = np.zeros_like(y)
-        clusters = DBSCAN(eps=self.eps, min_samples=self.min_samples).fit(
-            y.reshape(-1, 1), **self.argv)
+
+        with CHR_DBSCAN(use_sklearnex=use_sklearnex,
+                        algorithm_list=algorithm_list) as DBSCAN:
+            clusters = DBSCAN(eps=self.eps, min_samples=self.min_samples)\
+                .fit(y.reshape(-1, 1), **self.argv)
         labels = clusters.labels_
         outlier_indexes = np.where(labels == -1)[0]
         self.anomaly_indexes_ = outlier_indexes
