@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing_extensions import runtime
 import pytest
 from unittest import TestCase
 
@@ -87,7 +88,7 @@ def get_optimizer(model, config):
 
 class TestPytorchEstimator(TestCase):
     def setUp(self):
-        init_orca_context(cluster_mode="ray", address="localhost:6379")
+        init_orca_context(runtime="ray", address="localhost:6379")
     
     def tearDown(self):
         stop_orca_context()
@@ -100,7 +101,7 @@ class TestPytorchEstimator(TestCase):
                                         config={"lr": 1e-2},
                                         workers_per_node=2,
                                         backend="torch_distributed",
-                                        sync_stats=False)
+                                        sync_stats=True)
         
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
         print(start_val_stats)

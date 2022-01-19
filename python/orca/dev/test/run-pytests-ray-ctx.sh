@@ -27,7 +27,7 @@ cd ../..
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
-ray stop -f
+ray start --head
 
 echo "Running RayContext tests"
 python -m pytest -v test/bigdl/orca/ray/ray_cluster/ray_ctx
@@ -36,10 +36,6 @@ if [ $exit_status_1 -ne 0 ];
 then
     exit $exit_status_1
 fi
-
-ray stop -f
-
-ray start --head
 
 echo "Running Ray Estimator tests"
 python -m pytest -v test/bigdl/orca/ray/ray_cluster/ray_est
