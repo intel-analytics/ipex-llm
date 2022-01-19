@@ -106,10 +106,6 @@ object ProtoUtils {
     val weights = getParametersFromModel(model)._1
     val metadata = MetaData.newBuilder
       .setName(name).setVersion(version).build
-    FloatTensor.newBuilder()
-      .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
-      .addAllShape(weights.size.toList.map(v => int2Integer(v)))
-      .build()
     val tensor =
       FloatTensor.newBuilder()
         .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
@@ -183,8 +179,4 @@ object ProtoUtils {
     else
       false
   }
-
-
-
-
 }
