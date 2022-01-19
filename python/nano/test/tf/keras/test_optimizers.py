@@ -14,7 +14,9 @@
 # ==============================================================================
 
 import numpy as np
-from bigdl.nano.tf.optimizers import SparseAdam
+import sys
+sys.path.append(r'../../../src/bigdl/nano/tf/optimizers')
+from sparse_adam import SparseAdam
 
 
 def test_optimizer_sparseadam():
