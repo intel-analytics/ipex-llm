@@ -16,12 +16,12 @@
 
 package com.intel.analytics.bigdl.ppml.nn
 
-import com.intel.analytics.bigdl.ppml.base.StorageHolder
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, FLPhase}
 import com.intel.analytics.bigdl.ppml.common.FLPhase.{EVAL, PREDICT, TRAIN}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, TensorMap, MetaData}
 
 import scala.collection.JavaConverters._
+
 
 
 /**
