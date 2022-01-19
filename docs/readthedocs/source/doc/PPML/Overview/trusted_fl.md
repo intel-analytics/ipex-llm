@@ -31,44 +31,110 @@ Key features:
 * Training Worker in SGX
 ## Example 
 
-### Prepare environment
-#### SGX
-TO ADD
-#### Get jar ready
-##### Build from source
-```bash
-git clone https://github.com/intel-analytics/BigDL.git
-cd BigDL/scala
-./make-dist.sh
-```
-the jar would be `BigDL/scala/ppml/target/bigdl-ppml...jar-with-dependencies.jar`
-##### Download pre-build
-```bash
-wget
-```
-#### Config
-If deploying PPML on cluster, need to overwrite config `./ppml-conf.yaml`. Default config (localhost:8980) would be used if no `ppml-conf.yaml` exists in the directory.
-#### Start FL Server
-```bash
-java -cp com.intel.analytics.bigdl.ppml.FLServer
-```
-### HFL Logistic Regression
-We provide an example demo in `BigDL/scala/ppml/demo`
-```bash
-# client 1
-java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-1.csv
+### Before running code
 
-# client 2
-java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-2.csv
-```
-### VFL Logistic Regression
-```bash
-# client 1
-java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-1.csv
+#### **Prepare Docker Image**
 
-# client 2
-java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-2.csv
+##### **Build jar from Source**
+
+```bash
+cd BigDL/scala/ppml && mvn clean package -DskipTests -Pspark_3.x
+mv target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar demo
+cd demo
 ```
+
+##### **Build Image**
+Modify your `http_proxy` in `build-image.sh` then run:
+
+```bash
+./build-image.sh
+```
+
+#### **Prepare the Key**
+
+The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
+
+```bash
+bash ../../../ppml/scripts/generate-keys.sh
+```
+
+You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
+
+It will generate a file `enclave-key.pem` in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
+
+```bash
+openssl genrsa -3 -out enclave-key.pem 3072
+```
+
+#### **Prepare the Password**
+
+Next, you need to store the password you used for key generation, i.e., `generate-keys.sh`, in a secured file.
+
+```bash
+bash ../../../ppml/scripts/generate-password.sh used_password_when_generate_keys
+```
+
+Then modify `ENCLAVE_KEY_PATH` to `enclave-key.pem`, `DATA_PATH` to `BigDL/scala/ppml/demo/data`(for example), `KEYS_PATH` to `your-generated-keys` and `LOCAL_IP` in `deploy-local-spark-sgx.sh`.
+
+### **Start container**
+Running this command will start a docker container and initialize the sgx environment.
+
+```bash
+bash deploy-local-spark-sgx.sh
+sudo docker exec -it flDemo bash
+./init.sh
+```
+
+### **Start FLServer**
+In container, run:
+
+```bash
+./runFlServer.sh
+```
+The fl-server will start and listen on 8980 port. Both horizontal fl-demo and vertical fl-demo need two clients. You can change the listening port and client number by editing `BigDL/scala/ppml/demo/ppml-conf.yaml`'s `serverPort` and `clientNum`.  
+
+### **HFL Logistic Regression**
+Open two new terminals, run:
+
+```bash
+sudo docker exec -it flDemo bash
+```
+
+to enter the container, then in a terminal run:
+
+```bash
+./runHflClient1.sh
+```
+
+in another terminal run:
+
+```bash
+./runHflClient2.sh
+```
+
+Then we start two horizontal fl-clients to cooperate in training a model.
+
+### **VFL Logistic Regression**
+Open two new windows, run:
+
+```bash
+sudo docker exec -it flDemo bash
+```
+
+to enter the container, then in a terminal run:
+
+```bash
+./runVflClient1.sh
+```
+
+in another terminal run:
+
+```bash
+./runVflClient2.sh
+```
+
+Then we start two vertical fl-clients to cooperate in training a model.
+
 ## References
 
 1. [Intel SGX](https://software.intel.com/content/www/us/en/develop/topics/software-guard-extensions.html)
