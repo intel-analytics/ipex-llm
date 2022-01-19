@@ -403,7 +403,7 @@ class SparkRunner:
         executor_python_env = "python_env"
 
         assert penv_archive, \
-            "You should specify penv_archive explicitly"
+            "You should specify penv_archive explicitly for k8s cluster mode"
 
         archive = "{}#{}".format(penv_archive, executor_python_env)
 
@@ -430,16 +430,15 @@ class SparkRunner:
                      "spark.executor.extraLibraryPath": ld_path,
                      "spark.executorEnv.LD_PRELOAD": preload_so,
                      "spark.kubernetes.container.image": container_image})
-        if "BIGDL_CLASSPATH" in os.environ:
-            zoo_bigdl_jar_path = os.environ["BIGDL_CLASSPATH"]
-        else:
-            zoo_bigdl_jar_path = get_zoo_bigdl_classpath_on_driver()
+        zoo_bigdl_path_on_executor = ":".join(
+            list(get_executor_conda_zoo_classpath(executor_python_env)))
         if "spark.executor.extraClassPath" in conf:
             conf["spark.executor.extraClassPath"] = "{}:{}".format(
-                zoo_bigdl_jar_path, conf["spark.executor.extraClassPath"])
+                zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
         else:
-            conf["spark.executor.extraClassPath"] = zoo_bigdl_jar_path
-        sys_args = " ".join(sys.argv)
+            conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
+        conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
+        sys_args = "local://" + " ".join(sys.argv)
         conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
         submit_commnad = "spark-submit " + submit_args + " " + conf + " " + sys_args
         print("submit command", submit_commnad)

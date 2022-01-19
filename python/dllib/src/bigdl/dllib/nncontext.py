@@ -574,8 +574,8 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
                                             executor_memory=memory,
                                             conf=spark_args)
     elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
-        assert "master" in kwargs, "Please specify master"
-        assert "container_image" in kwargs, "Please specify container_image"
+        assert "master" in kwargs, "Please specify master for k8s mode"
+        assert "container_image" in kwargs, "Please specify container_image for k8s mode"
         for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                     "extra_python_lib", "penv_archive", "jars", "python_location"]:
             if key in kwargs:
