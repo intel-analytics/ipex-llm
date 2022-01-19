@@ -18,10 +18,10 @@ import tempfile
 from unittest import TestCase
 import pytest
 import torch
+import os
 
 from torch.utils.data import TensorDataset, DataLoader
-from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
-from bigdl.orca.common import init_orca_context, stop_orca_context
+from bigdl.chronos.autots import TSPipeline
 
 
 def train_data_creator(config):
@@ -46,30 +46,15 @@ def valid_data_creator(config):
 class TestTSPipeline(TestCase):
 
     def setUp(self) -> None:
-        pass
+        self.resource_path = os.path.join(os.path.split(__file__)[0], "../resources/")
 
     def tearDown(self) -> None:
         pass
 
     def test_seq2seq_tsppl_support_dataloader(self):
-        tmp_seq2seq_dir = tempfile.TemporaryDirectory()
-        init_orca_context(cores=4, memory="4g", init_ray_on_spark=True)
-        autots = AutoTSEstimator(model="seq2seq",
-                                 search_space="minimal",
-                                 input_feature_num=2,
-                                 output_target_num=2,
-                                 past_seq_len=10,
-                                 future_seq_len=2)
-        tsppl_seq2seq = autots.fit(data=train_data_creator({}),
-                                   validation_data=valid_data_creator({}),
-                                   epochs=2,
-                                   batch_size=32)
-        tsppl_seq2seq.save(tmp_seq2seq_dir.name)
-        del tsppl_seq2seq
-        stop_orca_context()
-
         # load
-        tsppl_seq2seq = TSPipeline.load(tmp_seq2seq_dir.name)
+        tsppl_seq2seq = TSPipeline.load(
+            os.path.join(self.resource_path, "tsppl_ckpt/s2s_tsppl_ckpt"))
         tsppl_seq2seq.fit(data=train_data_creator,
                           validation_data=valid_data_creator,
                           epochs=2,
@@ -110,24 +95,9 @@ class TestTSPipeline(TestCase):
                                    config['input_feature_num']))
 
     def test_tcn_tsppl_support_dataloader(self):
-        tmp_tcn_dir = tempfile.TemporaryDirectory()
-        init_orca_context(cores=4, memory="4g", init_ray_on_spark=True)
-        autots = AutoTSEstimator(model="tcn",
-                                 search_space="minimal",
-                                 input_feature_num=2,
-                                 output_target_num=2,
-                                 past_seq_len=10,
-                                 future_seq_len=2)
-        tsppl_tcn = autots.fit(data=train_data_creator({}),
-                               validation_data=valid_data_creator({}),
-                               epochs=2,
-                               batch_size=32)
-        tsppl_tcn.save(tmp_tcn_dir.name)
-        del tsppl_tcn
-        stop_orca_context()
-
         # load
-        tsppl_tcn = TSPipeline.load(tmp_tcn_dir.name)
+        tsppl_tcn = TSPipeline.load(
+            os.path.join(self.resource_path, "tsppl_ckpt/tcn_tsppl_ckpt"))
         tsppl_tcn.fit(data=train_data_creator,
                       validation_data=valid_data_creator,
                       epochs=2,
@@ -147,23 +117,9 @@ class TestTSPipeline(TestCase):
         assert smape < 2.0
 
     def test_lstm_tsppl_support_dataloader(self):
-        tmp_lstm_dir = tempfile.TemporaryDirectory()
-        init_orca_context(cores=4, memory="4g", init_ray_on_spark=True)
-        autots = AutoTSEstimator(model="lstm",
-                                 search_space="minimal",
-                                 input_feature_num=2,
-                                 output_target_num=2,
-                                 past_seq_len=10)
-        tsppl_lstm = autots.fit(data=train_data_creator({'future_seq_len': 1}),
-                                validation_data=valid_data_creator({'future_seq_len': 1}),
-                                epochs=2,
-                                batch_size=32)
-        tsppl_lstm.save(tmp_lstm_dir.name)
-        del tsppl_lstm
-        stop_orca_context()
-
         # load
-        tsppl_lstm = TSPipeline.load(tmp_lstm_dir.name)
+        tsppl_lstm = TSPipeline.load(
+            os.path.join(self.resource_path, "tsppl_ckpt/lstm_tsppl_ckpt"))
         tsppl_lstm.fit(data=train_data_creator,
                        validation_data=valid_data_creator,
                        epochs=2,

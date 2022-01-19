@@ -17,18 +17,18 @@
 import pytest
 import numpy as np
 import pandas as pd
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 
 from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
 from bigdl.chronos.detector.anomaly import ThresholdDetector
 
 
-class TestThresholdDetector(ZooTestCase):
+class TestThresholdDetector(TestCase):
 
-    def setup_method(self, method):
+    def setUp(self):
         pass
 
-    def teardown_method(self, method):
+    def tearDown(self):
         pass
 
     def gen_data(self, feature_num=6, sample_num=100):
