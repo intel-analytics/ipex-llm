@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -13,17 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import platform
-if platform.system() != "Darwin":
-    import tensorflow as tf
-    from bigdl.nano.common.cpu_schedule import schedule_workers, get_cpu_info
 
-    proc_list = schedule_workers(1)
-    _, get_socket = get_cpu_info()
+set -e
+RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
+echo $RUN_SCRIPT_DIR
 
-    num_sockets = len(set(get_socket.values()))
-    num_threads = len(proc_list[0]) // num_sockets
+if (( $# < 2)); then
+  echo "Usage: release_default_mac.sh version upload"
+  echo "Usage example: bash release_default_mac.sh default true"
+  echo "Usage example: bash release_default_mac.sh 0.14.0.dev1 true"
+  exit -1
+fi
 
-    tf.config.threading.set_inter_op_parallelism_threads(num_sockets)
-    tf.config.threading.set_intra_op_parallelism_threads(num_threads)
-    tf.config.set_soft_device_placement(enabled=True)
+version=$1
+upload=$2
+
+bash ${RUN_SCRIPT_DIR}/release.sh mac ${version} ${upload}
