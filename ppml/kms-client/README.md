@@ -62,6 +62,18 @@ Pay attention to the variables and set them to correct values according to your 
 
 `cd /ppml/trusted-big-data-ml`, you can do below operations supported by KMS APIs. Parameter `port` is set to `3000` as default similar to ehsm.
 
+- Request a primary key and save it locally in ciphertext:
+
+  ```bash
+  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>]
+  ```
+
+- Request a data key with prepared primary key and save it locally in ciphertext:
+
+  ```bash
+  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH>
+  ```
+
 - Encrypt a file without holding keys (keys will be generated automatically):
 
   ```bash
@@ -122,9 +134,10 @@ bash work/kms-client/kms-e2e-example.sh
 Then it takes a little time to operate in SGX, and you are expected to get output similar to below:
 
 ```bash
-[INFO] Start To Encrypt...
+[INFO] Start To Generate Keys...
 [INFO] Primary Key Generated Successfully at ./encrypted_primary_key
 [INFO] Data Key Generated Successfully at ./encrypted_data_key
+[INFO] Start To Encrypt...
 [INFO] Encrypt Files Start...
 [INFO] Encrypt Successfully! Encrypted Output Is /ppml/trusted-big-data-ml/1m_csv.encrypted/tmp_mock_r_table.csv.encrypted
 [INFO] Encrypt Successfully! Encrypted Output Is /ppml/trusted-big-data-ml/1m_csv.encrypted/tmp_mock_a_table.csv.encrypted
