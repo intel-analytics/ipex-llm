@@ -15,31 +15,34 @@
 #
 
 
+from cProfile import run
+
+
 class RayContext(object):
 
     _active_ray_context = None
 
     def __init__(self,
-                 cluster_mode="ray_on_spark",
-                 cores=None,
-                 num_nodes=None,
+                 runtime="ray_on_spark",
+                 cores=2,
+                 num_nodes=1,
                  **kwargs):
 
-        self.cluster_mode = cluster_mode
+        self.runtime = runtime
         self.initialized = False
 
-        if cluster_mode == "ray_on_spark":
-            from bigdl.orca.ray.ray_on_spark_context import RayOnSparkContext
+        if runtime == "ray_on_spark":
+            from bigdl.orca.ray import RayOnSparkContext
             self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
 
-        elif cluster_mode == "ray":
+        elif runtime == "ray":
             self.is_local = False
             ray_args = kwargs.copy()
             self.ray_args = ray_args
         else:
-            raise ValueError(f"Unsupported cluster mode: {cluster_mode}. "
-                             f"Cluster mode must be ray or ray_on_spark")
+            raise ValueError(f"Unsupported cluster mode: {runtime}. "
+                             f"Runtime must be ray or ray_on_spark")
 
         self.num_ray_nodes = num_nodes
         self.ray_node_cpu_cores = cores
@@ -47,7 +50,7 @@ class RayContext(object):
         RayContext._active_ray_context = self
 
     def init(self, driver_cores=0):
-        if self.cluster_mode == "ray":
+        if self.runtime == "ray":
             import ray
             results = ray.init(**self.ray_args)
         else:

@@ -167,12 +167,14 @@ def _check_python_micro_version():
                            f"with micro version >= 10 (e.g. 3.{sys.version_info[1]}.10)")
 
 
-def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
+def init_orca_context(runtime="spark", cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                       init_ray_on_spark=False, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
     across the cluster if necessary).
 
+    :param runtime: The runtime for backend. One of "ray", "ray_on_spark" and "spark",
+            Default to be "spark".
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
            "yarn-cluster", "k8s-client" and "standalone". Default to be None and in this case
            there is supposed to be an existing SparkContext in your application.
@@ -206,14 +208,15 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     print("Initializing orca context")
     import atexit
     atexit.register(stop_orca_context)
-    if cluster_mode == "ray":
+    if runtime == "ray":
+        assert cluster_mode == None, "cluster mode should be None"
         from bigdl.orca.ray import RayContext
-        ray_ctx = RayContext(cluster_mode="ray", cores=cores, num_nodes=num_nodes,
+        ray_ctx = RayContext(runtime="ray", cores=cores, num_nodes=num_nodes,
                              **kwargs)
-        assert "address" in kwargs, "address must be specified if cluster_mode is ray"
+        assert "address" in kwargs, "ray_address must be specified if runtime is ray"
         ray_ctx.init()
         return ray_ctx
-    else:
+    elif runtime in ("spark", "ray_on_spark"):
         from pyspark import SparkContext
         import warnings
         spark_args = {}
@@ -301,18 +304,22 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                 raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster,"
                                  "k8s-client or standalone, "
                                  "but got: %s".format(cluster_mode))
-        ray_args = {}
-        for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
-                    "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
-            if key in kwargs:
-                ray_args[key] = kwargs[key]
-        from bigdl.orca.ray import RayContext
-        ray_ctx = RayContext(cluster_mode="ray_on_spark", cores=cores, num_nodes=num_nodes,
-                             sc=sc, **ray_args)
-        if init_ray_on_spark:
-            driver_cores = 0  # This is the default value.
-            ray_ctx.init(driver_cores=driver_cores)
-        return sc
+        if runtime == "ray_on_spark":
+            ray_args = {}
+            for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
+                        "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
+                if key in kwargs:
+                    ray_args[key] = kwargs[key]
+            from bigdl.orca.ray import RayOnSparkContext
+            ray_ctx = RayOnSparkContext(runtime="ray_on_spark", cores=cores, num_nodes=num_nodes,
+                                sc=sc, **ray_args)
+            if init_ray_on_spark:
+                driver_cores = 0  # This is the default value.
+                ray_ctx.init(driver_cores=driver_cores)
+    else:
+        raise ValueError("runtime can only be ray, spark or ray_on_spark, "
+                         "but got %s".format(runtime))
+    return sc
 
 
 def stop_orca_context():

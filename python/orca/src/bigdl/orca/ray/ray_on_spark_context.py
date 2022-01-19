@@ -443,18 +443,18 @@ class RayOnSparkContext(object):
                 env=self.env,
                 include_webui=self.include_webui,
                 extra_params=self.extra_params)
-        RayContext._active_ray_context = self
+        RayOnSparkContext._active_ray_context = self
         self.total_cores = self.num_ray_nodes * self.ray_node_cpu_cores
 
     @classmethod
     def get(cls, initialize=True):
-        if RayContext._active_ray_context:
-            ray_ctx = RayContext._active_ray_context
+        if RayOnSparkContext._active_ray_context:
+            ray_ctx = RayOnSparkContext._active_ray_context
             if initialize and not ray_ctx.initialized:
                 ray_ctx.init()
             return ray_ctx
         else:
-            raise Exception("No active RayContext. Please create a RayContext and init it first")
+            raise Exception("No active RayOnSparkContext. Please create a RayOnSparkContext and init it first")
 
     def _gather_cluster_ips(self):
         """
