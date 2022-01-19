@@ -75,7 +75,7 @@ def model_creator(config):
 
 class TestTF2Estimator(TestCase):
     def setUp(self):
-        init_orca_context(runtime="ray", address="localhost:6379")
+        init_orca_context(cluster_mode="ray", address="localhost:6379")
     
     def tearDown(self):
         stop_orca_context()

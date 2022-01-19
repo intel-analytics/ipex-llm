@@ -87,7 +87,7 @@ def get_optimizer(model, config):
 
 class TestPytorchEstimator(TestCase):
     def setUp(self):
-        init_orca_context("ray", address="localhost:6379")
+        init_orca_context(cluster_mode="ray", address="localhost:6379")
     
     def tearDown(self):
         stop_orca_context()
@@ -121,19 +121,6 @@ class TestPytorchEstimator(TestCase):
         print(f"dLoss: {dloss}, dAcc: {dacc}")
 
         assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
-
-        # Verify syncing weights, i.e. the two workers have the same weights after training
-        import ray
-        import numpy as np
-        remote_workers = estimator.remote_workers
-        state_dicts = ray.get([worker.get_state_dict.remote() for worker in remote_workers])
-        weights = [state["models"] for state in state_dicts]
-        worker1_weights = weights[0][0]
-        worker2_weights = weights[1][0]
-        for layer in list(worker1_weights.keys()):
-            assert np.allclose(worker1_weights[layer].numpy(),
-                               worker2_weights[layer].numpy())
-        estimator.shutdown()
 
 
 if __name__ == "__main__":
