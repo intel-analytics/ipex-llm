@@ -108,8 +108,7 @@ class RayServiceFuncGenerator(object):
 
     def __init__(self, python_loc, redis_port, ray_node_cpu_cores,
                  password, object_store_memory, verbose=False, env=None,
-                 include_webui=False,
-                 extra_params=None):
+                 include_webui=False, extra_params=None, system_config=None):
         """object_store_memory: integer in bytes"""
         self.env = env
         self.python_loc = python_loc
@@ -119,6 +118,7 @@ class RayServiceFuncGenerator(object):
         self.ray_exec = self._get_ray_exec()
         self.object_store_memory = object_store_memory
         self.extra_params = extra_params
+        self.system_config = system_config
         self.include_webui = include_webui
         self.verbose = verbose
         # _mxnet_worker and _mxnet_server are resource tags for distributed MXNet training only
@@ -162,6 +162,9 @@ class RayServiceFuncGenerator(object):
                    self.ray_node_cpu_cores)
         if self.labels:
             command = command + " " + self.labels
+        if self.system_config:
+            import json
+            command = command + " " + "--system-config='"+json.dumps(self.system_config)+"'"
         return RayServiceFuncGenerator._enrich_command(command=command,
                                                        object_store_memory=self.object_store_memory,
                                                        extra_params=self.extra_params)
@@ -327,7 +330,7 @@ class RayContext(object):
 
     def __init__(self, sc, redis_port=None, password="123456", object_store_memory=None,
                  verbose=False, env=None, extra_params=None, include_webui=True,
-                 num_ray_nodes=None, ray_node_cpu_cores=None):
+                 num_ray_nodes=None, ray_node_cpu_cores=None, system_config=None):
         """
         The RayContext would initiate a ray cluster on top of the configuration of SparkContext.
         After creating RayContext, call the init method to set up the cluster.
@@ -376,6 +379,7 @@ class RayContext(object):
         self.ray_processesMonitor = None
         self.env = env
         self.extra_params = extra_params
+        self.system_config = system_config
         self.include_webui = include_webui
         self._address_info = None
         if self.is_local:
@@ -442,7 +446,8 @@ class RayContext(object):
                 verbose=self.verbose,
                 env=self.env,
                 include_webui=self.include_webui,
-                extra_params=self.extra_params)
+                extra_params=self.extra_params,
+                system_config=self.system_config)
         RayContext._active_ray_context = self
         self.total_cores = self.num_ray_nodes * self.ray_node_cpu_cores
 
@@ -530,6 +535,7 @@ class RayContext(object):
                     object_store_memory=self.object_store_memory,
                     include_dashboard=self.include_webui,
                     dashboard_host="0.0.0.0",
+                    _system_config=self.system_config
                 )
                 init_params.update(kwargs)
                 if version.parse(ray.__version__) >= version.parse("1.4.0"):
