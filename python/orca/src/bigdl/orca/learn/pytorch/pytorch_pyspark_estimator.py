@@ -31,7 +31,6 @@ from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
     get_remote_file_to_local
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
 from bigdl.orca.learn.log_monitor import start_log_server
 
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
