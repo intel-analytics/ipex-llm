@@ -6,7 +6,7 @@ In the following, we will present a end-to-end BigDL PPML with KMS example.
 
 <div align="center">
 <p align="center"> <img src="../../docs/readthedocs/image/KMS-Client.png" height="220px"><br></p>
-**KMS Client Architecture**
+KMS Client Architecture
 </div>
 
 ## 1. Deploy BigDL PPML with KMS Server
