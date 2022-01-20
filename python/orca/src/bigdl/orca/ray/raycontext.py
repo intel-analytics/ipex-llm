@@ -368,6 +368,10 @@ class RayContext(object):
         explicitly specify this. It is recommended that ray_node_cpu_cores is not larger than the
         number of cores for each Spark executor to make sure there are enough resources in your
         cluster.
+        :param system_config: The key value dict for overriding RayConfig defaults. Mainly for
+        testing purposes. An example for system_config could be:
+        {"object_spilling_config":"{\"type\":\"filesystem\",
+                                   \"params\":{\"directory_path\":\"/tmp/spill\"}}"}
         """
         assert sc is not None, "sc cannot be None, please create a SparkContext first"
         self.sc = sc
@@ -378,8 +382,17 @@ class RayContext(object):
         self.object_store_memory = resource_to_bytes(object_store_memory)
         self.ray_processesMonitor = None
         self.env = env
+        assert isinstance(extra_params, dict), \
+            "extra_params should be a dict for extra options to launch ray"
         self.extra_params = extra_params
         self.system_config = system_config
+        if self.system_config:
+            self.extra_params.pop("system_config", None)
+            self.extra_params.pop("_system_config", None)
+        elif "system_config" in self.extra_params:
+            self.system_config = self.extra_params.pop("system_config")
+        elif "_system_config" in self.extra_params:
+            self.system_config = self.extra_params.pop("_system_config")
         self.include_webui = include_webui
         self._address_info = None
         if self.is_local:
