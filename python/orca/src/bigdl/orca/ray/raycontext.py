@@ -382,18 +382,18 @@ class RayContext(object):
         self.object_store_memory = resource_to_bytes(object_store_memory)
         self.ray_processesMonitor = None
         self.env = env
+        self.extra_params = extra_params
+        self.system_config = system_config
         if extra_params:
             assert isinstance(extra_params, dict), \
                 "extra_params should be a dict for extra options to launch ray"
-        self.extra_params = extra_params
-        self.system_config = system_config
-        if self.system_config:
-            self.extra_params.pop("system_config", None)
-            self.extra_params.pop("_system_config", None)
-        elif "system_config" in self.extra_params:
-            self.system_config = self.extra_params.pop("system_config")
-        elif "_system_config" in self.extra_params:
-            self.system_config = self.extra_params.pop("_system_config")
+            if self.system_config:
+                self.extra_params.pop("system_config", None)
+                self.extra_params.pop("_system_config", None)
+            elif "system_config" in self.extra_params:
+                self.system_config = self.extra_params.pop("system_config")
+            elif "_system_config" in self.extra_params:
+                self.system_config = self.extra_params.pop("_system_config")
         self.include_webui = include_webui
         self._address_info = None
         if self.is_local:
