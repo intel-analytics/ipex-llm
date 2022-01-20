@@ -173,8 +173,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
     across the cluster if necessary).
 
-    :param runtime: The runtime for backend. One of "ray", "ray_on_spark" and "spark",
-            Default to be "spark".
+    :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
            "yarn-cluster", "k8s-client" and "standalone". Default to be None and in this case
            there is supposed to be an existing SparkContext in your application.
