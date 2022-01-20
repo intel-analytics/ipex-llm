@@ -80,13 +80,13 @@ Next, you need to store the password you used for key generation, i.e., `generat
 bash ../../../ppml/scripts/generate-password.sh used_password_when_generate_keys
 ```
 
-Then modify these path and your local ip in `deploy-local-spark-sgx.sh`.
+Then modify these path and your local ip in `deploy_fl_container.sh`.
 
 ## Start container
 run:
 
 ```bash
-bash deploy-local-spark-sgx.sh
+bash deploy_fl_container.sh
 sudo docker exec -it flDemo bash
 ./init.sh
 ```

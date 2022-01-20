@@ -2,7 +2,6 @@ FROM intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSH
 
 ADD bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar $BIGDL_HOME/jars
 ADD ppml-conf.yaml /ppml/trusted-big-data-ml
-ADD data /ppml/trusted-big-data-ml/data
 ADD runFlServer.sh /ppml/trusted-big-data-ml
 ADD runHflClient1.sh /ppml/trusted-big-data-ml
 ADD runHflClient2.sh /ppml/trusted-big-data-ml
