@@ -75,4 +75,5 @@ class RayContext(object):
                 ray_ctx.init()
             return ray_ctx
         else:
-            raise Exception("No active RayContext. Please create a RayContext and init it first")
+            raise Exception("No active RayContext. "
+                            "Please call init_orca_context to create a RayContext.")

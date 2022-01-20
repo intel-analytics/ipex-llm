@@ -342,6 +342,6 @@ def stop_orca_context():
     else:
         if RayContext._active_ray_context is not None:
             print("Stopping ray_orca context")
-            ray_ctx = RayContext.get(init_orca_context)
+            ray_ctx = RayContext.get(initialize=False)
             if ray_ctx.initialized:
                 ray_ctx.stop()
