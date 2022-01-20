@@ -23,6 +23,7 @@ from unittest import TestCase
 import torch
 from torch import nn
 from torch.utils.data import TensorDataset, DataLoader
+from pytorch_lightning import LightningModule
 
 import numpy as np
 
@@ -45,6 +46,28 @@ class ResNet18(nn.Module):
 
     def forward(self, x):
         return self.model(x)
+
+
+class LitResNet18(LightningModule):
+    def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+        super().__init__()
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+        output_size = backbone.get_output_size()
+        head = nn.Linear(output_size, num_classes)
+        self.classify = nn.Sequential(backbone, head)
+        self.loss = nn.CrossEntropyLoss()
+
+    def forward(self, x):
+        return self.classify(x)
+    
+    def training_step(self, batch, batch_idx):
+        y_hat = self(batch[0])
+        loss = self.loss(y_hat, batch[1])
+        return loss
+    
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters())
+
 
 class TestQuantizeInference(TestCase):
 
@@ -87,3 +110,13 @@ class TestQuantizeInference(TestCase):
             quantized_res = pl_model.inference(x, backend=None, quantize=True).numpy()  # quantized
             quantized_res_load = pl_model_load.inference(x, backend=None, quantize=True).numpy()  # quantized
             np.testing.assert_almost_equal(quantized_res, quantized_res_load, decimal=5)  # same result
+
+    def test_quantized_model_save_load_checkpoint(self):
+        model = LitResNet18(10, pretrained=False, include_top=False, freeze=True)
+        trainer = Trainer(max_epochs=1)
+        train_loader = create_data_loader(data_dir, batch_size, \
+                                          num_workers, data_transform, subset=200)
+        trainer.fit(model, train_loader)
+        model = trainer.quantize(model, train_loader)
+        trainer.save_checkpoint("example.ckpt")
+        model_load = LitResNet18.load_from_checkpoint("example.ckpt", num_classes=10)

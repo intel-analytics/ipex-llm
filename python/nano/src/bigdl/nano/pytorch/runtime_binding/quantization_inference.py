@@ -15,6 +15,7 @@
 #
 
 import warnings
+import pickle
 from functools import partial
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 
@@ -79,6 +80,17 @@ def load_quantized_state_dict(self, state_dict):
     self._quantized_model = qmodel
     self._quantized_model_up_to_date = True  # set to true before training next time
 
+
+def on_save_checkpoint(self, checkpoint):
+    if "_quantized_model" in dir(self):
+        tmp = self._quantized_model
+        self._quantized_model = None
+        checkpoint['state_dict'] = self.state_dict()
+        warnings.warn("Quantized model will not be saved, please call `quantized_state_dict` and "
+                      "load_quantized_state_dict for saving and loading.")
+        self._quantized_model = tmp
+
+
 def bind_quantize_methods(pl_model, q_model):
     # check conflicts
     for component in QUANTIZATION_BINDED_COMPONENTS:
@@ -95,5 +107,6 @@ def bind_quantize_methods(pl_model, q_model):
     pl_model._fx_quantize_on_fit_start = partial(_fx_quantize_on_fit_start, pl_model)
     pl_model.quantized_state_dict = partial(quantized_state_dict, pl_model)
     pl_model.load_quantized_state_dict = partial(load_quantized_state_dict, pl_model)
+    pl_model.on_save_checkpoint = partial(on_save_checkpoint, pl_model)
 
     return pl_model
