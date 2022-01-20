@@ -50,7 +50,7 @@ class KerasBaseModel(BaseModel):
         self.model_built = True
 
     def fit_eval(self, data, validation_data=None, mc=False, verbose=0, epochs=1, metric=None,
-                 metric_func=None,
+                 metric_func=None, resources_per_trial=None,
                  **config):
         """
         :param data: could be a tuple with numpy ndarray with form (x, y)
