@@ -35,7 +35,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                  stack_types=("generic", "generic"),
                  nb_blocks_per_stack=3,
                  thetas_dim=(4, 8),
-                 share_weigets_in_stack=False,
+                 share_weights_in_stack=False,
                  hidden_layer_units=256,
                  nb_harmonics=None,
                  optimizer="Adam",
@@ -57,7 +57,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                This value defaults to 3.
         :param thetas_dim: Number of fully connected layers
                with ReLu activation per block.
-        :param share_weigets_in_stack: Shared weights between stacks,
+        :param share_weights_in_stack: Shared weights between stacks,
                This value defaults to False.
         :param hidden_layer_units: The number of layers in a fully
                connected neural network, This values defaults to 256.
@@ -98,7 +98,7 @@ class NBeatsForecaster(BasePytorchForecaster):
             "stack_types": stack_types,
             "nb_blocks_per_stack": nb_blocks_per_stack,
             "thetas_dim": thetas_dim,
-            "share_weigets_in_stack": share_weigets_in_stack,
+            "share_weights_in_stack": share_weights_in_stack,
             "hidden_layer_units": hidden_layer_units,
             "nb_harmonics": nb_harmonics
         }
