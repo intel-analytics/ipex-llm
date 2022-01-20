@@ -74,13 +74,13 @@ Next, you need to store the password you used for key generation, i.e., `generat
 bash ../../../ppml/scripts/generate-password.sh used_password_when_generate_keys
 ```
 
-Then modify `ENCLAVE_KEY_PATH` to `enclave-key.pem`, `DATA_PATH` to `BigDL/scala/ppml/demo/data`(for example), `KEYS_PATH` to `your-generated-keys` and `LOCAL_IP` in `deploy-local-spark-sgx.sh`.
+Then modify `ENCLAVE_KEY_PATH` to `enclave-key.pem`, `DATA_PATH` to `BigDL/scala/ppml/demo/data`(for example), `KEYS_PATH` to `your-generated-keys` and `LOCAL_IP` in `deploy_fl_container.sh`.
 
 ### **Start container**
 Running this command will start a docker container and initialize the sgx environment.
 
 ```bash
-bash deploy-local-spark-sgx.sh
+bash deploy_fl_container.sh
 sudo docker exec -it flDemo bash
 ./init.sh
 ```
