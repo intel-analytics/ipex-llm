@@ -60,7 +60,7 @@ Pay attention to the variables and set them to correct values according to your 
 
 ## 3. Run KMS Client API
 
-`cd /ppml/trusted-big-data-ml`, you can do below operations supported by KMS APIs. Parameter `port` is set to `3000` as default similar to ehsm.
+Enter the container and go to the directory by `docker exec -it kms-client bash && cd /ppml/trusted-big-data-ml`, you can do below operations supported by KMS APIs. Parameter `port` is set to `3000` as default similar to ehsm.
 
 - Request a primary key and save it locally in ciphertext:
 
