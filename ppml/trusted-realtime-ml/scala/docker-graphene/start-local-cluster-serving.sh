@@ -24,6 +24,6 @@ sudo docker run -itd \
     intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:0.14.0-SNAPSHOT \
     bash  -c "cd /ppml/trusted-realtime-ml/ && ./start-all.sh && tail -f /dev/null"
 
-docker exec -i trusted-cluster-serving-local bash -c "mkdir /dev/sgx && \
+sudo docker exec -i trusted-cluster-serving-local bash -c "mkdir /dev/sgx && \
     ln -s /dev/sgx_enclave /dev/sgx/enclave && \
     ln -s /dev/sgx_provision /dev/sgx/provision"
