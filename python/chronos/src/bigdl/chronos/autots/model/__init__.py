@@ -70,7 +70,7 @@ AUTO_MODEL_DEFAULT_SEARCH_SPACE = {
                                                           ("generic", "seasonality")]),
                            "nb_blocks_per_stack": hp.grid_search([3, 6]),
                            "thetas_dim": (4, 8),
-                           "share_weight_in_stack": False,
+                           "share_weights_in_stack": False,
                            "hidden_layer_units": hp.grid_search([64, 128]),
                            "nb_harmonics": None},
                "normal": {"lr": hp.loguniform(0.001, 0.005),
@@ -79,7 +79,7 @@ AUTO_MODEL_DEFAULT_SEARCH_SPACE = {
                                                          ("generic", "seasonality")]),
                           "nb_blocks_per_stack": hp.grid_search([3, 6]),
                           "thetas_dim": (4, 8),
-                          "share_weight_in_stack": hp.grid_search([False, True]),
+                          "share_weights_in_stack": hp.grid_search([False, True]),
                           "hidden_layer_units": hp.grid_search([64, 128, 256]),
                           "nb_harmonics": None},
                "large": {"lr": hp.loguniform(0.001, 0.005),
@@ -88,7 +88,7 @@ AUTO_MODEL_DEFAULT_SEARCH_SPACE = {
                                                         ("generic", "seasonality")]),
                          "nb_blocks_per_stack": hp.grid_search([3, 6, 9]),
                          "thetas_dim": (4, 8),
-                         "share_weight_in_stack": hp.grid_search([False, True]),
+                         "share_weights_in_stack": hp.grid_search([False, True]),
                          "hidden_layer_units": hp.grid_search([64, 128, 256, 512]),
                          "nb_harmonics": None}}
 }

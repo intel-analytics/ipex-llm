@@ -29,7 +29,7 @@ class AutoNbeats(BasePytorchAutomodel):
                  stack_types,
                  nb_blocks_per_stack,
                  thetas_dim,
-                 share_weigets_in_stack,
+                 share_weights_in_stack,
                  hidden_layer_units,
                  nb_harmonics,
                  optimizer,
@@ -53,7 +53,7 @@ class AutoNbeats(BasePytorchAutomodel):
                This value defaults to 3.
         :param thetas_dim: Number of fully connected layers
                with ReLu activation per block.
-        :param share_weigets_in_stack: Shared weights between stacks,
+        :param share_weights_in_stack: Shared weights between stacks,
                This value defaults to False.
         :param hidden_layer_units: The number of layers in a fully
                connected neural network, This values defaults to 256.
@@ -88,7 +88,7 @@ class AutoNbeats(BasePytorchAutomodel):
         if isinstance(input_feature_num, int) and input_feature_num != 1:
             raise ValueError(f"NBeat only supports univariate prediction.")
 
-        self.search_space = dict(share_weigets_in_stack=share_weigets_in_stack,
+        self.search_space = dict(share_weights_in_stack=share_weights_in_stack,
                                  hidden_layer_units=hidden_layer_units,
                                  stack_types=stack_types,
                                  thetas_dim=thetas_dim,
