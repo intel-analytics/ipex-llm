@@ -25,6 +25,7 @@ class NBeatsForecaster(BasePytorchForecaster):
             >>> # NBeatsForecaster test.
             >>> forecaster = NBeatsForecaster(paste_seq_len=10,
                                               future_seq_len=1,
+                                              stack_types=("generic", "generic"),
                                               ...)
             >>> forecaster.fit((x_train, y_train))
             >>> forecaster.to_local() # if you set distributed=True
@@ -51,18 +52,21 @@ class NBeatsForecaster(BasePytorchForecaster):
 
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param future_seq_len: Specify the output time steps (i.e. horizon).
-        :param stack_types: Specifies the architecture of the stack,
+        :param stack_types: Specifies the type of stack,
+               including "generic", "trend", "seasnoality".
                This value defaults to ("generic", "generic").
-        :param nb_blocks_per_stack: Blocks contained in the stack,
-               This value defaults to 3.
-        :param thetas_dim: Number of fully connected layers
-               with ReLu activation per block.
-        :param share_weights_in_stack: Shared weights between stacks,
+        :param nb_blocks_per_stack: Specify the number of blocks
+               contained in each stack, This value defaults to 3.
+        :param thetas_dim: Expansion Coefficients of Multilayer FC Networks.
+               if type is "generic", Extended length factor, if type is "trend"
+               then polynomial coefficients, if type is "seasonality"
+               expressed as a change within each step.
+        :param share_weights_in_stack: Share block weights for each stack.,
                This value defaults to False.
-        :param hidden_layer_units: The number of layers in a fully
-               connected neural network, This values defaults to 256.
-        :param nb_harmonics: Number of fully connected layers
-               with ReLu activation per block.
+        :param hidden_layer_units: Number of fully connected layers with per block.
+               This values defaults to 256.
+        :param nb_harmonics:Only available in "seasonality" type,
+               specifies the time step of backward, This value defaults is None.
         :param dropout: Specify the dropout close possibility
                (i.e. the close possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
