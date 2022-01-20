@@ -60,6 +60,8 @@ Modify your `http_proxy` in `build-image.sh` then run:
 
 The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
+**Note: Must enter `localhost` in step `Common Name` for test purpose.**
+
 ```bash
 sudo bash ../../../ppml/scripts/generate-keys.sh
 ```
