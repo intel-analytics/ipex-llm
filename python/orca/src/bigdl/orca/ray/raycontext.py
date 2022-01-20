@@ -382,8 +382,9 @@ class RayContext(object):
         self.object_store_memory = resource_to_bytes(object_store_memory)
         self.ray_processesMonitor = None
         self.env = env
-        assert isinstance(extra_params, dict), \
-            "extra_params should be a dict for extra options to launch ray"
+        if extra_params:
+            assert isinstance(extra_params, dict), \
+                "extra_params should be a dict for extra options to launch ray"
         self.extra_params = extra_params
         self.system_config = system_config
         if self.system_config:
