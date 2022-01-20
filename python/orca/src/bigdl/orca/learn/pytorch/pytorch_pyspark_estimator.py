@@ -34,6 +34,8 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server
 
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
+from bigdl.dllib.utils.utils import get_node_ip
+
 
 
 def partition_to_creator(partition):
