@@ -40,12 +40,23 @@ then
 fi
 
 echo "Running Ray Estimator tests"
+start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/test/bigdl/orca/ray/ray_cluster/ray_est/test_ray_tf2estimator.py
+now=$(date "+%s")
+time1=$((now-start))
+
+start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/test/bigdl/orca/ray/ray_cluster/ray_est/test_ray_pytorch_estimator.py
+now=$(date "+%s")
+time2=$((now-start))
+
 exit_status_1=$?
 if [ $exit_status_1 -ne 0 ];
 then
     exit $exit_status_1
 fi
+
+echo "#1 ray_tf2estimator time used:$time1 seconds"
+echo "#2 ray_pytorch_estimator time used:$time2 seconds"
 
 ray stop -f
