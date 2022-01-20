@@ -167,7 +167,7 @@ def _check_python_micro_version():
                            f"with micro version >= 10 (e.g. 3.{sys.version_info[1]}.10)")
 
 
-def init_orca_context(runtime="spark", cluster_mode=None, cores=2, memory="2g", num_nodes=1,
+def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", num_nodes=1,
                       init_ray_on_spark=False, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
@@ -216,7 +216,7 @@ def init_orca_context(runtime="spark", cluster_mode=None, cores=2, memory="2g", 
         assert "address" in kwargs, "ray_address must be specified if runtime is ray"
         ray_ctx.init()
         return ray_ctx
-    elif runtime in ("spark", "ray_on_spark"):
+    elif runtime == "spark":
         from pyspark import SparkContext
         import warnings
         spark_args = {}
@@ -304,7 +304,6 @@ def init_orca_context(runtime="spark", cluster_mode=None, cores=2, memory="2g", 
                 raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster,"
                                  "k8s-client or standalone, "
                                  "but got: %s".format(cluster_mode))
-        if runtime == "ray_on_spark":
             ray_args = {}
             for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
                         "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
@@ -317,7 +316,7 @@ def init_orca_context(runtime="spark", cluster_mode=None, cores=2, memory="2g", 
                 driver_cores = 0  # This is the default value.
                 ray_ctx.init(driver_cores=driver_cores)
     else:
-        raise ValueError("runtime can only be ray, spark or ray_on_spark, "
+        raise ValueError("runtime can only be ray and spark, "
                          "but got %s".format(runtime))
     return sc
 
@@ -331,12 +330,7 @@ def stop_orca_context():
     # If users successfully call stop_orca_context after the program finishes,
     # namely when there is no active SparkContext, the registered exit function
     # should do nothing.
-    if RayContext._active_ray_context is not None:
-        print("Stopping ray_orca context")
-        ray_ctx = RayContext.get(init_orca_context)
-        if ray_ctx.initialized:
-            ray_ctx.stop()
-    elif SparkContext._active_spark_context is not None:
+    if SparkContext._active_spark_context is not None:
         print("Stopping orca context")
         ray_ctx = RayContext.get(initialize=False)
         if ray_ctx.initialized:
@@ -346,3 +340,9 @@ def stop_orca_context():
             from bigdl.dllib.nncontext import stop_spark_standalone
             stop_spark_standalone()
         sc.stop()
+    else:
+        if RayContext._active_ray_context is not None:
+            print("Stopping ray_orca context")
+            ray_ctx = RayContext.get(init_orca_context)
+            if ray_ctx.initialized:
+                ray_ctx.stop()

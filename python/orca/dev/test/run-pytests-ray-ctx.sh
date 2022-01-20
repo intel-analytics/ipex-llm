@@ -40,7 +40,8 @@ then
 fi
 
 echo "Running Ray Estimator tests"
-python test/bigdl/orca/ray/ray_cluster/ray_est
+python ${BIGDL_ROOT}/python/orca/test/bigdl/orca/ray/ray_cluster/ray_est/test_ray_tf2estimator.py
+python ${BIGDL_ROOT}/python/orca/test/bigdl/orca/ray/ray_cluster/ray_est/test_ray_pytorch_estimator.py
 exit_status_1=$?
 if [ $exit_status_1 -ne 0 ];
 then
