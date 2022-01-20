@@ -65,7 +65,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                This value defaults to False.
         :param hidden_layer_units: Number of fully connected layers with per block.
                This values defaults to 256.
-        :param nb_harmonics:Only available in "seasonality" type,
+        :param nb_harmonics: Only available in "seasonality" type,
                specifies the time step of backward, This value defaults is None.
         :param dropout: Specify the dropout close possibility
                (i.e. the close possibility to a neuron). This value defaults to 0.1.
