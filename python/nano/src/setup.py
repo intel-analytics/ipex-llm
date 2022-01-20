@@ -67,13 +67,32 @@ def download_libs(url: str):
 
 def setup_package(plat_name):
 
-    install_requires = ["intel-openmp"]
+    if plat_name != "macosx_10_11_x86_64":
+        install_requires = ["intel-openmp"]
+    else:
+        install_requires = []
 
-    tensorflow_requires = ["intel-tensorflow==2.6.0",
-                           "keras==2.6.0"]
+    if plat_name != "macosx_10_11_x86_64":
+        tensorflow_requires = ["intel-tensorflow==2.6.0",
+                               "keras==2.6.0",
+                               "tensorflow-estimator==2.6.0"]
+        pytorch_requires = ["torch==1.9.0",
+                            "torchvision==0.10.0",
+                            "pytorch_lightning==1.4.2",
+                            "opencv-python-headless",
+                            "PyTurboJPEG",
+                            "opencv-transforms",
+                            "onnx",
+                            "onnxruntime"]
+    else:
+        tensorflow_requires = ["tensorflow==2.6.0",
+                               "keras==2.6.0",
+                               "tensorflow-estimator==2.6.0"]
 
-    pytorch_requires = ["torch==1.8.0",
-                        "torchvision==0.9.0",
+        pytorch_requires = []
+
+    pytorch_requires = ["torch==1.9.0",
+                        "torchvision==0.10.0",
                         "pytorch_lightning==1.4.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
@@ -86,10 +105,13 @@ def setup_package(plat_name):
         "libs/libturbojpeg.so.0.2.0",
         "libs/libtcmalloc.so"
     ],
-        "win_amd64": []}
+        "win_amd64": [],
+        "macosx_10_11_x86_64": []}
 
     script_plat = {"manylinux2010_x86_64": ["../script/bigdl-nano-init"],
-                   "win_amd64": ["../script/bigdl-nano-init.ps1"]}
+                   "win_amd64": ["../script/bigdl-nano-init.ps1"],
+                   "macosx_10_11_x86_64": []
+                   }
 
     if plat_name == 'manylinux2010_x86_64':
         for url in lib_urls:
@@ -126,7 +148,7 @@ if __name__ == '__main__':
             "Cannot find --plat-name argument. bigdl-tf requires --plat-name to build.")
     verbose_plat_name = sys.argv[idx + 1]
 
-    valid_plat_names = ("win_amd64", "manylinux2010_x86_64")
+    valid_plat_names = ("win_amd64", "manylinux2010_x86_64", "macosx_10_11_x86_64")
     if verbose_plat_name not in valid_plat_names:
         raise ValueError(f"--plat-name is not valid. "
                          f"--plat-name should be one of {valid_plat_names}"

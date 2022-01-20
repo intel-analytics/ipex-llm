@@ -25,19 +25,20 @@ import com.intel.analytics.bigdl.dllib.optim.{Loss, ValidationMethod, Validation
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.{Level, LogManager}
+import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.util.Random
 
 object Test {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
 
   import Utils._
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).foreach { param =>
@@ -49,7 +50,7 @@ object Test {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val model = Module.load[Float](param.modelSnapshot.get)
+      val model = Module.loadModule[Float](param.modelSnapshot.get)
 
       if (param.evaluate) {
         val valtokens = SequencePreprocess(

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer.getClass
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 
@@ -34,7 +34,7 @@ class RefLocalOptimizer[T: ClassTag](
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T]) extends Optimizer[T, MiniBatch[T]](model, dataset, criterion) {
 
-  val logger: Logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   val (w, g) = model.getParameters()
 

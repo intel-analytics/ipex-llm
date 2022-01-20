@@ -2,7 +2,7 @@ ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
 
 # stage.1 graphene
-FROM ubuntu:18.04 AS graphene
+FROM ubuntu:20.04 AS graphene
 ARG GRAPHENE_BRANCH=branch-1.2-rc1
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -31,7 +31,7 @@ RUN /graphene/Scripts/download --output redis.tar.gz --sha256 f7ded6c27d48c20bc7
 RUN for f in $(find /graphene/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
 
 # stage.2 jdk & scala & flink
-FROM ubuntu:18.04 as flink
+FROM ubuntu:20.04 as flink
 ARG FLINK_VERSION=1.11.3
 ARG SCALA_VERSION=2.12
 ARG SCALA_SUB_VERSION_NUM=10
@@ -42,7 +42,7 @@ ENV SCALA_VERSION ${SCALA_VERSION}
 ENV SCALA_SUB_VERSION_NUM ${SCALA_SUB_VERSION_NUM}
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils wget unzip
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip
 # java
 RUN wget $JDK_URL && \
     gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
@@ -62,7 +62,7 @@ RUN cd /opt && \
 RUN ls -al /opt
 
 # stage.3 bigdl
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ENV SPARK_VERSION		${SPARK_VERSION}
@@ -89,7 +89,7 @@ RUN cd /opt && \
 
 
 # stage.4 ppml
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG SCALA_VERSION=2.12
@@ -160,6 +160,7 @@ COPY --from=bigdl /opt/e2e_throughput.py /ppml/trusted-realtime-ml/java/work/ben
 COPY --from=bigdl /opt/requirement.yml /ppml/trusted-realtime-ml/java/work/benchmark/requirement.yml
 
 RUN apt-get update --fix-missing && \
+    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git tree && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
@@ -211,6 +212,6 @@ RUN chmod a+x /ppml/trusted-realtime-ml/redis/init.sh && \
     chmod a+x /ppml/trusted-realtime-ml/check-status.sh && \
     chmod a+x /ppml/trusted-realtime-ml/start-all.sh
 
-ENV PYTHONPATH	${PYTHONPATH}:/graphene/meson_build_output/lib/python3.6/site-packages
+ENV PYTHONPATH	${PYTHONPATH}:/graphene/meson_build_output/lib/python3.8/site-packages
 ENV LC_ALL	C.UTF-8
 ENV LANG	C.UTF-8

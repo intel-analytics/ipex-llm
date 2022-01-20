@@ -20,7 +20,6 @@ import os
 import torch
 
 from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
-from bigdl.orca import init_orca_context, stop_orca_context
 from unittest import TestCase
 import pytest
 
@@ -165,6 +164,7 @@ class TestChronosModelLSTMForecaster(TestCase):
             forecaster.fit(train_data, epochs=2)
 
     def test_lstm_forecaster_xshard_input(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
         print("original", train_data[0].dtype)
         init_orca_context(cores=4, memory="2g")
@@ -191,6 +191,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         stop_orca_context()
 
     def test_lstm_forecaster_distributed(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
         init_orca_context(cores=4, memory="2g")
 
@@ -226,4 +227,17 @@ class TestChronosModelLSTMForecaster(TestCase):
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
+        stop_orca_context()
+
+    def test_lstm_dataloader_distributed(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+        train_loader, _, _ = create_data(loader=True)
+        init_orca_context(cores=4, memory="2g")
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01,
+                                    distributed=True)
+        forecaster.fit(train_loader, epochs=2)
         stop_orca_context()

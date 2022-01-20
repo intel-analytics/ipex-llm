@@ -216,7 +216,7 @@ else
 fi
 
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
-sed -i "s/epochs=10/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
+sed -i "s/epochs=20/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
 cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
 
 python ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.py
@@ -295,7 +295,7 @@ else
 fi
 
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
-sed -i "s/cores=10/cores=4/g; s/epochs=20/epochs=1/g; s/n_sampling=4/n_sampling=1/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
+sed -i "s/cores=10/cores=4/g; s/epochs=20/epochs=1/g; s/n_sampling=24/n_sampling=6/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py
 cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
 
 python ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.py

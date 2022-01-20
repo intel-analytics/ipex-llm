@@ -170,7 +170,7 @@ def train_data_creator(config, batch_size):
     train_set = get_training_set(config.get("upscale_factor", 3))
     training_data_loader = DataLoader(dataset=train_set,
                                       batch_size=batch_size,
-                                      num_workers=config.get("threads", 4),
+                                      num_workers=0,
                                       shuffle=True)
     return training_data_loader
 
@@ -188,7 +188,7 @@ def validation_data_creator(config, batch_size):
     test_set = get_test_set(config.get("upscale_factor", 3))
     testing_data_loader = DataLoader(dataset=test_set,
                                      batch_size=batch_size,
-                                     num_workers=config.get("threads", 4),
+                                     num_workers=0,
                                      shuffle=False)
     return testing_data_loader
 

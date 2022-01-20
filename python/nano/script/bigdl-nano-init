@@ -45,10 +45,9 @@ function display-help {
         echo "    -o, --disable-openmp      Disable openMP and unset related variables"
         echo "    -j, --enable-jemalloc     Enable jemalloc and unset related variables"
 		echo "	  -c, --disable-tcmalloc   Disable tcmalloc and unset related variables"
-		echo "    -t, --enable-tensorflow   Enable tensorflow optimaztion"
 }
 
-while getopts ":ojhtc-:" opt; do
+while getopts ":ojhc-:" opt; do
 	case ${opt} in
 		- )
 			case "${OPTARG}" in
@@ -82,9 +81,6 @@ while getopts ":ojhtc-:" opt; do
 			;;
 		c )
 			disable-tcmalloc-var
-			;;
-		t )
-			enable-tensorflow-var
 			;;
 		h )
 			display-help
@@ -125,10 +121,15 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 	OPENMP=1
 
 	# detect number of physical cores
-	cores_per_socket=$(lscpu | grep "Core(s) per socket" | sed "s/.*://g" | sed -r "s/\s+//g")
-	threads_per_core=$(lscpu | grep "Thread(s) per core" | sed "s/.*://g" | sed -r "s/\s+//g")
-	sockets_=$(lscpu | grep "Socket(s)" | sed "s/.*://g" | sed -r "s/\s+//g")
-	
+	cpu_infos=($(lscpu -p=CPU,Socket,Core | grep -P '^(\d*),(\d*),(\d*)$'))
+	max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g')) 
+	let cpu_=${max_cpu_info[0]}+1
+	let sockets_=${max_cpu_info[1]}+1
+	let core_=${max_cpu_info[2]}+1
+	let threads_per_core=$cpu_/$core_
+	let cores_per_socket=$core_/$sockets_
+
+
 	# set env variables
 	echo "Setting OMP_NUM_THREADS..."
 
@@ -191,6 +192,7 @@ fi
 
 # Set TF_ENABLE_ONEDNN_OPTS
 export TF_ENABLE_ONEDNN_OPTS=1
+export ENABLE_TF_OPTS=1
 
 # Disable openmp or jemalloc according to options
 if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
@@ -214,11 +216,6 @@ fi
 if [ -z "${LD_PRELOAD:-}" ]; then
 	unset LD_PRELOAD
 fi
-if [ -z "${ENABLE_TF_OPTS:-}" ]; then
-	unset ENABLE_TF_OPTS
-	unset TF_ENABLE_ONEDNN_OPTS
-fi
-
 
 
 echo "+++++ Env Variables +++++"
@@ -228,6 +225,7 @@ echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
 echo "KMP_AFFINITY=${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME=${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS=${TF_ENABLE_ONEDNN_OPTS}"
+echo "ENABLE_TF_OPTS=${ENABLE_TF_OPTS}"
 echo "+++++++++++++++++++++++++"
 # Run the commands after bigdl-nano-init
 echo "Complete."

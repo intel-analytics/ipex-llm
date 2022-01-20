@@ -1,4 +1,4 @@
-# AutoTSEstimator Quickstart
+# Tune a Forecasting Task Automatically
 
 ---
 

@@ -118,7 +118,7 @@ public final class PSIServiceProto {
       return PSIServiceProto.internal_static_SaltRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return PSIServiceProto.internal_static_SaltRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -356,7 +356,7 @@ public final class PSIServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -372,7 +372,7 @@ public final class PSIServiceProto {
         return PSIServiceProto.internal_static_SaltRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return PSIServiceProto.internal_static_SaltRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -385,7 +385,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -793,7 +793,7 @@ public final class PSIServiceProto {
       return PSIServiceProto.internal_static_SaltReply_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return PSIServiceProto.internal_static_SaltReply_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -967,7 +967,7 @@ public final class PSIServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -983,7 +983,7 @@ public final class PSIServiceProto {
         return PSIServiceProto.internal_static_SaltReply_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return PSIServiceProto.internal_static_SaltReply_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -996,7 +996,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1389,7 +1389,7 @@ public final class PSIServiceProto {
       return PSIServiceProto.internal_static_UploadSetRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return PSIServiceProto.internal_static_UploadSetRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1734,7 +1734,7 @@ public final class PSIServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1750,7 +1750,7 @@ public final class PSIServiceProto {
         return PSIServiceProto.internal_static_UploadSetRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return PSIServiceProto.internal_static_UploadSetRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1763,7 +1763,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2398,7 +2398,7 @@ public final class PSIServiceProto {
       return PSIServiceProto.internal_static_UploadSetResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return PSIServiceProto.internal_static_UploadSetResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2598,7 +2598,7 @@ public final class PSIServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2614,7 +2614,7 @@ public final class PSIServiceProto {
         return PSIServiceProto.internal_static_UploadSetResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return PSIServiceProto.internal_static_UploadSetResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -2627,7 +2627,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2988,7 +2988,7 @@ public final class PSIServiceProto {
       return PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return PSIServiceProto.internal_static_DownloadIntersectionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -3182,7 +3182,7 @@ public final class PSIServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3198,7 +3198,7 @@ public final class PSIServiceProto {
         return PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return PSIServiceProto.internal_static_DownloadIntersectionRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -3211,7 +3211,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3635,7 +3635,7 @@ public final class PSIServiceProto {
       return PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
     }
 
-    protected FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return PSIServiceProto.internal_static_DownloadIntersectionResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -3962,7 +3962,7 @@ public final class PSIServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3978,7 +3978,7 @@ public final class PSIServiceProto {
         return PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
       }
 
-      protected FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return PSIServiceProto.internal_static_DownloadIntersectionResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -3991,7 +3991,7 @@ public final class PSIServiceProto {
       }
 
       private Builder(
-          BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }

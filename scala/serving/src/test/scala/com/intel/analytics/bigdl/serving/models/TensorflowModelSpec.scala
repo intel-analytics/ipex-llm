@@ -27,8 +27,8 @@ import scala.sys.process._
 class TensorflowModelSpec extends FlatSpec with Matchers {
   ClusterServing.helper = new ClusterServingHelper()
   "Tensorflow Inception v1" should "work" in {
-    ("wget -O /tmp/tensorflow_inception_v1.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/tensorflow_inception_v1.tar").!
+    ("wget --no-check-certificate -O /tmp/tensorflow_inception_v1.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/tensorflow_inception_v1.tar").!
     "mkdir /tmp/tensorflow_inception_v1/".!
     "tar -xvf /tmp/tensorflow_inception_v1.tar -C /tmp/tensorflow_inception_v1/".!
     val resource = getClass().getClassLoader().getResource("serving")
@@ -45,18 +45,18 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
   "Tensorflow MobileNet v1" should "work" in {
-    ("wget -O /tmp/tensorflow_mobilenet_v1.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/tensorflow_mobilenet_v1.tar").!
+    ("wget --no-check-certificate -O /tmp/tensorflow_mobilenet_v1.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/tensorflow_mobilenet_v1.tar").!
     "mkdir /tmp/tensorflow_mobilenet_v1/".!
     "tar -xvf /tmp/tensorflow_mobilenet_v1.tar -C /tmp/tensorflow_mobilenet_v1".!
     val resource = getClass().getClassLoader().getResource("serving")
@@ -74,19 +74,19 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
 
   "TensorflowModel MobileNet v2" should "work" in {
-    ("wget -O /tmp/tensorflow_mobilenet_v2.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/tensorflow_mobilenet_v2.tar").!
+    ("wget --no-check-certificate -O /tmp/tensorflow_mobilenet_v2.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/tensorflow_mobilenet_v2.tar").!
     "mkdir /tmp/tensorflow_mobilenet_v2/".!
     "tar -xvf /tmp/tensorflow_mobilenet_v2.tar -C /tmp/tensorflow_mobilenet_v2".!
     val resource = getClass().getClassLoader().getResource("serving")
@@ -104,19 +104,19 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
 
   "TensorflowModel ResNet 50" should "work" in {
-    ("wget -O /tmp/tensorflow_resnet50.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/tensorflow_resnet50.tar").!
+    ("wget --no-check-certificate -O /tmp/tensorflow_resnet50.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/tensorflow_resnet50.tar").!
     "mkdir /tmp/tensorflow_resnet50/".!
     "tar -xvf /tmp/tensorflow_resnet50.tar -C /tmp/tensorflow_resnet50".!
     val resource = getClass().getClassLoader().getResource("serving")
@@ -134,18 +134,18 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1000, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
   "TensorflowModel tf auto" should "work" in {
-    ("wget -O /tmp/tensorflow_tfauto.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/tensorflow_tfauto.tar").!
+    ("wget --no-check-certificate -O /tmp/tensorflow_tfauto.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/tensorflow_tfauto.tar").!
     "mkdir /tmp/tensorflow_tfauto/".!
     "tar -xvf /tmp/tensorflow_tfauto.tar -C /tmp/tensorflow_tfauto".!
     val resource = getClass().getClassLoader().getResource("serving")
@@ -162,19 +162,20 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
     Seq("sh", "-c", "rm -rf /tmp/tensorflow_tfauto*").!
 
     val inference = new ClusterServingInference()
-    val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
-
+    val in = List(
+      ("1", Tensor[Float](1, 128).rand()),
+      ("2", Tensor[Float](1, 128).rand()))
+    val postProcessed = inference.singleThreadInference(in)
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 128, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
   "TensorflowModel VGG16" should "work" in {
-    ("wget -O /tmp/tensorflow_vgg16.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/tensorflow_vgg16.tar").!
+    ("wget --no-check-certificate -O /tmp/tensorflow_vgg16.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/tensorflow_vgg16.tar").!
     "mkdir /tmp/tensorflow_vgg16/".!
     "tar -xvf /tmp/tensorflow_vgg16.tar -C /tmp/tensorflow_vgg16".!
     val resource = getClass().getClassLoader().getResource("serving")
@@ -192,18 +193,18 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
       require(result(0)._1.length == 1000, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      require(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
   "TensorflowModel tf_2out" should "work" in {
-    ("wget -O /tmp/tensorflow_tf_2out.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/tensorflow_tf_2out.tar").!
+    ("wget --no-check-certificate -O /tmp/tensorflow_tf_2out.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/tensorflow_tf_2out.tar").!
     "mkdir /tmp/tensorflow_tf_2out/".!
     "tar -xvf /tmp/tensorflow_tf_2out.tar -C /tmp/tensorflow_tf_2out".!
     val resource = getClass().getClassLoader().getResource("serving")
@@ -221,7 +222,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     val inference = new ClusterServingInference()
     val in = List(("1", b64string, ""), ("2", b64string, ""), ("3", b64string, ""))
-    val postProcessed = inference.multiThreadPipeline(in)
+    val postProcessed = inference.singleThreadPipeline(in)
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
@@ -230,8 +231,8 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
     })
   }
   "TF String input" should "work" in {
-    ("wget -O /tmp/tf_string.tar https://sourceforge.net/projects/ " +
-"analytics-zoo/files/analytics-zoo-data/tf_string.tar").!
+    ("wget --no-check-certificate -O /tmp/tf_string.tar https://sourceforge.net/" +
+"projects/analytics-zoo/files/analytics-zoo-data/tf_string.tar").!
     "tar -xvf /tmp/tf_string.tar -C /tmp/".!
 
     val model = new InferenceModel(1)

@@ -16,11 +16,11 @@
 # limitations under the License.
 #
 
-from bigdl.orca.automl.auto_estimator import AutoEstimator
-from bigdl.chronos.model.arima import ARIMABuilder
-
-
+import warnings
+from bigdl.chronos.model.arima import ARIMABuilder, ARIMAModel
+from bigdl.chronos.autots.utils import recalculate_n_sampling
 # -
+
 
 class AutoARIMA:
 
@@ -36,6 +36,7 @@ class AutoARIMA:
                  cpus_per_trial=1,
                  name="auto_arima",
                  remote_dir=None,
+                 load_dir=None,
                  **arima_config
                  ):
         """
@@ -75,22 +76,29 @@ class AutoARIMA:
         :param arima_config: Other ARIMA hyperparameters.
 
         """
-        self.search_space = {
-            "p": p,
-            "q": q,
-            "seasonal": seasonal,
-            "P": P,
-            "Q": Q,
-            "m": m,
-        }
-        self.metric = metric
-        model_builder = ARIMABuilder()
-        self.auto_est = AutoEstimator(model_builder=model_builder,
-                                      logs_dir=logs_dir,
-                                      resources_per_trial={
-                                          "cpu": cpus_per_trial},
-                                      remote_dir=remote_dir,
-                                      name=name)
+        if load_dir:
+            self.best_model = ARIMAModel()
+            self.best_model.restore(load_dir)
+        try:
+            from bigdl.orca.automl.auto_estimator import AutoEstimator
+            self.search_space = {
+                "p": p,
+                "q": q,
+                "seasonal": seasonal,
+                "P": P,
+                "Q": Q,
+                "m": m,
+            }
+            self.metric = metric
+            model_builder = ARIMABuilder()
+            self.auto_est = AutoEstimator(model_builder=model_builder,
+                                          logs_dir=logs_dir,
+                                          resources_per_trial={
+                                              "cpu": cpus_per_trial},
+                                          remote_dir=remote_dir,
+                                          name=name)
+        except ImportError:
+            warnings.warn("You need to install `bigdl-orca[automl]` to use `fit` function.")
 
     def fit(self,
             data,
@@ -112,8 +120,9 @@ class AutoARIMA:
                optimized to the metric_threshold or it has been trained for {epochs} epochs.
         :param validation_data: Validation data. A 1-D numpy array.
         :param metric_threshold: a trial will be terminated when metric threshold is met
-        :param n_sampling: Number of times to sample from the search_space. Defaults to 1.
-               If hp.grid_search is in search_space, the grid will be repeated n_sampling of times.
+        :param n_sampling: Number of trials to evaluate in total. Defaults to 1.
+               If hp.grid_search is in search_space, the grid will be run n_sampling of trials
+               and round up n_sampling according to hp.grid_search.
                If this is -1, (virtually) infinite samples are generated
                until a stopping condition is met.
         :param search_alg: str, all supported searcher provided by ray tune
@@ -125,6 +134,8 @@ class AutoARIMA:
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         """
+        n_sampling = recalculate_n_sampling(self.search_space,
+                                            n_sampling) if n_sampling != -1 else -1
         self.auto_est.fit(data=data,
                           validation_data=validation_data,
                           metric=self.metric,

@@ -21,12 +21,13 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BytesToGreyImg, Gr
 import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.optim.{Top1Accuracy, ValidationMethod}
 import com.intel.analytics.bigdl.dllib.utils.Engine
-import org.apache.log4j.{Level, Logger}
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.config.Configurator
 
 object Test {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Configurator.setLevel("org", Level.ERROR)
+  Configurator.setLevel("akka", Level.ERROR)
+  Configurator.setLevel("breeze", Level.ERROR)
 
 
   import Utils._
@@ -47,7 +48,7 @@ object Test {
         batchSize = param.batchSize, None, None, None,
         partitionNum = Some(1))
 
-      val model = Module.load[Float](param.model)
+      val model = Module.loadModule[Float](param.model)
       val result = model.evaluate(evaluationSet.toLocal(),
         Array(new Top1Accuracy[Float].asInstanceOf[ValidationMethod[Float]]))
       result.foreach(r => println(s"${r._2} is ${r._1}"))

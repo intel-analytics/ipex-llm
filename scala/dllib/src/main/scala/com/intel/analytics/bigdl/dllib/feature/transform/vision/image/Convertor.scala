@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.reflect._
 
@@ -39,7 +39,7 @@ class BytesToMat(byteKey: String = ImageFeature.bytes)
 }
 
 object BytesToMat {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   def apply(byteKey: String = ImageFeature.bytes): BytesToMat = new BytesToMat(byteKey)
 
   def transform(feature: ImageFeature, byteKey: String): ImageFeature = {
@@ -94,7 +94,7 @@ class PixelBytesToMat(byteKey: String = ImageFeature.bytes) extends FeatureTrans
 }
 
 object PixelBytesToMat {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   def apply(byteKey: String = ImageFeature.bytes): PixelBytesToMat = new PixelBytesToMat(byteKey)
 }
 
@@ -138,7 +138,7 @@ class MatToFloats(validHeight: Int, validWidth: Int, validChannels: Int,
 }
 
 object MatToFloats {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
     outKey: String = ImageFeature.floats, shareBuffer: Boolean = true): MatToFloats =
@@ -189,7 +189,7 @@ class MatToTensor[T: ClassTag](toRGB: Boolean = false,
 }
 
 object MatToTensor {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply[T: ClassTag](toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor,
     shareBuffer: Boolean = true, greyToRGB: Boolean = false)
@@ -241,7 +241,7 @@ class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeat
 }
 
 object ImageFrameToSample {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature.imageTensor),
     targetKeys: Array[String] = null,

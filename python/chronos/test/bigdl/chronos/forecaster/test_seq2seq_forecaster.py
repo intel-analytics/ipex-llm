@@ -20,7 +20,6 @@ import os
 import torch
 
 from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
-from bigdl.orca import init_orca_context, stop_orca_context
 from unittest import TestCase
 import pytest
 
@@ -57,7 +56,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-class TestChronosModelTCNForecaster(TestCase):
+class TestChronosModelSeq2SeqForecaster(TestCase):
 
     def setUp(self):
         pass
@@ -163,6 +162,7 @@ class TestChronosModelTCNForecaster(TestCase):
             forecaster.fit(train_data, epochs=2)
 
     def test_s2s_forecaster_xshard_input(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
         print("original", train_data[0].dtype)
         init_orca_context(cores=4, memory="2g")
@@ -190,6 +190,7 @@ class TestChronosModelTCNForecaster(TestCase):
         stop_orca_context()
 
     def test_s2s_forecaster_distributed(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
 
         init_orca_context(cores=4, memory="2g")
@@ -227,4 +228,18 @@ class TestChronosModelTCNForecaster(TestCase):
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
+        stop_orca_context()
+
+    def test_seq2seq_dataloader_distributed(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
+        train_data, _, _ = create_data(loader=True)
+        init_orca_context(cores=4, memory="2g")
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01,
+                                       distributed=True)
+        forecaster.fit(train_data, epochs=2)
         stop_orca_context()

@@ -17,12 +17,12 @@
 package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, Transformer}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 import scala.collection.Iterator
 
 object BGRImgNormalizer {
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
 
   def apply(meanR: Double, meanG: Double, meanB: Double,
     stdR: Double, stdG: Double, stdB: Double): BGRImgNormalizer = {

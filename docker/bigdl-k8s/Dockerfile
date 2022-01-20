@@ -1,17 +1,20 @@
 ARG SPARK_VERSION=2.4.6
+ARG HADOOP_VERSION=2.7
 ARG SPARK_HOME=/opt/spark
 ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG TINI_VERSION=v0.18.0
-ARG PYTHON_ENV_NAME=tf1
+ARG DEBIAN_FRONTEND=noninteractive
 
 # stage.1 jdk & spark
-FROM ubuntu:18.04 as spark
+FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION
+ARG HADOOP_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_HOME
+ARG DEBIAN_FRONTEND
 ARG TINI_VERSION
 ENV TINI_VERSION                        ${TINI_VERSION}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
@@ -19,17 +22,17 @@ ENV SPARK_HOME                          ${SPARK_HOME}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip maven git && \
 # java
-    wget $JDK_URL && \
-    gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
-    tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
-    rm jdk-$JDK_VERSION-linux-x64.tar && \
-    mv /opt/jdk* /opt/jdk$JDK_VERSION && \
+    wget -O jdk.tar.gz $JDK_URL && \
+    gunzip jdk.tar.gz && \
+    mkdir /opt/jdk$JDK_VERSION && \
+    tar -xf jdk.tar -C /opt/jdk$JDK_VERSION --strip-components 1 && \
+    rm jdk.tar && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk && \
 # spark
-    wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
-    rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    wget https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark && \
+    rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
     cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt 
 
 RUN ln -fs /bin/bash /bin/sh
@@ -45,9 +48,10 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 RUN git clone https://github.com/tensorflow/models/ /opt/models
 
 # stage.2 bigdl
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 ARG SPARK_VERSION
 ARG BIGDL_VERSION
+ARG DEBIAN_FRONTEND
 ENV SPARK_VERSION               ${SPARK_VERSION}
 ENV BIGDL_VERSION               ${BIGDL_VERSION}
 ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
@@ -62,8 +66,9 @@ RUN /opt/download-bigdl.sh && \
     rm bigdl*.zip
 
 # stage.3 copies layer
-FROM ubuntu:18.04 as copies-layer
+FROM ubuntu:20.04 as copies-layer
 ARG BIGDL_VERSION
+ARG DEBIAN_FRONTEND
 
 COPY --from=bigdl /opt/bigdl-${BIGDL_VERSION} /opt/bigdl-${BIGDL_VERSION}
 COPY --from=spark /opt/jdk /opt/jdk
@@ -72,13 +77,13 @@ COPY --from=spark /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt
 
 
 # stage.4
-FROM ubuntu:18.04
-MAINTAINER The Analytics-Zoo Authors https://github.com/intel-analytics/analytics-zoo
+FROM ubuntu:20.04
+MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ARG SPARK_HOME
 ARG TINI_VERSION
-ARG PYTHON_ENV_NAME
+ARG DEBIAN_FRONTEND
 
 ENV BIGDL_HOME                          /opt/bigdl-${BIGDL_VERSION}
 ENV BIGDL_VERSION                       ${BIGDL_VERSION}
@@ -99,11 +104,7 @@ ENV RUNTIME_TOTAL_EXECUTOR_CORES        4
 ENV RUNTIME_DRIVER_CORES                4
 ENV RUNTIME_DRIVER_MEMORY               10g
 ENV RUNTIME_PERSISTENT_VOLUME_CLAIM     myvolumeclaim
-ENV SPARK_HOME                          /opt/spark
 ENV JAVA_HOME                           /opt/jdk
-ENV BIGDL_CLASSPATH                     ${BIGDL_HOME}/jars/*
-ENV PYTHON_ENV_NAME                     ${PYTHON_ENV_NAME}
-ENV PYTHONPATH                          ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/conf/spark-bigdl.conf:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip:/opt/models/research/slim
 ENV PATH ${BIGDL_HOME}/bin/cluster-serving:${JAVA_HOME}/bin:${PATH}
 ENV TINI_VERSION                        ${TINI_VERSION}
 ENV LC_ALL                              C.UTF-8
@@ -124,24 +125,7 @@ RUN mkdir -p /opt/bigdl-examples/python && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd 
 
-# python
-# Install Miniconda
-RUN wget https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh && \
-    chmod +x Miniconda3-4.5.4-Linux-x86_64.sh && \
-    ./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local 
-
-ADD ./install-python-env1.sh /opt
-ADD ./install-python-env2.sh /opt
-RUN chmod a+x /opt/install-python-env1.sh && \
-    chmod a+x /opt/install-python-env2.sh && \
-    chmod +x /sbin/tini
-RUN if [ $PYTHON_ENV_NAME = "tf1" ]; then \
-        rm /opt/install-python-env2.sh && \
-        /opt/install-python-env1.sh; \
-    elif [ $PYTHON_ENV_NAME = "tf2" ]; then \
-        rm /opt/install-python-env1.sh && \
-        /opt/install-python-env2.sh; \
-    fi
+RUN chmod +x /sbin/tini
 RUN cp /sbin/tini /usr/bin/tini
 
 WORKDIR /opt/spark/work-dir

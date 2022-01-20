@@ -158,6 +158,15 @@ class OrcaContext(metaclass=OrcaContextMeta):
         return RayContext.get()
 
 
+def _check_python_micro_version():
+    # with ray >=1.8.0, python small micro version will cause pickle error in ray.init()
+    # (https://github.com/ray-project/ray/issues/19938)
+    import sys
+    if sys.version_info[2] < 3:
+        raise RuntimeError(f"Found python version {sys.version[:5]}. We only support python"
+                           f"with micro version >= 10 (e.g. 3.{sys.version_info[1]}.10)")
+
+
 def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                       init_ray_on_spark=False, **kwargs):
     """
@@ -237,7 +246,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
             conda_env_name = detect_conda_env_name()
             for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                         "extra_python_lib", "penv_archive", "additional_archive",
-                        "hadoop_user_name", "spark_yarn_archive", "jars"]:
+                        "hadoop_user_name", "spark_yarn_archive", "jars", "py_files"]:
                 if key in kwargs:
                     spark_args[key] = kwargs[key]
             from bigdl.dllib.nncontext import init_spark_on_yarn, init_spark_on_yarn_cluster
@@ -260,13 +269,16 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
                                  'and use the default cluster_mode instead')
             assert "master" in kwargs, "Please specify master for k8s-client mode"
             assert "container_image" in kwargs, "Please specify container_image for k8s-client mode"
+            from bigdl.dllib.utils.utils import detect_conda_env_name
+            conda_env_name = detect_conda_env_name()
             for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
-                        "extra_python_lib", "jars", "python_location"]:
+                        "extra_python_lib", "penv_archive", "jars", "python_location"]:
                 if key in kwargs:
                     spark_args[key] = kwargs[key]
             from bigdl.dllib.nncontext import init_spark_on_k8s
             sc = init_spark_on_k8s(master=kwargs["master"],
                                    container_image=kwargs["container_image"],
+                                   conda_name=conda_env_name,
                                    num_executors=num_nodes, executor_cores=cores,
                                    executor_memory=memory, **spark_args)
         elif cluster_mode == "standalone":
@@ -290,6 +302,7 @@ def init_orca_context(cluster_mode=None, cores=2, memory="2g", num_nodes=1,
     from bigdl.orca.ray import RayContext
     ray_ctx = RayContext(sc, **ray_args)
     if init_ray_on_spark:
+        _check_python_micro_version()
         driver_cores = 0  # This is the default value.
         ray_ctx.init(driver_cores=driver_cores)
     return sc

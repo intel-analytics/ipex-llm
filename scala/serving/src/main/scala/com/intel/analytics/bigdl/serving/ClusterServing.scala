@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import com.intel.analytics.bigdl.serving.flink.{FlinkInference, FlinkKafkaSink, FlinkKafkaSource, FlinkRedisSink, FlinkRedisSource}
 import com.intel.analytics.bigdl.serving.utils.{ConfigParser, Conventions, RedisUtils}
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import redis.clients.jedis.{JedisPool, JedisPoolConfig}
 import scopt.OptionParser
 
@@ -29,7 +29,7 @@ import scopt.OptionParser
 object ClusterServing {
   case class ServingParams(configPath: String = "config.yaml",
                            timerMode: Boolean = false)
-  val logger = Logger.getLogger(getClass)
+  val logger = LogManager.getLogger(getClass)
   var argv: ServingParams = _
   var helper: ClusterServingHelper = _
   var streamingEnv: StreamExecutionEnvironment = _
@@ -72,7 +72,7 @@ object ClusterServing {
 
 
     logger.info(s"Cluster Serving Flink job graph details \n${streamingEnv.getExecutionPlan}")
-    streamingEnv.executeAsync()
+    streamingEnv.execute()
   }
   def initializeRedis(): Unit = {
     val params = ClusterServing.helper

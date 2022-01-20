@@ -17,6 +17,7 @@
 from contextlib import closing
 import socket
 import sys
+import tempfile
 
 from bigdl.dllib.utils.file_utils import get_file_list
 from bigdl.orca.data import SparkXShards
@@ -348,57 +349,6 @@ def data_length(data):
         return x[0].shape[0]
 
 
-# def save_weights_tf(model, path, overwrite=True, save_format=None):
-#     import tempfile
-#     import os
-#     filename = os.path.basename(path)
-#     tmp_dir = tempfile.mkdtemp()
-#     tmp_file = os.path.join(tmp_dir, filename)
-#     model.save_weights(tmp_file, overwrite=overwrite, save_format=save_format)
-#     if save_format is None:
-#         if (path.endswith('.h5') or path.endswith('.keras') or
-#                 path.endswith('.hdf5')):
-#             save_format = 'h5'
-#         else:
-#             save_format = 'tf'
-#     else:
-#         user_format = save_format.lower().strip()
-#         if user_format in ('tensorflow', 'tf'):
-#             save_format = 'tf'
-#         elif user_format in ('hdf5', 'h5', 'keras'):
-#             save_format = 'h5'
-#     if save_format == 'tf':
-#         raise Exception("Cannot save to tensorflow format at this time")
-#
-#     with open(tmp_file, "rb") as f:
-#         content = f.read()
-#     if path.startswith("hdfs"):  # hdfs://url:port/file_path
-#         import pyarrow as pa
-#         fs = pa.hdfs.connect()
-#         with fs.open(path, 'wb') as f:
-#             result = f.write(content)
-#             f.close()
-#             return result
-#     elif path.startswith("s3"):  # s3://bucket/file_path
-#         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
-#         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
-#         import boto3
-#         s3_client = boto3.Session(
-#             aws_access_key_id=access_key_id,
-#             aws_secret_access_key=secret_access_key).client('s3', verify=False)
-#         path_parts = path.split("://")[1].split('/')
-#         bucket = path_parts.pop(0)
-#         key = "/".join(path_parts)
-#         return s3_client.put_object(Bucket=bucket, Key=key, Body=content)
-#     else:
-#         if path.startswith("file://"):
-#             path = path[len("file://"):]
-#         with open(path, 'wb') as f:
-#             result = f.write(content)
-#             f.close()
-#             return result
-
-
 def save_pkl(data, path):
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
         import pyarrow as pa
@@ -435,7 +385,59 @@ def find_free_port():
         return s.getsockname()[1]
 
 
+def find_ip_and_free_port(pre_iter):
+    from pyspark import BarrierTaskContext
+    tc = BarrierTaskContext().get()
+    infos = tc.getLocalProperty("addresses").split(",")
+    address = infos[tc.partitionId()].split(":")[0]
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        return [f"{address}:{s.getsockname()[1]}"]
+
+
+def get_rank(cluster_info):
+    # As task placement may not be identical between two different jobs,
+    # we cannot simply index cluster_info using partitionId to get current
+    # ip and port.
+    # The approach here is to first get all tasks' ip in this job and compute
+    # a local rank by counting how many tasks has the same ip but with lower id.
+    # We then use the local rank to find the right slot in cluster_info to find
+    # the right global_rank.
+    from pyspark import BarrierTaskContext
+    tc = BarrierTaskContext().get()
+    infos = tc.getLocalProperty("addresses").split(",")
+    idx = tc.partitionId()
+    local_ip = infos[idx].split(":")[0]
+    local_rank = 0
+    for i in range(0, idx):
+        if infos[i].startswith(local_ip):
+            local_rank += 1
+    global_rank = -1
+    local_count = 0
+    for node in cluster_info:
+        if node.startswith(local_ip):
+            local_count += 1
+        global_rank += 1
+        if local_count == local_rank + 1:
+            break
+    return global_rank
+
+
 def duplicate_stdout_stderr_to_file(log_path):
     tee = subprocess.Popen(["tee", log_path], stdin=subprocess.PIPE)
     os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
     os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
+
+
+def get_specific_object_from_callbacks(class_type, callbacks):
+    for c in callbacks:
+        if isinstance(c, class_type):
+            return c
+    return None
+
+
+def get_replaced_path(original_filepath):
+    base_name = os.path.basename(original_filepath)
+    print("base name is: ", base_name)
+    temp_dir = tempfile.mkdtemp()
+    return os.path.join(temp_dir, base_name)

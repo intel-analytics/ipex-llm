@@ -39,7 +39,6 @@ import sys
 import threading
 
 import numpy as np
-import tensorflow as tf
 
 TRAINING_SHARDS = 1024
 VALIDATION_SHARDS = 128
@@ -54,7 +53,7 @@ def convert_imagenet_to_tf_records(
         raw_data_dir: str,
         output_dir: str) -> Tuple[List[str], List[str]]:
     """Converts the Imagenet dataset into TF-Record dumps."""
-
+    import tensorflow as tf
     # Shuffle training records to ensure we are distributing classes
     # across the batches.
     random.seed(0)
@@ -108,6 +107,7 @@ class ImageCoder(object):
     """Helper class that provides TensorFlow image coding utilities."""
 
     def __init__(self):
+        import tensorflow as tf
         # Create a single Session to run all image coding calls.
         self._sess = tf.Session()
 
@@ -125,17 +125,17 @@ class ImageCoder(object):
         self._decode_jpeg_data = tf.placeholder(dtype=tf.string)
         self._decode_jpeg = tf.image.decode_jpeg(self._decode_jpeg_data, channels=3)
 
-    def png_to_jpeg(self, image_data: bytes) -> tf.Tensor:
+    def png_to_jpeg(self, image_data: bytes):
         """Converts a PNG compressed image to a JPEG Tensor."""
         return self._sess.run(self._png_to_jpeg,
                               feed_dict={self._png_data: image_data})
 
-    def cmyk_to_rgb(self, image_data: bytes) -> tf.Tensor:
+    def cmyk_to_rgb(self, image_data: bytes):
         """Converts a CMYK image to RGB Tensor."""
         return self._sess.run(self._cmyk_to_rgb,
                               feed_dict={self._cmyk_data: image_data})
 
-    def decode_jpeg(self, image_data: bytes) -> tf.Tensor:
+    def decode_jpeg(self, image_data: bytes):
         """Decodes a JPEG image."""
         image = self._sess.run(self._decode_jpeg,
                                feed_dict={self._decode_jpeg_data: image_data})
@@ -197,6 +197,7 @@ def _process_image(
     width: integer, image width in pixels.
 
     """
+    import tensorflow as tf
     # Read the image file.
     with tf.gfile.FastGFile(filename, 'rb') as f:
         image_data = f.read()
@@ -240,6 +241,7 @@ def _process_image_files_batch(
     labels: map of string to integer; id for all synset labels.
 
     """
+    import tensorflow as tf
     writer = tf.python_io.TFRecordWriter(output_file)
 
     for filename, synset in zip(filenames, synsets):
@@ -253,20 +255,23 @@ def _process_image_files_batch(
 
 
 def _check_or_create_dir(directory: str):
+    import tensorflow as tf
     """Checks if directory exists otherwise creates it."""
     if not tf.gfile.Exists(directory):
         tf.gfile.MakeDirs(directory)
 
 
-def _int64_feature(value: Union[int, Iterable[int]]) -> tf.train.Feature:
+def _int64_feature(value: Union[int, Iterable[int]]):
     """Inserts int64 features into Example proto."""
+    import tensorflow as tf
     if not isinstance(value, list):
         value = [value]
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
 
-def _bytes_feature(value: Union[bytes, str]) -> tf.train.Feature:
+def _bytes_feature(value: Union[bytes, str]):
     """Inserts bytes features into Example proto."""
+    import tensorflow as tf
     if isinstance(value, str):
         value = bytes(value, 'utf-8')
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
@@ -277,7 +282,7 @@ def _convert_to_example(filename: str,
                         label: int,
                         synset: str,
                         height: int,
-                        width: int) -> tf.train.Example:
+                        width: int):
     """
     Builds an Example proto for an ImageNet example.
 
@@ -292,6 +297,7 @@ def _convert_to_example(filename: str,
     Example proto
 
     """
+    import tensorflow as tf
     colorspace = 'RGB'
     channels = 3
     image_format = 'JPEG'

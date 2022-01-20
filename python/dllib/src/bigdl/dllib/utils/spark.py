@@ -77,7 +77,8 @@ class SparkRunner:
                            hadoop_user_name="root",
                            spark_yarn_archive=None,
                            conf=None,
-                           jars=None):
+                           jars=None,
+                           py_files=None):
         print("Initializing SparkContext for yarn-client mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -98,6 +99,8 @@ class SparkRunner:
                 archive = archive + "," + additional_archive
             submit_args = "--master yarn --deploy-mode client"
             submit_args = submit_args + " --archives {}".format(archive)
+            if py_files:
+                submit_args = submit_args + " --py-files {}".format(py_files)
             submit_args = submit_args + gen_submit_args(
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
@@ -146,7 +149,8 @@ class SparkRunner:
                                    hadoop_user_name="root",
                                    spark_yarn_archive=None,
                                    conf=None,
-                                   jars=None):
+                                   jars=None,
+                                   py_files=None):
         print("Initializing job for yarn-cluster mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -171,6 +175,8 @@ class SparkRunner:
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
             submit_args = submit_args + " --jars " + ",".join(get_bigdl_jars())
+            if py_files:
+                submit_args = submit_args + " --py-files {}".format(py_files)
 
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                          executor_cores, executor_memory,
@@ -315,6 +321,7 @@ class SparkRunner:
     def init_spark_on_k8s(self,
                           master,
                           container_image,
+                          conda_name,
                           num_executors,
                           executor_cores,
                           executor_memory="2g",
@@ -322,47 +329,60 @@ class SparkRunner:
                           driver_cores=4,
                           extra_executor_memory_for_ray=None,
                           extra_python_lib=None,
+                          penv_archive=None,
                           conf=None,
                           jars=None,
                           python_location=None):
         print("Initializing SparkContext for k8s-client mode")
-        if "PYSPARK_PYTHON" not in os.environ:
-            os.environ["PYSPARK_PYTHON"] = \
-                python_location if python_location else detect_python_location()
-        python_env = "/".join(os.environ["PYSPARK_PYTHON"].split("/")[:-2])
+        executor_python_env = "python_env"
+        os.environ["PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
+        pack_env = False
+        assert penv_archive or conda_name, \
+            "You should either specify penv_archive or conda_name explicitly"
+        try:
 
-        submit_args = "--master " + master + " --deploy-mode client"
-        submit_args = submit_args + gen_submit_args(
-            driver_cores, driver_memory, num_executors, executor_cores,
-            executor_memory, extra_python_lib, jars)
+            if not penv_archive:
+                penv_archive = pack_penv(conda_name, executor_python_env)
+                pack_env = True
 
-        conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
-                                     executor_cores, executor_memory, extra_executor_memory_for_ray)
-        py_version = ".".join(platform.python_version().split(".")[0:2])
-        preload_so = python_env + "/lib/libpython" + py_version + "m.so"
-        ld_path = python_env + "/lib:" + python_env + "/lib/python" + py_version + "/lib-dynload"
-        if "spark.executor.extraLibraryPath" in conf:
-            ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
-        conf.update({"spark.cores.max": num_executors * executor_cores,
-                     "spark.executorEnv.PYTHONHOME": python_env,
-                     "spark.executor.extraLibraryPath": ld_path,
-                     "spark.executorEnv.LD_PRELOAD": preload_so,
-                     "spark.kubernetes.container.image": container_image})
-        if "spark.driver.host" not in conf:
-            conf["spark.driver.host"] = get_node_ip()
-        if "spark.driver.port" not in conf:
-            conf["spark.driver.port"] = random.randint(10000, 65535)
-        if "BIGDL_CLASSPATH" in os.environ:
-            zoo_bigdl_jar_path = os.environ["BIGDL_CLASSPATH"]
-        else:
-            zoo_bigdl_jar_path = get_zoo_bigdl_classpath_on_driver()
-        if "spark.executor.extraClassPath" in conf:
-            conf["spark.executor.extraClassPath"] = "{}:{}".format(
-                zoo_bigdl_jar_path, conf["spark.executor.extraClassPath"])
-        else:
-            conf["spark.executor.extraClassPath"] = zoo_bigdl_jar_path
+            archive = "{}#{}".format(penv_archive, executor_python_env)
 
-        sc = self.create_sc(submit_args, conf)
+            submit_args = "--master " + master + " --deploy-mode client"
+            submit_args = submit_args + " --archives {}".format(archive)
+            submit_args = submit_args + gen_submit_args(
+                driver_cores, driver_memory, num_executors, executor_cores,
+                executor_memory, extra_python_lib, jars)
+
+            conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
+                                         executor_cores, executor_memory,
+                                         extra_executor_memory_for_ray)
+            py_version = ".".join(platform.python_version().split(".")[0:2])
+            preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
+            ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
+                py_version + "/lib-dynload"
+            if "spark.executor.extraLibraryPath" in conf:
+                ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
+            conf.update({"spark.cores.max": num_executors * executor_cores,
+                         "spark.executorEnv.PYTHONHOME": executor_python_env,
+                         "spark.executor.extraLibraryPath": ld_path,
+                         "spark.executorEnv.LD_PRELOAD": preload_so,
+                         "spark.kubernetes.container.image": container_image})
+            if "spark.driver.host" not in conf:
+                conf["spark.driver.host"] = get_node_ip()
+            if "spark.driver.port" not in conf:
+                conf["spark.driver.port"] = random.randint(10000, 65535)
+            zoo_bigdl_path_on_executor = ":".join(
+                list(get_executor_conda_zoo_classpath(executor_python_env)))
+            if "spark.executor.extraClassPath" in conf:
+                conf["spark.executor.extraClassPath"] = "{}:{}".format(
+                    zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
+            else:
+                conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
+
+            sc = self.create_sc(submit_args, conf)
+        finally:
+            if conda_name and penv_archive and pack_env:
+                os.remove(penv_archive)
         return sc
 
 
