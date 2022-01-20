@@ -48,9 +48,9 @@ public abstract class GrpcServerBase extends AbstractGrpcBase {
             new LinkedList<ServerServiceDefinition>();
 
     // TLS arguments
-    String certChainFilePath;
-    String privateKeyFilePath;
-    String trustCertCollectionFilePath;
+    protected String certChainFilePath;
+    protected String privateKeyFilePath;
+    protected String trustCertCollectionFilePath;
 
 
     /**
@@ -80,7 +80,7 @@ public abstract class GrpcServerBase extends AbstractGrpcBase {
         server = builder.maxInboundMessageSize(Integer.MAX_VALUE).build();
     }
 
-    void buildWithTls() throws Exception {
+    public void buildWithTls() throws Exception {
         parseConfig();
         NettyServerBuilder serverBuilder = NettyServerBuilder.forPort(port);
         for (BindableService bindableService : serverServices) {

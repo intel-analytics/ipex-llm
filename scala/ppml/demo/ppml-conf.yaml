@@ -1,5 +1,7 @@
 ##### Server property
 clientNum: 2
+privateKeyFilePath: /ppml/trusted-big-data-ml/work/keys/server.pem
+certChainFilePath:  /ppml/trusted-big-data-ml/work/keys/server.crt
 # serverPort:
 
 ##### Client property

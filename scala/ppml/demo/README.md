@@ -61,7 +61,7 @@ Modify your `http_proxy` in `build-image.sh` then run:
 The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
 ```bash
-bash ../../../ppml/scripts/generate-keys.sh
+sudo bash ../../../ppml/scripts/generate-keys.sh
 ```
 
 You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
@@ -77,7 +77,7 @@ openssl genrsa -3 -out enclave-key.pem 3072
 Next, you need to store the password you used for key generation, i.e., `generate-keys.sh`, in a secured file.
 
 ```bash
-bash ../../../ppml/scripts/generate-password.sh used_password_when_generate_keys
+sudo bash ../../../ppml/scripts/generate-password.sh used_password_when_generate_keys
 ```
 
 Then modify these path and your local ip in `deploy_fl_container.sh`.

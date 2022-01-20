@@ -24,6 +24,8 @@ public class FLHelper {
     // Client property
     String clientTarget = "localhost:8980";
     String taskID = "taskID";
+    String certChainFilePath = "";
+    String privateKeyFilePath = "";
 
     public void setClientNum(int clientNum) {
         this.clientNum = clientNum;
@@ -40,4 +42,13 @@ public class FLHelper {
     public void setTaskID(String taskID) {
         this.taskID = taskID;
     }
+
+    public void setCertChainFilePath(String certChainFilePath) {
+       this.certChainFilePath = certChainFilePath;
+    }
+    
+    public void setPrivateKeyFilePath(String privateKeyFilePath) {
+       this.privateKeyFilePath = privateKeyFilePath;
+    }
+        
 }
