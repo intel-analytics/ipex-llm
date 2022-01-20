@@ -1,4 +1,4 @@
-set -x
+# set -x
 SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/sparkcryptofiles-1.0-SNAPSHOT.jar
 CSV_DIR_PATH=$1
 KMS_SERVER_IP=$2
