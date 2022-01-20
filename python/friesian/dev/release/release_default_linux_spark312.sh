@@ -27,24 +27,27 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 FRIESIAN_DIR="$(cd ${RUN_SCRIPT_DIR}/../../; pwd)"
 echo $FRIESIAN_DIR
+DEV_DIR="$(cd ${FRIESIAN_DIR}/../dev/; pwd)"
+echo $DEV_DIR
 
-if (( $# < 3)); then
-  echo "Usage: release_default_linux_spark312.sh version quick_build upload"
-  echo "Usage example: bash release_default_linux_spark312.sh default true true"
-  echo "Usage example: bash release_default_linux_spark312.sh 0.14.0.dev1 false true"
+if (( $# < 4)); then
+  echo "Usage: release_default_linux_spark312.sh version quick_build upload suffix"
+  echo "Usage example: bash release_default_linux_spark312.sh default true true true"
+  echo "Usage example: bash release_default_linux_spark312.sh 0.14.0.dev1 false true false"
   exit -1
 fi
 
 version=$1
 quick=$2
 upload=$3
+suffix=$4
 
-# Add spark3 suffix to the project name to avoid conflict with the whl for spark2.
-# Add name=, == and - in pattern matching so that if the script runs twice,
-# it won't change anything in the second run.
-sed -i "s/bigdl-orca==/bigdl-orca-spark3==/g" $FRIESIAN_DIR/src/setup.py
-sed -i "s/name='bigdl-friesian'/name='bigdl-friesian-spark3'/g" $FRIESIAN_DIR/src/setup.py
-sed -i "s/bigdl-orca\[ray\]/bigdl-orca-spark3\[ray\]/g" $FRIESIAN_DIR/src/setup.py
-sed -i "s/dist\/bigdl_friesian-/dist\/bigdl_friesian_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh
+if [ ${suffix} == true ]; then
+    bash ${DEV_DIR}/add_suffix_spark3.sh $FRIESIAN_DIR/src/setup.py
+    bash ${DEV_DIR}/add_suffix_spark3.sh ${RUN_SCRIPT_DIR}/release.sh
+else
+    bash ${DEV_DIR}/remove_spark_suffix.sh $FRIESIAN_DIR/src/setup.py
+    bash ${DEV_DIR}/remove_spark_suffix.sh ${RUN_SCRIPT_DIR}/release.sh
+fi
 
 bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x
