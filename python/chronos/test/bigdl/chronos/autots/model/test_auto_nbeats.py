@@ -62,10 +62,10 @@ def valid_dataloader_creator(config):
 
 
 def get_auto_estimator():
-    auto_nbeats = AutoNbeats(input_feature_num=1,
-                             output_target_num=1,
-                             past_seq_len=24,
-                             future_seq_len=5,
+    auto_nbeats = AutoNbeats(input_feature_num=input_feature_dim,
+                             output_target_num=output_feature_dim,
+                             past_seq_len=past_seq_len,
+                             future_seq_len=future_seq_len,
                              stack_types=('generic', 'generic'),
                              nb_blocks_per_stack=3,
                              thetas_dim=(4, 8),

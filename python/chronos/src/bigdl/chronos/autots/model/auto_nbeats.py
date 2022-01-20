@@ -47,18 +47,21 @@ class AutoNbeats(BasePytorchAutomodel):
         """
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param future_seq_len: Specify the output time steps (i.e. horizon).
-        :param stack_types: Specifies the architecture of the stack,
+        :param stack_types: Specifies the type of stack,
+               including "generic", "trend", "seasnoality".
                This value defaults to ("generic", "generic").
-        :param nb_blocks_per_stack: Blocks contained in the stack,
-               This value defaults to 3.
-        :param thetas_dim: Number of fully connected layers
-               with ReLu activation per block.
-        :param share_weights_in_stack: Shared weights between stacks,
+        :param nb_blocks_per_stack:  Specify the number of blocks
+               contained in each stack, This value defaults to 3.
+        :param thetas_dim: Expansion Coefficients of Multilayer FC Networks.
+               if type is "generic", Extended length factor, if type is "trend"
+               then polynomial coefficients, if type is "seasonality"
+               expressed as a change within each step.
+        :param share_weights_in_stack: Share block weights for each stack.,
                This value defaults to False.
-        :param hidden_layer_units: The number of layers in a fully
-               connected neural network, This values defaults to 256.
-        :param nb_harmonics: Number of fully connected layers
-               with ReLu activation per block.
+        :param hidden_layer_units: Number of fully connected layers with per block.
+               This values defaults to 256.
+        :param nb_harmonics: Only available in "seasonality" type,
+               specifies the time step of backward, This value defaults is None.
         :param dropout: Specify the dropout close possibility
                (i.e. the close possibility to a neuron). This value defaults to 0.001.
         :param optimizer: Specify the optimizer used for training. This value
@@ -86,7 +89,7 @@ class AutoNbeats(BasePytorchAutomodel):
             raise ValueError(f"We only support backend as torch. Got {backend}")
 
         if isinstance(input_feature_num, int) and input_feature_num != 1:
-            raise ValueError(f"NBeat only supports univariate prediction.")
+            raise ValueError(f"NBeats only supports univariate prediction.")
 
         self.search_space = dict(share_weights_in_stack=share_weights_in_stack,
                                  hidden_layer_units=hidden_layer_units,
