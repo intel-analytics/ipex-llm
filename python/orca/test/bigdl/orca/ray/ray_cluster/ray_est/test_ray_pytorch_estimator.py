@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing_extensions import runtime
-import pytest
-from unittest import TestCase
-
 import torch
 import torch.nn as nn
 
@@ -85,16 +81,10 @@ def get_model(config):
 def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
+if __name__ == "__main__":
+    init_orca_context(runtime="ray", address="localhost:6379")
 
-class TestPytorchEstimator(TestCase):
-    def setUp(self):
-        init_orca_context(runtime="ray", address="localhost:6379")
-    
-    def tearDown(self):
-        stop_orca_context()
-
-    def test_fit_and_evaluate(self):
-        estimator = Estimator.from_torch(model=get_model,
+    estimator = Estimator.from_torch(model=get_model,
                                         optimizer=get_optimizer,
                                         loss=nn.BCELoss(),
                                         metrics=Accuracy(),
@@ -103,26 +93,24 @@ class TestPytorchEstimator(TestCase):
                                         backend="torch_distributed",
                                         sync_stats=True)
         
-        start_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
-        print(start_val_stats)
+    start_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
+    print(start_val_stats)
 
-        train_stats = estimator.fit(train_data_loader, epochs=1, batch_size=32)
-        print(train_stats)
+    train_stats = estimator.fit(train_data_loader, epochs=1, batch_size=32)
+    print(train_stats)
 
-        end_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
-        print(end_val_stats)
+    end_val_stats = estimator.evaluate(val_data_loader, batch_size=32)
+    print(end_val_stats)
 
-        assert 0 < end_val_stats["Accuracy"] < 1
-        assert estimator.get_model()
+    assert 0 < end_val_stats["Accuracy"] < 1
+    assert estimator.get_model()
 
-        # sanity check that training worked
-        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
-        dacc = (end_val_stats["Accuracy"] -
-                start_val_stats["Accuracy"])
-        print(f"dLoss: {dloss}, dAcc: {dacc}")
+    # sanity check that training worked
+    dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+    dacc = (end_val_stats["Accuracy"] -
+            start_val_stats["Accuracy"])
+    print(f"dLoss: {dloss}, dAcc: {dacc}")
 
-        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
+    assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
 
-
-if __name__ == "__main__":
-    pytest.main([__file__])
+    stop_orca_context()

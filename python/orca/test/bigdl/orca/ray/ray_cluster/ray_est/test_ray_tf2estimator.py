@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import pytest
-from unittest import TestCase
-
 import numpy as np
 import tensorflow as tf
 
@@ -73,37 +70,30 @@ def model_creator(config):
     model.compile(**compile_args(config))
     return model
 
-class TestTF2Estimator(TestCase):
-    def setUp(self):
-        init_orca_context(runtime="ray", address="localhost:6379")
-    
-    def tearDown(self):
-        stop_orca_context()
-
-    def test_fit_and_evaluate(self):
-        estimator = Estimator.from_keras(model_creator=model_creator,
-                                            verbose=True,
-                                            config=None,
-                                            backend="tf2",
-                                            workers_per_node=2)
-        
-        start_stats = estimator.evaluate(create_test_dataset, batch_size=32)
-        print(start_stats)
-
-        train_stats = estimator.fit(create_train_datasets, epochs=1, batch_size=32)
-        print("This is Train Results:", train_stats)
-
-        end_stats = estimator.evaluate(create_test_dataset, batch_size=32)
-        print("This is Val Results:", end_stats)
-        assert estimator.get_model()
-
-        dloss = end_stats["validation_loss"] - start_stats["validation_loss"]
-        dmse = (end_stats["validation_mean_squared_error"] -
-                start_stats["validation_mean_squared_error"])
-        print(f"dLoss: {dloss}, dMSE: {dmse}")
-
-        assert dloss < 0 and dmse < 0, "training sanity check failed. loss increased!"
-        
-
 if __name__ == "__main__":
-    pytest.main([__file__])
+    init_orca_context(runtime="ray", address="localhost:6379")
+
+    estimator = Estimator.from_keras(model_creator=model_creator,
+                                        verbose=True,
+                                        config=None,
+                                        backend="tf2",
+                                        workers_per_node=2)
+
+    start_stats = estimator.evaluate(create_test_dataset, batch_size=32)
+    print(start_stats)
+
+    train_stats = estimator.fit(create_train_datasets, epochs=1, batch_size=32)
+    print("This is Train Results:", train_stats)
+
+    end_stats = estimator.evaluate(create_test_dataset, batch_size=32)
+    print("This is Val Results:", end_stats)
+    assert estimator.get_model()
+
+    dloss = end_stats["validation_loss"] - start_stats["validation_loss"]
+    dmse = (end_stats["validation_mean_squared_error"] -
+            start_stats["validation_mean_squared_error"])
+    print(f"dLoss: {dloss}, dMSE: {dmse}")
+
+    assert dloss < 0 and dmse < 0, "training sanity check failed. loss increased!"
+
+    stop_orca_context()
