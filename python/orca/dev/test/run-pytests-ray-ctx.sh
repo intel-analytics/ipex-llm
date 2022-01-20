@@ -27,6 +27,8 @@ cd ../..
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
+ray stop -f
+
 ray start --head
 
 echo "Running RayContext tests"
