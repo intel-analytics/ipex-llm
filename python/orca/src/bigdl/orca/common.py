@@ -310,8 +310,8 @@ def init_orca_context(runtime="spark", cluster_mode=None, cores=2, memory="2g", 
                         "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
                 if key in kwargs:
                     ray_args[key] = kwargs[key]
-            from bigdl.orca.ray import RayOnSparkContext
-            ray_ctx = RayOnSparkContext(runtime="ray_on_spark", cores=cores, num_nodes=num_nodes,
+            from bigdl.orca.ray import RayContext
+            ray_ctx = RayContext(runtime="ray_on_spark", cores=cores, num_nodes=num_nodes,
                                         sc=sc, **ray_args)
             if init_ray_on_spark:
                 driver_cores = 0  # This is the default value.
