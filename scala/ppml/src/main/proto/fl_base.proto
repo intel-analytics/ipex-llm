@@ -33,12 +33,12 @@ message FloatTensor {
     repeated float tensor = 2;
 }
 //
-message Table {
-    TableMetaData metaData = 1;
-    map<string, FloatTensor> table = 2;
+message TensorMap {
+    MetaData metaData = 1;
+    map<string, FloatTensor> tensorMap = 2;
 }
 //
-message TableMetaData {
+message MetaData {
     string name = 1;
     int32 version = 2;
 }

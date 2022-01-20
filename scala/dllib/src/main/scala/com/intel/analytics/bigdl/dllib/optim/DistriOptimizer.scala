@@ -961,7 +961,7 @@ class DistriOptimizer[T: ClassTag](
             models.unpersist()
             val newModel = if (modelFile != null) {
               DistriOptimizer.logger.info("Model recover from last snapshot")
-              Module.loadModule[T](modelFile)
+              Module.load[T](modelFile)
             } else {
               DistriOptimizer.logger.info("Model recover from origin model")
               trainingModel

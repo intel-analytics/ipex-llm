@@ -23,6 +23,7 @@ class AutoXGBClassifier(AutoEstimator):
                  logs_dir="/tmp/auto_xgb_classifier_logs",
                  cpus_per_trial=1,
                  name=None,
+                 remote_dir=None,
                  **xgb_configs
                  ):
         """
@@ -49,6 +50,9 @@ class AutoXGBClassifier(AutoEstimator):
             The value will also be assigned to n_jobs in xgboost,
             which is the number of parallel threads used to run xgboost.
         :param name: Name of the auto xgboost classifier.
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+            defaults to None and doesn't take effects while running in local. While running in
+            cluster, it defaults to "hdfs:///tmp/{name}".
         :param xgb_configs: Other scikit learn xgboost parameters. You may refer to
            https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn
            for the parameter names to specify. Note that we will directly use cpus_per_trial value
@@ -61,6 +65,7 @@ class AutoXGBClassifier(AutoEstimator):
         super().__init__(model_builder=xgb_model_builder,
                          logs_dir=logs_dir,
                          resources_per_trial=resources_per_trial,
+                         remote_dir=remote_dir,
                          name=name)
 
     def fit(self,
@@ -77,7 +82,7 @@ class AutoXGBClassifier(AutoEstimator):
             scheduler=None,
             scheduler_params=None,
             feature_cols=None,
-            target_cols=None,
+            label_cols=None,
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -114,12 +119,13 @@ class AutoXGBClassifier(AutoEstimator):
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         :param feature_cols: feature column names if data is Spark DataFrame.
-        :param target_cols: target column names if data is Spark DataFrame.
+        :param label_cols: target column names if data is Spark DataFrame.
         """
-        data, validation_data = _maybe_convert_spark_df_to_ndarray(data,
-                                                                   validation_data,
-                                                                   feature_cols,
-                                                                   target_cols)
+        data, validation_data, feature_cols, label_cols = _merge_cols_for_spark_df(data,
+                                                                                   validation_data,
+                                                                                   feature_cols,
+                                                                                   label_cols)
+
         super().fit(data=data,
                     epochs=epochs,
                     validation_data=validation_data,
@@ -132,7 +138,8 @@ class AutoXGBClassifier(AutoEstimator):
                     search_alg_params=search_alg_params,
                     scheduler=scheduler,
                     scheduler_params=scheduler_params,
-                    )
+                    feature_cols=feature_cols,
+                    label_cols=label_cols)
 
 
 class AutoXGBRegressor(AutoEstimator):
@@ -140,6 +147,7 @@ class AutoXGBRegressor(AutoEstimator):
                  logs_dir="/tmp/auto_xgb_regressor_logs",
                  cpus_per_trial=1,
                  name=None,
+                 remote_dir=None,
                  **xgb_configs
                  ):
         """
@@ -166,6 +174,9 @@ class AutoXGBRegressor(AutoEstimator):
         :param cpus_per_trial: Int. Number of cpus for each trial. The value will also be assigned
             to n_jobs, which is the number of parallel threads used to run xgboost.
         :param name: Name of the auto xgboost classifier.
+        :param remote_dir: String. Remote directory to sync training results and checkpoints. It
+            defaults to None and doesn't take effects while running in local. While running in
+            cluster, it defaults to "hdfs:///tmp/{name}".
         :param xgb_configs: Other scikit learn xgboost parameters. You may refer to
            https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn
            for the parameter names to specify. Note that we will directly use cpus_per_trial value
@@ -178,6 +189,7 @@ class AutoXGBRegressor(AutoEstimator):
         super().__init__(model_builder=xgb_model_builder,
                          logs_dir=logs_dir,
                          resources_per_trial=resources_per_trial,
+                         remote_dir=remote_dir,
                          name=name)
 
     def fit(self,
@@ -194,7 +206,7 @@ class AutoXGBRegressor(AutoEstimator):
             scheduler=None,
             scheduler_params=None,
             feature_cols=None,
-            target_cols=None,
+            label_cols=None,
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -231,12 +243,13 @@ class AutoXGBRegressor(AutoEstimator):
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         :param feature_cols: feature column names if data is Spark DataFrame.
-        :param target_cols: target column names if data is Spark DataFrame.
+        :param label_cols: target column names if data is Spark DataFrame.
         """
-        data, validation_data = _maybe_convert_spark_df_to_ndarray(data,
-                                                                   validation_data,
-                                                                   feature_cols,
-                                                                   target_cols)
+        data, validation_data, feature_cols, label_cols = _merge_cols_for_spark_df(data,
+                                                                                   validation_data,
+                                                                                   feature_cols,
+                                                                                   label_cols)
+
         super().fit(data=data,
                     epochs=epochs,
                     validation_data=validation_data,
@@ -249,42 +262,36 @@ class AutoXGBRegressor(AutoEstimator):
                     search_alg_params=search_alg_params,
                     scheduler=scheduler,
                     scheduler_params=scheduler_params,
-                    )
+                    feature_cols=feature_cols,
+                    label_cols=label_cols)
 
 
-def _maybe_convert_spark_df_to_ndarray(data,
-                                       validation_data,
-                                       feature_cols,
-                                       target_cols):
-    def convert_df_to_ndarray(data, feature_cols, target_cols):
-        df = data.toPandas()
-        X = df[feature_cols]
-        y = df[target_cols]
-        arrays = (X, y)
-        return arrays
-
-    def check_cols(cols, cols_name):
-        if not cols:
-            raise ValueError(f"You must input valid {cols_name} for Spark DataFrame data input")
-        if isinstance(cols, list):
-            return cols
-        if not isinstance(cols, str):
-            raise ValueError(f"{cols_name} should be a string or a list of strings, "
-                             f"but got {type(cols)}")
-        return [cols]
-
+def _merge_cols_for_spark_df(data,
+                             validation_data,
+                             feature_cols,
+                             label_cols):
+    # merge feature_cols/label_cols to one column, to adapt to the meanings of feature_cols and
+    # label_cols in AutoEstimator, which correspond to the model inputs/outputs.
     from pyspark.sql import DataFrame
+    from pyspark.sql.functions import array
+
+    def concat_cols(data, feature_cols, label_cols):
+        combined_feature_name = "combined_features"
+        combined_target_name = "combined_targets"
+        data = data.select(array(*feature_cols).alias(combined_feature_name),
+                           array(*label_cols).alias(combined_target_name))
+        return data, combined_feature_name, combined_target_name
+
+    feature_cols, label_cols = AutoEstimator._check_spark_dataframe_input(data,
+                                                                          validation_data,
+                                                                          feature_cols,
+                                                                          label_cols)
     if isinstance(data, DataFrame):
-        feature_cols = check_cols(feature_cols, cols_name="feature_cols")
-        target_cols = check_cols(target_cols, cols_name="target_cols")
-        train_arrays = convert_df_to_ndarray(data, feature_cols, target_cols)
-        if validation_data:
-            if not isinstance(validation_data, DataFrame):
-                raise ValueError(f"data and validation_data should be both Spark DataFrame, "
-                                 f"but got validation_data of type {type(data)}")
-            val_arrays = convert_df_to_ndarray(validation_data, feature_cols, target_cols)
-        else:
-            val_arrays = None
-        return train_arrays, val_arrays
-    else:
-        return data, validation_data
+        data, combined_feature_name, combined_target_name = concat_cols(data,
+                                                                        feature_cols,
+                                                                        label_cols)
+        if validation_data is not None:
+            validation_data, _, _ = concat_cols(validation_data, feature_cols, label_cols)
+        feature_cols = [combined_feature_name]
+        label_cols = [combined_target_name]
+    return data, validation_data, feature_cols, label_cols

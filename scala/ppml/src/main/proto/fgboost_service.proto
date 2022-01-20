@@ -1,0 +1,138 @@
+//
+// Copyright 2021 BigDL Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+syntax = 'proto3';
+package fgboost;
+import "fl_base.proto";
+//option java_multiple_files = true;
+option java_package = "com.intel.analytics.bigdl.ppml.generated";
+option java_outer_classname = "FGBoostServiceProto";
+
+service FGBoostService {
+    rpc uploadLabel(UploadLabelRequest) returns (UploadResponse) {}
+    rpc downloadLabel(DownloadLabelRequest) returns (DownloadResponse) {}
+    rpc split(SplitRequest) returns (SplitResponse) {}
+    rpc register(RegisterRequest) returns (RegisterResponse) {}
+    rpc uploadTreeLeaves(UploadTreeLeavesRequest) returns (UploadResponse) {}
+    rpc evaluate(EvaluateRequest) returns (EvaluateResponse) {}
+    rpc predict(PredictRequest) returns (PredictResponse) {}
+}
+
+message UploadLabelRequest {
+    string clientuuid = 1;
+    TensorMap data = 2;
+    string algorithm = 3;
+}
+message DownloadLabelRequest {
+    MetaData metaData = 1;
+    string algorithm = 2;
+}
+
+message DownloadResponse {
+    TensorMap data = 1;
+    string response = 2;
+    int32 code = 3;
+}
+message TreeLeaves {
+    string treeID = 1;
+    repeated int32 leafIndex = 2;
+    repeated float leafOutput = 3;
+}
+
+message UploadTreeLeavesRequest {
+    string clientuuid = 1;
+    TreeLeaves treeLeaves = 2;
+}
+message DataSplit {
+    string treeID = 1;
+    string nodeID = 2;
+    int32 featureID = 3;
+    float splitValue = 4;
+    float gain = 5;
+    int32 setLength = 6;
+    repeated int32 itemSet = 7;
+    string clientUid = 8;
+}
+
+message UploadResponse {
+    string response = 1;
+    int32 code = 2;
+}
+message TreePredict {
+    string treeID = 1;
+    repeated bool predicts = 2;
+}
+
+message BoostPredict {
+    repeated TreePredict predicts = 1;
+}
+
+message BoostEval {
+    repeated TreePredict evaluates = 1;
+}
+
+message RegisterRequest {
+    string clientuuid = 1;
+    string token = 2;
+}
+
+message RegisterResponse {
+    string response = 1;
+    int32 code = 2;
+}
+
+message UploadTreeEvalRequest {
+    string clientuuid = 1;
+    int32 version = 2;
+    repeated BoostEval treeEval = 3;
+}
+
+
+
+message EvaluateRequest {
+    string clientuuid = 1;
+    repeated BoostEval treeEval = 2;
+    int32 bsVersion = 3;
+}
+
+message EvaluateResponse {
+    string response = 1;
+    TensorMap data = 2;
+    int32 code = 3;
+    string message = 4;
+}
+message PredictRequest {
+    string clientuuid = 1;
+    repeated BoostEval treeEval = 2;
+    int32 bsVersion = 3;
+}
+message SplitRequest {
+    string clientuuid = 1;
+    DataSplit split = 2;
+}
+message PredictResponse {
+    string response = 1;
+    TensorMap data = 2;
+    int32 code = 3;
+}
+
+
+
+message SplitResponse {
+    DataSplit split = 1;
+    string response = 2;
+    int32 code = 3;
+}
+

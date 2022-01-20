@@ -27,10 +27,12 @@ import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
 import com.intel.analytics.bigdl.orca.inference.InferenceModel;
 import io.grpc.ServerInterceptors;
+import io.grpc.services.HealthStatusManager;
 import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
+import org.apache.commons.cli.Option;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +54,10 @@ public class RankingServer extends GrpcServerBase {
      */
     public RankingServer(String[] args) {
         super(args);
+        port = 8083;
         configPath = "config_ranking.yaml";
+        options.addOption(new Option("p", "port", true,
+                "The port to create the server"));
         Configurator.setLevel("org", Level.ERROR);
     }
 
@@ -60,8 +65,10 @@ public class RankingServer extends GrpcServerBase {
     public void parseConfig() throws IOException, InstantiationException, IllegalAccessException {
         Utils.helper_$eq(getConfigFromYaml(gRPCHelper.class, configPath));
         Utils.helper().parseConfigStrings();
-        if (Utils.helper() != null) {
+        if (Utils.helper() != null && Utils.helper().getServicePort() != -1) {
             port = Utils.helper().getServicePort();
+        } else if (cmd.getOptionValue("port") != null) {
+            port = Integer.parseInt(cmd.getOptionValue("port"));
         }
 
         if (Utils.runMonitor()) {
@@ -74,6 +81,7 @@ public class RankingServer extends GrpcServerBase {
         } else {
             serverServices.add(new RankingService());
         }
+        serverServices.add(new HealthStatusManager().getHealthService());
     }
 
     /**

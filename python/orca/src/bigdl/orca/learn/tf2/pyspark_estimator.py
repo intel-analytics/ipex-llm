@@ -20,20 +20,22 @@ import os
 from pyspark.sql.dataframe import DataFrame
 import tempfile
 import shutil
+import glob
 
 import pickle
 
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    get_remote_file_to_local
+    get_remote_file_to_local, is_local_path, get_remote_files_with_prefix_to_local, \
+    append_suffix, put_local_file_to_remote, put_local_files_with_prefix_to_remote
 
 from bigdl.dllib.utils.utils import get_node_ip
+from bigdl.orca.data.file import exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.tf2.spark_runner import find_ip_and_port
 from bigdl.orca.learn.utils import find_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
-    convert_predict_xshards_to_dataframe, make_data_creator, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe
+    convert_predict_xshards_to_dataframe, make_data_creator
 from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
@@ -93,7 +95,7 @@ class SparkTFEstimator():
             callbacks=None, validation_data=None, class_weight=None,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
-            label_cols=None, model_dir=None):
+            label_cols=None):
         """
         Train this tensorflow model with train data.
         :param data: train data. It can be XShards, Spark DataFrame or creator function which
@@ -352,11 +354,18 @@ class SparkTFEstimator():
 
         return result
 
-    @enable_multi_fs_save
     def save_weights(self, filepath, overwrite=True, save_format=None):
         """
-        Saves the model at the provided path.
-        :param checkpoint: (str) Path to the target checkpoint file.
+        Save model weights at the provided path.
+        :param filepath: String or PathLike, path to the file to save the weights to.
+        When saving in TensorFlow format, this is the prefix used for checkpoint files
+        (multiple files are generated). Note that the '.h5' suffix causes weights to be
+        saved in HDF5 format. It can be local, hdfs, or s3 filepath.
+        :param overwrite: Whether to silently overwrite any existing file at the target location,
+        or provide the user with a manual prompt.
+        :param save_format: Either 'tf' or 'h5'.
+        A filepath ending in '.h5' or '.keras' will default to HDF5 if save_format is None.
+        Otherwise None defaults to 'tf'.
         """
 
         # Some model might need to aggregate variables during checkpointing
@@ -366,12 +375,28 @@ class SparkTFEstimator():
         # it might get stuck
         model = self.model_creator(self.config)
         model.set_weights(self.model_weights)
-        model.save_weights(filepath, overwrite, save_format)
+        if is_local_path(filepath):
+            model.save_weights(filepath, overwrite, save_format)
+        else:
+            file_name = os.path.basename(filepath)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                model.save_weights(temp_path, overwrite, save_format)
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
+                else:
+                    # tf format
+                    remote_dir = os.path.dirname(filepath)
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir,
+                                                          over_write=overwrite)
+            finally:
+                shutil.rmtree(temp_dir)
 
-    @enable_multi_fs_load
     def load_weights(self, filepath, by_name=False):
         """
-        Save tensorflow keras model in this estimator.
+        Load tensorflow keras model weights in this estimator.
 
         :param filepath: keras model weights save path.
         :param by_name: Boolean, whether to load weights by name or by topological
@@ -379,7 +404,30 @@ class SparkTFEstimator():
                TensorFlow format.
         """
         model = self.model_creator(self.config)
-        model.load_weights(filepath, by_name)
+        if exists(filepath):
+            # not tensorflow format
+            if is_local_path(filepath):
+                model.load_weights(filepath, by_name)
+            else:
+                file_name = os.path.basename(filepath)
+                temp_dir = tempfile.mkdtemp()
+                temp_path = os.path.join(temp_dir, file_name)
+                try:
+                    get_remote_file_to_local(filepath, temp_path)
+                    model.load_weights(temp_path, by_name)
+                finally:
+                    shutil.rmtree(temp_dir)
+        else:
+            # tensorflow format
+            if is_local_path(filepath):
+                model.load_weights(filepath, by_name)
+            else:
+                temp_dir = tempfile.mkdtemp()
+                try:
+                    local_path = get_remote_files_with_prefix_to_local(filepath, temp_dir)
+                    model.load_weights(local_path, by_name)
+                finally:
+                    shutil.rmtree(temp_dir)
         self.model_weights = model.get_weights()
 
     @enable_multi_fs_save

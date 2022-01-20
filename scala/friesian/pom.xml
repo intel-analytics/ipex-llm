@@ -80,6 +80,18 @@
                     <artifactId>jackson-module-scala_${scala.major.version}</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.glassfish.jersey.media</groupId>
+                    <artifactId>jersey-media-jaxb</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
@@ -135,6 +147,12 @@
             <artifactId>java-grpc-prometheus</artifactId>
             <version>0.4.0</version>
             <scope>${serving.scope}</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-codec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- The client -->
         <dependency>
@@ -202,7 +220,7 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.16</version>
-            <scope>test</scope>
+            <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

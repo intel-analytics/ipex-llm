@@ -182,9 +182,12 @@ if __name__ == '__main__':
         scheduler = None
         scheduler_params = None
 
+    remote_dir = "hdfs:///tmp/auto_xgb_regressor" if opt.cluster_mode == "yarn" else None
+
     auto_xgb_reg = AutoXGBRegressor(
         cpus_per_trial=2,
         name="auto_xgb_regressor",
+        remote_dir=remote_dir,
         **config)
     auto_xgb_reg.fit(data=(X_train, y_train),
                      validation_data=(X_val, y_val),

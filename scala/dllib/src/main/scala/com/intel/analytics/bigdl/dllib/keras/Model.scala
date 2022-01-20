@@ -291,5 +291,4 @@ object Model extends KerasLayerSerializable {
     val tGraph = subModules(0).asInstanceOf[StaticGraph[T]]
     Model(tGraph.inputs.toArray, new GraphRef(tGraph).getOutputs().toArray)
   }
-
 }
