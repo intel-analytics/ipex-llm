@@ -35,7 +35,10 @@ fi
 version=$1
 upload=$2
 
-# TODO: nano is currently not ready for mac.
+# Release nano.
+NANO_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/nano/dev; pwd)"
+echo $NANO_SCRIPT_DIR
+bash ${NANO_SCRIPT_DIR}/release_default_mac.sh ${version} ${upload}
 # Serving has a universal jar for all platforms and spark versions and is released in the release_default_linux.sh.
 
 # Release default bigdl without suffix

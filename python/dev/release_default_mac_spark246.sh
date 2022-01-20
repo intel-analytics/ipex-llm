@@ -44,10 +44,6 @@ else
   profiles=${*:5}
 fi
 
-NANO_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/nano/dev; pwd)"
-echo $NANO_SCRIPT_DIR
-bash ${NANO_SCRIPT_DIR}/release_default_mac.sh ${version} ${upload}
-
 # Only dllib is not using quick build.
 # Since make_dist is invoked in dllib, all other packages can directly use quick build.
 DLLIB_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/dllib/dev/release; pwd)"
