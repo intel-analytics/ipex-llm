@@ -44,9 +44,9 @@ java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/di
 #### Build jar from Source
 
 ```bash
-cd .. && mvn clean package -DskipTests -Pspark_3.x
-mv target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar demo
-cd demo
+cd ../.. && bash make-dist.sh -DskipTests -Pspark_3.x
+mv ppml/target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar ppml/demo
+cd ppml/demo
 ```
 
 #### Build Image
