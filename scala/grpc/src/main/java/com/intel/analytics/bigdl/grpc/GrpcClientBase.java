@@ -79,9 +79,17 @@ public class GrpcClientBase extends AbstractGrpcBase {
     public void build() throws IOException {
         parseConfig();
         if (channel == null) {
-            channel = NettyChannelBuilder.forTarget(target)
-            .sslContext(GrpcSslContexts.forClient().trustManager(new File(privateKeyFilePath)).build())
-            .build();
+            if(privateKeyFilePath == null) {
+                channel = ManagedChannelBuilder.forTarget(target)
+                    .maxInboundMessageSize(Integer.MAX_VALUE)
+                    // Channels are secure by default (via SSL/TLS).
+                    .usePlaintext()
+                    .build();
+            }else {
+                channel = NettyChannelBuilder.forTarget(target)
+                .sslContext(GrpcSslContexts.forClient().trustManager(new File(privateKeyFilePath)).build())
+                .build();
+            }
         }
         loadServices();
     }
