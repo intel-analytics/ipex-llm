@@ -37,6 +37,7 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   var psiStub: PSIStub = null
   var nnStub: NNStub = null
   var fgbostStub: FGBoostStub = null
+  privateKeyFilePath = null
   def this() {
     this(null)
   }
@@ -49,6 +50,7 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
       logger.debug(s"Loading target: $target")
       taskID = flHelper.taskID
       logger.debug(s"Loading taskID: $taskID")
+      privateKeyFilePath = flHelper.privateKeyFilePath
     }
     super.parseConfig()
   }
