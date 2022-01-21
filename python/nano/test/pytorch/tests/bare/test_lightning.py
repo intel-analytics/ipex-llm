@@ -29,7 +29,7 @@ from bigdl.nano.pytorch.vision.models import vision
 num_classes = 10
 batch_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = os.path.join(os.path.dirname(__file__), "../../data")
 
 
 class ResNet18(nn.Module):
