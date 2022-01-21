@@ -79,7 +79,7 @@ class Embedding(TFEmbedding):
                              input_length=input_length,
                              **kwargs)
         else:
-            warnings.warn('param: embeddings_regularizer is not supported and should be removed', UserWarning)
+            warnings.warn('embeddings_regularizer is not supported and should be removed', UserWarning)
             if activity_regularizer is None:
                 # Use the embeddings_regularizer to initialize param: activity_regularizer
                 super().__init__(input_dim=input_dim,
@@ -100,3 +100,4 @@ class Embedding(TFEmbedding):
                                  mask_zero=mask_zero,
                                  input_length=input_length,
                                  **kwargs)
+                
