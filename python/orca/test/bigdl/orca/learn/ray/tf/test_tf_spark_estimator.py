@@ -197,6 +197,94 @@ class TestTFEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_dataframe_shard_size(self):
+        sc = OrcaContext.get_spark_context()
+        OrcaContext._shard_size = 3
+        rdd = sc.range(0, 100, numSlices=10)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        val_rdd = sc.range(0, 20, numSlices=4)
+        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark",
+                model_dir=temp_dir)
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              validation_data=val_df,
+                              validation_steps=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"])
+
+            res = trainer.evaluate(val_df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            res = trainer.predict(df, feature_cols=["feature"]).collect()
+            print("predict result: ", res)
+        finally:
+            shutil.rmtree(temp_dir)
+        OrcaContext._shard_size = None
+
+    def test_dataframe_different_train_val(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100, numSlices=10)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        val_rdd = sc.range(0, 20, numSlices=4)
+        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark",
+                model_dir=temp_dir)
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              validation_data=val_df,
+                              validation_steps=2,
+                              feature_cols=["feature"],
+                              label_cols=["label"])
+
+            res = trainer.evaluate(val_df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            res = trainer.predict(df, feature_cols=["feature"]).collect()
+            print("predict result: ", res)
+        finally:
+            shutil.rmtree(temp_dir)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
