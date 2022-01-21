@@ -22,7 +22,7 @@ from unittest import TestCase
 import pytest
 
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.chronos.forecaster.nbeats_forecaster import NBeatsForecaster
+from bigdl.chronos.forecaster.nbeats_forecaster import NBEATSForecaster
 
 
 def create_data(loader=False):
@@ -57,7 +57,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-class TestChronosNBeatsForecaster(TestCase):
+class TestChronosNBEATSForecaster(TestCase):
     def setUp(self):
         pass
 
@@ -66,7 +66,7 @@ class TestChronosNBeatsForecaster(TestCase):
 
     def test_nbeats_forecaster_fit_pred_eva(self):
         train_data, _, test_data = create_data()
-        forecaster = NBeatsForecaster(past_seq_len=24,
+        forecaster = NBEATSForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       stack_types=('generic', 'generic'),
                                       nb_blocks_per_stack=3,
@@ -83,7 +83,7 @@ class TestChronosNBeatsForecaster(TestCase):
     def test_nbeats_forecaster_data_loader(self):
         train_loader, _, _ = create_data(loader=True)
         init_orca_context(cores=4, memory="4g")
-        forecater = NBeatsForecaster(past_seq_len=24,
+        forecater = NBEATSForecaster(past_seq_len=24,
                                      future_seq_len=5,
                                      loss='mae',
                                      lr=0.01)
@@ -92,7 +92,7 @@ class TestChronosNBeatsForecaster(TestCase):
 
     def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
-        forecaster = NBeatsForecaster(past_seq_len=24,
+        forecaster = NBEATSForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       loss='mae',
                                       lr=0.01)
@@ -118,7 +118,7 @@ class TestChronosNBeatsForecaster(TestCase):
 
     def test_nbeats_forecaster_save_load(self):
         train_data, val_data, test_data = create_data()
-        forecaster = NBeatsForecaster(past_seq_len=24,
+        forecaster = NBEATSForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       loss='mae',
                                       lr=0.01)
@@ -133,7 +133,7 @@ class TestChronosNBeatsForecaster(TestCase):
 
     def test_nbeats_forecaster_runtime_error(self):
         _, _, test_data = create_data()
-        forecaster = NBeatsForecaster(past_seq_len=24,
+        forecaster = NBEATSForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       loss="mae",
                                       lr=0.01)
@@ -148,7 +148,7 @@ class TestChronosNBeatsForecaster(TestCase):
     
     def test_nbeats_forecaster_xshard_input(self):
         train_data, val_data, test_data = create_data()
-        forecaster = NBeatsForecaster(past_seq_len=24,
+        forecaster = NBEATSForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       loss='mae',
                                       lr=0.01)
@@ -177,7 +177,7 @@ class TestChronosNBeatsForecaster(TestCase):
     def test_nbeats_forecaster_distributed(self):
         train_data, _, test_data = create_data()
         init_orca_context(cores=4, memory="4g")
-        forecaster = NBeatsForecaster(past_seq_len=24,
+        forecaster = NBEATSForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       stack_types=('generic', 'seasonality'),
                                       loss="mae",
@@ -213,7 +213,7 @@ class TestChronosNBeatsForecaster(TestCase):
     def test_nbeats_forecaster_dataloader_distributed(self):
         train_data, _, _ = create_data(loader=True)
         init_orca_context(cores=4, memory="4g")
-        forecaster = NBeatsForecaster(past_seq_len=24,
+        forecaster = NBEATSForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       loss="mae",
                                       lr=0.01,

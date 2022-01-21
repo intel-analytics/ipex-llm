@@ -19,11 +19,11 @@ from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.nbeats_pytorch import model_creator, loss_creator, optimizer_creator
 
 
-class NBeatsForecaster(BasePytorchForecaster):
+class NBEATSForecaster(BasePytorchForecaster):
     """
         Example:
-            >>> # NBeatsForecaster test.
-            >>> forecaster = NBeatsForecaster(paste_seq_len=10,
+            >>> # NBEATSForecaster test.
+            >>> forecaster = NBEATSForecaster(paste_seq_len=10,
                                               future_seq_len=1,
                                               stack_types=("generic", "generic"),
                                               ...)
@@ -48,7 +48,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                  workers_per_node=1,
                  distributed_backend="torch_distributed"):
         """
-        Build a NBeats Forecaster Model.
+        Build a NBEATS Forecaster Model.
 
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param future_seq_len: Specify the output time steps (i.e. horizon).
@@ -94,7 +94,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         self.data_config = {
             "past_seq_len": past_seq_len,
             "future_seq_len": future_seq_len,
-            "input_feature_num": 1,  # nbeats only support input single feature.
+            "input_feature_num": 1,  # NBEATS only support input single feature.
             "output_feature_num": 1,
         }
 

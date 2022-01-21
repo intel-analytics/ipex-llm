@@ -42,6 +42,19 @@ Temporal Convolutional Networks (TCN) is a neural network that use convolutional
     :show-inheritance:
 
 
+NBeatsForecaster
+----------------------------------------
+
+:strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
+
+Neural basis expansion analysis for interpretable time series forecasting (N-BEATS) is a deep neural architecture based on backward and forward residual links and a very deep stack of fully-connected layers. Nbeats can solve univariate time series point forecasting problems, being interpretable, and fast to train.
+
+.. automodule:: bigdl.chronos.forecaster.nbeats_forecaster
+    :members:
+    :undoc-membears:
+    :show-inheritance:
+
+
 TCMFForecaster
 ----------------------------------------
 
