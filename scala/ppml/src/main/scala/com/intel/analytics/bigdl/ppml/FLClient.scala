@@ -37,7 +37,7 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
   var psiStub: PSIStub = null
   var nnStub: NNStub = null
   var fgbostStub: FGBoostStub = null
-  var privateKeyFilePath = "server.pem"
+  privateKeyFilePath = "server.pem"
   def this() {
     this(null)
   }

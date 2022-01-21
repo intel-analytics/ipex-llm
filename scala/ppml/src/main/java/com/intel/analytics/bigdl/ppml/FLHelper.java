@@ -24,8 +24,8 @@ public class FLHelper {
     // Client property
     String clientTarget = "localhost:8980";
     String taskID = "taskID";
-    String certChainFilePath = "server.crt";
-    String privateKeyFilePath = "server.pem";
+    String certChainFilePath = null;
+    String privateKeyFilePath = null;
 
     public void setClientNum(int clientNum) {
         this.clientNum = clientNum;

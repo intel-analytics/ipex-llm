@@ -1,38 +1,53 @@
 # PPML Demo Without SGX
 
 ## Get Prepared
+### Spark
+You need to download `spark-3.1.2-bin-hadoop2.7`. Then delete `$SPARK_HOME/jars/guava-14.0.1.jar`.
 ### Get jar ready
 #### Build from source
 ```bash
 git clone https://github.com/intel-analytics/BigDL.git
 cd BigDL/scala
-./make-dist.sh
+bash make-dist.sh -DskipTests -Pspark_3.x
 ```
-#### Download pre-build
-```bash
-wget
-```
+
 ### Config
 If deploying PPML on cluster, need to overwrite config `./ppml-conf.yaml`. Default config (localhost:8980) would be used if no `ppml-conf.yaml` exists in the directory.
+
+### Tls certificate
+If you want to build tls channel with certifacate, you need to prepare the secure keys. In this tutorial, you can generate keys with root permission (test only, need input security password for keys).
+
+**Note: Must enter `localhost` in step `Common Name` for test purpose.**
+
+```bash
+sudo bash ../../../ppml/scripts/generate-keys.sh
+```
+
+Then modify the `privateKeyFilePath` to `keys/server.pem` and `certChainFilePath` to `keys/server.crt` in `ppml-conf.yaml` with your local path.
+
+If you don't want to build tls channel with cerfiticate, just delete the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml`.
+
+
 ### Start FL Server
 ```bash
-java -cp com.intel.analytics.bigdl.ppml.FLServer
+cd ppml/demo
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.FLServer
 ```
 ## HFL Logistic Regression
 ```bash
 # client 1
-java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-1.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-1.csv
 
 # client 2
-java -cp com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-2.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-2.csv
 ```
 ## VFL Logistic Regression
 ```bash
 # client 1
-java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-1.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-1.csv
 
 # client 2
-java -cp com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-2.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-2.csv
 ```
 
 
@@ -78,9 +93,9 @@ If you want to build tls channel with certifacate, you need to prepare the secur
 sudo bash ../../../ppml/scripts/generate-keys.sh
 ```
 
-If run in container, please modify `KEYS_PATH` to `keys/` you generated in last step in `deploy_fl_container.sh`. This dir will mount to container's `/ppml/trusted-big-data-ml/work/keys`, then modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with container's absolute path.
+If run in container, please modify `KEYS_PATH` to `keys/` you generated in last step in `deploy_fl_container.sh`. This dir will mount to container's `/ppml/trusted-big-data-ml/work/keys`, then modify the `privateKeyFilePath` to `keys/server.pem` and `certChainFilePath` to `keys/server.crt` in `ppml-conf.yaml` with container's absolute path.
 
-If not in container, just modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with your local path.
+If not in container, just modify the `privateKeyFilePath` to `keys/server.pem` and `certChainFilePath` to `keys/server.crt` in `ppml-conf.yaml` with your local path.
 
 If you don't want to build tls channel with cerfiticate, just delete the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml`.
 
