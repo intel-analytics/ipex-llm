@@ -309,7 +309,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                 if key in kwargs:
                     ray_args[key] = kwargs[key]
             from bigdl.orca.ray import RayContext
-            ray_ctx = RayContext(runtime="ray_on_spark", cores=cores, num_nodes=num_nodes,
+            ray_ctx = RayContext(runtime="spark", cores=cores, num_nodes=num_nodes,
                                  sc=sc, **ray_args)
             if init_ray_on_spark:
                 driver_cores = 0  # This is the default value.
@@ -322,7 +322,8 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
 
 def stop_orca_context():
     """
-    Stop the SparkContext (and stop Ray services across the cluster if necessary).
+    Stop the SparkContext (and stop Ray services across the cluster if necessary) or 
+    stop the RayContext.
     """
     from pyspark import SparkContext
     from bigdl.orca.ray import RayContext
