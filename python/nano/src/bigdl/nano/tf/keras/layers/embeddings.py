@@ -15,6 +15,7 @@
 #
 
 import tensorflow as tf
+import warnings
 from tensorflow.keras.layers import Embedding as TFEmbedding
 
 
@@ -24,7 +25,8 @@ class Embedding(TFEmbedding):
                  input_dim,
                  output_dim,
                  embeddings_initializer='uniform',
-                 regularizer=None,
+                 embeddings_regularizer=None,
+                 activity_regularizer=None,
                  embeddings_constraint=None,
                  mask_zero=False,
                  input_length=None,
@@ -45,7 +47,10 @@ class Embedding(TFEmbedding):
         :param output_dim: Integer. Dimension of the dense embedding.
         :param embeddings_initializer: Initializer for the `embeddings`
             matrix (see `keras.initializers`).
-        :param regularizer: Regularizer function applied to
+        :param embeddings_regularizer: Regularizer function applied to
+            the `embeddings` matrix (see `keras.regularizers`).
+            We recommend you not using this parameter.
+        :param activity_regularizer: Regularizer function applied to
             the output tensor after looking up the `embeddings` matrix.
         :param embeddings_constraint: Constraint function applied to
             the `embeddings` matrix (see `keras.constraints`).
@@ -63,13 +68,35 @@ class Embedding(TFEmbedding):
             `Flatten` then `Dense` layers upstream
             (without it, the shape of the dense outputs cannot be computed).
         '''
-
-        super().__init__(input_dim=input_dim,
-                         output_dim=output_dim,
-                         embeddings_initializer=embeddings_initializer,
-                         embeddings_regularizer=None,
-                         embeddings_constraint=embeddings_constraint,
-                         activity_regularizer=regularizer,
-                         mask_zero=mask_zero,
-                         input_length=input_length,
-                         **kwargs)
+        if embeddings_regularizer is None:
+            super().__init__(input_dim=input_dim,
+                             output_dim=output_dim,
+                             embeddings_initializer=embeddings_initializer,
+                             embeddings_regularizer=embeddings_regularizer,
+                             activity_regularizer=activity_regularizer,
+                             embeddings_constraint=embeddings_constraint,
+                             mask_zero=mask_zero,
+                             input_length=input_length,
+                             **kwargs)
+        else:
+            warnings.warn('param: embeddings_regularizer is not supported and should be removed', UserWarning)
+            if activity_regularizer is None:
+                # Use the embeddings_regularizer to initialize param: activity_regularizer
+                super().__init__(input_dim=input_dim,
+                                 output_dim=output_dim,
+                                 embeddings_initializer=embeddings_initializer,
+                                 activity_regularizer=embeddings_regularizer,
+                                 embeddings_constraint=embeddings_constraint,
+                                 mask_zero=mask_zero,
+                                 input_length=input_length,
+                                 **kwargs)
+            else:
+                super().__init__(input_dim=input_dim,
+                                 output_dim=output_dim,
+                                 embeddings_initializer=embeddings_initializer,
+                                 embeddings_regularizer=embeddings_regularizer,
+                                 activity_regularizer=activity_regularizer,
+                                 embeddings_constraint=embeddings_constraint,
+                                 mask_zero=mask_zero,
+                                 input_length=input_length,
+                                 **kwargs)
