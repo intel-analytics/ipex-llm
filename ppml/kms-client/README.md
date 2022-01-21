@@ -75,7 +75,7 @@ Then, you will get a KMS server running in a docker container. If encounter any 
   ```bash
   docker exec -it kms-client bash
   cd /ppml/trusted-big-data-ml
-  bash init.sh # Graphene-SGX inilization
+  bash init.sh # Graphene-SGX initiation
   
   # You can also find the below shell script at /ppml/trusted-big-data-mlwork/kms-client/kms-e2e-example.sh
   
