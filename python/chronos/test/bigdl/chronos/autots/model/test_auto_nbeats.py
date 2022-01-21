@@ -20,7 +20,7 @@ from unittest import TestCase
 import pytest
 import tempfile
 
-from bigdl.chronos.autots.model.auto_nbeats import AutoNbeats
+from bigdl.chronos.autots.model.auto_nbeats import AutoNBEATS
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.automl import hp
 
@@ -62,14 +62,14 @@ def valid_dataloader_creator(config):
 
 
 def get_auto_estimator():
-    auto_nbeats = AutoNbeats(input_feature_num=input_feature_dim,
+    auto_nbeats = AutoNBEATS(input_feature_num=input_feature_dim,
                              output_target_num=output_feature_dim,
                              past_seq_len=past_seq_len,
                              future_seq_len=future_seq_len,
                              stack_types=('generic', 'generic'),
                              nb_blocks_per_stack=3,
                              thetas_dim=(4, 8),
-                             share_weigets_in_stack=True,
+                             share_weights_in_stack=True,
                              hidden_layer_units=hp.grid_search([64, 128]),
                              nb_harmonics=None,
                              loss=torch.nn.MSELoss(),
@@ -83,7 +83,7 @@ def get_auto_estimator():
     return auto_nbeats
 
 
-class TestAutoNBeats(TestCase):
+class TestAutoNBEATS(TestCase):
     def setUp(self) -> None:
         init_orca_context(cores=4, memory="4g", init_ray_on_spark=True)
 

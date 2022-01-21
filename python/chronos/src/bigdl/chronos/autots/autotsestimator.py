@@ -68,7 +68,7 @@ class AutoTSEstimator:
         for tuning using AutoML.
 
         :param model: a string or a model creation function.
-               A string indicates a built-in model, currently "lstm", "tcn", "seq2seq" are
+               A string indicates a built-in model, currently "lstm", "tcn", "seq2seq", "nbeats" are
                supported.
                A model creation function indicates a 3rd party model, the function should take a
                config param and return a torch.nn.Module (backend="torch") / tf model

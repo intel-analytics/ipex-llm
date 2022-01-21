@@ -22,7 +22,7 @@ from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
 from .base_automodel import BasePytorchAutomodel
 
 
-class AutoNbeats(BasePytorchAutomodel):
+class AutoNBEATS(BasePytorchAutomodel):
     def __init__(self,
                  past_seq_len,
                  future_seq_len,

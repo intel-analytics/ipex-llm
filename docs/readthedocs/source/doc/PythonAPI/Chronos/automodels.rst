@@ -35,6 +35,17 @@ Other API follows its base class(BasePytorchAutomodel).
     :undoc-members:
     :show-inheritance:
 
+AutoNBEATS
+----------------------------------------
+
+AutoNBEAT is an NBEATS forecaster model with Auto tuning.
+Other API follows its base class(BasePytorchAutomodel).
+
+..automodule:: bigdl.chronos.autots.model.auto_nbeats
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 AutoARIMA
 ----------------------------------------
 
