@@ -85,7 +85,7 @@ public class GrpcClientBase extends AbstractGrpcBase {
                     // Channels are secure by default (via SSL/TLS).
                     .usePlaintext()
                     .build();
-            }else {
+            } else {
                 channel = NettyChannelBuilder.forTarget(target)
                 .sslContext(GrpcSslContexts.forClient().trustManager(new File(privateKeyFilePath)).build())
                 .build();
