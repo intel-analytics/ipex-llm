@@ -41,7 +41,7 @@ class RayContext(object):
             ray_args = kwargs.copy()
             self.ray_args = ray_args
         else:
-            raise ValueError(f"Unsupported cluster mode: {runtime}. "
+            raise ValueError(f"Unsupported runtime: {runtime}. "
                              f"Runtime must be spark or ray")
 
         self.num_ray_nodes = num_nodes

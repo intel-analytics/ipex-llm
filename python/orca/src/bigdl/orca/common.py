@@ -171,9 +171,8 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                       init_ray_on_spark=False, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
-    across the cluster if necessary).
+    across the cluster if necessary) or a RayContext when the runtime is ray.
 
-    :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
            "yarn-cluster", "k8s-client" and "standalone". Default to be None and in this case
            there is supposed to be an existing SparkContext in your application.
@@ -192,6 +191,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
 
            For other cluster modes, you are recommended to install and run bigdl through
            pip, which is more convenient.
+    :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cores: The number of cores to be used on each node. Default to be 2.
     :param memory: The memory allocated for each node. Default to be '2g'.
     :param num_nodes: The number of nodes to be used in the cluster. Default to be 1.
@@ -315,8 +315,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                 driver_cores = 0  # This is the default value.
                 ray_ctx.init(driver_cores=driver_cores)
     else:
-        raise ValueError("runtime can only be spark or ray, "
-                         "but got %s".format(runtime))
+        raise ValueError("runtime can only be spark or ray, but got %s".format(runtime))
     return sc
 
 
