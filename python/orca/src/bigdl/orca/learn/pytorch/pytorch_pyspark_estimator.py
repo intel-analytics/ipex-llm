@@ -37,7 +37,6 @@ from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
 
 
-
 def partition_to_creator(partition):
 
     def data_creator(config, batch_size):
