@@ -19,7 +19,7 @@ import tensorflow as tf
 class Model(tf.keras.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+          
     def fit(self,
             x=None,
             y=None,
@@ -40,25 +40,35 @@ class Model(tf.keras.Model):
             max_queue_size=10,
             workers=1,
             use_multiprocessing=False,
-            perf_tune=None):
-        if perf_tune is not None:
-            assert perf_tune in ["batch_size", "callbacks", "dataset"], \
-                "perf_tune must be one of [\"batch_size\", \"callbacks\", \"dataset\"] or None"
-
-        elif perf_tune == "batch_size":
+            perf_tune=False):
+        if perf_tune:
+           
+            if batch_size is None:
+                batch_size=32
             batch_size_2 = int(batch_size * 2)
+            # 2 x batch_size
             super(Model, self).fit(x, y, batch_size_2, epochs, verbose, callbacks, validation_split, validation_data,
-                                   shuffle, class_weight,
-                                   sample_weight, initial_epoch, steps_per_epoch, validation_steps,
-                                   validation_batch_size, validation_freq,
-                                   max_queue_size, workers, use_multiprocessing)
-            batch_size_12 = int(batch_size / 4)
+                                shuffle, class_weight,
+                                sample_weight, initial_epoch, steps_per_epoch, validation_steps,
+                                validation_batch_size, validation_freq,
+                                max_queue_size, workers, use_multiprocessing)
+            batch_size_12 = int(batch_size / 2)
+            # 1/2 batch_size
             super(Model, self).fit(x, y, batch_size_12, epochs, verbose, callbacks, validation_split, validation_data,
-                                   shuffle, class_weight,
-                                   sample_weight, initial_epoch, steps_per_epoch, validation_steps,
-                                   validation_batch_size, validation_freq,
-                                   max_queue_size, workers, use_multiprocessing)
-
+                                shuffle, class_weight,
+                                sample_weight, initial_epoch, steps_per_epoch, validation_steps,
+                                validation_batch_size, validation_freq,
+                                max_queue_size, workers, use_multiprocessing)
+            # Without Callbacks
+            if callbacks != None:
+                callbacks=None
+            super(Model, self).fit(
+                 x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
+                sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq,
+                max_queue_size, workers, use_multiprocessing)
+            
+            # TODO: Data pipeline
+            
         else:
             super(Model, self).fit(
                 x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,

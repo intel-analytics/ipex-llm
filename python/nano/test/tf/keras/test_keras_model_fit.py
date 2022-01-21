@@ -1,4 +1,3 @@
-import unittest
 from bigdl.nano.tf.keras import Model
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,34 +5,42 @@ import tensorflow as tf
 
 
 
-class ModelTestCase(unittest.TestCase):
+class CustomModel(Model):
+    def train_step(self, data):
+        # Unpack the data. Its structure depends on your model and
+        # on what you pass to `fit()`.
+        x, y = data
 
-    def test_fit_batch_size(self):
-        mnist = tf.keras.datasets.mnist
+        with tf.GradientTape() as tape:
+            y_pred = self(x, training=True)  # Forward pass
+            # Compute the loss value
+            # (the loss function is configured in `compile()`)
+            loss = self.compiled_loss(y, y_pred, regularization_losses=self.losses)
 
-        (x_train, y_train), (x_test, y_test) = mnist.load_data()
-        x_train, x_test = x_train / 255.0, x_test / 255.0
-        model = Model([
-            tf.keras.layers.Flatten(input_shape=(28, 28)),
-            tf.keras.layers.Dense(128, activation='relu'),
-            tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(10)
-        ])
-        predictions = model(x_train[:1]).numpy()
-        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        loss_fn(y_train[:1], predictions).numpy()
-        model.compile(optimizer='adam',
-                      loss=loss_fn,
-                      metrics=['accuracy'])
-        predictions = model(x_train[:1]).numpy()
-        model.fit(x_train, y_train, epochs=5)
-        model.evaluate(x_test, y_test, verbose=2)
-        probability_model = tf.keras.Sequential([
-            model,
-            tf.keras.layers.Softmax()
-        ])
-        probability_model(x_test[:1]).numpy()
+        # Compute gradients
+        trainable_vars = self.trainable_variables
+        gradients = tape.gradient(loss, trainable_vars)
+        # Update weights
+        self.optimizer.apply_gradients(zip(gradients, trainable_vars))
+        # Update metrics (includes the metric that tracks the loss)
+        self.compiled_metrics.update_state(y, y_pred)
+        # Return a dict mapping metric names to current value
+        return {m.name: m.result() for m in self.metrics}
+
+
+def test_fit_batch_size():
+    # Construct and compile an instance of CustomModel
+    inputs = tf.keras.Input(shape=(32,))
+    outputs = tf.keras.layers.Dense(1)(inputs)
+    model = CustomModel(inputs, outputs)
+    model.compile(optimizer="adam", loss="mse", metrics=["mae"])
+
+    # Just use `fit` as usual
+    x = np.random.random((1000, 32))
+    y = np.random.random((1000, 1))
+    model.fit(x, y, epochs=3, perf_tune="batch_size")
+    
 
 
 if __name__ == '__main__':
-    unittest.main()
+    test_fit_batch_size()
