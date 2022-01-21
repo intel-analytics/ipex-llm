@@ -322,7 +322,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
 
 def stop_orca_context():
     """
-    Stop the SparkContext (and stop Ray services across the cluster if necessary) or 
+    Stop the SparkContext (and stop Ray services across the cluster if necessary) or
     stop the RayContext.
     """
     from pyspark import SparkContext
