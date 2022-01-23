@@ -15,7 +15,6 @@
 #
 
 import warnings
-import pickle
 from functools import partial
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 
