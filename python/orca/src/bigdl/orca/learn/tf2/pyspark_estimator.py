@@ -175,16 +175,9 @@ class SparkTFEstimator():
                     param["data_creator"] = make_data_creator(data_list)
                     param["validation_data_creator"] = make_data_creator(valid_list)
                     return SparkRunner(**init_param).step(**param)
-                # train_rdd = data.rdd.repartition(self.num_workers)\
-                #     .mapPartitions(lambda iter: [list(iter)])
-                # val_rdd = validation_data.rdd.repartition(self.num_workers)\
-                #     .mapPartitions(lambda iter: [list(iter)])
+
                 train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
                 val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
-
-                # res = train_rdd.zip(val_rdd).barrier() \
-                #     .mapPartitions(
-                #     lambda iter: transform_func(iter, init_params, params)).collect()
                 res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier()\
                     .mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()

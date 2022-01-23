@@ -438,6 +438,5 @@ def get_specific_object_from_callbacks(class_type, callbacks):
 
 def get_replaced_path(original_filepath):
     base_name = os.path.basename(original_filepath)
-    print("base name is: ", base_name)
     temp_dir = tempfile.mkdtemp()
     return os.path.join(temp_dir, base_name)
