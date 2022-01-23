@@ -207,7 +207,7 @@ class TestTFEstimator(TestCase):
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
-        val_rdd = sc.range(0, 20, numSlices=4)
+        val_rdd = sc.range(0, 20, numSlices=6)
         val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
@@ -251,7 +251,7 @@ class TestTFEstimator(TestCase):
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
-        val_rdd = sc.range(0, 20, numSlices=4)
+        val_rdd = sc.range(0, 20, numSlices=6)
         val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 

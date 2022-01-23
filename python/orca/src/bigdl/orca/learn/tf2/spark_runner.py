@@ -32,15 +32,6 @@ from bigdl.orca.learn.log_monitor import LogMonitor
 logger = logging.getLogger(__name__)
 
 
-def handle_datasets_train(data_creator, validation_data_creator):
-        train_dataset = data_creator()
-        if validation_data_creator is not None:
-            test_dataset = validation_data_creator()
-        else:
-            test_dataset = None
-        return train_dataset, test_dataset
-
-
 class DatasetHandler:
 
     def __init__(self, rank, size):
@@ -215,10 +206,15 @@ class SparkRunner:
         self.backend = backend
         self.setup()
         self.cluster = cluster_info
-        if TaskContext.get():
-            self.partition_id = TaskContext.get().partitionId()
-        else:
+        if mode == "fit" or mode == "evaluate":
             self.partition_id = BarrierTaskContext.get().partitionId()
+        else:
+            self.partition_id = TaskContext.get().partitionId()
+        print("partition id is: ", self.partition_id)
+        # if TaskContext.get():
+        #     self.partition_id = TaskContext.get().partitionId()
+        # else:
+        #     self.partition_id = BarrierTaskContext.get().partitionId()
         self.need_to_log_to_driver = need_to_log_to_driver
         if need_to_log_to_driver:
             self.log_path = os.path.join(tempfile.gettempdir(),
