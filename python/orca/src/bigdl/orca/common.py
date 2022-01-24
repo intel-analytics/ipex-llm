@@ -316,9 +316,9 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
             if init_ray_on_spark:
                 driver_cores = 0  # This is the default value.
                 ray_ctx.init(driver_cores=driver_cores)
+        return sc
     else:
         raise ValueError("runtime can only be spark or ray, but got %s".format(runtime))
-    return sc
 
 
 def stop_orca_context():
