@@ -2,7 +2,7 @@
 ---
 
 * __UnionPay__
-  <br>[Technical Verification of SGX and BigDL Based Privacy Computing for Multi Source Financial Big Data](https://www.intel.cn/content/www/cn/zh/now/data-centric/sgx-bigdl-financial-big-data.html)
+  <br>[Technical Verification of SGX and BigDL Based Privacy Computing for Multi Source Financial Big Data](https://www.intel.cn/content/www/cn/zh/now/data-centric/sgx-bigdl-financial-big-data.html) (in Chinese)
 * __Alibaba__
   <br>[Deploy Analytics Zoo in Aliyun EMR](https://partners-intl.aliyun.com/help/doc-detail/93155.htm)
   <br>[Better Together: Privacy-Preserving Machine Learning](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/alibaba-privacy-preserving-machine-learning.html)
