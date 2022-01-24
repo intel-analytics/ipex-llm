@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib._
-import com.intel.analytics.bigdl.dllib.feature.common.{FeatureLabelPreprocessing, Preprocessing, ScalarToTensor, SeqToTensor}
+import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.feature.dataset._
 import com.intel.analytics.bigdl.dllib.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
@@ -369,8 +369,6 @@ trait Predictable[T] extends VectorCompatibility{
     }
   }
 
-  var predictTransformer: Preprocessing[Any, Sample[T]] = null
-
   def outputToPrediction(output: Tensor[T]): Any = {
     output.clone().storage().array()
   }
@@ -396,8 +394,6 @@ trait Predictable[T] extends VectorCompatibility{
               featureCols: Array[String],
               predictionCol: String,
               batchPerThread: Int): DataFrame = {
-    require(predictTransformer!=null, "Must train the model before call predcition")
-
     val featureColIndexs = featureCols.map {f => x.schema.fieldIndex(f)}
     var featureSizes: Array[Array[Int]] = null
     val featureFunc = if (featureCols.length == 1) {
@@ -422,6 +418,19 @@ trait Predictable[T] extends VectorCompatibility{
 
     val sc = x.sqlContext.sparkContext
     val modelBroadCast = ModelBroadcast[T]().broadcast(sc, module.evaluate())
+
+    val featurePreprocessing = if (featureCols.size == 1) {
+      SeqToTensor()
+    } else {
+      SeqToMultipleTensors(featureSizes)
+    }
+
+    val preprocessing =
+      FeatureLabelPreprocessing(featurePreprocessing, ScalarToTensor[T]())
+        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
+
+    val predictTransformer = ToTuple() -> preprocessing
+      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]].clonePreprocessing()
 
     val featureTransformersBC = sc.broadcast(predictTransformer)
     val toBatchBC = sc.broadcast(SampleToMiniBatch[T](batchPerThread, partitionNum = Some(1)))

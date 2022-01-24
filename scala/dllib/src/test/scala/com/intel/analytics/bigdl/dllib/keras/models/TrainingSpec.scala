@@ -274,6 +274,8 @@ class TrainingSpec extends ZooSpecHelper {
     labelCols = Array("label"))
     val predDf = model.predict(df, featureCols = Array("features"), predictionCol = "predict")
     predDf.show()
+    model.evaluate(df, batchSize = 4, featureCols = Array("features"),
+      labelCols = Array("label"))
   }
 
   "Keras model" should "support dataframe with vector" in {

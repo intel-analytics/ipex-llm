@@ -537,9 +537,6 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
         .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
     }
 
-    predictTransformer = ToTuple() -> preprocessing
-      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]].clonePreprocessing()
-
     val initialDataSet = FeatureSet.rdd(featureAndLabel).transform(preprocessing)
 
     initialDataSet.transform(SampleToMiniBatch[T](batchSize))
@@ -655,6 +652,17 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
         val localSet = toDataSet(local, batchSize).asInstanceOf[LocalDataSet[MiniBatch[T]]]
         evaluate(localSet)
     }
+  }
+
+  def evaluate(
+     x: DataFrame,
+     batchSize: Int,
+     featureCols: Array[String],
+     labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
+    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    val valX = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
+    val xRDD = valX.toDistributed().data(false)
+    evaluate(xRDD, this.vMethods)
   }
 
   def toModel(): keras.Model[T]
