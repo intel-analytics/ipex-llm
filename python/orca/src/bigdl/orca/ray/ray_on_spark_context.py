@@ -108,8 +108,7 @@ class RayServiceFuncGenerator(object):
 
     def __init__(self, python_loc, redis_port, ray_node_cpu_cores,
                  password, object_store_memory, verbose=False, env=None,
-                 include_webui=False,
-                 extra_params=None):
+                 include_webui=False, extra_params=None, system_config=None):
         """object_store_memory: integer in bytes"""
         self.env = env
         self.python_loc = python_loc
@@ -119,6 +118,7 @@ class RayServiceFuncGenerator(object):
         self.ray_exec = self._get_ray_exec()
         self.object_store_memory = object_store_memory
         self.extra_params = extra_params
+        self.system_config = system_config
         self.include_webui = include_webui
         self.verbose = verbose
         # _mxnet_worker and _mxnet_server are resource tags for distributed MXNet training only
@@ -162,6 +162,9 @@ class RayServiceFuncGenerator(object):
                    self.ray_node_cpu_cores)
         if self.labels:
             command = command + " " + self.labels
+        if self.system_config:
+            import json
+            command = command + " " + "--system-config='"+json.dumps(self.system_config)+"'"
         return RayServiceFuncGenerator._enrich_command(command=command,
                                                        object_store_memory=self.object_store_memory,
                                                        extra_params=self.extra_params)
@@ -327,11 +330,10 @@ class RayOnSparkContext(object):
 
     def __init__(self, sc, redis_port=None, password="123456", object_store_memory=None,
                  verbose=False, env=None, extra_params=None, include_webui=True,
-                 num_ray_nodes=None, ray_node_cpu_cores=None):
+                 num_ray_nodes=None, ray_node_cpu_cores=None, system_config=None):
         """
-        The RayContext would initiate a ray cluster on top of the configuration of SparkContext.
-        After creating RayContext, call the init method to set up the cluster.
-
+        The RayOnSparkContext would initiate a ray cluster on top of the configuration of SparkContext.
+        After creating RayOnSparkContext, call the init method to set up the cluster.
         - For Spark local mode: The total available cores for Ray is equal to the number of
         Spark local cores.
         - For Spark cluster mode: The number of raylets to be created is equal to the number of
@@ -339,7 +341,6 @@ class RayOnSparkContext(object):
         cores for each Spark executor.
         You are allowed to specify num_ray_nodes and ray_node_cpu_cores for configurations
         to start raylets.
-
         :param sc: An instance of SparkContext.
         :param redis_port: The redis port for the ray head node. Default is None.
         The value would be randomly picked if not specified.
@@ -365,6 +366,10 @@ class RayOnSparkContext(object):
         explicitly specify this. It is recommended that ray_node_cpu_cores is not larger than the
         number of cores for each Spark executor to make sure there are enough resources in your
         cluster.
+        :param system_config: The key value dict for overriding RayConfig defaults. Mainly for
+        testing purposes. An example for system_config could be:
+        {"object_spilling_config":"{\"type\":\"filesystem\",
+                                   \"params\":{\"directory_path\":\"/tmp/spill\"}}"}
         """
         assert sc is not None, "sc cannot be None, please create a SparkContext first"
         self.sc = sc
@@ -376,6 +381,17 @@ class RayOnSparkContext(object):
         self.ray_processesMonitor = None
         self.env = env
         self.extra_params = extra_params
+        self.system_config = system_config
+        if extra_params:
+            assert isinstance(extra_params, dict), \
+                "extra_params should be a dict for extra options to launch ray"
+            if self.system_config:
+                self.extra_params.pop("system_config", None)
+                self.extra_params.pop("_system_config", None)
+            elif "system_config" in self.extra_params:
+                self.system_config = self.extra_params.pop("system_config")
+            elif "_system_config" in self.extra_params:
+                self.system_config = self.extra_params.pop("_system_config")
         self.include_webui = include_webui
         self._address_info = None
         if self.is_local:
@@ -408,7 +424,7 @@ class RayOnSparkContext(object):
             else:
                 raise Exception("spark.executor.cores not detected in the SparkContext, "
                                 "you need to manually specify num_ray_nodes and ray_node_cpu_cores "
-                                "for RayContext to start ray services")
+                                "for RayOnSparkContext to start ray services")
             if self.sc.getConf().contains("spark.executor.instances"):
                 num_executors = int(self.sc.getConf().get("spark.executor.instances"))
             elif self.sc.getConf().contains("spark.cores.max"):
@@ -428,7 +444,7 @@ class RayOnSparkContext(object):
             else:
                 raise Exception("spark.executor.cores not detected in the SparkContext, "
                                 "you need to manually specify num_ray_nodes and ray_node_cpu_cores "
-                                "for RayContext to start ray services")
+                                "for RayOnSparkContext to start ray services")
 
             from bigdl.dllib.utils.utils import detect_python_location
             self.python_loc = os.environ.get("PYSPARK_PYTHON", detect_python_location())
@@ -442,7 +458,8 @@ class RayOnSparkContext(object):
                 verbose=self.verbose,
                 env=self.env,
                 include_webui=self.include_webui,
-                extra_params=self.extra_params)
+                extra_params=self.extra_params,
+                system_config=self.system_config)
         RayOnSparkContext._active_ray_context = self
         self.total_cores = self.num_ray_nodes * self.ray_node_cpu_cores
 
@@ -505,10 +522,8 @@ class RayOnSparkContext(object):
     def init(self, driver_cores=0):
         """
         Initiate the ray cluster.
-
         :param driver_cores: The number of cores for the raylet on driver for Spark cluster mode.
         Default is 0 and in this case the local driver wouldn't have any ray workload.
-
         :return The dictionary of address information about the ray cluster.
         Information contains node_ip_address, redis_address, object_store_address,
         raylet_socket_name, webui_url and session_dir.
@@ -531,6 +546,7 @@ class RayOnSparkContext(object):
                     object_store_memory=self.object_store_memory,
                     include_dashboard=self.include_webui,
                     dashboard_host="0.0.0.0",
+                    _system_config=self.system_config
                 )
                 init_params.update(kwargs)
                 if version.parse(ray.__version__) >= version.parse("1.4.0"):
