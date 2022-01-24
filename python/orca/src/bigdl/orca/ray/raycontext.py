@@ -32,11 +32,6 @@ class RayContext(object):
             from bigdl.orca.ray import RayOnSparkContext
             self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
-            self._address_info = self._ray_on_spark_context._address_info
-            self.address_info = self._address_info
-            self.redis_address = self._ray_on_spark_context.redis_address
-            self.redis_password = self._ray_on_spark_context.redis_password
-            self.cluster_ips = self._ray_on_spark_context.cluster_ips
 
         elif runtime == "ray":
             self.is_local = False
@@ -57,6 +52,8 @@ class RayContext(object):
             results = ray.init(**self.ray_args)
         else:
             results = self._ray_on_spark_context.init(driver_cores=driver_cores)
+            self.redis_address = self._ray_on_spark_context.redis_address
+            self.redis_password = self._ray_on_spark_context.redis_password
 
         self.initialized = True
         return results
