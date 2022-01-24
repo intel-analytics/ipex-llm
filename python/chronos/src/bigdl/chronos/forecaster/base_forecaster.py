@@ -149,7 +149,7 @@ class BasePytorchForecaster(Forecaster):
             self.trainer.fit(self.internal, data)
             self.fitted = True
 
-    def predict(self, data, batch_size=32):
+    def predict(self, data, batch_size=32, quantize=False):
         """
         Predict using a trained forecaster.
 
@@ -193,7 +193,9 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling predict!")
-            yhat = self.internal.inference(torch.from_numpy(data), backend=None).numpy()
+            yhat = self.internal.inference(torch.from_numpy(data),
+                                           backend=None,
+                                           quantize=quantize).numpy()
             if not is_local_data:
                 yhat = np_to_xshard(yhat, prefix="prediction")
             return yhat
@@ -226,7 +228,7 @@ class BasePytorchForecaster(Forecaster):
             raise RuntimeError("You must call fit or restore first before calling predict!")
         return self.internal.inference(data, batch_size=batch_size)
 
-    def evaluate(self, data, batch_size=32, multioutput="raw_values"):
+    def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
         Evaluate using a trained forecaster.
 
@@ -277,7 +279,9 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling evaluate!")
-            yhat_torch = self.internal.inference(torch.from_numpy(data[0]), backend=None)
+            yhat_torch = self.internal.inference(torch.from_numpy(data[0]),
+                                                 backend=None,
+                                                 quantize=quantize)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
             return Evaluator.evaluate(self.metrics, data[1],
@@ -467,3 +471,63 @@ class BasePytorchForecaster(Forecaster):
                                  self.data_config["input_feature_num"])
         self.internal.update_ortsess(dummy_input,
                                      dirname=dirname)
+
+    def quantize(self, calib_data,
+                 val_data=None,
+                 metric=None,
+                 conf=None,
+                 framework='pytorch_fx',
+                 approach='static',
+                 tuning_strategy='bayesian',
+                 relative_drop=None,
+                 absolute_drop=None,
+                 timeout=0,
+                 max_trials=1):
+        # check model support for quantization
+        if not self.quantize_available:
+            raise NotImplementedError("This model has not supported quantization.")
+
+        # Distributed forecaster does not support quantization
+        if self.distributed:
+            raise NotImplementedError("quantization has not been supported for distributed "
+                                      "forecaster. You can call .to_local() to transform the "
+                                      "forecaster to a non-distributed version.")
+
+        # calib data should be set if the forecaster is just loaded
+        assert calib_data is not None, "You must set a `calib_data` for quantization."
+
+        # change data tuple to dataloader
+        if isinstance(calib_data, tuple):
+            calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_data[0]),
+                                                  torch.from_numpy(calib_data[1])))
+        if isinstance(val_data, tuple):
+            val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
+                                                torch.from_numpy(val_data[1])))
+
+        # map metric str to function
+        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
+        if isinstance(metric, str):
+            metric = TORCHMETRICS_REGRESSION_MAP[metric]
+
+        # init acc criterion
+        accuracy_criterion = None
+        if relative_drop and absolute_drop:
+            raise ValueError("Please unset either `relative_drop` or `absolute_drop`.")
+        if relative_drop:
+            accuracy_criterion = {'relative': relative_drop, 'higher_is_better': False}
+        if absolute_drop:
+            accuracy_criterion = {'absolute': absolute_drop, 'higher_is_better': False}
+
+        # quantize
+        self.internal = self.trainer.quantize(self.internal,
+                                              calib_dataloader=calib_data,
+                                              val_dataloader=val_data,
+                                              metric=metric,
+                                              conf=conf,
+                                              framework=framework,
+                                              approach=approach,
+                                              tuning_strategy=tuning_strategy,
+                                              accuracy_criterion=accuracy_criterion,
+                                              timeout=timeout,
+                                              max_trials=max_trials,
+                                              raw_return=False)
