@@ -26,15 +26,16 @@ Then, you will get a KMS server running in a docker container. If encounter any 
 
 - ##### **Start a BigDL PPML Container with KMS Client**
 
-  The KMS client in this example is running in the environment of [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene), in which we have deployed necessary requirements. You can also do the same in other trusted execution environments, like Trusted Realtime ML etc., after installing python modules listed in `requirement.yml` with pip. 
+  The KMS client in this example is running in the environment of [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene), in which we have deployed necessary requirements. You can also do the same in other trusted execution environments, like Trusted Realtime ML etc., after installing python modules listed in `requirement.yml` with pip. Please make sure Graphene-SGX is available on your machine.
 
-  Prepare and start the client container as below:
+  Prepare and start the Graphene-SGX-based client container as below:
 
   ```bash
   export ENCLAVE_KEY_PATH=YOUR_LOCAL_ENCLAVE_KEY_PATH
   export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
   export LOCAL_IP=YOUR_LOCAL_IP
   export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
+  export SECURE_PASSWORD_PATH=YOUR_SECURE_PASSWORD_PATH
   sudo docker pull $DOCKER_IMAGE
   sudo docker run -itd \
       --privileged \
@@ -47,6 +48,7 @@ Then, you will get a KMS server running in a docker container. If encounter any 
       -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
       -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
       -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+      -v $SECURE_PASSWORD_PATH:/opt/password \
       --name=kms-client \
       -e LOCAL_IP=$LOCAL_IP \
       -e SGX_MEM_SIZE=64G \
@@ -73,6 +75,7 @@ Then, you will get a KMS server running in a docker container. If encounter any 
   ```bash
   docker exec -it kms-client bash
   cd /ppml/trusted-big-data-ml
+  bash init.sh # Graphene-SGX initiation
   
   # You can also find the below shell script at /ppml/trusted-big-data-mlwork/kms-client/kms-e2e-example.sh
   
@@ -139,48 +142,48 @@ You can do below operations supported by BigDL PPML with KMS Client APIs. Please
 - Request a primary key and save it locally in ciphertext:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>]
+  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>]
   ```
 
 - Request a data key with prepared primary key and save it locally in ciphertext:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH>
+  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH>
   ```
 
 - Encrypt a file without holding keys (keys will be generated automatically):
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_file_without_key -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dfp DATA_FILE_PATH
+  python ./work/kms-client/KMS_Client.py -api encrypt_file_without_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dfp DATA_FILE_PATH
   ```
 
 - Encrypt a file with specified keys (if you have generated keys before, you will find encrypted key files named `encrypted_primary_key` and `encyrpted_data_key`, and you can use them again in the following):
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_file_with_key -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp DATA_FILE_PATH
+  python ./work/kms-client/KMS_Client.py -api encrypt_file_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp DATA_FILE_PATH
   ```
 
 - Decrypted a file with according keys:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api decrypt_file -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp ENCYRPTED_DATA_FILE_PATH
+  python ./work/kms-client/KMS_Client.py -api decrypt_file -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp ENCYRPTED_DATA_FILE_PATH
   ```
 
 - Encrypt all files under a directory:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_directory -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED>
+  python ./work/kms-client/KMS_Client.py -api encrypt_directory -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED>
   ```
 
 - Get plaintext data key from a `encyrpted_data_key`:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api get_data_key_plaintext -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH>
+  python ./work/kms-client/KMS_Client.py -api get_data_key_plaintext -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH>
   ```
 
 - Decrypt columns of CSVs under a directory:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api decrypt_csv_columns -ip <kMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dir <DIRECTORY_TO_BE_ENCRYPTED>
+  python ./work/kms-client/KMS_Client.py -api decrypt_csv_columns -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dir <DIRECTORY_TO_BE_ENCRYPTED>
   ```
 
