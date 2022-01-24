@@ -1,4 +1,4 @@
-# DLLib Getting Start Tutorial
+# DLLib Getting Start Guide
 
 ## 1. Creating dev environment
 
@@ -27,13 +27,26 @@ Open up IntelliJ and click File => Open
 Navigate to your project. If you have add BigDL DLLib as dependency in your pom.xml.
 The IDE will automatically download it from maven and you are able to run your application.
 
+For more details about how to setup IDE for BigDL project, please refer https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/#setup-ide
+
 
 ## 2. Code initialization
 ```NNContext``` is the main entry for provisioning the dllib program on the underlying cluster (such as K8s or Hadoop cluster), or just on a single laptop.
 
-We usually do some initialization at first
+It is recommended to initialize `NNContext` at the beginning of your program:
 ```
 import com.intel.analytics.bigdl.dllib.NNContext
+import com.intel.analytics.bigdl.dllib.keras.Model
+import com.intel.analytics.bigdl.dllib.keras.models.Models
+import com.intel.analytics.bigdl.dllib.keras.optimizers.Adam
+import com.intel.analytics.bigdl.dllib.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.keras.layers._
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.DoubleType
 
 val sc = NNContext.initNNContext("dllib_demo")
 ```
@@ -55,7 +68,6 @@ wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-di
 
 We create Spark session so we can use Spark API to load and process the data
 ```
-import org.apache.spark.sql.SQLContext
 val spark = new SQLContext(sc)
 ```
 
@@ -85,11 +97,10 @@ Now we have got the data which is ready to train. Next we will build a deep lear
 
 To define a model, you can use the [Keras Style API](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html).
 ```
-import com.intel.analytics.bigdl.dllib.keras.layers._
-val x1 = Input[Float](Shape(8))
-val dense1 = Dense[Float](12, activation="relu").inputs(x1)
-val dense2 = Dense[Float](8, activation="relu").inputs(dense1)
-val dense3 = Dense[Float](2).inputs(dense2)
+val x1 = Input(Shape(8))
+val dense1 = Dense(12, activation="relu").inputs(x1)
+val dense2 = Dense(8, activation="relu").inputs(dense1)
+val dense3 = Dense(2).inputs(dense2)
 val dmodel = Model(x1, dense3)
 ```
 
@@ -97,8 +108,8 @@ After creating the model, you will have to decide which loss function to use in 
 
 Now you can use `compile` function of the model to set the loss function, optimization method.
 ```
-dmodel.compile(optimizer = new Adam[Float](),
-      loss = ClassNLLCriterion[Float]())
+dmodel.compile(optimizer = new Adam(),
+  loss = ClassNLLCriterion())
 ```
 
 Now the model is built and ready to train.
@@ -117,13 +128,13 @@ When training is finished, you may need to save the final model for later use.
 BigDL allows you to save your BigDL model on local filesystem, HDFS, or Amazon s3.
 - **save**
 ```
-val modelPath = "/tmp/keras.model"
+val modelPath = "/tmp/demo/keras.model"
 dmodel.saveModel(modelPath)
 ```
 
 - **load**
 ```
-val loadModel = Models.loadModel[Float](modelPath)
+val loadModel = Models.loadModel(modelPath)
 ```
 
 You may want to refer [Save/Load](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html#save)
@@ -141,7 +152,72 @@ dmodel.predict(df, featureCols = Array("features"), predictionCol = "predict")
 dmodel.evaluate(df, featureCols = Array("features"))
 ```
 
-## 8. Running program
+## 8. Checkpointing and resuming training
+You can configure periodically taking snapshots of the model.
+```
+val cpPath = "/tmp/demo/cp"
+dmodel.setCheckpoint(cpPath, overWrite=false)
+```
+You can also set ```overWrite``` to ```true``` to enable overwriting any existing snapshot files
+
+After training stops, you can resume from any saved point. Choose one of the model snapshots to resume (saved in checkpoint path, details see Checkpointing). Use Models.loadModel to load the model snapshot into an model object.
+```
+val loadModel = Models.loadModel(path)
+```
+
+## 9. Monitor your training
+
+- **Tensorboard**
+
+BigDL provides a convenient way to monitor/visualize your training progress. It writes the statistics collected during training/validation. Saved summary can be viewed via TensorBoard.
+
+In order to take effect, it needs to be called before fit.
+```
+dmodel.setTensorBoard("./", "dllib_demo")
+```
+For more details, please refer [visulization](visualization.md)
+
+## 10. Transfer learning and finetuning
+
+- **freeze and trainable**
+BigDL DLLib supports exclude some layers of model from training.
+```
+dmodel.freeze(layer_names)
+```
+Layers that match the given names will be freezed. If a layer is freezed, its parameters(weight/bias, if exists) are not changed in training process.
+
+BigDL DLLib also support unFreeze operations. The parameters for the layers that match the given names will be trained(updated) in training process
+```
+dmodel.unFreeze(layer_names)
+```
+For more information, you may refer [freeze](freeze.md)
+
+## 11. Hyperparameter tuning
+- **optimizer**
+
+DLLib supports a list of optimization methods.
+For more details, please refer [optimization](optim-Methods.md)
+
+- **learning rate scheduler**
+
+DLLib supports a list of learning rate scheduler.
+For more details, please refer [lr_scheduler](learningrate-Scheduler.md)
+
+- **batch size**
+
+DLLib supports set batch size during training and prediction. We can adjust the batch size to tune the model's accuracy.
+
+- **regularizer**
+
+DLLib supports a list of regularizers.
+For more details, please refer [regularizer](regularizers.md)
+
+- **clipping**
+
+DLLib supports gradient clipping operations.
+For more details, please refer [gradient_clip](clipping.md)
+
+## 12. Running program
 You can run a bigdl-dllib program as a standard Spark program (running on either a local machine or a distributed cluster) as follows:
 ```
 # Spark local mode
@@ -179,67 +255,3 @@ ${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
  jar_path
 ```
 For more detail about how to run BigDL scala application, please refer https://bigdl.readthedocs.io/en/latest/doc/UserGuide/scala.html
-
-## 9. Checkpointing and resuming training
-You can configure periodically taking snapshots of the model.
-```
-dmodel.setCheckpoint(path, overWrite=False)
-```
-You can also set ```overWrite``` to ```True``` to enable overwriting any existing snapshot files
-
-After training stops, you can resume from any saved point. Choose one of the model snapshots to resume (saved in checkpoint path, details see Checkpointing). Use Models.loadModel to load the model snapshot into an model object.
-```
-val loadModel = Models.loadModel[Float](path)
-```
-
-## 10. Monitor your training
-
-- **Tensorboard**
-
-BigDL provides a convenient way to monitor/visualize your training progress. It writes the statistics collected during training/validation. Saved summary can be viewed via TensorBoard.
-
-In order to take effect, it needs to be called before fit.
-```
-dmodel.setTensorBoard("./", "dllib_demo")
-```
-For more details, please refer [visulization](visualization.md)
-
-## 11. Transfer learning and finetuning
-
-- **freeze and trainable**
-BigDL DLLib supports exclude some layers of model from training.
-```
-dmodel.freeze(layer_names)
-```
-Layers that match the given names will be freezed. If a layer is freezed, its parameters(weight/bias, if exists) are not changed in training process.
-
-BigDL DLLib also support unFreeze operations. The parameters for the layers that match the given names will be trained(updated) in training process
-```
-dmodel.unFreeze(layer_names)
-```
-For more information, you may refer [freeze](freeze.md)
-
-## 12. Hyperparameter tuning
-- **optimizer**
-
-DLLib supports a list of optimization methods.
-For more details, please refer [optimization](optim-Methods.md)
-
-- **learning rate scheduler**
-
-DLLib supports a list of learning rate scheduler.
-For more details, please refer [lr_scheduler](learningrate-Scheduler.md)
-
-- **batch size**
-
-DLLib supports set batch size during training and prediction. We can adjust the batch size to tune the model's accuracy.
-
-- **regularizer**
-
-DLLib supports a list of regularizers.
-For more details, please refer [regularizer](regularizers.md)
-
-- **clipping**
-
-DLLib supports gradient clipping operations.
-For more details, please refer [gradient_clip](clipping.md)

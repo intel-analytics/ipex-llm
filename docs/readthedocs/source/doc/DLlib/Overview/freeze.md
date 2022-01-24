@@ -1,15 +1,15 @@
-## Module Freeze
-To "freeze" a module means to exclude some layers of model from training.
+## Model Freeze
+To "freeze" a model means to exclude some layers of model from training.
 
 ```scala
-module.freeze("layer1", "layer2")
-module.unFreeze("layer1", "layer2")
+model.freeze("layer1", "layer2")
+model.unFreeze("layer1", "layer2")
 ```
-* The whole module can be "freezed" by calling ```freeze()```. If a module is freezed,
+* The model can be "freezed" by calling ```freeze()```. If a model is freezed,
 its parameters(weight/bias, if exists) are not changed in training process.
-If module names are passed, then layers that match the given names will be freezed.
-* The whole module can be "unFreezed" by calling ```unFreeze()```.
-If module names are provided, then layers that match the given names will be unFreezed.
+If model names are passed, then layers that match the given names will be freezed.
+* The whole model can be "unFreezed" by calling ```unFreeze()```.
+If model names are provided, then layers that match the given names will be unFreezed.
 * stop the input gradient of layers that match the given names. Their input gradient are not computed.
 And they will not contributed to the input gradient computation of layers that depend on them.
 
