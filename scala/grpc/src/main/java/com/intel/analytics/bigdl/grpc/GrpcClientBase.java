@@ -19,9 +19,13 @@ package com.intel.analytics.bigdl.grpc;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -36,12 +40,14 @@ public class GrpcClientBase extends AbstractGrpcBase {
     protected static final Logger logger = LogManager.getLogger(GrpcClientBase.class.getName());
     protected String target = "localhost:8980";
     protected final String clientUUID;
+    protected String privateKeyFilePath;
     protected ManagedChannel channel;
 
     public GrpcClientBase(String[] args) throws IOException {
         clientUUID = UUID.randomUUID().toString();
         this.args = args;
         this.channel = null;
+        this.privateKeyFilePath = null;
     }
 
     public void setTarget(String target) {
@@ -73,11 +79,17 @@ public class GrpcClientBase extends AbstractGrpcBase {
     public void build() throws IOException {
         parseConfig();
         if (channel == null) {
-            channel = ManagedChannelBuilder.forTarget(target)
+            if(privateKeyFilePath == null) {
+                channel = ManagedChannelBuilder.forTarget(target)
                     .maxInboundMessageSize(Integer.MAX_VALUE)
                     // Channels are secure by default (via SSL/TLS).
                     .usePlaintext()
                     .build();
+            } else {
+                channel = NettyChannelBuilder.forTarget(target)
+                .sslContext(GrpcSslContexts.forClient().trustManager(new File(privateKeyFilePath)).build())
+                .build();
+            }
         }
         loadServices();
     }
