@@ -66,7 +66,6 @@ root@[hostname]:/opt/work#
 
 The /opt/work directory contains:
 
-* start-notebook.sh is used for starting the jupyter notebook. You can specify the environment settings and spark settings to start a specified jupyter notebook.
 * bigdl-${BigDL_VERSION} is the BigDL home of BigDL distribution.
 * spark-${SPARK_VERSION} is the Spark home.
 * BigDL is cloned from https://github.com/intel-analytics/BigDL.git, contains apps, examples using BigDL.
@@ -81,7 +80,7 @@ After a Docker container is launched and user login into the container, you can 
 In the `/opt/work` directory, run this command line to start the Jupyter Notebook service:
 ```
 source activate bigdl
-./start-notebook.sh
+jupyter notebook --notebook-dir=/opt/work/bigdl-0.14.0-SNAPSHOT/apps --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root
 ```
 
 You will see the output message like below. This means the Jupyter Notebook service has started successfully within the container.
