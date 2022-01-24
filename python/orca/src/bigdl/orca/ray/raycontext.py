@@ -23,7 +23,7 @@ class RayContext(object):
     _active_ray_context = None
 
     def __init__(self,
-                 runtime="ray_on_spark",
+                 runtime="spark",
                  cores=2,
                  num_nodes=1,
                  **kwargs):
@@ -31,7 +31,7 @@ class RayContext(object):
         self.runtime = runtime
         self.initialized = False
 
-        if runtime == "ray_on_spark":
+        if runtime == "spark":
             from bigdl.orca.ray import RayOnSparkContext
             self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
@@ -41,8 +41,8 @@ class RayContext(object):
             ray_args = kwargs.copy()
             self.ray_args = ray_args
         else:
-            raise ValueError(f"Unsupported cluster mode: {runtime}. "
-                             f"Runtime must be ray or ray_on_spark")
+            raise ValueError(f"Unsupported runtime: {runtime}. "
+                             f"Runtime must be spark or ray")
 
         self.num_ray_nodes = num_nodes
         self.ray_node_cpu_cores = cores
@@ -75,4 +75,5 @@ class RayContext(object):
                 ray_ctx.init()
             return ray_ctx
         else:
-            raise Exception("No active RayContext. Please create a RayContext and init it first")
+            raise Exception("No active RayContext. "
+                            "Please call init_orca_context to create a RayContext.")

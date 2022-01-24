@@ -16,17 +16,17 @@
 
 import pytest
 import numpy as np
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 
 from bigdl.chronos.detector.anomaly.ae_detector import AEDetector
 
 
-class TestAEDetector(ZooTestCase):
+class TestAEDetector(TestCase):
 
-    def setup_method(self, method):
+    def setUp(self):
         pass
 
-    def teardown_method(self, method):
+    def tearDown(self):
         pass
 
     def create_data(self):

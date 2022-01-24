@@ -40,15 +40,15 @@ object ImageChannelNormalize {
   /**
    * image channel normalize
    *
-   * @param meanR mean value in R channel
-   * @param meanG mean value in G channel
    * @param meanB mean value in B channel
-   * @param stdR  std value in R channel
-   * @param stdG  std value in G channel
+   * @param meanG mean value in G channel
+   * @param meanR mean value in R channel
    * @param stdB  std value in B channel
+   * @param stdG  std value in G channel
+   * @param stdR  std value in R channel
    */
-  def apply(meanR: Float, meanG: Float, meanB: Float,
-            stdR: Float = 1, stdG: Float = 1, stdB: Float = 1): ImageChannelNormalize = {
+  def apply(meanB: Float, meanG: Float, meanR: Float,
+            stdB: Float = 1, stdG: Float = 1, stdR: Float = 1): ImageChannelNormalize = {
     new ImageChannelNormalize(Array(meanB, meanG, meanR), Array(stdB, stdG, stdR))
   }
 

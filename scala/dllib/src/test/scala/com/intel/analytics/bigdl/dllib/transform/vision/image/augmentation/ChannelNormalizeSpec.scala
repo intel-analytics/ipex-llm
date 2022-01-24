@@ -25,7 +25,7 @@ class ChannelNormalizeSpec extends FlatSpec with Matchers {
 
   "ChannelNormalize" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
-    val transformer = ChannelNormalize(100, 200, 300) -> MatToFloats()
+    val transformer = ChannelNormalize(300, 200, 100) -> MatToFloats()
     val transformed = transformer(data)
     val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
 
@@ -39,7 +39,7 @@ class ChannelNormalizeSpec extends FlatSpec with Matchers {
 
   "ChannelNormalize with std not 1" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
-    val transformer = ChannelNormalize(100, 200, 300, 2, 2, 2) -> MatToFloats()
+    val transformer = ChannelNormalize(300, 200, 100, 2, 2, 2) -> MatToFloats()
     val transformed = transformer(data)
     val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
 
