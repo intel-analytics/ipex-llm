@@ -306,7 +306,8 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                                  "but got: %s".format(cluster_mode))
             ray_args = {}
             for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
-                        "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
+                        "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui",
+                        "system_config"]:
                 if key in kwargs:
                     ray_args[key] = kwargs[key]
             from bigdl.orca.ray import RayContext

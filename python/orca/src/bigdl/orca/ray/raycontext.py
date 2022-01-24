@@ -15,9 +15,6 @@
 #
 
 
-from cProfile import run
-
-
 class RayContext(object):
 
     _active_ray_context = None
