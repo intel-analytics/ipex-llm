@@ -52,7 +52,7 @@ val sc = NNContext.initNNContext("dllib_demo")
 ```
 For more information about ```NNContext```, please refer to [NNContext](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/dllib.html#nn-context)
 
-## 3. Distributed Data Processing
+## 3. Distributed Data Loading
 
 #### Using Spark Dataframe APIs
 DLlib supports Spark Dataframes as the input to the distributed training, and as
@@ -77,19 +77,6 @@ val path = "pima-indians-diabetes.data.csv"
 val df = spark.read.options(Map("inferSchema"->"true","delimiter"->",")).csv(path)
       .toDF("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age", "class")
 ```
-
-Process the DataFrame to create the label and features. Then split it into traing part and validation part
-
-```
-val assembler = new VectorAssembler()
-  .setInputCols(Array("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age"))
-  .setOutputCol("features")
-val assembleredDF = assembler.transform(df)
-val df2 = assembleredDF.withColumn("label",col("class").cast(DoubleType) + lit(1))
-val Array(trainDF, valDF) = df2.randomSplit(Array(0.8, 0.2))
-```
-
-Now we have got the data which is ready to train. Next we will build a deep learning model using DLLib Keras API
 
 ## 4. Model Definition
 
@@ -116,6 +103,40 @@ Now the model is built and ready to train.
 
 ## 5. Distributed Model Training
 Now you can use 'fit' begin the training, please set the feature columns and label columns. Model Evaluation can be performed periodically during a training.
+If the model accepts single input(eg. column `feature1`) and single output(eg. column `label`), please set the feature columns of the model as :
+```
+model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
+  featureCols = Array("feature1"), labelCols = Array("label"))
+```
+
+If the feature column for the model is a Spark ML Vector. Please assemble related columns into a Vector and pass it to the model. eg.
+```
+val assembler = new VectorAssembler()
+  .setInputCols(Array("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age"))
+  .setOutputCol("features")
+val assembleredDF = assembler.transform(df)
+val df2 = assembleredDF.withColumn("label",col("class").cast(DoubleType) + lit(1))
+```
+
+If your model accepts multiple inputs(eg. column `f1`, `f2`, `f3`), please set the features as below:
+```
+model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
+  featureCols = Array("f1", "f2", "f3"), labelCols = Array("label"))
+```
+If one of the inputs is a Spark ML Vector, please assemble it before pass the data to the model.
+
+Similarly, if the model accepts multiple outputs(eg. column `label1`, `label2`), please set the label columns as below:
+```
+model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
+  featureCols = Array("f1", "f2", "f3"), labelCols = Array("label1", "label2"))
+```
+
+Then split it into traing part and validation part
+```
+val Array(trainDF, valDF) = df2.randomSplit(Array(0.8, 0.2))
+```
+
+The model is ready to train.
 ```
 dmodel.fit(x=trainDF, batchSize=4, nbEpoch = 2,
   featureCols = Array("features"), labelCols = Array("label"), valX = valDF
@@ -135,6 +156,8 @@ dmodel.saveModel(modelPath)
 - **load**
 ```
 val loadModel = Models.loadModel(modelPath)
+
+val preDF2 = loadModel.predict(valDF, featureCols = Array("features"), predictionCol = "predict")
 ```
 
 You may want to refer [Save/Load](https://bigdl.readthedocs.io/en/latest/doc/DLlib/Overview/keras-api.html#save)
@@ -144,12 +167,13 @@ After training finishes, you can then use the trained model for prediction or ev
 
 - **inference**
 ```
-dmodel.predict(df, featureCols = Array("features"), predictionCol = "predict")
+dmodel.predict(trainDF, featureCols = Array("features"), predictionCol = "predict")
 ```
 
 - **evaluation**
 ```
-dmodel.evaluate(df, featureCols = Array("features"))
+dmodel.evaluate(trainDF, batchSize = 4, featureCols = Array("features"),
+  labelCols = Array("label"))
 ```
 
 ## 8. Checkpointing and resuming training
