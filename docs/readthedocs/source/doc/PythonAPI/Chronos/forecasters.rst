@@ -38,7 +38,7 @@ Temporal Convolutional Networks (TCN) is a neural network that use convolutional
 
 .. automodule:: bigdl.chronos.forecaster.tcn_forecaster
     :members:
-    :undoc-members:
+    :undoc-membears:
     :show-inheritance:
 
 
