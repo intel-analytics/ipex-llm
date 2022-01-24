@@ -24,9 +24,9 @@ class NBeatsForecaster(BasePytorchForecaster):
     Example:
         >>> # NBeatsForecaster test.
         >>> forecaster = NBeatForecaster(paste_seq_len=10,
-                                          future_seq_len=1,
-                                          stack_types=("generic", "generic"),
-                                          ...)
+                                         future_seq_len=1,
+                                         stack_types=("generic", "generic"),
+                                         ...)
         >>> forecaster.fit((x_train, y_train))
         >>> forecaster.to_local() # if you set distributed=True
     """
