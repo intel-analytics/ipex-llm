@@ -35,4 +35,4 @@ echo "[INFO] The Output is Saved At $output_path"
 # Step 4. Decrypt The colums And Ouput With KMS API
 echo "[INFO] Retrieve Output At Client Side."
 echo "[INFO] Start To Decrypt Columns..."
-python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip 192.168.0.112 --dir $output_path --pkp /ppml/trusted-big-data-ml/encrypted_primary_key --dkp /ppml/trusted-big-data-ml/encrypted_data_key
+python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $output_path --pkp /ppml/trusted-big-data-ml/encrypted_primary_key --dkp /ppml/trusted-big-data-ml/encrypted_data_key
