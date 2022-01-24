@@ -34,7 +34,7 @@ class INTEL_EXT_DBSCAN:
         self.algorithm_list = algorithm_list
         self.sklearnex_available = sklearn_install_check()
         if not self.sklearnex_available and use_sklearnex:
-            warning("Please install scikit-learn-intelex first.")
+            warning("If you want to use sklearnex, please install scikit-learn-intelex first.")
         self.use_sklearnex = use_sklearnex if self.sklearnex_available else False
 
     def __enter__(self):
