@@ -53,9 +53,9 @@ class Seq2SeqForecaster(BasePytorchForecaster):
                  workers_per_node=1,
                  distributed_backend="torch_distributed"):
         """
-        Build a TCN Forecast Model.
+        Build a Seq2Seq Forecast Model.
 
-        TCN Forecast may fall into local optima. Please set repo_initialization
+        Seq2Seq Forecast may fall into local optima. Please set repo_initialization
         to False to alleviate the issue. You can also change a random seed to
         work around.
 

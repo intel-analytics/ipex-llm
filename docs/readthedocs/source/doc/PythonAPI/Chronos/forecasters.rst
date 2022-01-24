@@ -38,7 +38,7 @@ Temporal Convolutional Networks (TCN) is a neural network that use convolutional
 
 .. automodule:: bigdl.chronos.forecaster.tcn_forecaster
     :members:
-    :undoc-membears:
+    :undoc-members:
     :show-inheritance:
 
 
@@ -51,7 +51,7 @@ Neural basis expansion analysis for interpretable time series forecasting (`N-BE
 
 .. automodule:: bigdl.chronos.forecaster.nbeats_forecaster
     :members:
-    :undoc-membears:
+    :undoc-members:
     :show-inheritance:
 
 
