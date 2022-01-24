@@ -85,4 +85,3 @@ class Embedding(TFEmbedding):
                          mask_zero=mask_zero,
                          input_length=input_length,
                          **kwargs)
-
