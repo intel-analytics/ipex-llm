@@ -1,44 +1,52 @@
 #!/usr/bin/env python
 
+#
+# Copyright 2018 Analytics Zoo Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Usage ###################
+# Run ./gen_site.py to build site with Analytics Zoo docs with following commands
+# -s: add scala docs
+# -p: add python docs
+# -m [port]: --startserver
+# -h: help
+# Example
+# ./gen_site.py -s -p -m 8080
+############################
+
 import argparse
 import sys
 import os
-from subprocess import Popen, PIPE
 import subprocess
 
 
-def run_cmd(cmds, err_msg, s=False):
-    cmd = cmds
-    if s:
-        cmd = ' '.join(cmds)
-    try:
-        # print cmd
-        p = Popen(cmd, shell=s)
-        p.communicate()
-        if p.returncode != 0:
-            print err_msg
-            sys.exit(1)
-    except OSError as e:
-        print err_msg
-        print e.strerror
-        sys.exit(1)
-
-parser = argparse.ArgumentParser(description='Process BigDL docs.')
+parser = argparse.ArgumentParser(description='Process Analytics Zoo docs.')
 parser.add_argument('-s', '--scaladocs',
-    dest='scaladocsflag', action='store_true',
-    help='Add scala doc to site')
+                    dest='scaladocsflag', action='store_true',
+                    help='Add scala doc to site')
 parser.add_argument('-p', '--pythondocs',
-    dest='pythondocsflag', action='store_true',
-    help='Add python doc to site')
+                    dest='pythondocsflag', action='store_true',
+                    help='Add python doc to site')
 parser.add_argument('-m', '--startserver',
-    dest='port', type=int,
-    help='Start server at PORT after building')
+                    dest='port', type=int,
+                    help='Start server at PORT after building')
 parser.add_argument('-d', '--startmkdocserve',
-    dest='debugport', type=int,
-    help=argparse.SUPPRESS)
+                    dest='debugport', type=int,
+                    help=argparse.SUPPRESS)
 parser.add_argument('-l', '--localdoc',
-    dest='local_doc', action='store_true',
-    help='Use local bigdl doc repo(if it exists) instead of downloading from remote')
+                    dest='local_doc', action='store_true',
+                    help='Use local zoo doc repo(if it exists) instead of downloading from remote')
 
 args = parser.parse_args()
 
@@ -53,72 +61,65 @@ dir_name = os.path.dirname(script_path)
 os.chdir(dir_name)
 
 # check if mkdoc is installed
-run_cmd(['mkdocs', '--version'],
-    'Please install mkdocs and run this script again\n\te.g., pip install mkdocs')
+subprocess.run(['mkdocs', '--version'])  # pip install mkdocs==0.16.3
 
 # refresh local docs repo
 if not (local_doc and os.path.isdir("/tmp/bigdl-doc")):
-    run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
-        'rm doc repo error')
-    run_cmd(['git', 'clone', 'https://github.com/bigdl-project/bigdl-project.github.io.git', '/tmp/bigdl-doc'],
-        'git clone doc repo error')
+    subprocess.run(['rm', '-rf', '/tmp/bigdl-doc'])  # rm doc repo
+    # git clone doc repo
+    subprocess.run(['git', 'clone', 'https://github.com/bigdl-project/bigdl-project.github.io.git', '/tmp/bigdl-doc'])
 
 # refresh theme folder
-run_cmd(['rm', '-rf', '{}/mkdocs_windmill'.format(dir_name)],
-    'rm theme folder error')
-run_cmd(['cp', '-r', '/tmp/bigdl-doc/mkdocs_windmill', dir_name],
-    'mv theme foler error')
+subprocess.run(['rm', '-rf', '{}/mkdocs_windmill'.format(dir_name)])  # rm theme folder
+subprocess.run(['cp', '-r', '/tmp/bigdl-doc/mkdocs_windmill', dir_name])
 
 # refresh css file
-run_cmd(['cp', '/tmp/bigdl-doc/extra.css', '{}/docs'.format(dir_name)],
-    'mv theme foler error')
+subprocess.run(['cp', '/tmp/bigdl-doc/extra.css', '{}/docs'.format(dir_name)])  # mv theme folder
 
 # mkdocs build
-run_cmd(['mkdocs', 'build'],
-    'mkdocs build error')
+subprocess.run(['mkdocs', 'build'])
 
 # replace resources folder in site
-run_cmd(['cp', '/tmp/bigdl-doc/css/*', '{}/site/css'.format(dir_name)],
-    'mv theme foler error', s=True)
-run_cmd(['cp', '/tmp/bigdl-doc/js/*', '{}/site/js'.format(dir_name)],
-    'mv theme foler error', s=True)
-run_cmd(['cp', '/tmp/bigdl-doc/fonts/*', '{}/site/fonts'.format(dir_name)],
-    'mv theme foler error', s=True)
-run_cmd(['cp', '/tmp/bigdl-doc/img/*', '{}/site/img'.format(dir_name)],
-    'mv theme foler error', s=True)
-run_cmd(['cp', '/tmp/bigdl-doc/version-list', '{}/site'.format(dir_name)],
-    'mv theme foler error', s=True)
+# mv theme folder
+subprocess.run(' '.join(['cp', '/tmp/bigdl-doc/css/*', '{}/site/css'.format(dir_name)]), shell=True)
+subprocess.run(' '.join(['cp', '/tmp/bigdl-doc/js/*', '{}/site/js'.format(dir_name)]), shell=True)
+subprocess.run(' '.join(['cp', '/tmp/bigdl-doc/fonts/*', '{}/site/fonts'.format(dir_name)]), shell=True)
+subprocess.run(' '.join(['cp', '/tmp/bigdl-doc/img/*', '{}/site/img'.format(dir_name)]), shell=True)
+subprocess.run(' '.join(['cp', '/tmp/bigdl-doc/version-list', '{}/site'.format(dir_name)]), shell=True)
 
 if scaladocs:
-    print 'build scala doc'
+    print('build scala doc')
     bigdl_dir = os.path.dirname(dir_name)
     os.chdir(bigdl_dir)
-    run_cmd(['mvn', 'scala:doc'], 'Build scala doc error')
+    subprocess.run(['mvn', 'scala:doc'])  # build scala doc
     scaladocs_dir = bigdl_dir + '/spark/dl/target/site/scaladocs/*'
-    target_dir = dir_name + '/site/APIGuide/scaladoc/'
-    run_cmd(['cp', '-r', scaladocs_dir, target_dir],
-        'mv scaladocs error', s=True)
+    target_dir = dir_name + '/site/APIGuide/'
+    if not os.path.exists(target_dir):
+        subprocess.run(['mkdir', target_dir])  # mkdir APIGuide
+    # mv scaladocs
+    subprocess.run(' '.join(['cp', '-r', scaladocs_dir, target_dir + 'scaladoc/']), shell=True)
 
 if pythondocs:
-    print 'build python'
+    print('build python')
     pyspark_dir = os.path.dirname(dir_name) + '/pyspark/docs/'
-    target_dir = dir_name + '/site/APIGuide/python-api-doc/'
+    target_dir = dir_name + '/site/APIGuide/'
     os.chdir(pyspark_dir)
-    run_cmd(['./doc-gen.sh'], 'Build python doc error')
-    pythondocs_dir = pyspark_dir + '_build/html/*'
-    run_cmd(['cp', '-r', pythondocs_dir, target_dir],
-        'mv scaladocs error', s=True)
+    subprocess.run(['./doc-gen.sh'])  # build python doc
+    pythondocs_dir = pyspark_dir + '_build/html/'
+    if not os.path.exists(target_dir):
+        subprocess.run(['mkdir', target_dir])  # mkdir APIGuide
+    # mv pythondocs
+    subprocess.run(' '.join(['cp', '-r', pythondocs_dir, target_dir + 'python-api-doc/']), shell=True)
 
 os.chdir(dir_name)
 
-if args.debugport != None:
-    print 'starting mkdoc server in debug mode'
+if args.debugport:
+    print('starting mkdoc server in debug mode')
     addr = '--dev-addr=*:'+str(args.debugport)
-    run_cmd(['mkdocs', 'serve', addr],
-         'mkdocs start serve error')
+    # mkdocs start serve
+    subprocess.run(['mkdocs', 'serve', addr])
 
-if args.port != None:
+if args.port:
     os.chdir(dir_name + '/site')
-    run_cmd(['python', '-m', 'SimpleHTTPServer', '{}'.format(args.port)],
-        'start http server error')
-
+    # start http server
+    subprocess.run(['python', '-m', 'http.server', '{}'.format(args.port)])
