@@ -37,7 +37,7 @@ export ENCLAVE_KEY=/root/keys/enclave-key.pem
 export DATA_PATH=/root/zoo-tutorials/tpch-spark
 export KEYS_PATH=/root/keys
 export KUBERCONFIG_PATH=/root/kuberconfig
-export LOCAL_IP=172.20.55.35
+export LOCAL_IP=$local_ip
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
 sudo docker run -itd \
         --privileged \
@@ -102,8 +102,8 @@ spec:
 ```
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 export SPARK_LOCAL_IP=$LOCAL_IP && \
-export HDFS_HOST=172.20.55.35 && \
-export HDFS_PORT=39000 && \
+export HDFS_HOST=$hdfs_host_ip && \
+export HDFS_PORT=$hdfs_port && \
 export TPCH_DIR=/ppml/trusted-big-data-ml/work/tpch-spark \
 export INPUT_DIR=$TPCH_DIR/dbgen \
 export OUTPUT_DIR=hdfs://$HDFS_HOST:$HDFS_PORT/tpc-h/output \
