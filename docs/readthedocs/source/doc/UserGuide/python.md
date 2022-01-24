@@ -30,12 +30,12 @@ Supported Platforms: Linux and macOS.   _**Note:** Windows is currently not supp
 
 #### **1.1 Official Release**
 
-You can install the latest release version of BigDL as follows:
+You can install the latest release version of BigDL (built on top of Spark 2.4.6 by default) as follows:
 ```bash
 pip install bigdl
 ```
 _**Note:** Installing BigDL will automatically install all the BigDL packages including
-`bigdl-nano`, `bigdl-orca`, `bigdl-chronos`, `bigdl-serving`, `bigdl-friesian` and their dependencies if they haven't been detected in your conda environment._
+`bigdl-nano`, `bigdl-dllib`, `bigdl-orca`, `bigdl-chronos`, `bigdl-friesian`, `bigdl-serving` and their dependencies if they haven't been detected in your conda environment._
 
 #### **1.2 Nightly Build**
 
@@ -48,7 +48,7 @@ pip install --pre --upgrade bigdl
 Alternatively, you can find the list of the nightly build versions [here](https://pypi.org/project/BigDL/#history), and install a specific version as follows:
 
 ```bash
-pip install bigdl=version
+pip install bigdl==version
 ```
 
 _**Note:** If you are using a custom URL of Python Package Index, you may need to check whether the latest packages have been sync'ed with pypi. 
@@ -59,6 +59,16 @@ You could uninstall all the packages of BigDL as follows:
 ```bash
 pip uninstall bigdl-dllib bigdl-tf bigdl-math bigdl-orca bigdl-chronos bigdl-friesian bigdl-nano bigdl-serving bigdl
 ```
+
+#### **1.3 BigDL on Spark 3**
+
+You can install BigDL built on top of Spark 3.1.2 as follows:
+```bash
+pip install bigdl-spark3  # Install the latest release version
+pip install --pre --upgrade bigdl-spark3  # Install the latest nightly build version
+```
+You can find the list of the nightly build versions built on top of Spark3 [here](https://pypi.org/project/bigdl-spark3/#history).
+
 
 ---
 ### **2. Run**
@@ -108,7 +118,7 @@ For more details, please refer to [Orca Context](../Orca/Overview/orca-context.m
 BigDL has been tested on __Python 3.6 and 3.7__ with the following library versions:
 
 ```bash
-pyspark==2.4.6
+pyspark==2.4.6 or 3.1.2
 ray==1.2.0
 tensorflow==1.15.0 or >2.0
 pytorch>=1.5.0
