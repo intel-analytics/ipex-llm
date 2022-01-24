@@ -47,9 +47,9 @@ class Embedding(TFEmbedding):
         :param output_dim: Integer. Dimension of the dense embedding.
         :param embeddings_initializer: Initializer for the `embeddings`
             matrix (see `keras.initializers`).
-        :param embeddings_regularizer: Regularizer function applied to
-            the `embeddings` matrix (see `keras.regularizers`).
-            We recommend you not using this parameter.
+        :param embeddings_regularizer: Applying regularizer directly on embeddings
+            will make the sparse gradient dense and may result in degraded performance.
+            We recommend you to use activity_regularizer.
         :param activity_regularizer: Regularizer function applied to
             the output tensor after looking up the `embeddings` matrix.
         :param embeddings_constraint: Constraint function applied to
@@ -68,36 +68,21 @@ class Embedding(TFEmbedding):
             `Flatten` then `Dense` layers upstream
             (without it, the shape of the dense outputs cannot be computed).
         '''
-        if embeddings_regularizer is None:
-            super().__init__(input_dim=input_dim,
-                             output_dim=output_dim,
-                             embeddings_initializer=embeddings_initializer,
-                             embeddings_regularizer=embeddings_regularizer,
-                             activity_regularizer=activity_regularizer,
-                             embeddings_constraint=embeddings_constraint,
-                             mask_zero=mask_zero,
-                             input_length=input_length,
-                             **kwargs)
-        else:
-            warnings.warn('param: embeddings_regularizer is not supported\
-                          and should be removed', UserWarning)
-            if activity_regularizer is None:
-                # Use the embeddings_regularizer to initialize param: activity_regularizer
-                super().__init__(input_dim=input_dim,
-                                 output_dim=output_dim,
-                                 embeddings_initializer=embeddings_initializer,
-                                 activity_regularizer=embeddings_regularizer,
-                                 embeddings_constraint=embeddings_constraint,
-                                 mask_zero=mask_zero,
-                                 input_length=input_length,
-                                 **kwargs)
-            else:
-                super().__init__(input_dim=input_dim,
-                                 output_dim=output_dim,
-                                 embeddings_initializer=embeddings_initializer,
-                                 embeddings_regularizer=embeddings_regularizer,
-                                 activity_regularizer=activity_regularizer,
-                                 embeddings_constraint=embeddings_constraint,
-                                 mask_zero=mask_zero,
-                                 input_length=input_length,
-                                 **kwargs)
+        if embeddings_regularizer is not None and activity_regularizer is None:
+            warnings.warn(
+                'Apply regularizer directly on embeddings will make the sparse gradient dense and\
+                 may result in degraded performance. We are changing your regularizer\
+                 to apply on the output tensors ', UserWarning)
+            activity_regularizer = embeddings_regularizer
+            embeddings_regularizer = None
+
+        super().__init__(input_dim=input_dim,
+                         output_dim=output_dim,
+                         embeddings_initializer=embeddings_initializer,
+                         embeddings_regularizer=embeddings_regularizer,
+                         activity_regularizer=activity_regularizer,
+                         embeddings_constraint=embeddings_constraint,
+                         mask_zero=mask_zero,
+                         input_length=input_length,
+                         **kwargs)
+
