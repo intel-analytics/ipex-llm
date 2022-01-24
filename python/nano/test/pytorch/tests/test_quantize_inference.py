@@ -17,11 +17,13 @@
 
 import pytest
 import os
+import tempfile
 from unittest import TestCase
 
 import torch
 from torch import nn
 from torch.utils.data import TensorDataset, DataLoader
+from pytorch_lightning import LightningModule
 
 import numpy as np
 
@@ -45,6 +47,28 @@ class ResNet18(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+
+class LitResNet18(LightningModule):
+    def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+        super().__init__()
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+        output_size = backbone.get_output_size()
+        head = nn.Linear(output_size, num_classes)
+        self.classify = nn.Sequential(backbone, head)
+        self.loss = nn.CrossEntropyLoss()
+
+    def forward(self, x):
+        return self.classify(x)
+    
+    def training_step(self, batch, batch_idx):
+        y_hat = self(batch[0])
+        loss = self.loss(y_hat, batch[1])
+        return loss
+    
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters())
+
+
 class TestQuantizeInference(TestCase):
 
     def test_quantized_model_inference(self):
@@ -53,7 +77,7 @@ class TestQuantizeInference(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
 
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        pl_model = Trainer.compile(model, loss, optimizer)
         train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
@@ -71,5 +95,28 @@ class TestQuantizeInference(TestCase):
         trainer.fit(pl_model, train_loader)
         assert pl_model._quantized_model_up_to_date is False  # qmodel is not up-to-date after training
 
+        # test save/load dict
         pl_model = trainer.quantize(pl_model, train_loader)
         assert pl_model._quantized_model_up_to_date is True  # qmodel is up-to-date after building
+
+        model_load = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        pl_model_load = Trainer.compile(model_load)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, ".ckpt")
+            torch.save(pl_model.quantized_state_dict(), ckpt_name)
+            pl_model_load.load_quantized_state_dict(torch.load(ckpt_name))
+        
+        for x, y in train_loader:
+            quantized_res = pl_model.inference(x, backend=None, quantize=True).numpy()  # quantized
+            quantized_res_load = pl_model_load.inference(x, backend=None, quantize=True).numpy()  # quantized
+            np.testing.assert_almost_equal(quantized_res, quantized_res_load, decimal=5)  # same result
+
+    def test_quantized_model_save_load_checkpoint(self):
+        model = LitResNet18(10, pretrained=False, include_top=False, freeze=True)
+        trainer = Trainer(max_epochs=1)
+        train_loader = create_data_loader(data_dir, batch_size, \
+                                          num_workers, data_transform, subset=200)
+        trainer.fit(model, train_loader)
+        model = trainer.quantize(model, train_loader)
+        trainer.save_checkpoint("example.ckpt")
+        model_load = LitResNet18.load_from_checkpoint("example.ckpt", num_classes=10)

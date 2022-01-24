@@ -12,7 +12,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <spark-scope>compile</spark-scope>
+        <spark-scope>provided</spark-scope>
         <grpc.version>1.37.0</grpc.version>
     </properties>
 
@@ -56,6 +56,11 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.16</version>
         </dependency>
+	<dependency>
+	    <groupId>com.google.guava</groupId>
+	    <artifactId>guava</artifactId>
+	    <version>31.0.1-jre</version>
+	</dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-api</artifactId>
@@ -237,7 +242,13 @@
                             <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                            </transformers>
+			    </transformers>
+			    <relocations>
+                          	<relocation>
+                          	    <pattern>com.google.protobuf</pattern>
+                          	    <shadedPattern>shaded.com.google.protobuf</shadedPattern>
+                                </relocation>
+			    </relocations>
                         </configuration>
                     </execution>
                 </executions>

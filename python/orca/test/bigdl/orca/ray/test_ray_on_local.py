@@ -32,7 +32,10 @@ class TestRayLocal(TestCase):
                 return socket.gethostname()
 
         sc = init_spark_on_local(cores=8)
-        ray_ctx = RayContext(sc=sc, object_store_memory="1g", ray_node_cpu_cores=4)
+        config = {"object_spilling_config":"{\"type\":\"filesystem\","
+                                           "\"params\":{\"directory_path\":\"/tmp/spill\"}}"}
+        ray_ctx = RayContext(sc=sc, object_store_memory="1g", ray_node_cpu_cores=4,
+                             system_config=config)
         address_info = ray_ctx.init()
         assert "object_store_address" in address_info
         actors = [TestRay.remote() for i in range(0, 4)]

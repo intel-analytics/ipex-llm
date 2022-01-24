@@ -44,10 +44,6 @@ echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
-    
-    # bigdl-nano is on linux only 
-    echo "Exit, bigdl-nano does not support MacOS for now."
-    exit 1
 
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"

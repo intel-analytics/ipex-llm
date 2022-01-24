@@ -41,7 +41,7 @@ object FLServer {
   def main(args: Array[String]): Unit = {
     val flServer = new FLServer(args)
     // Set aggregator here
-    flServer.build()
+    flServer.buildWithTls()
     flServer.start()
     flServer.blockUntilShutdown()
   }
@@ -61,6 +61,8 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
     if (flHelper != null) {
       port = flHelper.serverPort
       clientNum = flHelper.clientNum
+      certChainFilePath = flHelper.certChainFilePath
+      privateKeyFilePath = flHelper.privateKeyFilePath
     }
 
     // start all services without providing service list
