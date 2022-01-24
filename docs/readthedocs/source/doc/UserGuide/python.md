@@ -67,7 +67,7 @@ You can install BigDL built on top of Spark 3.1.2 as follows:
 pip install bigdl-spark3  # Install the latest release version
 pip install --pre --upgrade bigdl-spark3  # Install the latest nightly build version
 ```
-You can find the list of the nightly build versions built on top of Spark3 [here](https://pypi.org/project/bigdl-spark3/#history).
+You can find the list of the nightly build versions built on top of Spark 3.1.2 [here](https://pypi.org/project/bigdl-spark3/#history).
 
 
 ---
