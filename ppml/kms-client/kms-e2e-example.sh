@@ -3,9 +3,9 @@
 
 # set -x
 # Modify Below Variables According To Your Environment
-KMS_SERVER_IP=192.168.0.112 # KMS Server IP
+KMS_SERVER_IP=YOUR_KMS_SERVER_IP_ADDRESS # KMS Server IP
 INPUT_DIR_PATH=/ppml/trusted-big-data-ml/1m_csv # Path Of The Directory Containing CSVs
-LOCAL_IP=192.168.0.112 # Spark Host IP
+LOCAL_IP=$LOCAL_IP # Spark Host IP
 
 # Step 1. Generate Primary Key And Data Key
 echo "[INFO] Start To Generate Keys..."
