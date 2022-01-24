@@ -170,13 +170,15 @@ class SparkTFEstimator():
             else:
                 def transform_func(iter, init_param, param):
                     data_tuple_list = list(iter)
-                    data_list = [x[0] for x in data_tuple_list]
-                    valid_list = [x[1] for x in data_tuple_list]
+                    data_list = [x for data_tuple in data_tuple_list for x in data_tuple[0]]
+                    valid_list = [x for data_tuple in data_tuple_list for x in data_tuple[1]]
                     param["data_creator"] = make_data_creator(data_list)
                     param["validation_data_creator"] = make_data_creator(valid_list)
                     return SparkRunner(**init_param).step(**param)
 
-                res = data.zip(validation_data).rdd.repartition(self.num_workers).barrier() \
+                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
+                val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
+                res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier()\
                     .mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
         else:
@@ -331,8 +333,8 @@ class SparkTFEstimator():
         )
 
         if isinstance(data, DataFrame):
-            data = data.repartition(self.num_workers)
-            xshards, _ = dataframe_to_xshards(data,
+            pre_predict_data = data.repartition(self.num_workers)
+            xshards, _ = dataframe_to_xshards(pre_predict_data,
                                               validation_data=None,
                                               feature_cols=feature_cols,
                                               label_cols=None,
@@ -347,7 +349,7 @@ class SparkTFEstimator():
 
             pred_shards = SparkXShards(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
-            result = convert_predict_xshards_to_dataframe(data, pred_shards)
+            result = convert_predict_xshards_to_dataframe(pre_predict_data, pred_shards)
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
 
