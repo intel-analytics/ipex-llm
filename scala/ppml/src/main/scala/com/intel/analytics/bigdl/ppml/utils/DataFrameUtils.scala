@@ -24,95 +24,251 @@ import com.intel.analytics.bigdl.ppml.FLContext
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{ArrayType, DataType, FloatType, MapType, StringType, StructType}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{Column, DataFrame, SparkSession}
+import org.apache.spark.sql.{functions => F}
 
 import collection.JavaConverters._
 import collection.JavaConversions._
+import scala.collection.mutable.ArrayBuffer
 
 object DataFrameUtils {
   val logger = LogManager.getLogger(getClass)
-  def dataFrameToMiniBatch(df: DataFrame,
-                           featureColumn: Array[String] = null,
-                           labelColumn: Array[String] = null,
-                           hasLabel: Boolean = true,
+
+  /**
+   * Get all possible value maps for each column in featureColumns
+   * e.g. calling this on DataFrame with following
+   * c1 c2
+   * a  x
+   * b  x
+   * would return Map((c1 -> Array(a, b)), (c2 -> Array(x)))
+   * @param df
+   * @param featureColumns
+   * @return
+   */
+  def getCategoricalValueMap(df: DataFrame, featureColumns: Array[String]) = {
+    var map: Map[String, Array[String]] = Map()
+    featureColumns.foreach(col => {
+      val arrayBuffer = new ArrayBuffer[String]()
+      // add every possible value to array
+      df.select(col).distinct().collect().foreach(r => {
+        arrayBuffer.add(r.getAs[String](0))
+      })
+      map += (col -> arrayBuffer.toArray)
+    })
+    map
+  }
+  /**
+   * Convert a column of String to column of Int
+   * according to an array storing all possible String values
+   */
+  def stringColumnToIndex(df: DataFrame, col: String, array: Array[String]) = {
+    val convertToIndex = (value: String) => {
+      array.indexOf(value)
+    }
+    val convertUDF = F.udf(convertToIndex)
+    df.withColumn(col, convertUDF(F.col(col)).as(col))
+  }
+
+  def oneHot(value: Int, vectorLen: Int) = {
+    val oneHot = new Array[Float](vectorLen)
+    oneHot(value) = 1
+    oneHot
+  }
+
+  /**
+   * Convert Spark DataFrame into a matrix
+   * if categoricalMap is provided, the categorical features would be converted to one-hot
+   * and concat with the previous features, similar with Python Pandas get_dummies
+   */
+  def dataFrameToMatrix(df: DataFrame,
+                        categoricalMap: Map[String, Array[String]] = null,
+                        labelColumns: Array[String] = null) = {
+    val labelArrayBuffer = new ArrayBuffer[Float]()
+    val featureArrayBuffer = new ArrayBuffer[Tensor[Float]]()
+    // TODO: support only single label column for now
+    val localDF = df.collect()
+    labelColumns.foreach(colName => {
+      localDF.foreach(row => {
+        labelArrayBuffer.add(row.getAs[Float](colName))
+      })
+    })
+    val numericalColumns = (df.columns.toSet -- categoricalMap.keySet -- labelColumns.toSet)
+      .toArray
+    localDF.foreach(row => {
+      var rowArrayBuffer = new ArrayBuffer[Float]()
+      categoricalMap.foreach(p => {
+        val colName = p._1
+        val vocabSize = categoricalMap(colName).size
+        val value = row.getAs[Int](colName)
+        rowArrayBuffer = rowArrayBuffer ++ oneHot(value, vocabSize)
+      })
+      numericalColumns.foreach(colName => {
+          rowArrayBuffer.add(row.getAs[Float](colName))
+      })
+      val rowTensor = Tensor[Float](rowArrayBuffer.toArray, Array(rowArrayBuffer.size))
+      featureArrayBuffer.add(rowTensor)
+    })
+    (featureArrayBuffer.toArray, labelArrayBuffer.toArray)
+  }
+
+  def sampleRDDToMiniBatch(sampleRDD: RDD[Sample[Float]],
                            batchSize: Int = 4): bigdl.DataSet[MiniBatch[Float]] = {
-    val samples = dataFrameToSampleRDD(df, featureColumn, labelColumn, hasLabel, batchSize)
-    DataSet.array(samples.collect()) ->
+    DataSet.array(sampleRDD.collect()) ->
       SampleToMiniBatch(batchSize, parallelizing = false)
   }
-  def dataFrameToSampleRDD(df: DataFrame,
-                           featureColumn: Array[String] = null,
-                           labelColumn: Array[String] = null,
-                           hasLabel: Boolean = true,
-                           batchSize: Int = 4): RDD[Sample[Float]] = {
+
+  def dataFrameFloatCasting(df: DataFrame, columns: Array[String]) = {
+    var newDF = df
+    columns.foreach(colName => {
+      logger.debug(s"Casting column: $colName")
+      if (isNumericColumn(df, colName)) {
+        newDF = newDF.withColumn(colName, df.col(colName).cast(FloatType))
+      }
+    })
+    newDF
+  }
+  def dataFrameToArrayRDD(df: DataFrame,
+                          featureColumn: Array[String] = null,
+                          labelColumn: Array[String] = null,
+                          hasLabel: Boolean = true) = {
+    // If featureColumn and labelColumn are not specified here, show warning and use default
+    val (_featureColumn, _labelColumn) = if (featureColumn == null) {
+      logger.warn("featureColumn is not provided, would take the last" +
+        "column as label column, and others would be feature columns")
+      if (hasLabel) {
+        (df.columns.slice(0, df.columns.size - 1), Array(df.columns(df.columns.size - 1)))
+      } else {
+        (df.columns.slice(0, df.columns.size), Array[String]())
+      }
+    } else {
+      (featureColumn, labelColumn)
+    }
+
     val spark = FLContext.getSparkSession()
     import spark.implicits._
     var fDf: DataFrame = df
-    if (featureColumn != null) {
-      val featureList = featureColumn.toList
-      fDf = fDf.select(featureList.head, featureList.tail: _*)
-    }
+    val columnList = _featureColumn.toList ++ _labelColumn.toList
+
+    fDf = fDf.select(columnList.head, columnList.tail: _*)
+    // a Map mapping column name to the sorted array of features
+    val oneHotMap = new java.util.HashMap[String, Array[String]]()
+
+    // record the DataType of each column
+    // If numeric type, cast to Float, if categorical, store to one-hot map
     df.columns.foreach(colName => {
-      val dataType = getGenericType(df.schema(colName).dataType)
-      fDf = dataType match {
-        case "scalar" => fDf.withColumn(colName, df.col(colName).cast(FloatType))
-        case "complex" => throw new Error("not implemented")
+      logger.debug(s"Casting column: $colName")
+      if (isNumericColumn(df, colName)) {
+        fDf = fDf.withColumn(colName, df.col(colName).cast(FloatType))
       }
-
+      else {
+        val featureArray = df.groupBy(colName).count.sort("count")
+          .collect().map(r => r.getAs[String](0))
+        oneHotMap.put(colName, featureArray)
+      }
     })
-    val samples = fDf.rdd.map(r => {
-      var featureNum: Int = 0
-      var labelMum: Int = 0
+
+    // construct to DlLib Tensor for each row, store value in Array first
+    val rddOfFeatureAndLabel = fDf.rdd.map(r => {
       val inputList = new java.util.ArrayList[Float]()
-      val arr = if (featureColumn != null || labelColumn != null) {
-        featureColumn.foreach(f => inputList.add(r.getAs[Float](f)))
-        if (hasLabel) {
-          require(featureColumn != null && labelColumn != null,
-            "You must provide both featureColumn and labelColumn " +
-              "or neither in training or evaluation.\n" +
-              "If neither, the last would be used as label and the rest are the features")
-          labelColumn.foreach(f => inputList.add(r.getAs[Float](f)))
-
+      val labelList = new java.util.ArrayList[Float]()
+      _featureColumn.foreach(f => {
+        if (oneHotMap.contains(f)) {
+          // is categorical column, convert to one-hot
+          val featureArray = oneHotMap.get(f)
+          val oneHotIndex = featureArray.indexOf(r.getAs[String](f))
+          val oneHot = new Array[Float](featureArray.length)
+          //TODO: we implement this flatten feature for now, will refine in future
+          oneHot(oneHotIndex) = 1f
+          inputList.addAll(oneHot.toList)
         } else {
-          require(featureColumn != null, "You must provide featureColumn in predict")
+          // is numeric column, add value
+          inputList.add(r.getAs[Float](f))
         }
-
-        featureNum = featureColumn.length
-        labelMum = labelColumn.length
-        inputList.asScala.toArray[Float]
-      } else {
-        logger.warn("featureColumn and labelColumn are not provided, would take the last" +
-          "column as label column, and others would be feature columns")
-        if (hasLabel) {
-          featureNum = r.size - 1
-          labelMum = 1
-        } else {
-          featureNum = r.size
-        }
-
-        (0 until r.size).map(i => r.getAs[Float](i)).toArray
-      }
-
-
-
-      if (hasLabel) {
-        require(featureNum + labelMum == r.size, "size mismatch")
-        val features = Tensor[Float](arr.slice(0, featureNum), Array(featureNum))
-        val target = Tensor[Float](arr.slice(featureNum, r.size), Array(labelMum))
-        Sample(features, target)
-      } else {
-        val featureNum = r.size
-        val features = Tensor[Float](arr.slice(0, featureNum), Array(featureNum))
-        Sample(features)
-      }
+      })
+      if (hasLabel) _labelColumn.foreach(f => labelList.add(r.getAs[Float](f)))
+      (inputList.asScala.toArray[Float], labelList.asScala.toArray[Float])
     })
+    rddOfFeatureAndLabel
+
+  }
+  def arrayRDDToSampleRDD(arrayRDD: RDD[(Array[Float], Array[Float])]): RDD[Sample[Float]] = {
+    val samples = arrayRDD.map {
+      case (featureArray, labelArray) =>
+        if (labelArray.size != 0) {
+          // use Array to construct Tensor
+          val features = Tensor[Float](featureArray, Array(featureArray.length))
+          val target = Tensor[Float](labelArray, Array(labelArray.length))
+          Sample(features, target)
+        } else {
+          val features = Tensor[Float](featureArray, Array(featureArray.length))
+          Sample(features)
+        }
+    }
     samples
   }
-  def getGenericType(dataType: DataType): String = {
-    dataType match {
-      case d =>
-        if (d != ArrayType && d != StructType && d != MapType) "scalar"
-        else "complex"
+  def arrayRDDToTensorArray(arrayRDD: RDD[(Array[Float], Array[Float])]) = {
+    val featureTensorArray = new java.util.ArrayList[Tensor[Float]]()
+    val labelTensorArray = new java.util.ArrayList[Float]()
+    arrayRDD.collect().map{
+      case (featureArray, labelArray) =>
+        featureTensorArray.add(Tensor[Float](featureArray, Array(featureArray.size)))
+        if (labelArray.size > 0) {
+          labelTensorArray.add(labelArray(0))
+        }
     }
+    (featureTensorArray.asScala.toArray, labelTensorArray.asScala.toArray)
+  }
+  def getGenericType(dataType: DataType): String = {
+    dataType.typeName match {
+      case "array"| "struct" | "map" => "complex"
+      case "string" => "string"
+      case _ => "number"
+    }
+  }
+  def fillNA(df: DataFrame, naValue: String = "NA"): DataFrame = {
+    var filledDF = df
+    df.columns.foreach{ colName => {
+      val dataType = df.schema(colName).dataType
+      getGenericType(dataType) match {
+        case "complex" =>
+          throw new NotImplementedError()
+        case "string" =>
+          // check if the column is numeric format
+          if (isNumericColumn(df, colName)) {
+            filledDF = replaceNaWithAverage(filledDF, colName, naValue)
+          } else {
+            filledDF = replaceNaWithMaxCount(filledDF, colName, naValue)
+          }
+
+
+        case "number" =>
+          // if spark infer the DataFrame as number type, then no NA exists
+          filledDF
+      }
+    }}
+    filledDF
+  }
+  def isNumericColumn(df: DataFrame, col: String): Boolean = {
+    // Try first 10 elements, if failed, bad luck
+    df.select(col).take(10).foreach(row => {
+      if (scala.util.Try(row.getAs[String](0).toFloat).isSuccess) return true
+    })
+    false
+  }
+  def replaceNaWithAverage(df: DataFrame, col: String, naValue: String): DataFrame = {
+    // spark average function will ignore invalid value, thus no need to filter NA here
+    val columnAvg = df.select(F.avg(col)).take(1)(0).getAs[Double](0)
+    val replaceMap = Map(naValue -> columnAvg.toString)
+    df.na.replace(col, replaceMap)
+  }
+  def replaceNaWithMaxCount(df: DataFrame, col: String, naValue: String): DataFrame = {
+    val columnMax =
+      df.groupBy(col).count().filter(F.col(col)=!=naValue)
+        .orderBy(F.desc("count"))
+    if (columnMax.count() != 0) {
+      val columnMaxCountValue = columnMax.take(1)(0).getAs[String](0)
+      val replaceMap = Map(naValue -> columnMaxCountValue)
+      df.na.replace(col, replaceMap)
+    } else df
   }
 }

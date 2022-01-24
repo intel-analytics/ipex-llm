@@ -34,7 +34,6 @@ class RegressionTree(
                       val treeID: String,
                       val numClasses: Int = 2,
                       var depth: Int = 0,
-                      val minInstancesPerNode: Int = 8,
                       val numFeaturesPerNode: Int = 1,
                       val minInfoGain: Float = 0,
                       val lambda: Float = 1f
@@ -162,6 +161,8 @@ class RegressionTree(
     // Only predict with local nodes
     val res = Array.fill[Boolean](math.pow(2, depth + 1).toInt)(true)
     localNodes.values.foreach { split =>
+      require(split.featureID < record.size(1),
+        s"Node split at feature: ${split.featureID}, but input size: ${record.size(1)}")
       val currValue = record.valueAt(split.featureID + 1)
       res(split.nodeID.toInt) = currValue < split.splitValue
     }
@@ -174,6 +175,7 @@ class RegressionTree(
       logger.info(split)
     }
     val parentNode = nodes(split.nodeID)
+    parentNode.splitInfo = split
     val newNodes = splitToNodes(split, parentNode)
     parentNode.leftChild = newNodes._1
     parentNode.rightChild = newNodes._2

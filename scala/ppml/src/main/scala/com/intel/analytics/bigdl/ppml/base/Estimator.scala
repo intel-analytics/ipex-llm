@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.ppml.base
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -28,10 +29,10 @@ trait Estimator {
     evaluateResults.map(v => (v._1, v._2.toArray)).toMap
   }
   def train(endEpoch: Int,
-            trainDataSet: LocalDataSet[MiniBatch[Float]],
-            valDataSet: LocalDataSet[MiniBatch[Float]]): Any
+            trainDataSet: RDD[(Array[Float], Array[Float])],
+            valDataSet: RDD[(Array[Float], Array[Float])]): Any
 
-  def evaluate(dataSet: LocalDataSet[MiniBatch[Float]])
+  def evaluate(dataSet: RDD[(Array[Float], Array[Float])])
 
-  def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Array[Activity]
+  def predict(dataSet: RDD[(Array[Float], Array[Float])]): Array[Activity]
 }

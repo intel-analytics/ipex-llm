@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.ppml.common;
 
 public enum FLPhase {
-    // NN Phase
+    // Common Phase
     TRAIN,
     EVAL,
     PREDICT,
@@ -25,5 +25,5 @@ public enum FLPhase {
     LABEL,
     SPLIT,
     TREE_LEAVES,
-    TREE_EVAL
+    RESULT
 }

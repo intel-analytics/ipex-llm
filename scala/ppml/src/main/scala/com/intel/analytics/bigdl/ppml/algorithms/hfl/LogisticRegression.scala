@@ -28,6 +28,6 @@ class LogisticRegression(featureNum: Int,
     .add(Sigmoid[Float]())
 
   override val estimator = new HflNNEstimator(
-    "hfl_logistic_regression", model, new Adam(learningRate),
+    "hfl_logistic_regression", model, new Adam[Float](learningRate),
     new BCECriterion[Float](), Array(new Top1Accuracy()))
 }
