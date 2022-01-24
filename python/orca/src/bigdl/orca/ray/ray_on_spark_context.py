@@ -332,7 +332,7 @@ class RayOnSparkContext(object):
                  verbose=False, env=None, extra_params=None, include_webui=True,
                  num_ray_nodes=None, ray_node_cpu_cores=None, system_config=None):
         """
-        The RayOnSparkContext would initiate a ray cluster on top of the configuration of 
+        The RayOnSparkContext would initiate a ray cluster on top of the configuration of
         SparkContext.
         After creating RayOnSparkContext, call the init method to set up the cluster.
         - For Spark local mode: The total available cores for Ray is equal to the number of
