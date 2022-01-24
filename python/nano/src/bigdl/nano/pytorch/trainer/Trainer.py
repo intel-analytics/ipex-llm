@@ -117,7 +117,8 @@ class Trainer(pl.Trainer):
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
                 metrics: List[Metric] = None,
-                onnx: bool = False):
+                onnx: bool = False,
+                quantize: bool = True):
         """
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
         return model. If model is pytorch model, construct a new pytorch-lightning module
@@ -130,6 +131,8 @@ class Trainer(pl.Trainer):
                             if model is instance of pl.LightningModule.
         :param metrics:     A list of torchmetrics to validate/test performance.
         :param onnx:        Indicates if onnxruntime support should be binded to the
+                            returned model.
+        :param quantize:    Indicates if quantization support should be binded to the
                             returned model.
         :return:            A LightningModule object.
         """
@@ -154,8 +157,15 @@ class Trainer(pl.Trainer):
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
-        else:
-            return pl_model
+
+        if quantize:
+            from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
+                bind_quantize_methods
+            from bigdl.nano.pytorch.runtime_binding.base_inference import\
+                bind_base_inference_rt_methods
+            return bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
+
+        return bind_base_inference_rt_methods(pl_model)
 
     def quantize(self, pl_model: LightningModule,
                  calib_dataloader: DataLoader = None,
