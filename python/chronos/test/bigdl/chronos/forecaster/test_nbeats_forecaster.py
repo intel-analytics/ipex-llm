@@ -21,7 +21,6 @@ import numpy as np
 from unittest import TestCase
 import pytest
 
-from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.chronos.forecaster.nbeats_forecaster import NBEATSForecaster
 
 
@@ -82,13 +81,11 @@ class TestChronosNBEATSForecaster(TestCase):
 
     def test_nbeats_forecaster_data_loader(self):
         train_loader, _, _ = create_data(loader=True)
-        init_orca_context(cores=4, memory="4g")
         forecater = NBEATSForecaster(past_seq_len=24,
                                      future_seq_len=5,
                                      loss='mae',
                                      lr=0.01)
         forecater.fit(train_loader, epochs=2)
-        stop_orca_context()
 
     def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
@@ -145,37 +142,38 @@ class TestChronosNBEATSForecaster(TestCase):
             forecaster.predict(test_data[0])
         with pytest.raises(RuntimeError):
             forecaster.evaluate(test_data)
-    
+
     def test_nbeats_forecaster_xshard_input(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
-        forecaster = NBEATSForecaster(past_seq_len=24,
-                                      future_seq_len=5,
-                                      loss='mae',
-                                      lr=0.01)
-        forecaster.fit(train_data, epochs=2)
-        try:
-            import onnx
-            import onnxruntime
-            pred = forecaster.predict(test_data[0])
-            pred_onnx = forecaster.predict_with_onnx(test_data[0])
-            np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
-            mse = forecaster.evaluate(test_data, multioutput="raw_values")
-            mse_onnx = forecaster.evaluate_with_onnx(test_data,
-                                                     multioutput="raw_values")
-            np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
-            with pytest.raises(RuntimeError):
-                forecaster.build_onnx(sess_options=1)
-            sess_options = onnxruntime.SessionOptions()
-            sess_options.intra_op_num_threads = 1
-            forecaster.build_onnx(sess_options=sess_options)
-            mse = forecaster.evaluate(test_data)
-            mse_onnx = forecaster.evaluate_with_onnx(test_data)
-            np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
-        except ImportError:
-            pass
-        
+        print("original", train_data[0].dtype)
+        init_orca_context(cores=4, memory="2g")
+        from bigdl.orca.data import XShards
+
+        def transform_to_dict(data):
+            return {'x': data[0], 'y': data[1]}
+
+        def transform_to_dict_x(data):
+            return {'x': data[0]}
+
+        train_data = XShards.partition(train_data).transform_shard(transform_to_dict)
+        val_data = XShards.partition(val_data).transform_shard(transform_to_dict)
+        test_data = XShards.partition(test_data).transform_shard(transform_to_dict_x)
+        for distributed in [True, False]:
+            forecaster = NBEATSForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          stack_types=("generic", "seasonality"),
+                                          loss='mae',
+                                          lr=0.01,
+                                          distributed=distributed)
+            forecaster.fit(train_data, epochs=2)
+            distributed_pred = forecaster.predict(test_data)
+            distributed_eval = forecaster.evaluate(val_data)
+        stop_orca_context()
+
     def test_nbeats_forecaster_distributed(self):
-        train_data, _, test_data = create_data()
+        train_data, val_data, test_data = create_data()
+        from bigdl.orca import init_orca_context, stop_orca_context
         init_orca_context(cores=4, memory="4g")
         forecaster = NBEATSForecaster(past_seq_len=24,
                                       future_seq_len=5,
@@ -185,14 +183,14 @@ class TestChronosNBEATSForecaster(TestCase):
                                       distributed=True)
         forecaster.fit(train_data, epochs=2)
         distributed_pred = forecaster.predict(test_data[0])
-        distributed_eval = forecaster.evaluate(test_data)
+        distributed_eval = forecaster.evaluate(val_data)
 
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
         forecaster.to_local()
         local_pred = forecaster.predict(test_data[0])
-        local_eval = forecaster.evaluate(test_data)
+        local_eval = forecaster.evaluate(val_data)
 
         np.testing.assert_almost_equal(distributed_pred, local_pred, decimal=5)
 
@@ -200,7 +198,7 @@ class TestChronosNBEATSForecaster(TestCase):
             import onnx
             import onnxruntime
             local_pred_onnx = forecaster.predict_with_onnx(test_data[0])
-            local_eval_onnx = forecaster.evaluate_with_onnx(test_data)
+            local_eval_onnx = forecaster.evaluate_with_onnx(val_data)
             np.testing.assert_almost_equal(distributed_pred, local_pred_onnx, decimal=5)
         except ImportError:
             pass
@@ -211,12 +209,14 @@ class TestChronosNBEATSForecaster(TestCase):
         stop_orca_context()
 
     def test_nbeats_forecaster_dataloader_distributed(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
         train_data, _, _ = create_data(loader=True)
         init_orca_context(cores=4, memory="4g")
         forecaster = NBEATSForecaster(past_seq_len=24,
                                       future_seq_len=5,
+                                      stack_types=("generic", "generic"),
                                       loss="mae",
                                       lr=0.01,
-                                      distributed=False)
+                                      distributed=True)
         forecaster.fit(train_data, epochs=2)
         stop_orca_context()

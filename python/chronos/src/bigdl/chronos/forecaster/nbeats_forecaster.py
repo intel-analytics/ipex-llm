@@ -90,7 +90,7 @@ class NBEATSForecaster(BasePytorchForecaster):
         :param distributed_backend: str, select from "torch_distributed" or
                "horovod". The value defaults to "torch_distributed".
         """
-        # TODO Currently generic mode not support distributed.
+        # TODO Currently generic mode not support distributed=True.
         self.data_config = {
             "past_seq_len": past_seq_len,
             "future_seq_len": future_seq_len,
