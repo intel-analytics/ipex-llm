@@ -208,12 +208,12 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
     import atexit
     atexit.register(stop_orca_context)
     if runtime == "ray":
-        assert cluster_mode is None, "cluster mode should be None"
+        assert cluster_mode is None, "Currently, cluster_mode is not supported for ray runtime " \
+                                     "and you must connect to an exiting ray cluster."
         from bigdl.orca.ray import RayContext
         ray_ctx = RayContext(runtime="ray", cores=cores, num_nodes=num_nodes,
                              **kwargs)
-        assert "address" in kwargs, "Currently, cluster_mode is not supported for ray runtime " \
-                                    "and you must connect to an exiting ray cluster."
+        assert "address" in kwargs, "address must be specified if the runtime is ray."
         ray_ctx.init()
         return ray_ctx
     elif runtime == "spark":
