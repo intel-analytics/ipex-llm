@@ -21,7 +21,7 @@ import numpy as np
 from unittest import TestCase
 import pytest
 
-from bigdl.chronos.forecaster.nbeats_forecaster import NBEATSForecaster
+from bigdl.chronos.forecaster.nbeats_forecaster import NBeatsForecaster
 
 
 def create_data(loader=False):
@@ -56,7 +56,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-class TestChronosNBEATSForecaster(TestCase):
+class TestChronosNBeatsForecaster(TestCase):
     def setUp(self):
         pass
 
@@ -65,7 +65,7 @@ class TestChronosNBEATSForecaster(TestCase):
 
     def test_nbeats_forecaster_fit_pred_eva(self):
         train_data, _, test_data = create_data()
-        forecaster = NBEATSForecaster(past_seq_len=24,
+        forecaster = NBeatsForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       stack_types=('generic', 'generic'),
                                       nb_blocks_per_stack=3,
@@ -81,7 +81,7 @@ class TestChronosNBEATSForecaster(TestCase):
 
     def test_nbeats_forecaster_data_loader(self):
         train_loader, _, _ = create_data(loader=True)
-        forecater = NBEATSForecaster(past_seq_len=24,
+        forecater = NBeatsForecaster(past_seq_len=24,
                                      future_seq_len=5,
                                      loss='mae',
                                      lr=0.01)
@@ -89,7 +89,7 @@ class TestChronosNBEATSForecaster(TestCase):
 
     def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
-        forecaster = NBEATSForecaster(past_seq_len=24,
+        forecaster = NBeatsForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       loss='mae',
                                       lr=0.01)
@@ -115,7 +115,7 @@ class TestChronosNBEATSForecaster(TestCase):
 
     def test_nbeats_forecaster_save_load(self):
         train_data, val_data, test_data = create_data()
-        forecaster = NBEATSForecaster(past_seq_len=24,
+        forecaster = NBeatsForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       loss='mae',
                                       lr=0.01)
@@ -130,7 +130,7 @@ class TestChronosNBEATSForecaster(TestCase):
 
     def test_nbeats_forecaster_runtime_error(self):
         _, _, test_data = create_data()
-        forecaster = NBEATSForecaster(past_seq_len=24,
+        forecaster = NBeatsForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       loss="mae",
                                       lr=0.01)
@@ -160,7 +160,7 @@ class TestChronosNBEATSForecaster(TestCase):
         val_data = XShards.partition(val_data).transform_shard(transform_to_dict)
         test_data = XShards.partition(test_data).transform_shard(transform_to_dict_x)
         for distributed in [True, False]:
-            forecaster = NBEATSForecaster(past_seq_len=24,
+            forecaster = NBeatsForecaster(past_seq_len=24,
                                           future_seq_len=5,
                                           stack_types=("generic", "seasonality"),
                                           loss='mae',
@@ -175,7 +175,7 @@ class TestChronosNBEATSForecaster(TestCase):
         train_data, val_data, test_data = create_data()
         from bigdl.orca import init_orca_context, stop_orca_context
         init_orca_context(cores=4, memory="4g")
-        forecaster = NBEATSForecaster(past_seq_len=24,
+        forecaster = NBeatsForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       stack_types=('generic', 'seasonality'),
                                       loss="mae",
@@ -212,7 +212,7 @@ class TestChronosNBEATSForecaster(TestCase):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, _, _ = create_data(loader=True)
         init_orca_context(cores=4, memory="4g")
-        forecaster = NBEATSForecaster(past_seq_len=24,
+        forecaster = NBeatsForecaster(past_seq_len=24,
                                       future_seq_len=5,
                                       stack_types=("generic", "generic"),
                                       loss="mae",

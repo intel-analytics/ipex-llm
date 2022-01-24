@@ -55,7 +55,7 @@ if torch_available:
     from .lstm_forecaster import LSTMForecaster
     from .tcn_forecaster import TCNForecaster
     from .seq2seq_forecaster import Seq2SeqForecaster
-    from .nbeats_forecaster import NBEATSForecaster
+    from .nbeats_forecaster import NBeatsForecaster
     if orca_available:
         from .tcmf_forecaster import TCMFForecaster
 if tf_available:

@@ -42,7 +42,7 @@ Temporal Convolutional Networks (TCN) is a neural network that use convolutional
     :show-inheritance:
 
 
-NBEATSForecaster
+NBeatsForecaster
 ----------------------------------------
 
 :strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.

@@ -19,17 +19,18 @@ from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.nbeats_pytorch import model_creator, loss_creator, optimizer_creator
 
 
-class NBEATSForecaster(BasePytorchForecaster):
+class NBeatsForecaster(BasePytorchForecaster):
     """
-        Example:
-            >>> # NBEATSForecaster test.
-            >>> forecaster = NBEATSForecaster(paste_seq_len=10,
-                                              future_seq_len=1,
-                                              stack_types=("generic", "generic"),
-                                              ...)
-            >>> forecaster.fit((x_train, y_train))
-            >>> forecaster.to_local() # if you set distributed=True
+    Example:
+        >>> # NBeatsForecaster test.
+        >>> forecaster = NBeatForecaster(paste_seq_len=10,
+                                          future_seq_len=1,
+                                          stack_types=("generic", "generic"),
+                                          ...)
+        >>> forecaster.fit((x_train, y_train))
+        >>> forecaster.to_local() # if you set distributed=True
     """
+
     def __init__(self,
                  past_seq_len,
                  future_seq_len,
@@ -48,7 +49,7 @@ class NBEATSForecaster(BasePytorchForecaster):
                  workers_per_node=1,
                  distributed_backend="torch_distributed"):
         """
-        Build a NBEATS Forecaster Model.
+        Build a NBeats Forecaster Model.
 
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param future_seq_len: Specify the output time steps (i.e. horizon).
@@ -94,7 +95,7 @@ class NBEATSForecaster(BasePytorchForecaster):
         self.data_config = {
             "past_seq_len": past_seq_len,
             "future_seq_len": future_seq_len,
-            "input_feature_num": 1,  # NBEATS only support input single feature.
+            "input_feature_num": 1,  # nbeats only support input single feature.
             "output_feature_num": 1,
         }
 
