@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from time import time
 import tensorflow as tf
+import numpy as np
 
 
 class Model(tf.keras.Model):
@@ -42,33 +44,59 @@ class Model(tf.keras.Model):
             use_multiprocessing=False,
             perf_tune=False):
         if perf_tune:
-           
             if batch_size is None:
-                batch_size=32
-            batch_size_2 = int(batch_size * 2)
-            # 2 x batch_size
-            super(Model, self).fit(x, y, batch_size_2, epochs, verbose, callbacks, validation_split, validation_data,
-                                shuffle, class_weight,
-                                sample_weight, initial_epoch, steps_per_epoch, validation_steps,
-                                validation_batch_size, validation_freq,
-                                max_queue_size, workers, use_multiprocessing)
-            batch_size_12 = int(batch_size / 2)
-            # 1/2 batch_size
-            super(Model, self).fit(x, y, batch_size_12, epochs, verbose, callbacks, validation_split, validation_data,
-                                shuffle, class_weight,
-                                sample_weight, initial_epoch, steps_per_epoch, validation_steps,
-                                validation_batch_size, validation_freq,
-                                max_queue_size, workers, use_multiprocessing)
-            # Without Callbacks
-            if callbacks != None:
-                callbacks=None
+                batch_size = 32
+            # Data pipeline
+            print("Prefetch Datapipeline")
+            assert issubclass(
+                type(x), tf.data.Dataset), "Data object currently only support tf.data.dataset"
+
+            batched_data=[]
+            batched_target = []
+            for i in range(batch_size):
+                batched_data_item, batched_target_item = next(iter(x))
+                # batched_data.append((batched_data_item, batched_target_item))
+                batched_data.append(batched_data_item)
+                batched_target.append(batched_target_item)
+            start = time()
             super(Model, self).fit(
-                 x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
+                batched_data, batched_target, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
                 sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq,
                 max_queue_size, workers, use_multiprocessing)
+            end = time()
+            print("Thoughpuy = ", len(batched_data)/(end-start) )
+
+            # 2 x batch_size
+            batch_size_2 = int(batch_size * 2)
+
+            print("Use Batch_size: ", batch_size_2)
+            start = time()
+            super(Model, self).fit(x, y, batch_size_2, epochs, verbose, callbacks, validation_split, validation_data,
+                                   shuffle, class_weight,
+                                   sample_weight, initial_epoch, steps_per_epoch, validation_steps,
+                                   validation_batch_size, validation_freq,
+                                   max_queue_size, workers, use_multiprocessing)
+            end = time()
             
-            # TODO: Data pipeline
-            
+            print("Thoughpuy = ", len(x)/(end-start) )
+            # 1/2 batch_size
+            batch_size_12 = int(batch_size / 2)
+            print("Use Batch_size: ", batch_size_12)
+
+            super(Model, self).fit(x, y, batch_size_12, epochs, verbose, callbacks, validation_split, validation_data,
+                                   shuffle, class_weight,
+                                   sample_weight, initial_epoch, steps_per_epoch, validation_steps,
+                                   validation_batch_size, validation_freq,
+                                   max_queue_size, workers, use_multiprocessing)
+            # Without Callbacks
+            print("Without Callback")
+            if callbacks != None:
+                callbacks = None
+            super(Model, self).fit(
+                x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
+                sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq,
+                max_queue_size, workers, use_multiprocessing)
+
         else:
             super(Model, self).fit(
                 x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
