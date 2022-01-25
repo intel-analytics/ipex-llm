@@ -31,7 +31,7 @@ ray stop -f
 ray start --head
 
 echo "Running RayContext tests"
-python -m pytest -v test/bigdl/orca/ray/ray_cluster/ray_ctx
+python -m pytest -v test/bigdl/orca/ray/ray_cluster
 exit_status_1=$?
 if [ $exit_status_1 -ne 0 ];
 then
