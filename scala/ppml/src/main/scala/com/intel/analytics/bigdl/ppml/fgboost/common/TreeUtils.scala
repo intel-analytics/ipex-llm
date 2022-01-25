@@ -67,8 +67,8 @@ object TreeUtils {
   def computeScore(indices: Array[Int],
                    grads: Array[Array[Float]],
                    lambda: Float): Float = {
-    val gradSum = indices.map(grads(0)(_)).sum
-    val hessSum = indices.map(grads(1)(_)).sum
+    val gradSum = sum(grads(0), indices)
+    val hessSum = sum(grads(1), indices)
     math.pow(gradSum, 2).toFloat / (hessSum + lambda)
   }
 
@@ -87,11 +87,40 @@ object TreeUtils {
   def computeOutput(indices: Array[Int],
                     grads: Array[Array[Float]],
                     lambda: Float = 1): Float = {
-    -1 * indices.map(grads(0)(_)).sum /
-      (indices.map(grads(1)(_)).sum + lambda)
+    -1 * sum(grads(0), indices) /
+      (sum(grads(1), indices) + lambda)
   }
 
   def sigmoidFloat(input: Float): Float = {
     (1 / (1 + Math.exp(-input))).toFloat
+  }
+  def sum(a1: Seq[Float], indices: Seq[Int]): Float = {
+    var sum = 0.0
+    var i = 0
+    while(i < indices.length) {
+      sum += a1(indices(i))
+      i += 1
+    }
+    sum.toFloat
+  }
+
+  def sum(a1: Seq[Float], indices: Seq[Int], start: Int, end: Int): Float = {
+    var sum = 0.0
+    var i = start
+    while(i < end) {
+      sum += a1(indices(i))
+      i += 1
+    }
+    sum.toFloat
+  }
+
+  def sum(a1: Seq[Float]): Float = {
+    var sum = 0.0
+    var i = 0
+    while(i < a1.length) {
+      sum += a1(i)
+      i += 1
+    }
+    sum.toFloat
   }
 }
