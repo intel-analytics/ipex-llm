@@ -1246,11 +1246,12 @@ class TestTable(TestCase):
         feature_tbl = FeatureTable.read_parquet(file_path)
         spark = OrcaContext.get_spark_session()
 
-        data = [("aa", 1.0),
-                ("bb", 2.0),
-                ("cc", 3.0),
-                ("dd", 4.0)]
+        data = [("aa", 2, 1.0),
+                ("bb", 4, 2.0),
+                ("cc", 6, 3.0),
+                ("dd", 8, 4.0)]
         schema = StructType([StructField("unknown", StringType(), True),
+                             StructField("target_encode_count", IntegerType(), True),
                              StructField("col_5_te_col_1", DoubleType(), True)])
         df0 = spark.createDataFrame(data, schema)
         target_code0 = TargetCode(df0,
