@@ -236,15 +236,8 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   }
 
   def getXGBClassifier(xgbparamsin: JMap[String, Any]): XGBClassifier = {
-    val model = if (xgbparamsin != null) {
-      val xgbparams: Map[String, Any] = xgbparamsin.asScala.toMap
-       new XGBClassifier(xgbparams)
-    }
-    else
-      {
-        new XGBClassifier()
-      }
-    model
+    val xgbparams = if (xgbparamsin == null) Map[String, Any]() else xgbparamsin.asScala.toMap
+    new XGBClassifier(xgbparams)
   }
 
   def setXGBClassifierNthread(model: XGBClassifier, value: Int): Unit = {
