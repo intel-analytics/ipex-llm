@@ -401,11 +401,10 @@ class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
  */
 class XGBClassifierModel private[bigdl](
    val model: XGBoostClassificationModel) {
-  private var featuresCols: Array[String] = null
+  private var featuresCols: String = null
   private var predictionCol: String = null
 
-  def setFeaturesCol(featuresColName: Array[String]): this.type = {
-    require(featuresColName.length > 1, "Please set a valid feature columns")
+  def setFeaturesCol(featuresColName: String): this.type = {
     featuresCols = featuresColName
     this
   }
@@ -422,16 +421,8 @@ class XGBClassifierModel private[bigdl](
 
   def transform(dataset: DataFrame): DataFrame = {
     require(featuresCols!=None, "Please set feature columns before transform")
-    val featureVectorAssembler = new VectorAssembler()
-      .setInputCols(featuresCols)
-      .setOutputCol("featureAssembledVector")
-    val assembledDF = featureVectorAssembler.transform(dataset)
-    import org.apache.spark.sql.functions.{col, udf}
-    import org.apache.spark.ml.linalg.Vector
-    val asDense = udf((v: Vector) => v.toDense)
-    val xgbInput = assembledDF.withColumn("DenseFeatures", asDense(col("featureAssembledVector")))
-    model.setFeaturesCol("DenseFeatures")
-    var output = model.transform(xgbInput).drop("DenseFeatures", "featureAssembledVector")
+        model.setFeaturesCol(featuresCols)
+    var output = model.transform(dataset)
     if(predictionCol != null) {
       output = output.withColumnRenamed("prediction", predictionCol)
     }

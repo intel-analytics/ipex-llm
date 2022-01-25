@@ -685,10 +685,10 @@ class NNClassifierModel(NNModel, HasThreshold):
 
 
 class XGBClassifier():
-    def __init__(self):
+    def __init__(self, params=None):
         super(XGBClassifier, self).__init__()
         bigdl_type = "float"
-        self.value = callZooFunc("float", "getXGBClassifier")
+        self.value = callZooFunc("float", "getXGBClassifier", params)
 
     def setNthread(self, value: int):
         callZooFunc("float", "setXGBClassifierNthread", self.value, value)
@@ -722,6 +722,9 @@ class XGBClassifier():
 
     def setNumClass(self, value: str):
         return callZooFunc("float", "setXGBClassifierNumClass", self.value, value)
+
+    def setFeaturesCol(self, value: str):
+        return callZooFunc("float", "setXGBClassifierFeaturesCol", self.value, value)
 
 
 class XGBClassifierModel:
