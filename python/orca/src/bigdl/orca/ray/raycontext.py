@@ -15,9 +15,6 @@
 #
 
 
-from cProfile import run
-
-
 class RayContext(object):
 
     _active_ray_context = None
@@ -55,6 +52,10 @@ class RayContext(object):
             results = ray.init(**self.ray_args)
         else:
             results = self._ray_on_spark_context.init(driver_cores=driver_cores)
+            self.address_info = self._ray_on_spark_context.address_info
+            self.redis_address = self._ray_on_spark_context.redis_address
+            self.redis_password = self._ray_on_spark_context.redis_password
+            self.sc = self._ray_on_spark_context.sc
 
         self.initialized = True
         return results

@@ -24,7 +24,7 @@ def test_embedding_gradient_sparse():
     from bigdl.nano.tf.keras import Sequential
     import tensorflow as tf
     model = Sequential()
-    model.add(Embedding(1000, 64, input_length=10, regularizer=tf.keras.regularizers.L2()))
+    model.add(Embedding(1000, 64, input_length=10, embeddings_regularizer=tf.keras.regularizers.L2()))
     model.compile('rmsprop', 'mse')
     input_array = np.random.randint(1000, size=(32, 10))
 

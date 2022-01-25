@@ -171,7 +171,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                       init_ray_on_spark=False, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
-    across the cluster if necessary).
+    across the cluster if necessary) or a RayContext when the runtime is ray.
 
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
@@ -192,6 +192,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
 
            For other cluster modes, you are recommended to install and run bigdl through
            pip, which is more convenient.
+    :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cores: The number of cores to be used on each node. Default to be 2.
     :param memory: The memory allocated for each node. Default to be '2g'.
     :param num_nodes: The number of nodes to be used in the cluster. Default to be 1.
@@ -202,17 +203,18 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
     :param kwargs: The extra keyword arguments used for creating SparkContext and
            launching Ray if any.
 
-    :return: An instance of SparkContext.
+    :return: An instance of SparkContext or RayContext.
     """
     print("Initializing orca context")
     import atexit
     atexit.register(stop_orca_context)
     if runtime == "ray":
-        assert cluster_mode is None, "cluster mode should be None"
+        assert cluster_mode is None, "Currently, cluster_mode is not supported for ray runtime " \
+                                     "and you must connect to an exiting ray cluster."
         from bigdl.orca.ray import RayContext
         ray_ctx = RayContext(runtime="ray", cores=cores, num_nodes=num_nodes,
                              **kwargs)
-        assert "address" in kwargs, "ray_address must be specified if runtime is ray"
+        assert "address" in kwargs, "ray_address must be specified if the runtime is ray."
         ray_ctx.init()
         return ray_ctx
     elif runtime == "spark":
@@ -305,24 +307,25 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                                  "but got: %s".format(cluster_mode))
             ray_args = {}
             for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
-                        "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui"]:
+                        "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui",
+                        "system_config"]:
                 if key in kwargs:
                     ray_args[key] = kwargs[key]
             from bigdl.orca.ray import RayContext
-            ray_ctx = RayContext(runtime="ray_on_spark", cores=cores, num_nodes=num_nodes,
+            ray_ctx = RayContext(runtime="spark", cores=cores, num_nodes=num_nodes,
                                  sc=sc, **ray_args)
             if init_ray_on_spark:
                 driver_cores = 0  # This is the default value.
                 ray_ctx.init(driver_cores=driver_cores)
+        return sc
     else:
-        raise ValueError("runtime can only be ray and spark, "
-                         "but got %s".format(runtime))
-    return sc
+        raise ValueError("runtime can only be spark or ray, but got %s".format(runtime))
 
 
 def stop_orca_context():
     """
-    Stop the SparkContext (and stop Ray services across the cluster if necessary).
+    Stop the SparkContext (and stop Ray services across the cluster if necessary) or
+    stop the RayContext.
     """
     from pyspark import SparkContext
     from bigdl.orca.ray import RayContext
@@ -342,6 +345,6 @@ def stop_orca_context():
     else:
         if RayContext._active_ray_context is not None:
             print("Stopping ray_orca context")
-            ray_ctx = RayContext.get(init_orca_context)
+            ray_ctx = RayContext.get(initialize=False)
             if ray_ctx.initialized:
                 ray_ctx.stop()

@@ -96,6 +96,26 @@ RUN wget https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data
     cp -f /opt/src/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-${HADOOP_VERSION}.jar ${SPARK_HOME}/jars && \
     rm -rf /opt/src
 
+# sbt
+RUN apt-get update && \
+    apt-get install apt-transport-https curl gnupg -yqq && \
+    echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list && \
+    echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | sudo tee /etc/apt/sources.list.d/sbt_old.list && \
+    curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo -H gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --import && \
+    chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg && \
+    apt-get update && \
+    apt-get install sbt
+
+# Prepare tpch 
+## 2.11.7 2.12.1 for scala version
+## 2.4.0 3.1.2 for spark version
+RUN cd /opt && \
+    git clone https://github.com/intel-analytics/zoo-tutorials.git && \
+    cd zoo-tutorials/tpch-spark && \
+    sed -i 's/2.11.7/2.12.1/g' tpch.sbt && \
+    sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
+    sbt package
+
 FROM occlum/occlum:0.26.0-ubuntu18.04 as ppml
 
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
@@ -159,9 +179,11 @@ RUN cd /opt && \
     ./download-bigdl.sh && \
     rm bigdl*.zip
 
+# Prepare Tpc-H
+COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
+
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
-
 
 COPY ./entrypoint.sh /opt/
 
