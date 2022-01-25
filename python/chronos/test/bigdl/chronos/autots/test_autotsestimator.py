@@ -29,7 +29,7 @@ import pandas as pd
 
 def get_ts_df(mode):
     sample_num = np.random.randint(100, 200)
-    if mode == 'multivariate':
+    if mode == 'multi':
         train_df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
                                  "value 1": np.random.randn(sample_num),
                                  "value 2": np.random.randn(sample_num),
@@ -43,9 +43,9 @@ def get_ts_df(mode):
     return train_df
 
 
-def get_tsdataset(mode='multivariate'):
+def get_tsdataset(mode='multi'):
     df = get_ts_df(mode)
-    if mode == 'multivariate':
+    if mode == 'multi':
         return TSDataset.from_pandas(df,
                                      dt_col="datetime",
                                      target_col=["value 1", "value 2"],
@@ -57,7 +57,7 @@ def get_tsdataset(mode='multivariate'):
                                  id_col='id')
 
 
-def get_data_creator(mode='multivariate'):
+def get_data_creator(mode='multi'):
     def data_creator(config):
         tsdata = get_tsdataset(mode)
         x, y = tsdata.roll(lookback=7, horizon=1).to_numpy()
@@ -405,8 +405,8 @@ class TestAutoTrainer(TestCase):
     def test_fit_nbeats_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
-        tsdata_train = get_tsdataset(mode='univariate').scale(scaler, fit=True)
-        tsdata_valid = get_tsdataset(mode='univariate').scale(scaler, fit=False)
+        tsdata_train = get_tsdataset(mode='single').scale(scaler, fit=True)
+        tsdata_valid = get_tsdataset(mode='single').scale(scaler, fit=False)
 
         auto_estimator = AutoTSEstimator(model='nbeats',
                                          search_space="minimal",
