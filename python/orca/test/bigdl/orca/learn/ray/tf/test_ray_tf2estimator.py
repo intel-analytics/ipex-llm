@@ -74,7 +74,7 @@ def model_creator(config):
     model.compile(**compile_args(config))
     return model
 
-class TestPytorchEstimator(TestCase):
+class TestTF2Estimator(TestCase):
     def setUp(self):
         init_orca_context(runtime="ray", address="localhost:6379")
 

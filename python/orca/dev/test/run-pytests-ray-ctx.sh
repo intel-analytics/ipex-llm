@@ -38,12 +38,22 @@ then
     exit $exit_status_1
 fi
 
+ray stop -f
+ray start --head
+
 echo "Running Ray Estimator tests"
-python -m pytest -v test/bigdl/orca/ray/ray_cluster/ray_est
+python -m pytest -v test/bigdl/orca/learn/ray/pytorch/test_ray_pytorch_estimator.py
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
     exit $exit_status_2
+fi
+
+python -m pytest -v test/bigdl/orca/learn/ray/tf/test_ray_tf2estimator.py
+exit_status_3=$?
+if [ $exit_status_3 -ne 0 ];
+then
+    exit $exit_status_3
 fi
 
 ray stop -f
