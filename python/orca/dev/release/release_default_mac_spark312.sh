@@ -27,23 +27,27 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 ORCA_DIR="$(cd ${RUN_SCRIPT_DIR}/../../; pwd)"
 echo $ORCA_DIR
+DEV_DIR="$(cd ${ORCA_DIR}/../dev/; pwd)"
+echo $DEV_DIR
 
-if (( $# < 3)); then
-  echo "Usage: release_default_mac_spark312.sh version quick_build upload"
-  echo "Usage example: bash release_default_mac_spark312.sh default true true"
-  echo "Usage example: bash release_default_mac_spark312.sh 0.14.0.dev1 false true"
+if (( $# < 4)); then
+  echo "Usage: release_default_mac_spark312.sh version quick_build upload suffix"
+  echo "Usage example: bash release_default_mac_spark312.sh default true true true"
+  echo "Usage example: bash release_default_mac_spark312.sh 0.14.0.dev1 false true false"
   exit -1
 fi
 
 version=$1
 quick=$2
 upload=$3
+suffix=$4
 
-# Add spark3 suffix to the project name to avoid conflict with the whl for spark2.
-# Add name=, == and - in pattern matching so that if the script runs twice,
-# it won't change anything in the second run.
-sed -i "s/bigdl-dllib==/bigdl-dllib-spark3==/g" $ORCA_DIR/src/setup.py
-sed -i "s/name='bigdl-orca'/name='bigdl-orca-spark3'/g" $ORCA_DIR/src/setup.py
-sed -i "s/dist\/bigdl_orca-/dist\/bigdl_orca_spark3-/g" ${RUN_SCRIPT_DIR}/release.sh
+if [ ${suffix} == true ]; then
+    bash ${DEV_DIR}/add_suffix_spark3.sh $ORCA_DIR/src/setup.py
+    bash ${DEV_DIR}/add_suffix_spark3.sh ${RUN_SCRIPT_DIR}/release.sh
+else
+    bash ${DEV_DIR}/remove_spark_suffix.sh $ORCA_DIR/src/setup.py
+    bash ${DEV_DIR}/remove_spark_suffix.sh ${RUN_SCRIPT_DIR}/release.sh
+fi
 
 bash ${RUN_SCRIPT_DIR}/release.sh mac ${version} ${quick} ${upload} -Dspark.version=3.1.2 -P spark_3.x

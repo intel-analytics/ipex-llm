@@ -133,11 +133,18 @@ class PreProcessing()
     OpenCVMat.toFloatPixels(mat, arrayBuffer)
 
     val imageTensor = Tensor[Float](arrayBuffer, Array(height, width, channel))
-    if (helper.chwFlag) {
+    val singleTensor = if (helper.chwFlag) {
       imageTensor.transpose(1, 3)
         .transpose(2, 3).contiguous()
     } else {
       imageTensor
+    }
+    if (helper.modelType == "openvino") {
+      // if OpenVINO model, return the single tensor and batch them before inference
+      singleTensor
+    } else {
+      // if other model, add a dimension to construct the input with batch_size dimension
+      singleTensor.addSingletonDimension()
     }
   }
   def decodeTensor(info: (ArrayBuffer[Int], ArrayBuffer[Float],

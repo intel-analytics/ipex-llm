@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-# This is the script to release the single bigdl package for linux.
+# This is the script to release the single bigdl package for spark2.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
@@ -24,16 +24,25 @@ echo $RUN_SCRIPT_DIR
 BIGDL_PYTHON_DIR="$(cd ${RUN_SCRIPT_DIR}/..; pwd)"
 echo $BIGDL_PYTHON_DIR
 
-if (( $# < 3)); then
-  echo "Usage: release.sh platform version upload"
-  echo "Usage example: bash release.sh linux default false"
-  echo "Usage example: bash release.sh mac 0.14.0.dev1 true"
+if (( $# < 4)); then
+  echo "Usage: release_bigdl_spark2.sh platform version upload suffix"
+  echo "Usage example: bash release_bigdl_spark2.sh linux default false true"
+  echo "Usage example: bash release_bigdl_spark2.sh mac 0.14.0.dev1 true false"
   exit -1
 fi
 
 platform=$1
 version=$2
-upload=$3  # Whether to upload the whl to pypi
+upload=$3
+suffix=$4
+
+if [ ${suffix} == true ]; then
+    bash ${RUN_SCRIPT_DIR}/add_suffix_spark2.sh $BIGDL_PYTHON_DIR/setup.py
+    name="bigdl_spark2"
+else
+    bash ${RUN_SCRIPT_DIR}/remove_spark_suffix.sh $BIGDL_PYTHON_DIR/setup.py
+    name="bigdl"
+fi
 
 if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
@@ -68,7 +77,7 @@ echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    upload_command="twine upload dist/${name}-${bigdl_version}-py3-none-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi

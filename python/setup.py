@@ -33,7 +33,7 @@ def setup_package():
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        url='https://github.com/intel-analytics/analytics-zoo',
+        url='https://github.com/intel-analytics/BigDL',
         install_requires=['bigdl-orca=='+VERSION, 'bigdl-nano=='+VERSION, 'bigdl-chronos=='+VERSION,
                           'bigdl-friesian=='+VERSION, 'bigdl-serving=='+VERSION],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],

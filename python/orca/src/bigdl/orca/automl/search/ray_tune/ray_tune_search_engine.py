@@ -343,6 +343,7 @@ class RayTuneSearchEngine(SearchEngine):
                                               mc=mc,
                                               metric=metric_name,
                                               metric_func=metric_func,
+                                              resources_per_trial=resources_per_trial,
                                               **config)
                 reward = result[metric_name]
                 checkpoint_filename = "best.ckpt"

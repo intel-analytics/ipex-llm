@@ -30,8 +30,6 @@
 
 
 from pyspark import BarrierTaskContext
-from contextlib import closing
-import socket
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist
 import logging
@@ -40,21 +38,10 @@ import os
 import tempfile
 
 from pyspark import BarrierTaskContext, TaskContext
-from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
-
-
-def find_ip_and_port(pre_iter):
-    tc = BarrierTaskContext().get()
-    address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind(("", 0))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        tc.barrier()
-        free_ip_port = f"{address}:{s.getsockname()[1]}"
-    return [free_ip_port]
 
 
 class PytorchPysparkWorker(TorchRunner):
@@ -121,7 +108,7 @@ class PytorchPysparkWorker(TorchRunner):
 
     def setup_distributed(self, mode, cluster_info):
         if mode == "fit":
-            self.rank = self._get_rank(cluster_info)
+            self.rank = get_rank(cluster_info)
             logger.info(f"cluster is: {cluster_info}")
             address = f"tcp://{cluster_info[0]}"
             self.setup_torch_distribute(url=address,
@@ -131,33 +118,6 @@ class PytorchPysparkWorker(TorchRunner):
             self.rank = 0
             self.setup_components()
             self.setup_operator(self.models)
-
-    @staticmethod
-    def _get_rank(cluster_info):
-        # As task placement may not be identical between two different jobs,
-        # we cannot simply index cluster_info using partitionId to get current
-        # ip and port.
-        # The approach here is to first get all tasks' ip in this job and compute
-        # a local rank by counting how many tasks has the same ip but with lower id.
-        # We then use the local rank to find the right slot in cluster_info to find
-        # the right global_rank.
-        tc = BarrierTaskContext().get()
-        infos = tc.getTaskInfos()
-        idx = tc.partitionId()
-        local_ip = infos[idx].address.split(":")[0]
-        local_rank = 0
-        for i in range(0, idx):
-            if infos[i].address.startswith(local_ip):
-                local_rank += 1
-        global_rank = -1
-        local_count = 0
-        for node in cluster_info:
-            if node.startswith(local_ip):
-                local_count += 1
-            global_rank += 1
-            if local_count == local_rank + 1:
-                break
-        return global_rank
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None):
