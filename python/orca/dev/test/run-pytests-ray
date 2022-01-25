@@ -30,6 +30,7 @@ ray stop -f
 echo "Running RayOnSpark tests"
 python -m pytest -v test/bigdl/orca/ray/ \
 	--ignore=test/bigdl/orca/ray/integration/ \
+    --ignore=test/bigdl/orca/ray/ray_cluster/ \
 	--ignore=test/bigdl/orca/ray/test_reinit_raycontext.py
 exit_status_1=$?
 if [ $exit_status_1 -ne 0 ];
@@ -42,6 +43,7 @@ ray stop -f
 echo "Running orca learn ray tests"
 python -m pytest -v test/bigdl/orca/learn/ray \
       --ignore=test/bigdl/orca/learn/ray/pytorch/test_estimator_horovod_backend.py \
+      --ignore=test/bigdl/orca/learn/ray/pytorch/test_ray_pytorch_estimator.py \
       --ignore=test/bigdl/orca/learn/ray/tf/
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
