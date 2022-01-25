@@ -69,6 +69,9 @@ build_spark() {
     # Prepare BigDL
     mkdir -p image/bin/jars
     cp -f $BIGDL_HOME/jars/* image/bin/jars
+
+    # Prepare tpc=h
+    cp $TPCH_DIR/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar image/bin/jars
     occlum build
 }
 
@@ -144,6 +147,43 @@ run_spark_resnet_cifar(){
                 $* | tee spark.local.sgx.log
 }
 
+run_spark_tpch(){
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run BigDL spark tpch${NC}"
+    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=256m \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx32g org.apache.spark.deploy.SparkSubmit \
+                --master 'local[4]' \
+                --conf spark.driver.port=54321 \
+                --conf spark.driver.memory=8g \
+                --conf spark.driver.blockManager.port=10026 \
+                --conf spark.blockManager.port=10025 \
+                --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
+                --conf spark.worker.timeout=600 \
+                --conf spark.python.use.daemon=false \
+                --conf spark.python.worker.reuse=false \
+                --conf spark.network.timeout=10000000 \
+                --conf spark.starvation.timeout=250000 \
+                --conf spark.rpc.askTimeout=600 \
+                --conf spark.sql.autoBroadcastJoinThreshold=-1 \
+                --conf spark.io.compression.codec=lz4 \
+                --conf spark.sql.shuffle.partitions=8 \
+                --conf spark.speculation=false \
+                --conf spark.executor.heartbeatInterval=10000000 \
+                --conf spark.executor.instances=4 \
+                --executor-cores 8 \
+                --total-executor-cores 32 \
+                --executor-memory 8G \
+                --class main.scala.TpchQuery \
+                --verbose \
+                /bin/jars/spark-tpc-h-queries_2.12-1.0.jar \
+                /host/data /host/data/output
+}
 
 id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 
@@ -163,6 +203,10 @@ case "$arg" in
         ;;
     resnet)
         run_spark_resnet_cifar
+        cd ../
+        ;;
+    tpch)
+        run_spark_tpch
         cd ../
         ;;
 esac

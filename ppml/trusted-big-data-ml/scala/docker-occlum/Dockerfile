@@ -108,6 +108,7 @@ ENV BIGDL_VERSION=${BIGDL_VERSION}
 ENV BIGDL_HOME=/opt/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ENV SGX_MEM_SIZE=20GB
+ENV TPCH_DIR=/opt/zoo-tutorials/tpch-spark
 
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
@@ -158,6 +159,24 @@ RUN cd /opt && \
     chmod a+x ./download-bigdl.sh && \
     ./download-bigdl.sh && \
     rm bigdl*.zip
+
+# sbt
+RUN apt-get update && \
+    apt-get install apt-transport-https curl gnupg -yqq && \
+    echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list && \
+    echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | sudo tee /etc/apt/sources.list.d/sbt_old.list && \
+    curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo -H gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --import && \
+    chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg && \
+    apt-get update && \
+    apt-get install sbt
+
+# Prepare tpch
+RUN cd /opt && \
+    git clone https://github.com/intel-analytics/zoo-tutorials.git && \
+    cd zoo-tutorials/tpch-spark && \
+    sed -i 's/2.11.7/2.12.1/g' tpch.sbt && \
+    sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
+    sbt package
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
