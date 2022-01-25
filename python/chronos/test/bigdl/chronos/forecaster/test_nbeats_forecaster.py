@@ -214,7 +214,7 @@ class TestChronosNBeatsForecaster(TestCase):
         init_orca_context(cores=4, memory="4g")
         forecaster = NBeatsForecaster(past_seq_len=24,
                                       future_seq_len=5,
-                                      stack_types=("generic", "generic"),
+                                      stack_types=("generic", "seasonality"),
                                       loss="mae",
                                       lr=0.01,
                                       distributed=True)
