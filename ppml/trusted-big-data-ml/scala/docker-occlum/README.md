@@ -82,7 +82,7 @@ The examples are run in the docker container. Attach it and see the results (`do
 2021-10-29 02:32:27 INFO  DistriOptimizer$:431 - [Epoch 5 1200/50000][Iteration 503][Wall Clock 960.971331791s] Trained 400.0 records in 1.861386182 seconds. Throughput is 214.89362 records/second. Loss is 0.5886179. Sequentialf702431bs hyper parameters: Current learning rate is 0.1. Current weight decay is 1.0E-4. Current momentum is 0.9. Current nesterov is true.
 ```
 
-## Spark Tpc-h example
+## Spark TPC-H example
 
 ### Generate Data
 

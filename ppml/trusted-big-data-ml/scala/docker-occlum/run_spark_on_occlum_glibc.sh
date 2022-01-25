@@ -69,9 +69,6 @@ build_spark() {
     # Prepare BigDL
     mkdir -p image/bin/jars
     cp -f $BIGDL_HOME/jars/* image/bin/jars
-
-    # Prepare tpc=h
-    cp $TPCH_DIR/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar image/bin/jars
     occlum build
 }
 
