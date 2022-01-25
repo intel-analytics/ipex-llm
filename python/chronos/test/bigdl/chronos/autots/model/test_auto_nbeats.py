@@ -20,7 +20,7 @@ from unittest import TestCase
 import pytest
 import tempfile
 
-from bigdl.chronos.autots.model.auto_nbeats import AutoNBEATS
+from bigdl.chronos.autots.model.auto_nbeats import AutoNBeats
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.automl import hp
 
@@ -62,7 +62,7 @@ def valid_dataloader_creator(config):
 
 
 def get_auto_estimator():
-    auto_nbeats = AutoNBEATS(input_feature_num=input_feature_dim,
+    auto_nbeats = AutoNBeats(input_feature_num=input_feature_dim,
                              output_target_num=output_feature_dim,
                              past_seq_len=past_seq_len,
                              future_seq_len=future_seq_len,
@@ -94,20 +94,13 @@ class TestAutoNBEATS(TestCase):
         auto_nbeats_ = get_auto_estimator()
         auto_nbeats_.fit(data=(train_dataloader_creator(config={'batch_size': 64})),
                          epochs=1,
+                         batch_size=hp.choice([32, 64]),
                          validation_data=valid_dataloader_creator(config={'batch_size': 64}),
                          n_sampling=1)
-        test_data_x, test_data_y = get_x_y(size=100)
-        pred = auto_nbeats_.predict(test_data_x)
-        eval_res = auto_nbeats_.evaluate((test_data_x, test_data_y))
-        try:
-            import onnx
-            import onnxruntime
-            pred_onnx = auto_nbeats_.predict_with_onnx(test_data_x)
-            eval_res_onnx = auto_nbeats_.evaluate_with_onnx((test_data_x, test_data_y))
-            np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
-            np.testing.assert_almost_equal(eval_res, eval_res_onnx, decimal=5)
-        except ImportError:
-            pass
+        assert auto_nbeats_.get_best_model()
+        best_config = auto_nbeats_.get_best_config()
+        assert 0.1 <= best_config['dropout'] <= 0.2
+        assert best_config['batch_size'] in (32, 64)
     
     def test_fit_data_creator(self):
         auto_nbeats_ = get_auto_estimator()
