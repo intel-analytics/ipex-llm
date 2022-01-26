@@ -701,7 +701,8 @@ class XGBClassifier():
 
     def fit(self, df):
         model = callZooFunc("float", "fitXGBClassifier", self.value, df)
-        return XGBClassifierModel(model)
+        xgb_model = XGBClassifierModel(model)
+        return xgb_model
 
     def setMissing(self, value: int):
         return callZooFunc("float", "setXGBClassifierMissing", self.value, value)
