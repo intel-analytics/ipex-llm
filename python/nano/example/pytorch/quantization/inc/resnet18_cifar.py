@@ -36,14 +36,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-from pl_bolts.datamodules import CIFAR10DataModule
-from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
 from pytorch_lightning import LightningModule, Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.optim.lr_scheduler import OneCycleLR
 from torchmetrics.functional import accuracy
 
+try:
+    from pl_bolts.datamodules import CIFAR10DataModule
+    from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
+except ModuleNotFoundError:
+    raise ImportError("This example need lightning-bolts, please install by: "
+                      "pip install lightning-bolts")
+                      
 seed_everything(7)
 
 PATH_DATASETS = os.environ.get("PATH_DATASETS", ".")
