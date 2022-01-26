@@ -133,9 +133,9 @@ class PublicDataset:
                 val.loc[val.id.eq('m_1932')]\
                    .to_csv(self.final_file_path,
                            mode='a',
-                           header=columns_name,
+                           header=columns_list,
                            index=False)
-                columns_name = None
+                columns_list = None
 
         self.df = pd.read_csv(self.final_file_path, usecols=[1, 2, 3])
         self.df.sort_values(by="time_step", inplace=True)
