@@ -135,14 +135,13 @@ if __name__ == '__main__':
                 "tweet_type", "language", 'present_media_language']
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
-
     train = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
-
+    print(type(train.select("engaged_with_user_id").cast("engaged_with_user_id", "str").df.rdd))
     test_user_ids = test.select("engaged_with_user_id").cast("engaged_with_user_id", "str").\
         to_list("engaged_with_user_id")
     test_labels = test.select("label").to_list("label")
-
+    
     full = train.concat(test)
     reindex_tbls = full.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     full, min_max_dict = full.min_max_scale(num_cols)

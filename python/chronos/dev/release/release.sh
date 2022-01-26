@@ -72,7 +72,7 @@ echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl_chronos-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    upload_command="twine upload dist/bigdl_chronos_spark3-${bigdl_version}-py3-none-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi

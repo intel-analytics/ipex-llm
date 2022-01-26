@@ -80,7 +80,7 @@ def get_bigdl_packages():
 
 def setup_package():
     metadata = dict(
-        name='bigdl-friesian',
+        name='bigdl-friesian-spark3',
         version=VERSION,
         description='Large-scale End-to-End Recommendation Solution on Big Data',
         author='BigDL Authors',
@@ -88,8 +88,8 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
-        install_requires=['bigdl-orca=='+VERSION],
-        extras_require={'train': ['bigdl-orca[ray]']},
+        install_requires=['bigdl-orca-spark3=='+VERSION],
+        extras_require={'train': ['bigdl-orca-spark3[ray]']},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         package_data={"bigdl.share.friesian": ['lib/bigdl-friesian*.jar']},

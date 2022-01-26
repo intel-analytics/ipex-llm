@@ -45,7 +45,7 @@ def get_bigdl_packages():
 
 def setup_package():
     metadata = dict(
-        name='bigdl-chronos',
+        name='bigdl-chronos-spark3',
         version=VERSION,
         description='Scalable time series analysis using AutoML',
         author='BigDL Authors',
@@ -53,7 +53,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
-        install_requires=['bigdl-orca=='+VERSION, 'bigdl-nano[pytorch]',
+        install_requires=['bigdl-orca-spark3=='+VERSION, 'bigdl-nano[pytorch]',
                           'pandas>=1.0.5, <1.3.0', 'scikit-learn', 'statsmodels'],
         extras_require={'all': ['bigdl-orca[automl]=='+VERSION]},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
