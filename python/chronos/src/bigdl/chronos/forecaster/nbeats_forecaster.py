@@ -56,6 +56,8 @@ class NBeatsForecaster(BasePytorchForecaster):
         :param stack_types: Specifies the type of stack,
                including "generic", "trend", "seasnoality".
                This value defaults to ("generic", "generic").
+               If set distributed=True, the second type should not be "generic",
+               use "seasonality" or "trend", e.g. ("generic", "trend").
         :param nb_blocks_per_stack: Specify the number of blocks
                contained in each stack, This value defaults to 3.
         :param thetas_dim: Expansion Coefficients of Multilayer FC Networks.
@@ -91,7 +93,12 @@ class NBeatsForecaster(BasePytorchForecaster):
         :param distributed_backend: str, select from "torch_distributed" or
                "horovod". The value defaults to "torch_distributed".
         """
-        # TODO Currently generic mode not support distributed=True.
+        # ("generic", "generic") not support orca distributed.
+        if stack_types[-1] == "generic" and distributed:
+           raise RuntimeError("Please set distributed=False or change the type "
+                              "of 'stack_types' to 'trend', 'seasonality', "
+                              "e.g. ('generic', 'seasonality').")
+
         self.data_config = {
             "past_seq_len": past_seq_len,
             "future_seq_len": future_seq_len,

@@ -219,4 +219,13 @@ class TestChronosNBeatsForecaster(TestCase):
                                       lr=0.01,
                                       distributed=True)
         forecaster.fit(train_data, epochs=2)
+
+        with pytest.raises(RuntimeError):
+            forecaster = NBeatsForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          stack_types=("generic", "generic"),
+                                          loss="mae",
+                                          lr=0.01,
+                                          distributed=True)
+
         stop_orca_context()
