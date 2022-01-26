@@ -111,15 +111,17 @@ echo "[INFO] The Output Path is $encrypted_path"
 
 The KMS client in this example is running in a BigDL PPML container. Please make sure the SGX-Graphene is available.
 
-Prepare and start the Graphene-SGX-based client container as below. As for `ENCLAVE_KEY_PATH`, `KEYS_PATH` and `SECURE_PASSWORD_PATH`, please refer to  [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene).
+Prepare and start the Graphene-SGX-based client container as below. As for `ENCLAVE_KEY_PATH`, `SPARK_KEY_PATH` and `SECURE_PASSWORD_PATH`, please refer to  [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene#prepare-the-key).
 
 ```bash
 export INPUT_DIR_PATH=YOUR_DATA_FILE_DIRECTORY_PATH # Encrypted Data Files Is Under This Directory
 export KMS_SERVER_IP=YOUR_KMS_SERVER_IP
 export LOCAL_IP=YOUR_LOCAL_IP
 export ENCLAVE_KEY_PATH=YOUR_LOCAL_ENCLAVE_KEY_PATH
-export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
+export SPARK_KEY_PATH=YOUR_SPARK_KEY_PATH
 export SECURE_PASSWORD_PATH=YOUR_SECURE_PASSWORD_PATH
+export ENCRYPT_PRIMARY_KEY=YOUR_ENCRYPT_PRIMARY_KEY # The encrypt_primary_key generated in the previous step
+export ENCRYPT_DATA_KEY=YOUR_ENCRYPT_DATA_KEY # The encrypt_data_key generated in the previous step
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
 
 sudo docker pull $DOCKER_IMAGE
@@ -133,9 +135,11 @@ sudo docker run -itd \
     --device=/dev/sgx/provision \
     -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-    -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+    -v $SPARK_KEY_PATH:/ppml/trusted-big-data-ml/work/keys \
     -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
-    -v $INPUT_DIR_PATH:/ppml/trusted-big-data-ml/work/input \
+    -v $INPUT_DIR_PATH:/ppml/trusted-big-data-ml/work/input/plain.encrypted \
+    -v $ENCRYPT_PRIMARY_KEY:/ppml/trusted-big-data-ml/work/input/keys/encrypt_primary_key \
+    -v $ENCRYPT_DATA_KEY:/ppml/trusted-big-data-ml/work/input/keys/encrypt_data_key \
     --name=kms-client \
     -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=64G \
@@ -166,9 +170,10 @@ Enter the client container deployed in the previous step and run the below comma
   bash init.sh # Graphene-SGX Initiation
   
   # Step 1. Decrypt The Encrypted Files As A Spark Job Inside SGX And Then Encrypt Columns
-  export INPUT_PATH=/ppml/trusted-big-data-ml/work/input
-  SGX=1 ./pal_loader bash -c "bash ./work/kms-client/DecryptFilesWithSpark.sh $INPUT_PATH $KMS_SERVER_IP $LOCAL_IP" 2>&1 > spark-inside-sgx.log
-  export output_path=$INPUT_PATH.col_encrypted
+  export INPUT_DIR_PATH=/ppml/trusted-big-data-ml/work/input/plain.encrypted
+  export ENCRYPT_KEYS_PATH=/ppml/trusted-big-data-ml/work/input/keys
+  SGX=1 ./pal_loader bash -c "bash ./work/kms-client/DecryptFilesWithSpark.sh $INPUT_DIR_PATH $ENCRYPT_KEYS_PATH $KMS_SERVER_IP $LOCAL_IP" 2>&1 > spark-inside-sgx.log
+  export output_path=$INPUT_DIR_PATH.col_encrypted
   
   # Step 2. Decrypt The colums And Ouput With KMS API
   python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $output_path --pkp /ppml/trusted-big-data-ml/encrypted_primary_key --dkp /ppml/trusted-big-data-ml/encrypted_data_key
