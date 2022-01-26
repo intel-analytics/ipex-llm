@@ -176,7 +176,7 @@ Enter the client container deployed in the previous step and run the below comma
   export output_path=$INPUT_DIR_PATH.col_encrypted
   
   # Step 2. Decrypt The colums And Ouput With KMS API
-  python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $output_path --pkp /ppml/trusted-big-data-ml/encrypted_primary_key --dkp /ppml/trusted-big-data-ml/encrypted_data_key
+  python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $output_path --pkp $ENCRYPT_KEYS_PATH/encrypted_primary_key --dkp $ENCRYPT_KEYS_PATH/encrypted_data_key
   ```
 
   Then it takes a little time to operate in SGX, and you are expected to get output files under directory `$output_path`. You will get screen output similar to below:
