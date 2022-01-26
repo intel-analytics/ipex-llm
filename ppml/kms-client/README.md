@@ -64,7 +64,7 @@ Users without a ready python environment can turn to use a pre-prepared BigDL PP
 
 We have deployed necessary requirements in [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene). You can also do the same in other trusted execution environments, like Trusted Realtime ML etc., after installing python modules listed in `requirement.yml` with pip.
 
-Pay attention to the variables and set them to correct values according to your operating environment. As for `ENCLAVE_KEY_PATH`, `KEYS_PATH` and`SECURE_PASSWORD_PATH`, please refer to [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene). If your goal is only to encrypt data files, you can ignore these variables while they are needed in the following steps for SGX-related operations. 
+Pay attention to the variables and set them to correct values according to your operating environment.
 
 ```bash
 export INPUT_DIR_PATH=YOUR_DATA_FILE_DIRECTORY_PATH # For example, multiple CSV files are in this directory
