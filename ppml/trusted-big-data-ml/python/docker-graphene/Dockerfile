@@ -85,7 +85,7 @@ RUN cd /opt && \
     mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
 
 ADD spark-example-sql-e2e.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
-ADD spark-decrypt-files.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-decrypt-files.jar
+RUN cd /opt/spark-${SPARK_VERSION}/examples/jars && wget http://10.239.45.10:8081/repository/raw/spark-encrypt-io-0.1-SNAPSHOT.jar
 
 # hadoop
 RUN cd /opt && \

@@ -1,5 +1,5 @@
 # set -x
-SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-decrypt-files.jar
+SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-encrypt-io-0.1-SNAPSHOT.jar
 INPUT_DIR_PATH=$1
 ENCRYPT_KEYS_PATH=$2
 KMS_SERVER_IP=$3
@@ -26,7 +26,7 @@ data_key=$(python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py -api g
   --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
   --conf spark.ssl.trustStorePassword=$secure_password \
   --conf spark.ssl.trustStoreType=JKS \
-  --class sparkCryptoFiles.encryptColumnFromDifferentTables \
+  --class com.intel.analytics.bigdl.ppml.e2e.examples.SimpleEncryptIO \
   $SPARK_DECRYPT_JAR_PATH \
   $INPUT_DIR_PATH \
   $data_key \
