@@ -54,6 +54,8 @@ python ./KMS_Client.py --api generate_data_key --ip $KMS_SERVER_IP --pkp ./encry
 
 # Step 2. Encyypt The Input Directory Outside SGX With KMS
 python ./KMS_Client.py --api encrypt_directory_with_key --ip $KMS_SERVER_IP  --dir $INPUT_DIR_PATH --pkp ./encrypted_primary_key --dkp ./encrypted_data_key
+encrypted_path=$INPUT_DIR_PATH.encrypted
+echo "[INFO] The Output Path is $encrypted_path"
 ```
 
 ### **Scheme 2: Encrypt Inside a BigDL PPML Container**
@@ -99,8 +101,6 @@ python ./work/kms-client/KMS_Client.py --api generate_data_key --ip $KMS_SERVER_
 
 # Step 2. Encyypt The Input Directory Outside SGX With KMS
 python ./work/kms-client/KMS_Client.py --api encrypt_directory_with_key --ip $KMS_SERVER_IP  --dir /ppml/trusted-big-data-ml/work/input --pkp ./encrypted_primary_key --dkp ./encrypted_data_key
-encrypted_path=$INPUT_DIR_PATH.encrypted
-echo "[INFO] The Output Path is $encrypted_path"
 ```
 
 ## 3. Run BigDL PPML with KMS Client at Spark Local Mode
