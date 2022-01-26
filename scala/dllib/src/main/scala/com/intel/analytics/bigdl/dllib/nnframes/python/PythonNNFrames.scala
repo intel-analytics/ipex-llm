@@ -292,6 +292,10 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     XGBClassifierModel.load(path, numClasses)
   }
 
+  def saveXGBClassifierModel(model: XGBClassifierModel, path: String): Unit = {
+    model.save(path)
+  }
+
   def setFeaturesXGBClassifierModel(model: XGBClassifierModel, features: String): Unit = {
     model.setFeaturesCol(features)
   }

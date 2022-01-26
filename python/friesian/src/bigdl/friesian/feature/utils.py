@@ -16,8 +16,8 @@
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
-    DoubleType
-from pyspark.sql.functions import broadcast
+    DoubleType, BooleanType
+from pyspark.sql.functions import broadcast, udf
 
 
 def compute(df):
@@ -170,7 +170,7 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
             else t_df.sort(t_df.target_encode_count.desc()).limit(limit_size)
         br_df = broadcast(top_df.drop("target_encode_count"))
         keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
-        filter_udf = lambda key: key in keyset
+        filter_udf = udf(lambda key: key in keyset, BooleanType())
 
         if fold_col is None:
             join_key = cat_col

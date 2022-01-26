@@ -700,7 +700,8 @@ class XGBClassifier():
         callZooFunc("float", "setXGBClassifierNumWorkers", self.value, value)
 
     def fit(self, df):
-        return callZooFunc("float", "fitXGBClassifier", self.value, df)
+        model = callZooFunc("float", "fitXGBClassifier", self.value, df)
+        return XGBClassifierModel(model)
 
     def setMissing(self, value: int):
         return callZooFunc("float", "setXGBClassifierMissing", self.value, value)
@@ -750,6 +751,9 @@ class XGBClassifierModel:
     def transform(self, dataset):
         df = callZooFunc("float", "transformXGBClassifierModel", self.value, dataset)
         return df
+
+    def saveModel(self, path):
+        callZooFunc("float", "saveXGBClassifierModel", self.value, path)
 
     @staticmethod
     def loadModel(path, numClasses):
