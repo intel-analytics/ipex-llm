@@ -334,7 +334,7 @@ class BasePytorchForecaster(Forecaster):
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
 
-    def save(self, checkpoint_file):
+    def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """
         Save the forecaster.
 
@@ -349,9 +349,15 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling save!")
-            self.trainer.save_checkpoint(checkpoint_file)
+            self.trainer.save_checkpoint(checkpoint_file)  # save current status
+            if quantize_checkpoint_file:
+                try:
+                    torch.save(self.internal.quantized_state_dict(), quantize_checkpoint_file)
+                except RuntimeError:
+                    warnings.warn("Please call .quantize() method to build "
+                                "an up-to-date quantized model")
 
-    def load(self, checkpoint_file):
+    def load(self, checkpoint_file, quantize_checkpoint_file=None):
         """
         restore the forecaster.
 
@@ -372,6 +378,8 @@ class BasePytorchForecaster(Forecaster):
                                                                           optimizer=optimizer)
             self.internal = Trainer.compile(self.internal, onnx=self.onnx_available)
             self.fitted = True
+            if quantize_checkpoint_file:
+                self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
 
     def to_local(self):
         """
