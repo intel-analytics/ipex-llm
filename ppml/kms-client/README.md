@@ -220,26 +220,30 @@ You can do below operations supported by BigDL PPML with KMS Client APIs. Please
 - Encrypt a file without holding keys (keys will be generated automatically):
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_file_without_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dfp DATA_FILE_PATH
+  python ./work/kms-client/KMS_Client.py -api encrypt_file_without_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dfp <DATA_FILE_PATH>
   ```
 
 - Encrypt a file with specified keys (if you have generated keys before, you will find encrypted key files named `encrypted_primary_key` and `encyrpted_data_key`, and you can use them again in the following):
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_file_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp DATA_FILE_PATH
+  python ./work/kms-client/KMS_Client.py -api encrypt_file_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp <DATA_FILE_PATH>
   ```
 
 - Decrypted a file with according keys:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api decrypt_file -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp ENCYRPTED_DATA_FILE_PATH
+  python ./work/kms-client/KMS_Client.py -api decrypt_file -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp <ENCYRPTED_DATA_FILE_PATH>
   ```
 
-- Encrypt all files under a directory:
+- Automatically generate keys and encrypt all files under a directory:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_directory -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED>
+  python ./work/kms-client/KMS_Client.py -api encrypt_directory_without_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED> [-sdp <SAVE_DIRECTORY_PATH>]
   ```
+- Encrypt all files under a directory with existing keys:
+
+  ```bash
+  python ./work/kms-client/KMS_Client.py -api encrypt_directory_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED> -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> [-sdp <SAVE_DIRECTORY_PATH>]
 
 - Get plaintext data key from a `encyrpted_data_key`:
 
