@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This file is adapted from PyTorch Lightning.
+# This file is adapted from PyTorch Lightning Tutorial.
 # https://github.com/PyTorchLightning/lightning-tutorials/blob/main/
 # lightning_examples/cifar10-baseline/baseline.py
 # Copyright The PyTorch Lightning team.
@@ -47,8 +47,7 @@ from torchmetrics.functional import accuracy
 seed_everything(7)
 
 PATH_DATASETS = os.environ.get("PATH_DATASETS", ".")
-AVAIL_GPUS = min(1, torch.cuda.device_count())
-BATCH_SIZE = 256 if AVAIL_GPUS else 64
+BATCH_SIZE =  64
 NUM_WORKERS = int(os.cpu_count() / 2)
 
 
@@ -75,6 +74,7 @@ cifar10_dm = CIFAR10DataModule(
     train_transforms=train_transforms,
     test_transforms=test_transforms,
     val_transforms=test_transforms,
+    pin_memory=False
 )
 
 def create_model():
@@ -145,7 +145,6 @@ model.datamodule = cifar10_dm
 trainer = Trainer(
     progress_bar_refresh_rate=10,
     max_epochs=30,
-    gpus=AVAIL_GPUS,
     logger=TensorBoardLogger("lightning_logs/", name="resnet"),
     callbacks=[LearningRateMonitor(logging_interval="step")],
 )
