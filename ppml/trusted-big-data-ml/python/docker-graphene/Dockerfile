@@ -78,14 +78,15 @@ RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-network-common_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-examples_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/pyspark.zip && \
+    wget $SPARK_JAR_REPO_URL/spark-encrypt-io-0.1-SNAPSHOT.jar && \
     mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-examples_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
-    mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip
+    mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip && \
+    mv /opt/spark-encrypt-io-0.1-SNAPSHOT.jar /opt/spark-${SPARK_VERSION}/examples/jars
 
 ADD spark-example-sql-e2e.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-example-sql-e2e.jar
-RUN cd /opt/spark-${SPARK_VERSION}/examples/jars && wget http://10.239.45.10:8081/repository/raw/spark-encrypt-io-0.1-SNAPSHOT.jar
 
 # hadoop
 RUN cd /opt && \
