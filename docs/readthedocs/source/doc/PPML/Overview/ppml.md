@@ -1,10 +1,10 @@
 # Privacy Preserving Machine Learning (PPML) User Guide
 
 ## 1. Introduction
-Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. BigDL ***PPML*** combines various low-level hardware and software security technologies (e.g., [Intel® Software Guard Extensions (Intel® SGX)](https://www.intel.com/content/www/us/en/architecture-and-technology/software-guard-extensions.html#:~:text=Intel%C2%AE%20SGX%20allows%20user,level%20of%20control%20and%20protection.), [Library Operating System (LibOS)](https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Library-OS-is-the-New-Container-Why-is-Library-OS-A-Better-Option-for-Compatibility-and-Sandboxing-Chia-Che-Tsai-UC-Berkeley.pdf) such as [Graphene](https://www.usenix.org/conference/atc17/technical-sessions/presentation/tsai) and [Occlum](https://github.com/occlum/occlum), Federated Learning, etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
+Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. BigDL ***PPML*** combines various low-level hardware and software security technologies (e.g., [Intel® Software Guard Extensions (Intel® SGX)](https://www.intel.com/content/www/us/en/architecture-and-technology/software-guard-extensions.html), [Library Operating System (LibOS)](https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Library-OS-is-the-New-Container-Why-is-Library-OS-A-Better-Option-for-Compatibility-and-Sandboxing-Chia-Che-Tsai-UC-Berkeley.pdf) such as [Graphene](https://github.com/gramineproject/graphene) and [Occlum](https://github.com/occlum/occlum), [Federated Learning](https://en.wikipedia.org/wiki/Federated_learning), etc.), so that users can continue to apply standard Big Data and AI technologies (such as Apache Spark, Apache Flink, Tensorflow, PyTorch, etc.) without sacrificing privacy.
 
 ## 1.1 PPML for Big Data AI
-BigDL provides a distributed PPML platform for protecting the *end-to-end Big Data AI pipeline* (from data ingestion, data analysis, all the way to machine learning and deep learning). In particular, it extends the single-node [Trusted Execution Environment](https://en.wikipedia.org/wiki/Trusted_execution_environment) to provide a *Trusted Cluster Environment*, so as to run unmodified Big Data analysis and ML/DL programs in a secure fashion on a (private or public) cloud:
+BigDL provides a distributed PPML platform for protecting the *end-to-end Big Data AI pipeline* (from data ingestion, data analysis, all the way to machine learning and deep learning). In particular, it extends the single-node [Trusted Execution Environment](https://en.wikipedia.org/wiki/Trusted_execution_environment) to provide a *Trusted Cluster Environment*, so as to run unmodified Big Data analysis and ML/DL programs in a secure fashion on (private or public) cloud:
 
  * Compute and memory protected by SGX Enclaves
  * Network communication protected by remote attestation and [Transport Layer Security (TLS)](https://en.wikipedia.org/wiki/Transport_Layer_Security)
@@ -40,7 +40,7 @@ cd BigDL/ppml/
     cd ..
     ```
 
-2. Generate the key for SGX Enclaves
+2. Generate the signing key for SGX Enclaves
 
    Generate the enclave key using the command below, keep it safely for future remote attestations and to start SGX Enclaves more securely. It will generate a file `enclave-key.pem` in the current working directory, which will be the  enclave key. To store the key elsewhere, modify the output file path.
 
@@ -75,7 +75,7 @@ cd BigDL/ppml/
     ./generate-password.sh used_password_when_generate_keys
     cd ..
     ```
-    This scrip will generate 2 files in `./ppml/scripts/password` dir.
+    This script will generate 2 files in `./ppml/scripts/password` dir.
 
     ```bash
     key.txt
@@ -116,7 +116,7 @@ Enter `BigDL/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
    There are four files. **train-images-idx3-ubyte** contains train images, **train-labels-idx1-ubyte** is train label file, **t10k-images-idx3-ubyte** has validation images    and **t10k-labels-idx1-ubyte** contains validation labels. For more detail, please refer to the download page. <br>
    After you decompress the gzip files, these files may be renamed by some decompress tools, e.g. **train-images-idx3-ubyte** is renamed to **train-images.idx3-ubyte**. Please change the name back before you run the example.  <br>
    
-3. To start the container, firstly modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:
+3. To start the container, modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:
     ```bash
     ./deploy-local-spark-sgx.sh
     sudo docker exec -it spark-local bash
@@ -130,7 +130,7 @@ Enter `BigDL/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
 
 ##### 2.2.2.2 Run Your Spark Program with BigDL PPML on SGX
 
-To run your pyspark program, firstly you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
+To run your pyspark program, you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
 
 ```bash
 ./ppml-spark-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
@@ -164,7 +164,7 @@ The result should look something like this:
 
 This example shows how to run trusted Spark SQL (e.g.,  TPC-H queries).
 
-First, download and install sbt from [here](https://www.scala-sbt.org/download.html) and deploy an Hadoop Distributed File System from [here](https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/ClusterSetup.html) for the Transaction Processing Performance Council Benchmark H (TPC-H) dataset and output, then build the source codes with SBT and generate the TPC-H dataset according to the TPC-H example from [here](https://github.com/intel-analytics/zoo-tutorials/tree/master/tpch-spark). After that, check if there is a  `spark-tpc-h-queries_2.11-1.0.jar` under `tpch-spark/target/scala-2.11`; if so, we have successfully packaged the project.
+First, download and install sbt from [here](https://www.scala-sbt.org/download.html) and deploy an Hadoop Distributed File System(HDFS) from [here](https://hadoop.apache.org/docs/r2.7.7/hadoop-project-dist/hadoop-common/ClusterSetup.html) for the Transaction Processing Performance Council Benchmark H (TPC-H) dataset and output, then build the source codes with SBT and generate the TPC-H dataset according to the TPC-H example from [here](https://github.com/intel-analytics/zoo-tutorials/tree/master/tpch-spark). After that, check if there is  `spark-tpc-h-queries_2.11-1.0.jar` under `tpch-spark/target/scala-2.11`; if so, we have successfully packaged the project.
 
 Copy the TPC-H package to the container:
 
@@ -288,7 +288,7 @@ Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` directory.
    cp -r ../password .
    ```
 
-2. To start the container, firstly modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:
+2. To start the container, modify the paths in deploy-local-spark-sgx.sh, and then run the following commands:
 
    ```bash
    ./deploy-local-spark-sgx.sh
@@ -299,7 +299,7 @@ Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` directory.
 
 ##### 2.3.2.2 Run Your Pyspark Program with BigDL PPML on SGX
 
-To run your pyspark program, firstly you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
+To run your pyspark program, you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
 
 ```bash
 ./ppml-spark-submit.sh work/YOUR_PROMGRAM.py | tee YOUR_PROGRAM-sgx.log
@@ -748,7 +748,7 @@ cd ${FLINK_HOME}
 ./bin/flink run ./examples/batch/WordCount.jar
 ```
 
-If Job manager is not running on the current node, please add `-m ${FLINK_JOB_MANAGER_IP}`.
+If Jobmanager is not running on the current node, please add `-m ${FLINK_JOB_MANAGER_IP}`.
 
 The result should look like this:
 
