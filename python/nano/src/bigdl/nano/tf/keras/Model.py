@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from time import time
+
 import tensorflow as tf
 import numpy as np
-
+from time import time
 
 class Model(tf.keras.Model):
     def __init__(self, *args, **kwargs):
