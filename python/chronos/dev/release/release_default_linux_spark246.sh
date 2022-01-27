@@ -25,15 +25,28 @@
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
+CHRONOS_DIR="$(cd ${RUN_SCRIPT_DIR}/../../; pwd)"
+echo $CHRONOS_DIR
+DEV_DIR="$(cd ${CHRONOS_DIR}/../dev/; pwd)"
+echo $DEV_DIR
 
-if (( $# < 2)); then
-  echo "Usage: release_default_linux_spark246.sh version upload"
-  echo "Usage example: bash release_default_linux_spark246.sh default true"
-  echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 true"
+if (( $# < 3)); then
+  echo "Usage: release_default_linux_spark246.sh version upload suffix"
+  echo "Usage example: bash release_default_linux_spark246.sh default true true"
+  echo "Usage example: bash release_default_linux_spark246.sh 0.14.0.dev1 true false"
   exit -1
 fi
 
 version=$1
 upload=$2
+suffix=$3
+
+if [ ${suffix} == true ]; then
+    bash ${DEV_DIR}/add_suffix_spark2.sh $CHRONOS_DIR/src/setup.py
+    bash ${DEV_DIR}/add_suffix_spark2.sh ${RUN_SCRIPT_DIR}/release.sh
+else
+    bash ${DEV_DIR}/remove_spark_suffix.sh $CHRONOS_DIR/src/setup.py
+    bash ${DEV_DIR}/remove_spark_suffix.sh ${RUN_SCRIPT_DIR}/release.sh
+fi
 
 bash ${RUN_SCRIPT_DIR}/release.sh linux ${version} ${upload}

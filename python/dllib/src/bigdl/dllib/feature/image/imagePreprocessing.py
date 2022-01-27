@@ -81,18 +81,18 @@ class ImageBrightness(ImagePreprocessing):
 class ImageChannelNormalize(ImagePreprocessing):
     """
     image channel normalize
-    :param mean_r mean value in R channel
+    :param mean_b mean value in B channel
     :param mean_g mean value in G channel
-    :param meanB_b mean value in B channel
-    :param std_r std value in R channel
-    :param std_g std value in G channel
+    :param mean_r mean value in R channel
     :param std_b std value in B channel
+    :param std_g std value in G channel
+    :param std_r std value in R channel
     """
-    def __init__(self, mean_r, mean_g, mean_b, std_r=1.0,
-                 std_g=1.0, std_b=1.0, bigdl_type="float"):
-        super(ImageChannelNormalize, self).__init__(bigdl_type, float(mean_r), float(mean_g),
-                                                    float(mean_b), float(std_r), float(std_g),
-                                                    float(std_b))
+    def __init__(self, mean_b, mean_g, mean_r, std_b=1.0,
+                 std_g=1.0, std_r=1.0, bigdl_type="float"):
+        super(ImageChannelNormalize, self).__init__(bigdl_type, float(mean_b), float(mean_g),
+                                                    float(mean_r), float(std_b), float(std_g),
+                                                    float(std_r))
 
 
 class PerImageNormalize(ImagePreprocessing):

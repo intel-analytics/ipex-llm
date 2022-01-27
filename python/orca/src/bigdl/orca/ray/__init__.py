@@ -15,3 +15,4 @@
 #
 
 from .raycontext import RayContext
+from .ray_on_spark_context import RayOnSparkContext
