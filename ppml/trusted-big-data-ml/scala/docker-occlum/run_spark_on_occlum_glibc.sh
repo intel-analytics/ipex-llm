@@ -19,6 +19,7 @@ init_instance() {
         .resource_limits.kernel_space_heap_size="1024MB" |
         .process.default_mmap_size = "28000MB" |
         .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
+        .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL" ] |
         .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
@@ -35,6 +36,10 @@ build_spark() {
     mkdir -p image/usr/lib/jvm
     cp -r /usr/lib/jvm/java-11-openjdk-amd64 image/usr/lib/jvm
     cp -rf /etc/java-11-openjdk image/etc/
+    # Copy K8s secret
+    mkdir -p image/var/run/secrets/
+    cp -r /var/run/secrets/* image/var/run/secrets/
+    ls image/var/run/secrets/kubernetes.io/serviceaccount/
     # Copy libs
     cp /lib/x86_64-linux-gnu/libz.so.1 image/lib
     cp /lib/x86_64-linux-gnu/libz.so.1 image/$occlum_glibc
