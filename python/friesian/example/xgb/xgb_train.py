@@ -30,7 +30,7 @@ spark_conf = {"spark.network.timeout": "10000000",
               "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
               "spark.kryo.unsafe": "true",
               "spark.kryoserializer.buffer.max": "1024m",
-              "spark.task.cpus": "1",
+              "spark.task.cpus": "4",
               "spark.executor.heartbeatInterval": "200s",
               "spark.driver.maxResultSize": "40G",
               "spark.eventLog.enabled": "true",
@@ -76,56 +76,53 @@ if __name__ == '__main__':
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
 
-    # cat_cols = ['present_media_language']
-    # embed_cols = []
-
     features = num_cols + [col + "_te_label" for col in cat_cols] +\
                [col + "_te_label" for col in embed_cols]
 
     train = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
-    train.df.printSchema()
     full = train.concat(test)
 
-    full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols=["label", "language"])
-    print(len(target_codes))
+    full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols=["label"])
 
-    for i in range(len(target_codes)):
-        print(" **** in driver, lenght of target codes")
-        target_codes[i].show(2, False)
-        print(target_codes[i].size())
-
-    train = train.encode_target(target_cols="label", targets=target_codes, drop_cat=False)\
+    train = train.drop("text_tokens")\
+        .encode_target(target_cols="label", targets=target_codes, drop_cat=False)\
         .merge_cols(features, "features") \
         .select(["label", "features"])\
         .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
-    train.drop("text_tokens").show(2, False)
+    train.show(2, False)
 
-    test = test.drop("text_tokens").encode_target(target_cols="label", targets=target_codes) \
+    test = test.drop("text_tokens")\
+        .encode_target(target_cols="label", targets=target_codes) \
         .merge_cols(features, "features") \
         .select(["label", "features"]) \
         .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
     test.show(2, False)
+    train.cache()
+    test.cache()
 
     import time
     begin = time.time()
-    params = {"eta": 0.2, "max_depth":4, "max_leaf_nodes": 8, "objective": "binary:logistic",
-              "num_round": 100}
 
-    classifier = XGBClassifier(params)
-    classifier.setNthread(1)
-    xgbmodel = classifier.fit(train.df)
-    xgbmodel.setFeaturesCol("features")
-    predicts = xgbmodel.transform(test.df)
+    for eta in [0.1, 0.2, 0.3, 0.4]:
+        for max_depth in [4, 8, 12]:
+            for num_round in [200, 400, 600]:
+                params = {"eta": eta, "max_depth": max_depth, "max_leaf_nodes": 8,
+                          "objective": "binary:logistic",
+                          "num_round": num_round}
+                classifier = XGBClassifier(params)
+                classifier.setNthread(1)
+                xgbmodel = classifier.fit(train.df)
+                xgbmodel.setFeaturesCol("features")
+                predicts = xgbmodel.transform(test.df)
 
-    predicts.show(10, False)
-    predicts.cache()
-
-    gr = [row.label for row in predicts.select("label").collect()]
-    predicts = [row.prediction for row in predicts.select("prediction").collect()]
-    accuracy = accuracy_score(gr, predicts)
-
-    print("Accuracy: %.2f%%" % (accuracy * 100.0))
+                predicts.cache()
+                gr = [row.label for row in predicts.select("label").collect()]
+                predicts = [row.prediction for row in predicts.select("prediction").collect()]
+                accuracy = accuracy_score(gr, predicts)
+                predicts.unpersist()
+                print("eta:", eta, "  max_depth: ", max_depth, "  num_round: ", num_round)
+                print("Accuracy: %.2f%%" % (accuracy * 100.0))
     end = time.time()
     print(end - begin)
     stop_orca_context()
