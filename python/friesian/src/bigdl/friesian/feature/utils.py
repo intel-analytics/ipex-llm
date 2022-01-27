@@ -168,7 +168,6 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
                     new_out_target_mean[out_col] = target_mean
             out_target_mean = new_out_target_mean
 
-
         br_df = broadcast(join_tbl.df)
         if fold_col is None:
             df = tbl.df.join(br_df, on=cat_col, how="left")
