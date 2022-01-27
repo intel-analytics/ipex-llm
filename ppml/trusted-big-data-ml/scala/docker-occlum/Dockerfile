@@ -14,6 +14,8 @@ ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
+ENV HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
+ENV HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
         openjdk-8-jdk build-essential wget git && \
@@ -41,7 +43,7 @@ RUN cd /opt && \
     rm spark/jars/hadoop-common-3.2.0.jar && \
     rm spark/jars/hive-exec-2.3.7-core.jar
 
-# spark modification
+# spark modification and download test jars
 RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
@@ -50,7 +52,23 @@ RUN cd /opt && \
     mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark/jars/spark-core_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
-    mv /opt/pyspark.zip /opt/spark/python/lib/pyspark.zip
+    mv /opt/pyspark.zip /opt/spark/python/lib/pyspark.zip && \
+    mkdir /opt/spark/test-jars && \
+    cd /opt/spark/test-jars && \
+    wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION-tests.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-catalyst_2.12-$SPARK_VERSION-tests.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-sql_2.12-$SPARK_VERSION-tests.jar && \
+    wget https://repo1.maven.org/maven2/org/scalactic/scalactic_2.12/3.1.4/scalactic_2.12-3.1.4.jar && \
+    wget https://repo1.maven.org/maven2/org/scalatest/scalatest_2.12/3.1.4/scalatest_2.12-3.1.4.jar && \
+    wget https://repo1.maven.org/maven2/org/mockito/mockito-core/3.4.6/mockito-core-3.4.6.jar && \
+    wget https://repo1.maven.org/maven2/com/h2database/h2/1.4.195/h2-1.4.195.jar && \
+    wget https://repo1.maven.org/maven2/com/ibm/db2/jcc/11.5.0.0/jcc-11.5.0.0.jar && \
+    wget https://repo1.maven.org/maven2/org/apache/parquet/parquet-avro/1.10.1/parquet-avro-1.10.1.jar && \
+    wget https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.13/byte-buddy-1.10.13.jar && \
+    wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.6/postgresql-42.2.6.jar && \
+    wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-mockito_2.12/1.0.0-SNAP5/scalatestplus-mockito_2.12-1.0.0-SNAP5.jar && \
+    wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-scalacheck_2.12/3.1.0.0-RC2/scalatestplus-scalacheck_2.12-3.1.0.0-RC2.jar
+    
 
 RUN mkdir -p /opt/src
 
@@ -184,6 +202,7 @@ COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-qu
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
+ADD ./sqlSuites /opt/sqlSuites
 
 COPY ./entrypoint.sh /opt/
 
