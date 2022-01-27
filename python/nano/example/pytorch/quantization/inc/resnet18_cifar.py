@@ -43,17 +43,15 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.optim.lr_scheduler import OneCycleLR
 from torchmetrics.functional import accuracy
 
-try:
-    from pl_bolts.datamodules import CIFAR10DataModule
-    from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
-except ModuleNotFoundError:
-    raise ImportError("This example need lightning-bolts, please install by: "
-                      "pip install lightning-bolts")
-                      
+
+from pl_bolts.datamodules import CIFAR10DataModule
+from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
+
+
 seed_everything(7)
 
 PATH_DATASETS = os.environ.get("PATH_DATASETS", ".")
-BATCH_SIZE =  64
+BATCH_SIZE = 64
 NUM_WORKERS = int(os.cpu_count() / 2)
 
 
@@ -83,9 +81,11 @@ cifar10_dm = CIFAR10DataModule(
     pin_memory=False
 )
 
+
 def create_model():
     model = torchvision.models.resnet18(pretrained=False, num_classes=10)
-    model.conv1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+    model.conv1 = nn.Conv2d(3, 64, kernel_size=(
+        3, 3), stride=(1, 1), padding=(1, 1), bias=False)
     model.maxpool = nn.Identity()
     return model
 
