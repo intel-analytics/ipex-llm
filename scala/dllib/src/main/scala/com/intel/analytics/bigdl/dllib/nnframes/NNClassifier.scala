@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.utils.Engine
+import org.apache.spark.sql.SparkSession
 // import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.EngineRef
 import com.intel.analytics.bigdl.dllib.nnframes.NNModel.NNModelWriter
 import ml.dmlc.xgboost4j.scala.spark.{XGBoostClassificationModel, XGBoostHelper,
@@ -319,8 +320,11 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
 }
 
 class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
+  val sc = SparkSession.active.sparkContext
+  sc.getConf.set("spark.task.cpus", Engine.coreNumber().toString)
   private val model = new XGBoostClassifier(xgboostParams)
   model.setNthread(Engine.coreNumber())
+  model.setNumWorkers(Engine.nodeNumber())
   model.setMaxBins(256)
 
   def setFeaturesCol(featuresColName: String): this.type = {
