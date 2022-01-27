@@ -23,14 +23,14 @@ def decrypt_file(data_file_path, ip, port, encrypted_primary_key_path, encrypted
     FileOperator.decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path)
 
 
-def encrypt_directory_with_key(dir_path, ip, port,encrypted_primary_key_path, encrypted_data_key_path):
-    FileOperator.encrypt_directory_automation(ip, port, dir_path, encrypted_primary_key_path, encrypted_data_key_path)
+def encrypt_directory_with_key(dir_path, ip, port,encrypted_primary_key_path, encrypted_data_key_path, save_dir=None):
+    FileOperator.encrypt_directory_automation(ip, port, dir_path, encrypted_primary_key_path, encrypted_data_key_path,save_dir)
 
 
-def encrypt_directory_without_key(dir_path, ip, port):
+def encrypt_directory_without_key(dir_path, ip, port, save_dir=None):
     KeyManager.generate_primary_key_ciphertext(ip, port)
     KeyManager.generate_data_key_ciphertext(ip, port, './encrypted_primary_key')
-    FileOperator.encrypt_directory_automation(ip, port, dir_path, './encrypted_primary_key', './encrypted_data_key')
+    FileOperator.encrypt_directory_automation(ip, port, dir_path, './encrypted_primary_key', './encrypted_data_key',save_dir)
 
 
 def get_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path):
@@ -52,6 +52,7 @@ if __name__ == "__main__":
     parser.add_argument('-dkp', '--dkp', type=str, help='path of the data key storage file', required=False)
     parser.add_argument('-dfp', '--dfp', type=str, help='path of the data file to encrypt', required=False)
     parser.add_argument('-dir', '--dir', type=str, help='path of the directory containing column-encrypted CSVs or the directory to be encrypted', required=False)
+    parser.add_argument('-sdp', '--sdp', type=str, help='path of the save directory output to',required=False)
     args = parser.parse_args()
 
     api = args.api
@@ -78,12 +79,14 @@ if __name__ == "__main__":
         decrypt_file(data_file_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path)
     elif api == 'encrypt_directory_without_key':
         dir_path = args.dir
-        encrypt_directory(dir_path, ip, port)
+        save_path = args.sdp
+        encrypt_directory(dir_path, ip, port, save_path)
     elif api == 'encrypt_directory_with_key':
         dir_path = args.dir
         encrypted_primary_key_path = args.pkp
         encrypted_data_key_path = args.dkp
-        encrypt_directory_with_key(dir_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path)
+        save_path = args.sdp
+        encrypt_directory_with_key(dir_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path,save_path)
     elif api == 'get_data_key_plaintext':
         encrypted_primary_key_path = args.pkp
         encrypted_data_key_path = args.dkp

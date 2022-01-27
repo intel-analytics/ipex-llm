@@ -33,7 +33,8 @@ def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path
     print('[INFO] Encrypt Files Start...')
     if save_dir is None:
         save_dir = input_dir+'.encrypted'
-    os.mkdir(save_dir)
+    if not os.path.isdir(save_dir):
+        os.mkdir(save_dir)
     data_key = retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
     fernet = Fernet(data_key)
     for file_name in os.listdir(input_dir):
