@@ -50,33 +50,21 @@ class Model(tf.keras.Model):
             print("Prefetch Datapipeline")
             assert issubclass(
                 type(x), tf.data.Dataset), "Data object currently only support tf.data.dataset"
+            dataList = [
+                x.take(1).cache().repeat(100),
+                x.take(1).cache().repeat(100).unbatch().batch(int(batch_size/2)),
+                x.take(1).cache().repeat(100).unbatch().batch(int(batch_size*2)),
+            ]
             
-            a = x.take(1).cache().repeat(100)
-            start = time()
-            super(Model, self).fit(
-               a, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
-                sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq,
-                max_queue_size, workers, use_multiprocessing)
-            end = time()
-            print("Throughput: ", 100/(end-start))
-
-            a = x.take(1).cache().repeat(100).unbatch().batch(int(batch_size/2))
-            start = time()
-            super(Model, self).fit(
-               a, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
-                sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq,
-                max_queue_size, workers, use_multiprocessing)
-            end = time()
-            print("Throughput: ", 200/(end-start))
-
-            a = x.take(1).cache().repeat(100).unbatch().batch(int(batch_size*2))
-            start = time()
-            super(Model, self).fit(
-               a, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
-                sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq,
-                max_queue_size, workers, use_multiprocessing)
-            end = time()
-            print("Throughput: ", 50/(end-start))
+            for x in dataList:
+                start = time()
+                super(Model, self).fit(
+                x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
+                    sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq,
+                    max_queue_size, workers, use_multiprocessing)
+                end = time()
+                print("Throughput: ", len(x)/(end-start))
+            
             
             if callbacks is not None:
                 callbacks = None
