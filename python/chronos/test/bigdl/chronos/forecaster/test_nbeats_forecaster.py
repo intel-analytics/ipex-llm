@@ -125,8 +125,7 @@ class TestChronosNBeatsForecaster(TestCase):
         pred_q = forecaster.predict(test_data[0], quantize=True)
         eval_q = forecaster.evaluate(test_data, quantize=True)
         # quantization with tunning
-        forecaster.quantize(train_data, val_data=val_data,
-                            metric="mae", relative_drop=0.1, max_trials=3)
+        forecaster.quantize(train_data)
         pred_q = forecaster.predict(test_data[0], quantize=True)
         eval_q = forecaster.evaluate(test_data, quantize=True)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
