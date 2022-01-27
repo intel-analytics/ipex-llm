@@ -133,6 +133,10 @@ def gen_cols_name(columns, name_sep="_"):
 
 
 def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True, fold_col=None):
+
+    df = tbl.df
+    df.persist(StorageLevel.DISK_ONLY)
+
     for target_code in targets:
         cat_col = target_code.cat_col
         out_target_mean = target_code.out_target_mean
@@ -168,7 +172,6 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         limit_size = 10000000
         t_df = join_tbl.df
         t_df.persist()
-        tbl.df.persist(StorageLevel.DISK_ONLY)
         top_df = t_df if all_size <= limit_size \
             else t_df.sort(t_df.target_encode_count.desc()).limit(limit_size)
         br_df = broadcast(top_df.drop("target_encode_count"))
@@ -179,18 +182,19 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
             join_key = [cat_col, fold_col] if isinstance(cat_col, str) else cat_col + [fold_col]
 
         if all_size <= limit_size:
-            joined = tbl.df.join(br_df, on=join_key, how="left")
+            df = df.join(br_df, on=join_key, how="left")
         else:
             keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
             filter_udf = udf(lambda key: key in keyset, BooleanType())
-            df1 = tbl.df.filter(filter_udf(cat_col))
-            df2 = tbl.df.subtract(df1)
+            df1 = df.filter(filter_udf(cat_col))
+            df2 = df.subtract(df1)
             joined1 = df1.join(br_df, on=join_key)
             joined2 = df2.join(t_df.drop("target_encode_count").subtract(br_df),
                                on=join_key, how="left")
-            joined = joined1.union(joined2)
+            df = joined1.union(joined2)
 
-        tbl = tbl._clone(joined)
+        tbl = tbl._clone(df)
+        t_df.unpersist()
 
         # for new columns, fill na with mean
         for out_col, target_mean in out_target_mean.items():
@@ -208,8 +212,7 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         if fold_col is not None:
             tbl = tbl.drop(fold_col)
 
-    t_df.unpersist()
-    tbl.df.unpersist()
+    df.unpersist()
 
     return tbl
 
