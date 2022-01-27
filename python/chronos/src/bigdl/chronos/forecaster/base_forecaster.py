@@ -355,7 +355,7 @@ class BasePytorchForecaster(Forecaster):
                     torch.save(self.internal.quantized_state_dict(), quantize_checkpoint_file)
                 except RuntimeError:
                     warnings.warn("Please call .quantize() method to build "
-                                "an up-to-date quantized model")
+                                  "an up-to-date quantized model")
 
     def load(self, checkpoint_file, quantize_checkpoint_file=None):
         """
