@@ -5,6 +5,8 @@ export SGX_MEM_SIZE=64GB
 BLUE='\033[1;34m'
 NC='\033[0m'
 occlum_glibc=/opt/occlum/glibc/lib
+# occlum-node IP
+HOST_IP=`cat /etc/hosts | grep $HOSTNAME | awk '{print $1}'`
 
 init_instance() {
     # Init Occlum instance
@@ -95,7 +97,7 @@ run_spark_unittest() {
 
 run_spark_unittest_only() {
     cd /opt/occlum_spark
-    mkdir -p olog
+    mkdir -p data/olog
     echo -e "${BLUE}occlum run spark unit test only ${NC}"
     for suite in `cat /opt/sqlSuites`
     do occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g \
@@ -112,7 +114,7 @@ run_spark_unittest_only() {
 	        -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*"  \
 	        org.scalatest.tools.Runner \
 	        -s ${suite} \
-	        -fF /host/olog/${suite}.txt
+	        -fF /host/data/olog/${suite}.txt
     done
 }
 
