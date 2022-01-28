@@ -46,8 +46,6 @@ class Model(tf.keras.Model):
         if perf_tune:
             if batch_size is None:
                 batch_size = 32
-            # Data pipeline
-            print("Prefetch Datapipeline")
             assert issubclass(
                 type(x), tf.data.Dataset), "Data object currently only support tf.data.dataset"
             dataList = (
