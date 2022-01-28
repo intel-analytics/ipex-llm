@@ -17,6 +17,7 @@ import tensorflow as tf
 import numpy as np
 from time import time
 
+
 class Model(tf.keras.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -49,32 +50,24 @@ class Model(tf.keras.Model):
             print("Prefetch Datapipeline")
             assert issubclass(
                 type(x), tf.data.Dataset), "Data object currently only support tf.data.dataset"
-            dataList = [
-                x.take(1).cache().repeat(100),
-                x.take(1).cache().repeat(100).unbatch().batch(int(batch_size/2)),
-                x.take(1).cache().repeat(100).unbatch().batch(int(batch_size*2)),
-            ]
-            
-            for x in dataList:
+            dataList = (
+                ("Data Pipeline", 100,  x.take(1).cache().repeat(100), callbacks),
+                ("Batch Size / 2", 200,
+                 x.take(1).cache().repeat(100).unbatch().batch(int(batch_size/2)), callbacks),
+                ("Batch Size * 2", 50,
+                 x.take(1).cache().repeat(100).unbatch().batch(int(batch_size*2)), callbacks),
+                ("Clear Callback", 100, x.take(1).cache().repeat(100), None)
+            )
+            for data in dataList:
                 start = time()
+                a = data[2]
                 super(Model, self).fit(
-                x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
+                    a, y, batch_size, epochs, verbose, data[
+                        3], validation_split, validation_data, shuffle, class_weight,
                     sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq,
                     max_queue_size, workers, use_multiprocessing)
                 end = time()
-                print("Throughput: ", len(x)/(end-start))
-            
-            
-            if callbacks is not None:
-                callbacks = None
-            a = x.take(1).cache().repeat(100) 
-            start = time()
-            super(Model, self).fit(
-               a, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight,
-                sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq,
-                max_queue_size, workers, use_multiprocessing)
-            end = time()
-            print("Throughput: ", 100/(end-start))
+                print(f"Throughput of {data[0]}: ", data[1]/(end-start))
 
         else:
             super(Model, self).fit(
