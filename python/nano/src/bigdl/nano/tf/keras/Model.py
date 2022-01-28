@@ -70,8 +70,8 @@ class Model(tf.keras.Model):
                 print(f"Throughput of {data[0]}: ", data[1] / (end - start))
 
         else:
-                super(Model, self).fit(
-                    x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data,
-                    shuffle, class_weight, sample_weight, initial_epoch, steps_per_epoch,
-                    validation_steps, validation_batch_size, validation_freq,
-                    max_queue_size, workers, use_multiprocessing)
+            super(Model, self).fit(
+                x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data,
+                shuffle, class_weight, sample_weight, initial_epoch, steps_per_epoch,
+                validation_steps, validation_batch_size, validation_freq,
+                max_queue_size, workers, use_multiprocessing)
