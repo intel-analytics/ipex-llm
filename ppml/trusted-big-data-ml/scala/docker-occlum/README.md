@@ -108,3 +108,12 @@ bash start-spark-local.sh tpch
 ```
 
 You will find `output` folder under `/path/to/zoo-tutorials/tpch-spark/dbgen` which contains sql result.
+
+## Spark SQL Scala Unit Tests
+
+### Run Spark SQl Scala Unit Tests
+
+```
+cd /opt/
+bash run_spark_on_occlum_glibc.sh ut
+```
