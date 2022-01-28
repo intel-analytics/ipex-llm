@@ -293,7 +293,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                 sc = init_spark_on_k8s(master=kwargs["master"],
                                        container_image=kwargs["container_image"],
                                        conda_name=conda_env_name,
-                                       num_executors=num_nodes, 
+                                       num_executors=num_nodes,
                                        executor_cores=cores,
                                        executor_memory=memory,
                                        **spark_args)
