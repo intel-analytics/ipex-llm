@@ -112,8 +112,26 @@ You will find `output` folder under `/path/to/zoo-tutorials/tpch-spark/dbgen` wh
 ## Spark SQL Scala Unit Tests
 
 ### Run Spark SQl Scala Unit Tests
+To run Spark Sql Scala Unit Tests, start the docker container with:
+```
+bash start-spark-local.sh ut
+```
+You can see some output like this:
+```
+22/01/27 04:08:36 INFO SQLExecutionSuite: 
 
+===== TEST OUTPUT FOR o.a.s.sql.execution.SQLExecutionSuite: 'concurrent query execution (SPARK-10548)' =====
+
+22/01/27 04:08:36 INFO SQLExecutionSuite: 
+
+===== FINISHED o.a.s.sql.execution.SQLExecutionSuite: 'concurrent query execution (SPARK-10548)' =====
+
++ for suite in `cat /opt/sqlSuites`
++ occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g -Divy.home=/tmp/.ivy -Dos.name=Linux -Djdk.lang.Process.launchMechanism=posix_spaetaspaceSize=256m -Dspark.testing=true -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-branch-3.1.2 -Dspark.sql.warehouse.dir=hdfs://localh1-spark-warehouse -Dspark.python.use.daemon=false -Dspark.python.worker.reuse=false -Dspark.driver.host=192.168.0.111 -cp '/opt/spark/conf/:/opt/s:/opt/spark/test-jars/*' org.scalatest.tools.Runner -s org.apache.spark.sql.execution.bucketing.CoalesceBucketsInJoinSuite -fF /host/olog/org.apacl.execution.bucketing.CoalesceBucketsInJoinSuite.txt
++ for suite in `cat /opt/sqlSuites`
++ occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g -Divy.home=/tmp/.ivy -Dos.name=Linux -Djdk.lang.Process.launchMechanism=posix_spaetaspaceSize=256m -Dspark.testing=true -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-branch-3.1.2 -Dspark.sql.warehouse.dir=hdfs://localh1-spark-warehouse -Dspark.python.use.daemon=false -Dspark.python.worker.reuse=false -Dspark.driver.host=192.168.0.111 -cp '/opt/spark/conf/:/opt/s:/opt/spark/test-jars/*' org.scalatest.tools.Runner -s org.apache.spark.sql.execution.command.CommandUtilsSuite -fF /host/olog/org.apache.spark.sq.command.CommandUtilsSuite.txt
+22/01/27 04:18:19 INFO CommandUtilsSuite: 
+
+===== TEST OUTPUT FOR o.a.s.sql.execution.command.CommandUtilsSuite: 'Check if compareAndGetNewStats returns correct results' =====
 ```
-cd /opt/
-bash run_spark_on_occlum_glibc.sh ut
-```
+And the log files will be saved to `data/olog` folder.
