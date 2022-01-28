@@ -140,7 +140,7 @@ def inference(self,
             return yhat
 
 
-def bind_base_inference_rt_methods(pl_model: LightningModule):
+def bind_base_inference_rt_methods(pl_model):
 
     # if all needed method has been binded, return the same model
     if set(BASE_BINDED_COMPONENTS) <= set(dir(pl_model)):

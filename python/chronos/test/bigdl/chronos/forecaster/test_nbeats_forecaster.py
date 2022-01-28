@@ -113,6 +113,33 @@ class TestChronosNBeatsForecaster(TestCase):
         except ImportError:
             pass
 
+    def test_nbeats_forecaster_quantization(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mae',
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        # no tunning quantization
+        forecaster.quantize(train_data)
+        pred_q = forecaster.predict(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True)
+        # quantization with tunning
+        forecaster.quantize(train_data)
+        pred_q = forecaster.predict(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            ckpt_name_q = os.path.join(tmp_dir_name, "ckpt.q")
+            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save_q = forecaster.predict(test_data[0], quantize=True)
+            forecaster.save(ckpt_name, ckpt_name_q)
+            forecaster.load(ckpt_name, ckpt_name_q)
+            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load_q = forecaster.predict(test_data[0], quantize=True)
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+        np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
+
     def test_nbeats_forecaster_save_load(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
