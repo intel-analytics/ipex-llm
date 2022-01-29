@@ -26,31 +26,6 @@ import albumentations as A
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
-def set_seed(seed = 0):
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-
-def diagnosis(mask_path):
-    return 1 if np.max(cv2.imread(mask_path)) > 0 else 0
-
-def dataset():
-    ROOT_PATH = '/home/mingxuan/BigDL/python/orca/example/learn/pytorch/brainMRI/data/kaggle_3m/'
-    mask_files = glob.glob(ROOT_PATH + '*/*_mask*')
-    image_files = [file.replace('_mask', '') for file in mask_files]
-    files_df = pd.DataFrame({"image_path": image_files,
-                    "mask_path": mask_files,
-                    "diagnosis": [diagnosis(x) for x in mask_files]})
-
-    train_df, test_df = train_test_split(files_df, stratify=files_df['diagnosis'], test_size=0.15, random_state=0)
-    train_df = train_df.reset_index(drop=True)
-    test_df = test_df.reset_index(drop=True)
-
-    return train_df, test_df
-
 class BrainDataset(data.Dataset):
     def __init__(self, df, transform=None):
         self.df = df
