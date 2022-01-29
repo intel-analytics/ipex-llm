@@ -57,6 +57,3 @@ python brainMRI.py --backend spark
 export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 python brainMRI.py --cluster_mode yarn-client
 ```
-
-
-## Check git
