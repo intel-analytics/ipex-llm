@@ -24,7 +24,7 @@ import time
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
-              "spark.sql.shuffle.partitions": "400",
+              "spark.sql.shuffle.partitions": "500",
               "spark.locality.wait": "0s",
               "spark.sql.hive.filesourcePartitionFileCacheSize": "4096000000",
               "spark.sql.crossJoin.enabled": "true",
@@ -131,7 +131,6 @@ if __name__ == '__main__':
             for num_round in [100, 200, 400]:
                 params.update({"eta": eta, "max_depth": max_depth, "num_round": num_round})
                 classifier = XGBClassifier(params)
-                classifier.setNthread(1)
                 xgbmodel = classifier.fit(train.df)
                 xgbmodel.setFeaturesCol("features")
                 predicts = xgbmodel.transform(test.df)
