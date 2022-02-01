@@ -17,7 +17,8 @@
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.friesian.feature import FeatureTable
 from pyspark.ml.linalg import DenseVector, VectorUDT
-from sklearn.metrics import accuracy_score
+from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
+from sklearn.metrics import accuracy_score, roc_auc_score
 from bigdl.dllib.nnframes.nn_classifier import *
 import argparse
 import time
@@ -82,10 +83,10 @@ if __name__ == '__main__':
     begin = time.time()
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")\
         .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
-               "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
+              "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")\
         .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
-               "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
+              "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
     train_tbl = train_tbl.cache()
     test_tbl = test_tbl.cache()
     full = train_tbl.concat(test_tbl)
@@ -134,14 +135,32 @@ if __name__ == '__main__':
                 xgbmodel = classifier.fit(train.df)
                 xgbmodel.setFeaturesCol("features")
                 predicts = xgbmodel.transform(test.df)
-
+                predicts.drop("features").show(10, False)
                 predicts.cache()
-                gr = [row.label for row in predicts.select("label").collect()]
-                predictions = [row.prediction for row in predicts.select("prediction").collect()]
-                accuracy = accuracy_score(gr, predictions)
-                predicts.unpersist(blocking=True)
+
+                evaluatorMulti = MulticlassClassificationEvaluator(labelCol="label",
+                                                                   predictionCol="prediction")
+                evaluator = BinaryClassificationEvaluator(labelCol="label",
+                                                          rawPredictionCol="rawPrediction",
+                                                          metricName='areaUnderROC')
+                auc = evaluator.evaluate(predicts)
+                acc = evaluatorMulti.evaluate(predicts,
+                                              {evaluatorMulti.metricName: "accuracy"})
+                f1 = evaluatorMulti.evaluate(predicts, {evaluatorMulti.metricName: "f1"})
+                weightedPrecision = evaluatorMulti.evaluate(predicts, {
+                    evaluatorMulti.metricName: "weightedPrecision"})
+                weightedRecall = evaluatorMulti.evaluate(predicts, {
+                    evaluatorMulti.metricName: "weightedRecall"})
+
                 print(params)
-                print("Accuracy: %.2f" % (accuracy * 100.0))
+                print("AUC: %.2f" % (auc * 100.0))
+                print("Accuracy: %.2f" % (acc * 100.0))
+                print("f1: %.2f" % (f1 * 100.0))
+                print("weightedPrecision: %.2f" % (weightedPrecision * 100.0))
+                print("weightedRecall: %.2f" % (weightedRecall * 100.0))
+
+                predicts.unpersist(blocking=True)
+
     end = time.time()
     print("training time: %.2f" % (end - preprocess))
     print(end - begin)
