@@ -76,8 +76,7 @@ if __name__ == '__main__':
                 "tweet_type", "language", 'present_media_language']
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
-    cat_cols = ['present_media_language']
-    embed_cols = []
+
     features = num_cols + [col + "_te_label" for col in cat_cols] +\
                [col + "_te_label" for col in embed_cols]
     begin = time.time()
@@ -120,7 +119,7 @@ if __name__ == '__main__':
     test_tbl.uncache()
 
     preprocess = time.time()
-    print("feature preprocessing time: %.2f" (preprocess - begin))
+    print("feature preprocessing time: %.2f" % (preprocess - begin))
 
     params = {"tree_method": 'hist', "eta": 0.1, "gamma": 0.1,
               "min_child_weight": 30, "reg_lambda": 1, "scale_pos_weight": 2,
@@ -130,7 +129,6 @@ if __name__ == '__main__':
         for max_depth in [4, 6, 8, 10]:
             for num_round in [100, 200, 400]:
                 params.update({"eta": eta, "max_depth": max_depth, "num_round": num_round})
-                print(params)
                 classifier = XGBClassifier(params)
                 classifier.setNthread(1)
                 xgbmodel = classifier.fit(train.df)
@@ -142,9 +140,9 @@ if __name__ == '__main__':
                 predictions = [row.prediction for row in predicts.select("prediction").collect()]
                 accuracy = accuracy_score(gr, predictions)
                 predicts.unpersist(blocking=True)
-                print("eta:", eta, "  max_depth: ", max_depth, "  num_round: ", num_round)
+                print(params)
                 print("Accuracy: %.2f" % (accuracy * 100.0))
     end = time.time()
-    print("training time: %.2f" (end - preprocess))
+    print("training time: %.2f" % (end - preprocess))
     print(end - begin)
     stop_orca_context()
