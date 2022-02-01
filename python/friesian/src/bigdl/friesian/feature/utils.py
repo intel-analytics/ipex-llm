@@ -16,8 +16,8 @@
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
-    DoubleType
-from pyspark.sql.functions import broadcast
+    DoubleType, BooleanType
+from pyspark.sql.functions import broadcast, udf
 
 
 def compute(df):
@@ -164,7 +164,7 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
             out_target_mean = new_out_target_mean
 
         all_size = join_tbl.size()
-        limit_size = 50000000
+        limit_size = 10000000
         t_df = join_tbl.df
         top_df = t_df if all_size <= limit_size \
             else t_df.sort(t_df.target_encode_count.desc()).limit(limit_size)
@@ -179,7 +179,7 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
             joined = tbl.df.join(br_df, on=join_key, how="left")
         else:
             keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
-            filter_udf = lambda key: key in keyset
+            filter_udf = udf(lambda key: key in keyset, BooleanType())
             df1 = tbl.df.filter(filter_udf(cat_col))
             df2 = tbl.df.subtract(df1)
             joined1 = df1.join(br_df, on=join_key)

@@ -18,14 +18,13 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.friesian.feature import FeatureTable
 from pyspark.ml.linalg import DenseVector, VectorUDT
 from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
-from sklearn.metrics import accuracy_score, roc_auc_score
 from bigdl.dllib.nnframes.nn_classifier import *
 import argparse
 import time
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
-              "spark.sql.shuffle.partitions": "2000",
+              "spark.sql.shuffle.partitions": "400",
               "spark.locality.wait": "0s",
               "spark.sql.hive.filesourcePartitionFileCacheSize": "4096000000",
               "spark.sql.crossJoin.enabled": "true",
@@ -44,7 +43,7 @@ if __name__ == '__main__':
                         help='The cluster mode, such as local, yarn or standalone.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
-    parser.add_argument('--executor_cores', type=int, default=8,
+    parser.add_argument('--executor_cores', type=int, default=4,
                         help='The executor core number.')
     parser.add_argument('--executor_memory', type=str, default="160g",
                         help='The executor memory.')
@@ -93,6 +92,7 @@ if __name__ == '__main__':
 
     full, min_max_dict = full.min_max_scale(num_cols)
     index_tbls = full.gen_reindex_mapping(embed_cols)
+    full = full.reindex(embed_cols, index_tbls)
     full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols=["label"])
 
     train = train_tbl.transform_min_max_scale(num_cols, min_max_dict)\
