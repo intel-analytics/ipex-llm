@@ -20,6 +20,7 @@ from pyspark.ml.linalg import DenseVector, VectorUDT
 from sklearn.metrics import accuracy_score
 from bigdl.dllib.nnframes.nn_classifier import *
 import argparse
+import time
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
@@ -79,38 +80,57 @@ if __name__ == '__main__':
     embed_cols = []
     features = num_cols + [col + "_te_label" for col in cat_cols] +\
                [col + "_te_label" for col in embed_cols]
+    begin = time.time()
+    train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")\
+        .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
+               "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
+    test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")\
+        .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
+               "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
+    train_tbl = train_tbl.cache()
+    test_tbl = test_tbl.cache()
+    full = train_tbl.concat(test_tbl)
 
-    train = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
-    test = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
-    full = train.concat(test)
-
+    full, min_max_dict = full.min_max_scale(num_cols)
+    index_tbls = full.gen_reindex_mapping(embed_cols)
     full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols=["label"])
 
-    train = train.drop("text_tokens")\
-        .encode_target(target_cols="label", targets=target_codes, drop_cat=False)\
+    train = train_tbl.transform_min_max_scale(num_cols, min_max_dict)\
+        .reindex(embed_cols, index_tbls)\
+        .encode_target(target_cols="label", targets=target_codes)\
         .merge_cols(features, "features") \
         .select(["label", "features"])\
         .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
-    train.show(2, False)
+    train.show(5, False)
 
-    test = test.drop("text_tokens")\
+    test = test_tbl.transform_min_max_scale(num_cols, min_max_dict)\
+        .reindex(embed_cols, index_tbls)\
         .encode_target(target_cols="label", targets=target_codes) \
         .merge_cols(features, "features") \
         .select(["label", "features"]) \
         .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
-    test.show(2, False)
-    train.cache()
-    test.cache()
 
-    import time
-    begin = time.time()
+    test.show(5, False)
+    print("training size:", train.size())
+    train = train.cache()
+    print("test size:", test.size())
+    test = test.cache()
 
-    for eta in [0.1, 0.2, 0.3, 0.4]:
-        for max_depth in [4, 8, 12]:
-            for num_round in [200, 400, 600]:
-                params = {"eta": eta, "max_depth": max_depth, "max_leaf_nodes": 8,
-                          "objective": "binary:logistic",
-                          "num_round": num_round}
+    train_tbl.uncache()
+    test_tbl.uncache()
+
+    preprocess = time.time()
+    print("feature preprocessing time: %.2f" (preprocess - begin))
+
+    params = {"tree_method": 'hist', "eta": 0.1, "gamma": 0.1,
+              "min_child_weight": 30, "reg_lambda": 1, "scale_pos_weight": 2,
+              "subsample": 1, "objective": "binary:logistic"}
+
+    for eta in [0.05, 0.1, 0.15, 0.2]:
+        for max_depth in [4, 6, 8, 10]:
+            for num_round in [100, 200, 400]:
+                params.update({"eta": eta, "max_depth": max_depth, "num_round": num_round})
+                print(params)
                 classifier = XGBClassifier(params)
                 classifier.setNthread(1)
                 xgbmodel = classifier.fit(train.df)
@@ -121,9 +141,10 @@ if __name__ == '__main__':
                 gr = [row.label for row in predicts.select("label").collect()]
                 predictions = [row.prediction for row in predicts.select("prediction").collect()]
                 accuracy = accuracy_score(gr, predictions)
-                predicts.unpersist()
+                predicts.unpersist(blocking=True)
                 print("eta:", eta, "  max_depth: ", max_depth, "  num_round: ", num_round)
-                print("Accuracy: %.2f%%" % (accuracy * 100.0))
+                print("Accuracy: %.2f" % (accuracy * 100.0))
     end = time.time()
+    print("training time: %.2f" (end - preprocess))
     print(end - begin)
     stop_orca_context()

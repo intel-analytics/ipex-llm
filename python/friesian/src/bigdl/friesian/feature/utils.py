@@ -16,9 +16,8 @@
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
-    DoubleType, BooleanType
-from pyspark.sql.functions import broadcast, udf
-from pyspark import StorageLevel
+    DoubleType
+from pyspark.sql.functions import broadcast
 
 
 def compute(df):
@@ -133,10 +132,6 @@ def gen_cols_name(columns, name_sep="_"):
 
 
 def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True, fold_col=None):
-
-    # df = tbl.df
-    # df.persist(StorageLevel.DISK_ONLY)
-
     for target_code in targets:
         cat_col = target_code.cat_col
         out_target_mean = target_code.out_target_mean
@@ -168,49 +163,37 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
                     new_out_target_mean[out_col] = target_mean
             out_target_mean = new_out_target_mean
 
-        br_df = broadcast(join_tbl.df)
+        all_size = join_tbl.size()
+        limit_size = 50000000
+        t_df = join_tbl.df
+        top_df = t_df if all_size <= limit_size \
+            else t_df.sort(t_df.target_encode_count.desc()).limit(limit_size)
+        br_df = broadcast(top_df.drop("target_encode_count"))
+
         if fold_col is None:
-            df = tbl.df.join(br_df, on=cat_col, how="left")
+            join_key = cat_col
         else:
-            if isinstance(cat_col, str):
-                df = tbl.df.join(br_df, on=[cat_col, fold_col], how="left")
-            else:
-                df = tbl.df.join(br_df, on=cat_col + [fold_col], how="left")
-        tbl = tbl._clone(df)
-        br_df.unpersist()
+            join_key = [cat_col, fold_col] if isinstance(cat_col, str) else cat_col + [fold_col]
 
-        # all_size = join_tbl.size()
-        # limit_size = 10000000
-        # t_df = join_tbl.df
-        # t_df.persist()
-        # top_df = t_df if all_size <= limit_size \
-        #     else t_df.sort(t_df.target_encode_count.desc()).limit(limit_size)
-        # br_df = broadcast(top_df.drop("target_encode_count"))
-        #
-        # if fold_col is None:
-        #     join_key = cat_col
-        # else:
-        #     join_key = [cat_col, fold_col] if isinstance(cat_col, str) else cat_col + [fold_col]
-        #
-        # if all_size <= limit_size:
-        #     df = df.join(br_df, on=join_key, how="left")
-        # else:
-        #     keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
-        #     filter_udf = udf(lambda key: key in keyset, BooleanType())
-        #     df1 = df.filter(filter_udf(cat_col))
-        #     df2 = df.subtract(df1)
-        #     joined1 = df1.join(br_df, on=join_key)
-        #     joined2 = df2.join(t_df.drop("target_encode_count").subtract(br_df),
-        #                        on=join_key, how="left")
-        #     df = joined1.union(joined2)
-        #
-        # tbl = tbl._clone(df)
-        # t_df.unpersist()
+        if all_size <= limit_size:
+            joined = tbl.df.join(br_df, on=join_key, how="left")
+        else:
+            keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
+            filter_udf = lambda key: key in keyset
+            df1 = tbl.df.filter(filter_udf(cat_col))
+            df2 = tbl.df.subtract(df1)
+            joined1 = df1.join(br_df, on=join_key)
+            joined2 = df2.join(t_df.drop("target_encode_count").subtract(br_df),
+                               on=join_key, how="left")
+            joined = joined1.union(joined2)
 
+        tbl = tbl._clone(joined)
         # for new columns, fill na with mean
         for out_col, target_mean in out_target_mean.items():
             if out_col in tbl.df.columns:
                 tbl = tbl.fillna(target_mean[1], out_col)
+
+        br_df.unpersist(blocking=True)
 
     if drop_cat:
         for target_code in targets:
@@ -222,8 +205,6 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
     if drop_fold:
         if fold_col is not None:
             tbl = tbl.drop(fold_col)
-
-    # df.unpersist()
 
     return tbl
 
