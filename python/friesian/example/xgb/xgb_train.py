@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--dricver_memory', type=str, default="36g",
                         help='The driver memory.')
     parser.add_argument('--model_dir', default='snapshot', type=str,
-                        help='snapshot directory name (default: snapshot)')
+                        help='snapshot directory name (default: nativeModel)')
     parser.add_argument('--data_dir', type=str, help='data directory')
 
     args = parser.parse_args()
@@ -111,10 +111,10 @@ if __name__ == '__main__':
         .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
 
     test.show(5, False)
-    print("training size:", train.size())
     train = train.cache()
-    print("test size:", test.size())
     test = test.cache()
+    print("training size:", train.size())
+    print("test size:", test.size())
 
     train_tbl.uncache()
     test_tbl.uncache()
@@ -126,37 +126,29 @@ if __name__ == '__main__':
               "min_child_weight": 30, "reg_lambda": 1, "scale_pos_weight": 2,
               "subsample": 1, "objective": "binary:logistic"}
 
-    for eta in [0.05, 0.1, 0.15, 0.2]:
-        for max_depth in [4, 6, 8, 10]:
-            for num_round in [100, 200, 400]:
+    for eta in [0.1, 0.15, 0.2, 0.25, 0.3]:
+        for max_depth in [6, 8, 10]:
+            for num_round in [100, 200, 400, 600, 800]:
                 params.update({"eta": eta, "max_depth": max_depth, "num_round": num_round})
                 classifier = XGBClassifier(params)
                 xgbmodel = classifier.fit(train.df)
+                xgbmodel.saveModel(args.model_dir)
+                xgbmodel = XGBClassifierModel.loadModel(args.model_dir, 2)
                 xgbmodel.setFeaturesCol("features")
                 predicts = xgbmodel.transform(test.df)
                 predicts.drop("features").show(10, False)
                 predicts.cache()
 
-                evaluatorMulti = MulticlassClassificationEvaluator(labelCol="label",
-                                                                   predictionCol="prediction")
                 evaluator = BinaryClassificationEvaluator(labelCol="label",
-                                                          rawPredictionCol="rawPrediction",
-                                                          metricName='areaUnderROC')
-                auc = evaluator.evaluate(predicts)
-                acc = evaluatorMulti.evaluate(predicts,
-                                              {evaluatorMulti.metricName: "accuracy"})
-                f1 = evaluatorMulti.evaluate(predicts, {evaluatorMulti.metricName: "f1"})
-                weightedPrecision = evaluatorMulti.evaluate(predicts, {
-                    evaluatorMulti.metricName: "weightedPrecision"})
-                weightedRecall = evaluatorMulti.evaluate(predicts, {
-                    evaluatorMulti.metricName: "weightedRecall"})
+                                                          rawPredictionCol="rawPrediction")
+                auc = evaluator.evaluate(predicts, {evaluator.metricName: "areaUnderROC"})
 
+                evaluator2 = MulticlassClassificationEvaluator(labelCol="label",
+                                                               predictionCol="prediction")
+                acc = evaluator2.evaluate(predicts, {evaluator2.metricName: "accuracy"})
                 print(params)
                 print("AUC: %.2f" % (auc * 100.0))
                 print("Accuracy: %.2f" % (acc * 100.0))
-                print("f1: %.2f" % (f1 * 100.0))
-                print("weightedPrecision: %.2f" % (weightedPrecision * 100.0))
-                print("weightedRecall: %.2f" % (weightedRecall * 100.0))
 
                 predicts.unpersist(blocking=True)
 
