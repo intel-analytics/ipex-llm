@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost
 
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifierModel
-
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 object xgbClassifierPredictExample {
@@ -33,16 +33,24 @@ object xgbClassifierPredictExample {
     val sc = NNContext.initNNContext()
     val spark = SQLContext.getOrCreate(sc)
 
-    val schema = new StructType(Array(
-      StructField("sepal length", DoubleType, true),
-      StructField("sepal width", DoubleType, true),
-      StructField("petal length", DoubleType, true),
-      StructField("petal width", DoubleType, true),
-      StructField("class", StringType, true)))
-    val df = spark.read.schema(schema).csv(input_path)
-
     val model = XGBClassifierModel.load(model_path)
-    model.setFeaturesCol(Array("sepal length", "sepal width", "petal length", "petal width"))
+
+    val schema = new StructType(Array(
+    StructField("sepal length", DoubleType, true),
+    StructField("sepal width", DoubleType, true),
+    StructField("petal length", DoubleType, true),
+    StructField("petal width", DoubleType, true),
+    StructField("class", StringType, true)))
+    val df = spark.read.schema(schema).csv(input_path)
+    val featureVectorAssembler = new VectorAssembler()
+      .setInputCols(Array("sepal length", "sepal width", "petal length", "petal width"))
+      .setOutputCol("featureAssembledVector")
+    val assembledDF = featureVectorAssembler.transform(df)
+    import org.apache.spark.sql.functions.{col, udf}
+    import org.apache.spark.ml.linalg.Vector
+    val asDense = udf((v: Vector) => v.toDense)
+    val xgbInput = assembledDF.withColumn("DenseFeatures", asDense(col("featureAssembledVector")))
+    model.setFeaturesCol("DenseFeatures")
 
     val results = model.transform(df)
     results.show()

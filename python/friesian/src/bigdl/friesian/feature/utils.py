@@ -16,8 +16,8 @@
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
-    DoubleType
-from pyspark.sql.functions import broadcast
+    DoubleType, BooleanType
+from pyspark.sql.functions import broadcast, udf
 
 
 def compute(df):
@@ -164,13 +164,11 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
             out_target_mean = new_out_target_mean
 
         all_size = join_tbl.size()
-        limit_size = 1000000
+        limit_size = 10000000
         t_df = join_tbl.df
         top_df = t_df if all_size <= limit_size \
             else t_df.sort(t_df.target_encode_count.desc()).limit(limit_size)
         br_df = broadcast(top_df.drop("target_encode_count"))
-        keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
-        filter_udf = lambda key: key in keyset
 
         if fold_col is None:
             join_key = cat_col
@@ -180,6 +178,8 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         if all_size <= limit_size:
             joined = tbl.df.join(br_df, on=join_key, how="left")
         else:
+            keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
+            filter_udf = udf(lambda key: key in keyset, BooleanType())
             df1 = tbl.df.filter(filter_udf(cat_col))
             df2 = tbl.df.subtract(df1)
             joined1 = df1.join(br_df, on=join_key)
@@ -188,11 +188,12 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
             joined = joined1.union(joined2)
 
         tbl = tbl._clone(joined)
-
         # for new columns, fill na with mean
         for out_col, target_mean in out_target_mean.items():
             if out_col in tbl.df.columns:
                 tbl = tbl.fillna(target_mean[1], out_col)
+
+        br_df.unpersist(blocking=True)
 
     if drop_cat:
         for target_code in targets:
