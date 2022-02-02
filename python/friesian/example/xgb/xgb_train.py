@@ -127,8 +127,8 @@ if __name__ == '__main__':
               "subsample": 1, "objective": "binary:logistic"}
 
     for eta in [0.1, 0.15, 0.2, 0.25, 0.3]:
-        for max_depth in [6, 8, 10]:
-            for num_round in [100, 200, 400, 600, 800]:
+        for max_depth in [6, 8, 10, 12]:
+            for num_round in [200, 400, 600, 800, 1000]:
                 params.update({"eta": eta, "max_depth": max_depth, "num_round": num_round})
                 classifier = XGBClassifier(params)
                 xgbmodel = classifier.fit(train.df)
