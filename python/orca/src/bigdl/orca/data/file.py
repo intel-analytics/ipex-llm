@@ -255,6 +255,14 @@ def put_local_dir_to_remote(local_dir, remote_dir):
 
 def put_local_dir_tree_to_remote(local_dir, remote_dir):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        host_port = remote_dir.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        if not fs.exists(remote_dir):
+            fs.mkdir(remote_dir)
         cmd = 'hdfs dfs -put {}/* {}'.format(local_dir, remote_dir)
         process = subprocess.Popen(cmd)
         process.wait()

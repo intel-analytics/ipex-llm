@@ -459,8 +459,6 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
                 if self.rank == 0:
                     print("prepare copy")
                     print("tensorboard folder content: ", os.listdir(self.local_dir))
-                    if not exists(self.remote_dir):
-                        makedirs(self.remote_dir)
                     # print("tensorboard folder content: ", os.listdir(self.local_dir))
                     put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
 
@@ -477,8 +475,6 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
             if self.rank is not None:
                 if self.rank == 0:
                     if batch % self.freq == 0:
-                        if not exists(self.remote_dir):
-                            makedirs(self.remote_dir)
                         put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
 
 
@@ -495,8 +491,6 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
             if self.rank is not None:
                 if self.rank == 0:
                     if batch % self.freq == 0:
-                        if not exists(self.remote_dir):
-                            makedirs(self.remote_dir)
                         put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
 
     tensorboard = get_specific_object_from_callbacks(tf.keras.callbacks.TensorBoard,
