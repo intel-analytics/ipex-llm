@@ -135,8 +135,7 @@ if __name__ == '__main__':
                 xgbmodel.saveModel(args.model_dir)
                 xgbmodel = XGBClassifierModel.loadModel(args.model_dir, 2)
                 xgbmodel.setFeaturesCol("features")
-                predicts = xgbmodel.transform(test.df)
-                predicts.drop("features").show(10, False)
+                predicts = xgbmodel.transform(test.df).drop("features")
                 predicts.cache()
 
                 evaluator = BinaryClassificationEvaluator(labelCol="label",
