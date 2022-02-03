@@ -263,7 +263,7 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
         fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
         if not fs.exists(remote_dir):
             fs.mkdir(remote_dir)
-        cmd = 'hdfs dfs -put {}/* {}/'.format(local_dir, remote_dir)
+        cmd = 'hdfs dfs -put -f {}/* {}/'.format(local_dir, remote_dir)
         process = subprocess.Popen(cmd, shell=True)
         process.wait()
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
