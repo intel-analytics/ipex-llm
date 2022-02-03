@@ -264,7 +264,7 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
         if not fs.exists(remote_dir):
             fs.mkdir(remote_dir)
         cmd = 'hdfs dfs -put {}/* {}/'.format(local_dir, remote_dir)
-        process = subprocess.Popen(cmd)
+        process = subprocess.Popen(cmd, shell=True)
         process.wait()
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
