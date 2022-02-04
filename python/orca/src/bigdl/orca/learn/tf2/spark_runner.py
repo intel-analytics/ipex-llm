@@ -26,7 +26,8 @@ from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.data.file import put_local_dir_to_remote
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
-    get_specific_object_from_callbacks, get_replaced_path, get_rank, process_tensorboard_in_callbacks
+    get_specific_object_from_callbacks, get_replaced_path, get_rank, \
+    process_tensorboard_in_callbacks
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)

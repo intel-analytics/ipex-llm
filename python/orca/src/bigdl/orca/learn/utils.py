@@ -445,6 +445,7 @@ def get_replaced_path(original_filepath):
 
 def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
     import tensorflow as tf
+
     class EpochCopyCallback(tf.keras.callbacks.Callback):
         def __init__(self, local_dir, remote_dir, rank=None):
             super(EpochCopyCallback, self).__init__()
@@ -470,7 +471,6 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
                 if self.rank == 0:
                     if batch % self.freq == 0:
                         put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
-
 
     class BatchCopyCallback(tf.keras.callbacks.Callback):
         def __init__(self, local_dir, remote_dir, freq, rank=None):
@@ -503,7 +503,7 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
             if mode == "fit":
                 # create copy callback for batch
                 copy_callback = TrainBatchCopyCallback(replaced_log_dir, original_log_dir,
-                                                  update_freq, rank)
+                                                       update_freq, rank)
             else:
                 copy_callback = BatchCopyCallback(replaced_log_dir, original_log_dir,
                                                   update_freq, rank)
