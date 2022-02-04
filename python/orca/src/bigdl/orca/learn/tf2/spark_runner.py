@@ -274,7 +274,6 @@ class SparkRunner:
                                        config=config, epochs=epochs,
                                        steps_per_epoch=steps_per_epoch,
                                        validation_steps=validation_steps)
-        # checkpoint = None
         if callbacks:
             checkpoint = get_specific_object_from_callbacks(tf.keras.callbacks.ModelCheckpoint,
                                                             callbacks)
