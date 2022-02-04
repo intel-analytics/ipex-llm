@@ -452,14 +452,8 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
             self.rank = rank
 
         def on_epoch_end(self, epoch, logs=None):
-            print("called on epoch end")
-            print("epoch is: ", epoch)
-            print("rank is: ", self.rank)
             if self.rank is not None:
                 if self.rank == 0:
-                    print("prepare copy")
-                    print("tensorboard folder content: ", os.listdir(self.local_dir))
-                    # print("tensorboard folder content: ", os.listdir(self.local_dir))
                     put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
 
     class TrainBatchCopyCallback(tf.keras.callbacks.Callback):
@@ -471,7 +465,6 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
             self.rank = rank
 
         def on_train_batch_end(self, batch, logs=None):
-            print("on train batch")
             if self.rank is not None:
                 if self.rank == 0:
                     if batch % self.freq == 0:
@@ -487,7 +480,6 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
             self.rank = rank
 
         def on_test_batch_end(self, batch, logs=None):
-            print("on test batch")
             if self.rank is not None:
                 if self.rank == 0:
                     if batch % self.freq == 0:
@@ -514,7 +506,6 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
                 copy_callback = BatchCopyCallback(replaced_log_dir, original_log_dir,
                                                   update_freq, rank)
         callbacks.append(copy_callback)
-        print("callbacks is: ", callbacks)
         return replaced_log_dir
     return None
 
