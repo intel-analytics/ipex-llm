@@ -9,6 +9,7 @@
  * __Burger King__
   <br>[Context-Aware Fast Food Recommendation at Burger King with RayOnSpark](https://medium.com/riselab/context-aware-fast-food-recommendation-at-burger-king-with-rayonspark-2e7a6009dd2d)
   <br>[How Intel and Burger King built an order recommendation system that preserves customer privacy](https://venturebeat.com/2021/04/06/how-intel-and-burger-king-built-an-order-recommendation-system-that-preserves-customer-privacy/)
+  <br>[Burger King: Context-Aware Recommendations (video)](https://www.intel.com/content/www/us/en/customer-spotlight/stories/burger-king-ai-customer-story.html)
 * __CERN__
  <br>[Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo)
  <br>[Topology classification at CERN's Large Hadron Collider using Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
@@ -31,6 +32,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 <br>[Object Detection and Image Feature Extraction at JD.com](https://software.intel.com/en-us/articles/building-large-scale-image-feature-extraction-with-bigdl-at-jdcom)
 * __MasterCard__
 <br> [Deep Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://software.intel.com/en-us/articles/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service)
+<br> ["AI at Scale" in Mastercard with BigDL](https://www.intel.com/content/www/us/en/developer/articles/technical/ai-at-scale-in-mastercard-with-bigdl0.html)
 * __Microsoft Azure__
 <br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 1]( https://software.intel.com/en-us/use-analytics-zoo-to-inject-ai-into-customer-service-platforms-on-microsoft-azure-part-1)
 <br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 2](https://www.infoq.com/articles/analytics-zoo-qa-module/?from=timeline&isappinstalled=0)
