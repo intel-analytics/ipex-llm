@@ -153,7 +153,7 @@ class Trainer(pl.Trainer):
                     bind_onnxrt_methods
                 from bigdl.nano.pytorch.runtime_binding.base_inference import\
                     bind_base_inference_rt_methods
-                return bind_onnxrt_methods(bind_base_inference_rt_methods(pl_model))
+                pl_model = bind_onnxrt_methods(bind_base_inference_rt_methods(pl_model))
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
@@ -163,7 +163,7 @@ class Trainer(pl.Trainer):
                 bind_quantize_methods
             from bigdl.nano.pytorch.runtime_binding.base_inference import\
                 bind_base_inference_rt_methods
-            return bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
+            pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
         return bind_base_inference_rt_methods(pl_model)
 

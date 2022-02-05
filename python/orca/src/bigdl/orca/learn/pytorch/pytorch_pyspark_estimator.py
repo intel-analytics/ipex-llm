@@ -172,7 +172,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             reduce_results=True,
             info=None,
             feature_cols=None,
-            label_cols=None):
+            label_cols=None,
+            callbacks=[]):
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -197,6 +198,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param label_cols: label column names if data is Spark DataFrame.
+        :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
@@ -225,6 +227,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             batch_size=batch_size,
             profile=profile,
             info=info,
+            callbacks=callbacks,
         )
 
         if isinstance(data, SparkXShards):

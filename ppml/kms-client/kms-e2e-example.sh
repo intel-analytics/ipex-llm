@@ -3,9 +3,9 @@
 
 # set -x
 # Modify Below Variables According To Your Environment
-KMS_SERVER_IP=192.168.0.112 # KMS Server IP
+KMS_SERVER_IP=$KMS_SERVER_IP # KMS Server IP
 INPUT_DIR_PATH=/ppml/trusted-big-data-ml/1m_csv # Path Of The Directory Containing CSVs
-LOCAL_IP=192.168.0.112 # Spark Host IP
+LOCAL_IP=$LOCAL_IP # Spark Host IP
 
 # Step 1. Generate Primary Key And Data Key
 echo "[INFO] Start To Generate Keys..."
@@ -35,4 +35,4 @@ echo "[INFO] The Output is Saved At $output_path"
 # Step 4. Decrypt The colums And Ouput With KMS API
 echo "[INFO] Retrieve Output At Client Side."
 echo "[INFO] Start To Decrypt Columns..."
-python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip 192.168.0.112 --dir $output_path --pkp /ppml/trusted-big-data-ml/encrypted_primary_key --dkp /ppml/trusted-big-data-ml/encrypted_data_key
+python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $output_path --pkp /ppml/trusted-big-data-ml/encrypted_primary_key --dkp /ppml/trusted-big-data-ml/encrypted_data_key

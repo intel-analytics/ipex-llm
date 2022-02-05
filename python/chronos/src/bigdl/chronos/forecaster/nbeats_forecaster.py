@@ -16,62 +16,62 @@
 
 import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
-from bigdl.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
+from bigdl.chronos.model.nbeats_pytorch import model_creator, loss_creator, optimizer_creator
 
 
-class TCNForecaster(BasePytorchForecaster):
+class NBeatsForecaster(BasePytorchForecaster):
     """
-        Example:
-            >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
-            >>> forecaster = TCNForecaster(past_seq_len=24,
-                                           future_seq_len=5,
-                                           input_feature_num=1,
-                                           output_feature_num=1,
-                                           ...)
-            >>> forecaster.fit((x_train, y_train))
-            >>> forecaster.to_local()  # if you set distributed=True
-            >>> test_pred = forecaster.predict(x_test)
-            >>> test_eval = forecaster.evaluate((x_test, y_test))
-            >>> forecaster.save({ckpt_name})
-            >>> forecaster.load({ckpt_name})
+    Example:
+        >>> # NBeatsForecaster test.
+        >>> forecaster = NBeatForecaster(paste_seq_len=10,
+                                         future_seq_len=1,
+                                         stack_types=("generic", "generic"),
+                                         ...)
+        >>> forecaster.fit((x_train, y_train))
+        >>> forecaster.to_local() # if you set distributed=True
     """
+
     def __init__(self,
                  past_seq_len,
                  future_seq_len,
-                 input_feature_num,
-                 output_feature_num,
-                 num_channels=[30]*7,
-                 kernel_size=3,
-                 repo_initialization=True,
-                 dropout=0.1,
+                 stack_types=("generic", "generic"),
+                 nb_blocks_per_stack=3,
+                 thetas_dim=(4, 8),
+                 share_weights_in_stack=False,
+                 hidden_layer_units=256,
+                 nb_harmonics=None,
                  optimizer="Adam",
                  loss="mse",
                  lr=0.001,
-                 metrics=["mse"],
+                 metircs=["mse"],
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
                  distributed_backend="torch_distributed"):
         """
-        Build a TCN Forecast Model.
-
-        TCN Forecast may fall into local optima. Please set repo_initialization
-        to False to alleviate the issue. You can also change a random seed to
-        work around.
+        Build a NBeats Forecaster Model.
 
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param future_seq_len: Specify the output time steps (i.e. horizon).
-        :param input_feature_num: Specify the feature dimension.
-        :param output_feature_num: Specify the output dimension.
-        :param num_channels: Specify the convolutional layer filter number in
-               TCN's encoder. This value defaults to [30]*7.
-        :param kernel_size: Specify convolutional layer filter height in TCN's
-               encoder. This value defaults to 3.
-        :param repo_initialization: if to use framework default initialization,
-               True to use paper author's initialization and False to use the
-               framework's default initialization. The value defaults to True.
-        :param dropout: Specify the dropout close possibility (i.e. the close
-               possibility to a neuron). This value defaults to 0.1.
+        :param stack_types: Specifies the type of stack,
+               including "generic", "trend", "seasnoality".
+               This value defaults to ("generic", "generic").
+               If set distributed=True, the second type should not be "generic",
+               use "seasonality" or "trend", e.g. ("generic", "trend").
+        :param nb_blocks_per_stack: Specify the number of blocks
+               contained in each stack, This value defaults to 3.
+        :param thetas_dim: Expansion Coefficients of Multilayer FC Networks.
+               if type is "generic", Extended length factor, if type is "trend"
+               then polynomial coefficients, if type is "seasonality"
+               expressed as a change within each step.
+        :param share_weights_in_stack: Share block weights for each stack.,
+               This value defaults to False.
+        :param hidden_layer_units: Number of fully connected layers with per block.
+               This values defaults to 256.
+        :param nb_harmonics: Only available in "seasonality" type,
+               specifies the time step of backward, This value defaults is None.
+        :param dropout: Specify the dropout close possibility
+               (i.e. the close possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
         :param loss: Specify the loss function used for training. This value
@@ -93,22 +93,32 @@ class TCNForecaster(BasePytorchForecaster):
         :param distributed_backend: str, select from "torch_distributed" or
                "horovod". The value defaults to "torch_distributed".
         """
-        # config setting
+        # ("generic", "generic") not support orca distributed.
+        if stack_types[-1] == "generic" and distributed:
+            raise RuntimeError("Please set distributed=False or change the type "
+                               "of 'stack_types' to 'trend', 'seasonality', "
+                               "e.g. ('generic', 'seasonality').")
+
         self.data_config = {
             "past_seq_len": past_seq_len,
             "future_seq_len": future_seq_len,
-            "input_feature_num": input_feature_num,
-            "output_feature_num": output_feature_num
+            "input_feature_num": 1,  # nbeats only support input single feature.
+            "output_feature_num": 1,
         }
+
         self.model_config = {
-            "num_channels": num_channels,
-            "kernel_size": kernel_size,
-            "repo_initialization": repo_initialization,
-            "dropout": dropout
+            "stack_types": stack_types,
+            "nb_blocks_per_stack": nb_blocks_per_stack,
+            "thetas_dim": thetas_dim,
+            "share_weights_in_stack": share_weights_in_stack,
+            "hidden_layer_units": hidden_layer_units,
+            "nb_harmonics": nb_harmonics
         }
+
         self.loss_config = {
             "loss": loss
         }
+
         self.optim_config = {
             "lr": lr,
             "optim": optimizer
@@ -126,13 +136,13 @@ class TCNForecaster(BasePytorchForecaster):
 
         # other settings
         self.lr = lr
-        self.metrics = metrics
         self.seed = seed
+        self.metrics = metircs
 
-        # nano setting
+        # nano settings
         current_num_threads = torch.get_num_threads()
         self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
-        self.use_ipex = False  # TCN has worse performance on ipex
+        self.use_ipex = False
         self.onnx_available = True
         self.quantize_available = True
         self.checkpoint_callback = False

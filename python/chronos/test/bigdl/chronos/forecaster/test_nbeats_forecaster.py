@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 
-import numpy as np
-import tempfile
 import os
+import tempfile
 import torch
-
-from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
+import numpy as np
 from unittest import TestCase
 import pytest
+
+from bigdl.chronos.forecaster.nbeats_forecaster import NBeatsForecaster
 
 
 def create_data(loader=False):
@@ -56,46 +56,43 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-class TestChronosModelSeq2SeqForecaster(TestCase):
-
+class TestChronosNBeatsForecaster(TestCase):
     def setUp(self):
         pass
 
     def tearDown(self):
         pass
 
-    def test_s2s_forecaster_fit_eva_pred(self):
-        train_data, val_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
-        train_loss = forecaster.fit(train_data, epochs=2)
-        test_pred = forecaster.predict(test_data[0])
-        assert test_pred.shape == test_data[1].shape
-        test_mse = forecaster.evaluate(test_data)
-        assert test_mse[0].shape == test_data[1].shape[1:]
+    def test_nbeats_forecaster_fit_pred_eva(self):
+        train_data, _, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'generic'),
+                                      nb_blocks_per_stack=3,
+                                      hidden_layer_units=256,
+                                      metircs=['mae'],
+                                      lr=0.01)
+        forecaster.fit((train_data[0], train_data[1]), epochs=2)
+        # inference
+        nbeats_pred=forecaster.predict(test_data[0])
+        assert nbeats_pred.shape == test_data[1].shape
+        eva = forecaster.evaluate(test_data)
+        assert eva[0].shape == test_data[1].shape[1:]
 
-    def test_s2s_forecaster_fit_loader(self):
+    def test_nbeats_forecaster_data_loader(self):
         train_loader, _, _ = create_data(loader=True)
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
-        train_loss = forecaster.fit(train_loader, epochs=2)
+        forecater = NBeatsForecaster(past_seq_len=24,
+                                     future_seq_len=5,
+                                     loss='mae',
+                                     lr=0.01)
+        forecater.fit(train_loader, epochs=2)
 
-    def test_s2s_forecaster_onnx_methods(self):
+    def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mae',
+                                      lr=0.01)
         forecaster.fit(train_data, epochs=2)
         try:
             import onnx
@@ -103,9 +100,9 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             pred = forecaster.predict(test_data[0])
             pred_onnx = forecaster.predict_with_onnx(test_data[0])
             np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
-            mse = forecaster.evaluate(test_data, multioutput="raw_values")
+            mse = forecaster.evaluate(test_data, multioutput='raw_values')
             mse_onnx = forecaster.evaluate_with_onnx(test_data,
-                                                     multioutput="raw_values")
+                                                     multioutput='raw_values')
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
             with pytest.raises(RuntimeError):
                 forecaster.build_onnx(sess_options=1)
@@ -116,27 +113,40 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         except ImportError:
             pass
 
-    def test_s2s_forecaster_quantization(self):
+    def test_nbeats_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mae',
+                                      lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        with pytest.raises(NotImplementedError):
-            forecaster.quantize(train_data)
+        # no tunning quantization
+        forecaster.quantize(train_data)
+        pred_q = forecaster.predict(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True)
+        # quantization with tunning
+        forecaster.quantize(train_data)
+        pred_q = forecaster.predict(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            ckpt_name_q = os.path.join(tmp_dir_name, "ckpt.q")
+            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save_q = forecaster.predict(test_data[0], quantize=True)
+            forecaster.save(ckpt_name, ckpt_name_q)
+            forecaster.load(ckpt_name, ckpt_name_q)
+            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load_q = forecaster.predict(test_data[0], quantize=True)
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+        np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
-    def test_s2s_forecaster_save_load(self):
+    def test_nbeats_forecaster_save_load(self):
         train_data, val_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
-        train_mse = forecaster.fit(train_data, epochs=2)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mae',
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
             test_pred_save = forecaster.predict(test_data[0])
@@ -145,14 +155,12 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             test_pred_load = forecaster.predict(test_data[0])
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
-    def test_s2s_forecaster_runtime_error(self):
-        train_data, val_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
+    def test_nbeats_forecaster_runtime_error(self):
+        _, _, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss="mae",
+                                      lr=0.01)
         with pytest.raises(RuntimeError):
             with tempfile.TemporaryDirectory() as tmp_dir_name:
                 ckpt_name = os.path.join(tmp_dir_name, "ckpt")
@@ -162,18 +170,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         with pytest.raises(RuntimeError):
             forecaster.evaluate(test_data)
 
-    def test_s2s_forecaster_shape_error(self):
-        train_data, val_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=2,
-                                       loss="mae",
-                                       lr=0.01)
-        with pytest.raises(AssertionError):
-            forecaster.fit(train_data, epochs=2)
-
-    def test_s2s_forecaster_xshard_input(self):
+    def test_nbeats_forecaster_xshard_input(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
         print("original", train_data[0].dtype)
@@ -185,36 +182,32 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
 
         def transform_to_dict_x(data):
             return {'x': data[0]}
+
         train_data = XShards.partition(train_data).transform_shard(transform_to_dict)
         val_data = XShards.partition(val_data).transform_shard(transform_to_dict)
         test_data = XShards.partition(test_data).transform_shard(transform_to_dict_x)
         for distributed in [True, False]:
-            forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                           future_seq_len=5,
-                                           input_feature_num=1,
-                                           output_feature_num=1,
-                                           loss="mae",
-                                           lr=0.01,
-                                           distributed=distributed)
+            forecaster = NBeatsForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          stack_types=("generic", "seasonality"),
+                                          loss='mae',
+                                          lr=0.01,
+                                          distributed=distributed)
             forecaster.fit(train_data, epochs=2)
             distributed_pred = forecaster.predict(test_data)
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
-    def test_s2s_forecaster_distributed(self):
-        from bigdl.orca import init_orca_context, stop_orca_context
+    def test_nbeats_forecaster_distributed(self):
         train_data, val_data, test_data = create_data()
-
-        init_orca_context(cores=4, memory="2g")
-
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01,
-                                       distributed=True)
-
+        from bigdl.orca import init_orca_context, stop_orca_context
+        init_orca_context(cores=4, memory="4g")
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=('generic', 'seasonality'),
+                                      loss="mae",
+                                      lr=0.01,
+                                      distributed=True)
         forecaster.fit(train_data, epochs=2)
         distributed_pred = forecaster.predict(test_data[0])
         distributed_eval = forecaster.evaluate(val_data)
@@ -236,22 +229,30 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             np.testing.assert_almost_equal(distributed_pred, local_pred_onnx, decimal=5)
         except ImportError:
             pass
-
+        
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
         stop_orca_context()
 
-    def test_seq2seq_dataloader_distributed(self):
+    def test_nbeats_forecaster_dataloader_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, _, _ = create_data(loader=True)
-        init_orca_context(cores=4, memory="2g")
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01,
-                                       distributed=True)
+        init_orca_context(cores=4, memory="4g")
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      stack_types=("generic", "seasonality"),
+                                      loss="mae",
+                                      lr=0.01,
+                                      distributed=True)
         forecaster.fit(train_data, epochs=2)
+
+        with pytest.raises(RuntimeError):
+            forecaster = NBeatsForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          stack_types=("generic", "generic"),
+                                          loss="mae",
+                                          lr=0.01,
+                                          distributed=True)
+
         stop_orca_context()
