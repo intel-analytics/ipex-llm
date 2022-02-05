@@ -87,6 +87,8 @@ if __name__ == '__main__':
         .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
               "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
 
+    train_tbl.cache()
+    test_tbl.cache()
     full = train_tbl.concat(test_tbl)
     full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols=["label"])
     for code in target_codes:
@@ -110,6 +112,8 @@ if __name__ == '__main__':
     test = test.cache()
     print("training size:", train.size())
     print("test size:", test.size())
+    train_tbl.uncache()
+    test_tbl.uncache()
     for code in target_codes:
         code.uncache()
 
