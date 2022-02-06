@@ -391,7 +391,7 @@ def init_spark_on_k8s_cluster(master,
            default Python interpreter in effect would be used.
     :return: An instance of SparkContext.
     """
-    if os.environ.get("ondriver", "False") == "True":
+    if os.environ.get("onDriver", "False") == "True":
         sc = init_internal_nncontext()
         return sc
     else:
