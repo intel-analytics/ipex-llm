@@ -169,6 +169,7 @@ elif args.backend in ["torch_distributed", "spark"]:
                                           loss=criterion,
                                           metrics=[Accuracy()],
                                           model_dir=os.getcwd(),
+                                          use_tqdm=True,
                                           backend=args.backend,
                                           config={"lr": 0.001,
                                                   "root": root_dir})
