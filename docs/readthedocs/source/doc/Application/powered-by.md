@@ -41,7 +41,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 <br>[Deep Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://www.intel.com/content/www/us/en/developer/articles/technical/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service.html)
 <br>["AI at Scale" in Mastercard with BigDL](https://www.intel.com/content/www/us/en/developer/articles/technical/ai-at-scale-in-mastercard-with-bigdl0.html)
 * __Microsoft Azure__
-<br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 1]( https://software.intel.com/en-us/use-analytics-zoo-to-inject-ai-into-customer-service-platforms-on-microsoft-azure-part-1)
+<br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 1](https://www.intel.com/content/www/us/en/developer/articles/technical/use-analytics-zoo-to-inject-ai-into-customer-service-platforms-on-microsoft-azure-part-1.html)
 <br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 2](https:https://www.intel.com/content/www/us/en/developer/articles/technical/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service.html//www.infoq.com/articles/analytics-zoo-qa-module/?from=timeline&isappinstalled=0)
 * __Midea__
 <br>[Industrial Inspection Platform in Midea and KUKA: Using Distributed TensorFlow on Analytics Zoo](https://www.intel.com/content/www/us/en/developer/articles/technical/industrial-inspection-platform-in-midea-and-kuka-using-distributed-tensorflow-on-analytics.html) 
