@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.base
 
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, DataSplit, TreeLeaves}
+import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, DataSplit, TreeLeaf}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TensorMap
 
 
@@ -25,23 +25,23 @@ import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TensorMap
  * all its acceptable data types
  * @param _tensorMap [[TensorMap]] instance of protobuf
  * @param _split [[DataSplit]] instance of protobuf
- * @param _treeLeaves [[TreeLeaves]] instance of protobuf
+ * @param _treeLeaf [[TreeLeaf]] instance of protobuf
  * @param _boostEval [[BoostEval]] instance of protobuf
  */
 class DataHolder(_tensorMap: TensorMap = null,
                  _split: DataSplit = null,
-                 _treeLeaves: TreeLeaves = null,
+                 _treeLeaf: TreeLeaf = null,
                  _boostEval: java.util.List[BoostEval] = null) {
   var tensorMap: TensorMap = null
   var split: DataSplit = null
-  var treeLeaves: TreeLeaves = null
+  var treeLeaf: TreeLeaf = null
   var boostEval: java.util.List[BoostEval] = null
   if (_tensorMap != null) tensorMap = _tensorMap
   if (_split != null) split = _split
-  if (_treeLeaves != null) treeLeaves = _treeLeaves
+  if (_treeLeaf != null) treeLeaf = _treeLeaf
   if (_boostEval != null) boostEval = _boostEval
   def this(value: TensorMap) = this(_tensorMap = value)
   def this(value: DataSplit) = this(_split = value)
-  def this(value: TreeLeaves) = this(_treeLeaves = value)
+  def this(value: TreeLeaf) = this(_treeLeaf = value)
   def this(value: java.util.List[BoostEval]) = this(_boostEval = value)
 }

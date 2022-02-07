@@ -32,13 +32,13 @@ class StorageHolder(flDataType: FLDataType) {
   private var clientDataSize: Int = 0
   private var tensorMapStorage: Storage[TensorMap] = null
   private var treeSplitStorage: Storage[DataSplit] = null
-  private var treeLeavesStorage: Storage[TreeLeaves] = null
+  private var treeLeafStorage: Storage[TreeLeaf] = null
   private var treeEvalStorage: Storage[java.util.List[BoostEval]] = null
 
   flDataType match {
     case FLDataType.TENSOR_MAP => tensorMapStorage = new Storage[TensorMap](flDataType.toString)
     case FLDataType.TREE_SPLIT => treeSplitStorage = new Storage[DataSplit](flDataType.toString)
-    case FLDataType.TREE_LEAVES => treeLeavesStorage = new Storage[TreeLeaves](flDataType.toString)
+    case FLDataType.TREE_LEAF => treeLeafStorage = new Storage[TreeLeaf](flDataType.toString)
     case FLDataType.TREE_EVAL => treeEvalStorage =
       new Storage[java.util.List[BoostEval]](flDataType.toString)
     case _ => throw new NotImplementedError()
@@ -59,10 +59,10 @@ class StorageHolder(flDataType: FLDataType) {
       treeSplitStorage.clientData.put(clientID, dataHolder.split)
       clientDataSize = treeSplitStorage.clientData.size()
       logger.debug(s"Put Split into client data map, current size: $clientDataSize")
-    } else if (dataHolder.treeLeaves != null) {
-      treeLeavesStorage.clientData.put(clientID, dataHolder.treeLeaves)
-      clientDataSize = treeLeavesStorage.clientData.size()
-      logger.debug(s"Put TreeLeaves into client data map, current size: $clientDataSize")
+    } else if (dataHolder.treeLeaf != null) {
+      treeLeafStorage.clientData.put(clientID, dataHolder.treeLeaf)
+      clientDataSize = treeLeafStorage.clientData.size()
+      logger.debug(s"Put TreeLeaf into client data map, current size: $clientDataSize")
     } else if (dataHolder.boostEval != null) {
       treeEvalStorage.clientData.put(clientID, dataHolder.boostEval)
       clientDataSize = treeEvalStorage.clientData.size()
@@ -73,6 +73,6 @@ class StorageHolder(flDataType: FLDataType) {
   }
   def getTensorMapStorage() = this.tensorMapStorage
   def getSplitStorage() = this.treeSplitStorage
-  def getLeafStorage() = this.treeLeavesStorage
+  def getLeafStorage() = this.treeLeafStorage
   def getBranchStorage() = this.treeEvalStorage
 }

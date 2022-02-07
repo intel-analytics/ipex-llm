@@ -19,6 +19,6 @@ package com.intel.analytics.bigdl.ppml.common;
 public enum FLDataType {
     TENSOR_MAP,
     TREE_SPLIT,
-    TREE_LEAVES,
+    TREE_LEAF,
     TREE_EVAL
 }
