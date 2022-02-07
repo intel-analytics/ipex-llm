@@ -1,8 +1,6 @@
 # Powered By
 ---
 
-* __UnionPay__
-  <br>[Technical Verification of SGX and BigDL Based Privacy Computing for Multi Source Financial Big Data](https://www.intel.cn/content/www/cn/zh/now/data-centric/sgx-bigdl-financial-big-data.html) (in Chinese)
 * __Alibaba__
   <br>[Deploy Analytics Zoo in Aliyun EMR](https://partners-intl.aliyun.com/help/doc-detail/93155.htm)
   <br>[Better Together: Privacy-Preserving Machine Learning](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/alibaba-privacy-preserving-machine-learning.html)
@@ -73,6 +71,8 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 * __UC Berkeley RISELab__
 <br>[RayOnSpark: Running Emerging AI Applications on Big Data Clusters with Ray and Analytics Zoo](https://medium.com/riselab/rayonspark-running-emerging-ai-applications-on-big-data-clusters-with-ray-and-analytics-zoo-923e0136ed6a)
 <br>[Scalable AutoML for Time Series Prediction Using Ray and Analytics Zoo](https://medium.com/riselab/scalable-automl-for-time-series-prediction-using-ray-and-analytics-zoo-b79a6fd08139)
+* __UnionPay__
+  <br>[Technical Verification of SGX and BigDL Based Privacy Computing for Multi Source Financial Big Data](https://www.intel.cn/content/www/cn/zh/now/data-centric/sgx-bigdl-financial-big-data.html) (in Chinese)
 * __World Bank__
 <br>[Using Crowdsourced Images to Create Image Recognition Models with Analytics Zoo using BigDL](https://databricks.com/session/using-crowdsourced-images-to-create-image-recognition-models-with-bigdl)
 * __Yunda__
