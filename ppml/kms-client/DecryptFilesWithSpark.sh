@@ -8,7 +8,6 @@ LOCAL_IP=$5
 OUTPUT_PATH=$6
 
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
-#data_key=$(python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py -api get_data_key_plaintext -ip $KMS_SERVER_IP -pkp $ENCRYPT_KEYS_PATH/encrypted_primary_key -dkp $ENCRYPT_KEYS_PATH/encrypted_data_key)
 
 /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar' \
