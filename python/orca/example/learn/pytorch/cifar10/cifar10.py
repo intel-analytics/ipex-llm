@@ -45,7 +45,7 @@ parser.add_argument('--cluster_mode', type=str, default="local",
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
                          'bigdl, torch_distributed and spark are supported')
-parser.add_argument('--batch_size', type=int, default=4, help='The training batch size')
+parser.add_argument('--batch_size', type=int, default=4, help='The training batch size')  # change default batch size to 4
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default="./data", help='The path to dataset')
 parser.add_argument('--download', type=bool, default=True, help='Download dataset or not')
@@ -168,9 +168,9 @@ elif args.backend in ["torch_distributed", "spark"]:
                                           optimizer=optim_creator,
                                           loss=criterion,
                                           metrics=[Accuracy()],
-                                          model_dir=os.getcwd(),
-                                          use_tqdm=True,
+                                          model_dir=os.getcwd(),  # add this line
                                           backend=args.backend,
+                                          use_tqdm=True,  # add progress bar
                                           config={"lr": 0.001,
                                                   "root": root_dir})
 
@@ -180,7 +180,7 @@ elif args.backend in ["torch_distributed", "spark"]:
     for r in res:
         print(r, ":", res[r])
 else:
-    raise NotImplementedError("Only bigdl, torch_distributed, and spark are supported as the backend,"
+    raise NotImplementedError("Only bigdl, torch_distributed, and spark are supported as the backend,"  # add spark
                               " but got {}".format(args.backend))
 
 stop_orca_context()
