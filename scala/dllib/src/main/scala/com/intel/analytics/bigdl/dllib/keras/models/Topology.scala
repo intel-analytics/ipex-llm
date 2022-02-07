@@ -444,8 +444,10 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       keepOrder: Boolean = false,
       groupSize: Int = 1)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
-    val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam, keepOrder, groupSize)
-    val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam, keepOrder, groupSize)
+    val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam,
+      keepOrder, groupSize)
+    val valData = toDataSet(validationData, batchSize, featurePaddingParam,
+      labelPaddingParam, keepOrder, groupSize)
     this.fit(trainData, nbEpoch, valData)
 
     releaseDataSets(Array(trainData, valData))

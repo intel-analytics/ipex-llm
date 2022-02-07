@@ -377,7 +377,7 @@ object DataSet {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
         .cache()
-      ,keepOrder, groupSize)
+      , keepOrder, groupSize)
   }
 
   def imageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
