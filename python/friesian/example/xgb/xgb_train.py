@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--dricver_memory', type=str, default="36g",
                         help='The driver memory.')
     parser.add_argument('--model_dir', default='snapshot', type=str,
-                        help='snapshot directory name (default: nativeModel)')
+                        help='nativeModel directory name (default: nativeModel)')
     parser.add_argument('--data_dir', type=str, help='data directory')
 
     args = parser.parse_args()
@@ -86,25 +86,22 @@ if __name__ == '__main__':
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")\
         .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
               "retweet_timestamp", "retweet_with_comment_timestamp", "like_timestamp")
-    train_tbl = train_tbl.cache()
-    test_tbl = test_tbl.cache()
+
+    train_tbl.cache()
+    test_tbl.cache()
     full = train_tbl.concat(test_tbl)
-
-    full, min_max_dict = full.min_max_scale(num_cols)
-    index_tbls = full.gen_reindex_mapping(embed_cols)
-    full = full.reindex(embed_cols, index_tbls)
     full, target_codes = full.target_encode(cat_cols=cat_cols + embed_cols, target_cols=["label"])
+    for code in target_codes:
+        code.cache()
 
-    train = train_tbl.transform_min_max_scale(num_cols, min_max_dict)\
-        .reindex(embed_cols, index_tbls)\
+    train = train_tbl\
         .encode_target(target_cols="label", targets=target_codes)\
         .merge_cols(features, "features") \
         .select(["label", "features"])\
         .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
     train.show(5, False)
 
-    test = test_tbl.transform_min_max_scale(num_cols, min_max_dict)\
-        .reindex(embed_cols, index_tbls)\
+    test = test_tbl\
         .encode_target(target_cols="label", targets=target_codes) \
         .merge_cols(features, "features") \
         .select(["label", "features"]) \
@@ -115,9 +112,10 @@ if __name__ == '__main__':
     test = test.cache()
     print("training size:", train.size())
     print("test size:", test.size())
-
     train_tbl.uncache()
     test_tbl.uncache()
+    for code in target_codes:
+        code.uncache()
 
     preprocess = time.time()
     print("feature preprocessing time: %.2f" % (preprocess - begin))
@@ -135,8 +133,7 @@ if __name__ == '__main__':
                 xgbmodel.saveModel(args.model_dir)
                 xgbmodel = XGBClassifierModel.loadModel(args.model_dir, 2)
                 xgbmodel.setFeaturesCol("features")
-                predicts = xgbmodel.transform(test.df)
-                predicts.drop("features").show(10, False)
+                predicts = xgbmodel.transform(test.df).drop("features")
                 predicts.cache()
 
                 evaluator = BinaryClassificationEvaluator(labelCol="label",

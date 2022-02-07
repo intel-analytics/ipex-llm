@@ -164,7 +164,7 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
             out_target_mean = new_out_target_mean
 
         all_size = join_tbl.size()
-        limit_size = 10000000
+        limit_size = 100000000
         t_df = join_tbl.df
         top_df = t_df if all_size <= limit_size \
             else t_df.sort(t_df.target_encode_count.desc()).limit(limit_size)
@@ -192,8 +192,6 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         for out_col, target_mean in out_target_mean.items():
             if out_col in tbl.df.columns:
                 tbl = tbl.fillna(target_mean[1], out_col)
-
-        br_df.unpersist(blocking=True)
 
     if drop_cat:
         for target_code in targets:
