@@ -685,10 +685,10 @@ class NNClassifierModel(NNModel, HasThreshold):
 
 
 class XGBClassifier():
-    def __init__(self):
+    def __init__(self, params=None):
         super(XGBClassifier, self).__init__()
         bigdl_type = "float"
-        self.value = callZooFunc("float", "getXGBClassifier")
+        self.value = callZooFunc("float", "getXGBClassifier", params)
 
     def setNthread(self, value: int):
         callZooFunc("float", "setXGBClassifierNthread", self.value, value)
@@ -700,10 +700,33 @@ class XGBClassifier():
         callZooFunc("float", "setXGBClassifierNumWorkers", self.value, value)
 
     def fit(self, df):
-        return callZooFunc("float", "fitXGBClassifier", self.value, df)
+        model = callZooFunc("float", "fitXGBClassifier", self.value, df)
+        xgb_model = XGBClassifierModel(model)
+        return xgb_model
 
     def setMissing(self, value: int):
         return callZooFunc("float", "setXGBClassifierMissing", self.value, value)
+
+    def setMaxDepth(self, value: int):
+        return callZooFunc("float", "setXGBClassifierMaxDepth", self.value, value)
+
+    def setEta(self, value: float):
+        return callZooFunc("float", "setXGBClassifierEta", self.value, value)
+
+    def setGamma(self, value: int):
+        return callZooFunc("float", "setXGBClassifierGamma", self.value, value)
+
+    def setTreeMethod(self, value: str):
+        return callZooFunc("float", "setXGBClassifierTreeMethod", self.value, value)
+
+    def setObjective(self, value: str):
+        return callZooFunc("float", "setXGBClassifierObjective", self.value, value)
+
+    def setNumClass(self, value: str):
+        return callZooFunc("float", "setXGBClassifierNumClass", self.value, value)
+
+    def setFeaturesCol(self, value: str):
+        return callZooFunc("float", "setXGBClassifierFeaturesCol", self.value, value)
 
 
 class XGBClassifierModel:
@@ -723,9 +746,15 @@ class XGBClassifierModel:
     def setPredictionCol(self, prediction):
         callZooFunc("float", "setPredictionXGBClassifierModel", self.value, prediction)
 
+    def setInferBatchSize(self, batch_size):
+        callZooFunc("float", "setInferBatchSizeXGBClassifierModel", self.value, batch_size)
+
     def transform(self, dataset):
         df = callZooFunc("float", "transformXGBClassifierModel", self.value, dataset)
         return df
+
+    def saveModel(self, path):
+        callZooFunc("float", "saveXGBClassifierModel", self.value, path)
 
     @staticmethod
     def loadModel(path, numClasses):

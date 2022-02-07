@@ -81,3 +81,81 @@ The examples are run in the docker container. Attach it and see the results (`do
 2021-10-29 02:32:25 INFO  DistriOptimizer$:431 - [Epoch 5 800/50000][Iteration 502][Wall Clock 959.109945609s] Trained 400.0 records in 1.735078757 seconds. Throughput is 230.53708 records/second. Loss is 0.8222007. Sequentialf702431bs hyper parameters: Current learning rate is 0.1. Current weight decay is 1.0E-4. Current momentum is 0.9. Current nesterov is true.
 2021-10-29 02:32:27 INFO  DistriOptimizer$:431 - [Epoch 5 1200/50000][Iteration 503][Wall Clock 960.971331791s] Trained 400.0 records in 1.861386182 seconds. Throughput is 214.89362 records/second. Loss is 0.5886179. Sequentialf702431bs hyper parameters: Current learning rate is 0.1. Current weight decay is 1.0E-4. Current momentum is 0.9. Current nesterov is true.
 ```
+
+## Spark TPC-H example
+
+### Rebuild Image
+
+Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/branch-2.0/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
+```
+.resource_limits.max_num_of_threads = 4096 |
+.process.default_heap_size = "4096MB" |
+.resource_limits.kernel_space_heap_size="4096MB" |
+.process.default_mmap_size = "81920MB" |
+```
+
+Then build the docker image:
+
+``` bash
+bash build-docker-image.sh
+```
+
+### Generate Data
+
+```
+git clone https://github.com/intel-analytics/zoo-tutorials.git && \
+cd zoo-tutorials/tpch-spark/dbgen && \
+make
+```
+
+Then you can generate 100G size data by:
+```
+./dbgen -s 100
+```
+
+Then mount `/path/to/zoo-tutorials/tpch-spark/dbgen` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/zoo-tutorials/tpch-spark/dbgen:/opt/occlum_spark/data
+```
+
+Start run spark tpc-h example:
+```
+bash start-spark-local.sh tpch
+```
+
+You will find `output` folder under `/path/to/zoo-tutorials/tpch-spark/dbgen` which contains sql result.
+
+## Spark SQL Scala Unit Tests
+
+### Run Spark SQl Scala Unit Tests
+To run Spark Sql Scala Unit Tests, start the docker container with:
+```
+bash start-spark-local.sh ut
+```
+You can see some output like this:
+```
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== TEST OUTPUT FOR o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = false and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = false and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== TEST OUTPUT FOR o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== TEST OUTPUT FOR o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = true' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = true' =====
+```
+And the log files will be saved to `data/olog` folder.

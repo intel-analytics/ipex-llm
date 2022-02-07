@@ -16,53 +16,15 @@
 
 package com.intel.analytics.bigdl.friesian.serving.utils
 
-import java.io.File
-
 import com.codahale.metrics.Timer
-import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.sql.SparkSession
 
-import scala.math._
-
 object Utils {
   var helper: gRPCHelper = _
   val logger: Logger = LogManager.getLogger(getClass)
-
-  def timing[T](name: String)(timers: Timer*)(f: => T): T = {
-    val begin = System.nanoTime()
-    val contexts = timers.map(_.time())
-    val result = f
-    contexts.map(_.stop())
-    val end = System.nanoTime()
-    val cost = (end - begin)
-    logger.info(s"$name time elapsed [${cost / 1e6} ms]")
-    result
-  }
-
-  def silent[T](name: String)(timers: Timer*)(f: => T): T = {
-    val contexts = timers.map(_.time())
-    val result = f
-    contexts.map(_.stop())
-    result
-  }
-
-  def getListOfFiles(dir: String): Array[List[String]] = {
-    val d = new File(dir)
-    if (d.exists && d.isDirectory) {
-      logger.info("file exists & dir")
-      val parquetList = d.listFiles.filter(_.isFile).toList.map(_.getAbsolutePath)
-        .filter(path => !path.endsWith("SUCCESS") & !path.endsWith(".crc"))
-      logger.info(s"ParquetList length: ${parquetList.length}")
-      val batch = (parquetList.length.toFloat / helper.part).ceil.toInt
-      parquetList.sliding(batch, batch).toArray
-    } else {
-      logger.info(s"empty, exists: ${d.exists()}, dir: ${d.isDirectory}")
-      Array[List[String]]()
-    }
-  }
 
   def runMonitor(): Boolean = {
     if (helper.monitorPort == 0) {
@@ -75,47 +37,6 @@ object Utils {
   def getPromBuckets: Array[Double] = {
     Array(0.001D, 0.005D, 0.008D, 0.01D, 0.015D, 0.020D, 0.025D, 0.03D, 0.04D, 0.05D, 0.06D,
       0.07D, 0.08D, 0.09D, 0.1D, 1D, 2D, 5D, 10D)
-  }
-
-  /**
-   * Transform tensor into readable string,
-   * could apply to any shape of tensor
-   * @return
-   */
-  def tensorToNdArrayString(t: Tensor[Float]): String = {
-    val totalSize = {
-      var res: Int = 1
-      t.size().indices.foreach(i => res *= t.size()(i))
-      res
-    }
-    val sizeArray = t.size()
-    var strideArray = Array[Int]()
-    sizeArray.indices.foreach(i => {
-      var res: Int = 1
-      (0 to i).foreach(j => {
-        res *= sizeArray(sizeArray.length - 1 - j)
-      })
-      strideArray = strideArray :+ res
-    })
-    val flatTensor = t.resize(totalSize).toArray()
-    var str: String = ""
-    flatTensor.indices.foreach(i => {
-      sizeArray.indices.foreach(j => {
-        if (i % strideArray(j) == 0) {
-          str += "["
-        }
-      })
-      str += flatTensor(i).toString
-      sizeArray.indices.foreach(j => {
-        if ((i + 1) % strideArray(j) == 0) {
-          str += "]"
-        }
-      })
-      if (i != flatTensor.length - 1) {
-        str += ","
-      }
-    })
-    str
   }
 
   def loadUserData(dataDir: String, userIdCol: String, dataNum: Int): Array[Int] = {

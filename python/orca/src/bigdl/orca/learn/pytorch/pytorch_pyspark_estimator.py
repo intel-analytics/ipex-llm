@@ -31,11 +31,10 @@ from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
     get_remote_file_to_local
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.orca.learn.pytorch.pytorch_pyspark_worker import find_ip_and_port
 from bigdl.orca.learn.log_monitor import start_log_server
 
+from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
-from bigdl.orca.learn.utils import find_free_port
 
 
 def partition_to_creator(partition):
@@ -162,7 +161,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.state_dict = self.driver_runner.get_state_dict()
 
     def _get_cluster_info(self, sc):
-        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_port).collect()
+        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
         return cluster_info
 
     def fit(self,
@@ -173,7 +172,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             reduce_results=True,
             info=None,
             feature_cols=None,
-            label_cols=None):
+            label_cols=None,
+            callbacks=[]):
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -198,6 +198,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param label_cols: label column names if data is Spark DataFrame.
+        :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
@@ -226,6 +227,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             batch_size=batch_size,
             profile=profile,
             info=info,
+            callbacks=callbacks,
         )
 
         if isinstance(data, SparkXShards):

@@ -20,7 +20,6 @@ import os
 import torch
 
 from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
-from bigdl.orca import init_orca_context, stop_orca_context
 from unittest import TestCase
 import pytest
 
@@ -122,6 +121,35 @@ class TestChronosModelLSTMForecaster(TestCase):
         except ImportError:
             pass
 
+    def test_lstm_forecaster_quantization(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        # no tunning quantization
+        forecaster.quantize(train_data)
+        pred_q = forecaster.predict(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True)
+        # quantization with tunning
+        forecaster.quantize(train_data, val_data=val_data,
+                            metric="mse", relative_drop=0.1, max_trials=3)
+        pred_q = forecaster.predict(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            ckpt_name_q = os.path.join(tmp_dir_name, "ckpt.q")
+            test_pred_save = forecaster.predict(test_data[0])
+            test_pred_save_q = forecaster.predict(test_data[0], quantize=True)
+            forecaster.save(ckpt_name, ckpt_name_q)
+            forecaster.load(ckpt_name, ckpt_name_q)
+            test_pred_load = forecaster.predict(test_data[0])
+            test_pred_load_q = forecaster.predict(test_data[0], quantize=True)
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+        np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
+
     def test_lstm_forecaster_save_load(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -165,6 +193,7 @@ class TestChronosModelLSTMForecaster(TestCase):
             forecaster.fit(train_data, epochs=2)
 
     def test_lstm_forecaster_xshard_input(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
         print("original", train_data[0].dtype)
         init_orca_context(cores=4, memory="2g")
@@ -191,6 +220,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         stop_orca_context()
 
     def test_lstm_forecaster_distributed(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
         init_orca_context(cores=4, memory="2g")
 
@@ -229,6 +259,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         stop_orca_context()
 
     def test_lstm_dataloader_distributed(self):
+        from bigdl.orca import init_orca_context, stop_orca_context
         train_loader, _, _ = create_data(loader=True)
         init_orca_context(cores=4, memory="2g")
         forecaster = LSTMForecaster(past_seq_len=24,

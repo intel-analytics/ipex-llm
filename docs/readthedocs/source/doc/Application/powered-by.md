@@ -8,9 +8,14 @@
   <br>[Better Together: Privacy-Preserving Machine Learning](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/alibaba-privacy-preserving-machine-learning.html)
 * __Baosight__
   <br>[LSTM-Based Time Series Anomaly Detection Using Analytics Zoo for Apache Spark and BigDL at Baosight](https://www.intel.com/content/www/us/en/developer/articles/technical/lstm-based-time-series-anomaly-detection-using-analytics-zoo-for-apache-spark-and-bigdl.html)
+* __BBVA__
+  <br>[A Graph Convolutional Network Implementation](https://emartinezs44.medium.com/graph-convolutions-networks-ad8295b3ce57)
  * __Burger King__
   <br>[Context-Aware Fast Food Recommendation at Burger King with RayOnSpark](https://medium.com/riselab/context-aware-fast-food-recommendation-at-burger-king-with-rayonspark-2e7a6009dd2d)
   <br>[How Intel and Burger King built an order recommendation system that preserves customer privacy](https://venturebeat.com/2021/04/06/how-intel-and-burger-king-built-an-order-recommendation-system-that-preserves-customer-privacy/)
+  <br>[Burger King: Context-Aware Recommendations (video)](https://www.intel.com/content/www/us/en/customer-spotlight/stories/burger-king-ai-customer-story.html)
+* __Capgemini__
+  <br>[Intelligent 5G L2 MAC Scheduler: Powered by Capgemini NetAnticipate 5G on Intel Architecture](https://networkbuilders.intel.com/solutionslibrary/intelligent-5g-l2-mac-scheduler-powered-by-capgemini-netanticipate-5g-on-intel-architecture)
 * __CERN__
  <br>[Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo)
  <br>[Topology classification at CERN's Large Hadron Collider using Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
@@ -28,6 +33,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 * __GoldWind__
 <br>[Intel big data analysis + AI platform helps GoldWind to build a new energy intelligent power prediction solution](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/create-power-forecasting-solutions.html)
 * __Inspur__
+<br>[Inspur E2E Smart Transportation CV application](https://jason-dai.github.io/cvpr2021/slides/Inspur%20E2E%20Smart%20Transportation%20CV%20application%20-CVPR21.pdf)
 <br>[Inspur End-to-End Smart Computing Solution with Intel Analytics Zoo](https://dpgresources.intel.com/asset-library/inspur-end-to-end-smart-computing-solution-with-intel-analytics-zoo/)
 * __JD__
 <br>[Object Detection and Image Feature Extraction at JD.com](https://software.intel.com/en-us/articles/building-large-scale-image-feature-extraction-with-bigdl-at-jdcom)

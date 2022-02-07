@@ -38,6 +38,7 @@ import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
+import org.apache.commons.cli.Option;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -59,6 +60,8 @@ public class RecommenderServer extends GrpcServerBase {
         super(args);
         port = 8980;
         configPath = "config_recommender.yaml";
+        options.addOption(new Option("p", "port", true,
+                "The port to create the server"));
         Configurator.setLevel("org", Level.ERROR);
     }
 

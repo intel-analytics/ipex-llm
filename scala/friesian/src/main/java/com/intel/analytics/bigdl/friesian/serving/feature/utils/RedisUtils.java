@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import scala.Tuple2;
 
 import java.util.*;
 
@@ -15,20 +16,24 @@ public class RedisUtils {
     private static RedisUtils instance = null;
     private static JedisPool jedisPool = null;
     private static JedisCluster cluster = null;
+    private String redisKeyPrefix;
+    private int itemSlotType;
 
-    private RedisUtils(int maxTotal) {
+    private RedisUtils(int maxTotal, ArrayList<Tuple2<String, Integer>> redisHostPort,
+                       String redisPrefix, int itemSlotType) {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxTotal(maxTotal);
+        this.redisKeyPrefix = redisPrefix;
+        this.itemSlotType = itemSlotType;
 
-
-        if (Utils.helper().redisHostPort().size() == 1) {
-            jedisPool = new JedisPool(jedisPoolConfig, Utils.helper().redisHostPort().get(0)._1,
-                    (int) Utils.helper().redisHostPort().get(0)._2, 30000);
+        if (redisHostPort.size() == 1) {
+            jedisPool = new JedisPool(jedisPoolConfig, redisHostPort.get(0)._1,
+                    (int) redisHostPort.get(0)._2, 30000);
         } else {
             Set<HostAndPort> hps = new HashSet<HostAndPort>();
-            for (int i = 0; i < Utils.helper().redisHostPort().size(); i++) {
-                HostAndPort hp = new HostAndPort(Utils.helper().redisHostPort().get(i)._1,
-                        (int) Utils.helper().redisHostPort().get(i)._2);
+            for (int i = 0; i < redisHostPort.size(); i++) {
+                HostAndPort hp = new HostAndPort(redisHostPort.get(i)._1,
+                        (int) redisHostPort.get(i)._2);
                 hps.add(hp);
             }
             // default maxAttempt=5, service likely to down, increase to 20
@@ -48,9 +53,11 @@ public class RedisUtils {
         return cluster;
     }
 
-    public static RedisUtils getInstance(int maxTotal) {
+    public static RedisUtils getInstance(int maxTotal,
+                                         ArrayList<Tuple2<String, Integer>> redisHostPort,
+                                         String redisPrefix, int itemSlotType) {
         if (instance == null) {
-            instance = new RedisUtils(maxTotal);
+            instance = new RedisUtils(maxTotal, redisHostPort, redisPrefix, itemSlotType);
         }
         return instance;
     }
@@ -99,7 +106,7 @@ public class RedisUtils {
             if(data.size() != 2) {
                 logger.warn("Data size in dataArray should be 2, but got" + data.size());
             } else {
-                String hKey = Utils.helper().getRedisKeyPrefix() + keyPrefix + ":" +
+                String hKey = redisKeyPrefix + keyPrefix + ":" +
                         data.get(0);
                 Map<String, String> hValue = new HashMap<>();
                 hValue.put("value", data.get(1));
@@ -111,7 +118,7 @@ public class RedisUtils {
     }
 
     public void setSchema(String keyPrefix, String colNames) {
-        String hKey = Utils.helper().getRedisKeyPrefix() + keyPrefix;
+        String hKey = redisKeyPrefix + keyPrefix;
         if (cluster == null) {
             Jedis jedis = getRedisClient();
             jedis.set(hKey, colNames);
@@ -123,13 +130,13 @@ public class RedisUtils {
 
     public void clusterSet(String keyPrefix, List<String>[] dataArray) {
         if (keyPrefix.equals("user") ||
-                (keyPrefix.equals("item") && Utils.helper().itemSlotType() == 0)) {
+                (keyPrefix.equals("item") && itemSlotType == 0)) {
             int cnt = 0;
             for(List<String> data: dataArray) {
                 if(data.size() != 2) {
                     logger.warn("Data size in dataArray should be 2, but got" + data.size());
                 } else {
-                    String key = Utils.helper().getRedisKeyPrefix() + keyPrefix + ":" +
+                    String key = redisKeyPrefix + keyPrefix + ":" +
                             data.get(0);
                     getCluster().set(key, data.get(1));
                     cnt += 1;
@@ -137,8 +144,8 @@ public class RedisUtils {
             }
             logger.info(cnt + " valid records written to redis.");
         } else if (keyPrefix.equals("item")) {
-            if (Utils.helper().itemSlotType() == 1) {
-                keyPrefix = "{" + Utils.helper().getRedisKeyPrefix() + keyPrefix + "}";
+            if (itemSlotType == 1) {
+                keyPrefix = "{" + redisKeyPrefix + keyPrefix + "}";
                 String[] keyValues = buildKeyValuesArray(keyPrefix, dataArray);
                 getCluster().mset(keyValues);
                 logger.info(keyValues.length / 2 + " valid records written to redis.");
@@ -166,7 +173,7 @@ public class RedisUtils {
             if(data.size() != 2) {
                 logger.warn("Data size in dataArray should be 2, but got" + data.size());
             } else {
-                String hKey = Utils.helper().getRedisKeyPrefix() + keyPrefix + ":" +
+                String hKey = redisKeyPrefix + keyPrefix + ":" +
                         data.get(0);
                 Map<String, String> hValue = new HashMap<>();
                 hValue.put("value", data.get(1));
@@ -181,7 +188,7 @@ public class RedisUtils {
 
     public void jedisMset(String keyPrefix, List<String>[] dataArray) {
         Jedis jedis = getRedisClient();
-        keyPrefix = Utils.helper().getRedisKeyPrefix() + keyPrefix;
+        keyPrefix = redisKeyPrefix + keyPrefix;
         String[] keyValues = buildKeyValuesArray(keyPrefix, dataArray);
         jedis.mset(keyValues);
         jedis.close();
@@ -205,7 +212,7 @@ public class RedisUtils {
 
     private Collection<ArrayList<String>> buildAndDivideKeyValues(String keyPrefix,
                                                                   List<String>[] dataArray) {
-        keyPrefix = "{" + Utils.helper().getRedisKeyPrefix() + keyPrefix;
+        keyPrefix = "{" + redisKeyPrefix + keyPrefix;
         HashMap<Character, ArrayList<String>> keyValueSlots = new HashMap<>();
         for(List<String> data: dataArray) {
             if(data.size() != 2) {

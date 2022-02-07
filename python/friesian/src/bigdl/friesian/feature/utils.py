@@ -16,7 +16,8 @@
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
-    DoubleType
+    DoubleType, BooleanType
+from pyspark.sql.functions import broadcast, udf
 
 
 def compute(df):
@@ -134,15 +135,17 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
     for target_code in targets:
         cat_col = target_code.cat_col
         out_target_mean = target_code.out_target_mean
-
         join_tbl = tbl._clone(target_code.df)
-
+        assert "target_encode_count" in join_tbl.df.columns, \
+            "target_encode_count should be in target_code"
         # (keys of out_target_mean) should include (output columns)
         output_columns = list(filter(lambda x:
                                      ((isinstance(cat_col, str) and x != cat_col) or
                                       (isinstance(cat_col, list) and x not in cat_col)) and
-                                     (fold_col is not None and x != fold_col),
+                                     (fold_col is not None and x != fold_col) and
+                                     (x != "target_encode_count"),
                                      join_tbl.df.columns))
+
         for column in output_columns:
             assert column in out_target_mean, column + " should be in out_target_mean"
             column_mean = out_target_mean[column][1]
@@ -160,18 +163,37 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
                     new_out_target_mean[out_col] = target_mean
             out_target_mean = new_out_target_mean
 
-        if fold_col is None:
-            tbl = tbl.join(join_tbl, on=cat_col, how="left")
-        else:
-            if isinstance(cat_col, str):
-                tbl = tbl.join(join_tbl, on=[cat_col, fold_col], how="left")
-            else:
-                tbl = tbl.join(join_tbl, on=cat_col + [fold_col], how="left")
+        all_size = join_tbl.size()
+        limit_size = 10000000
+        t_df = join_tbl.df
+        top_df = t_df if all_size <= limit_size \
+            else t_df.sort(t_df.target_encode_count.desc()).limit(limit_size)
+        br_df = broadcast(top_df.drop("target_encode_count"))
 
+        if fold_col is None:
+            join_key = cat_col
+        else:
+            join_key = [cat_col, fold_col] if isinstance(cat_col, str) else cat_col + [fold_col]
+
+        if all_size <= limit_size:
+            joined = tbl.df.join(br_df, on=join_key, how="left")
+        else:
+            keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
+            filter_udf = udf(lambda key: key in keyset, BooleanType())
+            df1 = tbl.df.filter(filter_udf(cat_col))
+            df2 = tbl.df.subtract(df1)
+            joined1 = df1.join(br_df, on=join_key)
+            joined2 = df2.join(t_df.drop("target_encode_count").subtract(br_df),
+                               on=join_key, how="left")
+            joined = joined1.union(joined2)
+
+        tbl = tbl._clone(joined)
         # for new columns, fill na with mean
         for out_col, target_mean in out_target_mean.items():
             if out_col in tbl.df.columns:
                 tbl = tbl.fillna(target_mean[1], out_col)
+
+        br_df.unpersist(blocking=True)
 
     if drop_cat:
         for target_code in targets:

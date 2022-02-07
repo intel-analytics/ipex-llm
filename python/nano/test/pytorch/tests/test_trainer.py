@@ -24,6 +24,7 @@ from pytorch_lightning import LightningModule
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
 from torch import nn
+import torchmetrics
 
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
@@ -84,6 +85,24 @@ class TestTrainer(TestCase):
 
         # Case 1: Default
         qmodel = trainer.quantize(pl_model, self.train_loader)
+        assert qmodel
+        out = qmodel(next(train_loader_iter)[0])
+        assert out.shape == torch.Size([256, 10])
+
+        # Case 2: Override by arguments
+        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
+                                  metric=torchmetrics.F1(10), framework='pytorch_fx',
+                                  approach='static',
+                                  tuning_strategy='basic',
+                                  accuracy_criterion={'relative': 0.99,
+                                                      'higher_is_better': True})
+
+        assert qmodel
+        out = qmodel(next(train_loader_iter)[0])
+        assert out.shape == torch.Size([256, 10])
+
+        # Case 3: Dynamic quantization
+        qmodel = trainer.quantize(pl_model, approach='dynamic')
         assert qmodel
         out = qmodel(next(train_loader_iter)[0])
         assert out.shape == torch.Size([256, 10])

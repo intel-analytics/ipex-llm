@@ -20,36 +20,16 @@ import tempfile
 import shutil
 
 import tensorflow as tf
-from contextlib import closing
-import socket
 
 from pyspark import BarrierTaskContext, TaskContext
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.data.file import put_local_dir_to_remote
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
-    get_specific_object_from_callbacks, get_replaced_path
+    get_specific_object_from_callbacks, get_replaced_path, get_rank
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
-
-
-def find_free_port(tc):
-    address = tc.getTaskInfos()[tc.partitionId()].address.split(":")[0]
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind(("", 0))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        tc.barrier()
-        return f"{address}:{s.getsockname()[1]}"
-
-
-def handle_datasets_train(data_creator, validation_data_creator):
-        train_dataset = data_creator()
-        if validation_data_creator is not None:
-            test_dataset = validation_data_creator()
-        else:
-            test_dataset = None
-        return train_dataset, test_dataset
 
 
 class DatasetHandler:
@@ -190,12 +170,6 @@ class LocalDatasetHandler(DatasetHandler):
         return config, config["batch_size"]
 
 
-def find_ip_and_port(pre_iter):
-    tc = BarrierTaskContext().get()
-    free_port = find_free_port(tc)
-    return [free_port]
-
-
 class SparkRunner:
     def __init__(self, model_creator, compile_args_creator,
                  size,
@@ -232,10 +206,10 @@ class SparkRunner:
         self.backend = backend
         self.setup()
         self.cluster = cluster_info
-        if TaskContext.get():
-            self.partition_id = TaskContext.get().partitionId()
-        else:
+        if mode == "fit" or mode == "evaluate":
             self.partition_id = BarrierTaskContext.get().partitionId()
+        else:
+            self.partition_id = TaskContext.get().partitionId()
         self.need_to_log_to_driver = need_to_log_to_driver
         if need_to_log_to_driver:
             self.log_path = os.path.join(tempfile.gettempdir(),
@@ -259,37 +233,11 @@ class SparkRunner:
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
-    def _get_rank(self, cluster_info):
-        # As task placement may not be identical between two different jobs,
-        # we cannot simply index cluster_info using partitionId to get current
-        # ip and port.
-        # The approach here is to first get all tasks' ip in this job and compute
-        # a local rank by counting how many tasks has the same ip but with lower id.
-        # We then use the local rank to find the right slot in cluster_info to find
-        # the right global_rank.
-        tc = BarrierTaskContext().get()
-        infos = tc.getTaskInfos()
-        idx = tc.partitionId()
-        local_ip = infos[idx].address.split(":")[0]
-        local_rank = 0
-        for i in range(0, idx):
-            if infos[i].address.startswith(local_ip):
-                local_rank += 1
-        global_rank = -1
-        local_count = 0
-        for node in cluster_info:
-            if node.startswith(local_ip):
-                local_count += 1
-            global_rank += 1
-            if local_count == local_rank + 1:
-                break
-        return global_rank
-
     def setup_distributed(self, cluster):
         """
         Sets up TensorFLow distributed environment and initializes the model.
         """
-        self.rank = self._get_rank(cluster)
+        self.rank = get_rank(cluster)
         logger.info("cluster is: {}".format(cluster))
 
         os.environ["TF_CONFIG"] = json.dumps({
