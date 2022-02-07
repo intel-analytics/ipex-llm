@@ -12,6 +12,7 @@ pip install torch
 pip install torchvision
 pip install matplotlib
 
+
 # For bigdl backend:
 pip install bigdl-orca
 pip install jep==3.9.0
@@ -19,10 +20,12 @@ pip install six cloudpickle
 
 # For torch_distributed backend:
 pip install bigdl-orca
-pip install ray
+pip install ray[default]
+pip install tqdm  # progress bar
 
 # For spark backend
 pip install bigdl-orca
+pip install tqdm  # progress bar
 ```
 
 ## Run on local after pip install
@@ -65,7 +68,7 @@ You can find the logs for training as follows:
 
 Final test results will be printed at the end:
 ```
-Accuracy of the network on the 10000 test images: 0.541100025177002 
+Accuracy of the network on the test images: {'Top1Accuracy': 0.5515000224113464}
 ```
 
 **For "torch_distributed" and "spark" backend**
@@ -73,6 +76,6 @@ Accuracy of the network on the 10000 test images: 0.541100025177002
 Final test results will be printed at the end:
 ```
 num_samples : 10000
-Accuracy : tensor(0.5378)
-val_loss : 1.3078322240829467
+Accuracy : tensor(0.5526)
+val_loss : 1.2584745523452758
 ```
