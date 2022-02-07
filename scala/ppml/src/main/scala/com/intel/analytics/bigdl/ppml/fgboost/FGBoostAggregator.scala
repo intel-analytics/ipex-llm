@@ -39,18 +39,18 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   var obj: TreeObjective = new RMSEObjective
   var nLabel = 1
 
-  val serverTreeLeaves = new ArrayBuffer[Map[Int, Float]]()
+  val serverTreeLeaf = new ArrayBuffer[Map[Int, Float]]()
   var validationSize = -1
   var basePrediction: Array[Float] = null
   val bestSplit = new java.util.HashMap[String, DataSplit]()
   var validationResult = Array[ValidationResult]()
 
   // wrapper methods to simplify data access
-  def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTableStorage()
+  def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTensorMapStorage()
   def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
   def getTreeLeaveStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAVES).getLeafStorage()
   def getBranchStorage() = aggregateTypeMap.get(FLPhase.TREE_EVAL).getBranchStorage()
-  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTableStorage()
+  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTensorMapStorage()
 
   override def initStorage(): Unit = {
     aggregateTypeMap.put(FLPhase.LABEL, new StorageHolder(FLDataType.TENSOR_MAP))
@@ -63,7 +63,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     flPhase match {
       case FLPhase.LABEL => initGradient()
       case FLPhase.SPLIT => aggregateSplit()
-      case FLPhase.TREE_LEAVES => aggregateTreeLeaves()
+      case FLPhase.TREE_LEAVES => aggregateTreeLeaf()
       case FLPhase.EVAL => aggEvaluate()
       case FLPhase.PREDICT => aggPredict()
       case _ => throw new NotImplementedError()
@@ -152,17 +152,17 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   def predictWithEncoding(encoding: Array[java.lang.Boolean], treeID: Int): Float = {
-    val treeLeaves = serverTreeLeaves(treeID)
+    val treeLeaf = serverTreeLeaf(treeID)
     logger.debug("Predict with encoding" + encoding.mkString("Array(", ", ", ")"))
-    logger.debug("Tree map encoding" + treeLeaves.mkString("Array(", ", ", ")"))
+    logger.debug("Tree map encoding" + treeLeaf.mkString("Array(", ", ", ")"))
     // go through the path by encoding to the leaf node
     var currIndex = 0
-    while (!treeLeaves.contains(currIndex)) {
+    while (!treeLeaf.contains(currIndex)) {
       logger.debug("CurrIndex " + currIndex)
       if (currIndex > encoding.length - 1) {
         logger.error("Exception " + currIndex)
         logger.error("encoding " + encoding.mkString("Array(", ", ", ")"))
-        logger.error("Leaves " + treeLeaves.toString)
+        logger.error("Leaves " + treeLeaf.toString)
       }
       if (encoding(currIndex).booleanValue()) {
         currIndex = currIndex * 2 + 1
@@ -170,8 +170,8 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
         currIndex = currIndex * 2 + 2
       }
     }
-    logger.debug("Reach leaf " + treeLeaves(currIndex))
-    treeLeaves(currIndex)
+    logger.debug("Reach leaf " + treeLeaf(currIndex))
+    treeLeaf(currIndex)
   }
 
 
@@ -180,7 +180,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     if (aggPredict.head.length == 1) {
       // Last tree
       aggPredict.map { predict =>
-        predictWithEncoding(predict.last._2, serverTreeLeaves.length - 1)
+        predictWithEncoding(predict.last._2, serverTreeLeaf.length - 1)
       }
     } else {
       // n label tree or full tree
@@ -191,15 +191,15 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     }
   }
 
-  def aggregateTreeLeaves(): Unit = {
-    logger.info(s"Add new Tree ${serverTreeLeaves.length}")
+  def aggregateTreeLeaf(): Unit = {
+    logger.info(s"Add new Tree ${serverTreeLeaf.length}")
     val leafMap = getTreeLeaveStorage().clientData
 
     val treeIndexes = leafMap.values.head.getLeafIndexList.map(Integer2int).toArray
     val treeOutputs = leafMap.values.head.getLeafOutputList.map(Float2float).toArray
-    val treeLeaves = treeIndexes.zip(treeOutputs).toMap
+    val treeLeaf = treeIndexes.zip(treeOutputs).toMap
     // Add new tree leaves to server
-    serverTreeLeaves += treeLeaves
+    serverTreeLeaf += treeLeaf
     leafMap.clear()
   }
 
