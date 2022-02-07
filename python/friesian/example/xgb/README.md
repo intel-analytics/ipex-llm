@@ -34,6 +34,9 @@ python xgb_train.py \
     --model_dir /path/to/the/folder/to/save/trained_model
 ```
 
+### note for comparison:
+best results from recsys data: Accuracy: 69.89; AUC: 76.77; params: {'tree_method': 'hist', 'eta': 0.3, 'gamma': 0.1, 'min_child_weight': 10, 'reg_lambda': 1, 'scale_pos_weight': 2, 'subsample': 1, 'objective': 'binary:logistic', 'max_depth': 12, 'num_round': 800}
+
 __Options:__
 * `cluster_mode`: The cluster mode to run the data preprocessing, one of local, spark submit or yarn Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
@@ -47,4 +50,4 @@ __Options:__
 
 
 ## references:
-Guo H, Tang R, Ye Y, et al. Deepfm: a factorization-machine based neural network for ctr prediction[J]. arXiv preprint arXiv:1703.04247, 2017.
+Tianqi Chen, Carlos Guestrin. XGBoost: A Scalable Tree Boosting System. arXiv:1603.02754.

@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--dricver_memory', type=str, default="36g",
                         help='The driver memory.')
     parser.add_argument('--model_dir', default='snapshot', type=str,
-                        help='snapshot directory name (default: nativeModel)')
+                        help='nativeModel directory name (default: nativeModel)')
     parser.add_argument('--data_dir', type=str, help='data directory')
 
     args = parser.parse_args()
