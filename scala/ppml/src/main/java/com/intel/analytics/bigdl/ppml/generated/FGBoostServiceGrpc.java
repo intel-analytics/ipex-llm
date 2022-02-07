@@ -138,35 +138,35 @@ public final class FGBoostServiceGrpc {
     return getRegisterMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.UploadTreeLeavesRequest,
-      FGBoostServiceProto.UploadResponse> getUploadTreeLeavesMethod;
+  private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.UploadTreeLeafRequest,
+      FGBoostServiceProto.UploadResponse> getUploadTreeLeafMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
-      fullMethodName = SERVICE_NAME + '/' + "uploadTreeLeaves",
-      requestType = FGBoostServiceProto.UploadTreeLeavesRequest.class,
+      fullMethodName = SERVICE_NAME + '/' + "uploadTreeLeaf",
+      requestType = FGBoostServiceProto.UploadTreeLeafRequest.class,
       responseType = FGBoostServiceProto.UploadResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<FGBoostServiceProto.UploadTreeLeavesRequest,
-      FGBoostServiceProto.UploadResponse> getUploadTreeLeavesMethod() {
-    io.grpc.MethodDescriptor<FGBoostServiceProto.UploadTreeLeavesRequest, FGBoostServiceProto.UploadResponse> getUploadTreeLeavesMethod;
-    if ((getUploadTreeLeavesMethod = FGBoostServiceGrpc.getUploadTreeLeavesMethod) == null) {
+  public static io.grpc.MethodDescriptor<FGBoostServiceProto.UploadTreeLeafRequest,
+      FGBoostServiceProto.UploadResponse> getUploadTreeLeafMethod() {
+    io.grpc.MethodDescriptor<FGBoostServiceProto.UploadTreeLeafRequest, FGBoostServiceProto.UploadResponse> getUploadTreeLeafMethod;
+    if ((getUploadTreeLeafMethod = FGBoostServiceGrpc.getUploadTreeLeafMethod) == null) {
       synchronized (FGBoostServiceGrpc.class) {
-        if ((getUploadTreeLeavesMethod = FGBoostServiceGrpc.getUploadTreeLeavesMethod) == null) {
-          FGBoostServiceGrpc.getUploadTreeLeavesMethod = getUploadTreeLeavesMethod =
-              io.grpc.MethodDescriptor.<FGBoostServiceProto.UploadTreeLeavesRequest, FGBoostServiceProto.UploadResponse>newBuilder()
+        if ((getUploadTreeLeafMethod = FGBoostServiceGrpc.getUploadTreeLeafMethod) == null) {
+          FGBoostServiceGrpc.getUploadTreeLeafMethod = getUploadTreeLeafMethod =
+              io.grpc.MethodDescriptor.<FGBoostServiceProto.UploadTreeLeafRequest, FGBoostServiceProto.UploadResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
-              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "uploadTreeLeaves"))
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "uploadTreeLeaf"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  FGBoostServiceProto.UploadTreeLeavesRequest.getDefaultInstance()))
+                  FGBoostServiceProto.UploadTreeLeafRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   FGBoostServiceProto.UploadResponse.getDefaultInstance()))
-              .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("uploadTreeLeaves"))
+              .setSchemaDescriptor(new FGBoostServiceMethodDescriptorSupplier("uploadTreeLeaf"))
               .build();
         }
       }
     }
-    return getUploadTreeLeavesMethod;
+    return getUploadTreeLeafMethod;
   }
 
   private static volatile io.grpc.MethodDescriptor<FGBoostServiceProto.EvaluateRequest,
@@ -309,9 +309,9 @@ public final class FGBoostServiceGrpc {
 
     /**
      */
-    public void uploadTreeLeaves(FGBoostServiceProto.UploadTreeLeavesRequest request,
-                                 io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse> responseObserver) {
-      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUploadTreeLeavesMethod(), responseObserver);
+    public void uploadTreeLeaf(FGBoostServiceProto.UploadTreeLeafRequest request,
+                               io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUploadTreeLeafMethod(), responseObserver);
     }
 
     /**
@@ -359,12 +359,12 @@ public final class FGBoostServiceGrpc {
                 FGBoostServiceProto.RegisterResponse>(
                   this, METHODID_REGISTER)))
           .addMethod(
-            getUploadTreeLeavesMethod(),
+            getUploadTreeLeafMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                FGBoostServiceProto.UploadTreeLeavesRequest,
+                FGBoostServiceProto.UploadTreeLeafRequest,
                 FGBoostServiceProto.UploadResponse>(
-                  this, METHODID_UPLOAD_TREE_LEAVES)))
+                  this, METHODID_UPLOAD_TREE_LEAF)))
           .addMethod(
             getEvaluateMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
@@ -431,10 +431,10 @@ public final class FGBoostServiceGrpc {
 
     /**
      */
-    public void uploadTreeLeaves(FGBoostServiceProto.UploadTreeLeavesRequest request,
-                                 io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse> responseObserver) {
+    public void uploadTreeLeaf(FGBoostServiceProto.UploadTreeLeafRequest request,
+                               io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
-          getChannel().newCall(getUploadTreeLeavesMethod(), getCallOptions()), request, responseObserver);
+          getChannel().newCall(getUploadTreeLeafMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
@@ -498,9 +498,9 @@ public final class FGBoostServiceGrpc {
 
     /**
      */
-    public FGBoostServiceProto.UploadResponse uploadTreeLeaves(FGBoostServiceProto.UploadTreeLeavesRequest request) {
+    public FGBoostServiceProto.UploadResponse uploadTreeLeaf(FGBoostServiceProto.UploadTreeLeafRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
-          getChannel(), getUploadTreeLeavesMethod(), getCallOptions(), request);
+          getChannel(), getUploadTreeLeafMethod(), getCallOptions(), request);
     }
 
     /**
@@ -566,10 +566,10 @@ public final class FGBoostServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<FGBoostServiceProto.UploadResponse> uploadTreeLeaves(
-        FGBoostServiceProto.UploadTreeLeavesRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<FGBoostServiceProto.UploadResponse> uploadTreeLeaf(
+        FGBoostServiceProto.UploadTreeLeafRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
-          getChannel().newCall(getUploadTreeLeavesMethod(), getCallOptions()), request);
+          getChannel().newCall(getUploadTreeLeafMethod(), getCallOptions()), request);
     }
 
     /**
@@ -593,7 +593,7 @@ public final class FGBoostServiceGrpc {
   private static final int METHODID_DOWNLOAD_LABEL = 1;
   private static final int METHODID_SPLIT = 2;
   private static final int METHODID_REGISTER = 3;
-  private static final int METHODID_UPLOAD_TREE_LEAVES = 4;
+  private static final int METHODID_UPLOAD_TREE_LEAF = 4;
   private static final int METHODID_EVALUATE = 5;
   private static final int METHODID_PREDICT = 6;
 
@@ -630,8 +630,8 @@ public final class FGBoostServiceGrpc {
           serviceImpl.register((FGBoostServiceProto.RegisterRequest) request,
               (io.grpc.stub.StreamObserver<FGBoostServiceProto.RegisterResponse>) responseObserver);
           break;
-        case METHODID_UPLOAD_TREE_LEAVES:
-          serviceImpl.uploadTreeLeaves((FGBoostServiceProto.UploadTreeLeavesRequest) request,
+        case METHODID_UPLOAD_TREE_LEAF:
+          serviceImpl.uploadTreeLeaf((FGBoostServiceProto.UploadTreeLeafRequest) request,
               (io.grpc.stub.StreamObserver<FGBoostServiceProto.UploadResponse>) responseObserver);
           break;
         case METHODID_EVALUATE:
@@ -707,7 +707,7 @@ public final class FGBoostServiceGrpc {
               .addMethod(getDownloadLabelMethod())
               .addMethod(getSplitMethod())
               .addMethod(getRegisterMethod())
-              .addMethod(getUploadTreeLeavesMethod())
+              .addMethod(getUploadTreeLeafMethod())
               .addMethod(getEvaluateMethod())
               .addMethod(getPredictMethod())
               .build();

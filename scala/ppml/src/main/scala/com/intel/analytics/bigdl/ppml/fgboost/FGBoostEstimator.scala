@@ -122,10 +122,10 @@ class FGBoostEstimator(continuous: Boolean,
       return false
     }
     // upload local tree
-    val treeLeaves = currTree.leaves.toArray
-    val treeIndexes = treeLeaves.map(_.nodeID.toInt).map(int2Integer).toList.asJava
-    val treeOutput = treeLeaves.map(_.similarScore).map(float2Float).toList.asJava
-    flClient.fgbostStub.uploadTreeLeaves(i.toString, treeIndexes, treeOutput)
+    val treeLeaf = currTree.leaves.toArray
+    val treeIndexes = treeLeaf.map(_.nodeID.toInt).map(int2Integer).toList.asJava
+    val treeOutput = treeLeaf.map(_.similarScore).map(float2Float).toList.asJava
+    flClient.fgbostStub.uploadTreeLeaf(i.toString, treeIndexes, treeOutput)
     logger.debug(s"Update tree leaves ${(System.currentTimeMillis() - st) / 1000f} s")
     st = System.currentTimeMillis()
     trees.enqueue(currTree)
