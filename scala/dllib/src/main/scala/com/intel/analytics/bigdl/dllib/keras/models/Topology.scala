@@ -315,7 +315,9 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    */
   private def toDataSet(x: RDD[Sample[T]], batchSize: Int,
     featurePaddingParam: PaddingParam[T] = null,
-    labelPaddingParam: PaddingParam[T] = null): DataSet[MiniBatch[T]] = {
+    labelPaddingParam: PaddingParam[T] = null,
+    keepOrder: Boolean = false,
+    groupSize: Int = 1): DataSet[MiniBatch[T]] = {
     val _featurePaddingParam = if (featurePaddingParam != null) {
       Some(featurePaddingParam)
     } else None
@@ -323,8 +325,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       Some(labelPaddingParam)
     } else None
 
-    if (x != null) DataSet.rdd(x) -> SampleToMiniBatch[T](batchSize, _featurePaddingParam,
-      _labelPaddingParam)
+    if (x != null) DataSet.rdd(x, keepOrder = keepOrder, groupSize = groupSize) ->
+      SampleToMiniBatch[T](batchSize, _featurePaddingParam, _labelPaddingParam)
     else null
   }
 
@@ -438,10 +440,12 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       nbEpoch: Int = 10,
       validationData: RDD[Sample[T]] = null,
       featurePaddingParam: PaddingParam[T] = null,
-      labelPaddingParam: PaddingParam[T] = null)(implicit ev: TensorNumeric[T]): Unit = {
+      labelPaddingParam: PaddingParam[T] = null,
+      keepOrder: Boolean = false,
+      groupSize: Int = 1)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
-    val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam)
-    val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam)
+    val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam, keepOrder, groupSize)
+    val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam, keepOrder, groupSize)
     this.fit(trainData, nbEpoch, valData)
 
     releaseDataSets(Array(trainData, valData))
