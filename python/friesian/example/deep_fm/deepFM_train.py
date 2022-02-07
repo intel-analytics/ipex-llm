@@ -21,7 +21,8 @@ from evaluation import uAUC
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy
+from bigdl.orca.learn.metrics import Accuracy, AUC
+from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
 
 import argparse
 
@@ -203,8 +204,18 @@ if __name__ == '__main__':
     print("Validation stats: {}".format(valid_stats))
 
     predicts = est.predict(data=test.df, feature_cols=["feature"], batch_size=args.batch_size)
-    predicts = predicts.select("prediction").collect()
-    auc = uAUC(test_labels, predicts, test_user_ids)
-    print("AUC: ", auc)
+    predicts.show(10, False)
+
+    predicts.cache()
+    evaluator = BinaryClassificationEvaluator(labelCol="label",
+                                              rawPredictionCol="rawPrediction")
+    auc = evaluator.evaluate(predicts, {evaluator.metricName: "areaUnderROC"})
+
+    evaluator2 = MulticlassClassificationEvaluator(labelCol="label",
+                                                   predictionCol="prediction")
+    acc = evaluator2.evaluate(predicts, {evaluator2.metricName: "accuracy"})
+    print("AUC: %.2f" % (auc * 100.0))
+    print("Accuracy: %.2f" % (acc * 100.0))
+
     est.shutdown()
     stop_orca_context()
