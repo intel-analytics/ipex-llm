@@ -108,3 +108,38 @@ bash start-spark-local.sh tpch
 ```
 
 You will find `output` folder under `/path/to/zoo-tutorials/tpch-spark/dbgen` which contains sql result.
+
+## Spark SQL Scala Unit Tests
+
+### Run Spark SQl Scala Unit Tests
+To run Spark Sql Scala Unit Tests, start the docker container with:
+```
+bash start-spark-local.sh ut
+```
+You can see some output like this:
+```
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== TEST OUTPUT FOR o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = false and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = false and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== TEST OUTPUT FOR o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== TEST OUTPUT FOR o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = true' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = true' =====
+```
+And the log files will be saved to `data/olog` folder.
