@@ -10,8 +10,6 @@ You may pull the prebuilt  BigDL `bigdl-k8s` Image from [Docker Hub](https://hub
 sudo docker pull intelanalytics/bigdl-k8s:latest
 ```
 
-Note, If you would like to run Tensorflow 2.x application, pull image "bigdl-k8s:latest-tf2" with `sudo docker pull intelanalytics/bigdl-k8s:latest-tf2`. The two images are distinguished with tensorflow version installed in python environment.
-
 **Speed up pulling image by adding mirrors**
 
 To speed up pulling the image from DockerHub, you may add the registry-mirrors key and value by editing `daemon.json` (located in `/etc/docker/` folder on Linux):
@@ -252,21 +250,22 @@ This section shows some common topics for both client mode and cluster mode.
 
 #### **5.1 How to specify the Python environment?**
 
-The k8s image provides conda python environment. Image "intelanalytics/bigdl-k8s:latest" installs python environment in "/usr/local/envs/pytf1/bin/python". Image "intelanalytics/bigdl-k8s:latest-tf2" installs python environment in "/usr/local/envs/pytf2/bin/python".
-
 In client mode, set python env and run application:
 ```python
-source activate pytf1
 python script.py
 ```
 In cluster mode, specify on both the driver and executor:
-```bash
-${SPARK_HOME}/bin/spark-submit \
-  --... ...\
-  --conf spark.pyspark.driver.python=/usr/local/envs/pytf1/bin/python \
-  --conf spark.pyspark.python=/usr/local/envs/pytf1/bin/python \
-  file:///path/script.py
-```
+Pack conda environment and use on both the driver and executor.
+    - Pack the current conda environment to `environment.tar.gz` (you can use any name you like):
+    ```
+    conda pack -o environment.tar.gz
+    ```
+    - spark-submit with "--archives" and specify python stores for dirver and executor
+    ```
+    --conf spark.pyspark.driver.python=./env/bin/python \
+    --conf spark.pyspark.python=./env/bin/python \
+    --archives local:///bigdl2.0/data/environment.tar.gz#env \ # this path shoud be that k8s pod can access
+
 #### **5.2 How to retain executor logs for debugging?**
 
 The k8s would delete the pod once the executor failed in client mode and cluster mode.  If you want to get the content of executor log, you could set "temp-dir" to a mounted network file system (NFS) storage to change the log dir to replace the former one. In this case, you may meet `JSONDecodeError` because multiple executors would write logs to the same physical folder and cause conflicts. The solutions are in the next section.
