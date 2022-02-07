@@ -19,6 +19,7 @@ pip install six cloudpickle
 
 # For torch_distributed backend:
 pip install bigdl-orca
+pip install ray
 
 # For spark backend
 pip install bigdl-orca
