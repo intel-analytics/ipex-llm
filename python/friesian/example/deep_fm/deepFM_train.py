@@ -21,8 +21,11 @@ from evaluation import uAUC
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy, AUC
+from bigdl.orca.learn.metrics import Accuracy
 from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
+from pyspark.sql.types import ArrayType, DoubleType, IntegerType
+from pyspark.sql.functions import udf, array
+from pyspark.ml.linalg import DenseVector, VectorUDT
 
 import argparse
 
@@ -207,15 +210,34 @@ if __name__ == '__main__':
     predicts.show(10, False)
 
     predicts.cache()
-    evaluator = BinaryClassificationEvaluator(labelCol="label",
+    predicts = predicts\
+        .withColumn("rawPrediction",
+                    udf(lambda x: DenseVector([1-x, x]), VectorUDT())("prediction"))\
+        .withColumn("predictedLabel",
+                    udf(lambda x: float(round(x)), DoubleType())("prediction"))\
+        .withColumn("grLabel", udf(lambda x: x[0], DoubleType())("label"))
+    predicts.show(10, False)
+    evaluator = BinaryClassificationEvaluator(labelCol="grLabel",
                                               rawPredictionCol="rawPrediction")
     auc = evaluator.evaluate(predicts, {evaluator.metricName: "areaUnderROC"})
 
-    evaluator2 = MulticlassClassificationEvaluator(labelCol="label",
-                                                   predictionCol="prediction")
+    evaluator2 = MulticlassClassificationEvaluator(labelCol="grLabel",
+                                                   predictionCol="predictedLabel")
     acc = evaluator2.evaluate(predicts, {evaluator2.metricName: "accuracy"})
     print("AUC: %.2f" % (auc * 100.0))
     print("Accuracy: %.2f" % (acc * 100.0))
+
+    predicts2 = predicts.select("prediction").collect()
+    auc2 = uAUC(test_labels, predicts2, test_user_ids)
+    print("AUC2: ", auc2)
+
+    forauc3 = predicts.select("prediction", "grLabel").collect()
+    print(forauc3[:10])
+    forauc3 = list(map(lambda x: [x[0], x[1]], forauc3))
+    print(forauc3[:10])
+    from evaluation import calc_auc
+    auc3 = calc_auc(forauc3)
+    print(auc3)
 
     est.shutdown()
     stop_orca_context()
