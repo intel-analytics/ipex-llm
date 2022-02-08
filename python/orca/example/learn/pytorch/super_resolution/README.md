@@ -46,7 +46,7 @@ python super_resolution.py --cluster_mode local
 python super_resolution.py --cluster_mode yarn
 ```
 
-You can run this example with bigdl backend (default) or torch_distributed backend.
+You can run this example with bigdl backend (default) or torch_distributed backend. 
 
 - Run with bigdl backend:
 ```bash
