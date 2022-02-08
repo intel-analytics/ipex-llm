@@ -90,7 +90,7 @@ def download_bsd300(dest=opt.data_dir):
     output_image_dir = join(dest, "BSDS300/images")
 
     if not exists(output_image_dir):
-        makedirs(dest)
+        makedirs(dest, exist_ok=True)
         url = "http://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/BSDS300-images.tgz"
         print("downloading url ", url)
 
@@ -277,8 +277,8 @@ elif opt.backend in ["torch_distributed", "spark"]:
         model=model_creator,
         optimizer=optim_creator,
         loss=criterion,
-        model_dir=os.getcwd(),
-        use_tqdm=True,
+        model_dir=os.getcwd(),  # add this line
+        use_tqdm=True,  # add progress bar
         backend=opt.backend,
         config={
             "lr": opt.lr,
@@ -307,7 +307,7 @@ elif opt.backend in ["torch_distributed", "spark"]:
         torch.save(model, model_out_path)
         print("Checkpoint saved to {}".format(model_out_path))
 else:
-    raise NotImplementedError("Only bigdl, torch_distributed, and spark are supported as the backend, "
+    raise NotImplementedError("Only bigdl, torch_distributed, and spark are supported as the backend, "  # add spark
                               "but got {}".format(opt.backend))
 
 stop_orca_context()
