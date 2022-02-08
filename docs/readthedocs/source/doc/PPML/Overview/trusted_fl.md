@@ -1,41 +1,26 @@
 # Trusted FL (Federated Learning)
 
-SGX-based End-to-end Trusted FL platform
+Federated Learning is a new tool in PPML (Privacy Preserving Machine Learning), which empowers multi-parities to build united model across different parties without compromising privacy, even if these parities have different datasets or features. In FL training stage, sensitive data will be kept locally, only temp gradients or weights will be safely aggregated by a trusted third-parity. In our design, this trusted third-parity is fully protected by Intel SGX.
 
-## ID & Feature align
+A number of FL tools or frameworks have been proposed to enable FL in different areas, i.e., OpenFL, FATE, Flower and PySyft etc. However, none of them is designed for Big Data scenario. To enable FL in big data ecosystem, BigDL PPML provides a SGX-based End-to-end Trusted FL platform. With this platform, data scientist and developers can easily setup FL applications upon distributed large scale datasets with a few clicks. To achieve this goal, we provides following features:
 
-Before we start Federated Learning, we need to align ID & Feature, and figure out portions of local data that will participate in later training stage.
+ * ID & feature align: figure out portions of local data that will participate in training stage
+ * Horizontal FL: training across multi-parties with same features and different entities
+ * Vertical FL: training across multi-parties with same entries and different features.
 
-Let RID1 and RID2 be randomized ID from party 1 and party 2.
+To ensure sensitive data are fully protected in training and inference stages, we make sure:
 
-## Vertical FL
+ * Sensitive data and weights are kept local, only temp gradients or weights will be safely aggregated by a trusted third-parity
+ * Trusted third-parity, i.e., FL Server, is protected by SGX Enclaves
+ * Local Training env is protected by SGX Enclaves (recommended but not enforced)
+ * Network communication and Storage (e.g., data and model) protected by encryption and Transport Layer Security (TLS)](https://en.wikipedia.org/wiki/Transport_Layer_Security)
+ 
 
-Vertical FL training across multi-parties with different features.
+## Prerequisite
 
-Key features:
+### Prepare Docker Image
 
-* FL Server in SGX
-    * ID & feature align
-    * Forward & backward aggregation
-* Training node in SGX
 
-## Horizontal FL
-
-Horizontal FL training across multi-parties.
-
-Key features:
-
-* FL Server in SGX
-   * ID & feature align (optional)
-   * Weight/Gradient Aggregation in SGX
-* Training Worker in SGX
-## Example 
-
-### Before running code
-
-#### **Prepare Docker Image**
-
-##### **Build jar from Source**
 
 ```bash
 cd BigDL/scala && bash make-dist.sh -DskipTests -Pspark_3.x
@@ -43,7 +28,7 @@ mv ppml/target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar 
 cd ppml/demo
 ```
 
-##### **Build Image**
+##### Build Image
 Modify your `http_proxy` in `build-image.sh` then run:
 
 ```bash
@@ -78,7 +63,9 @@ If you don't want to build tls channel with cerfiticate, just delete the `privat
 
 Then modify `DATA_PATH` to `./data` with absolute path in your machine and your local ip in `deploy_fl_container.sh`. The `./data` path will mlount to container's `/ppml/trusted-big-data-ml/work/data`, so if you don't run in container, you need to modify the data path in `runH_VflClient1_2.sh`.
 
-### **Start container**
+#### Prepare Docker Image
+
+### Start container
 Running this command will start a docker container and initialize the sgx environment.
 
 ```bash
@@ -87,15 +74,26 @@ sudo docker exec -it flDemo bash
 ./init.sh
 ```
 
-### **Start FLServer**
+### Start FLServer
 In container, run:
 
 ```bash
 ./runFlServer.sh
 ```
+
 The fl-server will start and listen on 8980 port. Both horizontal fl-demo and vertical fl-demo need two clients. You can change the listening port and client number by editing `BigDL/scala/ppml/demo/ppml-conf.yaml`'s `serverPort` and `clientNum`.  
 
-### **HFL Logistic Regression**
+
+
+## ID & Feature align
+
+Before we start Federated Learning, we need to align ID & Feature, and figure out portions of local data that will participate in later training stage. In horizontal FL, feature align is required to ensure each party is training on the same features. In vertical FL, both ID and feature align are required to ensure each party training on different features of the same record.
+
+Let RID1 and RID2 be randomized ID from party 1 and party 2.
+
+
+## HFL Logistic Regression
+
 Open two new terminals, run:
 
 ```bash
@@ -116,7 +114,7 @@ in another terminal run:
 
 Then we start two horizontal fl-clients to cooperate in training a model.
 
-### **VFL Logistic Regression**
+## VFL Logistic Regression
 Open two new windows, run:
 
 ```bash
