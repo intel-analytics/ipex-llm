@@ -36,6 +36,7 @@ from bigdl.dllib.nnframes import *
 from bigdl.dllib.utils.tf import *
 from pyspark.sql.functions import array
 from pyspark.ml.linalg import DenseVector, VectorUDT
+from pyspark.sql.functions import udf, array
 
 class TestNNClassifer():
     def setup_method(self, method):
@@ -855,7 +856,8 @@ class TestNNClassifer():
             .builder \
             .getOrCreate()
         df = spark.read.csv(filePath, sep=",", inferSchema=True, header=True)
-        df = df.select(["age", "gender", "jointime", "star"]).alias("features")
+        df = df.select(array("age", "gender", "jointime", "star").alias("features")) \
+            .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
 
         model.setFeaturesCol("features")
         predict = model.transform(df)
@@ -879,7 +881,7 @@ class TestNNClassifer():
             .getOrCreate()
         df = spark.read.csv(filePath, sep=",", inferSchema=True, header=True)
         df = df.select(array("age", "gender", "jointime", "star").alias("features"), "star")\
-            .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
+            .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
         params = {"eta": 0.2, "max_depth":4, "max_leaf_nodes": 8, "objective": "binary:logistic",
                   "num_round": 100}
         classifier = XGBClassifier(params)
@@ -925,4 +927,4 @@ class TestNNClassifer():
 
 
 if __name__ == "__main__":
-    pytest.main()
+    pytest.main([__file__])
