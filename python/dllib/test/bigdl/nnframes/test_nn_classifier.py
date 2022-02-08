@@ -880,7 +880,7 @@ class TestNNClassifer():
             .builder \
             .getOrCreate()
         df = spark.read.csv(filePath, sep=",", inferSchema=True, header=True)
-        df = df.select(array("age", "gender", "jointime", "star").alias("features"), "star")\
+        df = df.select(array("age", "gender", "jointime", "star").alias("features"), "label")\
             .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
         params = {"eta": 0.2, "max_depth":4, "max_leaf_nodes": 8, "objective": "binary:logistic",
                   "num_round": 100}
