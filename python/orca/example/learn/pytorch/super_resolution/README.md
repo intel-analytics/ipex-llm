@@ -5,22 +5,24 @@ We demonstrate how to easily run synchronous distributed Pytorch training using 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environment, especially if you want to run on a yarn cluster (yarn-client mode only).
 ```
-conda create -n zoo python=3.7  # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
+conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
+conda activate bigdl
 pip install pillow
 conda install pytorch torchvision cpuonly -c pytorch  # command for linux
 conda install pytorch torchvision -c pytorch  # command for macOS
 
 # For bigdl backend:
-pip install analytics-zoo  # 0.10.0.dev3 or above
+pip install bigdl-orca
 pip install jep==3.9.0
 pip install six cloudpickle
 
 # For torch_distributed backend:
-pip install analytics-zoo[ray]  # 0.10.0.dev3 or above
+pip install bigdl-orca[ray]
+pip install tqdm  # progress bar
 
 # For spark backend
 pip install bigdl-orca
+pip install tqdm  # progress bar
 ```
 
 ## Prepare Dataset
@@ -44,7 +46,7 @@ python super_resolution.py --cluster_mode local
 python super_resolution.py --cluster_mode yarn
 ```
 
-You can run this example with bigdl backend (default) or torch_distributed backend. 
+You can run this example with bigdl backend (default) or torch_distributed backend.
 
 - Run with bigdl backend:
 ```bash
