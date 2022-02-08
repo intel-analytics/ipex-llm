@@ -16,57 +16,46 @@
 
 package com.intel.analytics.bigdl.ppml.fgboost
 
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
-import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.ValidationMethod
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLContext
-import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.fgboost.common.{RegressionTree, Split, TreeUtils}
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
-import com.intel.analytics.bigdl.ppml.utils.{DataFrameUtils, DataSetUtils, ProtoUtils}
-import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
+import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{MetaData, TensorMap}
+import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
+import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.{getTensor, toArrayFloat, toBoostEvals, toFloatTensor}
 import org.apache.logging.log4j.LogManager
-import org.apache.spark.rdd.RDD
 
-import scala.collection.mutable.ArrayBuffer
-import collection.JavaConverters._
-import collection.JavaConversions._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
+import collection.JavaConverters._
 
-class FGBoostEstimator(continuous: Boolean,
-                       nLabel: Int = 1,
-                       learningRate: Float = 0.005f,
-                       maxDepth: Int = 6,
-                       minChildSize: Int = 1,
-                       validationMethods: Array[ValidationMethod[Float]] = null) extends Estimator {
+abstract class FGBoostModel(continuous: Boolean,
+                            nLabel: Int = 1,
+                            learningRate: Float = 0.005f,
+                            maxDepth: Int = 6,
+                            minChildSize: Int = 1,
+                            validationMethods: Array[ValidationMethod[Float]] = null) {
   val logger = LogManager.getLogger(getClass)
-  val flClient = FLContext.getClient()
+  var flClient = FLContext.getClient()
 
-  override protected val evaluateResults: mutable.Map[String, ArrayBuffer[Float]] = null
+  protected val evaluateResults: mutable.Map[String, ArrayBuffer[Float]] = null
   val trees = new mutable.Queue[RegressionTree]()
-  override def train(endEpoch: Int,
-                     trainDataSet: LocalDataSet[MiniBatch[Float]],
-                     valDataSet: LocalDataSet[MiniBatch[Float]]): Any = {
-    // transform the LocalDataSet to Array type, the input type of RegressionTree
-    val (feature, label) = DataSetUtils.localDataSetToArray(trainDataSet)
+  def fit(feature: Array[Tensor[Float]],
+          label: Array[Float],
+          boostRound: Int) = {
     val sortedIndexByFeature = TreeUtils.sortByFeature(feature)
     // TODO Load model from file
     initFGBoost(label)
 
     if (continuous) {
-      trainRegressionTree(feature, sortedIndexByFeature, endEpoch)
+      trainRegressionTree(feature, sortedIndexByFeature, boostRound)
     } else {
-      trainClassificationTree(feature, sortedIndexByFeature, endEpoch)
+      trainClassificationTree(feature, sortedIndexByFeature, boostRound)
     }
   }
-
-  override def evaluate(dataSet: LocalDataSet[MiniBatch[Float]]): Unit = {
-    val (feature, label) = DataSetUtils.localDataSetToArray(dataSet)
-    // TODO Load model from file
+  def evaluate(feature: Array[Tensor[Float]],
+               label: Array[Float]) = {
     val predictResult = predictTree(feature)
     val predictActivity = Tensor[Float](predictResult, Array(predictResult.length))
     val targetProto = flClient.fgbostStub.downloadLabel("label", 0).getData
@@ -75,14 +64,17 @@ class FGBoostEstimator(continuous: Boolean,
       vMethod.apply(predictActivity, targetActivity)
     })
   }
-
-  override def predict(dataSet: LocalDataSet[MiniBatch[Float]]): Array[Activity] = {
-    val (feature, label) = DataSetUtils.localDataSetToArray(dataSet)
+  def predict(feature: Array[Tensor[Float]]) = {
     val predictResult = predictTree(feature)
     predictResult.map{ value =>
       Tensor[Float](Array(value), Array(1))
     }
   }
+  /**
+   * Use server tree to predict input
+   * @param inputs the input data
+   * @return predict result
+   */
   def predictTree(inputs: Array[Tensor[Float]]): Array[Float] = {
     val localPredicts = inputs.map { record =>
       trees.indices.map(i =>
@@ -122,19 +114,19 @@ class FGBoostEstimator(continuous: Boolean,
       return false
     }
     // upload local tree
-    val treeLeaf = currTree.leaves.toArray
-    val treeIndexes = treeLeaf.map(_.nodeID.toInt).map(int2Integer).toList.asJava
-    val treeOutput = treeLeaf.map(_.similarScore).map(float2Float).toList.asJava
+    val treeLeaves = currTree.leaves.toArray
+    val treeIndexes = treeLeaves.map(_.nodeID.toInt).map(int2Integer).toList.asJava
+    val treeOutput = treeLeaves.map(_.similarScore).map(float2Float).toList.asJava
     flClient.fgbostStub.uploadTreeLeaf(i.toString, treeIndexes, treeOutput)
     logger.debug(s"Update tree leaves ${(System.currentTimeMillis() - st) / 1000f} s")
     st = System.currentTimeMillis()
     trees.enqueue(currTree)
     // Evaluate tree and update residual and grads (g and h)
-//    validateLast(tree.dataset)
     uploadResidual(tree.dataset)
     logger.debug(s"Upload residual of last tree ${(System.currentTimeMillis() - st) / 1000f} s")
     true
   }
+
   /**
    * Use local tree to predict, and upload residual to FLServer
    * @param data the input data to predict
@@ -149,11 +141,13 @@ class FGBoostEstimator(continuous: Boolean,
     flClient.fgbostStub.evaluate(boostEvals.asJava)
   }
 
+
   def trainRegressionTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int): Unit = {
     for (i <- 0 until totalRound) {
       logger.debug(s"Training regression tree boost round: $i")
       val grads = downloadGrad(i)
       val currTree = RegressionTree(dataSet, indices, grads, i.toString)
+      currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return
     }
@@ -167,6 +161,7 @@ class FGBoostEstimator(continuous: Boolean,
       for (gID <- 0 until nLabel) {
         if (!labelEarlyStop(gID)) {
           val currTree = RegressionTree(dataSet, indices, nGrads(gID), i.toString)
+          currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
           val continueBoosting = boostRound(i, currTree)
           if (!continueBoosting) labelEarlyStop(gID) = true
         }
@@ -240,6 +235,7 @@ class FGBoostEstimator(continuous: Boolean,
     val hess = getTensor("hess", gradTable).toArray
     Array(grad, hess)
   }
+
   def getBestSplitFromServer(split: Split): Split = {
     split.setClientID(flClient.getClientUUID)
     val dataSplit = flClient.fgbostStub.split(split.toDataSplit()).getSplit

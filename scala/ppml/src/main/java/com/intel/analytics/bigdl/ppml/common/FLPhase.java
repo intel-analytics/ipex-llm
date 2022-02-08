@@ -25,5 +25,5 @@ public enum FLPhase {
     LABEL,
     SPLIT,
     TREE_LEAF,
-    TREE_EVAL
+    RESULT
 }

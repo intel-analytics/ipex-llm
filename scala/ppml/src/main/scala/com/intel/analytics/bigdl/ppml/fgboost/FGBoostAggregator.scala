@@ -49,13 +49,17 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTensorMapStorage()
   def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
   def getTreeLeafStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAF).getLeafStorage()
-  def getBranchStorage() = aggregateTypeMap.get(FLPhase.TREE_EVAL).getBranchStorage()
-  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTensorMapStorage()
+  def getEvalStorage() = aggregateTypeMap.get(FLPhase.EVAL).getBranchStorage()
+  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getBranchStorage()
+  def getResultStorage() = aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
 
   override def initStorage(): Unit = {
     aggregateTypeMap.put(FLPhase.LABEL, new StorageHolder(FLDataType.TENSOR_MAP))
-    aggregateTypeMap.put(FLPhase.PREDICT, new StorageHolder(FLDataType.TENSOR_MAP))
+    aggregateTypeMap.put(FLPhase.RESULT, new StorageHolder(FLDataType.TENSOR_MAP))
     aggregateTypeMap.put(FLPhase.SPLIT, new StorageHolder(FLDataType.TREE_SPLIT))
+    aggregateTypeMap.put(FLPhase.TREE_LEAF, new StorageHolder(FLDataType.TREE_LEAF))
+    aggregateTypeMap.put(FLPhase.PREDICT, new StorageHolder(FLDataType.TREE_EVAL))
+    aggregateTypeMap.put(FLPhase.EVAL, new StorageHolder(FLDataType.TREE_EVAL))
   }
 
   override def aggregate(flPhase: FLPhase): Unit = {
@@ -138,27 +142,21 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   def aggEvaluate(): Unit = {
-    val aggPredict = aggregatePredict()
+    val aggPredict = aggregatePredict(FLPhase.EVAL)
     val newPredict = predictWithTree(aggPredict)
-    val predictTensor = Tensor[Float](newPredict, Array(newPredict.size))
     val targetProto = getLabelStorage().serverData
-    val targetTensor = getTensor("label", targetProto)
-//    validationResult = validationMethods.map(vMethod => {
-//      vMethod.apply(predictTensor, targetTensor)
-//    })
-
     // Compute new residual
     updateGradient(newPredict)
   }
 
   def predictWithEncoding(encoding: Array[java.lang.Boolean], treeID: Int): Float = {
     val treeLeaf = serverTreeLeaf(treeID)
-    logger.debug("Predict with encoding" + encoding.mkString("Array(", ", ", ")"))
-    logger.debug("Tree map encoding" + treeLeaf.mkString("Array(", ", ", ")"))
+//    logger.debug("Predict with encoding" + encoding.mkString("Array(", ", ", ")"))
+//    logger.debug("Tree map encoding" + treeLeaf.mkString("Array(", ", ", ")"))
     // go through the path by encoding to the leaf node
     var currIndex = 0
     while (!treeLeaf.contains(currIndex)) {
-      logger.debug("CurrIndex " + currIndex)
+//      logger.debug("CurrIndex " + currIndex)
       if (currIndex > encoding.length - 1) {
         logger.error("Exception " + currIndex)
         logger.error("encoding " + encoding.mkString("Array(", ", ", ")"))
@@ -170,7 +168,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
         currIndex = currIndex * 2 + 2
       }
     }
-    logger.debug("Reach leaf " + treeLeaf(currIndex))
+//    logger.debug("Reach leaf " + treeLeaf(currIndex))
     treeLeaf(currIndex)
   }
 
@@ -258,10 +256,14 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     }
   }
 
-  def aggregatePredict(): Array[Array[(String, Array[java.lang.Boolean])]] = {
+  def aggregatePredict(flPhase: FLPhase): Array[Array[(String, Array[java.lang.Boolean])]] = {
     // get proto and convert to scala object
     logger.info("Aggregate Predict")
-    val boostEvalBranchMap = getBranchStorage().clientData
+    val boostEvalBranchMap = flPhase match {
+      case FLPhase.EVAL => getEvalStorage().clientData
+      case FLPhase.PREDICT => getPredictStorage().clientData
+      case _ => throw new IllegalArgumentException()
+    }
     val evalResults = boostEvalBranchMap.mapValues { list =>
       list.asScala.toArray.map { be =>
         be.getEvaluatesList.asScala.toArray.map { treePredict =>
@@ -286,12 +288,12 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   def aggPredict(): Unit = {
-    val tableStorage = getPredictStorage()
-    val aggedPredict = aggregatePredict()
+    val aggedPredict = aggregatePredict(FLPhase.PREDICT)
     val newPredict = aggedPredict.zip(basePrediction).map(p =>
       // Predict value of each boosting tree
       p._1.map(x => predictWithEncoding(x._2, x._1.toInt)).sum + p._2
     )
+    val tableStorage = getResultStorage()
     val metaData = MetaData.newBuilder()
       .setName("predictResult")
       .setVersion(tableStorage.version)
