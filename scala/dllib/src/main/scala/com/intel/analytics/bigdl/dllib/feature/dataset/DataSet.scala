@@ -368,7 +368,8 @@ object DataSet {
    * @tparam T
    * @return
    */
-  def rdd[T: ClassTag](data: RDD[T], partitionNum: Int = Engine.nodeNumber()
+  def rdd[T: ClassTag](data: RDD[T], partitionNum: Int = Engine.nodeNumber(),
+    shuffleData: Boolean = false, groupSize: Int = 1
     ): DistributedDataSet[T] = {
     new CachedDistriDataSet[T](
       data.coalesce(partitionNum, true)
@@ -376,7 +377,7 @@ object DataSet {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
         .cache()
-    )
+      , shuffleData, groupSize)
   }
 
   def imageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
