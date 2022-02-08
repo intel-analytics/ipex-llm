@@ -67,7 +67,7 @@ ENV BIGDL_VERSION               ${BIGDL_VERSION}
 ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils vim curl nano wget unzip maven git
+    apt-get install -y apt-utils vim curl nano wget unzip git
 ADD ./download-bigdl.sh /opt
 
 RUN chmod a+x /opt/download-bigdl.sh && \
@@ -127,7 +127,7 @@ COPY --from=spark /sbin/tini /sbin/tini
 RUN mkdir -p /opt/bigdl-examples/python && \
     mkdir -p /opt/bigdl-examples/scala && \
     apt-get update --fix-missing && \
-    apt-get install -y apt-utils vim curl nano wget unzip maven git && \
+    apt-get install -y apt-utils vim curl nano wget unzip git && \
     apt-get install -y gcc g++ make && \
     apt-get install -y libsm6 libxext6 libxrender-dev && \
     rm /bin/sh && \
