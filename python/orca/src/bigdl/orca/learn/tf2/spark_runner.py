@@ -298,11 +298,17 @@ class SparkRunner:
 
         if callbacks:
             if checkpoint:
+                checkpoint_copied = False
                 try:
                     if self.rank == 0:
                         put_local_dir_to_remote(os.path.dirname(replaced_checkpoint_path),
                                                 original_checkpoint_dir)
-                finally:
+                        checkpoint_copied = True
+                except Exception:
+                    logger.warning("Error when copy local checkpoint {} to {}, "
+                                   "please get the local checkpoint manually"
+                                   .format(replaced_checkpoint_path, original_checkpoint_dir))
+                if checkpoint_copied:
                     shutil.rmtree(os.path.dirname(replaced_checkpoint_path))
             if replaced_log_dir and os.path.exists(replaced_log_dir):
                 shutil.rmtree(replaced_log_dir)
