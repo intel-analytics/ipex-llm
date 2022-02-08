@@ -276,10 +276,12 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
         path_parts = remote_dir.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
-        local_files = [os.path.join(x[0], x[2]) for x in os.walk(local_dir)]
+        local_files = [os.path.join(dirpath, f)
+                       for (dirpath, dirnames, filenames) in os.walk(local_dir)
+                       for f in filenames]
         for file in local_files:
-            with open(os.path.join(local_dir, file), "rb") as f:
-                s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix+'/'+file)
+            with open(file, "rb") as f:
+                s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix+'/'+file[len(local_dir)+1:])
     else:
         if remote_dir.startswith("file://"):
             remote_dir = remote_dir[len("file://"):]
