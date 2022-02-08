@@ -103,6 +103,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
     fGBoostRegression.fit(trainFeatures, trainLabels, 100)
     val fGBoostResult = fGBoostRegression.predict(testFeatures).map(tensor => tensor.value())
       .map(math.exp(_))
+    // The predict result validation
     var cnt = 0
     fGBoostResult.indices.foreach(i => {
       val diffAllow = math.min(fGBoostResult(i), xGBoostResults(i)) * 0.03
@@ -111,6 +112,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
     flServer.stop()
     val fgBoostTreeInFormat = fGBoostRegression.trees.toArray.map(
       fTree => XGBoostFormatSerializer(fTree))
+    // The tree structure validation
     XGBoostFormatValidator(fgBoostTreeInFormat, xgBoostFormatNodes)
     logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
     require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
