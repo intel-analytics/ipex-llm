@@ -63,7 +63,7 @@ def decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypt
     for csv_file in all_csv_files:
         data = csv.reader(open(csv_file,'r'))
         csvWriter = csv.writer(open(csv_file + '.col_decrypted', 'w', newline='\n'))
-        csvWriter.writerow(next(data)) # Header
+        next(data)
         for row in data:
             write_buffer = []
             for field in row:
