@@ -31,6 +31,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# mypy: ignore-errors
 import os
 
 import torch
@@ -52,7 +54,7 @@ seed_everything(7)
 
 PATH_DATASETS = os.environ.get("PATH_DATASETS", ".")
 BATCH_SIZE = 64
-NUM_WORKERS = int(os.cpu_count() / 2)
+NUM_WORKERS = 0
 
 
 train_transforms = torchvision.transforms.Compose(
@@ -146,7 +148,6 @@ class LitResnet(LightningModule):
 
 
 model = LitResnet(lr=0.05)
-model.datamodule = cifar10_dm
 
 trainer = Trainer(
     progress_bar_refresh_rate=10,
