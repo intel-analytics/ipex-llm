@@ -98,7 +98,7 @@ public class FGBoostStub {
             List<Integer> treeIndexes,
             List<Float> treeOutput
     ) {
-        TreeLeaf treeLeaves = TreeLeaf
+        TreeLeaf treeLeaf = TreeLeaf
                 .newBuilder()
                 .setTreeID(treeID)
                 .addAllLeafIndex(treeIndexes)
@@ -107,7 +107,7 @@ public class FGBoostStub {
         UploadTreeLeafRequest uploadTreeLeafRequest = UploadTreeLeafRequest
                 .newBuilder()
                 .setClientuuid(clientID)
-                .setTreeLeaf(treeLeaves)
+                .setTreeLeaf(treeLeaf)
                 .build();
         return stub.uploadTreeLeaf(uploadTreeLeafRequest);
     }
