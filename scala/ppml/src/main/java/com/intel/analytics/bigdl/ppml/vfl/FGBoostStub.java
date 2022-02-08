@@ -93,22 +93,22 @@ public class FGBoostStub {
     }
 
 
-    public UploadResponse uploadTreeLeaves(
+    public UploadResponse uploadTreeLeaf(
             String treeID,
             List<Integer> treeIndexes,
             List<Float> treeOutput
     ) {
-        TreeLeaves treeLeaves = TreeLeaves
+        TreeLeaf treeLeaf = TreeLeaf
                 .newBuilder()
                 .setTreeID(treeID)
                 .addAllLeafIndex(treeIndexes)
                 .addAllLeafOutput(treeOutput)
                 .build();
-        UploadTreeLeavesRequest uploadTreeLeavesRequest = UploadTreeLeavesRequest
+        UploadTreeLeafRequest uploadTreeLeafRequest = UploadTreeLeafRequest
                 .newBuilder()
                 .setClientuuid(clientID)
-                .setTreeLeaves(treeLeaves)
+                .setTreeLeaf(treeLeaf)
                 .build();
-        return stub.uploadTreeLeaves(uploadTreeLeavesRequest);
+        return stub.uploadTreeLeaf(uploadTreeLeafRequest);
     }
 }

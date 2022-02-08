@@ -5,6 +5,8 @@ export SGX_MEM_SIZE=64GB
 BLUE='\033[1;34m'
 NC='\033[0m'
 occlum_glibc=/opt/occlum/glibc/lib
+# occlum-node IP
+HOST_IP=`cat /etc/hosts | grep $HOSTNAME | awk '{print $1}'`
 
 init_instance() {
     # Init Occlum instance
@@ -95,7 +97,7 @@ run_spark_unittest() {
 
 run_spark_unittest_only() {
     cd /opt/occlum_spark
-    mkdir -p olog
+    mkdir -p data/olog
     echo -e "${BLUE}occlum run spark unit test only ${NC}"
     for suite in `cat /opt/sqlSuites`
     do occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g \
@@ -112,7 +114,7 @@ run_spark_unittest_only() {
 	        -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*"  \
 	        org.scalatest.tools.Runner \
 	        -s ${suite} \
-	        -fF /host/olog/${suite}.txt
+	        -fF /host/data/olog/${suite}.txt
     done
 }
 
@@ -178,15 +180,16 @@ run_spark_tpch(){
     build_spark
     echo -e "${BLUE}occlum run BigDL spark tpch${NC}"
     occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=256m \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=1024m \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx32g org.apache.spark.deploy.SparkSubmit \
+                -Xmx78g -Xms78g \
+                org.apache.spark.deploy.SparkSubmit \
                 --master 'local[4]' \
                 --conf spark.driver.port=54321 \
-                --conf spark.driver.memory=8g \
+                --conf spark.driver.memory=12g \
                 --conf spark.driver.blockManager.port=10026 \
                 --conf spark.blockManager.port=10025 \
                 --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
@@ -201,9 +204,9 @@ run_spark_tpch(){
                 --conf spark.sql.shuffle.partitions=8 \
                 --conf spark.speculation=false \
                 --conf spark.executor.heartbeatInterval=10000000 \
-                --conf spark.executor.instances=4 \
-                --executor-cores 8 \
-                --total-executor-cores 32 \
+                --conf spark.executor.instances=8 \
+                --executor-cores 2 \
+                --total-executor-cores 16 \
                 --executor-memory 8G \
                 --class main.scala.TpchQuery \
                 --verbose \

@@ -14,26 +14,21 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl
+package com.intel.analytics.bigdl.ppml.nn
 
-import java.io.{File, FileFilter}
-
-import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.{LinearRegression, LogisticRegression}
 import com.intel.analytics.bigdl.ppml.example.DebugLogger
+import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.collection.JavaConverters._
 
-
-class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
+class VflNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   "Logistic Regression" should "work" in {
     val flServer = new FLServer()
     flServer.build()
     flServer.start()
     val spark = FLContext.getSparkSession()
-    import spark.implicits._
     val df = spark.read.option("header", "true")
       .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
 

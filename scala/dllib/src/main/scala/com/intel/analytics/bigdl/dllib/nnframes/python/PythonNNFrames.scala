@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.nnframes.python
 
-import java.util.{ArrayList => JArrayList, List => JList}
+import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{Sample, Transformer}
 import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, Trigger, ValidationMethod, ValidationResult}
@@ -28,6 +28,8 @@ import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.feature.image.RowToImageFeature
+
+import scala.collection.mutable
 // import com.intel.analytics.bigdl.dllib.feature.pmem._
 import com.intel.analytics.bigdl.dllib.nnframes._
 import org.apache.spark.api.java.JavaSparkContext
@@ -233,9 +235,9 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     NNClassifierModel.load(path)
   }
 
-  def getXGBClassifier(): XGBClassifier = {
-    val model = new XGBClassifier()
-    model
+  def getXGBClassifier(xgbparamsin: JMap[String, Any]): XGBClassifier = {
+    val xgbparams = if (xgbparamsin == null) Map[String, Any]() else xgbparamsin.asScala.toMap
+    new XGBClassifier(xgbparams)
   }
 
   def setXGBClassifierNthread(model: XGBClassifier, value: Int): Unit = {
@@ -258,18 +260,54 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     model.setMissing(value)
   }
 
+  def setXGBClassifierMaxDepth(model: XGBClassifier, value: Int): Unit = {
+    model.setMaxDepth(value)
+  }
+
+  def setXGBClassifierEta(model: XGBClassifier, value: Double): Unit = {
+    model.setEta(value)
+  }
+
+  def setXGBClassifierGamma(model: XGBClassifier, value: Int): Unit = {
+    model.setGamma(value)
+  }
+
+  def setXGBClassifierTreeMethod(model: XGBClassifier, value: String): Unit = {
+    model.setTreeMethod(value)
+  }
+
+  def setXGBClassifierObjective(model: XGBClassifier, value: String): Unit = {
+    model.setObjective(value)
+  }
+
+  def setXGBClassifierNumClass(model: XGBClassifier, value: Int): Unit = {
+    model.setNumClass(value)
+  }
+
+  def setXGBClassifierFeaturesCol(model: XGBClassifier, value: String): Unit = {
+    model.setFeaturesCol(value)
+  }
+
   def loadXGBClassifierModel(path: String, numClasses: Int): XGBClassifierModel = {
     XGBClassifierModel.load(path, numClasses)
   }
 
-  def setFeaturesXGBClassifierModel(model: XGBClassifierModel,
-                                          features: JList[String]): Unit = {
-    model.setFeaturesCol(features.asScala.toArray)
+  def saveXGBClassifierModel(model: XGBClassifierModel, path: String): Unit = {
+    model.model.nativeBooster.saveModel(path)
+  }
+
+  def setFeaturesXGBClassifierModel(model: XGBClassifierModel, features: String): Unit = {
+    model.setFeaturesCol(features)
   }
 
   def setPredictionXGBClassifierModel(model: XGBClassifierModel,
                                             prediction: String): Unit = {
     model.setPredictionCol(prediction)
+  }
+
+  def setInferBatchSizeXGBClassifierModel(model: XGBClassifierModel,
+                                          batchSize: Int): Unit = {
+    model.setInferBatchSize(batchSize)
   }
 
   def transformXGBClassifierModel(model: XGBClassifierModel,

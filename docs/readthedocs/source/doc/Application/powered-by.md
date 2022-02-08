@@ -5,10 +5,15 @@
   <br>[Deploy Analytics Zoo in Aliyun EMR](https://partners-intl.aliyun.com/help/doc-detail/93155.htm)
   <br>[Better Together: Privacy-Preserving Machine Learning](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/alibaba-privacy-preserving-machine-learning.html)
 * __Baosight__
-  <br>[LSTM-Based Time Series Anomaly Detection Using Analytics Zoo for Apache Spark and BigDL at Baosight](https://software.intel.com/en-us/articles/lstm-based-time-series-anomaly-detection-using-analytics-zoo-for-apache-spark-and-bigdl)
+  <br>[LSTM-Based Time Series Anomaly Detection Using Analytics Zoo for Apache Spark and BigDL at Baosight](https://www.intel.com/content/www/us/en/developer/articles/technical/lstm-based-time-series-anomaly-detection-using-analytics-zoo-for-apache-spark-and-bigdl.html)
+* __BBVA__
+  <br>[A Graph Convolutional Network Implementation](https://emartinezs44.medium.com/graph-convolutions-networks-ad8295b3ce57)
  * __Burger King__
   <br>[Context-Aware Fast Food Recommendation at Burger King with RayOnSpark](https://medium.com/riselab/context-aware-fast-food-recommendation-at-burger-king-with-rayonspark-2e7a6009dd2d)
   <br>[How Intel and Burger King built an order recommendation system that preserves customer privacy](https://venturebeat.com/2021/04/06/how-intel-and-burger-king-built-an-order-recommendation-system-that-preserves-customer-privacy/)
+  <br>[Burger King: Context-Aware Recommendations (video)](https://www.intel.com/content/www/us/en/customer-spotlight/stories/burger-king-ai-customer-story.html)
+* __Capgemini__
+  <br>[Intelligent 5G L2 MAC Scheduler: Powered by Capgemini NetAnticipate 5G on Intel Architecture](https://networkbuilders.intel.com/solutionslibrary/intelligent-5g-l2-mac-scheduler-powered-by-capgemini-netanticipate-5g-on-intel-architecture)
 * __CERN__
  <br>[Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo)
  <br>[Topology classification at CERN's Large Hadron Collider using Analytics Zoo](https://db-blog.web.cern.ch/blog/luca-canali/machine-learning-pipelines-high-energy-physics-using-apache-spark-bigdl)
@@ -26,26 +31,28 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 * __GoldWind__
 <br>[Intel big data analysis + AI platform helps GoldWind to build a new energy intelligent power prediction solution](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/create-power-forecasting-solutions.html)
 * __Inspur__
+<br>[Inspur E2E Smart Transportation CV application](https://jason-dai.github.io/cvpr2021/slides/Inspur%20E2E%20Smart%20Transportation%20CV%20application%20-CVPR21.pdf)
 <br>[Inspur End-to-End Smart Computing Solution with Intel Analytics Zoo](https://dpgresources.intel.com/asset-library/inspur-end-to-end-smart-computing-solution-with-intel-analytics-zoo/)
 * __JD__
 <br>[Object Detection and Image Feature Extraction at JD.com](https://software.intel.com/en-us/articles/building-large-scale-image-feature-extraction-with-bigdl-at-jdcom)
 * __MasterCard__
-<br> [Deep Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://software.intel.com/en-us/articles/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service)
+<br>["AI at Scale" in Mastercard with BigDL](https://www.intel.com/content/www/us/en/developer/articles/technical/ai-at-scale-in-mastercard-with-bigdl0.html)
+<br>[Deep Learning with Analytic Zoo Optimizes Mastercard Recommender AI Service](https://www.intel.com/content/www/us/en/developer/articles/technical/deep-learning-with-analytic-zoo-optimizes-mastercard-recommender-ai-service.html)
 * __Microsoft Azure__
-<br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 1]( https://software.intel.com/en-us/use-analytics-zoo-to-inject-ai-into-customer-service-platforms-on-microsoft-azure-part-1)
+<br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 1](https://www.intel.com/content/www/us/en/developer/articles/technical/use-analytics-zoo-to-inject-ai-into-customer-service-platforms-on-microsoft-azure-part-1.html)
 <br>[Use Analytics Zoo to Inject AI Into Customer Service Platforms on Microsoft Azure: Part 2](https://www.infoq.com/articles/analytics-zoo-qa-module/?from=timeline&isappinstalled=0)
 * __Midea__
-<br>[Industrial Inspection Platform in Midea and KUKA: Using Distributed TensorFlow on Analytics Zoo](https://software.intel.com/en-us/articles/industrial-inspection-platform-in-midea-and-kuka-using-distributed-tensorflow-on-analytics) 
+<br>[Industrial Inspection Platform in Midea and KUKA: Using Distributed TensorFlow on Analytics Zoo](https://www.intel.com/content/www/us/en/developer/articles/technical/industrial-inspection-platform-in-midea-and-kuka-using-distributed-tensorflow-on-analytics.html) 
 <br>[Ability to add "eyes" and "brains" to smart manufacturing](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/midea-case-study.html) (in Chinese)
 * __MLSListings__
-<br>[Image Similarity-Based House Recommendations and Search](https://software.intel.com/content/www/us/en/develop/articles/using-bigdl-to-build-image-similarity-based-house-recommendations.html)
+<br>[Image Similarity-Based House Recommendations and Search](https://www.intel.com/content/www/us/en/developer/articles/technical/using-bigdl-to-build-image-similarity-based-house-recommendations.html)
 * __NeuSoft/BMW__
 <br>[Neusoft RealSight APM partners with Intel to create an application performance management platform with active defense capabilities](https://platform.neusoft.com/2020/01/17/xw-intel.html) (in Chinese)
 * __NeuSoft/Mazda__
 <br>[JD, Neusoft and Intel Jointly Building Intelligent and Connected Vehicle Cloud for HaiMa(former Hainan Mazda)](https://www.neusoft.com/Products/Platforms/2472/4735110231.html)
 <br>[JD, Neusoft and Intel Jointly Building Intelligent and Connected Vehicle Cloud for Hainan-Mazda](https://platform.neusoft.com/2020/06/11/jjfa-haimaqiche.html) (in Chinese)
 * __Office Depot__
-<br>[Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://software.intel.com/en-us/articles/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on)
+<br>[Real-time Product Recommendations for Office Depot Using Apache Spark and Analytics Zoo on AWS](https://www.intel.com/content/www/us/en/developer/articles/technical/real-time-product-recommendations-for-office-depot-using-apache-spark-and-analytics-zoo-on.html)
 <br>[Office Depot product recommender using Analytics Zoo on AWS](https://conferences.oreilly.com/strata/strata-ca/public/schedule/detail/73079)
 * __SK Telecom__
 <br>[White Paper: Reference Architecture for Confidential Computing on SKT 5G MEC](https://github.com/analytics-zoo/analytics-zoo.github.io/blob/master/presentations/reference-architecture-for-confidential-computing-on-skt-5g-mec-1635323587.pdf)
@@ -53,7 +60,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 <br>[Vectorized Deep Learning Acceleration from Preprocessing to Inference and Training on Apache Spark in SK Telecom](https://databricks.com/session_na20/vectorized-deep-learning-acceleration-from-preprocessing-to-inference-and-training-on-apache-spark-in-sk-telecom)
 <br>[Apache Spark AI Use Case in Telco: Network Quality Analysis and Prediction with Geospatial Visualization](https://databricks.com/session_eu19/apache-spark-ai-use-case-in-telco-network-quality-analysis-and-prediction-with-geospatial-visualization)
  * __Talroo__
-<br>[Uses Analytics Zoo and AWS to Leverage Deep Learning for Job Recommendations](https://software.intel.com/en-us/articles/talroo-uses-analytics-zoo-and-aws-to-leverage-deep-learning-for-job-recommendations)
+<br>[Uses Analytics Zoo and AWS to Leverage Deep Learning for Job Recommendations](https://www.intel.com/content/www/us/en/developer/articles/technical/talroo-uses-analytics-zoo-and-aws-to-leverage-deep-learning-for-job-recommendations.html)
 <br>[Job recommendations leveraging deep learning using Analytics Zoo on Apache Spark and BigDL](https://conferences.oreilly.com/strata/strata-ny-2018/public/schedule/detail/69113)
 * __Telefonica__
  <br>[Running Analytics Zoo jobs on Telefónica Open Cloud’s MRS Service](https://medium.com/@fernando.delaiglesia/running-analytics-zoo-jobs-on-telef%C3%B3nica-open-clouds-mrs-service-2e64bc823c50)
@@ -64,6 +71,8 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 * __UC Berkeley RISELab__
 <br>[RayOnSpark: Running Emerging AI Applications on Big Data Clusters with Ray and Analytics Zoo](https://medium.com/riselab/rayonspark-running-emerging-ai-applications-on-big-data-clusters-with-ray-and-analytics-zoo-923e0136ed6a)
 <br>[Scalable AutoML for Time Series Prediction Using Ray and Analytics Zoo](https://medium.com/riselab/scalable-automl-for-time-series-prediction-using-ray-and-analytics-zoo-b79a6fd08139)
+* __UnionPay__
+  <br>[Technical Verification of SGX and BigDL Based Privacy Computing for Multi Source Financial Big Data](https://www.intel.cn/content/www/cn/zh/now/data-centric/sgx-bigdl-financial-big-data.html) (in Chinese)
 * __World Bank__
 <br>[Using Crowdsourced Images to Create Image Recognition Models with Analytics Zoo using BigDL](https://databricks.com/session/using-crowdsourced-images-to-create-image-recognition-models-with-bigdl)
 * __Yunda__

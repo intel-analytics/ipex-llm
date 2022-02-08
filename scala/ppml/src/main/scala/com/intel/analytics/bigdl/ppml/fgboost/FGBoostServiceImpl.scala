@@ -94,14 +94,14 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
 
   }
 
-  override def uploadTreeLeaves(request: UploadTreeLeavesRequest,
+  override def uploadTreeLeaf(request: UploadTreeLeafRequest,
                                 responseObserver: StreamObserver[UploadResponse]): Unit = {
     val clientUUID = request.getClientuuid
-    val leaves = request.getTreeLeaves
+    val leaves = request.getTreeLeaf
 
     val version = -1 // version is not needed in fgboost
     try {
-      aggregator.putClientData(FLPhase.TREE_LEAVES, clientUUID, version, new DataHolder(leaves))
+      aggregator.putClientData(FLPhase.TREE_LEAF, clientUUID, version, new DataHolder(leaves))
       val response = s"Tree leaves uploaded to server at clientID: $clientUUID, version: $version"
       responseObserver.onNext(UploadResponse.newBuilder.setResponse(response).setCode(0).build)
       responseObserver.onCompleted()
