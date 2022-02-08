@@ -885,8 +885,7 @@ class TestNNClassifer():
         params = {"eta": 0.2, "max_depth":4, "max_leaf_nodes": 8, "objective": "binary:logistic",
                   "num_round": 100}
         classifier = XGBClassifier(params)
-        model = classifier.fit(df)
-        xgbmodel = XGBClassifierModel(model)
+        xgbmodel = classifier.fit(df)
         xgbmodel.setFeaturesCol("features")
         predicts = xgbmodel.transform(df)
         predicts.count()
