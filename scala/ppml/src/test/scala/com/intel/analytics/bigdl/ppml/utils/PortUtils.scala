@@ -15,6 +15,7 @@
  */
 
 package com.intel.analytics.bigdl.ppml.utils
+
 import java.io.IOException
 import java.net.{DatagramSocket, ServerSocket}
 
