@@ -382,10 +382,10 @@ class TrialStopper(Stopper):
 
     def __call__(self, trial_id, result):
         if self._metric_threshold is not None:
-            if self._mode == "max" and result[self._metric] >= self._metric_threshold:
-                return True
-            if self._mode == "min" and result[self._metric] <= self._metric_threshold:
-                return True
+            if self._mode == "max" and result[self._metric] <= self._metric_threshold:
+                return False
+            elif self._mode == "min" and result[self._metric] >= self._metric_threshold:
+                return False
         if result["training_iteration"] >= self._epochs:
             return True
         return False
