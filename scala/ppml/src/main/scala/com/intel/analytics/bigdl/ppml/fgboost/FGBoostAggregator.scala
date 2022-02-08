@@ -48,7 +48,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   // wrapper methods to simplify data access
   def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTensorMapStorage()
   def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
-  def getTreeLeaveStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAVES).getLeafStorage()
+  def getTreeLeafStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAF).getLeafStorage()
   def getBranchStorage() = aggregateTypeMap.get(FLPhase.TREE_EVAL).getBranchStorage()
   def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTensorMapStorage()
 
@@ -63,7 +63,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     flPhase match {
       case FLPhase.LABEL => initGradient()
       case FLPhase.SPLIT => aggregateSplit()
-      case FLPhase.TREE_LEAVES => aggregateTreeLeaf()
+      case FLPhase.TREE_LEAF => aggregateTreeLeaf()
       case FLPhase.EVAL => aggEvaluate()
       case FLPhase.PREDICT => aggPredict()
       case _ => throw new NotImplementedError()
@@ -193,7 +193,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
 
   def aggregateTreeLeaf(): Unit = {
     logger.info(s"Add new Tree ${serverTreeLeaf.length}")
-    val leafMap = getTreeLeaveStorage().clientData
+    val leafMap = getTreeLeafStorage().clientData
 
     val treeIndexes = leafMap.values.head.getLeafIndexList.map(Integer2int).toArray
     val treeOutputs = leafMap.values.head.getLeafOutputList.map(Float2float).toArray
