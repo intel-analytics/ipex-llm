@@ -12,7 +12,6 @@ pip install torch
 pip install torchvision
 pip install matplotlib
 
-
 # For bigdl backend:
 pip install bigdl-orca
 pip install jep==3.9.0
