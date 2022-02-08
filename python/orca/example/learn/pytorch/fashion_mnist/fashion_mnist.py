@@ -176,6 +176,8 @@ def main():
                                               optimizer=optimizer_creator,
                                               loss=criterion,
                                               metrics=[Accuracy()],
+                                              model_dir=os.getcwd(),
+                                              use_tqdm=True,
                                               backend=args.backend)
         stats = orca_estimator.fit(train_data_creator, epochs=epochs, batch_size=batch_size)
 
@@ -186,7 +188,7 @@ def main():
         print("Validation stats: {}".format(val_stats))
         orca_estimator.shutdown()
     else:
-        raise NotImplementedError("Only bigdl and torch_distributed are supported "
+        raise NotImplementedError("Only bigdl, torch_distributed, and spark are supported "
                                   "as the backend, but got {}".format(args.backend))
 
     stop_orca_context()
