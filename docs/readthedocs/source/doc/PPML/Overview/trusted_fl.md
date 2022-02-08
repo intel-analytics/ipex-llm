@@ -14,13 +14,51 @@ To ensure sensitive data are fully protected in training and inference stages, w
  * Trusted third-parity, i.e., FL Server, is protected by SGX Enclaves
  * Local Training env is protected by SGX Enclaves (recommended but not enforced)
  * Network communication and Storage (e.g., data and model) protected by encryption and Transport Layer Security (TLS)](https://en.wikipedia.org/wiki/Transport_Layer_Security)
- 
 
 ## Prerequisite
 
+Please ensure SGX is properly enabled, and SGX driver is installed. If not, please refer to the [Install SGX Driver](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html#prerequisite).
+
+### Prepare Keys & Dataset
+
+1. Generate the signing key for SGX Enclaves
+
+   Generate the enclave key using the command below, keep it safely for future remote attestations and to start SGX Enclaves more securely. It will generate a file `enclave-key.pem` in the current working directory, which will be the  enclave key. To store the key elsewhere, modify the output file path.
+
+    ```bash
+    cd scripts/
+    openssl genrsa -3 -out enclave-key.pem 3072
+    cd ..
+    ```
+
+    Then modify `ENCLAVE_KEY_PATH` in `deploy_fl_container.sh` with your path to `enclave-key.pem`.
+
+2. Prepare keys for TLS with root permission (test only, need input security password for keys). Please also install JDK/OpenJDK and set the environment path of the java path to get `keytool`.
+
+    ```bash
+    cd scripts/
+    ./generate-keys.sh
+    cd ..
+    ```
+
+    When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is "3456abcd". These passwords would be used for future remote attestations and to start SGX enclaves more securely. And This script will generate 6 files in `./ppml/scripts/keys` dir (you can replace them with your own TLS keys).
+
+    ```bash
+    keystore.jks
+    keystore.pkcs12
+    server.crt
+    server.csr
+    server.key
+    server.pem
+    ```
+
+    If run in container, please modify `KEYS_PATH` to `keys/` you generated in last step in `deploy_fl_container.sh`. This dir will mount to container's `/ppml/trusted-big-data-ml/work/keys`, then modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with container's absolute path. If not in container, just modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with your local path. If you don't want to build tls channel with certificate, just delete the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml`.
+
+3. Prepare dataset for FL training. For demo purposes, we have added a public dataset in [BigDL PPML Demo data](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/ppml/demo/data). Please download these data into your local machine. Then modify `DATA_PATH` to `./data` with absolute path in your machine and your local ip in `deploy_fl_container.sh`. The `./data` path will mlount to container's `/ppml/trusted-big-data-ml/work/data`, so if you don't run in container, you need to modify the data path in `runH_VflClient1_2.sh`.
+
 ### Prepare Docker Image
 
-
+Build Jar from BigDL source code
 
 ```bash
 cd BigDL/scala && bash make-dist.sh -DskipTests -Pspark_3.x
@@ -28,42 +66,14 @@ mv ppml/target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar 
 cd ppml/demo
 ```
 
-##### Build Image
+#### Build Image
+
 Modify your `http_proxy` in `build-image.sh` then run:
 
 ```bash
 ./build-image.sh
 ```
 
-#### **Enclave key**
-You need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
-
-It will generate a file `enclave-key.pem` in your present working directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
-
-```bash
-openssl genrsa -3 -out enclave-key.pem 3072
-```
-
-Then modify `ENCLAVE_KEY_PATH` in `deploy_fl_container.sh` with your path to `enclave-key.pem`.
-
-#### **Tls certificate**
-If you want to build tls channel with certifacate, you need to prepare the secure keys. In this tutorial, you can generate keys with root permission (test only, need input security password for keys).
-
-**Note: Must enter `localhost` in step `Common Name` for test purpose.**
-
-```bash
-sudo bash ../../../ppml/scripts/generate-keys.sh
-```
-
-If run in container, please modify `KEYS_PATH` to `keys/` you generated in last step in `deploy_fl_container.sh`. This dir will mount to container's `/ppml/trusted-big-data-ml/work/keys`, then modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with container's absolute path.
-
-If not in container, just modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with your local path.
-
-If you don't want to build tls channel with cerfiticate, just delete the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml`.
-
-Then modify `DATA_PATH` to `./data` with absolute path in your machine and your local ip in `deploy_fl_container.sh`. The `./data` path will mlount to container's `/ppml/trusted-big-data-ml/work/data`, so if you don't run in container, you need to modify the data path in `runH_VflClient1_2.sh`.
-
-#### Prepare Docker Image
 
 ### Start container
 Running this command will start a docker container and initialize the sgx environment.
