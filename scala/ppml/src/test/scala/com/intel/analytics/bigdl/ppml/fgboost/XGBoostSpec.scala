@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.ppml.fgboost
 
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer
 import com.intel.analytics.bigdl.ppml.example.DebugLogger
+import com.intel.analytics.bigdl.ppml.fgboost.common.XGBoostFormatNode
 import ml.dmlc.xgboost4j.scala.DMatrix
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
