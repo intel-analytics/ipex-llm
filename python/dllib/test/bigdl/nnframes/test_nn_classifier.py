@@ -861,7 +861,7 @@ class TestNNClassifer():
 
         model.setFeaturesCol("features")
         predict = model.transform(df)
-        predict.count()
+        assert predict.count() == 14
 
     def test_XGBClassifier_train(self):
         from sys import platform
@@ -888,7 +888,7 @@ class TestNNClassifer():
         xgbmodel = classifier.fit(df)
         xgbmodel.setFeaturesCol("features")
         predicts = xgbmodel.transform(df)
-        predicts.count()
+        assert predicts.count() == 14
 
     def test_XGBRegressor(self):
         from sys import platform
