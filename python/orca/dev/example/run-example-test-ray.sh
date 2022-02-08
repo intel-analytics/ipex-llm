@@ -131,7 +131,7 @@ else
   unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.zip
 fi
 
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --backend torch_distributed
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --backend torch_distributed --batch_size=256
 
 now=$(date "+%s")
 time11=$((now-start))
