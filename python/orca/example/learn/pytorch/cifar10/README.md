@@ -6,8 +6,8 @@ We demonstrate how to easily run synchronous distributed PyTorch training using 
 We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster:
 
 ```
-conda create -n orca python=3.7  # "orca" is conda environment name, you can use any name you like.
-conda activate orca
+conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
+conda activate bigdl
 pip install torch
 pip install torchvision
 pip install matplotlib
@@ -19,8 +19,7 @@ pip install jep==3.9.0
 pip install six cloudpickle
 
 # For torch_distributed backend:
-pip install bigdl-orca
-pip install ray[default]
+pip install bigdl-orca[ray]
 pip install tqdm  # progress bar
 
 # For spark backend
