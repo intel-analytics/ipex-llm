@@ -106,7 +106,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
     // The predict result validation
     var cnt = 0
     fGBoostResult.indices.foreach(i => {
-      val diffAllow = math.min(fGBoostResult(i), xGBoostResults(i)) * 0.03
+      val diffAllow = math.min(fGBoostResult(i), xGBoostResults(i)) * 0.05
       if (math.abs(fGBoostResult(i) - xGBoostResults(i)) < diffAllow) cnt += 1
     })
     flServer.stop()
@@ -151,7 +151,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       .map(math.exp(_))
     var cnt = 0
     fGBoostResult.indices.foreach(i => {
-      val diffAllow = math.min(fGBoostResult(i), xGBoostResults(i)) * 0.03
+      val diffAllow = math.min(fGBoostResult(i), xGBoostResults(i)) * 0.05
       if (math.abs(fGBoostResult(i) - xGBoostResults(i)) < diffAllow) cnt += 1
     })
     flServer.stop()

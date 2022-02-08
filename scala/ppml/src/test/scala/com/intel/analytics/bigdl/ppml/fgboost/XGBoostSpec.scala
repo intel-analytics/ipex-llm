@@ -24,7 +24,8 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class XGBoostSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger{
   "XGBoost Sparse Dmatrix from file" should "work" in {
-    val mat = new DMatrix(getClass.getClassLoader.getResource("xgboost-sparse.txt").getPath)
+    val mat = new DMatrix(getClass.getClassLoader
+      .getResource("xgboost/xgboost-sparse.txt").getPath)
     mat
   }
   "XGBoost model dump json single node" should "work" in {

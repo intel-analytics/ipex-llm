@@ -221,8 +221,8 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     val loss = obj.getLoss(predict, label)
 
     logger.info(s"========Loss ${loss} =======")
-    logger.debug("New Predict" + predict.mkString("Array(", ", ", ")"))
-    logger.debug("New Grad" + gradients(0).mkString("Array(", ", ", ")"))
+//    logger.debug("New Predict" + predict.mkString("Array(", ", ", ")"))
+//    logger.debug("New Grad" + gradients(0).mkString("Array(", ", ", ")"))
 
     val metaData = MetaData.newBuilder()
       .setName("xgboost_grad")
