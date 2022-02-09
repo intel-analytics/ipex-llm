@@ -257,7 +257,7 @@ class TorchRunner:
             loader = self.with_sampler(loader)
         if callbacks is not None:
             for callback in callbacks:
-                callback.set_model(self.models)
+                callback.set_trainer(self)
                 callback.on_train_begin()
         stats_list = list()
         for i in range(epochs):
