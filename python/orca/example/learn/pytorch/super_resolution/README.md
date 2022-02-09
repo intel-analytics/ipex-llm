@@ -79,31 +79,20 @@ python super_resolution.py --backend spark
 
 You can find the result for training as follows:
 ```
-22-02-08 16:53:41 INFO  DistriOptimizer$:430 - [Epoch 1 256/256][Iteration 4][Wall Clock 24.509990412s] Trained 64.0 records in 0.843214699 seconds. Throughput is 75.90001 records/second. Loss is 0.1878621.
+2021-03-31 18:02:23 INFO  DistriOptimizer$:427 - [Epoch 1 64/256][Iteration 1][Wall Clock 3.255740525s] Trained 64.0 records in 3.255740525 seconds. Throughput is 19.657585 records/second. Loss is 0.44492772.
 ```
 You can find the result for validation as follows:
 ```
-22-02-08 16:54:11 INFO  DistriOptimizer$:1512 - MSE is (Loss: 0.094448544, count: 2, Average Loss: 0.047224272)
-===> Validation Complete: Avg. PSNR: 13.2583 dB, Avg. Loss: 0.0472
+2021-03-31 18:02:45 INFO  DistriOptimizer$:1759 - MSE is (Loss: 0.1174012, count: 2, Average Loss: 0.0587006)
+===> Validation Complete: Avg. PSNR: 12.3136 dB, Avg. Loss: 0.0587
 ```
 
-**For "torch_distributed" backend**
+**For "torch_distributed" and "spark" backend**
 You can find the result for training as follows:
 ```
-===> Epoch 2 Complete: Avg. Loss: 0.1025
+===> Epoch 1 Complete: Avg. Loss: 9.2172
 ```
 You can find the result for validation as follows:
 ```
-===> Validation Complete: Avg. PSNR: 12.8203 dB, Avg. Loss: 0.0522
-```
-
-**For "spark" backend**
-
-You can find the result for training as follows:
-```
-===> Epoch 2 Complete: Avg. Loss: 0.1025
-```
-You can find the result for validation as follows:
-```
-===> Validation Complete: Avg. PSNR: 12.8203 dB, Avg. Loss: 0.0522
+===> Validation Complete: Avg. PSNR: 11.8249 dB, Avg. Loss: 0.0657
 ```
