@@ -16,8 +16,11 @@
 
 import os
 import subprocess
+import logging
 
 from bigdl.dllib.utils.file_utils import callZooFunc
+
+logger = logging.getLogger(__name__)
 
 
 def open_text(path):
@@ -255,14 +258,20 @@ def put_local_dir_to_remote(local_dir, remote_dir):
 
 def put_local_dir_tree_to_remote(local_dir, remote_dir):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        FNULL = open(os.devnull, 'w')
         test_cmd = 'hdfs dfs -ls {}'.format(remote_dir)
-        process = subprocess.Popen(test_cmd, shell=True, stdout=FNULL, stderr=FNULL)
-        process.wait()
+        process = subprocess.Popen(test_cmd, shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        out, err = process.communicate()
         if process.returncode != 0:
-            mkdir_cmd = 'hdfs dfs -mkdir {}'.format(remote_dir)
-            process = subprocess.Popen(mkdir_cmd, shell=True, stdout=FNULL, stderr=FNULL)
-            process.wait()
+            if 'No such file or direcory' in err.decode('utf-8'):
+                mkdir_cmd = 'hdfs dfs -mkdir {}'.format(remote_dir)
+                mkdir_process = subprocess.Popen(mkdir_cmd, shell=True)
+                mkdir_process.wait()
+            else:
+                # ls remote dir error
+                logger.warning(err.decode('utf-8'))
+                return
         cmd = 'hdfs dfs -put -f {}/* {}/'.format(local_dir, remote_dir)
         process = subprocess.Popen(cmd, shell=True)
         process.wait()
