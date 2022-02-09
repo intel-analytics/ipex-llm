@@ -73,13 +73,13 @@ The default backend is `bigdl`. You can also run with `torch_distributed` or `sp
 You can find the logs for training as follows:
 
 ```
-22-02-08 16:21:13 INFO  DistriOptimizer$:430 - [Epoch 1 55600/60000][Iteration 13900][Wall Clock 454.145287871s] Trained 4.0 records in 0.019744969 seconds. Throughput is 202.58324 records/second. Loss is 0.9015253.
+2021-03-24 14:33:36 INFO  DistriOptimizer$:427 - [Epoch 4 52876/60000][Iteration 58219][Wall Clock 1230.685682812s] Trained 4.0 records in 0.016452279 seconds. Throughput is 243.12741 records/second. Loss is 0.0136261955.
 ```
 
 Final test results will be printed at the end:
 
 ```
-Accuracy of the network on the test images: {'Top1Accuracy': 0.8704000115394592}
+2021-03-24 14:39:43 INFO  DistriOptimizer$:1759 - Top1Accuracy is Accuracy(correct: 8851, count: 10000, accuracy: 0.8851)
 ```
 
 **For "torch_distributed" and "spark" backend**
@@ -87,13 +87,7 @@ Accuracy of the network on the test images: {'Top1Accuracy': 0.8704000115394592}
 You can find the results of training and validation as follows:
 
 ```
-# torch_distributed backend
-Train stats: [{'num_samples': 60000, 'epoch': 1, 'batch_count': 938, 'train_loss': 1.7453054378827413, 'last_train_loss': 0.5022475123405457}, {'num_samples': 60000, 'epoch': 2, 'batch_count': 938, 'train_loss': 0.7086501805464427, 'last_train_loss': 0.32789549231529236}]
+Train stats: [{'num_samples': 60000, 'epoch': 1, 'batch_count': 15000, 'train_loss': 0.6387080065780457, 'last_train_loss': 0.17801283299922943}, {'num_samples': 60000, 'epoch': 2, 'batch_count': 15000, 'train_loss': 0.372230169281755, 'last_train_loss': 0.19179978966712952}, {'num_samples': 60000, 'epoch': 3, 'batch_count': 15000, 'train_loss': 0.32247564417196833, 'last_train_loss': 0.30726122856140137}, {'num_samples': 60000, 'epoch': 4, 'batch_count': 15000, 'train_loss': 0.2959285915141232, 'last_train_loss': 0.2786743640899658}, {'num_samples': 60000, 'epoch': 5, 'batch_count': 15000, 'train_loss': 0.27712880933261197, 'last_train_loss': 0.2697388529777527}]
 
-Validation stats: {'num_samples': 10000, 'Accuracy': tensor(0.7557), 'val_loss': 0.6404335161209106}
-
-# spark backend
-Train stats: [{'num_samples': 60000, 'epoch': 1, 'batch_count': 938, 'train_loss': 1.6330145305315653, 'last_train_loss': 0.5567581057548523}, {'num_samples': 60000, 'epoch': 2, 'batch_count': 938, 'train_loss': 0.7078083839098612, 'last_train_loss': 0.31840038299560547}]
-
-Validation stats: {'num_samples': 10000, 'Accuracy': tensor(0.7633), 'val_loss': 0.630250259399414}
+Validation stats: {'num_samples': 10000, 'Accuracy': tensor(0.8788), 'val_loss': 0.34675604103680596}
 ```
