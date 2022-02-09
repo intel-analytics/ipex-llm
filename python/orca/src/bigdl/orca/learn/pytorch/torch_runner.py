@@ -397,28 +397,77 @@ class TorchRunner:
         """Sets the state of the model."""
         for model, state_dict in zip(self.models, state["models"]):
             model.load_state_dict(state_dict)
-        for optimizer, state_dict in zip(self.optimizers, state["optimizers"]):
-            optimizer.load_state_dict(state_dict)
-        if self.schedulers:
+        if "optimizers" in state:
+            for optimizer, state_dict in zip(self.optimizers, state["optimizers"]):
+                optimizer.load_state_dict(state_dict)
+        if self.schedulers and "schedulers" in state:
             for scheduler, state_dict in zip(self.schedulers,
                                              state["schedulers"]):
                 scheduler.load_state_dict(state_dict)
 
         self.epochs = state["epoch"]
-        self.training_operator.load_state_dict(state["operator"])
+        if "operator" in state:
+            self.training_operator.load_state_dict(state["operator"])
 
-    def get_state_stream(self):
-        """Returns a bytes object for the state dict."""
-        state_dict = self.get_state_dict()
+    @staticmethod
+    def _state_dict2stream(state_dict):
         _buffer = io.BytesIO()
         torch.save(state_dict, _buffer)
         return _buffer.getvalue()
 
-    def load_state_stream(self, byte_obj):
-        """Loads a bytes object the training state dict."""
+    @staticmethod
+    def _state_stream2dict(byte_obj):
         _buffer = io.BytesIO(byte_obj)
         state_dict = torch.load(_buffer)
+        return state_dict
+
+    def get_state_stream(self):
+        """Returns a bytes object for the state dict."""
+        state_dict = self.get_state_dict()
+        state_stream = TorchRunner._state_dict2stream(state_dict)
+        return state_stream
+
+    def load_state_stream(self, byte_obj):
+        """Loads a bytes object the training state dict."""
+        state_dict = TorchRunner._state_stream2dict(byte_obj)
         return self.load_state_dict(state_dict)
+
+    def save_checkpoint(self, filepath, save_weights_only=False):
+        if self.rank == 0:
+            self._save_checkpoint(filepath, save_weights_only)
+
+    def _save_checkpoint(self, filepath, save_weights_only=False):
+        import fsspec
+        if save_weights_only:
+            checkpoint = {
+                "epoch": self.epochs,
+                "models": [model.state_dict() for model in self.models],
+            }
+        else:
+            checkpoint = self.get_state_dict()
+        byte_obj = TorchRunner._state_dict2stream(checkpoint)
+        with fsspec.open(filepath, "wb") as f:
+            f.write(byte_obj)
+
+    def load_checkpoint(self, filepath):
+        from utils import get_filesystem
+        fs = get_filesystem(filepath)
+        if not fs.exists(filepath):
+            raise FileNotFoundError(f"Checkpoint at {filepath} not found. Aborting training.")
+        with fs.open(filepath, "rb") as f:
+            state_dict = torch.load(f)
+        self.load_state_dict(state_dict)
+
+    def remove_checkpoint(self, filepath):
+        if self.rank == 0:
+            self._remove_checkpoint(filepath)
+
+    def _remove_checkpoint(self, filepath):
+        from utils import get_filesystem
+        fs = get_filesystem(filepath)
+        if fs.exists(filepath):
+            fs.rm(filepath, recursive=True)
+            self.logger.debug(f"Removed checkpoint: {filepath}")
 
     def apply(self, fn):
         return fn()
