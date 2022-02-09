@@ -33,6 +33,8 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
 
+import tempfile
+import shutil
 
 np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(
@@ -483,6 +485,31 @@ class TestPyTorchEstimator(TestCase):
     # def inject_fixtures(self, capsys):
     #     self._capsys = capsys
 
+    def test_checkpoint_callback(self):
+        from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+            callbacks = [
+                ModelCheckpoint(filepath=os.path.join(temp_dir, "test-{epoch}"),
+                                save_weights_only=True)
+            ]
+            estimator.fit(df, batch_size=4, epochs=2,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"])
+            estimator.evaluate(df, batch_size=4,
+                               feature_cols=["feature"],
+                               label_cols=["label"])
+        finally:
+            shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
     pytest.main([__file__])

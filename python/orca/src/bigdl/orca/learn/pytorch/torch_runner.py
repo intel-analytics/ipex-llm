@@ -435,6 +435,7 @@ class TorchRunner:
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
             self._save_checkpoint(filepath, save_weights_only)
+            self.logger.debug(f"Saved checkpoint: {filepath}")
 
     def _save_checkpoint(self, filepath, save_weights_only=False):
         import fsspec
