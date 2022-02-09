@@ -365,11 +365,13 @@ object DataSet {
    * Wrap a RDD as a DataSet.
    * @param data
    * @param partitionNum repartition data rdd to partition number, default node number.
+   * @param shuffleData whether shuffle the data, default true.
+   * @param groupSize offset range, only use when shuffleData is false
    * @tparam T
    * @return
    */
   def rdd[T: ClassTag](data: RDD[T], partitionNum: Int = Engine.nodeNumber(),
-    shuffleData: Boolean = false, groupSize: Int = 1
+    shuffleData: Boolean = true, groupSize: Int = 1
     ): DistributedDataSet[T] = {
     new CachedDistriDataSet[T](
       data.coalesce(partitionNum, true)
@@ -377,7 +379,7 @@ object DataSet {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
         .cache()
-      , shuffleData, groupSize)
+      , !shuffleData, groupSize)
   }
 
   def imageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
