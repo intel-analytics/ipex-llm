@@ -264,7 +264,7 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
                                    stderr=subprocess.PIPE)
         out, err = process.communicate()
         if process.returncode != 0:
-            if 'No such file or direcory' in err.decode('utf-8'):
+            if 'No such file or directory' in err.decode('utf-8'):
                 mkdir_cmd = 'hdfs dfs -mkdir {}'.format(remote_dir)
                 mkdir_process = subprocess.Popen(mkdir_cmd, shell=True)
                 mkdir_process.wait()
