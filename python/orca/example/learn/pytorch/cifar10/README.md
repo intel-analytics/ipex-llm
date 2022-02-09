@@ -66,7 +66,7 @@ You can find the logs for training as follows:
 
 Final test results will be printed at the end:
 ```
-Accuracy of the network on the test images: {'Top1Accuracy': 0.5515000224113464}
+Accuracy of the network on the 10000 test images: 0.541100025177002 
 ```
 
 **For "torch_distributed" and "spark" backend**
@@ -74,6 +74,6 @@ Accuracy of the network on the test images: {'Top1Accuracy': 0.5515000224113464}
 Final test results will be printed at the end:
 ```
 num_samples : 10000
-Accuracy : tensor(0.5526)
-val_loss : 1.2584745523452758
+Accuracy : tensor(0.5378)
+val_loss : 1.3078322240829467
 ```
