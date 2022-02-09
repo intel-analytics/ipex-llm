@@ -74,8 +74,13 @@ class ModelCheckpoint(Callback):
         dirname = os.path.dirname(self.filepath)
         fs = get_filesystem(dirname)
         if fs.exists(dirname):
+            files = [os.path.basename(f["name"]) for f in fs.listdir(dirname)]
+            files = [x for x in files if "ckpt" in x]
+            if len(files) == 0:
+                return None
             raise ValueError(f"Find non-empty dirname with filepath of {self.filepath}.")
-        fs.mkdirs(dirname)
+        else:
+            fs.mkdirs(dirname)
 
     def on_train_end(self):
         """
@@ -108,7 +113,7 @@ class ModelCheckpoint(Callback):
             for group in groups:
                 name = group[1:]
 
-                if name != "epoch":
+                if "epoch" not in name:
                     warnings.warn("We only support filepath with {epoch} for now.")
 
                 filename = filename.replace(group, name + "={" + name)
