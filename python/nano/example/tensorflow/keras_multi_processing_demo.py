@@ -56,6 +56,9 @@ def distributed_train_keras(model, train_dataset, num_instances, epochs, fit_kwa
     graph_def = serialize_dataset_to_graph(train_dataset)
     graph_def = graph_def.numpy()
     elem_spec = train_dataset.element_spec
+
+    # this is to work around a tensorflow problem: if we save before calling fit, the saved format is incorrect
+    # dummy_batch is a batch of input with batch size equal to 0, so that the model.fit does not take any effect
     dummy_batch = _dummy_tensor_fn(elem_spec)
     model.fit(tf.data.Dataset.from_tensors(dummy_batch))
     
