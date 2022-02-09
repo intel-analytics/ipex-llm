@@ -3,6 +3,8 @@
 
 from __future__ import print_function
 from UNET import UNet
+from dataset import *
+
 import os
 from os.path import exists
 from os import makedirs
@@ -14,8 +16,8 @@ import random
 import cv2
 from PIL import Image
 import pandas as pd
-from dataset import dataset
-from dataset import BrainDataset
+from sklearn.model_selection import train_test_split
+
 
 import torch
 import torchvision
@@ -36,6 +38,19 @@ from bigdl.orca.learn.trigger import EveryEpoch
 
 import albumentations as A
 
+def dataset():
+    ROOT_PATH = '/home/mingxuan/BigDL/python/orca/example/learn/pytorch/brainMRI/data/kaggle_3m/'
+    mask_files = glob.glob(ROOT_PATH + '*/*_mask*')
+    image_files = [file.replace('_mask', '') for file in mask_files]
+    files_df = pd.DataFrame({"image_path": image_files,
+                    "mask_path": mask_files,
+                    "diagnosis": [diagnosis(x) for x in mask_files]})
+
+    train_df, test_df = train_test_split(files_df, stratify=files_df['diagnosis'], test_size=0.15, random_state=0)
+    train_df = train_df.reset_index(drop=True)
+    test_df = test_df.reset_index(drop=True)
+
+    return train_df, test_df
 
 train_df, test_df = dataset()
 
