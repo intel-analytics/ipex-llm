@@ -26,7 +26,8 @@ from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.data.file import put_local_dir_to_remote
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
-    get_specific_object_from_callbacks, get_replaced_path, get_rank
+    get_specific_object_from_callbacks, get_replaced_path, get_rank, \
+    process_tensorboard_in_callbacks
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
@@ -274,7 +275,6 @@ class SparkRunner:
                                        config=config, epochs=epochs,
                                        steps_per_epoch=steps_per_epoch,
                                        validation_steps=validation_steps)
-        checkpoint = None
         if callbacks:
             checkpoint = get_specific_object_from_callbacks(tf.keras.callbacks.ModelCheckpoint,
                                                             callbacks)
@@ -282,6 +282,8 @@ class SparkRunner:
                 original_checkpoint_dir = os.path.dirname(checkpoint.filepath)
                 replaced_checkpoint_path = get_replaced_path(checkpoint.filepath)
                 checkpoint.filepath = replaced_checkpoint_path
+
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
 
         history = model.fit(train_dataset,
                             epochs=epochs,
@@ -294,14 +296,22 @@ class SparkRunner:
                             validation_steps=validation_steps,
                             validation_freq=validation_freq)
 
-        if checkpoint:
-            try:
-                if self.rank == 0:
-                    put_local_dir_to_remote(os.path.dirname(replaced_checkpoint_path),
-                                            original_checkpoint_dir)
-            finally:
-                shutil.rmtree(os.path.dirname(replaced_checkpoint_path))
-
+        if callbacks:
+            if checkpoint:
+                checkpoint_copied = False
+                try:
+                    if self.rank == 0:
+                        put_local_dir_to_remote(os.path.dirname(replaced_checkpoint_path),
+                                                original_checkpoint_dir)
+                        checkpoint_copied = True
+                except Exception:
+                    logger.warning("Error when copy local checkpoint {} to {}, "
+                                   "please get the local checkpoint manually"
+                                   .format(replaced_checkpoint_path, original_checkpoint_dir))
+                if checkpoint_copied:
+                    shutil.rmtree(os.path.dirname(replaced_checkpoint_path))
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
         return (model, history)
 
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
@@ -374,6 +384,8 @@ class SparkRunner:
             dataset = dataset_handler.handle_dataset_validation(data_creator,
                                                                 config=config,
                                                                 steps=steps)
+        if callbacks:
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "evaluate", self.rank)
 
         params = dict(
             verbose=verbose,
@@ -396,6 +408,11 @@ class SparkRunner:
             }
         else:
             stats = {"results": results}
+
+        # clean temporary dir for tensorboard
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
 
         if self.rank == 0:
             if self.need_to_log_to_driver:
