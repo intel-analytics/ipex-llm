@@ -1,8 +1,8 @@
 # Trusted FL (Federated Learning)
 
-Federated Learning is a new tool in PPML (Privacy Preserving Machine Learning), which empowers multi-parities to build united model across different parties without compromising privacy, even if these parities have different datasets or features. In FL training stage, sensitive data will be kept locally, only temp gradients or weights will be safely aggregated by a trusted third-parity. In our design, this trusted third-parity is fully protected by Intel SGX.
+[Federated Learning](https://en.wikipedia.org/wiki/Federated_learning) is a new tool in PPML (Privacy Preserving Machine Learning), which empowers multi-parities to build united model across different parties without compromising privacy, even if these parities have different datasets or features. In FL training stage, sensitive data will be kept locally, only temp gradients or weights will be safely aggregated by a trusted third-parity. In our design, this trusted third-parity is fully protected by Intel SGX.
 
-A number of FL tools or frameworks have been proposed to enable FL in different areas, i.e., OpenFL, FATE, Flower and PySyft etc. However, none of them is designed for Big Data scenario. To enable FL in big data ecosystem, BigDL PPML provides a SGX-based End-to-end Trusted FL platform. With this platform, data scientist and developers can easily setup FL applications upon distributed large scale datasets with a few clicks. To achieve this goal, we provides following features:
+A number of FL tools or frameworks have been proposed to enable FL in different areas, i.e., OpenFL, TensorFlow Federated, FATE, Flower and PySyft etc. However, none of them is designed for Big Data scenario. To enable FL in big data ecosystem, BigDL PPML provides a SGX-based End-to-end Trusted FL platform. With this platform, data scientist and developers can easily setup FL applications upon distributed large scale datasets with a few clicks. To achieve this goal, we provides following features:
 
  * ID & feature align: figure out portions of local data that will participate in training stage
  * Horizontal FL: training across multi-parties with same features and different entities
@@ -12,8 +12,10 @@ To ensure sensitive data are fully protected in training and inference stages, w
 
  * Sensitive data and weights are kept local, only temp gradients or weights will be safely aggregated by a trusted third-parity
  * Trusted third-parity, i.e., FL Server, is protected by SGX Enclaves
- * Local Training env is protected by SGX Enclaves (recommended but not enforced)
+ * Local training environment is protected by SGX Enclaves (recommended but not enforced)
  * Network communication and Storage (e.g., data and model) protected by encryption and Transport Layer Security (TLS)](https://en.wikipedia.org/wiki/Transport_Layer_Security)
+
+That is, even when the program runs in an untrusted cloud environment, all the data and models are protected (e.g., using encryption) on disk and network, and the compute and memory are also protected using SGX Enclaves.
 
 ## Prerequisite
 
@@ -58,7 +60,13 @@ Please ensure SGX is properly enabled, and SGX driver is installed. If not, plea
 
 ### Prepare Docker Image
 
-Build Jar from BigDL source code
+Pull image from Dockerhub
+
+```bash
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-fl-scala-graphene:0.14.0-SNAPSHOT
+```
+
+If Dockerhub is not accessable, you can build docker image from BigDL source code
 
 ```bash
 cd BigDL/scala && bash make-dist.sh -DskipTests -Pspark_3.x
@@ -66,16 +74,14 @@ mv ppml/target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar 
 cd ppml/demo
 ```
 
-#### Build Image
-
 Modify your `http_proxy` in `build-image.sh` then run:
 
 ```bash
 ./build-image.sh
 ```
 
+## Start FLServer
 
-### Start container
 Running this command will start a docker container and initialize the sgx environment.
 
 ```bash
@@ -84,7 +90,6 @@ sudo docker exec -it flDemo bash
 ./init.sh
 ```
 
-### Start FLServer
 In container, run:
 
 ```bash
@@ -93,14 +98,7 @@ In container, run:
 
 The fl-server will start and listen on 8980 port. Both horizontal fl-demo and vertical fl-demo need two clients. You can change the listening port and client number by editing `BigDL/scala/ppml/demo/ppml-conf.yaml`'s `serverPort` and `clientNum`.  
 
-
-
-## ID & Feature align
-
-Before we start Federated Learning, we need to align ID & Feature, and figure out portions of local data that will participate in later training stage. In horizontal FL, feature align is required to ensure each party is training on the same features. In vertical FL, both ID and feature align are required to ensure each party training on different features of the same record.
-
-Let RID1 and RID2 be randomized ID from party 1 and party 2.
-
+Note that we skip ID & Feature for simplify demo. In practice, before we start Federated Learning, we need to align ID & Feature, and figure out portions of local data that will participate in later training stage. In horizontal FL, feature align is required to ensure each party is training on the same features. In vertical FL, both ID and feature align are required to ensure each party training on different features of the same record.
 
 ## HFL Logistic Regression
 
@@ -125,6 +123,7 @@ in another terminal run:
 Then we start two horizontal fl-clients to cooperate in training a model.
 
 ## VFL Logistic Regression
+
 Open two new windows, run:
 
 ```bash
@@ -149,3 +148,8 @@ Then we start two vertical fl-clients to cooperate in training a model.
 
 1. [Intel SGX](https://software.intel.com/content/www/us/en/develop/topics/software-guard-extensions.html)
 2. Qiang Yang, Yang Liu, Tianjian Chen, and Yongxin Tong. 2019. Federated Machine Learning: Concept and Applications. ACM Trans. Intell. Syst. Technol. 10, 2, Article 12 (February 2019), 19 pages. DOI:https://doi.org/10.1145/3298981
+3. [Federated Learning](https://en.wikipedia.org/wiki/Federated_learning)
+4. [TensorFlow Federated](https://www.tensorflow.org/federated)
+5. [FATE](https://github.com/FederatedAI/FATE)
+6. [PySyft](https://github.com/OpenMined/PySyft)
+7. [Federated XGBoost](https://github.com/mc2-project/federated-xgboost)
