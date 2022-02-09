@@ -31,7 +31,7 @@ ARG DEBIAN_FRONTEND
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
 RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils vim curl nano wget unzip maven git && \
+    apt-get install -y apt-utils vim curl nano wget unzip git && \
 # java
     wget $JDK_URL && \
     gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
@@ -44,7 +44,16 @@ RUN apt-get update --fix-missing && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
-    cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt
+    cp /opt/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
+    # remove log4j 1.x jars
+    rm -f ${SPARK_HOME}/jars/log4j-1.2.17.jar && \
+    rm -f ${SPARK_HOME}/jars/slf4j-log4j12-1.7.16.jar && \
+    rm -f ${SPARK_HOME}/jars/apache-log4j-extras-1.2.17.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 
 RUN ln -fs /bin/bash /bin/sh
 RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
@@ -65,7 +74,7 @@ ENV BIGDL_VERSION               ${BIGDL_VERSION}
 ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils vim curl nano wget unzip maven git
+    apt-get install -y apt-utils vim curl nano wget unzip  git
 ADD ./download-bigdl.sh /opt
 
 RUN chmod a+x /opt/download-bigdl.sh && \
@@ -109,7 +118,7 @@ ADD ./install-python-env.sh /opt
 RUN chmod a+x /opt/install-python-env.sh
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils vim curl nano wget unzip maven git && \
+    apt-get install -y apt-utils vim curl nano wget unzip git && \
     apt-get install -y gcc g++ make && \
     apt-get install -y libsm6 libxext6 libxrender-dev && \
     rm /bin/sh && \
