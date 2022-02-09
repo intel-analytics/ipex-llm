@@ -46,7 +46,7 @@ python super_resolution.py --cluster_mode local
 python super_resolution.py --cluster_mode yarn
 ```
 
-You can run this example with bigdl backend (default) or torch_distributed backend. 
+You can run this example with bigdl backend (default), torch_distributed backend, or spark backend. 
 
 - Run with bigdl backend:
 ```bash
@@ -88,6 +88,7 @@ You can find the result for validation as follows:
 ```
 
 **For "torch_distributed" and "spark" backend**
+
 You can find the result for training as follows:
 ```
 ===> Epoch 1 Complete: Avg. Loss: 9.2172
