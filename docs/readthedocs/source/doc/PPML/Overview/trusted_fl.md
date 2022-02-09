@@ -56,7 +56,7 @@ Please ensure SGX is properly enabled, and SGX driver is installed. If not, plea
 
     If run in container, please modify `KEYS_PATH` to `keys/` you generated in last step in `deploy_fl_container.sh`. This dir will mount to container's `/ppml/trusted-big-data-ml/work/keys`, then modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with container's absolute path. If not in container, just modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with your local path. If you don't want to build tls channel with certificate, just delete the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml`.
 
-3. Prepare dataset for FL training. For demo purposes, we have added a public dataset in [BigDL PPML Demo data](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/ppml/demo/data). Please download these data into your local machine. Then modify `DATA_PATH` to `./data` with absolute path in your machine and your local ip in `deploy_fl_container.sh`. The `./data` path will mlount to container's `/ppml/trusted-big-data-ml/work/data`, so if you don't run in container, you need to modify the data path in `runH_VflClient1_2.sh`.
+3. Prepare dataset for FL training. For demo purposes, we have added a public dataset in [BigDL PPML Demo data](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/ppml/demo/data). Please download these data into your local machine. Then modify `DATA_PATH` to `./data` with absolute path in your machine and your local ip in `deploy_fl_container.sh`. The `./data` path will mount to container's `/ppml/trusted-big-data-ml/work/data`, so if you don't run in container, you need to modify the data path in `runH_VflClient1_2.sh`.
 
 ### Prepare Docker Image
 
@@ -66,7 +66,7 @@ Pull image from Dockerhub
 docker pull intelanalytics/bigdl-ppml-trusted-big-data-fl-scala-graphene:0.14.0-SNAPSHOT
 ```
 
-If Dockerhub is not accessable, you can build docker image from BigDL source code
+If Dockerhub is not accessible, you can build docker image from BigDL source code
 
 ```bash
 cd BigDL/scala && bash make-dist.sh -DskipTests -Pspark_3.x
@@ -82,7 +82,9 @@ Modify your `http_proxy` in `build-image.sh` then run:
 
 ## Start FLServer
 
-Running this command will start a docker container and initialize the sgx environment.
+Before starting any local training client or worker, we need to start a Trusted third-parity, i.e., FL Server, for secure aggregation. In current design, this FL Server is running in SGX with help of Graphene or Occlum. Local workers/Clients can verify its integrity with SGX Remote Attestation.
+
+Running this command will start a docker container and initialize the SGX environment.
 
 ```bash
 bash deploy_fl_container.sh
@@ -124,7 +126,7 @@ Then we start two horizontal fl-clients to cooperate in training a model.
 
 ## VFL Logistic Regression
 
-Open two new windows, run:
+Open two new terminals, run:
 
 ```bash
 sudo docker exec -it flDemo bash
