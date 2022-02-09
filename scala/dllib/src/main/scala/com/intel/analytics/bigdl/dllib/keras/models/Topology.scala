@@ -316,7 +316,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   private def toDataSet(x: RDD[Sample[T]], batchSize: Int,
     featurePaddingParam: PaddingParam[T] = null,
     labelPaddingParam: PaddingParam[T] = null,
-    shuffleData: Boolean = false,
+    shuffleData: Boolean = true,
     groupSize: Int = 1): DataSet[MiniBatch[T]] = {
     val _featurePaddingParam = if (featurePaddingParam != null) {
       Some(featurePaddingParam)
@@ -441,7 +441,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
            validationData: RDD[Sample[T]] = null,
            featurePaddingParam: PaddingParam[T] = null,
            labelPaddingParam: PaddingParam[T] = null,
-           shuffleData: Boolean = false,
+           shuffleData: Boolean = true,
            groupSize: Int = 1)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
     val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam,
