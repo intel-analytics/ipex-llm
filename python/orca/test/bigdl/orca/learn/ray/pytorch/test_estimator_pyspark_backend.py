@@ -420,7 +420,9 @@ class TestPyTorchEstimator(TestCase):
                            label_cols=["label"])
         for i in range(epochs):
             assert os.path.isfile(os.path.join(self.model_dir, f"test-epoch={i + 1}.ckpt"))
-        assert os.path.isfile(os.path.join(self.model_dir, f"last.ckpt"))
+
+        latest_checkpoint_path = Estimator.latest_checkpoint(self.model_dir)
+        assert os.path.isfile(latest_checkpoint_path)
 
 
 if __name__ == "__main__":

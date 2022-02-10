@@ -3,6 +3,8 @@ import os
 import re
 import warnings
 
+from bigdl.orca.learn.pytorch.utils import get_filesystem
+
 
 class ModelCheckpoint(Callback):
 
@@ -81,7 +83,6 @@ class ModelCheckpoint(Callback):
           but that may change in the future.
         """
         # todo: support resume training
-        from bigdl.orca.learn.pytorch.utils import get_filesystem
         dirname = os.path.dirname(self.filepath)
         fs = get_filesystem(dirname)
         if fs.exists(dirname):
@@ -112,6 +113,19 @@ class ModelCheckpoint(Callback):
 
     def set_param(self, param):
         self.params = param
+
+    @classmethod
+    def get_latest_checkpoint(cls, dirname):
+        """
+        Finds the filepath of latest saved checkpoint file.
+        :param dirname: directory where the checkpoints were saved
+        return: The full path to the latest checkpoint or `None` if no checkpoint was found.
+        """
+        ckpt_path = cls._format_checkpoint_name(dirname, filename=cls.CHECKPOINT_NAME_LAST)
+        fs = get_filesystem(ckpt_path)
+        if not fs.exists(ckpt_path):
+            raise FileNotFoundError(f"Latest checkpoint at {ckpt_path} not found.")
+        return ckpt_path
 
     @classmethod
     def _format_checkpoint_name(cls, dirname, filename, stats=None):
