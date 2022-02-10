@@ -106,7 +106,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     // use scala tracker
     val xgbParam = Map("tracker_conf" -> TrackerConf(0L, "scala"),
-      "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2),
+      "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2)
     )
 
     val xgbClassifier = new XGBClassifier(xgbParam)
