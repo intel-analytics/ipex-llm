@@ -28,7 +28,7 @@ secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/k
   --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
   --conf spark.ssl.trustStorePassword=$secure_password \
   --conf spark.ssl.trustStoreType=JKS \
-  --class com.intel.analytics.bigdl.ppml.e2e.examples.SimpleEncryptIOV2 \
+  --class com.intel.analytics.bigdl.ppml.e2e.examples.SimpleEncryptIO \
   $SPARK_DECRYPT_JAR_PATH \
   $INPUT_PATH \
   $KMS_SERVER_IP \
