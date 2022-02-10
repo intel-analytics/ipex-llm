@@ -99,26 +99,39 @@ You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.cri
 ## Train
 ```
 spark-submit \
-  --master local[16] \
-  --conf spark.task.cpus=16 \
+  --master local[4] \
+  --conf spark.task.cpus=4 \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
-  --conf spark.scheduler.maxRegisteredResourcesWaitingTime=50000000 \
-  --conf spark.worker.timeout=60000000 \
-  --conf spark.network.timeout=10000000 \
-  --conf spark.starvation.timeout=2500000 \
-  --conf spark.speculation=false \
-  --conf spark.executor.heartbeatInterval=10000000 \
-  --conf spark.sql.shuffle.partitions=200 \
-  --conf spark.shuffle.io.maxRetries=8 \
-  --num-executors 16 \
+  --num-executors 2 \
   --executor-cores 4 \
   --executor-memory 4G \
-  --driver-memory 32G \
+  --driver-memory 10G \
   /path/to/bigdl-dllib-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  /path/to/preprocessed-data/saved /path/to/model/saved 4
+  /path/to/preprocessed-data/saved /path/to/model/saved 4 10 2
 ```
 
 parameters:
 - input_path: String. Path to criteo-click-logs-dataset.
 - modelsave_path: String. Path to model to be saved.
 - num_threads: Int. Xgboost train threads.
+- num_round: Int. Training round.
+- max_depth: Int. Tree max depth.
+
+**note**: parameters `num_threads` must less than `spark.task.cpus`.
+
+The console output looks like:
+```
+[INFO] [02/10/2022 14:57:04.244] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [0]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
+[INFO] [02/10/2022 14:57:07.296] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [1]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
+[INFO] [02/10/2022 14:57:10.071] [RabitTracker-akka.actor.default-dispatcher-7] [akka://RabitTracker/user/Handler] [2]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
+```
+
+The tree of folder `/path/to/model/saved` is:
+```
+/path/to/model/saved
+├── data
+│   └── XGBoostClassificationModel
+└── metadata
+    ├── part-00000
+    └── _SUCCESS
+```

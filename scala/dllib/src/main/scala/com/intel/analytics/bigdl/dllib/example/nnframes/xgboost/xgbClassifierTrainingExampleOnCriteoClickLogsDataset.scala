@@ -24,11 +24,19 @@ import org.apache.spark.sql.types.{StructField, StructType, LongType}
 import org.apache.spark.sql.{SQLContext, SparkSession, Row}
 import org.apache.spark.SparkContext
 
+val feature_nums = 39
+val default_missing_value = "-999"
+
+/*
+    The dataset is tab separated with the following schema: <label> <integer feature 1> … <integer feature 13> <categorical feature 1> … <categorical feature 26>
+    We set missing value to -999.
+    Categorical feature is in hexadecimal format and we convert them into long type.
+*/
 class Task extends Serializable{
   def rowToLibsvm(row: Row): String = {
     0 until row.length flatMap {
       case 0 => Some(row(0).toString)
-      case i if row(i) == null => Some("-999")
+      case i if row(i) == null => Some(default_missing_value)
       case i => Some( (if (i < 14) row(i) else java.lang.Long.parseLong(row(i).toString, 16)).toString )
     } mkString " "
   }
@@ -36,8 +44,8 @@ class Task extends Serializable{
 
 object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
   def main(args: Array[String]): Unit = {
-    if (args.length < 3) {
-      println("Usage: program input_path modelsave_path num_threads")
+    if (args.length < 5) {
+      println("Usage: program input_path modelsave_path num_threads num_round max_depth")
       sys.exit(1)
     }
 
@@ -48,24 +56,30 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val input_path = args(0) // path to data
     val modelsave_path = args(1) // save model to this path
     val num_threads = args(2).toInt // xgboost threads
+    val num_round = args(3).toInt //  train round
+    val max_depth = args(4).toInt // tree max depth
 
+    // read csv files to dataframe
     var df = spark.read.option("header", "false").option("inferSchema", "true").option("delimiter", "\t").csv(input_path)
+    // preprocess data
     val processedRdd = df.rdd.map(task.rowToLibsvm)
 
-    var structFieldArray = new Array[StructField](40)
-    for(i <- 0 to 39) {
+    // declare schema
+    var structFieldArray = new Array[StructField](feature_nums+1)
+    for(i <- 0 to feature_nums) {
       structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
     }
     var schema =  new StructType(structFieldArray)
 
+    // convert RDD to RDD[Row]
     val rowRDD = processedRdd.map(_.split(" ")).map(row => Row.fromSeq(
       for{
-        i <- 0 to 39
+        i <- 0 to feature_nums
       } yield {
         row(i).toLong
       }
     ))
-
+    // RDD[Row] to Dataframe
     df = spark.createDataFrame(rowRDD,schema)
 
     val stringIndexer = new StringIndexer()
@@ -74,8 +88,8 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       .fit(df)
     val labelTransformed = stringIndexer.transform(df).drop("_c0")
 
-    var inputCols = new Array[String](39)
-    for(i <- 0 to 38){
+    var inputCols = new Array[String](feature_nums)
+    for(i <- 0 to feature_nums-1){
       inputCols(i) = "_c" + (i+1).toString
     }
 
@@ -84,8 +98,10 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       setOutputCol("features")
 
     val xgbInput = vectorAssembler.transform(labelTransformed).select("features","classIndex")
+    // randomly split dataset to (train, eval1, eval2, test) in proportion 6:2:1:1
     val Array(train, eval1, eval2, test) = xgbInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
 
+    // use scala tracker
     val xgbParam = Map("tracker_conf" -> TrackerConf(0L, "scala"),
       "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2),
     )
@@ -95,13 +111,14 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     xgbClassifier.setLabelCol("classIndex")
     xgbClassifier.setNumClass(2)
     xgbClassifier.setNumWorkers(1)
-    xgbClassifier.setMaxDepth(2)
+    xgbClassifier.setMaxDepth(max_depth)
     xgbClassifier.setNthread(num_threads)
-    xgbClassifier.setNumRound(10)
+    xgbClassifier.setNumRound(num_round)
     xgbClassifier.setTreeMethod("auto")
     xgbClassifier.setObjective("multi:softprob")
     xgbClassifier.setTimeoutRequestWorkers(180000L)
 
+    // start training model
     val xgbClassificationModel = xgbClassifier.fit(train)
     xgbClassificationModel.save(modelsave_path)
 
