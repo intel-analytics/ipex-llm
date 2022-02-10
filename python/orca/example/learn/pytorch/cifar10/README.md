@@ -66,7 +66,7 @@ You can find the logs for training as follows:
 
 Final test results will be printed at the end:
 ```
-Accuracy of the network on the 10000 test images: 0.541100025177002 
+Accuracy of the network on the test images: {'Top1Accuracy': 0.541100025177002}
 ```
 
 **For "torch_distributed" and "spark" backend**
