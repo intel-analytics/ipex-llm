@@ -26,6 +26,7 @@ from ray.tune import Stopper
 from bigdl.orca.automl.model.abstract import ModelBuilder
 from bigdl.orca.data import ray_xshards
 from ray.tune.progress_reporter import TrialProgressCallback
+from collections import defaultdict, deque
 
 
 class RayTuneSearchEngine(SearchEngine):
@@ -118,10 +119,12 @@ class RayTuneSearchEngine(SearchEngine):
         # metric and metric's mode
         self.metric_name = metric.__name__ if callable(metric) else (metric or DEFAULT_METRIC_NAME)
         self.mode = metric_mode
+        _scheduler_params = scheduler_params.copy() if scheduler_params else dict()
         self.stopper = TrialStopper(metric_threshold=metric_threshold,
                                     epochs=epochs,
                                     metric=self.metric_name,
-                                    mode=self.mode)
+                                    mode=self.mode,
+                                    max_iter=_scheduler_params.get('max_iter', 10))
         self.num_samples = n_sampling
         self.search_space = search_space
 
@@ -374,17 +377,22 @@ class RayTuneSearchEngine(SearchEngine):
 
 # stopper
 class TrialStopper(Stopper):
-    def __init__(self, metric_threshold, epochs, metric, mode):
+    def __init__(self, metric_threshold, epochs, metric, mode, max_iter):
         self._mode = mode
         self._metric = metric
         self._metric_threshold = metric_threshold
         self._epochs = epochs
+        self._max_iter = max_iter
+        self._iter = defaultdict(lambda: 0)
 
     def __call__(self, trial_id, result):
         if self._metric_threshold is not None:
-            if self._mode == "max" and result[self._metric] <= self._metric_threshold:
+            self._iter[trial_id] += 1
+            if self._mode == "max" and result[self._metric] <= self._metric_threshold and \
+                    self._iter[trial_id] < self._max_iter:
                 return False
-            elif self._mode == "min" and result[self._metric] >= self._metric_threshold:
+            elif self._mode == "min" and result[self._metric] >= self._metric_threshold and \
+                    self._iter[trial_id] < self._max_iter:
                 return False
         if result["training_iteration"] >= self._epochs:
             return True
