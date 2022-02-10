@@ -1,5 +1,6 @@
 # set -x
 SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-encrypt-io-0.1-SNAPSHOT.jar
+CLASS_PATH=com.intel.analytics.bigdl.ppml.e2e.examples.SimpleEncryptIO
 INPUT_PATH=$1
 ENCRYPT_KEYS_PATH=$2
 KMS_SERVER_IP=$3
@@ -28,7 +29,7 @@ secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/k
   --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
   --conf spark.ssl.trustStorePassword=$secure_password \
   --conf spark.ssl.trustStoreType=JKS \
-  --class com.intel.analytics.bigdl.ppml.e2e.examples.SimpleEncryptIO \
+  --class $CLASS_PATH \
   $SPARK_DECRYPT_JAR_PATH \
   $INPUT_PATH \
   $KMS_SERVER_IP \
