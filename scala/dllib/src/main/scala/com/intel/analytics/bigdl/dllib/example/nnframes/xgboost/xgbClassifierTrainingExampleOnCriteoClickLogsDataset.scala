@@ -24,15 +24,15 @@ import org.apache.spark.sql.types.{StructField, StructType, LongType}
 import org.apache.spark.sql.{SQLContext, SparkSession, Row}
 import org.apache.spark.SparkContext
 
-val feature_nums = 39
-val default_missing_value = "-999"
-
 /*
     The dataset is tab separated with the following schema: <label> <integer feature 1> … <integer feature 13> <categorical feature 1> … <categorical feature 26>
     We set missing value to -999.
     Categorical feature is in hexadecimal format and we convert them into long type.
 */
 class Task extends Serializable{
+
+  val default_missing_value = "-999"
+
   def rowToLibsvm(row: Row): String = {
     0 until row.length flatMap {
       case 0 => Some(row(0).toString)
@@ -43,6 +43,9 @@ class Task extends Serializable{
 }
 
 object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
+
+  val feature_nums = 39
+
   def main(args: Array[String]): Unit = {
     if (args.length < 5) {
       println("Usage: program input_path modelsave_path num_threads num_round max_depth")

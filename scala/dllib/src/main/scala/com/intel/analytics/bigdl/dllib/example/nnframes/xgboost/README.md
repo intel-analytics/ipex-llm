@@ -107,7 +107,7 @@ spark-submit \
   --executor-memory 4G \
   --driver-memory 10G \
   /path/to/bigdl-dllib-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
-  /path/to/preprocessed-data/saved /path/to/model/saved 4 10 2
+  /path/to/preprocessed-data/saved /path/to/model/saved num_threads num_round max_depth
 ```
 
 parameters:
@@ -117,7 +117,7 @@ parameters:
 - num_round: Int. Training round.
 - max_depth: Int. Tree max depth.
 
-**note**: parameters `num_threads` must less than `spark.task.cpus`.
+**note**: parameters `num_threads` must less than `spark.task.cpus`. The spark conf above successfully tested 1g data.
 
 The console output looks like:
 ```
