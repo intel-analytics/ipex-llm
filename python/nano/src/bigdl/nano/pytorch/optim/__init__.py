@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from bigdl.nano.pytorch.optim.lazyadam import LazyAdam
+from bigdl.nano.pytorch.optim.sparseadam import SparseAdam
