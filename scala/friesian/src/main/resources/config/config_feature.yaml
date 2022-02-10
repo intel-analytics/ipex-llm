@@ -39,7 +39,10 @@ redisClusterItemSlotType: 2
 
 ### Redis Configuration
 # default: localhost:6379
-# redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
+redisUrl: 10.239.158.177:6379,10.239.158.177:6380
 
 # default: 256, JedisPoolMaxTotal
 # redisPoolMaxTotal:
+
+# default: 2, The redis log emit interval in minutes
+logInterval: 3

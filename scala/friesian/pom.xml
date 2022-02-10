@@ -143,6 +143,16 @@
             <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>6.1.6.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.latencyutils</groupId>
+            <artifactId>LatencyUtils</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+        <dependency>
             <groupId>me.dinowernli</groupId>
             <artifactId>java-grpc-prometheus</artifactId>
             <version>0.4.0</version>

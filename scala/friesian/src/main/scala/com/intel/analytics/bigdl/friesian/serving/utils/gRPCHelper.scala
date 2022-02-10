@@ -47,6 +47,7 @@ class gRPCHelper extends Serializable {
   @BeanProperty var itemFeatureColumns: String = _
   @BeanProperty var redisKeyPrefix: String = _
   @BeanProperty var redisClusterItemSlotType = 0
+  @BeanProperty var logInterval = 2
 
   // recall service attributes
   @BeanProperty var indexPath: String = _

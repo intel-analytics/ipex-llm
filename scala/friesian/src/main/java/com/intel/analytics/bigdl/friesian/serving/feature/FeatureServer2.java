@@ -19,21 +19,21 @@ package com.intel.analytics.bigdl.friesian.serving.feature;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
-import com.intel.analytics.bigdl.friesian.serving.feature.utils.LettuceUtils;
 import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc;
+import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
+import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils;
-import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
+import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
+import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.orca.inference.InferenceModel;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.ServerMessage;
 import io.grpc.ServerInterceptors;
 import io.grpc.Status;
-import io.grpc.stub.StreamObserver;
 import io.grpc.services.HealthStatusManager;
+import io.grpc.stub.StreamObserver;
 import io.prometheus.client.exporter.HTTPServer;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
@@ -43,26 +43,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import redis.clients.jedis.Jedis;
-import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
-import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
-import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-enum ServiceType {
-    KV, INFERENCE
-}
 
-enum SearchType {
-    ITEM, USER
-}
-
-public class FeatureServer extends GrpcServerBase {
+public class FeatureServer2 extends GrpcServerBase {
     private static final Logger logger = LogManager.getLogger(FeatureServer.class.getName());
 
     /** Create a Feature server. */
-    public FeatureServer(String[] args) {
+    public FeatureServer2(String[] args) {
         super(args);
         port = 8082;
         configPath = "config_feature.yaml";
@@ -111,7 +101,8 @@ public class FeatureServer extends GrpcServerBase {
     private static class FeatureService extends FeatureGrpc.FeatureImplBase {
         private InferenceModel userModel;
         private InferenceModel itemModel;
-        private LettuceUtils redis;
+        private RedisUtils redis;
+        private final boolean redisCluster;
         private Set<ServiceType> serviceType;
         private Map<String, String[]> colNamesMap;
         private MetricRegistry metrics = new MetricRegistry();
@@ -126,9 +117,11 @@ public class FeatureServer extends GrpcServerBase {
             colNamesMap = new HashMap<>();
             parseServiceType();
             if (serviceType.contains(ServiceType.KV)) {
-                redis = LettuceUtils.getInstance(Utils.helper().redisHostPort(),
-                        Utils.helper().getRedisKeyPrefix());
+                redis = RedisUtils.getInstance(Utils.helper().getRedisPoolMaxTotal(),
+                        Utils.helper().redisHostPort(), Utils.helper().getRedisKeyPrefix(),
+                        Utils.helper().itemSlotType());
             }
+            redisCluster = redis.getCluster() != null;
 
             if (serviceType.contains(ServiceType.INFERENCE)) {
                 if (Utils.helper().getUserModelPath() != null) {
@@ -158,9 +151,9 @@ public class FeatureServer extends GrpcServerBase {
             }
         }
         @Override
-        public void getUserFeatures(IDs request,
-                                    StreamObserver<Features> responseObserver) {
-            Features result;
+        public void getUserFeatures(FeatureProto.IDs request,
+                                    StreamObserver<FeatureProto.Features> responseObserver) {
+            FeatureProto.Features result;
             try {
                 result = getFeatures(request, SearchType.USER);
             } catch (Exception e) {
@@ -175,9 +168,9 @@ public class FeatureServer extends GrpcServerBase {
         }
 
         @Override
-        public void getItemFeatures(IDs request,
-                                    StreamObserver<Features> responseObserver) {
-            Features result;
+        public void getItemFeatures(FeatureProto.IDs request,
+                                    StreamObserver<FeatureProto.Features> responseObserver) {
+            FeatureProto.Features result;
             try {
                 result = getFeatures(request, SearchType.ITEM);
             } catch (Exception e) {
@@ -193,16 +186,15 @@ public class FeatureServer extends GrpcServerBase {
 
         @Override
         public void getMetrics(Empty request,
-                               StreamObserver<ServerMessage> responseObserver) {
+                               StreamObserver<FeatureProto.ServerMessage> responseObserver) {
             responseObserver.onNext(getMetrics());
             responseObserver.onCompleted();
         }
 
-        private Features getFeatures(IDs msg, SearchType searchType) throws Exception {
+        private FeatureProto.Features getFeatures(FeatureProto.IDs msg, SearchType searchType) throws Exception {
             Timer.Context overallContext = overallTimer.time();
-            Features result;
-            if (serviceType.contains(ServiceType.KV) &&
-                    serviceType.contains(ServiceType.INFERENCE)) {
+            FeatureProto.Features result;
+            if (serviceType.contains(ServiceType.KV) && serviceType.contains(ServiceType.INFERENCE)) {
                 result = getFeaturesFromRedisAndInference(msg, searchType);
             }
             else if (serviceType.contains(ServiceType.KV)) {
@@ -219,14 +211,13 @@ public class FeatureServer extends GrpcServerBase {
             return result;
         }
 
-        private Features getFeaturesFromRedisAndInference(IDs msg, SearchType searchType)
-                throws Exception {
-            Features.Builder featureBuilder = Features.newBuilder();
+        private FeatureProto.Features getFeaturesFromRedisAndInference(FeatureProto.IDs msg, SearchType searchType) throws Exception {
+            FeatureProto.Features.Builder featureBuilder = FeatureProto.Features.newBuilder();
             Timer.Context predictContext;
             String typeStr = "";
             InferenceModel model;
             String[] featureCols;
-            Features features = getFeaturesFromRedis(msg, searchType);
+            FeatureProto.Features features = getFeaturesFromRedis(msg, searchType);
             if (searchType == SearchType.USER) {
                 predictContext = userPredictTimer.time();
                 model = this.userModel;
@@ -250,36 +241,119 @@ public class FeatureServer extends GrpcServerBase {
             return featureBuilder.build();
         }
 
-        private Features getFeaturesFromRedis(IDs msg, SearchType searchType) {
+        private FeatureProto.Features getFeaturesFromRedis(FeatureProto.IDs msg, SearchType searchType) {
             String keyPrefix =
                     Utils.helper().getRedisKeyPrefix() +
                             (searchType == SearchType.USER ? "user": "item");
             List<Integer> ids = msg.getIDList();
+            Jedis jedis = redisCluster ? null : redis.getRedisClient();
 
-            Features.Builder featureBuilder = Features.newBuilder();
+            FeatureProto.Features.Builder featureBuilder;
             Timer.Context redisContext;
             if (searchType == SearchType.USER) {
                 redisContext = userRedisTimer.time();
+                if (!redisCluster) {
+                    featureBuilder = redisLocalGet(keyPrefix, ids, jedis);
+                } else {
+                    featureBuilder = redisClusterSeparateGet(keyPrefix, ids);
+                }
             } else {
                 redisContext = itemRedisTimer.time();
+                if (!redisCluster) {
+                    featureBuilder = redisLocalGet(keyPrefix, ids, jedis);
+                } else {
+                    if (Utils.helper().itemSlotType() == 0) {
+                        featureBuilder = redisClusterSeparateGet(keyPrefix, ids);
+                    } else {
+                        featureBuilder = redisClusterMGet(keyPrefix, ids);
+                    }
+                }
             }
-
-            List<String> values = redis.MGet(keyPrefix, ids);
-            featureBuilder.addAllID(ids);
-            featureBuilder.addAllB64Feature(values);
             redisContext.stop();
-            if (!colNamesMap.containsKey(keyPrefix)) {
+            if (!colNamesMap.containsValue(keyPrefix)) {
                 String colNamesStr;
-                colNamesStr = redis.get(keyPrefix);
+                if (!redisCluster) {
+                    colNamesStr = jedis.get(keyPrefix);
+                } else {
+                    colNamesStr = redis.getCluster().get(keyPrefix);
+                }
                 colNamesMap.put(keyPrefix, colNamesStr.split(","));
             }
             featureBuilder.addAllColNames(Arrays.asList(colNamesMap.get(keyPrefix)));
 
+            if (jedis != null) {
+                jedis.close();
+            }
             return featureBuilder.build();
         }
 
-        private Features getFeaturesFromInferenceModel(IDs msg, SearchType searchType) throws Exception {
-            Features.Builder featureBuilder = Features.newBuilder();
+        private FeatureProto.Features.Builder redisLocalGet(String keyPrefix, List<Integer> ids, Jedis jedis) {
+            FeatureProto.Features.Builder featureBuilder = FeatureProto.Features.newBuilder();
+            String[] keys = new String[ids.size()];
+            for (int i = 0; i < ids.size(); i ++) {
+                keys[i] = keyPrefix + ":" + ids.get(i);
+            }
+            List<String> values = jedis.mget(keys);
+            values.replaceAll(s -> s == null ? "": s);
+            featureBuilder.addAllID(ids);
+            featureBuilder.addAllB64Feature(values);
+            return featureBuilder;
+        }
+
+        private FeatureProto.Features.Builder redisClusterSeparateGet(String keyPrefix, List<Integer> ids) {
+            FeatureProto.Features.Builder featureBuilder = FeatureProto.Features.newBuilder();
+            ArrayList<String> values = new ArrayList<>(ids.size());
+            for (int id: ids){
+                values.add(redis.getCluster().get( keyPrefix + ":" + id));
+            }
+            values.replaceAll(s -> s == null ? "": s);
+            featureBuilder.addAllID(ids);
+            featureBuilder.addAllB64Feature(values);
+            return featureBuilder;
+        }
+
+        private FeatureProto.Features.Builder redisClusterMGet(String keyPrefix, List<Integer> ids) {
+            FeatureProto.Features.Builder featureBuilder = FeatureProto.Features.newBuilder();
+            List<String> values;
+            if (Utils.helper().itemSlotType() == 1) {
+                keyPrefix = "{" + keyPrefix + "}";
+                String[] keys = new String[ids.size()];
+                for (int i = 0; i < ids.size(); i ++) {
+                    keys[i] = keyPrefix + ":" + ids.get(i);
+                }
+                values = redis.getCluster().mget(keys);
+                featureBuilder.addAllID(ids);
+            } else {
+                List<Integer> resultIds = new ArrayList<>(ids.size());
+                values = new ArrayList<>(ids.size());
+                keyPrefix = "{" + Utils.helper().getRedisKeyPrefix() + keyPrefix;
+                HashMap<Integer, ArrayList<Integer>> idMap = new HashMap<>(10);
+                for (int id: ids) {
+                    int lastDigit = id % 10;
+                    if (!idMap.containsKey(lastDigit)) {
+                        idMap.put(lastDigit, new ArrayList<>());
+                    }
+                    idMap.get(lastDigit).add(id);
+                }
+                for (int lastI: idMap.keySet()) {
+                    String hashTag = keyPrefix + lastI + "}:";
+                    ArrayList<Integer> slotIds = idMap.get(lastI);
+                    String[] keys = new String[slotIds.size()];
+                    for (int i = 0; i < slotIds.size(); i ++) {
+                        keys[i] = hashTag + slotIds.get(i);
+                    }
+                    resultIds.addAll(slotIds);
+                    values.addAll(redis.getCluster().mget(keys));
+                }
+                featureBuilder.addAllID(resultIds);
+            }
+            values.replaceAll(s -> s == null ? "": s);
+            featureBuilder.addAllB64Feature(values);
+            return featureBuilder;
+        }
+
+        private FeatureProto.Features getFeaturesFromInferenceModel(FeatureProto.IDs msg, SearchType searchType) throws Exception {
+            FeatureProto.Features.Builder featureBuilder = FeatureProto.Features.newBuilder();
             Timer.Context predictContext;
             String typeStr = "";
             InferenceModel model;
@@ -304,7 +378,7 @@ public class FeatureServer extends GrpcServerBase {
             return featureBuilder.build();
         }
 
-        private ServerMessage getMetrics() {
+        private FeatureProto.ServerMessage getMetrics() {
             JacksonJsonSerializer jacksonJsonSerializer = new JacksonJsonSerializer();
             Set<String> keys = metrics.getTimers().keySet();
             List<TimerMetrics> timerMetrics = keys.stream()
@@ -312,7 +386,7 @@ public class FeatureServer extends GrpcServerBase {
                             TimerMetrics$.MODULE$.apply(key, metrics.getTimers().get(key)))
                     .collect(Collectors.toList());
             String jsonStr = jacksonJsonSerializer.serialize(timerMetrics);
-            return ServerMessage.newBuilder().setStr(jsonStr).build();
+            return FeatureProto.ServerMessage.newBuilder().setStr(jsonStr).build();
         }
 
         @Override

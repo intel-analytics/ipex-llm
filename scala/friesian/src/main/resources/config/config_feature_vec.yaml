@@ -43,3 +43,6 @@ redisClusterItemSlotType:
 
 # default: 256, JedisPoolMaxTotal
 # redisPoolMaxTotal:
+
+# default: 2, The redis log emit interval in minutes
+logInterval: 2
