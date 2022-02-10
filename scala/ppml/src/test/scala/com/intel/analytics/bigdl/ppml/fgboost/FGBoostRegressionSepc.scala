@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.common;
+package com.intel.analytics.bigdl.ppml.fgboost
 
-public enum FLPhase {
-    // NN Phase
-    TRAIN,
-    EVAL,
-    PREDICT,
-    // FGBoost Phase
-    LABEL,
-    SPLIT,
-    TREE_LEAF,
-    RESULT
+import com.intel.analytics.bigdl.ppml.example.DebugLogger
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
+class FGBoostRegressionSepc extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger{
+  // House pricing dataset compared with xgboost training and prediction result
+  "FGBoost Regression single party" should "work" in {
+
+  }
 }
+
