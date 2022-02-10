@@ -61,7 +61,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       }
     ))
 
-    val df = spark.createDataFrame(rowRDD,schema)
+    df = spark.createDataFrame(rowRDD,schema)
 
     val stringIndexer = new StringIndexer()
       .setInputCol("_c0")
