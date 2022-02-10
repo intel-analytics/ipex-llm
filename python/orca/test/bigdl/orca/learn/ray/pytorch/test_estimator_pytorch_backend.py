@@ -489,6 +489,7 @@ class TestPyTorchEstimator(TestCase):
         from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 100)
+        epochs = 2
         df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
@@ -501,15 +502,20 @@ class TestPyTorchEstimator(TestCase):
                 ModelCheckpoint(filepath=os.path.join(temp_dir, "test-{epoch}"),
                                 save_weights_only=True)
             ]
-            estimator.fit(df, batch_size=4, epochs=2,
+            estimator.fit(df, batch_size=4, epochs=epochs,
                           callbacks=callbacks,
                           feature_cols=["feature"],
                           label_cols=["label"])
             estimator.evaluate(df, batch_size=4,
                                feature_cols=["feature"],
                                label_cols=["label"])
+            for i in range(epochs):
+                assert os.path.isfile(os.path.join(temp_dir, f"test-epoch={i + 1}.ckpt"))
+            assert os.path.isfile(os.path.join(temp_dir, f"last.ckpt"))
+
         finally:
             shutil.rmtree(temp_dir)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
