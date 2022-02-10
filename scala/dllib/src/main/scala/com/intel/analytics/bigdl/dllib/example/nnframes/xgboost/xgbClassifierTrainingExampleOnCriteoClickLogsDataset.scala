@@ -59,7 +59,6 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val xgbClassificationModel = xgbClassifier.fit(train)
     xgbClassificationModel.save(modelsave_path)
 
-    spark.stop()
     sc.stop()
   }
 }
