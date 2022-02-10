@@ -11,4 +11,4 @@ sudo docker build \
     --build-arg HTTPS_PROXY_HOST=$HTTPS_PROXY_HOST \
     --build-arg HTTPS_PROXY_PORT=$HTTPS_PROXY_PORT \
     --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/bigdl-ppml-trusted-big-data-fl-scala-graphene:flDemo -f ./Dockerfile .
+    -t grapheneintelanalytics/bigdl-ppml-trusted-fl-graphene:0.14.0-SNAPSHOT -f ./Dockerfile .

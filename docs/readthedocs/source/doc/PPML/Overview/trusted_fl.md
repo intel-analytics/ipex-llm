@@ -63,7 +63,7 @@ Please ensure SGX is properly enabled, and SGX driver is installed. If not, plea
 Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-fl-scala-graphene:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:0.14.0-SNAPSHOT
 ```
 
 If Dockerhub is not accessible, you can build docker image from BigDL source code
