@@ -15,7 +15,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     }
 
     val sc = NNContext.initNNContext()
-    val spark = SQLContext.getOrCreate(sc)
+    val spark = SparkSession.getOrCreate(sc)
 
     val input_path = args(0) // path to data
     val modelsave_path = args(1) // save model to this path
