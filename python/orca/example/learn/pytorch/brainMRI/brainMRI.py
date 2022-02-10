@@ -39,7 +39,7 @@ from bigdl.orca.learn.trigger import EveryEpoch
 import albumentations as A
 
 def dataset():
-    ROOT_PATH = '/home/mingxuan/BigDL/python/orca/example/learn/pytorch/brainMRI/data/kaggle_3m/'
+    ROOT_PATH = '/home/mingxuan/bigdl/python/orca/example/learn/pytorch/brainMRI/data/kaggle_3m/'
     mask_files = glob.glob(ROOT_PATH + '*/*_mask*')
     image_files = [file.replace('_mask', '') for file in mask_files]
     files_df = pd.DataFrame({"image_path": image_files,
@@ -53,6 +53,29 @@ def dataset():
     return train_df, test_df
 
 train_df, test_df = dataset()
+
+
+def dice_coef_metric(pred, label):
+    intersection = 2.0 * (pred * label).sum()
+    union = pred.sum() + label.sum()
+    if pred.sum() == 0 and label.sum() == 0:
+        return 1.
+    return intersection / union
+
+def dice_coef_loss(pred, label):
+    smooth = 1.0
+    intersection = 2.0 * (pred * label).sum() + smooth
+    union = pred.sum() + label.sum() + smooth
+    return 1 - (intersection / union)
+
+def bce_dice_loss(pred, label):
+    dice_loss = dice_coef_loss(pred, label)
+    bce_loss = nn.BCELoss()(pred, label)
+    return dice_loss + bce_loss
+
+def loss_creator(config):
+    return bce_dice_loss
+
 
 def train_loader_creator(config, batch_size):
     train_transform = A.Compose([
@@ -112,7 +135,7 @@ def show_batch(dl):
 parser = argparse.ArgumentParser(description='PyTorch brainMRI Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn-client, yarn-cluster, spark-submit or k8s.')
-parser.add_argument('--backend', type=str, default="bigdl",
+parser.add_argument('--backend', type=str, default="torch_distributed",
                     help='The backend of PyTorch Estimator; '
                         'bigdl, torch_distributed and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
@@ -165,7 +188,7 @@ if args.backend == "bigdl":
 elif args.backend in ["torch_distributed", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                         optimizer=optim_creator,
-                                        loss=criterion,
+                                        loss=loss_creator,
                                         metrics=[Accuracy()],
                                         backend=args.backend,
                                         config={"lr": 0.001,

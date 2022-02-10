@@ -3,12 +3,12 @@ We demonstrate how to easily run synchronous distributed PyTorch training using 
 
 
 ## Trouble Shooting
-- [x] no support of val set?
-- [ ] Difficult to identify a customized loss function; for example, dice coefficient
-- [ ] Unable to see the plot of matplotlib
+- Difficult to identify a customized loss function; for example, dice coefficient
+    - Require a loss function creator to pass a customized loss function into orca
+- Unable to see the plot of matplotlib
+- Need to implement function to download dataset if it's not included in pytorch datasets
 
 ## TODO
-- [ ] Need to implement function to download dataset if it's not included in pytorch datasets
 - [ ] bigdl backend development
 - [ ] yarn development
 
