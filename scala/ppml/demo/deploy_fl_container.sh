@@ -4,7 +4,7 @@ export ENCLAVE_KEY_PATH=YOUR_LOCAL_ENCLAVE_KEY_PATH
 export DATA_PATH=YOUR_LOCAL_DATA_PATH
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
-export DOCKER_IMAGE=iintelanalytics/bigdl-ppml-trusted-fl-graphene:0.14.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-fl-graphene:0.14.0-SNAPSHOT
 
 sudo docker run -itd \
     --privileged \
