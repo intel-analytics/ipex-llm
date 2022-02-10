@@ -5,6 +5,11 @@ import warnings
 
 
 class ModelCheckpoint(Callback):
+
+    CHECKPOINT_JOIN_CHAR = "-"
+    CHECKPOINT_NAME_LAST = "last"
+    FILE_EXTENSION = ".ckpt"
+
     def __init__(self,
                  filepath=None,
                  save_weights_only=False,
@@ -25,6 +30,8 @@ class ModelCheckpoint(Callback):
         self.filepath = filepath
         self.save_weights_only = save_weights_only
         self.last_ckpt_path = ""
+        self.filename = os.path.basename(self.filepath)
+        self.dirname = os.path.dirname(self.filepath)
 
     def on_batch_begin(self, batch):
         """
@@ -61,7 +68,9 @@ class ModelCheckpoint(Callback):
         @param epoch:  Integer, index of epoch.
         """
         stats = {"epoch": self.trainer.epochs}
-        last_ckpt_path = self._format_checkpoint_name(self.filepath, stats)
+        last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
+                                                      filename=self.filename,
+                                                      stats=stats)
         self.trainer.save_checkpoint(last_ckpt_path, self.save_weights_only)
 
     def on_train_begin(self):
@@ -90,7 +99,9 @@ class ModelCheckpoint(Callback):
         Subclasses should override for any actions to run.
         """
         stats = {"epoch": self.trainer.epochs}
-        last_ckpt_path = self._format_checkpoint_name(self.filepath, stats, last=True)
+        last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
+                                                      filename=self.CHECKPOINT_NAME_LAST,
+                                                      stats=stats)
         previous, self.last_ckpt_path = self.last_ckpt_path, last_ckpt_path
         self.trainer.save_checkpoint(last_ckpt_path, self.save_weights_only)
         if previous and previous != last_ckpt_path:
@@ -102,16 +113,15 @@ class ModelCheckpoint(Callback):
     def set_param(self, param):
         self.params = param
 
-    @staticmethod
-    def _format_checkpoint_name(filepath, stats, last=False):
+    @classmethod
+    def _format_checkpoint_name(cls, dirname, filename, stats=None):
         """
         checkpoint name is in the format of 'epoch={epoch}.ckpt'
         """
-        filename = os.path.basename(filepath) if not last else "last"
-
         # check and parse user passed keys in the string
         groups = re.findall(r"(\{.*?)[:\}]", filename)
         if len(groups) >= 0:
+            stats = dict() if stats is None else stats
             for group in groups:
                 name = group[1:]
 
@@ -123,6 +133,6 @@ class ModelCheckpoint(Callback):
                 if name not in stats:
                     stats[name] = 0
             filename = filename.format(**stats)
-        ckpt_name = f"{filename}.ckpt"
-        ckpt_path = os.path.join(os.path.dirname(filepath), ckpt_name)
+        ckpt_name = f"{filename}{cls.FILE_EXTENSION}"
+        ckpt_path = os.path.join(dirname, ckpt_name)
         return ckpt_path
