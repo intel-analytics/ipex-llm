@@ -131,6 +131,25 @@ class TestOnnx(TestCase):
         for x1, x2, y in train_loader:
             pl_model.inference([x1.numpy(), x2.numpy()])
 
+    def test_trainer_compile_with_onnx_quantize(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        train_loader = create_data_loader(data_dir, batch_size, \
+                                          num_workers, data_transform, subset=200)
+        trainer.fit(pl_model, train_loader)
+        pl_model = trainer.quantize(pl_model, train_loader, framework=['pytorch_fx', 'onnxrt_integerops'])
+        assert pl_model._quantized_model_up_to_date is True
+        for x, y in train_loader:
+            onnx_res = pl_model.inference(x, backend="onnx", quantize=True).numpy()
+            onnx_res_fp32 = pl_model.inference(x, backend="onnx", quantize=False).numpy()  # native pytorch
+            pl_model.eval_onnx(quantize=True)
+            forward_res = pl_model(x).numpy()
+            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
