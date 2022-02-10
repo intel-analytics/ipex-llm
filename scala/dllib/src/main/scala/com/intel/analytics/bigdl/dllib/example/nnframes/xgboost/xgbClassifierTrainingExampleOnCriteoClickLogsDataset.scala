@@ -41,7 +41,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     // var df = spark.read.option("header", "false").option("inferSchema", "true").option("delimiter", " ").csv(input_path)
     var df = spark.read.option("header", "false").option("inferSchema", "true").option("delimiter", "\t").csv(input_path)
-    val processedRdd = df.rdd.map(task.rowToLibsvm))
+    val processedRdd = df.rdd.map(task.rowToLibsvm)
 
     var structFieldArray = new Array[StructField](40)
     for(i <- 0 to 39){
