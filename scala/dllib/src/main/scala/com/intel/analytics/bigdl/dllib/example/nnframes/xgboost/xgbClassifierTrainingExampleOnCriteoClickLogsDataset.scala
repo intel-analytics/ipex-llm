@@ -4,7 +4,7 @@ import ml.dmlc.xgboost4j.scala.spark.TrackerConf
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifier
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.SparkContext
 
 object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
@@ -15,7 +15,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     }
 
     val sc = NNContext.initNNContext()
-    val spark = SparkSession.getOrCreate(sc)
+    val spark = SQLContext.getOrCreate(sc)
 
     val input_path = args(0) // path to data
     val modelsave_path = args(1) // save model to this path
