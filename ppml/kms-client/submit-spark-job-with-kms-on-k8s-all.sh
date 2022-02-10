@@ -1,6 +1,6 @@
 #set -x
-SPARK_DECRYPT_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-encrypt-io-0.1-SNAPSHOT.jar
-CLASS_PATH=com.intel.analytics.bigdl.ppml.e2e.examples.SimpleEncryptIO
+SPARK_EXTRA_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-encrypt-io-0.1-SNAPSHOT.jar
+SPARK_JOB_MAIN_CLASS=com.intel.analytics.bigdl.ppml.e2e.examples.SimpleEncryptIO
 KMS_SERVER_PORT=3000
 INPUT_PATH=$1
 INPUT_DIR_PATH=$2
@@ -32,7 +32,7 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --num-executors 2 \
     --executor-cores 8 \
     --executor-memory 32g \
-    --jars local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-encrypt-io-0.1-SNAPSHOT.jar \
+    --jars local://$SPARK_EXTRA_JAR_PATH \
     --conf spark.kubernetes.sgx.enabled=true \
     --conf spark.kubernetes.sgx.mem=32g \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
@@ -59,7 +59,7 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS \
-    --class $CLASS_PATH \
+    --class $SPARK_JOB_MAIN_CLASS \
     --verbose \
-    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-encrypt-io-0.1-SNAPSHOT.jar \
+    local://$SPARK_EXTRA_JAR_PATH \
     $INPUT_DIR_PATH $KMS_SERVER_IP $KMS_SERVER_PORT $ENCRYPT_KEYS_PATH $OUTPUT_DIR_PATH" 2>&1 | tee spark-decrypt-k8s-sgx-all.log
