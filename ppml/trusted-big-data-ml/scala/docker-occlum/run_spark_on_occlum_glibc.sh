@@ -99,8 +99,9 @@ run_spark_unittest_only() {
     cd /opt/occlum_spark
     mkdir -p data/olog
     echo -e "${BLUE}occlum run spark unit test only ${NC}"
+    occlum start
     for suite in `cat /opt/sqlSuites`
-    do occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g \
+    do occlum exec /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
 		-Djdk.lang.Process.launchMechanism=posix_spawn \
@@ -116,6 +117,7 @@ run_spark_unittest_only() {
 	        -s ${suite} \
 	        -fF /host/data/olog/${suite}.txt
     done
+    occlum stop
 }
 
 run_spark_lenet_mnist(){
