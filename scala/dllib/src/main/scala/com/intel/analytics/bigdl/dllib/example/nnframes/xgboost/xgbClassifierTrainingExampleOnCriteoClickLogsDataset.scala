@@ -40,7 +40,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     // var df = spark.read.option("header", "false").option("inferSchema", "true").option("delimiter", " ").csv(input_path)
     var df = spark.read.option("header", "false").option("inferSchema", "true").option("delimiter", "\t").csv(input_path)
-    df = df.rdd.map(task.rowToLibsvm).toDF
+    df = spark.createDataFrame(df.rdd.map(task.rowToLibsvm))
 
 
     val stringIndexer = new StringIndexer()
