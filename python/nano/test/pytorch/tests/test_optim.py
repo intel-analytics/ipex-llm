@@ -14,7 +14,7 @@
 # ==============================================================================
 
 import numpy as np
-from bigdl.nano.pytorch.optim import LazyAdam
+from bigdl.nano.pytorch.optim import SparseAdam
 import torch
 from torch import nn
 
