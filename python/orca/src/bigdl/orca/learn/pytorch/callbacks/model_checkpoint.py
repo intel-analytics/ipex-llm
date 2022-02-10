@@ -17,6 +17,8 @@ class ModelCheckpoint(Callback):
             >>> checkpoint_callback = ModelCheckpoint(
             ...     filepath='my/path/sample-mnist-{epoch:02d}',
             ... )
+        And checkpoints will be saved as file with path like 'my/path/sample-mnist-epoch=1.ckpt'
+        with different epoch values.
         :param filepath: path to save the model file.
         """
         super().__init__()
