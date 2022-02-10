@@ -20,7 +20,7 @@ import ml.dmlc.xgboost4j.scala.spark.TrackerConf
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifier
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
-import org.apache.spark.sql.types.{IntegerType, StructField, StructType, LongType}
+import org.apache.spark.sql.types.{IntegerType, StructField, StructType, LongType, StringType}
 import org.apache.spark.sql.{SQLContext, SparkSession, Row}
 import org.apache.spark.SparkContext
 
@@ -39,25 +39,22 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val modelsave_path = args(1) // save model to this path
     val num_threads = args(2).toInt // xgboost threads
 
-    // var df = spark.read.option("header", "false").option("inferSchema", "true").option("delimiter", " ").csv(input_path)
     var df = spark.read.option("header", "false").option("inferSchema", "true").option("delimiter", "\t").csv(input_path)
     val processedRdd = df.rdd.map(task.rowToLibsvm)
 
     var structFieldArray = new Array[StructField](40)
     for(i <- 0 to 39){
-    //   structFieldArray(i) = StructField("_c" + i.toString, if(i<14) IntegerType else LongType, true)
-      structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
+      structFieldArray(i) = StructField("_c" + i.toString, if(i==0) StringType else if(i<14) IntegerType else LongType, true)
+    //   structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
     }
     var schema =  new StructType(structFieldArray)
-  
-    // val decryptionRDD = decryption.flatMap(_.split("\n"))
 
     val rowRDD = processedRdd.map(_.split(" ")).map(row => Row.fromSeq(
       for{
         i <- 0 to 39
       } yield {
-        // if(i<14) row(i).toInt else row(i).toLong
-        row(i).toLong
+        if(i==0) row(i).toString else if(i<14) row(i).toInt else row(i).toLong
+        // row(i).toLong
       }
     ))
 
