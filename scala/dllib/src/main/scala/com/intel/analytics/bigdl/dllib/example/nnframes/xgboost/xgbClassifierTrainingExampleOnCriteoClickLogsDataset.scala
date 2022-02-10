@@ -45,8 +45,8 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     var structFieldArray = new Array[StructField](40)
     for(i <- 0 to 39){
-      structFieldArray(i) = StructField("_c" + i.toString, if(i<14) IntegerType else LongType, true)
-    //   structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
+    //   structFieldArray(i) = StructField("_c" + i.toString, if(i<14) IntegerType else LongType, true)
+      structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
     }
     var schema =  new StructType(structFieldArray)
   
@@ -56,8 +56,8 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       for{
         i <- 0 to 39
       } yield {
-        if(i<14) row(i).toInt else row(i).toLong
-        // row(i).toLong
+        // if(i<14) row(i).toInt else row(i).toLong
+        row(i).toLong
       }
     ))
 
