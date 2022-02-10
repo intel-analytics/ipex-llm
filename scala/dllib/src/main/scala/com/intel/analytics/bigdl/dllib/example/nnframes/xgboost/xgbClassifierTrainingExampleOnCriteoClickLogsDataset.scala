@@ -20,9 +20,19 @@ import ml.dmlc.xgboost4j.scala.spark.TrackerConf
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifier
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
-import org.apache.spark.sql.types.{IntegerType, StructField, StructType, LongType, StringType}
+import org.apache.spark.sql.types.{StructField, StructType, LongType}
 import org.apache.spark.sql.{SQLContext, SparkSession, Row}
 import org.apache.spark.SparkContext
+
+class Task extends Serializable{
+  def rowToLibsvm(row: Row): String = {
+    0 until row.length flatMap {
+      case 0 => Some(row(0).toString)
+      case i if row(i) == null => Some("0")
+      case i => Some( (if (i < 14) row(i) else java.lang.Long.parseLong(row(i).toString, 16)).toString )
+    } mkString " "
+  }
+}
 
 object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
   def main(args: Array[String]): Unit = {
@@ -43,9 +53,8 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val processedRdd = df.rdd.map(task.rowToLibsvm)
 
     var structFieldArray = new Array[StructField](40)
-    for(i <- 0 to 39){
-      structFieldArray(i) = StructField("_c" + i.toString, if(i==0) StringType else if(i<14) IntegerType else LongType, true)
-    //   structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
+    for(i <- 0 to 39) {
+      structFieldArray(i) = StructField("_c" + i.toString, LongType, true)
     }
     var schema =  new StructType(structFieldArray)
 
@@ -53,8 +62,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
       for{
         i <- 0 to 39
       } yield {
-        if(i==0) row(i).toString else if(i<14) row(i).toInt else row(i).toLong
-        // row(i).toLong
+        row(i).toLong
       }
     ))
 
@@ -93,6 +101,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     xgbClassifier.setTreeMethod("auto")
     xgbClassifier.setObjective("multi:softprob")
     xgbClassifier.setTimeoutRequestWorkers(180000L)
+
     val xgbClassificationModel = xgbClassifier.fit(train)
     xgbClassificationModel.save(modelsave_path)
 
