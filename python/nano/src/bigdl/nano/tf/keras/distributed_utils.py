@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from turtle import back
 from bigdl.nano.common.cpu_schedule import schedule_workers
 import os
 import json
@@ -31,7 +30,7 @@ def find_free_port():
         return s.getsockname()[1]
 
 
-def train_func(model_dir, ds_graph, elem_spec, epochs, fit_kwargs):
+def train_func(model_dir, ds_graph, elem_spec, fit_kwargs):
     import tensorflow as tf
     from tensorflow.python.distribute.coordinator.values import deserialize_dataset_from_graph
 
@@ -40,20 +39,22 @@ def train_func(model_dir, ds_graph, elem_spec, epochs, fit_kwargs):
         new_model = tf.keras.models.load_model('/tmp/temp_model')
         dataset = deserialize_dataset_from_graph(ds_graph, elem_spec)
         tf_config = json.loads(os.environ["TF_CONFIG"])
-        if tf_config["task"]["index"] == 0:
-            verbose = 1
+
+        task_id = strategy.cluster_resolver.task_id
+        
+        if task_id == 0:
+            verbose = fit_kwargs['verbose']
         else:
             verbose = 0
-        new_model.fit(dataset, epochs=epochs, verbose=verbose, **fit_kwargs)
-        task_id = tf_config["task"]["index"]
+        del fit_kwargs['verbose']
+        history = new_model.fit(dataset, verbose=verbose, **fit_kwargs)
         if task_id == 0:
-            print("saving model")
-            new_model.save(os.path.join(model_dir, 'temp_model'), overwrite=True)
+            new_model.save_weights(os.path.join(model_dir, 'trained_model_weights'), overwrite=True)
         else:
-            new_model.save(os.path.join(model_dir, f'temp_model_{task_id}'), overwrite=True)
-            shutil.rmtree(os.path.join(model_dir, f'temp_model_{task_id}'))
+            new_model.save_weights(os.path.join(model_dir, f'trained_model_weights_{task_id}'), overwrite=True)
+        return history
 
-def distributed_train_keras(backend, model, train_dataset, nprocs, epochs, fit_kwargs=None):
+def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
 
     backend.setup()
 
@@ -64,6 +65,8 @@ def distributed_train_keras(backend, model, train_dataset, nprocs, epochs, fit_k
 
     from tensorflow.python.distribute.input_lib import _dummy_tensor_fn
     from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
+
+    train_dataset = fit_kwargs.pop('x')
 
     graph_def = serialize_dataset_to_graph(train_dataset)
     graph_def = graph_def.numpy()
@@ -99,12 +102,12 @@ def distributed_train_keras(backend, model, train_dataset, nprocs, epochs, fit_k
             }
             envs.append(env)
         
-        backend.run(target=train_func,
-                    args=(temp_dir, graph_def, elem_spec, epochs, fit_kwargs),
-                    nprocs=nprocs,
-                    envs=envs)
-        model = tf.keras.models.load_model(os.path.join(temp_dir, 'temp_model'))
-    return model
+        histrories = backend.run(target=train_func,
+                                 args=(temp_dir, graph_def, elem_spec, fit_kwargs),
+                                 nprocs=nprocs,
+                                 envs=envs)
+        model.load_weights(os.path.join(temp_dir, 'trained_model_weights'))
+    return histrories[0]
 
 
         

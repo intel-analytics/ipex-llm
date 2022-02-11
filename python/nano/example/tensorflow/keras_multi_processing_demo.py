@@ -6,7 +6,7 @@ from bigdl.nano.tf.keras.distributed_utils import distributed_train_keras
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-from tensorflow.keras.models import Sequential
+from bigdl.nano.tf.keras import Sequential
 
 
 import pathlib
@@ -25,6 +25,15 @@ train_ds = tf.keras.utils.image_dataset_from_directory(
   seed=123,
   image_size=(img_height, img_width),
   batch_size=batch_size)
+
+val_ds = tf.keras.utils.image_dataset_from_directory(
+  data_dir,
+  validation_split=0.2,
+  subset="validation",
+  seed=123,
+  image_size=(img_height, img_width),
+  batch_size=batch_size)
+
 class_names = train_ds.class_names
 
 AUTOTUNE = tf.data.AUTOTUNE
@@ -50,7 +59,7 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-ray_backend = RayBackend()
-distributed_train_keras(ray_backend, model, train_ds, 2, 3)
-
+model.fit(train_ds, epochs=3, nprocs=2)
+model.evaluate(train_ds)
+model.evaluate(val_ds)
 

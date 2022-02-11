@@ -16,11 +16,11 @@
 
 class Backend:
 
-    def setup(self) -> None:
+    def setup(self):
         pass
 
-    def run(self, target, args=(), nprocs=1, envs=None) -> None:
+    def run(self, target, args=(), nprocs=1, envs=None):
         pass
 
-    def shutdown(self) -> None:
+    def shutdown(self):
         pass

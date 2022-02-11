@@ -41,4 +41,4 @@ class RayBackend(Backend):
                 "env_vars": envs[i]
             }
             results.append(ray.remote(target).options(runtime_env=runtime_env).remote(*args))
-        ray.get(results)
+        return ray.get(results)
