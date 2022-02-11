@@ -32,7 +32,7 @@ class Example18(nn.Module):
 
 def test_optim_sparseadam():
     # # Test different results of SparseAdam
-    # # when applied in sparse= False and sparse=True
+    # # when applied in sparse=False and sparse=True
     # model1: sparse=False
     # model2: sparse=True
     model1 = Example18(30, 16, sparse=False)
