@@ -31,7 +31,7 @@ class Example18(nn.Module):
 
 
 def test_optim_lazyadam():
-    # # Test different results of LazyAdam
+    # # Test different results of SparseAdam
     # # when applied in sparse= False and sparse=True
     # model1: sparse=False
     # model2: sparse=True
@@ -40,8 +40,8 @@ def test_optim_lazyadam():
 
     loss_function = nn.MSELoss()
 
-    optimizer1 = LazyAdam(model1.parameters())
-    optimizer2 = LazyAdam(model2.parameters())
+    optimizer1 = SparseAdam(model1.parameters())
+    optimizer2 = SparseAdam(model2.parameters())
 
     nums_epochs = 1
     nums_batches = 2
