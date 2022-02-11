@@ -25,7 +25,9 @@ import org.apache.spark.sql.{SQLContext, SparkSession, Row}
 import org.apache.spark.SparkContext
 
 /*
-    The dataset is tab separated with the following schema: <label> <integer feature 1> … <integer feature 13> <categorical feature 1> … <categorical feature 26>
+    The dataset is tab separated with the following schema: 
+    <label> <integer feature 1> … <integer feature 13> 
+      <categorical feature 1> … <categorical feature 26>
     We set missing value to -999.
     Categorical feature is in hexadecimal format and we convert them into long type.
 */
@@ -37,7 +39,8 @@ class Task extends Serializable{
     0 until row.length flatMap {
       case 0 => Some(row(0).toString)
       case i if row(i) == null => Some(default_missing_value)
-      case i => Some( (if (i < 14) row(i) else java.lang.Long.parseLong(row(i).toString, 16)).toString )
+      case i => Some( (if (i < 14) row(i) 
+        else java.lang.Long.parseLong(row(i).toString, 16)).toString )
     } mkString " "
   }
 }
@@ -63,7 +66,8 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val max_depth = args(4).toInt // tree max depth
 
     // read csv files to dataframe
-    var df = spark.read.option("header", "false").option("inferSchema", "true").option("delimiter", "\t").csv(input_path)
+    var df = spark.read.option("header", "false").
+      option("inferSchema", "true").option("delimiter", "\t").csv(input_path)
     // preprocess data
     val processedRdd = df.rdd.map(task.rowToLibsvm)
 
