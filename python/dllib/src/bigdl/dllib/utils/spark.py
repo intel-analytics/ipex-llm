@@ -431,16 +431,11 @@ class SparkRunner:
                      "spark.executor.extraLibraryPath": ld_path,
                      "spark.executorEnv.LD_PRELOAD": preload_so,
                      "spark.kubernetes.container.image": container_image})
-        if "BIGDL_CLASSPATH" in os.environ:
-            zoo_bigdl_path_on_executor = os.environ["BIGDL_CLASSPATH"]
-        else:
-            zoo_bigdl_path_on_executor = ":".join(
-                list(get_executor_conda_zoo_classpath(executor_python_env)))
         if "spark.executor.extraClassPath" in conf:
             conf["spark.executor.extraClassPath"] = "{}:{}".format(
                 zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
         else:
-            conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
+            conf["spark.executor.extraClassPath"] = "/opt/bigdl-0.14.0-SNAPSHOT/jars/*" # BigDL Class path in k8s image"
         conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
         sys_args = "local://" + " ".join(sys.argv)
         conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
