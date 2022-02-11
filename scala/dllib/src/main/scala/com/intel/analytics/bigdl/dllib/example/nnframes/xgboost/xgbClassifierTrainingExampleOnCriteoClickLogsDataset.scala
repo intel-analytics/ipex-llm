@@ -25,8 +25,8 @@ import org.apache.spark.sql.{SQLContext, SparkSession, Row}
 import org.apache.spark.SparkContext
 
 /*
-    The dataset is tab separated with the following schema: 
-    <label> <integer feature 1> … <integer feature 13> 
+    The dataset is tab separated with the following schema:
+    <label> <integer feature 1> … <integer feature 13>
       <categorical feature 1> … <categorical feature 26>
     We set missing value to -999.
     Categorical feature is in hexadecimal format and we convert them into long type.
@@ -39,7 +39,7 @@ class Task extends Serializable{
     0 until row.length flatMap {
       case 0 => Some(row(0).toString)
       case i if row(i) == null => Some(default_missing_value)
-      case i => Some( (if (i < 14) row(i) 
+      case i => Some( (if (i < 14) row(i)
         else java.lang.Long.parseLong(row(i).toString, 16)).toString )
     } mkString " "
   }
