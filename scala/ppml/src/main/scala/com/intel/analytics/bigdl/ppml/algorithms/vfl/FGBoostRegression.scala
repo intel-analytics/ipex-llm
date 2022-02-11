@@ -17,9 +17,10 @@
 package com.intel.analytics.bigdl.ppml.algorithms.vfl
 
 import com.intel.analytics.bigdl.dllib.nn.Sequential
+import com.intel.analytics.bigdl.dllib.optim.MAE
 import com.intel.analytics.bigdl.ppml.FLModel
 import com.intel.analytics.bigdl.ppml.base.Estimator
-import com.intel.analytics.bigdl.ppml.fgboost.FGBoostEstimator
+import com.intel.analytics.bigdl.ppml.fgboost.{FGBoostEstimator, FGBoostModel}
 
 /**
  * FGBoost regression algorithm
@@ -29,8 +30,10 @@ import com.intel.analytics.bigdl.ppml.fgboost.FGBoostEstimator
  */
 class FGBoostRegression(learningRate: Float = 0.005f,
                         maxDepth: Int = 6,
-                        minChildSize: Int = 1) extends FLModel {
-  override val model: Sequential[Float] = null
-  override val estimator: Estimator = new FGBoostEstimator(
-    continuous = true, nLabel = 1, learningRate, maxDepth, minChildSize)
+                        minChildSize: Int = 1)
+  extends FGBoostModel(continuous = true,
+    learningRate = learningRate,
+    maxDepth = maxDepth,
+    minChildSize = minChildSize,
+    validationMethods = Array(new MAE())) {
 }

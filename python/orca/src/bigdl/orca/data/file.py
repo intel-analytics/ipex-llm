@@ -16,8 +16,11 @@
 
 import os
 import subprocess
+import logging
 
 from bigdl.dllib.utils.file_utils import callZooFunc
+
+logger = logging.getLogger(__name__)
 
 
 def open_text(path):
@@ -246,6 +249,48 @@ def put_local_dir_to_remote(local_dir, remote_dir):
         for file in os.listdir(local_dir):
             with open(os.path.join(local_dir, file), "rb") as f:
                 s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix+'/'+file)
+    else:
+        if remote_dir.startswith("file://"):
+            remote_dir = remote_dir[len("file://"):]
+        from distutils.dir_util import copy_tree
+        copy_tree(local_dir, remote_dir)
+
+
+def put_local_dir_tree_to_remote(local_dir, remote_dir):
+    if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
+        test_cmd = 'hdfs dfs -ls {}'.format(remote_dir)
+        process = subprocess.Popen(test_cmd, shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        if process.returncode != 0:
+            if 'No such file or directory' in err.decode('utf-8'):
+                mkdir_cmd = 'hdfs dfs -mkdir {}'.format(remote_dir)
+                mkdir_process = subprocess.Popen(mkdir_cmd, shell=True)
+                mkdir_process.wait()
+            else:
+                # ls remote dir error
+                logger.warning(err.decode('utf-8'))
+                return
+        cmd = 'hdfs dfs -put -f {}/* {}/'.format(local_dir, remote_dir)
+        process = subprocess.Popen(cmd, shell=True)
+        process.wait()
+    elif remote_dir.startswith("s3"):  # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = remote_dir.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        prefix = "/".join(path_parts)
+        local_files = [os.path.join(dirpath, f)
+                       for (dirpath, dirnames, filenames) in os.walk(local_dir)
+                       for f in filenames]
+        for file in local_files:
+            with open(file, "rb") as f:
+                s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix+'/'+file[len(local_dir)+1:])
     else:
         if remote_dir.startswith("file://"):
             remote_dir = remote_dir[len("file://"):]

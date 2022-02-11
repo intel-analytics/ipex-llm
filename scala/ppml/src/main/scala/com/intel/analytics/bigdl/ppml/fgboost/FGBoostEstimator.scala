@@ -92,7 +92,7 @@ class FGBoostEstimator(continuous: Boolean,
     // message may be too large, split by group to send to FLServer
     val messageSize = 2 * 1e6
     val groupedSize = Math.ceil(messageSize / booleanOnePredict).toInt
-    val result = localPredicts.grouped(groupedSize).flatMap{groupedPredicts =>
+    val result = localPredicts.grouped(groupedSize).flatMap{ groupedPredicts =>
       val boostEvals = toBoostEvals(groupedPredicts)
       val response = flClient.fgbostStub.predict(boostEvals.asJava)
       toArrayFloat(response)
@@ -118,21 +118,35 @@ class FGBoostEstimator(continuous: Boolean,
     // Add this tree into tree list
     logger.info(s"Built Tree_${i}" + currTree.toString)
     if (currTree.leaves.isEmpty) {
-      logger.info("Early Stop boosting!")
+      logger.info("No leaves could be expanded, early Stop boosting.")
       return false
     }
     // upload local tree
-    val treeLeaves = currTree.leaves.toArray
-    val treeIndexes = treeLeaves.map(_.nodeID.toInt).map(int2Integer).toList.asJava
-    val treeOutput = treeLeaves.map(_.similarScore).map(float2Float).toList.asJava
-    flClient.fgbostStub.uploadTreeLeaves(i.toString, treeIndexes, treeOutput)
+    val treeLeaf = currTree.leaves.toArray
+    val treeIndexes = treeLeaf.map(_.nodeID.toInt).map(int2Integer).toList.asJava
+    val treeOutput = treeLeaf.map(_.similarScore).map(float2Float).toList.asJava
+    flClient.fgbostStub.uploadTreeLeaf(i.toString, treeIndexes, treeOutput)
     logger.debug(s"Update tree leaves ${(System.currentTimeMillis() - st) / 1000f} s")
     st = System.currentTimeMillis()
     trees.enqueue(currTree)
     // Evaluate tree and update residual and grads (g and h)
 //    validateLast(tree.dataset)
-    logger.debug(s"Validate last ${(System.currentTimeMillis() - st) / 1000f} s")
+    uploadResidual(tree.dataset)
+    logger.debug(s"Upload residual of last tree ${(System.currentTimeMillis() - st) / 1000f} s")
     true
+  }
+  /**
+   * Use local tree to predict, and upload residual to FLServer
+   * @param data the input data to predict
+   * @return
+   */
+  def uploadResidual(data: Array[Tensor[Float]]) = {
+    val lastTreePredict = data.map { record =>
+      Map(trees.last.treeID -> trees.last.predict(record))
+    }
+    val boostEvals = toBoostEvals(lastTreePredict)
+    // TODO: add grouped sending message
+    flClient.fgbostStub.evaluate(boostEvals.asJava)
   }
 
   def trainRegressionTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int): Unit = {
@@ -238,24 +252,5 @@ class FGBoostEstimator(continuous: Boolean,
       dataSplit.getGain,
       dataSplit.getItemSetList
     ).setClientID(dataSplit.getClientUid)
-  }
-  def validateLast(dataSet: Array[Tensor[Float]]): Unit = {
-    // TODO: mini-batch support
-    //    val batchSize = 100
-    // predict with new tress
-    logger.info("Eval new Tree")
-    val localPredicts = dataSet.map { record =>
-      Map(trees.last.treeID -> trees.last.predict(record))
-    }
-    val res = localPredicts.map{predict =>
-      BoostEval.newBuilder()
-        .addAllEvaluates(predict.toSeq.sortBy(_._1).map(p => {
-          TreePredict.newBuilder().setTreeID(p._1)
-            .addAllPredicts(p._2.map(boolean2Boolean).toList.asJava)
-            .build()
-        }).toList.asJava)
-        .build()
-    }.toList
-    flClient.fgbostStub.evaluate(res.asJava)
   }
 }

@@ -33,6 +33,7 @@ from bigdl.orca.data.image.utils import chunks
 
 import tempfile
 import shutil
+import logging
 
 np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(
@@ -155,7 +156,8 @@ def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
 
-def get_estimator(workers_per_node=1, model_fn=get_model, model_dir=None):
+def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
+                  log_level=logging.INFO, model_dir=None):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=nn.BCELoss(),
@@ -163,6 +165,8 @@ def get_estimator(workers_per_node=1, model_fn=get_model, model_dir=None):
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
                                      backend="spark",
+                                     sync_stats=sync_stats,
+                                     log_level=log_level,
                                      model_dir=model_dir)
     return estimator
 
@@ -390,6 +394,35 @@ class TestPyTorchEstimator(TestCase):
 
         state = estimator.get_state_dict()
         assert state['models'][0]['fc1.weight'].item() == 0.25
+
+    def test_checkpoint_callback(self):
+        from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        epochs = 2
+        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+
+        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
+                                  log_level=logging.DEBUG)
+
+        callbacks = [
+            ModelCheckpoint(filepath=os.path.join(self.model_dir, "test-{epoch}"),
+                            save_weights_only=True)
+        ]
+        estimator.fit(df, batch_size=4, epochs=epochs,
+                      callbacks=callbacks,
+                      feature_cols=["feature"],
+                      label_cols=["label"])
+        estimator.evaluate(df, batch_size=4,
+                           feature_cols=["feature"],
+                           label_cols=["label"])
+        for i in range(epochs):
+            assert os.path.isfile(os.path.join(self.model_dir, f"test-epoch={i + 1}.ckpt"))
+
+        latest_checkpoint_path = Estimator.latest_checkpoint(self.model_dir)
+        assert os.path.isfile(latest_checkpoint_path)
 
 
 if __name__ == "__main__":

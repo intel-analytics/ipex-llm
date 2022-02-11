@@ -12,7 +12,7 @@ pip install numba
 ```
 
 ## Preprocess data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing] to preprocess the orginal data.
+You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/friesian/example/wnd) to preprocess the orginal data.
 
 ## Training  tower model
 * Spark local, we can use some sample data to have a trial, example command:
@@ -28,7 +28,8 @@ python deepFM_train.py \
 ```bash
 python deepFM_train.py \
     --cluster_mode yarn \
-    --executor_cores 56 \
+    --num_executor 20 \
+    --executor_cores 8 \
     --executor_memory 240g \
     --data_dir /path/to/the/folder/of/sample_data \
     --model_dir /path/to/the/folder/to/save/trained_model
