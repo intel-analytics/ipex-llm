@@ -61,7 +61,7 @@ class SparseAdam(Optimizer):
     """
 
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8):
-        """Constructs a new LazyAdam optimizer.
+        """Constructs a new SparseAdam optimizer.
         Args:
           lr: A `Tensor` or a floating point value. or a schedule
             that is a `tf.keras.optimizers.schedules.LearningRateSchedule`
@@ -86,7 +86,7 @@ class SparseAdam(Optimizer):
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
 
         defaults = dict(lr=lr, betas=betas, eps=eps)
-        super(LazyAdam, self).__init__(params, defaults)
+        super(SparseAdam, self).__init__(params, defaults)
 
     def step(self, closure=None):
         """Performs a single optimization step.
