@@ -33,6 +33,7 @@ def recalculate_n_sampling(search_space, n_sampling):
     # TODO Number of threads specified by the user corresponds to n_sampling and give warning.
     return math.ceil(n_sampling)
 
+
 def data_check(search_space, model):
     from bigdl.chronos.autots.model.auto_nbeats import AutoNBeats
     if isinstance(model, AutoNBeats) and search_space['output_feature_num'] != 1:
