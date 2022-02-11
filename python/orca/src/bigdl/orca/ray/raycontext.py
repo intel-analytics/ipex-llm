@@ -17,6 +17,7 @@
 
 from threading import Lock
 
+
 class RayContext(object):
 
     _active_ray_context = None
