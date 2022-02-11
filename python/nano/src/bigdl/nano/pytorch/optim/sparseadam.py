@@ -14,6 +14,9 @@
 # ==============================================================================
 """SparseAdam optimizer pytorch implementation."""
 
+# This file is adapted from Lazy Adam optimizer (PyTorch).
+# https://github.com/davda54/lazy-adam/blob/master/lazy_adam.py
+
 # MIT License
 #
 # Copyright (c) 2020 David Samuel
