@@ -164,8 +164,9 @@ ${SPARK_HOME}/bin/spark-submit \
   --name bigdl \
   --conf spark.kubernetes.container.image="intelanalytics/bigdl-k8s:latest" \
   --conf spark.kubernetes.container.image.pullPolicy=Always \
-  --conf spark.pyspark.driver.python=./environment/bin/python \
-  --conf spark.pyspark.python=./environment/bin/python \
+  --conf spark.pyspark.driver.python=./env/bin/python \
+  --conf spark.pyspark.python=./env/bin/python \
+  --archives path/to/environment.tar.gz#env \
   --conf spark.executor.instances=1 \
   --executor-memory 10g \
   --driver-memory 10g \
@@ -250,21 +251,21 @@ This section shows some common topics for both client mode and cluster mode.
 
 #### **5.1 How to specify the Python environment?**
 
-In client mode, set python env and run application:
+In client mode, follow [python user guide](./python.md) to install conda and BigDL and run application:
 ```python
 python script.py
 ```
-In cluster mode, specify on both the driver and executor:
-Pack conda environment and use on both the driver and executor.
-    - Pack the current conda environment to `environment.tar.gz` (you can use any name you like):
-    ```
-    conda pack -o environment.tar.gz
-    ```
-    - spark-submit with "--archives" and specify python stores for dirver and executor
-    ```
-    --conf spark.pyspark.driver.python=./env/bin/python \
-    --conf spark.pyspark.python=./env/bin/python \
-    --archives local:///bigdl2.0/data/environment.tar.gz#env \ # this path shoud be that k8s pod can access
+In cluster mode, install conda, pack environment and use on both the driver and executor.
+- Pack the current conda environment to `environment.tar.gz` (you can use any name you like):
+```bash
+conda pack -o environment.tar.gz
+```
+- spark-submit with "--archives" and specify python stores for dirver and executor
+```bash
+--conf spark.pyspark.driver.python=./env/bin/python \
+--conf spark.pyspark.python=./env/bin/python \
+--archives local:///bigdl2.0/data/environment.tar.gz#env \ # this path shoud be that k8s pod can access
+```
 
 #### **5.2 How to retain executor logs for debugging?**
 
