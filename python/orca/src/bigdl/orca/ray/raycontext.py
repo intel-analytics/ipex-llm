@@ -15,9 +15,12 @@
 #
 
 
+from threading import Lock
+
 class RayContext(object):
 
     _active_ray_context = None
+    _lock = Lock()
 
     def __init__(self,
                  runtime="spark",
@@ -67,6 +70,8 @@ class RayContext(object):
         import ray
         ray.shutdown()
         self.initialized = False
+        with RayContext._lock:
+            RayContext._active_ray_context = None
 
     @classmethod
     def get(cls, initialize=True):
