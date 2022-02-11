@@ -30,7 +30,7 @@ class Example18(nn.Module):
         return self.model(embeds)
 
 
-def test_optim_lazyadam():
+def test_optim_sparseadam():
     # # Test different results of SparseAdam
     # # when applied in sparse= False and sparse=True
     # model1: sparse=False
