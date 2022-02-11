@@ -53,7 +53,7 @@ class TrainingSpec extends ZooSpecHelper {
 
   override def doBefore(): Unit = {
     val conf = new SparkConf()
-      .setMaster("local[4]")
+      .setMaster("local[1]")
     sc = NNContext.initNNContext(conf, appName = "TrainingSpec")
   }
 
@@ -426,6 +426,22 @@ class TrainingSpec extends ZooSpecHelper {
     val predDf = model.predict(x2, featureCols = Array("feature1", "feature2"),
       predictionCol = "predict")
     predDf.show()
+  }
+
+  "Keras model" should "support image dataframe" in {
+    import org.apache.spark.sql.functions.lit
+    val imgDF =
+      NNImageReader.readImages(getClass.getClassLoader.getResource("gray/gray.bmp").getFile, sc)
+    .withColumn("label", lit(1))
+    val model = Sequential[Float]()
+    model.add(Convolution2D[Float](1, 24, 24, activation = "relu",
+      inputShape =Shape(1, 50, 50)))
+    model.add(MaxPooling2D[Float]())
+    model.add(Reshape[Float](Array(169)))
+    model.add(Dense[Float](2, activation = "log_softmax"))
+    model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
+    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCol = "label", transformer = null)
+    model.evaluate(imgDF, batchSize = 1, labelCol = "label", transformer = null)
   }
 }
 
