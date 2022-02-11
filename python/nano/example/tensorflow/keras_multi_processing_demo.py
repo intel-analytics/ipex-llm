@@ -59,7 +59,7 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-model.fit(train_ds, epochs=3, nprocs=2)
+model.fit(train_ds, epochs=3, validation_data=val_ds, nprocs=2)
 model.evaluate(train_ds)
 model.evaluate(val_ds)
 

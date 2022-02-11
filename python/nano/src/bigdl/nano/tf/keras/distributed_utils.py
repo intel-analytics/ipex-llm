@@ -30,15 +30,19 @@ def find_free_port():
         return s.getsockname()[1]
 
 
-def train_func(model_dir, ds_graph, elem_spec, fit_kwargs):
+def train_func(model_dir, ds_graph, elem_spec, 
+               val_ds_graph, val_elem_sepc, fit_kwargs):
     import tensorflow as tf
     from tensorflow.python.distribute.coordinator.values import deserialize_dataset_from_graph
 
     strategy = tf.distribute.MultiWorkerMirroredStrategy()
     with strategy.scope():
         new_model = tf.keras.models.load_model('/tmp/temp_model')
-        dataset = deserialize_dataset_from_graph(ds_graph, elem_spec)
-        tf_config = json.loads(os.environ["TF_CONFIG"])
+        train_dataset = deserialize_dataset_from_graph(ds_graph, elem_spec)
+        if val_ds_graph is not None:
+            val_dataset = deserialize_dataset_from_graph(val_ds_graph, val_elem_sepc)
+        else:
+            val_dataset = None
 
         task_id = strategy.cluster_resolver.task_id
         
@@ -47,11 +51,13 @@ def train_func(model_dir, ds_graph, elem_spec, fit_kwargs):
         else:
             verbose = 0
         del fit_kwargs['verbose']
-        history = new_model.fit(dataset, verbose=verbose, **fit_kwargs)
+        history = new_model.fit(train_dataset, validation_data=val_dataset, verbose=verbose, **fit_kwargs)
         if task_id == 0:
-            new_model.save_weights(os.path.join(model_dir, 'trained_model_weights'), overwrite=True)
+            path = os.path.join(model_dir, 'trained_model_weights')
+            new_model.save_weights(path, overwrite=True)
         else:
-            new_model.save_weights(os.path.join(model_dir, f'trained_model_weights_{task_id}'), overwrite=True)
+            path = os.path.join(model_dir, f'trained_model_weights_{task_id}')
+            new_model.save_weights(path, overwrite=True)
         return history
 
 def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
@@ -67,15 +73,22 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
     from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
 
     train_dataset = fit_kwargs.pop('x')
+    val_dataset = fit_kwargs.pop('validation_data')
 
-    graph_def = serialize_dataset_to_graph(train_dataset)
-    graph_def = graph_def.numpy()
-    elem_spec = train_dataset.element_spec
+    train_ds_def = serialize_dataset_to_graph(train_dataset).numpy()
+    train_elem_spec = train_dataset.element_spec
+
+    if val_dataset is not None:
+        val_ds_def = serialize_dataset_to_graph(val_dataset).numpy()
+        val_elem_spec = val_dataset.element_spec
+    else:
+        val_ds_def = None
+        val_elem_spec = None
 
     # this is to work around a tensorflow problem: if we save before calling fit, the saved format is incorrect
     # dummy_batch is a batch of input with batch size equal to 0, so that the model.fit does not take any effect
-    dummy_batch = _dummy_tensor_fn(elem_spec)
-    model.fit(tf.data.Dataset.from_tensors(dummy_batch))
+    dummy_batch = _dummy_tensor_fn(train_elem_spec)
+    model.fit(tf.data.Dataset.from_tensors(dummy_batch), verbose=0)
     
     ports = set()
     while len(ports) < nprocs:
@@ -102,8 +115,11 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
             }
             envs.append(env)
         
+        train_args = (temp_dir, train_ds_def, train_elem_spec,
+                      val_ds_def, val_elem_spec, fit_kwargs)
+        
         histrories = backend.run(target=train_func,
-                                 args=(temp_dir, graph_def, elem_spec, fit_kwargs),
+                                 args=train_args,
                                  nprocs=nprocs,
                                  envs=envs)
         model.load_weights(os.path.join(temp_dir, 'trained_model_weights'))

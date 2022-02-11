@@ -63,8 +63,9 @@ class TrainingUtils:
         )
 
         if nprocs is not None:
-            assert validation_data is None, ("validation_data is currently not supported"
-                                             " for multi-process training")
+            if validation_data is not None:
+                msg = "validataion_data must be a tf.data.Dataset for multi-process training"
+                assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
             msg = "x must be a tf.data.Dataset for multi-process training"
             assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
 
@@ -78,11 +79,3 @@ class TrainingUtils:
         
         else:
             return super().fit(**fit_kwargs)
-
-
-            
-
-
-
-              
-    
