@@ -18,6 +18,7 @@ from curses import noecho
 from bigdl.nano.common.multiprocessing.backend import Backend
 import ray
 
+
 class RayBackend(Backend):
 
     def setup(self) -> None:
