@@ -282,11 +282,13 @@ class AutoTSEstimator:
         """
         import torch
         from torch.utils.data import TensorDataset, DataLoader
+        from bigdl.chronos.autots.utils import data_check
         import ray
 
         # automatically inference output_feature_num
         # input_feature_num will be set by base pytorch model according to selected features.
         search_space['output_feature_num'] = len(train_data.target_col)
+        data_check(search_space, self.model)  # nbeats only supports univariate prediction.
         if search_space['past_seq_len'] == 'auto':
             cycle_length = train_data.get_cycle_length(aggregate='mode', top_k=3)
             cycle_length = 2 if cycle_length < 2 else cycle_length

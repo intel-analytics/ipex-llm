@@ -469,6 +469,28 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
+        with pytest.raises(ValueError):
+            tsdata_train = get_tsdataset().scale(scaler, fit=True)
+            tsdata_valid = get_tsdataset().scale(scaler, fit=False)
+            auto_estimator = AutoTSEstimator(model='nbeats',
+                                             search_space="minimal",
+                                             past_seq_len='auto',
+                                             future_seq_len=1,
+                                             input_feature_num=2,
+                                             output_target_num=2,
+                                             selected_features="auto",
+                                             metric="mse",
+                                             optimizer="Adam",
+                                             loss=torch.nn.MSELoss(),
+                                             logs_dir="/tmp/auto_trainer",
+                                             cpus_per_trial=2,
+                                             name="auto_trainer")
+            auto_estimator.fit(data=tsdata_train,
+                               epochs=1,
+                               batch_size=hp.choice([32, 64]),
+                               validation_data=tsdata_valid,
+                               n_sampling=1)
+
     def test_fit_lstm_data_creator(self):
         input_feature_dim = 4
         output_feature_dim = 2  # 2 targets are generated in get_tsdataset

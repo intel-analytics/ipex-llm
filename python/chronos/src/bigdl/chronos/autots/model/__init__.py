@@ -113,7 +113,10 @@ class AutoModelFactory:
             return AutoSeq2Seq(**search_space)
         if name == "nbeats":
             from .auto_nbeats import AutoNBeats
-            return AutoNBeats(**search_space)
+            nbeats_search_space = search_space.copy()
+            del (nbeats_search_space['input_feature_num'],
+                 nbeats_search_space['output_target_num']) # nbeat only support single input.
+            return AutoNBeats(**nbeats_search_space)
         return NotImplementedError(f"{AUTO_MODEL_SUPPORT_LIST} are supported for auto model,\
                                     but get {name}.")
 

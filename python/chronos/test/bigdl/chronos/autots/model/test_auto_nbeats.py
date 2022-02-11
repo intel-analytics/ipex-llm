@@ -62,9 +62,7 @@ def valid_dataloader_creator(config):
 
 
 def get_auto_estimator():
-    auto_nbeats = AutoNBeats(input_feature_num=input_feature_dim,
-                             output_target_num=output_feature_dim,
-                             past_seq_len=past_seq_len,
+    auto_nbeats = AutoNBeats(past_seq_len=past_seq_len,
                              future_seq_len=future_seq_len,
                              stack_types=('generic', 'generic'),
                              nb_blocks_per_stack=3,

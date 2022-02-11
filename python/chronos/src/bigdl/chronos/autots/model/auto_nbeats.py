@@ -35,8 +35,6 @@ class AutoNBeats(BasePytorchAutomodel):
                  optimizer,
                  loss,
                  metric,
-                 input_feature_num,
-                 output_target_num,
                  lr=0.001,
                  dropout=0.2,
                  backend="torch",
@@ -73,8 +71,6 @@ class AutoNBeats(BasePytorchAutomodel):
                forecasting. You may only choose from "mse" and "mae" for a
                distributed forecaster. You may choose from "mse", "mae",
                "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
-        :param input_feature_num: Int. The number of features in the input
-        :param output_target_num: Int. The number of targets in the output
         :param backend: The backend of the nbeats model. We only support backend as "torch" for now.
         :param logs_dir: Local directory to save logs and results. It defaults to "/tmp/auto_nbeats"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
@@ -88,9 +84,6 @@ class AutoNBeats(BasePytorchAutomodel):
         if backend != "torch":
             raise ValueError(f"We only support backend as torch. Got {backend}")
 
-        if isinstance(input_feature_num, int) and input_feature_num != 1:
-            raise ValueError(f"NBeats only supports univariate prediction.")
-
         self.search_space = dict(share_weights_in_stack=share_weights_in_stack,
                                  hidden_layer_units=hidden_layer_units,
                                  stack_types=stack_types,
@@ -100,9 +93,7 @@ class AutoNBeats(BasePytorchAutomodel):
                                  lr=lr,
                                  dropout=dropout,
                                  past_seq_len=past_seq_len,
-                                 future_seq_len=future_seq_len,
-                                 input_feature_num=1,
-                                 output_feature_num=1)
+                                 future_seq_len=future_seq_len)
 
         self.metric = metric
         model_builder = PytorchModelBuilder(model_creator=model_creator,
