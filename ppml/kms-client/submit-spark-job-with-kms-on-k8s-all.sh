@@ -1,13 +1,13 @@
 #set -x
 SPARK_EXTRA_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-encrypt-io-0.1-SNAPSHOT.jar
 SPARK_JOB_MAIN_CLASS=com.intel.analytics.bigdl.ppml.e2e.examples.SimpleEncryptIO
-KMS_SERVER_PORT=3000
 INPUT_PATH=$1
 INPUT_DIR_PATH=$2
 ENCRYPT_KEYS_PATH=$3
 OUTPUT_DIR_PATH=$4
 KMS_SERVER_IP=$5
-LOCAL_IP=$6
+KMS_SERVER_PORT=$6
+LOCAL_IP=$7
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 
 SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
