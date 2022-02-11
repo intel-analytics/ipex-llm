@@ -22,7 +22,7 @@ import tempfile
 from bigdl.dllib.utils.file_utils import get_file_list
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
-from bigdl.orca.data.file import put_local_dir_tree_to_remote, exists, makedirs
+from bigdl.orca.data.file import put_local_dir_tree_to_remote
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 import numpy as np
 import pickle

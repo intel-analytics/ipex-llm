@@ -24,7 +24,7 @@ import tensorflow as tf
 from pyspark import BarrierTaskContext, TaskContext
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.data.file import put_local_dir_to_remote
+from bigdl.orca.data.file import put_local_dir_tree_to_remote
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_specific_object_from_callbacks, get_replaced_path, get_rank, \
     process_tensorboard_in_callbacks
@@ -301,7 +301,7 @@ class SparkRunner:
                 checkpoint_copied = False
                 try:
                     if self.rank == 0:
-                        put_local_dir_to_remote(os.path.dirname(replaced_checkpoint_path),
+                        put_local_dir_tree_to_remote(os.path.dirname(replaced_checkpoint_path),
                                                 original_checkpoint_dir)
                         checkpoint_copied = True
                 except Exception:
