@@ -435,7 +435,7 @@ class TrainingSpec extends ZooSpecHelper {
     .withColumn("label", lit(1))
     val model = Sequential[Float]()
     model.add(Convolution2D[Float](1, 24, 24, activation = "relu",
-      inputShape =Shape(1, 50, 50)))
+      inputShape = Shape(1, 50, 50)))
     model.add(MaxPooling2D[Float]())
     model.add(Reshape[Float](Array(169)))
     model.add(Dense[Float](2, activation = "log_softmax"))
