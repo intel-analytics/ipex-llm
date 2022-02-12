@@ -98,12 +98,17 @@ class AUC(Metric):
 
     >>> meter = AUC(20)
     """
-    def __init__(self, threshold_num=200):
+    def __init__(self, threshold_num=200, dist_sync_on_step=False):
         self.threshold_num = threshold_num
+        self.dist_sync_on_step=dist_sync_on_step
 
     def get_bigdl_metric(self):
         from bigdl.dllib.keras.metrics import AUC as KerasAUC
         return KerasAUC(threshold_num=self.threshold_num)
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.AUROC(self.dist_sync_on_step)
 
     def get_name(self):
         return "AUC"
