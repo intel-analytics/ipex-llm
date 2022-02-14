@@ -7,7 +7,7 @@ OUTPUT_DIR_PATH=$3
 KMS_SERVER_IP=$4
 KMS_SERVER_PORT=$5
 LOCAL_IP=$6
-secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt < /ppml/trusted-big-data-ml/work/password/output.bin`
 
 SGX=1 ./pal_loader bash -c "\
 /opt/jdk8/bin/java \
@@ -35,4 +35,4 @@ SGX=1 ./pal_loader bash -c "\
   $KMS_SERVER_IP \
   $KMS_SERVER_PORT \
   $ENCRYPT_KEYS_PATH \
-  $OUTPUT_DIR_PATH 2>&1 | tee spark-decrypt-local-sgx.log"
+  $OUTPUT_DIR_PATH" 2>&1 | tee spark-decrypt-local-sgx.log
