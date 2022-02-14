@@ -435,7 +435,8 @@ class SparkRunner:
             conf["spark.executor.extraClassPath"] = "{}:{}".format(
                 zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
         else:
-            conf["spark.executor.extraClassPath"] = "/opt/bigdl-0.14.0-SNAPSHOT/jars/*" # BigDL Class path in k8s image"
+            # BigDL Class path in k8s image
+            conf["spark.executor.extraClassPath"] = "/opt/bigdl-0.14.0-SNAPSHOT/jars/*"
         conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
         sys_args = "local://" + " ".join(sys.argv)
         conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
