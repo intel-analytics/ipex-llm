@@ -644,7 +644,7 @@ class TestTFRayEstimator(TestCase):
             return model
 
         import itertools
-        from zoo.orca import OrcaContext
+        from bigdl.orca import OrcaContext
         from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType
         spark = OrcaContext.get_spark_session()
         schema = StructType([
