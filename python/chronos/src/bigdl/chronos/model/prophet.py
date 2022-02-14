@@ -51,9 +51,23 @@ class ProphetModel:
                              changepoint_range=changepoint_range,
                              seasonality_mode=seasonality_mode)
 
+    def _fit(self, data, **config):
+        """
+        Only fit the data without validation data
+
+        :param data: training data, an dataframe with Td rows,
+            and 2 columns, with column 'ds' indicating date and column 'y' indicating target
+            and Td is the time dimension
+        """
+        if not self.model_init:
+            self._build(**config)
+            self.model_init = True
+
+        self.model.fit(data)
+
     def fit_eval(self,
                  data,
-                 validation_data,
+                 validation_data=None,
                  **config):
         """
         Fit on the training data from scratch.
@@ -69,20 +83,17 @@ class ProphetModel:
                cross_validation is set to True.
         :return: the evaluation metric value
         """
-        if not self.model_init:
-            self._build(**config)
-            self.model_init = True
+        self._fit(data, **config)
 
-        self.model.fit(data)
-
-        cross_validation = config.get('cross_validation', False)
-        expected_horizon = config.get('expect_horizon', int(0.1*len(data)))
-        if cross_validation:
-            return self._eval_cross_validation(expected_horizon)
-        else:
-            val_metric = self.evaluate(target=validation_data,
-                                       metrics=[self.metric])[0].item()
-            return {self.metric: val_metric}
+        if validation_data is not None:
+            cross_validation = config.get('cross_validation', False)
+            expected_horizon = config.get('expect_horizon', int(0.1*len(data)))
+            if cross_validation:
+                return self._eval_cross_validation(expected_horizon)
+            else:
+                val_metric = self.evaluate(target=validation_data,
+                                        metrics=[self.metric])[0].item()
+                return {self.metric: val_metric}
 
     def _eval_cross_validation(self, expected_horizon):
         df_cv = cross_validation(self.model, horizon=expected_horizon)

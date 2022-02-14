@@ -44,17 +44,18 @@ class TestChronosModelProphetForecaster(TestCase):
 
     def test_prophet_forecaster_fit_eval_pred(self):
         data, validation_data = create_data()
-        forecaster = ProphetForecaster(changepoint_prior_scale=0.05,
-                                       seasonality_prior_scale=10.0,
-                                       holidays_prior_scale=10.0,
-                                       seasonality_mode='additive',
-                                       changepoint_range=0.8,
-                                       metric="mse",
-                                       )
-        train_loss = forecaster.fit(data, validation_data)
-        test_pred = forecaster.predict(validation_data.shape[0])
-        assert test_pred.shape[0] == validation_data.shape[0]
-        test_mse = forecaster.evaluate(validation_data)
+        for valid_data in [None, validation_data]:
+            forecaster = ProphetForecaster(changepoint_prior_scale=0.05,
+                                        seasonality_prior_scale=10.0,
+                                        holidays_prior_scale=10.0,
+                                        seasonality_mode='additive',
+                                        changepoint_range=0.8,
+                                        metric="mse",
+                                        )
+            train_loss = forecaster.fit(data, valid_data)
+            test_pred = forecaster.predict(validation_data.shape[0])
+            assert test_pred.shape[0] == validation_data.shape[0]
+            test_mse = forecaster.evaluate(validation_data)
 
     def test_prophet_forecaster_save_restore(self):
         data, validation_data = create_data()
