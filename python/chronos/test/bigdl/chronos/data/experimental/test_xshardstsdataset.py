@@ -52,8 +52,6 @@ class TestXShardsTSDataset(TestCase):
             sc.stop()
 
     def test_xshardstsdataset_initialization(self):
-        from bigdl.orca import init_orca_context, stop_orca_context
-        init_orca_context(cores=4, memory="2g")
         shards_single = read_csv(os.path.join(self.resource_path, "single.csv"))
         tsdata = XShardsTSDataset.from_xshards(shards_single, dt_col="datetime", target_col="value",
                                                extra_feature_col=["extra feature"], id_col="id")
@@ -80,11 +78,8 @@ class TestXShardsTSDataset(TestCase):
         assert tsdata.target_col == ["value"]
         assert tsdata.dt_col == "datetime"
         assert tsdata.shards.num_partitions() == 1
-        # stop_orca_context()
 
     def test_xshardstsdataset_initialization_multiple(self):
-        # from bigdl.orca import init_orca_context, stop_orca_context
-        # init_orca_context(cores=4, memory="2g")
         shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
         # legal input
         tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
@@ -113,11 +108,8 @@ class TestXShardsTSDataset(TestCase):
         assert tsdata.target_col == ["value"]
         assert tsdata.dt_col == "datetime"
         assert tsdata.shards.num_partitions() == 1
-        # stop_orca_context()
 
     def test_xshardstsdataset_split(self):
-        # from bigdl.orca import init_orca_context, stop_orca_context
-        # init_orca_context(cores=4, memory="2g")
         shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
         # only train and test
         tsdata_train, tsdata_valid, tsdata_test =\
@@ -140,11 +132,8 @@ class TestXShardsTSDataset(TestCase):
         assert tsdata_train.target_col[0] == "new value"
         assert tsdata_valid.target_col[0] != "new value"
         assert tsdata_test.target_col[0] != "new value"
-        # stop_orca_context()
 
     def test_xshardstsdataset_roll_multiple_id(self):
-        # from bigdl.orca import init_orca_context, stop_orca_context
-        # init_orca_context(cores=4, memory="2g")
         shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
         horizon = random.randint(1, 10)
         lookback = random.randint(1, 20)
@@ -192,4 +181,3 @@ class TestXShardsTSDataset(TestCase):
         collected_numpy = shards_numpy.collect()  # collect and valid
         x = np.concatenate([collected_numpy[i]['x'] for i in range(len(collected_numpy))], axis=0)
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
-        # stop_orca_context()
