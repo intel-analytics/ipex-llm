@@ -13,10 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import tensorflow as tf
-from bigdl.nano.tf.keras.training_utils import TrainingUtils
 
+class Backend:
 
-class Sequential(TrainingUtils, tf.keras.Sequential):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def setup(self):
+        pass
+
+    def run(self, target, args=(), nprocs=1, envs=None):
+        pass
+
+    def shutdown(self):
+        pass
