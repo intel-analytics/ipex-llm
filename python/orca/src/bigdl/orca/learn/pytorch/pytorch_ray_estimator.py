@@ -416,6 +416,28 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         state_dict = torch.load(model_path)
         self.load_state_dict(state_dict)
 
+    def save_checkpoint(self, model_path):
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path:
+            self.save(model_path)
+        else:
+            results = [
+                worker.save_checkpoint(model_path)
+                for worker in self.remote_workers
+            ]
+            ray.get(results)
+
+    def load_checkpoint(self, model_path):
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path:
+            self.load(model_path)
+        else:
+            results = [
+                worker.load_checkpoint(model_path)
+                for worker in self.remote_workers
+            ]
+            ray.get(results)
+
     def shutdown(self, force=False):
         """
         Shuts down workers and releases resources.
