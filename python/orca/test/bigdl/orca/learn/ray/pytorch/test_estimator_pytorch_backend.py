@@ -511,10 +511,15 @@ class TestPyTorchEstimator(TestCase):
                                label_cols=["label"])
             for i in range(epochs):
                 assert os.path.isfile(os.path.join(temp_dir, f"test-epoch={i + 1}.ckpt"))
-            assert os.path.isfile(os.path.join(temp_dir, f"last.ckpt"))
+
+            latest_checkpoint_path = Estimator.latest_checkpoint(temp_dir)
+            assert os.path.isfile(latest_checkpoint_path)
 
         finally:
             shutil.rmtree(temp_dir)
+
+        with pytest.raises(FileNotFoundError):
+            Estimator.latest_checkpoint(temp_dir)
 
 
 if __name__ == "__main__":
