@@ -7,7 +7,7 @@
 
         <RollingFile name="RollingFile" filename="log/test.log"
                      filepattern="log/test-%d{yyMMddHHmmss}.log">
-            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %msg%n"/>
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %msg%n"/>
             <Policies>
                 <SizeBasedTriggeringPolicy size="100 MB"/>
             </Policies>
@@ -18,10 +18,8 @@
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
-<!--        <Logger name="com.intel.analytics.zoo.faiss.examples.Examples" level="info"-->
-<!--                additivity="false">-->
-<!--            <AppenderRef ref="Console"/>-->
-<!--            <AppenderRef ref="RollingFile"/>-->
-<!--        </Logger>-->
+        <Logger name="org" level="warn" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
     </Loggers>
 </Configuration>
