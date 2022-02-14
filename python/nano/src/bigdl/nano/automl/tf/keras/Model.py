@@ -13,12 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import tensorflow as tf
 
-try:
-    from ..quantization import quantize
-    tf.keras.Model.quantize = quantize
-except ImportError:
-    print("Warning: Intel Neural Compressor should be installed if you need quantization.")
-from .Sequential import Sequential
-from .Model import Model
+
+import tensorflow as tf
+from bigdl.nano.automl.hpo.mixin import HPOMixin
+
+
+class Model(HPOMixin, tf.keras.Model):
+    def __init__(
+        self,
+        model_initor=None,
+        model_compiler=None,
+        *args,
+        **kwargs,
+    ):
+        # super().__init__(*args, **kwargs)
+        if model_initor is None:
+            super().__init__(*args, **kwargs)
+        else:
+            self.model_initor = model_initor
+        self.model_compiler = model_compiler
+
+        self.objective = None
+        self.study = None

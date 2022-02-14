@@ -26,7 +26,6 @@ class Objective(object):
                  model_initor=None,
                  model_compiler=None,
                  target_metric=None,
-                 *args,
                  **kwargs,
                  ):
         """Init the objective
@@ -60,7 +59,7 @@ class Objective(object):
 
         self.model_compiler = model_compiler
         self.target_metric = target_metric
-        self.args = args
+
         self.kwargs = kwargs
 
     def __call__(self, trial):
@@ -79,7 +78,7 @@ class Objective(object):
         # compile
         self.model_compiler(model, trial)
         # fit
-        hist = model.fit(*self.args, **self.kwargs)
+        hist = model.fit(**self.kwargs)
 
         # evaluate
         (x_valid, y_valid) = self.kwargs.get('validation_data', (None, None))

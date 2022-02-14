@@ -13,12 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import tensorflow as tf
 
-try:
-    from ..quantization import quantize
-    tf.keras.Model.quantize = quantize
-except ImportError:
-    print("Warning: Intel Neural Compressor should be installed if you need quantization.")
-from .Sequential import Sequential
-from .Model import Model
+
+from .decorator import *
+from .space import *
+#__import__("pkg_resources").declare_namespace(__name__)
