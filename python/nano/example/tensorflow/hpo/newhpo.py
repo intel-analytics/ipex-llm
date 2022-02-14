@@ -55,7 +55,6 @@ model.compile(
         metrics=["accuracy"]
     )
 
-
 model.search(
     n_trails = 2,
     target_metric='accuracy',
@@ -69,10 +68,8 @@ model.search(
     verbose=False,
 )
 
-model.end_search()
-#model.build(input_shape=input_shape)
-#model.build(input_shape=input_shape)
-#print(model.summary())
+
+print(model.summary())
 
 model.fit(
         x_train,
@@ -83,3 +80,9 @@ model.fit(
         epochs=2,
         verbose=False
     )
+
+score = model.evaluate(x_valid, y_valid, verbose=0)
+
+
+
+print("The final score is on validation data is",score[1])

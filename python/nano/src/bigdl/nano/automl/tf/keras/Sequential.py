@@ -17,13 +17,26 @@
 import tensorflow as tf
 
 from bigdl.nano.automl.hpo.space import AutoGluonObject
+from bigdl.nano.automl.utils.lazyutils import proxy_methods
 import bigdl.nano.tf.keras.Sequential as NanoSequential
 from bigdl.nano.automl.hpo.mixin import HPOMixin
 from bigdl.nano.automl.hpo.backend import OptunaBackend
 import bigdl.nano.automl.hpo as hpo
 import copy
 
+
+@proxy_methods
 class Sequential(HPOMixin, tf.keras.Sequential):
+
+    # these methods are automatically created using "@proxy_methods"
+    # details see desriptions in _proxy method
+    PROXYED_METHODS = ['predict', 'predict_on_batch',
+            'evaluate', 'test_on_batch',
+            'to_json', 'to_yaml', 'summary',
+            'save', 'save_spec', 'save_weights',
+            'get_layer']
+
+
     def __init__(self, layers=None, name=None):
         super().__init__(layers=None, name=name)
         # TODO add more flexibility for args parsing
@@ -37,8 +50,21 @@ class Sequential(HPOMixin, tf.keras.Sequential):
         self.objective = None
         self.study = None
         self.tune_end=False
+        super().__init__(layers, name)
+        self._lazymodel = None
 
-    def _istantiate_layers(self,trial, layers):
+
+    def _proxy(self, name, method, *args, **kwargs):
+        # call to keras method is forwarded to internal model
+        # NOTE: keep the unused "method" argument so that
+        # only the methods which are actually called are created
+        if not self._lazymodel:
+            raise ValueError("Model is not actually built yet. "+ \
+                "Please call end_search before calling \""+name+"\"")
+        internal_m = getattr(self._lazymodel, name)
+        return internal_m(*args, **kwargs)
+
+    def _instantiate_layers(self,trial, layers):
         inst_layers=[]
         for l in layers:
             if isinstance(l, AutoGluonObject):
@@ -60,17 +86,31 @@ class Sequential(HPOMixin, tf.keras.Sequential):
     def _model_init_args(self, trial):
         # for lazy model init
         # use backend to sample model init args
-        inst_layers = self._istantiate_layers(trial, self.layers_)
+        inst_layers = self._instantiate_layers(trial, self.layers_)
         return {'layers':inst_layers, 'name': self.name_}
 
     def _model_compile(self, model, trial):
         # for lazy model compile
         # use backedn to sample compile args
-        # config = OptunaBackend.sample_config(tiral, kwspaces)
+        # config = OptunaBackend.sample_config(trial, kwspaces)
         model.compile(*self.compile_args, **self.compile_kwargs)
 
+    def _model_build(self, trial):
+        # for lazy model build
+        # build model based on searched hyperparams from trial
+        # TODO may add data creator here, e.g. refresh data, reset generators, etc.
+        #super().__init__(**self._model_init_args(trial))
+        #self._model_compile(super(), trial)
+        # use composition instead of inherited
+        modelcls = self.__class__.__bases__[1]
+        self._lazymodel = modelcls(**self._model_init_args(trial))
+        self._model_compile(self._lazymodel, trial)
+
     def fit(self, *args, **kwargs):
-    #     if not self.tune_end:
-    #         self.end_tune()
-        super().fit(*args, **kwargs)
+        if not self.tune_end:
+             self.end_search()
+        self._lazymodel.fit(*args, **kwargs)
+
+
+
 

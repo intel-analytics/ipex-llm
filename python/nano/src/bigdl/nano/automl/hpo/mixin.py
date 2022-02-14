@@ -101,9 +101,7 @@ class HPOMixin:
             trial = self.study.best_trial
         else:
             trial = self.study.trials[use_trial_id]
-        # TODO may add data creator here, e.g. refresh data, reset generators, etc.
-        super().__init__(**self._model_init_args(trial))
-        self._model_compile(super(), trial)
-        #super().build()
+
+        self._model_build(trial)
         # TODO Next step: support retrive saved model instead of retrain from hparams
         self.tune_end=True
