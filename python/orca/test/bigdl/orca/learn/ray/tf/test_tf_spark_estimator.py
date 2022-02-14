@@ -375,6 +375,21 @@ class TestTFEstimator(TestCase):
                 model_dir=temp_dir)
 
             callbacks = [
+                tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "ckpt_{epoch}"),
+                                                   save_weights_only=False
+                                                   )
+            ]
+
+            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
+                              callbacks=callbacks,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1
+                              )
+            assert len(os.listdir(os.path.join(temp_dir, "ckpt_3"))) > 0
+
+            callbacks = [
                 tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "best"),
                                                    save_weights_only=False,
                                                    save_best_only=True
