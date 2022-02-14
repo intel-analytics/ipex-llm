@@ -282,6 +282,18 @@ class TestPyTorchEstimator(TestCase):
         assert result.selectExpr(expr).first()["error"] == 0
 
     def test_xshards_predict_save_load(self):
+        from bigdl.orca.data import SparkXShards
+        estimator = get_estimator(workers_per_node=1, model_dir=self.model_dir)
+        sc = init_nncontext()
+        x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
+        # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
+        y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1, 1)).astype(np.float32))
+        rdd = x_rdd.zip(y_rdd).map(lambda x_y: {'x': x_y[0], 'y': x_y[1]})
+        train_rdd, val_rdd = rdd.randomSplit([0.9, 0.1])
+        train_xshards = SparkXShards(train_rdd)
+        val_xshards = SparkXShards(val_rdd)
+        train_stats = estimator.fit(train_xshards, batch_size=256, epochs=2)
+        val_stats = estimator.evaluate(val_xshards, batch_size=128)
 
         sc = init_nncontext()
         rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
@@ -291,6 +303,9 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: IdentityNet(),
                                   model_dir=self.model_dir)
+        estimator.fit(shards, batch_size=4, epochs=2,
+                      feature_cols=["feature"],
+                      label_cols=["label"])
         result_shards = estimator.predict(shards, batch_size=4)
         result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
         expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
@@ -299,8 +314,12 @@ class TestPyTorchEstimator(TestCase):
         path = "/tmp/model.pth"
         try:
             estimator.save(path)
-            estimator.load(path)
-            result_shards = estimator.predict(shards, batch_size=4)
+            estimator.shutdown()
+            new_estimator = get_estimator(workers_per_node=2,
+                                          model_fn=lambda config: IdentityNet(),
+                                          model_dir=self.model_dir)
+            new_estimator.load(path)
+            result_shards = new_estimator.predict(shards, batch_size=4)
             result_after = np.concatenate([shard["prediction"]
                                            for shard in result_shards.collect()])
 
@@ -350,7 +369,6 @@ class TestPyTorchEstimator(TestCase):
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["f1", "f2"])
         result.collect()
-
 
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()
@@ -403,6 +421,7 @@ class TestPyTorchEstimator(TestCase):
         df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
+        df = df.cache()
 
         estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
                                   log_level=logging.DEBUG)
@@ -415,14 +434,64 @@ class TestPyTorchEstimator(TestCase):
                       callbacks=callbacks,
                       feature_cols=["feature"],
                       label_cols=["label"])
-        estimator.evaluate(df, batch_size=4,
-                           feature_cols=["feature"],
-                           label_cols=["label"])
+        eval_before = estimator.evaluate(df, batch_size=4,
+                                         feature_cols=["feature"],
+                                         label_cols=["label"])
+
         for i in range(epochs):
             assert os.path.isfile(os.path.join(self.model_dir, f"test-epoch={i + 1}.ckpt"))
 
         latest_checkpoint_path = Estimator.latest_checkpoint(self.model_dir)
         assert os.path.isfile(latest_checkpoint_path)
+        estimator.shutdown()
+        new_estimator = get_estimator(workers_per_node=2,  model_dir=self.model_dir,
+                                      log_level=logging.DEBUG)
+        new_estimator.load_checkpoint(latest_checkpoint_path)
+        eval_after = new_estimator.evaluate(df, batch_size=4,
+                                            feature_cols=["feature"],
+                                            label_cols=["label"])
+        for name, value in eval_before.items():
+            print(f"Comparing evaluate result of {name}")
+            np.testing.assert_almost_equal(value, eval_after[name])
+        res = new_estimator.predict(df, feature_cols=["feature"]).collect()
+
+    def test_manual_ckpt(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        epochs = 2
+        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+        df = df.cache()
+
+        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
+                                  log_level=logging.DEBUG)
+        estimator.fit(df, batch_size=4, epochs=epochs,
+                      feature_cols=["feature"],
+                      label_cols=["label"])
+        eval_before = estimator.evaluate(df, batch_size=4,
+                                         feature_cols=["feature"],
+                                         label_cols=["label"])
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+            ckpt_file = os.path.join(temp_dir, "manual.ckpt")
+            estimator.save_checkpoint(ckpt_file)
+            state_dict1 = estimator.get_state_dict()
+            print(state_dict1)
+            estimator.shutdown()
+            new_estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
+                                          log_level=logging.DEBUG)
+            new_estimator.load_checkpoint(ckpt_file)
+            state_dict2 = new_estimator.get_state_dict()
+            print(state_dict2)
+            eval_after = new_estimator.evaluate(df, batch_size=4,
+                                                feature_cols=["feature"],
+                                                label_cols=["label"])
+            for name, value in eval_before.items():
+                np.testing.assert_almost_equal(value, eval_after[name])
+        finally:
+            shutil.rmtree(temp_dir)
 
 
 if __name__ == "__main__":
