@@ -92,7 +92,7 @@ class ProphetModel:
                 return self._eval_cross_validation(expected_horizon)
             else:
                 val_metric = self.evaluate(target=validation_data,
-                                        metrics=[self.metric])[0].item()
+                                           metrics=[self.metric])[0].item()
                 return {self.metric: val_metric}
 
     def _eval_cross_validation(self, expected_horizon):
