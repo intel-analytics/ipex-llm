@@ -418,7 +418,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
     def save_checkpoint(self, model_path):
         from bigdl.dllib.utils.file_utils import is_local_path
-        if is_local_path:
+        if is_local_path(model_path):
             self.save(model_path)
         else:
             results = [
@@ -429,7 +429,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
     def load_checkpoint(self, model_path):
         from bigdl.dllib.utils.file_utils import is_local_path
-        if is_local_path:
+        if is_local_path(model_path):
             self.load(model_path)
         else:
             results = [
