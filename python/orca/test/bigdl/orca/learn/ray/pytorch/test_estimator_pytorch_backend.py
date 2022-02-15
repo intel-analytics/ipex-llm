@@ -493,6 +493,7 @@ class TestPyTorchEstimator(TestCase):
         df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
+        df = df.cache()
 
         estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
 
@@ -536,6 +537,7 @@ class TestPyTorchEstimator(TestCase):
         df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
+        df = df.cache()
 
         estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=epochs,
