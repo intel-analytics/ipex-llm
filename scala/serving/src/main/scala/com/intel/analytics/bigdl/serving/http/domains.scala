@@ -845,7 +845,7 @@ class ServableManager {
         metrics.timer("bigdl.serving.inference." + modelInfo.getModelName + "."
           + modelInfo.getModelVersion)
       purePredictTimersMap(modelInfo.getModelName)(modelInfo.getModelVersion) =
-        metrics.timer("zoo.pure.predict." + modelInfo.getModelName + "."
+        metrics.timer("bigdl.pure.predict." + modelInfo.getModelName + "."
           + modelInfo.getModelVersion)
       val servable = modelInfo match {
         case clusterServingModelInfo: ClusterServingMetaData =>

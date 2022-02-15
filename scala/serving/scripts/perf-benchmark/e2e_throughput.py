@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-from zoo.serving.client import InputQueue, OutputQueue
-from zoo.common.encryption_utils import encrypt_with_AES_GCM
+from bigdl.serving.client import InputQueue, OutputQueue
+from bigdl.common.encryption_utils import encrypt_with_AES_GCM
 import os
 import cv2
 import json
