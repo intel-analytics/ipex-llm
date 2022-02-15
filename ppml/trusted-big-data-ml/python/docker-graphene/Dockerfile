@@ -214,7 +214,7 @@ ADD ./kms-client /ppml/trusted-big-data-ml/work/kms-client
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
-    apt-get install -y apt-utils vim curl nano wget unzip git tree zip && \
+    apt-get install -y apt-utils vim curl nano wget unzip maven git tree zip && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y netcat net-tools
