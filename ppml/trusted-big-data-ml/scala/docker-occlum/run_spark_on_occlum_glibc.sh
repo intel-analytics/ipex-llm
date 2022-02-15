@@ -1,6 +1,5 @@
 #!/bin/bash
 set -x
-export SGX_MEM_SIZE=64GB
 
 BLUE='\033[1;34m'
 NC='\033[0m'
