@@ -38,7 +38,7 @@ import scala.concurrent.Await
 object FrontEndApp extends Supportive with EncryptSupportive {
   override val logger = LoggerFactory.getLogger(getClass)
 
-  val name = "analytics zoo web serving frontend"
+  val name = "BigDL web serving frontend"
 
   implicit val system = ActorSystem("zoo-serving-frontend-system")
   implicit val materializer = ActorMaterializer()
@@ -316,7 +316,7 @@ object FrontEndApp extends Supportive with EncryptSupportive {
   val jacksonJsonSerializer = new JacksonJsonSerializer()
 
   val argumentsParser = new scopt.OptionParser[FrontEndAppArguments]("AZ Serving") {
-    head("Analytics Zoo Serving Frontend")
+    head("BigDL Serving Frontend")
     opt[String]('i', "interface")
       .action((x, c) => c.copy(interface = x))
       .text("network interface of frontend")
