@@ -54,6 +54,11 @@ def _build_ortsess(self,
     :param **kwargs: will be passed to torch.onnx.export function.
     '''
 
+    # quantized model will not be supported
+    if "_quantized_model" in dir(self):
+        self._quantized_model = None
+        self._quantized_model_up_to_date = False
+
     if input_sample is None and self.example_input_array is not None:
         input_sample = self.example_input_array  # use internal example_input_array
     else:

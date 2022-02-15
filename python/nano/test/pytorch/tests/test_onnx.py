@@ -22,6 +22,7 @@ from unittest import TestCase
 import torch
 from torch import nn
 from torch.utils.data import TensorDataset, DataLoader
+import torchmetrics
 
 import numpy as np
 
@@ -141,11 +142,37 @@ class TestOnnx(TestCase):
         train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
+
+        # false framework parameters
+        with pytest.raises(RuntimeError):
+            pl_model = trainer.quantize(pl_model, train_loader,
+                                        framework=['pytorch_fx', 'pytorch'])
+        with pytest.raises(RuntimeError):
+            pl_model = trainer.quantize(pl_model, train_loader,
+                                        framework=['onnxrt_integerops', 'onnxrt_qlinearops'])
+
+        # normal usage without tunning
         pl_model = trainer.quantize(pl_model, train_loader, framework=['pytorch_fx', 'onnxrt_integerops'])
         assert pl_model._quantized_model_up_to_date is True
         for x, y in train_loader:
             onnx_res = pl_model.inference(x, backend="onnx", quantize=True).numpy()
-            onnx_res_fp32 = pl_model.inference(x, backend="onnx", quantize=False).numpy()  # native pytorch
+            pl_model.eval_onnx(quantize=True)
+            forward_res = pl_model(x).numpy()
+            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
+
+        # quantization with tunning
+        pl_model.eval()
+        pl_model = trainer.quantize(pl_model,
+                                    calib_dataloader=train_loader,
+                                    val_dataloader=train_loader,
+                                    metric=torchmetrics.F1(10),
+                                    framework=['onnxrt_qlinearops'],
+                                    accuracy_criterion={'relative': 0.99,
+                                                        'higher_is_better': True})
+        # pl_model = trainer.quantize(pl_model, train_loader, framework=['onnxrt_integerops'])
+        assert pl_model._quantized_model_up_to_date is True
+        for x, y in train_loader:
+            onnx_res = pl_model.inference(x, backend="onnx", quantize=True).numpy()
             pl_model.eval_onnx(quantize=True)
             forward_res = pl_model(x).numpy()
             np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
