@@ -45,6 +45,7 @@ from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
+from bigdl.orca.learn.pytorch.utils import get_filesystem
 
 try:
     from collections.abc import Iterable
@@ -452,7 +453,6 @@ class TorchRunner:
             f.write(byte_obj)
 
     def load_checkpoint(self, filepath):
-        from utils import get_filesystem
         fs = get_filesystem(filepath)
         if not fs.exists(filepath):
             raise FileNotFoundError(f"Checkpoint at {filepath} not found. Aborting training.")
@@ -465,7 +465,6 @@ class TorchRunner:
             self._remove_checkpoint(filepath)
 
     def _remove_checkpoint(self, filepath):
-        from utils import get_filesystem
         fs = get_filesystem(filepath)
         if fs.exists(filepath):
             fs.rm(filepath, recursive=True)
