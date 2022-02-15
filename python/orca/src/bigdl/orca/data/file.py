@@ -269,14 +269,16 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
             if 'No such file or directory' in err.decode('utf-8'):
                 mkdir_cmd = 'hdfs dfs -mkdir -p {}'.format(remote_dir)
                 mkdir_process = subprocess.Popen(mkdir_cmd, shell=True)
-                mkdir_process.wait()
+                ret = mkdir_process.wait()
+                if ret != 0:
+                    return ret
             else:
                 # ls remote dir error
                 logger.warning(err.decode('utf-8'))
-                return
+                return -1
         cmd = 'hdfs dfs -put -f {}/* {}/'.format(local_dir, remote_dir)
         process = subprocess.Popen(cmd, shell=True)
-        process.wait()
+        return process.wait()
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -297,7 +299,11 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
         if remote_dir.startswith("file://"):
             remote_dir = remote_dir[len("file://"):]
         from distutils.dir_util import copy_tree
-        copy_tree(local_dir, remote_dir)
+        try:
+            copy_tree(local_dir, remote_dir)
+        except Exception as e:
+            logger.warning(str(e))
+            return -1
 
 
 def put_local_file_to_remote(local_path, remote_path):

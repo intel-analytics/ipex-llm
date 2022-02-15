@@ -437,6 +437,22 @@ def get_specific_object_from_callbacks(class_type, callbacks):
             return c
     return None
 
+def get_class(class_name):
+    parts = class_name.split('.')
+    module = ".".join(parts[:-1])
+    m = __import__( module )
+    for comp in parts[1:]:
+        m = getattr(m, comp)
+    return m
+
+def replace_specific_object_from_callbacks(callbacks, original_class_type, new_class_type, rank=None):
+    for c in callbacks:
+        if isinstance(c, original_class_type):
+            callbacks.remove(c)
+            new_callback = new_class_type(c, rank)
+            callbacks.append(new_callback)
+    return None
+
 
 def get_replaced_path(original_filepath):
     base_name = os.path.basename(original_filepath)
@@ -444,74 +460,34 @@ def get_replaced_path(original_filepath):
     return os.path.join(temp_dir, base_name)
 
 
-def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
-    import tensorflow as tf
-
-    class EpochCopyCallback(tf.keras.callbacks.Callback):
-        def __init__(self, local_dir, remote_dir, rank=None):
-            super(EpochCopyCallback, self).__init__()
-            self.local_dir = local_dir
-            self.remote_dir = remote_dir
-            self.rank = rank
-
-        def on_epoch_end(self, epoch, logs=None):
-            if self.rank is not None:
-                if self.rank == 0:
-                    put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
-
-    class TrainBatchCopyCallback(tf.keras.callbacks.Callback):
-        def __init__(self, local_dir, remote_dir, freq, rank=None):
-            super(TrainBatchCopyCallback, self).__init__()
-            self.local_dir = local_dir
-            self.remote_dir = remote_dir
-            self.freq = freq
-            self.rank = rank
-
-        def on_train_batch_end(self, batch, logs=None):
-            if self.rank is not None:
-                if self.rank == 0:
-                    if batch % self.freq == 0:
-                        put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
-
-    class BatchCopyCallback(tf.keras.callbacks.Callback):
-        def __init__(self, local_dir, remote_dir, freq, rank=None):
-            super(BatchCopyCallback, self).__init__()
-            self.local_dir = local_dir
-            self.remote_dir = remote_dir
-            self.freq = freq
-            self.rank = rank
-
-        def on_test_batch_end(self, batch, logs=None):
-            if self.rank is not None:
-                if self.rank == 0:
-                    if batch % self.freq == 0:
-                        put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
-
-    tensorboard = get_specific_object_from_callbacks(tf.keras.callbacks.TensorBoard,
-                                                     callbacks)
-    if tensorboard:
-        original_log_dir = tensorboard.log_dir
-        replaced_log_dir = get_replaced_path(original_log_dir)
-        tensorboard.log_dir = replaced_log_dir
-
-        if tensorboard.update_freq == 'epoch':
-            # create copy callback for epoch
-            copy_callback = EpochCopyCallback(replaced_log_dir, original_log_dir, rank)
-        else:
-            # to avoid frequent copy, set update freq > 10
-            update_freq = tensorboard.update_freq if tensorboard.update_freq > 10 \
-                else 10
-            if mode == "fit":
-                # create copy callback for batch
-                copy_callback = TrainBatchCopyCallback(replaced_log_dir, original_log_dir,
-                                                       update_freq, rank)
-            else:
-                copy_callback = BatchCopyCallback(replaced_log_dir, original_log_dir,
-                                                  update_freq, rank)
-        callbacks.append(copy_callback)
-        return replaced_log_dir
-    return None
-
+# def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
+#     import tensorflow as tf
+#
+#     tensorboard = get_specific_object_from_callbacks(tf.keras.callbacks.TensorBoard,
+#                                                      callbacks)
+#     if tensorboard:
+#         original_log_dir = tensorboard.log_dir
+#         replaced_log_dir = get_replaced_path(original_log_dir)
+#         tensorboard.log_dir = replaced_log_dir
+#
+#         if tensorboard.update_freq == 'epoch':
+#             # create copy callback for epoch
+#             copy_callback = EpochCopyCallback(replaced_log_dir, original_log_dir, rank)
+#         else:
+#             # to avoid frequent copy, set update freq > 10
+#             update_freq = tensorboard.update_freq if tensorboard.update_freq > 10 \
+#                 else 10
+#             if mode == "fit":
+#                 # create copy callback for batch
+#                 copy_callback = TrainBatchCopyCallback(replaced_log_dir, original_log_dir,
+#                                                        update_freq, rank)
+#             else:
+#                 copy_callback = BatchCopyCallback(replaced_log_dir, original_log_dir,
+#                                                   update_freq, rank)
+#         callbacks.append(copy_callback)
+#         return replaced_log_dir
+#     return None
+#
 
 def get_latest_checkpoint(checkpoint_dir):
     import tensorflow as tf

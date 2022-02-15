@@ -27,8 +27,9 @@ from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.data.file import put_local_dir_tree_to_remote
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_specific_object_from_callbacks, get_replaced_path, get_rank, \
-    process_tensorboard_in_callbacks
+    replace_specific_object_from_callbacks
 from bigdl.orca.learn.log_monitor import LogMonitor
+from bigdl.orca.learn.tf2.callbacks import Tensorboard
 
 logger = logging.getLogger(__name__)
 
@@ -283,7 +284,10 @@ class SparkRunner:
                 replaced_checkpoint_path = get_replaced_path(checkpoint.filepath)
                 checkpoint.filepath = replaced_checkpoint_path
 
-            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
+            replace_specific_object_from_callbacks(callbacks,
+                                                   tf.keras.callbacks.TensorBoard,
+                                                   Tensorboard,
+                                                   self.rank)
 
         history = model.fit(train_dataset,
                             epochs=epochs,
@@ -308,10 +312,7 @@ class SparkRunner:
                     logger.warning("Error when copy local checkpoint {} to {}, "
                                    "please get the local checkpoint manually"
                                    .format(replaced_checkpoint_path, original_checkpoint_dir))
-                if checkpoint_copied:
-                    shutil.rmtree(os.path.dirname(replaced_checkpoint_path))
-            if replaced_log_dir and os.path.exists(replaced_log_dir):
-                shutil.rmtree(replaced_log_dir)
+
         return (model, history)
 
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
@@ -385,7 +386,10 @@ class SparkRunner:
                                                                 config=config,
                                                                 steps=steps)
         if callbacks:
-            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "evaluate", self.rank)
+            replace_specific_object_from_callbacks(callbacks,
+                                                   tf.keras.callbacks.TensorBoard,
+                                                   Tensorboard,
+                                                   self.rank)
 
         params = dict(
             verbose=verbose,
@@ -408,11 +412,6 @@ class SparkRunner:
             }
         else:
             stats = {"results": results}
-
-        # clean temporary dir for tensorboard
-        if callbacks:
-            if replaced_log_dir and os.path.exists(replaced_log_dir):
-                shutil.rmtree(replaced_log_dir)
 
         if self.rank == 0:
             if self.need_to_log_to_driver:
