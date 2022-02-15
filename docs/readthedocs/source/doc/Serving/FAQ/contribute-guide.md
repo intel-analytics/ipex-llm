@@ -2,13 +2,13 @@
 
 This is the guide to contribute your code to Cluster Serving.
 
-Cluster Serving takes advantage of Analytics Zoo core with integration of Deep Learning Frameworks, e.g. Tensorflow, OpenVINO, PyTorch, and implements the inference logic on top of it, and parallelize the computation with Flink and Redis by default. To contribute more features to Cluster Serving, you could refer to following sections accordingly.
+Cluster Serving takes advantage of BigDL core with integration of Deep Learning Frameworks, e.g. Tensorflow, OpenVINO, PyTorch, and implements the inference logic on top of it, and parallelize the computation with Flink and Redis by default. To contribute more features to Cluster Serving, you could refer to following sections accordingly.
 ## Dev Environment
 
 ### Get Code and Prepare Branch
-Go to Analytics Zoo main repo https://github.com/intel-analytics/analytics-zoo, press Fork to your github repo, and git clone the forked repo to local. Use `git checkout -b your_branch_name` to create a new branch, and you could start to write code and pull request to Analytics Zoo from this branch.
+Go to BigDL main repo https://github.com/intel-analytics/bigdl, press Fork to your github repo, and git clone the forked repo to local. Use `git checkout -b your_branch_name` to create a new branch, and you could start to write code and pull request to BigDL from this branch.
 ### Environment Set up
-You could refer to [Analytics Zoo Scala Developer Guide](https://analytics-zoo.readthedocs.io/en/latest/doc/UserGuide/develop.html#scala) to set up develop environment. Cluster Serving is an Analytics Zoo Scala module.
+You could refer to [BigDL Scala Developer Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/develop.html#scala) to set up develop environment. Cluster Serving is an BigDL Scala module.
 
 ### Debug in IDE
 Cluster Serving depends on Flink and Redis. To install Redis and start Redis server,
@@ -23,22 +23,22 @@ $ ./src/redis-server
 ```
 in IDE, embedded Flink would be used so that no dependency is needed.
 
-Once set up, you could copy the `/path/to/analytics-zoo/scripts/cluster-serving/config.yaml` to `/path/to/analytics-zoo/config.yaml`, and run `zoo/src/main/scala/com/intel/analytics/zoo/serving/ClusterServing.scala` in IDE. Since IDE consider `/path/to/analytics-zoo/` as the current directory, it would read the config file in it.
+Once set up, you could copy the `/path/to/bigdl/scripts/cluster-serving/config.yaml` to `/path/to/bigdl/config.yaml`, and run `zoo/src/main/scala/com/intel/analytics/zoo/serving/ClusterServing.scala` in IDE. Since IDE consider `/path/to/bigdl/` as the current directory, it would read the config file in it.
 
 Run `zoo/src/main/scala/com/intel/analytics/zoo/serving/http/Frontend2.scala` if you use HTTP frontend.
  
-Once started, you could run python client code to finish an end-to-end test just as you run Cluster Serving in [Programming Guide](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#4-model-inference).
+Once started, you could run python client code to finish an end-to-end test just as you run Cluster Serving in [Programming Guide](https://github.com/intel-analytics/bigdl/blob/master/docs/docs/ClusterServingGuide/ProgrammingGuide.md#4-model-inference).
 ### Test Package
 Once you write the code and complete the test in IDE, you can package the jar and test.
 
 To package,
 ```
-cd /path/to/analytics-zoo/zoo
+cd /path/to/bigdl/zoo
 ./make-dist.sh
 ```
-Then, in `target` folder, copy `analytics-zoo-xxx-flink-udf.jar` to your test directory, and rename it as `zoo.jar`, and also copy the `config.yaml` to your test directory.
+Then, in `target` folder, copy `bigdl-xxx-flink-udf.jar` to your test directory, and rename it as `zoo.jar`, and also copy the `config.yaml` to your test directory.
 
-You could copy `/path/to/analytics-zoo/scripts/cluster-serving/cluster-serving-start` to start Cluster Serving, this scripts will start Redis server for you and submit Flink job. If you prefer not to control Redis, you could use the command in it `${FLINK_HOME}/bin/flink run -c com.intel.analytics.zoo.serving.ClusterServing zoo.jar` to start Cluster Serving.
+You could copy `/path/to/bigdl/scripts/cluster-serving/cluster-serving-start` to start Cluster Serving, this scripts will start Redis server for you and submit Flink job. If you prefer not to control Redis, you could use the command in it `${FLINK_HOME}/bin/flink run -c com.intel.analytics.zoo.serving.ClusterServing zoo.jar` to start Cluster Serving.
 
 To run frontend, call `java -cp zoo.jar com.intel.analytics.zoo.serving.http.Frontend2`.
 
