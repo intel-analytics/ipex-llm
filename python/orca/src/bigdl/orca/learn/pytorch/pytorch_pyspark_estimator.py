@@ -481,14 +481,14 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
     def save_checkpoint(self, model_path):
         from bigdl.dllib.utils.file_utils import is_local_path
-        if is_local_path:
+        if is_local_path(model_path):
             self.save(model_path)
         else:
             self.driver_runner.save_checkpoint(filepath=model_path)
 
     def load_checkpoint(self, model_path):
         from bigdl.dllib.utils.file_utils import is_local_path
-        if is_local_path:
+        if is_local_path(model_path):
             self.load(model_path)
         else:
             self.driver_runner.load_checkpoint(filepath=model_path)
