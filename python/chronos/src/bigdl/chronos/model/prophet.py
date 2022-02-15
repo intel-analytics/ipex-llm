@@ -94,7 +94,7 @@ class ProphetModel:
         # normal validation process
         if validation_data is not None:
             val_metric = self.evaluate(target=validation_data,
-                                        metrics=[self.metric])[0].item()
+                                       metrics=[self.metric])[0].item()
             return {self.metric: val_metric}
 
     def _eval_cross_validation(self, expected_horizon):
