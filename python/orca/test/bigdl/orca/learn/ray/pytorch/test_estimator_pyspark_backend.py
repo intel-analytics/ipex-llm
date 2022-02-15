@@ -458,14 +458,10 @@ class TestPyTorchEstimator(TestCase):
             temp_dir = tempfile.mkdtemp()
             ckpt_file = os.path.join(temp_dir, "manual.ckpt")
             estimator.save_checkpoint(ckpt_file)
-            state_dict1 = estimator.get_state_dict()
-            print(state_dict1)
             estimator.shutdown()
             new_estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir,
                                           log_level=logging.DEBUG)
             new_estimator.load_checkpoint(ckpt_file)
-            state_dict2 = new_estimator.get_state_dict()
-            print(state_dict2)
             eval_after = new_estimator.evaluate(df, batch_size=4,
                                                 feature_cols=["feature"],
                                                 label_cols=["label"])
