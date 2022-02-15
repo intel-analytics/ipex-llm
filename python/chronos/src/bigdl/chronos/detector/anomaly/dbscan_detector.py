@@ -63,7 +63,7 @@ class DBScanDetector(AnomalyDetector):
 
         :param y: the input time series. y must be 1-D numpy array.
         :param use_sklearnex: bool, If scikit-learn-intelex is not installed,
-               DBScanDetector will fallback to use stack sklearn.
+               DBScanDetector will fallback to use stock sklearn.
         """
         self.check_data(y)
         self.anomaly_scores_ = np.zeros_like(y)
