@@ -40,7 +40,7 @@ object FrontEndApp extends Supportive with EncryptSupportive {
 
   val name = "BigDL web serving frontend"
 
-  implicit val system = ActorSystem("zoo-serving-frontend-system")
+  implicit val system = ActorSystem("bigdl-serving-frontend-system")
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)

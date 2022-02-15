@@ -45,7 +45,7 @@ object Frontend2 extends Supportive with EncryptSupportive {
 
   val name = "BigDL web serving frontend"
 
-  implicit val system = ActorSystem("zoo-serving-frontend-system")
+  implicit val system = ActorSystem("bigdl-serving-frontend-system")
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
@@ -135,7 +135,7 @@ object Frontend2 extends Supportive with EncryptSupportive {
   "instances" : [ {
     "intScalar" : 12345,
     "floatScalar" : 3.14159,
-    "stringScalar" : "hello, world. hello, zoo.",
+    "stringScalar" : "hello, world. hello, bigdl.",
     "intTensor" : [ 7756, 9549, 1094, 9808, 4959, 3831, 3926, 6578, 1870, 1741 ],
     "floatTensor" : [ 0.6804766, 0.30136853, 0.17394465, 0.44770062, 0.20275897 ],
     "stringTensor" : [ "come", "on", "united" ],

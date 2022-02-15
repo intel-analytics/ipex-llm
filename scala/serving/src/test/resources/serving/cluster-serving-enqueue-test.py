@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from zoo.serving.client import InputQueue, OutputQueue
+from bigdl.serving.client import InputQueue, OutputQueue
 import os
 import cv2
 import json
