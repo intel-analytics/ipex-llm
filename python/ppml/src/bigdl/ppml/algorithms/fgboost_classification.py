@@ -17,7 +17,7 @@
 from bigdl.dllib.utils.common import JavaValue
 
 
-class FGBoostRegression(JavaValue):
+class FGBoostClassification(JavaValue):
     def __init__(self, jvalue, *args):
         bigdl_type = "float"
         super(JavaValue, self).__init__(jvalue, bigdl_type, *args)

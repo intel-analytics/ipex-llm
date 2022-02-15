@@ -17,12 +17,12 @@
 from bigdl.dllib.utils.common import JavaValue
 
 
-class FGBoostRegression(JavaValue):
+class HflLogisticRegression(JavaValue):
     def __init__(self, jvalue, *args):
         bigdl_type = "float"
         super(JavaValue, self).__init__(jvalue, bigdl_type, *args)
 
-    def fit(self, x, y, num_round):
+    def fit(self, x, y, epochs):
         pass
 
     def evaluate(self, x, y):

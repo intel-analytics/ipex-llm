@@ -18,5 +18,6 @@ from bigdl.dllib.utils.common import JavaValue
 
 
 class FLServer(JavaValue):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, jvalue, *args):
+        bigdl_type = "float"
+        super(JavaValue, self).__init__(jvalue, bigdl_type, *args)

@@ -13,20 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from bigdl.dllib.utils.common import *
 
-from bigdl.dllib.utils.common import JavaValue
 
-
-class FGBoostRegression(JavaValue):
-    def __init__(self, jvalue, *args):
-        bigdl_type = "float"
-        super(JavaValue, self).__init__(jvalue, bigdl_type, *args)
-
-    def fit(self, x, y, num_round):
-        pass
-
-    def evaluate(self, x, y):
-        pass
-
-    def predict(self, x):
-        pass
+def init_flcontext(bigdl_type="float"):
+    callBigDlFunc(bigdl_type, "initFLContext")

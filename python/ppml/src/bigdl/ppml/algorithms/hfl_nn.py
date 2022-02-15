@@ -17,12 +17,15 @@
 from bigdl.dllib.utils.common import JavaValue
 
 
-class FGBoostRegression(JavaValue):
+class HflNN(JavaValue):
+    """
+    HFL NN class, users could build custom NN structure in this class
+    """
     def __init__(self, jvalue, *args):
         bigdl_type = "float"
         super(JavaValue, self).__init__(jvalue, bigdl_type, *args)
 
-    def fit(self, x, y, num_round):
+    def fit(self, x, y, epochs):
         pass
 
     def evaluate(self, x, y):
