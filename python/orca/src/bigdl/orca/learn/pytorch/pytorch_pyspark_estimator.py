@@ -484,6 +484,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         if is_local_path(model_path):
             self.save(model_path)
         else:
+            self.driver_runner.load_state_dict(self.state_dict)
             self.driver_runner.save_checkpoint(filepath=model_path)
 
     def load_checkpoint(self, model_path):
