@@ -38,7 +38,11 @@ def train_func(model_dir, ds_graph, elem_spec,
 
     strategy = tf.distribute.MultiWorkerMirroredStrategy()
     with strategy.scope():
+<<<<<<< Updated upstream
         new_model = tf.keras.models.load_model('/tmp/temp_model')
+=======
+        new_model = tf.keras.models.load_model(os.path.join(model_dir, "temp_model"))
+>>>>>>> Stashed changes
         train_dataset = deserialize_dataset_from_graph(ds_graph, elem_spec)
         if val_ds_graph is not None:
             val_dataset = deserialize_dataset_from_graph(val_ds_graph, val_elem_sepc)
@@ -74,7 +78,6 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
 
     cpu_procs = schedule_workers(nprocs)
 
-    from tensorflow.python.distribute.input_lib import _dummy_tensor_fn
     from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
 
     train_dataset = fit_kwargs.pop('x')
@@ -90,11 +93,9 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
         val_ds_def = None
         val_elem_spec = None
 
-    # this is to work around a tensorflow problem: if we save before calling fit,
-    # the saved format is incorrect. dummy_batch is a batch of input with batch size
-    # equal to 0, so that the model.fit does not take any effect
-    dummy_batch = _dummy_tensor_fn(train_elem_spec)
-    model.fit(tf.data.Dataset.from_tensors(dummy_batch), verbose=0)
+    # this is to work around a tensorflow bug: https://github.com/keras-team/keras/issues/16023
+    model.evaluate(train_dataset, verbose=0, steps=1)
+    assert model.compiled_metrics.built
 
     ports = set()
     while len(ports) < nprocs:
