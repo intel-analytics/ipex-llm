@@ -497,8 +497,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
     def load_checkpoint(self, model_path):
         """
         Loads the Estimator state (including model and optimizer) from the provided model_path.
-        :param model_path: (str) Path to the existing model. Both local and remote path are supported.
-               e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
+        :param model_path: (str) Path to the existing model. Both local and remote path are
+               supported. e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
         :return: None
         """
         from bigdl.dllib.utils.file_utils import is_local_path
