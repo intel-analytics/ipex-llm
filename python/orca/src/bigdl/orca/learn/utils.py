@@ -18,11 +18,12 @@ from contextlib import closing
 import socket
 import sys
 import tempfile
+import shutil
 
-from bigdl.dllib.utils.file_utils import get_file_list
+from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
-from bigdl.orca.data.file import put_local_dir_tree_to_remote
+from bigdl.orca.data.file import put_local_dir_tree_to_remote, get_remote_dir_to_local
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 import numpy as np
 import pickle
@@ -510,3 +511,19 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
         callbacks.append(copy_callback)
         return replaced_log_dir
     return None
+
+
+def get_latest_checkpoint(checkpoint_dir):
+    import tensorflow as tf
+    if is_local_path(checkpoint_dir):
+        checkpoint_path = tf.train.latest_checkpoint(checkpoint_dir)
+        return checkpoint_path
+    else:
+        try:
+            temp_dir = tempfile.mkdtemp()
+            get_remote_dir_to_local(checkpoint_dir, temp_dir)
+            checkpoint_path = tf.train.latest_checkpoint(temp_dir)
+            checkpoint_prefix = os.path.basename(checkpoint_path)
+            return os.path.join(checkpoint_dir, checkpoint_prefix)
+        finally:
+            shutil.rmtree(temp_dir)
