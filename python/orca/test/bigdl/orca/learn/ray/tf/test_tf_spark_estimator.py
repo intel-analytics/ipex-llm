@@ -350,6 +350,64 @@ class TestTFEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_checkpoint_model(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark",
+                model_dir=temp_dir)
+
+            callbacks = [
+                tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "ckpt_{epoch}"),
+                                                   save_weights_only=False
+                                                   )
+            ]
+
+            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
+                              callbacks=callbacks,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1
+                              )
+            assert len(os.listdir(os.path.join(temp_dir, "ckpt_3"))) > 0
+
+            callbacks = [
+                tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "best"),
+                                                   save_weights_only=False,
+                                                   save_best_only=True
+                                                   )
+            ]
+
+            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
+                              callbacks=callbacks,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1
+                              )
+            assert len(os.listdir(os.path.join(temp_dir, "best"))) > 0
+        finally:
+            shutil.rmtree(temp_dir)
+
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
