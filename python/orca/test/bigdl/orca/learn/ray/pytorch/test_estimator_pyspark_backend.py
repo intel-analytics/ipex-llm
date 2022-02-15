@@ -282,18 +282,6 @@ class TestPyTorchEstimator(TestCase):
         assert result.selectExpr(expr).first()["error"] == 0
 
     def test_xshards_predict_save_load(self):
-        from bigdl.orca.data import SparkXShards
-        estimator = get_estimator(workers_per_node=1, model_dir=self.model_dir)
-        sc = init_nncontext()
-        x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
-        # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
-        y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1, 1)).astype(np.float32))
-        rdd = x_rdd.zip(y_rdd).map(lambda x_y: {'x': x_y[0], 'y': x_y[1]})
-        train_rdd, val_rdd = rdd.randomSplit([0.9, 0.1])
-        train_xshards = SparkXShards(train_rdd)
-        val_xshards = SparkXShards(val_rdd)
-        train_stats = estimator.fit(train_xshards, batch_size=256, epochs=2)
-        val_stats = estimator.evaluate(val_xshards, batch_size=128)
 
         sc = init_nncontext()
         rdd = sc.range(0, 110).map(lambda x: np.array([x]*50))
@@ -303,9 +291,6 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: IdentityNet(),
                                   model_dir=self.model_dir)
-        estimator.fit(shards, batch_size=4, epochs=2,
-                      feature_cols=["feature"],
-                      label_cols=["label"])
         result_shards = estimator.predict(shards, batch_size=4)
         result_before = np.concatenate([shard["prediction"] for shard in result_shards.collect()])
         expected_result = np.concatenate([shard["x"] for shard in result_shards.collect()])
@@ -314,12 +299,8 @@ class TestPyTorchEstimator(TestCase):
         path = "/tmp/model.pth"
         try:
             estimator.save(path)
-            estimator.shutdown()
-            new_estimator = get_estimator(workers_per_node=2,
-                                          model_fn=lambda config: IdentityNet(),
-                                          model_dir=self.model_dir)
-            new_estimator.load(path)
-            result_shards = new_estimator.predict(shards, batch_size=4)
+            estimator.load(path)
+            result_shards = estimator.predict(shards, batch_size=4)
             result_after = np.concatenate([shard["prediction"]
                                            for shard in result_shards.collect()])
 
