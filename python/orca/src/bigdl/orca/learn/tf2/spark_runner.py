@@ -302,7 +302,7 @@ class SparkRunner:
                 try:
                     if self.rank == 0:
                         put_local_dir_tree_to_remote(os.path.dirname(replaced_checkpoint_path),
-                                                original_checkpoint_dir)
+                                                     original_checkpoint_dir)
                         checkpoint_copied = True
                 except Exception:
                     logger.warning("Error when copy local checkpoint {} to {}, "
