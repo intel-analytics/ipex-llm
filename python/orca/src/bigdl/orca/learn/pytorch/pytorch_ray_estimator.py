@@ -422,7 +422,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             self.save(model_path)
         else:
             results = [
-                worker.save_checkpoint(model_path)
+                worker.save_checkpoint.remote(model_path)
                 for worker in self.remote_workers
             ]
             ray.get(results)
@@ -433,7 +433,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             self.load(model_path)
         else:
             results = [
-                worker.load_checkpoint(model_path)
+                worker.load_checkpoint.remote(model_path)
                 for worker in self.remote_workers
             ]
             ray.get(results)
