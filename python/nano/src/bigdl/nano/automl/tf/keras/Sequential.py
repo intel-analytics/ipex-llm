@@ -78,7 +78,6 @@ class Sequential(HPOMixin, tf.keras.Sequential):
     def add(self, layer):
         self.layers_.append(layer)
 
-    #@hpo.args()
     def compile(self, *args, **kwargs):
         self.compile_args = args
         self.compile_kwargs = kwargs

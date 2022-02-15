@@ -1,15 +1,11 @@
-import tensorflow as tf
 
 from bigdl.nano.automl.tf.keras import Sequential
-from tensorflow.keras.optimizers import RMSprop
-import bigdl.nano.automl.hpo as hpo
-import bigdl.nano.automl.hpo.space as space
-from tensorflow.keras.layers import Flatten
 
+from tensorflow.keras.optimizers import RMSprop, Adam
+import bigdl.nano.automl.hpo.space as space
 
 from tensorflow.keras.datasets import mnist
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras import Input
+from bigdl.nano.tf.keras.layers import Dense, Flatten, Conv2D
 
 N_TRAIN_EXAMPLES = 3000
 N_VALID_EXAMPLES = 1000
@@ -25,10 +21,6 @@ y_train = y_train[:N_TRAIN_EXAMPLES]
 y_valid = y_valid[:N_VALID_EXAMPLES]
 input_shape = (img_x, img_y, 1)
 
-# decorate the layer class to accept automl.hpo.space as input argument
-@hpo.obj()
-class Conv2D(tf.keras.layers.Conv2D):
-    pass
 
 print(input_shape)
 # define the model as usual. You can now use search space specificaions for Dense arguments
@@ -45,7 +37,7 @@ model.add(Dense(CLASSES, activation="softmax"))
 
 model.compile(
         loss="sparse_categorical_crossentropy",
-        optimizer=RMSprop(learning_rate=0.0001),
+        optimizer= RMSprop(learning_rate=0.0001),
         metrics=["accuracy"]
     )
 
