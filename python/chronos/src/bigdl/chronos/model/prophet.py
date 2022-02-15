@@ -85,15 +85,17 @@ class ProphetModel:
         """
         self._fit(data, **config)
 
+        # cross_validation
+        cross_validation = config.get('cross_validation', False)
+        expected_horizon = config.get('expect_horizon', int(0.1*len(data)))
+        if cross_validation:
+            return self._eval_cross_validation(expected_horizon)
+
+        # normal validation process
         if validation_data is not None:
-            cross_validation = config.get('cross_validation', False)
-            expected_horizon = config.get('expect_horizon', int(0.1*len(data)))
-            if cross_validation:
-                return self._eval_cross_validation(expected_horizon)
-            else:
-                val_metric = self.evaluate(target=validation_data,
-                                           metrics=[self.metric])[0].item()
-                return {self.metric: val_metric}
+            val_metric = self.evaluate(target=validation_data,
+                                        metrics=[self.metric])[0].item()
+            return {self.metric: val_metric}
 
     def _eval_cross_validation(self, expected_horizon):
         df_cv = cross_validation(self.model, horizon=expected_horizon)
