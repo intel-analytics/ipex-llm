@@ -38,11 +38,7 @@ def train_func(model_dir, ds_graph, elem_spec,
 
     strategy = tf.distribute.MultiWorkerMirroredStrategy()
     with strategy.scope():
-<<<<<<< Updated upstream
-        new_model = tf.keras.models.load_model('/tmp/temp_model')
-=======
         new_model = tf.keras.models.load_model(os.path.join(model_dir, "temp_model"))
->>>>>>> Stashed changes
         train_dataset = deserialize_dataset_from_graph(ds_graph, elem_spec)
         if val_ds_graph is not None:
             val_dataset = deserialize_dataset_from_graph(val_ds_graph, val_elem_sepc)
