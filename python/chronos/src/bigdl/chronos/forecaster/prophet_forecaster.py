@@ -70,7 +70,7 @@ class ProphetForecaster(Forecaster):
 
         super().__init__()
 
-    def fit(self, data, validation_data):
+    def fit(self, data, validation_data=None):
         """
         Fit(Train) the forecaster.
 
@@ -87,8 +87,9 @@ class ProphetForecaster(Forecaster):
     def _check_data(self, data, validation_data):
         assert 'ds' in data.columns and 'y' in data.columns, \
             "data should be a pandas dataframe that has at least 2 columns 'ds' and 'y'."
-        assert 'ds' in validation_data.columns and 'y' in validation_data.columns, \
-            "validation_data should be a dataframe that has at least 2 columns 'ds' and 'y'."
+        if validation_data is not None:
+            assert 'ds' in validation_data.columns and 'y' in validation_data.columns, \
+                "validation_data should be a dataframe that has at least 2 columns 'ds' and 'y'."
 
     def predict(self, horizon=1, freq="D", ds_data=None):
         """
