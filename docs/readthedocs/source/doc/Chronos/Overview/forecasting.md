@@ -229,10 +229,10 @@ Neural basis expansion analysis for interpretable time series forecasting ([N-BE
 Auto forecasting models are designed to be used exactly the same as Forecasters. The only difference is that you can set hp search function to the hyperparameters and the `.fit()` method will search the best hyperparameter setting.
 ```python
 # set hyperparameters in hp search function, loss, metric...
-f = Forecaster(...)
+auto_model = AutoModel(...)
 # input data, batch size, epoch...
-f.fit(...)
+auto_model.fit(...)
 # input test data x, batch size...
-f.predict(...)
+auto_model.predict(...)
 ```
 The input data can be easily get from `TSDataset`. Users can refer to detailed [API doc](../../PythonAPI/Chronos/automodels.html).

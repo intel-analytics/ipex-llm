@@ -56,7 +56,7 @@ python script.py
 
 ```eval_rst
 .. note:: 
-    **Optimization on Intel Hardware**:
+    **Optimization on Intel® Hardware**:
     
      Chronos integrated many optimized library and best known methods(BKMs), users can have best performance to add ``bigdl-nano-init`` before their scripts. 
      
