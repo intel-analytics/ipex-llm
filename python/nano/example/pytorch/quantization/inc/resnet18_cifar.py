@@ -174,12 +174,7 @@ print("Accuracy: %.2f%%" % (log_dict['test_acc'] * 100))
 
 # Run post-training quantization
 int8_model = trainer.quantize(fp32_model,
-                              calib_dataloader=cifar10_dm.train_dataloader(),
-                              raw_return=True)
-
-# compile quantized model as pytorch-lightning
-int8_model = trainer.compile(
-    int8_model, loss=torch.nn.NLLLoss(), metrics=[Accuracy()])
+                              calib_dataloader=cifar10_dm.train_dataloader())
 
 # Testing on quantized INT8 model
 start = time()
