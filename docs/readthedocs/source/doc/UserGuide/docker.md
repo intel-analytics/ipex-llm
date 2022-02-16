@@ -80,7 +80,6 @@ After a Docker container is launched and user login into the container, you can 
 
 In the `/opt/work` directory, run this command line to start the Jupyter Notebook service:
 ```
-source activate bigdl
 ./start-notebook.sh
 ```
 
