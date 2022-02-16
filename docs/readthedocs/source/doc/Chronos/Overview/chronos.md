@@ -32,7 +32,7 @@ pip install --pre --upgrade bigdl-chronos[all]
 .. note:: 
     **Supported OS**:
 
-     Chronos is thoroughly tested on Ubuntu (1604/1804/2004). If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
+     Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04). If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
 ```
 ---
 ### **3. Run**
@@ -58,13 +58,11 @@ python script.py
 .. note:: 
     **Optimization on Intel Hardware**:
     
-     Chronos integrated many optimized library and best known methods(BKMs), users can have best performance to add `bigdl-nano-init` before their scripts. 
+     Chronos integrated many optimized library and best known methods(BKMs), users can have best performance to add ``bigdl-nano-init`` before their scripts. 
+     
+     ``bigdl-nano-init python script.py``
 
-     ```bash
-     bigdl-nano-init python script.py
-     ```
-
-     Currently, this function is under active development and we encourage our users to add `bigdl-nano-init` during forecaster's training.
+     Currently, this function is under active development and we encourage our users to add ``bigdl-nano-init`` for forecaster's training.
      
 ```
 
