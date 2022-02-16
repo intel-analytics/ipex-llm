@@ -20,7 +20,7 @@ In `init_orca_context`, the user may specify necessary runtime configurations fo
 - *Cluster mode*: Users can specify the computing environment for the program (a local machine, K8s cluster, Hadoop/YARN cluster, etc.).
 - *Runtime*: Users can specify the backend for the program (spark and
 ray, etc.) to create SparkContext and/or RayContext, the cluster mode
-would be worked based on the specified backend.
+would be worked based on the specified runtime backend.
 - *Physical resources*: Users can specify the amount of physical resources to be allocated for the program on the underlying cluster, including the number of nodes in the cluster, the cores and memory allocated for each node, etc.
 
 The Orca program simply runs `init_orca_context` on the local machine, which will automatically provision the runtime Python environment and distributed execution engine on the underlying computing environment (such as a single laptop, a large K8s or Hadoop cluster, etc.).
