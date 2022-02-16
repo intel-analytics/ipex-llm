@@ -168,7 +168,7 @@ def get_bigdl_class_version():
         bigdl_class_version = re.search('spark_(.+?)-jar', bigdl_jars[0]).group(1)[6:]
     except AttributeError:
         # not found
-        bigdl_class_version  = 'Cannot find BigDL classpath, please check your installation'
+        bigdl_class_version = 'Cannot find BigDL classpath, please check your installation'
     return bigdl_class_version
 
 
