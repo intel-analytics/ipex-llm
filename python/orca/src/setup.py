@@ -29,9 +29,9 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
-RAY_DEP = ['ray[default]==1.9.0', 'aiohttp==3.8.1', 'async-timeout==4.0.1', 'aioredis==1.3.1',
+RAY_DEP = ['ray[default]==1.9.2', 'aiohttp==3.8.1', 'async-timeout==4.0.1', 'aioredis==1.3.1',
            'hiredis==2.0.0', 'setproctitle', 'psutil']
-AUTOML_DEP = RAY_DEP + ['ray[tune]==1.9.0', 'scikit-learn', 'tensorboard']
+AUTOML_DEP = RAY_DEP + ['ray[tune]==1.9.2', 'scikit-learn', 'tensorboard']
 
 building_error_msg = """
 If you are packing python API from BigDL source, you must build BigDL first
