@@ -342,6 +342,8 @@ def stop_orca_context():
         ray_ctx = RayContext.get(initialize=False)
         if ray_ctx.initialized:
             ray_ctx.stop()
+        else:
+            RayContext._active_ray_context = None
         sc = SparkContext.getOrCreate()
         if sc.getConf().get("spark.master").startswith("spark://"):
             from bigdl.dllib.nncontext import stop_spark_standalone
