@@ -47,7 +47,7 @@ from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.optim.lr_scheduler import OneCycleLR
 from torchmetrics.functional import accuracy
-import copy
+from torchmetrics import Accuracy
 
 from pl_bolts.datamodules import CIFAR10DataModule
 from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
@@ -170,29 +170,16 @@ time1 = time() - start
 log_dict = outputs[0]
 print("FP32 model size: %.3f MB" % fp32_model.model_size)
 print("Throughput: %d s" % time1)
-print("Accuracy: top1=%.2f%%" % (log_dict['test_acc'] * 100))
-
-# Save FP32 checkpoint
-trainer.save_checkpoint('ResNet18_on_CIFAR_FP32_CKPT.pth')
+print("Accuracy: %.2f%%" % (log_dict['test_acc'] * 100))
 
 # Run post-training quantization
-quantized = trainer.quantize(fp32_model, calib_dataloader=cifar10_dm.train_dataloader(),
-                             val_dataloader=cifar10_dm.test_dataloader(),
-                             metric=Accuracy(num_classes=10),
-                             # recommend 'pytorch_fx' instead of 'pytorch' to enable automatic
-                             # fusion
-                             framework='pytorch_fx',
-                             approach='static',
-                             tuning_strategy='bayesian',
-                             accuracy_criterion={
-                                 'higher_is_better': True, 'relative': 0.1},
-                             timeout=0,  # Limited time(seconds)
-                             max_trials=10,  # Maximum traverse to get best model
-                             raw_return=True)
+int8_model = trainer.quantize(fp32_model,
+                              calib_dataloader=cifar10_dm.train_dataloader(),
+                              raw_return=True)
 
-# Wrap quantized model as a Pytorch-Lightning Module for testing
-int8_model = copy.deepcopy(fp32_model)
-int8_model.model = quantized
+# compile quantized model as pytorch-lightning
+int8_model = trainer.compile(
+    int8_model, loss=torch.nn.NLLLoss(), metrics=[Accuracy()])
 
 # Testing on quantized INT8 model
 start = time()
@@ -201,12 +188,9 @@ time2 = time() - start
 log_dict = outputs[0]
 print("INT8 model size: %.3f MB" % int8_model.model_size)
 print("Throughput: %d s" % time2)
-print("Accuracy: top1=%.2f%%" % (log_dict['test_acc'] * 100))
-
-# Save INT8 checkpoint
-trainer.save_checkpoint('ResNet18_on_CIFAR_INT8_CKPT.pth')
+print("Accuracy: %.2f%%" % (log_dict['test/Accuracy'] * 100))
 
 print("After quantization, the model size reduces %d%%, throughput improves %d%%" % (
-     (fp32_model.model_size - int8_model.model_size) / fp32_model.model_size * 100,
-     (time1 - time2)/time1 * 100
+    (fp32_model.model_size - int8_model.model_size) / fp32_model.model_size * 100,
+    (time1 - time2) / time1 * 100
 ))
