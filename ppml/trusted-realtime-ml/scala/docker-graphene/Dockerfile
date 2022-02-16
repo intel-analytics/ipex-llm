@@ -198,6 +198,7 @@ ADD ./check-status.sh /ppml/trusted-realtime-ml/check-status.sh
 ADD ./start-all.sh /ppml/trusted-realtime-ml/start-all.sh
 ADD ./init-benchmark.sh /ppml/trusted-realtime-ml/java/work/benchmark/init-benchmark.sh
 ADD ./cluster-serving-config.yaml /ppml/trusted-realtime-ml/java/config.yaml
+ADD ./log4j2.xml /ppml/trusted-realtime-ml/java/work/flink-${FLINK_VERSION}/conf/log4j2.xml
 
 RUN chmod a+x /ppml/trusted-realtime-ml/redis/init.sh && \
     chmod a+x /ppml/trusted-realtime-ml/redis/clean.sh && \
