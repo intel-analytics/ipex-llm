@@ -221,7 +221,7 @@ ProphetForecaster wraps the Prophet model ([site](https://github.com/facebook/pr
 View Stock Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb) and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#prophetforecaster) for more details.
 
 <span id="NBeatsForecaster"></span>
-###### **3.7 NBeatsForecaster**
+###### **3.8 NBeatsForecaster**
 
 Neural basis expansion analysis for interpretable time series forecasting ([N-BEATS](https://arxiv.org/abs/1905.10437)) is a deep neural architecture based on backward and forward residual links and a very deep stack of fully-connected layers. Nbeats can solve univariate time series point forecasting problems, being interpretable, and fast to train.
 
