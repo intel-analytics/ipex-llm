@@ -45,6 +45,7 @@ RUN apt-get update --fix-missing && \
     wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
     
 
+ADD ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
 RUN ln -fs /bin/bash /bin/sh
 RUN if [ $SPARK_VERSION = "3.1.2" ]; then \
         rm $SPARK_HOME/jars/okhttp-*.jar && \
