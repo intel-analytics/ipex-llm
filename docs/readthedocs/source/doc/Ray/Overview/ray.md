@@ -7,14 +7,14 @@ With the _**RayOnSpark**_ support packaged in [BigDL Orca](../../Orca/Overview/o
 Users can seamlessly integrate Ray applications into the big data processing pipeline on the underlying Big Data cluster 
 (such as [Hadoop/YARN](../../UserGuide/hadoop.md) or [K8s](../../UserGuide/k8s.md)).
 
-_**Note:** BigDL has been tested on Ray 1.2.0 and you are highly recommended to use this tested version._
+_**Note:** BigDL has been tested on Ray 1.9.2 and you are highly recommended to use this tested version._
 
 
 ### **1. Install**
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment. 
 When installing bigdl-orca with pip, you can specify the extras key `[ray]` to install the additional dependencies 
-for running Ray (i.e. `ray==1.2.0`, `psutil`, `aiohttp==3.7.0`, `aioredis==1.1.0`, `setproctitle`, `hiredis==1.1.0`, `async-timeout==3.0.1`):
+for running Ray (i.e. `ray==1.9.2`, `psutil`, `aiohttp==3.7.0`, `aioredis==1.1.0`, `setproctitle`, `hiredis==1.1.0`, `async-timeout==3.0.1`):
 
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
