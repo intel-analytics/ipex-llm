@@ -1,6 +1,6 @@
 FROM krallin/ubuntu-tini AS tini
 
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 
 ARG SPARK_VERSION=3.1.2
 ARG HADOOP_VERSION=3.2.0
@@ -134,7 +134,7 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
     sbt package
 
-FROM occlum/occlum:0.26.0-ubuntu18.04 as ppml
+FROM occlum/occlum:0.26.4-ubuntu20.04 as ppml
 
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
