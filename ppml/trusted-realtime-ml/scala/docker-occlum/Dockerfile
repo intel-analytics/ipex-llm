@@ -109,7 +109,6 @@ RUN mkdir -p ${BIGDL_HOME}
 
 COPY --from=redis-tls /opt/ssl /opt/ssl
 COPY --from=redis-tls /opt/redis /opt/redis
-COPY --from=redis-tls /opt/occlum/glibc /opt/occlum/glibc
 COPY --from=bigdl /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
 COPY --from=bigdl /opt/flink-${FLINK_VERSION} /opt/flink-${FLINK_VERSION}
 COPY --from=bigdl /opt/resnet50 /opt/resnet50
