@@ -33,6 +33,8 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
 
+import tempfile
+import shutil
 
 np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(
@@ -482,6 +484,83 @@ class TestPyTorchEstimator(TestCase):
     # @pytest.fixture(autouse=True)
     # def inject_fixtures(self, capsys):
     #     self._capsys = capsys
+
+    def test_checkpoint_callback(self):
+        from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        epochs = 2
+        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+        df = df.cache()
+
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+            callbacks = [
+                ModelCheckpoint(filepath=os.path.join(temp_dir, "test-{epoch}"),
+                                save_weights_only=True)
+            ]
+            estimator.fit(df, batch_size=4, epochs=epochs,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"])
+            eval_before = estimator.evaluate(df, batch_size=4,
+                                             feature_cols=["feature"],
+                                             label_cols=["label"])
+            for i in range(epochs):
+                assert os.path.isfile(os.path.join(temp_dir, f"test-epoch={i + 1}.ckpt"))
+
+            latest_checkpoint_path = Estimator.latest_checkpoint(temp_dir)
+            assert os.path.isfile(latest_checkpoint_path)
+            estimator.shutdown()
+            new_estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
+            new_estimator.load_checkpoint(latest_checkpoint_path)
+            eval_after = new_estimator.evaluate(df, batch_size=4,
+                                                feature_cols=["feature"],
+                                                label_cols=["label"])
+            for name, value in eval_before.items():
+                np.testing.assert_almost_equal(value, eval_after[name])
+            res = new_estimator.predict(df, feature_cols=["feature"]).collect()
+        finally:
+            shutil.rmtree(temp_dir)
+
+        with pytest.raises(FileNotFoundError):
+            Estimator.latest_checkpoint(temp_dir)
+
+    def test_manual_ckpt(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        epochs = 2
+        df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+        df = df.cache()
+
+        estimator = get_estimator(workers_per_node=2)
+        estimator.fit(df, batch_size=4, epochs=epochs,
+                      feature_cols=["feature"],
+                      label_cols=["label"])
+        eval_before = estimator.evaluate(df, batch_size=4,
+                                         feature_cols=["feature"],
+                                         label_cols=["label"])
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+            ckpt_file = os.path.join(temp_dir, "manual.ckpt")
+            estimator.save_checkpoint(ckpt_file)
+            estimator.shutdown()
+            new_estimator = get_estimator(workers_per_node=2)
+            new_estimator.load_checkpoint(ckpt_file)
+            eval_after = new_estimator.evaluate(df, batch_size=4,
+                                                feature_cols=["feature"],
+                                                label_cols=["label"])
+            for name, value in eval_before.items():
+                np.testing.assert_almost_equal(value, eval_after[name])
+        finally:
+            shutil.rmtree(temp_dir)
 
 
 if __name__ == "__main__":

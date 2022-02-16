@@ -20,7 +20,7 @@ import org.apache.logging.log4j.LogManager
 import java.util
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.ppml.fgboost.common.TreeUtils
+import com.intel.analytics.bigdl.ppml.fgboost.common.TreeUtils._
 
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConverters._
@@ -88,13 +88,14 @@ class RegressionTree(
   def findBestSplitValue(treeNode: TreeNode): Split  = {
     // TODO: make minChildSize a parameter
     // For each feature
+    val (gradSum, hessSum) = (sum(grads(0), treeNode.recordSet.toArray),
+      sum(grads(1), treeNode.recordSet.toArray))
     val bestGainByFeature = sortedIndex.indices.par.map{fIndex =>
       val sortedFeatureIndex = sortedIndex(fIndex).filter(treeNode.recordSet.contains)
-      // use Double to save gradSum, this will loss fewer precision.
       var leftGradSum = 0.0
       var leftHessSum  = 0.0
-      var rightGradSum = sortedFeatureIndex.map(grads(0)(_)).sum.toDouble
-      var rightHessSum = sortedFeatureIndex.map(grads(1)(_)).sum.toDouble
+      var rightGradSum = gradSum.toDouble
+      var rightHessSum = hessSum.toDouble
       var rStartIndex = 0
       var rEndIndex = minChildSize
       var fBestGain = minInfoGain
@@ -106,14 +107,14 @@ class RegressionTree(
           rEndIndex += 1
         }
         if (rEndIndex < sortedFeatureIndex.length - minChildSize) {
-          val currGrad = sortedFeatureIndex.slice(rStartIndex, rEndIndex).map(grads(0)(_)).sum
-          val currHess = sortedFeatureIndex.slice(rStartIndex, rEndIndex).map(grads(1)(_)).sum
+          val currGrad = sum(grads(0), sortedFeatureIndex, rStartIndex, rEndIndex)
+          val currHess = sum(grads(1), sortedFeatureIndex, rStartIndex, rEndIndex)
           leftGradSum += currGrad
           leftHessSum += currHess
-          val leftGain = TreeUtils.computeScoreWithSum(leftGradSum, leftHessSum, lambda)
+          val leftGain = computeScoreWithSum(leftGradSum, leftHessSum, lambda)
           rightGradSum -= currGrad
           rightHessSum -= currHess
-          val rightGain = TreeUtils.computeScoreWithSum(rightGradSum, rightHessSum, lambda)
+          val rightGain = computeScoreWithSum(rightGradSum, rightHessSum, lambda)
           val currGain = leftGain + rightGain - treeNode.similarScore
           if (currGain > fBestGain) {
             fBestGain = currGain
@@ -143,6 +144,7 @@ class RegressionTree(
       logger.info("Best local split on node " + treeNode.nodeID + " is " + bestS.toString)
       bestS
     } else {
+      logger.info("Failed to find local split on node " + treeNode.nodeID)
       Split.leaf(treeID, treeNode.nodeID)
     }
   }
@@ -162,6 +164,8 @@ class RegressionTree(
     // Only predict with local nodes
     val res = Array.fill[Boolean](math.pow(2, depth + 1).toInt)(true)
     localNodes.values.foreach { split =>
+      require(split.featureID < record.size(1),
+        s"Node split at feature: ${split.featureID}, but input size: ${record.size(1)}")
       val currValue = record.valueAt(split.featureID + 1)
       res(split.nodeID.toInt) = currValue < split.splitValue
     }
@@ -174,6 +178,7 @@ class RegressionTree(
       logger.info(split)
     }
     val parentNode = nodes(split.nodeID)
+    parentNode.splitInfo = split
     val newNodes = splitToNodes(split, parentNode)
     parentNode.leftChild = newNodes._1
     parentNode.rightChild = newNodes._2

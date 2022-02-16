@@ -142,6 +142,8 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=64G \
     -e KMS_SERVER_IP=$KMS_SERVER_IP
+    -e ENCRYPT_KEYS_PATH=/ppml/trusted-big-data-ml/work/input/keys
+    -e INPUT_DIR_PATH=/ppml/trusted-big-data-ml/work/input/plain.encrypted
     $DOCKER_IMAGE bash
 ```
 
@@ -168,13 +170,11 @@ Enter the client container deployed in the previous step and run the below comma
   bash init.sh # Graphene-SGX Initiation
   
   # Step 1. Decrypt The Encrypted Files As A Spark Job Inside SGX And Then Encrypt Columns
-  export INPUT_DIR_PATH=/ppml/trusted-big-data-ml/work/input/plain.encrypted
-  export ENCRYPT_KEYS_PATH=/ppml/trusted-big-data-ml/work/input/keys
-  SGX=1 ./pal_loader bash -c "bash ./work/kms-client/DecryptFilesWithSpark.sh $INPUT_DIR_PATH $ENCRYPT_KEYS_PATH $KMS_SERVER_IP $LOCAL_IP" 2>&1 > spark-inside-sgx.log
-  export output_path=$INPUT_DIR_PATH.col_encrypted
+  export OUT_DIR_PATH=YOUR_OUTPUT_SAVE_DIR # You can decide a directory path for output files, it will be created automatically
+  bash ./work/kms-client/submit-spark-job-with-kms-local.sh $INPUT_DIR_PATH $ENCRYPT_KEYS_PATH $OUT_DIR_PATH $KMS_SERVER_IP $KMS_SERVER_PORT $LOCAL_IP" 2>&1 > spark-inside-sgx.log
   
   # Step 2. Decrypt The colums And Ouput With KMS API
-  python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $output_path --pkp $ENCRYPT_KEYS_PATH/encrypted_primary_key --dkp $ENCRYPT_KEYS_PATH/encrypted_data_key
+  python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $OUT_DIR_PATH --pkp $ENCRYPT_KEYS_PATH/encrypted_primary_key --dkp $ENCRYPT_KEYS_PATH/encrypted_data_key
   ```
 
   Then it takes a little time to operate in SGX, and you are expected to get output files under directory `$output_path`. You will get screen output similar to below:

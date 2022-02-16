@@ -1,6 +1,5 @@
 #!/bin/bash
 set -x
-export SGX_MEM_SIZE=64GB
 
 BLUE='\033[1;34m'
 NC='\033[0m'
@@ -99,8 +98,9 @@ run_spark_unittest_only() {
     cd /opt/occlum_spark
     mkdir -p data/olog
     echo -e "${BLUE}occlum run spark unit test only ${NC}"
+    occlum start
     for suite in `cat /opt/sqlSuites`
-    do occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g \
+    do occlum exec /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
 		-Djdk.lang.Process.launchMechanism=posix_spawn \
@@ -116,6 +116,7 @@ run_spark_unittest_only() {
 	        -s ${suite} \
 	        -fF /host/data/olog/${suite}.txt
     done
+    occlum stop
 }
 
 run_spark_lenet_mnist(){
@@ -214,6 +215,29 @@ run_spark_tpch(){
                 /host/data /host/data/output
 }
 
+run_spark_xgboost() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run BigDL Spark XGBoost${NC}"
+    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=256m \
+                -XX:ActiveProcessorCount=8 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx30g -Xms30g org.apache.spark.deploy.SparkSubmit \
+                --master local[16] \
+                --conf spark.task.cpus=8 \
+                --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
+                --num-executors 8 \
+                --executor-cores 2 \
+                --executor-memory 2G \
+                --driver-memory 10G \
+                /bin/jars/bigdl-dllib-spark_3.1.2-0.14.0-SNAPSHOT.jar \
+                /host/data /host/data/model 8 100 2
+}
+
+
 id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 
 arg=$1
@@ -244,6 +268,10 @@ case "$arg" in
         ;;
     tpch)
         run_spark_tpch
+        cd ../
+        ;;
+    xgboost)
+        run_spark_xgboost
         cd ../
         ;;
 esac

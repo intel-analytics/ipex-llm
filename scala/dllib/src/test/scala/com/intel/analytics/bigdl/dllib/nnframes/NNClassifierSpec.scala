@@ -431,7 +431,7 @@ class NNClassifierSpec extends ZooSpecHelper {
       val xgbInput = vectorAssembler.transform(df).select("features")
 
       model.setFeaturesCol("features")
-      model.transform(df).count()
+      model.transform(xgbInput).count()
     }
   }
 
@@ -461,7 +461,7 @@ class NNClassifierSpec extends ZooSpecHelper {
 
       val model = XGBClassifierModel.load(modelPath, 2)
       model.setFeaturesCol("features")
-      model.transform(df).count()
+      model.transform(xgbInput).count()
     }
   }
 

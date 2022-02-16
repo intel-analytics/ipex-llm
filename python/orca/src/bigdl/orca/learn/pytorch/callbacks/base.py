@@ -5,6 +5,7 @@ class Callback(object):
     def __init__(self):
         self.model = None
         self.params = None
+        self.trainer = None
 
     @abstractmethod
     def on_batch_begin(self, batch):
@@ -69,3 +70,6 @@ class Callback(object):
 
     def set_param(self, param):
         self.params = param
+
+    def set_trainer(self, trainer):
+        self.trainer = trainer
