@@ -430,8 +430,7 @@ class TrainingSpec extends ZooSpecHelper {
 
   "Keras model" should "support image dataframe" in {
     sc.stop()
-    val conf = new SparkConf()
-      .setMaster("local[1]")
+    val conf = new SparkConf().setMaster("local[1]")
     val ksc = NNContext.initNNContext(conf, appName = "imageDf")
 
     import org.apache.spark.sql.functions.lit
@@ -446,6 +445,8 @@ class TrainingSpec extends ZooSpecHelper {
     model.add(Dense[Float](2, activation = "log_softmax"))
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
     model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCol = "label", transformer = null)
+    val predDf = model.predict(imgDF, predictionCol = "predict", transformer = null)
+    predDf.show()
     model.evaluate(imgDF, batchSize = 1, labelCol = "label", transformer = null)
   }
 }

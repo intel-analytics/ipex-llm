@@ -27,16 +27,17 @@ import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.dllib.utils.{Engine, T, Table}
-import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.feature.image.{ImageMatToTensor, ImageProcessing, ImageSet, ImageSetToSample}
 import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.dllib.nnframes.{NNImageReader, NNImageSchema}
 import org.apache.spark.ml.VectorCompatibility
 import org.apache.spark.ml.adapter.SchemaUtils
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.mllib.linalg.VectorUDT
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{ArrayType, DataType, DoubleType => sqlDoubleType, FloatType => sqlFloatType}
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType, DoubleType => sqlDoubleType, FloatType => sqlFloatType}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
 import scala.collection.Iterator
 import scala.collection.mutable.ArrayBuffer
@@ -369,6 +370,33 @@ trait Predictable[T] extends VectorCompatibility{
     }
   }
 
+  protected def df2ImageSet(df: DataFrame, labelCol: String = null,
+                            transformer: ImageProcessing = null):
+  ImageSet = {
+    val labelColIndex = if (labelCol != null) {
+      df.schema.fieldIndex(labelCol)
+    } else -1
+
+    val imfRDD = df.rdd.mapPartitions { rowIter =>
+      rowIter.map { row =>
+        val imf = NNImageSchema.row2IMF(row.get(0).asInstanceOf[Row])
+        if (labelColIndex != -1) {
+          val labelTensor = Tensor[Float](1)
+          labelTensor(Array(1)) = row.getInt(labelColIndex)
+          imf(ImageFeature.label) = labelTensor
+        }
+        imf
+      }
+    }
+
+    val transformeredImf = if (transformer != null) {
+      transformer.apply(imfRDD)
+    } else imfRDD
+
+    val trainData = ImageSet.rdd(transformeredImf)
+    trainData
+  }
+
   def outputToPrediction(output: Tensor[T]): Any = {
     output.clone().storage().array()
   }
@@ -486,6 +514,32 @@ trait Predictable[T] extends VectorCompatibility{
               featureCols: Array[String],
               predictionCol: String): DataFrame = {
     predict(x, featureCols, predictionCol, batchPerThread = 4)
+  }
+
+  def predict(x: DataFrame,
+              predictionCol: String,
+              transformer: ImageProcessing,
+              batchPerThread: Int): DataFrame = {
+    val imageset = df2ImageSet(x, null, transformer)
+    val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
+    imageset.transform(transformer2)
+    val res = this.predict(imageset, batchPerThread)
+
+    val rowRDD = res.toDistributed().rdd.map { imf =>
+      val r = NNImageSchema.imf2Row(imf)
+      Row.fromSeq(r.toSeq ++ Seq(imf.getLabel[Int]))
+    }
+
+    import org.apache.spark.sql.types.IntegerType
+    val resultSchema =
+          SchemaUtils.appendColumn(NNImageSchema.floatSchema, predictionCol, IntegerType, true)
+    x.sqlContext.createDataFrame(rowRDD, resultSchema)
+  }
+
+  def predict(x: DataFrame,
+              predictionCol: String,
+              transformer: ImageProcessing): DataFrame = {
+    predict(x, predictionCol, transformer, batchPerThread = 4)
   }
 
   /**
