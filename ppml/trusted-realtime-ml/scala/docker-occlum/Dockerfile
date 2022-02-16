@@ -5,7 +5,7 @@ ARG SCALA_VERSION=2.12
 ARG SCALA_SUB_VERSION_NUM=10
 
 # stage.1 Redis
-FROM occlum/occlum:0.24.0-ubuntu18.04 as redis-tls
+FROM occlum/occlum:0.26.4-ubuntu20.04 as redis-tls
 
 WORKDIR /opt
 
@@ -29,7 +29,7 @@ RUN git clone https://github.com/redis/redis.git && \
     make -j `getconf _NPROCESSORS_ONLN` BUILD_TLS=yes && make PREFIX=/opt/redis install
 
 # stage. 2 Flink & bigdl & Scala
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu20.04 as bigdl
 ENV JAVA_HOME				/usr/lib/jvm/java-8-openjdk-amd64
 ARG FLINK_VERSION=1.11.3
 ENV FLINK_VERSION ${FLINK_VERSION}
@@ -77,7 +77,7 @@ RUN cd /opt && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG
 
 # stage.3 az ppml occlum
-FROM ubuntu:18.04 as ppml
+FROM occlum/occlum:0.26.4-ubuntu20.04 as ppml
 
 ARG FLINK_VERSION=1.11.3
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
@@ -116,28 +116,28 @@ COPY --from=bigdl /opt/resnet50 /opt/resnet50
 COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar
 COPY --from=bigdl /opt/bigdl-serving*-http.jar ${BIGDL_HOME}/bigdl-serving-http.jar
 
-RUN apt-get update && \
-    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        build-essential ca-certificates openjdk-11-jdk \
-        curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
-        libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev
+# RUN apt-get update && \
+#     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+#         build-essential ca-certificates openjdk-11-jdk \
+#         curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
+#         libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev
 # Add 01.org & key
-RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
-    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+# RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
+#     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
 
-RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
-    wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
+# RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
+#     wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
 
-RUN apt-get update && \
-    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools \
-        gnupg2 vim jq make gdb libfuse-dev libtool \
-        libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
-        libsgx-dcap-quote-verify-dev \
-        occlum && \
-    apt-get clean
+# RUN apt-get update && \
+#     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+#         build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools \
+#         gnupg2 vim jq make gdb libfuse-dev libtool \
+#         libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
+#         libsgx-dcap-quote-verify-dev \
+#         occlum && \
+#     apt-get clean
 
-RUN echo "source /etc/profile" >> $HOME/.bashrc 
+# RUN echo "source /etc/profile" >> $HOME/.bashrc 
 
 
 # Cluster Serving config
