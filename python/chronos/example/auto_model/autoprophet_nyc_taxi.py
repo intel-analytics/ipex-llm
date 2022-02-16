@@ -76,8 +76,7 @@ if __name__ == '__main__':
     autoprophet = AutoProphet(cpus_per_trial=args.cpus_per_trial)
     start_time = time.time()
     autoprophet.fit(df_train, cross_validation=True, n_sampling=args.n_sampling)
-    autoprophet_fit_time = time.time() - start_time
-    stop_orca_context()
+    autoprophet_fit_time = time.time() - start_time    
 
     # save and load
     autoprophet.save("autoprophet.ckpt")
@@ -92,3 +91,5 @@ if __name__ == '__main__':
     print("nonauto_searched_mse:", nonauto_searched_mse)
     print("auto_searched_time:", autoprophet_fit_time)
     print("nonauto_searched_time:", prophet_fit_time)
+
+    stop_orca_context()
