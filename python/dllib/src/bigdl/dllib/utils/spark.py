@@ -24,6 +24,7 @@ from bigdl.dllib.nncontext import init_internal_nncontext, init_spark_conf
 from bigdl.dllib.utils.utils import detect_python_location, pack_penv, get_node_ip
 from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath
 from bigdl.dllib.utils.utils import get_zoo_bigdl_classpath_on_driver
+from bigdl.dllib.utils.utils import get_bigdl_class_version
 from bigdl.dllib.utils.engine import get_bigdl_jars
 
 
@@ -436,7 +437,8 @@ class SparkRunner:
                 zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
         else:
             # BigDL Class path in k8s image
-            conf["spark.executor.extraClassPath"] = "/opt/bigdl-0.14.0-SNAPSHOT/jars/*"
+            bigdl_class_version = get_bigdl_class_version()
+            conf["spark.executor.extraClassPath"] = "/opt/" + bigdl_class_version + "/jars/*"
         conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
         sys_args = "local://" + " ".join(sys.argv)
         conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
