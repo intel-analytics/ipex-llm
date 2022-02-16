@@ -71,6 +71,7 @@ RUN cd /opt && \
     rm spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar && \
     rm spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
+ADD ./log4j2.xml spark-${SPARK_VERSION}/conf/log4j2.xml
 # spark modification
 RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
