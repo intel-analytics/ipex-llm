@@ -10,6 +10,8 @@ You can use _Chronos_ to do:
 - **Anomaly Detection** (using [Anomaly Detectors](./anomaly_detection.html#anomaly-detection))
 - **Synthetic Data Generation** (using [Simulators](./simulation.html#generate-synthetic-data))
 
+Furthermore, Chronos is adapted to integrate many optimized library and best known methods(BKMs) for accuracy and performance improvement.
+
 ---
 ### **2. Install**
 
@@ -25,6 +27,12 @@ You may also install `bigdl-chronos` with target `[all]` to install the addition
 pip install bigdl-chronos[all]
 # nightly built version
 pip install --pre --upgrade bigdl-chronos[all]
+```
+```eval_rst
+.. note:: 
+    **Supported OS**:
+
+     Chronos is thoroughly tested on Ubuntu (1604/1804/2004). If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
 ```
 ---
 ### **3. Run**
@@ -46,6 +54,20 @@ You can directly write _Chronos_ application in a python file (e.g. script.py) a
 python script.py
 ```
 
+```eval_rst
+.. note:: 
+    **Optimization on Intel Hardware**:
+    
+     Chronos integrated many optimized library and best known methods(BKMs), users can have best performance to add `bigdl-nano-init` before their scripts. 
+
+     ```bash
+     bigdl-nano-init python script.py
+     ```
+
+     Currently, this function is under active development and we encourage our users to add `bigdl-nano-init` during forecaster's training.
+     
+```
+
 ---
 ### **4. Get Started**
 
@@ -61,7 +83,7 @@ Otherwise, there is no need to initialize an orca context.
 View [Orca Context](../../Orca/Overview/orca-context.md) for more details. Note that argument `init_ray_on_spark` must be `True` for _Chronos_. 
 
 ```python
-from bigdl.orca.common import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 # run in local mode
 init_orca_context(cluster_mode="local", cores=4, init_ray_on_spark=True)
@@ -101,7 +123,6 @@ for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
 
 # AutoTSEstimator initalization
 autotsest = AutoTSEstimator(model="tcn",
-                            past_seq_len=hp.randint(50, 200),
                             future_seq_len=10)
 
 # AutoTSEstimator fitting
