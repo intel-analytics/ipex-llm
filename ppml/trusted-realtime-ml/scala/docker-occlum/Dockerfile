@@ -5,13 +5,13 @@ ARG SCALA_VERSION=2.12
 ARG SCALA_SUB_VERSION_NUM=10
 
 # stage.1 Redis
-FROM occlum/occlum:0.26.4-ubuntu20.04 as redis-tls
+FROM ubuntu:20.04 as redis-tls
 
 WORKDIR /opt
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        git build-essential coreutils ca-certificates && \
+        pkg-config git build-essential coreutils ca-certificates && \
     apt-get clean
 
 RUN git clone https://github.com/openssl/openssl.git && \
@@ -29,7 +29,7 @@ RUN git clone https://github.com/redis/redis.git && \
     make -j `getconf _NPROCESSORS_ONLN` BUILD_TLS=yes && make PREFIX=/opt/redis install
 
 # stage. 2 Flink & bigdl & Scala
-FROM ubuntu20.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 ENV JAVA_HOME				/usr/lib/jvm/java-8-openjdk-amd64
 ARG FLINK_VERSION=1.11.3
 ENV FLINK_VERSION ${FLINK_VERSION}
