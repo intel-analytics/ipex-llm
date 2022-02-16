@@ -6,22 +6,24 @@ We demonstrate how to easily run synchronous distributed PyTorch training using 
 We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster:
 
 ```
-conda create -n zoo python=3.7  # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
+conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
+conda activate bigdl
 pip install torch
 pip install torchvision
 pip install matplotlib
 
 # For bigdl backend:
-pip install analytics-zoo  # 0.10.0.dev3 or above
+pip install bigdl-orca
 pip install jep==3.9.0
 pip install six cloudpickle
 
 # For torch_distributed backend:
-pip install analytics-zoo[ray]  # 0.10.0.dev3 or above
+pip install bigdl-orca[ray]
+pip install tqdm  # progress bar
 
 # For spark backend
 pip install bigdl-orca
+pip install tqdm  # progress bar
 ```
 
 ## Run on local after pip install
@@ -64,7 +66,7 @@ You can find the logs for training as follows:
 
 Final test results will be printed at the end:
 ```
-Accuracy of the network on the 10000 test images: 0.541100025177002 
+Accuracy of the network on the test images: {'Top1Accuracy': 0.541100025177002}
 ```
 
 **For "torch_distributed" and "spark" backend**
