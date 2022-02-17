@@ -488,7 +488,7 @@ class SparkTFEstimator():
             try:
                 model.optimizer.set_weights(self.optimizer_weights)
             except Exception as e:
-                logger.error(str(e))
+                logger.error("Set optimizer weights error : {}".format(str(e)))
         if is_local_path(filepath):
             model.save(filepath, overwrite, include_optimizer, save_format,
                    signatures, options, save_traces)
