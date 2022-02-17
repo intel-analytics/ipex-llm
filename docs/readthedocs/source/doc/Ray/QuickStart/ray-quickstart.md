@@ -20,7 +20,7 @@ pip install bigdl-orca[ray]
 
 ### **Step 1: Initialize**
 
-We recommend using `init_orca_context` to initiate and run Analytics Zoo on the underlying cluster. The Ray cluster would be launched automatically by specifying `init_ray_on_spark=True`.
+We recommend using `init_orca_context` to initiate and run BigDL on the underlying cluster. The Ray cluster would be launched automatically by specifying `init_ray_on_spark=True`.
 
 ```python
 from bigdl.orca import init_orca_context
