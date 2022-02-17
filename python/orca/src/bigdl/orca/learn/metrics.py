@@ -100,7 +100,7 @@ class AUC(Metric):
     """
     def __init__(self, threshold_num=200, dist_sync_on_step=False):
         self.threshold_num = threshold_num
-        self.dist_sync_on_step=dist_sync_on_step
+        self.dist_sync_on_step = dist_sync_on_step
 
     def get_bigdl_metric(self):
         from bigdl.dllib.keras.metrics import AUC as KerasAUC
