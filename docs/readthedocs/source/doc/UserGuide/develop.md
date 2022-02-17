@@ -77,7 +77,7 @@ export BIGDL_CLASSPATH=BigDL/dist/lib/bigdl-dllib-spark_SPARKVERSION-BIGDLVERSIO
 ```
 - Configure BigDL source files to the Python interpreter:
 
-You can easily do this after launching the IDE by right clicking the folder `BigDL/python/dllib/src` -> __Mark Directory As__ -> __Sources Root__ (also do this for `BigDL/python/nano/src`, `BigDL/python/orca/src`, `BigDL/python/friesian/src`, `BigDL/python/chronos/src`, `BigDL/python/serving/src` if necessary).
+You can easily do this after launching PyCharm by right clicking the folder `BigDL/python/dllib/src` -> __Mark Directory As__ -> __Sources Root__ (also do this for `BigDL/python/nano/src`, `BigDL/python/orca/src`, `BigDL/python/friesian/src`, `BigDL/python/chronos/src`, `BigDL/python/serving/src` if necessary).
 
 Alternatively, you can add BigDL source files to `PYTHONPATH`:
 ```bash
@@ -89,7 +89,7 @@ export PYTHONPATH=BigDL/python/dllib/src:BigDL/python/nano/src:BigDL/python/orca
 export PYTHONPATH=BigDL/python/dist/conf/spark-bigdl.conf:$PYTHONPATH
 ```
 
-The above environment variables should be available when running or debugging code in the IDE. In PyCharm, go to RUN -> Edit Configurations. In the "Run/Debug Configurations" panel, you can update the above environment variables in your configuration if necessary.
+The above environment variables should be available when running or debugging code in the IDE. When running applications in PyCharm, you can modify runtime environment variable by clicking  __Run__ -> __Edit Configurations__; then in the __Run/Debug Configurations__ panel, you can update the above environment variables in your application configuration.
 
 
 ### **2. Scala**
