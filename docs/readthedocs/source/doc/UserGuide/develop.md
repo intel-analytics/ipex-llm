@@ -89,7 +89,7 @@ export PYTHONPATH=BigDL/python/dllib/src:BigDL/python/nano/src:BigDL/python/orca
 export PYTHONPATH=BigDL/python/dist/conf/spark-bigdl.conf:$PYTHONPATH
 ```
 
-The above environment variables should be available when running or debugging code in the IDE. When running applications in PyCharm, you can add runtime environment variables by clicking  __Run__ -> __Edit Configurations__; then in the __Run/Debug Configurations__ panel, you can add necessary environment variables in your application configuration.
+The above environment variables should be available when running or debugging code in the IDE. When running applications in PyCharm, you can add runtime environment variables by clicking  __Run__ -> __Edit Configurations__; then in the __Run/Debug Configurations__ panel, you can add necessary environment variables to your applications.
 
 
 ### **2. Scala**
