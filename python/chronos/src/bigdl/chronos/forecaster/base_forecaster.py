@@ -167,6 +167,7 @@ class BasePytorchForecaster(Forecaster):
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
+        :param quantize: if use the quantized model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
                  if data is a numpy ndarray. A xshard item with format {‘prediction’: result},
@@ -262,6 +263,7 @@ class BasePytorchForecaster(Forecaster):
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.The param is only effective when the forecaster is a
                non-distribtued version.
+        :param quantize: if use the quantized model to predict.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
