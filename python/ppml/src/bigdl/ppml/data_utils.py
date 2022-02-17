@@ -13,11 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pandas as pd
+import numpy as np
 
 
-def dataframe_to_ndarray():
+def convert_to_numpy(x, dataframe_columns=None):
     """
-    convert Pandas DataFrame to Numpy NdArray
-    :return:
+    :param x: The input to convert
+    :param dataframe_columns: applicable if x is pandas.DataFrame, the column to convert
+    :return: the converted numpy.ndarray
     """
-    pass
+    if isinstance(x, pd.DataFrame):
+        return [x[col] for col in dataframe_columns]
+    elif isinstance(x, np.ndarray):
+        return [x]
+    elif isinstance(x, list):
+        for e in x:
+            if not isinstance(x, np.ndarray):
+                raise Exception("only NdArray type is supported for list input")
+        return x
+    else:
+        raise Exception("Input could be Pandas DataFrame or Numpy NDArray or list of NDArray, but got", type(x))
+
+

@@ -14,10 +14,16 @@
 # limitations under the License.
 #
 
-from bigdl.dllib.utils.common import JavaValue
+from bigdl.ppml import *
 
 
 class FLServer(JavaValue):
     def __init__(self, jvalue, *args):
-        bigdl_type = "float"
-        super(JavaValue, self).__init__(jvalue, bigdl_type, *args)
+        self.bigdl_type = "float"
+        super(JavaValue, self).__init__(jvalue, self.bigdl_type, *args)
+
+    def build(self):
+        callBigDlFunc(self.bigdl_type, "flServerBuild")
+
+    def start(self):
+        callBigDlFunc(self.bigdl_type, "flServerStart")

@@ -17,6 +17,8 @@
 
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.utils.zoo_engine import prepare_env
+from bigdl.dllib.utils.common import *
+from bigdl.ppml.fl_server import *
 
 prepare_env()
 creator_classes = JavaCreator.get_creator_class()[:]
