@@ -34,8 +34,7 @@ ONNXRT_BINDED_COMPONENTS = ['_ortsess_up_to_date',
                             '_build_ortsess',
                             'update_ortsess',
                             '_forward_onnx',
-                            '_quantized_ortsess',
-                            '_quantized_ortsess_up_to_date'
+                            'to_quantize_onnx'
                             ]
 
 
@@ -124,7 +123,17 @@ def _onnx_on_fit_start(self):
 def _onnx_on_train(self, mode=True):
     self.exit_onnx()
     self._ortsess_up_to_date = False
+    self._ortsess = None
     self._quantized_ortsess_up_to_date = False
+    self._quantized_ortsess = None
+
+
+def to_quantize_onnx(self, file_path):
+    if self._quantized_ortsess_up_to_date:
+        onnx.save(self._q_onnx_model, file_path)
+    else:
+        raise RuntimeError("Please run trainer.quantize again since "
+                           "the quantized onnxruntime session is out-of-date.")
 
 
 def _forward_onnx(self, *args):
@@ -147,7 +156,8 @@ def _forward_onnx_quantized(self, *args):
     return torch.from_numpy(ort_outs[0])
 
 
-def eval_onnx(self, input_sample=None, file_path="model.onnx", sess_options=None, quantize=False, **kwargs):
+def eval_onnx(self, input_sample=None, file_path="model.onnx",
+              sess_options=None, quantize=False, **kwargs):
     '''
     This method change the `forward` method to an onnxruntime backed forwarding.
 
@@ -165,7 +175,8 @@ def eval_onnx(self, input_sample=None, file_path="model.onnx", sess_options=None
     # build ortsess
     if quantize:
         assert self._quantized_ortsess_up_to_date, \
-            "Please run trainer.quantize again since the quantized onnxruntime session is out-of-date."
+            "Please run trainer.quantize again since the, " \
+            "quantized onnxruntime session is out-of-date."
     else:
         # change to eval mode
         self.eval()
@@ -176,7 +187,7 @@ def eval_onnx(self, input_sample=None, file_path="model.onnx", sess_options=None
             input_sample = self.example_input_array
         if input_sample is None and self.trainer is None:
             raise RuntimeError("You must specify an input_sample or call `Trainer.fit` "
-                            "on the model first to use `eval_onnx`")
+                               "on the model first to use `eval_onnx`")
         if input_sample is None and self.trainer.train_dataloader:
             input_sample = tuple(next(iter(self.trainer.train_dataloader))[:-1])
         if input_sample is None and self.trainer.datamodule:
@@ -200,12 +211,14 @@ def exit_onnx(self):
 
 def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_options=None):
     # class type check
-    assert isinstance(pl_model, LightningModule),\
-        f"onnxruntime support is only valid for a LightningModule, but found a {type(pl_model)}."
+    # assert isinstance(pl_model, LightningModule),\
+    #     f"onnxruntime support is only valid for a LightningModule, but found a {type(pl_model)}."
 
     if q_onnx_model:
         onnx.save(q_onnx_model, "_model_quantized_cache.onnx")
-        pl_model._quantized_ortsess = ort.InferenceSession("_model_quantized_cache.onnx", sess_options=sess_options)
+        pl_model._q_onnx_model = q_onnx_model
+        pl_model._quantized_ortsess = ort.InferenceSession("_model_quantized_cache.onnx",
+                                                           sess_options=sess_options)
         pl_model._quantized_ortsess_up_to_date = True
 
     # if all needed method has been binded, return the same model
@@ -237,5 +250,6 @@ def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_optio
     pl_model.exit_onnx = partial(exit_onnx, pl_model)
     pl_model._onnx_on_train = partial(_onnx_on_train, pl_model)
     pl_model._forward_onnx_quantized = partial(_forward_onnx_quantized, pl_model)
+    pl_model.to_quantize_onnx = partial(to_quantize_onnx, pl_model)
 
     return pl_model

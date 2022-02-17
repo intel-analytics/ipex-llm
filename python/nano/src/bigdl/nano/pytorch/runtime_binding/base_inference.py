@@ -22,8 +22,7 @@ import warnings
 import math
 import numpy as np
 
-BASE_BINDED_COMPONENTS = ['_on_fit_start_old',
-                          '_train_old',
+BASE_BINDED_COMPONENTS = ['_train_old',
                           '_torch_forward',
                           '_eval_old',
                           'inference']
@@ -96,7 +95,7 @@ def inference(self,
         if not quantize:
             if not self._ortsess_up_to_date:
                 warnings.warn("Onnxruntime session will be built implicitly,"
-                            " this may harm your inference latency.")
+                              " this may harm your inference latency.")
                 # generate input_sample for ortsess building
                 # defaultly set all input to a Tensor(TODO: might be an issue)
                 self.eval()
@@ -126,14 +125,14 @@ def inference(self,
                 for batch_id in range(batch_num):
                     yhat_list.append(self._forward_onnx(
                         *tuple(map(lambda x: x[batch_id * batch_size:
-                                            (batch_id + 1) * batch_size],
-                                input_sample_list))))
+                                               (batch_id + 1) * batch_size],
+                                   input_sample_list))))
             else:
                 for batch_id in range(batch_num):
                     yhat_list.append(self._forward_onnx_quantized(
                         *tuple(map(lambda x: x[batch_id * batch_size:
-                                            (batch_id + 1) * batch_size],
-                                input_sample_list))))
+                                               (batch_id + 1) * batch_size],
+                                   input_sample_list))))
             # this operation may cause performance degradation
             yhat = np.concatenate(yhat_list, axis=0)
             return yhat

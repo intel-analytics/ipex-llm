@@ -220,12 +220,14 @@ class Trainer(pl.Trainer):
         for framework_item in framework:
             if "pytorch" in framework_item:
                 if has_pytorch:
-                    raise RuntimeError("You should choose one from {'pytorch'|'pytorch_fx'|'pytorch_ipex'}")
+                    raise RuntimeError("You should choose one from "
+                                       "{'pytorch'|'pytorch_fx'|'pytorch_ipex'}")
                 has_pytorch = True
                 continue
             if "onnx" in framework_item:
                 if has_onnx:
-                    raise RuntimeError("You should choose one from {'onnxrt_integerops'|'onnxrt_qlinearops'}")
+                    raise RuntimeError("You should choose one from "
+                                       "{'onnxrt_integerops'|'onnxrt_qlinearops'}")
                 has_onnx = True
                 continue
 
@@ -252,7 +254,8 @@ class Trainer(pl.Trainer):
                     # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
                     model: nn.Module = pl_model
                     if isinstance(pl_model, LightningModuleFromTorch):
-                        # LightningModuleFromTorch.forward fails to trace in FX, so replace it temporarily
+                        # LightningModuleFromTorch.forward fails to trace in FX
+                        # so replace it temporarily
                         model = pl_model.model
                 else:
                     # for 'onnxrt_integerops'|'onnxrt_qlinearops'
@@ -263,12 +266,14 @@ class Trainer(pl.Trainer):
                         assert calib_dataloader, \
                             "calib_calib_dataloader must not be None when approach is " \
                             "post-training static quantization."
-                        pl_model.update_ortsess(input_sample=tuple(next(iter(calib_dataloader))[:-1]),
-                                                file_path="model.onnx")
+                        pl_model.update_ortsess(input_sample=tuple(next(iter(
+                            calib_dataloader))[:-1]),
+                            file_path="model.onnx")
                         model = pl_model._onnx_graph
                     else:
                         assert pl_model._ortsess_up_to_date, \
-                            "Please call `update_ortsess` on model to update/build your onnx structure."
+                            "Please call `update_ortsess` on model to " \
+                            "update/build your onnx structure."
                         model = pl_model._onnx_graph
                 quantized_models.append(quantizer.post_training_quantize(model, calib_dataloader,
                                                                          val_dataloader, metric))
@@ -292,8 +297,8 @@ class Trainer(pl.Trainer):
                 from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import \
                     bind_onnxrt_methods
                 return bind_onnxrt_methods(
-                        bind_quantize_methods(
-                            bind_base_inference_rt_methods(pl_model), quantized_pytorch_model),
-                            quantized_onnx_model)
+                    bind_quantize_methods(
+                        bind_base_inference_rt_methods(pl_model), quantized_pytorch_model),
+                    quantized_onnx_model)
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))

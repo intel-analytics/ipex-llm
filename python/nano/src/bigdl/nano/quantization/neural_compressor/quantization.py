@@ -76,7 +76,8 @@ class QuantizationINC(Quantization):
     def post_training_quantize(self, model, calib_dataloader=None, val_dataloader=None,
                                metric=None):
         self.check(calib_dataloader, val_dataloader, metric)
-        self.model = model
+        self.model = common.Model(model)
+
         def func(data):
             # TODO: only x, y are supported here for onnx quantization
             import torch

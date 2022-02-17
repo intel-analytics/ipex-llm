@@ -22,7 +22,6 @@ class PytorchINCMetric(INCMetric):
         # calculate accuracy
         preds = torch.stack(preds)
         labels = torch.stack(labels)
-        print("DDDDDDDDDDDDDDDDDD", preds.shape, labels.shape)
         return preds, labels
 
     def to_scalar(self, tensor):
@@ -39,6 +38,7 @@ class TensorflowINCMetric(INCMetric):
 
     def to_scalar(self, tensor):
         return tensor.numpy()
+
 
 class ONNXRuntimeINCMetic(INCMetric):
     '''

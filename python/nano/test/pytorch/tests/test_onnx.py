@@ -18,6 +18,7 @@
 import pytest
 import os
 from unittest import TestCase
+import tempfile
 
 import torch
 from torch import nn
@@ -176,6 +177,11 @@ class TestOnnx(TestCase):
             pl_model.eval_onnx(quantize=True)
             forward_res = pl_model(x).numpy()
             np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
+
+        # save the quantized model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, ".onnx")
+            pl_model.to_quantize_onnx(ckpt_name)
 
 
 if __name__ == '__main__':
