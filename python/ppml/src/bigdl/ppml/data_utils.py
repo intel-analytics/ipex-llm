@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.dllib.utils.common import *
 
 
-def init_flcontext(bigdl_type="float"):
-    callBigDlFunc(bigdl_type, "initFLContext")
-
+def dataframe_to_ndarray():
+    """
+    convert Pandas DataFrame to Numpy NdArray
+    :return:
+    """
+    pass

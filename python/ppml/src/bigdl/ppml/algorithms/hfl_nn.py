@@ -26,10 +26,25 @@ class HflNN(JavaValue):
         super(JavaValue, self).__init__(jvalue, bigdl_type, *args)
 
     def fit(self, x, y, epochs):
+        """
+        :param x: data, could be Numpy NdArray or Pandas DataFrame
+        :param y: label, could be Numpy NdArray or Pandas DataFrame
+        :param epochs: training epochs
+        :return:
+        """
         pass
 
     def evaluate(self, x, y):
+        """
+        :param x: data, could be Numpy NdArray or Pandas DataFrame
+        :param y: label, could be Numpy NdArray or Pandas DataFrame
+        :return:
+        """
         pass
 
     def predict(self, x):
+        """
+        :param x: data, could be Numpy NdArray or Pandas DataFrame
+        :return:
+        """
         pass
