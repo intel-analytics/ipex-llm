@@ -31,7 +31,7 @@ bash release_default_linux_spark246.sh default false false false  # build on Spa
 - The second argument is whether to __quick build__ BigDL Scala dependencies. You need to set it to be 'true' for the first build. In later builds, if you don't make any changes in BigDL Scala, you can set it to be 'false' so that the Scala dependencies would not be re-built.
 - The third argument is whether to __upload__ the packages to pypi. Set it to 'false' if you are simply developing BigDL for your own usage.
 - The fourth argument is whether to add __spark suffix__ (i.e. -spark2 or -spark3) to BigDL package names. Just set this to be 'false' if you are simply developing BigDL for your own usage.
-- You can also add other profiles to build the package (if any) after the fourth argument, for example '-Ddata-store-url=..'.
+- You can also add other Maven profiles to build the package (if any) after the fourth argument, for example '-Ddata-store-url=..', etc.
 
 
 After running the above command, you will find a `whl` file for each submodule of BigDL and you can then directly pip install them to your local Python environment:
@@ -61,7 +61,7 @@ cd BigDL/python/serving/src/dist
 pip install bigdl_serving-*.whl
 ```
 
-Remark: See [here](./python.md) for more instructions to run BigDL after pip install.
+See [here](./python.md) for more instructions to run BigDL after pip install.
 
 
 #### **1.2 IDE Setup**
@@ -70,25 +70,26 @@ Any IDE that support Python should be able to run BigDL. PyCharm works fine for 
 You need to do the following preparations before starting the IDE to successfully run a BigDL Python program in the IDE:
 
 - Build BigDL; see [here](#build) for more instructions.
-- Prepare Spark environment by either setting `SPARK_HOME` as the environment variable or pip install `pyspark`. Note that the Spark version should match the one you build BigDL on.
-- Check the jars under `BigDL/dist/lib` and set BIGDL_CLASSPATH. Modify SPARKVERSION and BIGDLVERSION(Scala) as appropriate:
+- Prepare Spark environment by either setting `SPARK_HOME` as the environment variable or `pip install pyspark`. Note that the Spark version should match the one you build BigDL on.
+- Check the jars under `BigDL/dist/lib` and set the environment variable `BIGDL_CLASSPATH`. Modify SPARKVERSION and BIGDLVERSION(Scala) as appropriate:
 ```bash
 export BIGDL_CLASSPATH=BigDL/dist/lib/bigdl-dllib-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar:BigDL/dist/lib/bigdl-orca-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar:BigDL/dist/lib/bigdl-friesian-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar
 ```
-- Add bigdl source files to `PYTHONPATH`:
+- Configure BigDL source files to the Python interpreter:
 
-You can either do this in the IDE by right clicking `BigDL/python/dllib/src` -> __Mark Directory As__ -> __Sources Root__ (also do this for `BigDL/python/nano/src`, `BigDL/python/orca/src`, `BigDL/python/friesian/src`, `BigDL/python/chronos/src`, `BigDL/python/serving/src` if necessary) or adding to the environment variable:
+You can easily do this after launching the IDE by right clicking the folder `BigDL/python/dllib/src` -> __Mark Directory As__ -> __Sources Root__ (also do this for `BigDL/python/nano/src`, `BigDL/python/orca/src`, `BigDL/python/friesian/src`, `BigDL/python/chronos/src`, `BigDL/python/serving/src` if necessary).
+
+Alternatively, you can add BigDL source files to `PYTHONPATH`:
 ```bash
 export PYTHONPATH=BigDL/python/dllib/src:BigDL/python/nano/src:BigDL/python/orca/src:BigDL/python/friesian/src:BigDL/python/chronos/src:BigDL/python/serving/src:$PYTHONPATH
 ```
 
-- Add `spark-analytics-zoo.conf` to `PYTHONPATH`:
+- Add `spark-bigdl.conf` to `PYTHONPATH`:
 ```bash
 export PYTHONPATH=BigDL/python/dist/conf/spark-bigdl.conf:$PYTHONPATH
 ```
 
-The above environment variables should be available when running or debugging code in IDE.
-* In PyCharm, go to RUN -> Edit Configurations. In the "Run/Debug Configurations" panel, you can update the above environment variables in your configuration.
+The above environment variables should be available when running or debugging code in the IDE. In PyCharm, go to RUN -> Edit Configurations. In the "Run/Debug Configurations" panel, you can update the above environment variables in your configuration if necessary.
 
 
 ### **2. Scala**
