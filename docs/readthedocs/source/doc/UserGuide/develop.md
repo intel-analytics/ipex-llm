@@ -66,7 +66,7 @@ The above environmental variables should be available when running or debugging 
 
 #### **2.1 Build**
 
-Maven 3 is needed to build Analytics Zoo, you can download it from the [maven website](https://maven.apache.org/download.cgi).
+Maven 3 is needed to build BigDL, you can download it from the [maven website](https://maven.apache.org/download.cgi).
 
 After installing Maven 3, please set the environment variable MAVEN_OPTS as follows:
 ```bash
@@ -75,18 +75,19 @@ $ export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m"
 
 **Build using `make-dist.sh`**
 
-It is highly recommended that you build Analytics Zoo using the [make-dist.sh script](https://github.com/intel-analytics/analytics-zoo/blob/master/make-dist.sh) with **Java 8**.
+It is highly recommended that you build BigDL using the [make-dist.sh script](https://github.com/intel-analytics/BigDL/blob/branch-2.0/scala/make-dist.sh) with **Java 8**.
 
-You can build Analytics Zoo with the following commands:
+You can build BigDL with the following commands:
 ```bash
+$ cd scala
 $ bash make-dist.sh
 ```
-After that, you can find a `dist` folder, which contains all the needed files to run a Analytics Zoo program. The files in `dist` include:
+After that, you can find a `dist` folder, which contains all the needed files to run a BigDL program. The files in `dist` include:
 
-* **dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar**: This jar package contains all dependencies except Spark classes.
-* **dist/lib/analytics-zoo-VERSION-python-api.zip**: This zip package contains all Python files of Analytics Zoo.
+* **dist/lib/bigdl-VERSION-jar-with-dependencies.jar**: This jar package contains all dependencies except Spark classes.
+* **dist/lib/bigdl-VERSION-python-api.zip**: This zip package contains all Python files of BigDL.
 
-The instructions above will build Analytics Zoo with Spark 2.4.3. To build with other spark versions, for example building analytics-zoo with spark 2.2.0, you can use `bash make-dist.sh -Dspark.version=2.2.0 -Dbigdl.artifactId=bigdl_SPARK_2.2`.  
+The instructions above will build BigDL with Spark 2.4.6. To build with other spark versions, for example building analytics-zoo with spark 2.2.0, you can use `bash make-dist.sh -Dspark.version=2.2.0`.  
 
 **Build with JDK 11**
 
@@ -102,9 +103,9 @@ $ bash make-dist.sh -P spark_3.x -Djava.version=11 -Djavac.version=11
 
 #### **2.2 IDE Setup**
 
-Analytics Zoo uses maven to organize project. You should choose an IDE that supports Maven project and scala language. IntelliJ IDEA works fine for us.
+BigDL uses maven to organize project. You should choose an IDE that supports Maven project and scala language. IntelliJ IDEA works fine for us.
 
-In IntelliJ, you can open Analytics Zoo project root directly, and the IDE will import the project automatically.
+In IntelliJ, you can open BigDL project root directly, and the IDE will import the project automatically. If not imported automatically, right click `scala/pom.xml` and choose `Add as Maven Project`.
 
 We set the scopes of spark related libraries to `provided` in the maven pom.xml, which, however, will cause a problem in IDE  (throwing `NoClassDefFoundError` when you run applications). You can easily change the scopes using the `all-in-one` profile.
 
