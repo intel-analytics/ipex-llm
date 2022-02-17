@@ -16,23 +16,34 @@
 
 
 import tensorflow as tf
+
+from bigdl.nano.automl.utils.lazyutils import proxy_methods
 from bigdl.nano.automl.hpo.mixin import HPOMixin
+from bigdl.nano.automl.hpo.callgraph import exec_callgraph
 
-
+@proxy_methods
 class Model(HPOMixin, tf.keras.Model):
-    def __init__(
-        self,
-        model_initor=None,
-        model_compiler=None,
-        *args,
-        **kwargs,
-    ):
-        # super().__init__(*args, **kwargs)
-        if model_initor is None:
-            super().__init__(*args, **kwargs)
-        else:
-            self.model_initor = model_initor
-        self.model_compiler = model_compiler
 
+    def __init__(self, **kwargs):
+        # we only take keyword arguments for now
+        # TODO check how args is used
+        super().__init__()
         self.objective = None
         self.study = None
+        self.tune_end = False
+        self._lazymodel = None
+
+        self.kwargs = kwargs
+        self.lazyinputs_ = kwargs['inputs']
+        self.lazyoutputs_ = kwargs['outputs']
+
+    def _model_init_args(self, trial):
+        # for lazy model init
+        # use backend to sample model init args
+        # and construct the actual layers
+        out_t = exec_callgraph(self.lazyinputs_, self.lazyoutputs_, trial)
+
+        self.kwargs['inputs'] = self.lazyinputs_
+        self.kwargs['outputs'] = out_t
+        return self.kwargs
+

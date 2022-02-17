@@ -14,11 +14,20 @@
 # limitations under the License.
 #
 
+from bigdl.nano.automl.utils.lazyutils import proxy_methods
 from .objective import Objective
 import optuna
 
 
 class HPOMixin:
+
+    # these methods are automatically created using "@proxy_methods"
+    # details see desriptions in _proxy method
+    PROXYED_METHODS = ['predict', 'predict_on_batch',
+            'evaluate', 'test_on_batch',
+            'to_json', 'to_yaml', 'summary',
+            'save', 'save_spec', 'save_weights',
+            'get_layer']
 
     def search(
         self,
@@ -60,9 +69,6 @@ class HPOMixin:
         self.study.optimize(self.objective, n_trials=n_trails, **optimize_kwargs)
         self.tune_end=False
 
-    @staticmethod
-    def _filter_tuner_args(kwargs, tuner_keys):
-        return {k: v for k, v in kwargs.items() if k in tuner_keys}
 
     def search_summary(self):
         """Retrive a summary of trials
@@ -105,3 +111,46 @@ class HPOMixin:
         self._model_build(trial)
         # TODO Next step: support retrive saved model instead of retrain from hparams
         self.tune_end=True
+
+
+    def compile(self, *args, **kwargs):
+        self.compile_args = args
+        self.compile_kwargs = kwargs
+
+
+    def fit(self, *args, **kwargs):
+        if not self.tune_end:
+             self.end_search()
+        self._lazymodel.fit(*args, **kwargs)
+
+    @staticmethod
+    def _filter_tuner_args(kwargs, tuner_keys):
+        return {k: v for k, v in kwargs.items() if k in tuner_keys}
+
+    def _model_compile(self, model, trial):
+        # for lazy model compile
+        # use backedn to sample compile args
+        # config = OptunaBackend.sample_config(trial, kwspaces)
+        model.compile(*self.compile_args, **self.compile_kwargs)
+
+    def _model_build(self, trial):
+        # for lazy model build
+        # build model based on searched hyperparams from trial
+        # TODO may add data creator here, e.g. refresh data, reset generators, etc.
+        #super().__init__(**self._model_init_args(trial))
+        #self._model_compile(super(), trial)
+        # use composition instead of inherited
+        modelcls = self.__class__.__bases__[1]
+        self._lazymodel = modelcls(**self._model_init_args(trial))
+        self._model_compile(self._lazymodel, trial)
+
+
+    def _proxy(self, name, method, *args, **kwargs):
+        # call to keras method is forwarded to internal model
+        # NOTE: keep the unused "method" argument so that
+        # only the methods which are actually called are created
+        if not self._lazymodel:
+            raise ValueError("Model is not actually built yet. "+ \
+                "Please call end_search before calling \""+name+"\"")
+        internal_m = getattr(self._lazymodel, name)
+        return internal_m(*args, **kwargs)

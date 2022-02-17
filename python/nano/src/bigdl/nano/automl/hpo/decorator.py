@@ -10,6 +10,7 @@ import ConfigSpace as CS
 from .space import *
 from .space import _add_hp, _add_cs, _rm_hp, _strip_config_space, SPLITTER
 
+from .callgraph import update_callgraph
 from bigdl.nano.automl.utils import EasyDict as ezdict
 
 __all__ = ['args', 'obj', 'func', 'sample_config']
@@ -267,6 +268,7 @@ def obj(**kwvars):
                 self.args = args
                 self.kwargs = kwargs
                 self._inited = False
+                self._callgraph = None #keep a reference to the call graph
 
             def sample(self, **config):
                 kwargs = copy.deepcopy(self.kwargs)
@@ -283,6 +285,18 @@ def obj(**kwvars):
 
             def __repr__(self):
                 return 'AutoGluonObject -- ' + Cls.__name__
+
+            def __call__(self, *args, **kwargs):
+                # this is to handle functional API of layers
+                self._call_args = args
+                self._call_kwargs = kwargs
+                #get the inputs tensor argument
+                if len(args) == 0:
+                    inputs = kwargs['inputs']
+                else:
+                    inputs = args[0]
+                self._callgraph = update_callgraph(inputs, self)
+                return self
 
         autogluonobject.kwvars = autogluonobject.__init__.kwvars
         autogluonobject.__doc__ = Cls.__doc__

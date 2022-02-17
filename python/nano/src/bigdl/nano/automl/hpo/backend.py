@@ -19,7 +19,6 @@ from .space import Bool, Int, Categorical, Real
 
 class OptunaBackend(object):
 
-
     @staticmethod
     def get_other_args(kwargs, kwspaces):
         return{ k : kwargs[k] for k in set(kwargs) - set(kwspaces) }
@@ -47,6 +46,11 @@ class OptunaBackend(object):
             config[hp] = hp_dimension
         return config
 
+
+    @staticmethod
+    def instantiate(trial, lazyobj):
+        config = OptunaBackend.gen_config(trial, lazyobj)
+        return lazyobj.sample(**config)
 
     @staticmethod
     def gen_config(trial, automl_obj):
