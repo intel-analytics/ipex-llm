@@ -13,6 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 import os
+
+os.system("pip install ray[default]")
+os.system("pip install -U intel_tensorflow")
+
 import pathlib
 from tempfile import TemporaryDirectory
 
