@@ -22,11 +22,6 @@ from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy, AUC
-from pyspark.ml.evaluation import BinaryClassificationEvaluator, MulticlassClassificationEvaluator
-from pyspark.sql.types import ArrayType, DoubleType, IntegerType
-from pyspark.sql.functions import udf, array
-from pyspark.ml.linalg import DenseVector, VectorUDT
-
 import argparse
 
 spark_conf = {"spark.network.timeout": "10000000",
@@ -121,9 +116,6 @@ if __name__ == '__main__':
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
     args = parser.parse_args()
 
-
-
-
     if args.cluster_mode == "local":
         sc = init_orca_context("local")
     elif args.cluster_mode == "yarn":
@@ -197,7 +189,7 @@ if __name__ == '__main__':
               'lr': args.lr}
 
     est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion,
-                               metrics=[Accuracy(), AUC(dist_sync_on_step=False)], use_tqdm=True, backend="torch_distributed",
+                               metrics=[Accuracy(), AUC()], use_tqdm=True, backend="torch_distributed",
                                config=config)
     train_stats = est.fit(data=train.df, feature_cols=["feature"], label_cols=["label"],
                           epochs=args.epochs, batch_size=args.batch_size)
@@ -212,19 +204,6 @@ if __name__ == '__main__':
     predicts = est.predict(data=test.df, feature_cols=["feature"], batch_size=args.batch_size)
     predicts.show(10, False)
 
-    predicts.cache()
-    predicts = predicts\
-        .withColumn("probability",
-                    udf(lambda x: DenseVector([1-x, x]), VectorUDT())("prediction"))\
-        .withColumn("label_predicted",
-                    udf(lambda x: float(round(x)), DoubleType())("prediction"))\
-        .withColumn("label_gr", udf(lambda x: x[0], DoubleType())("label"))
-    predicts.show(10, False)
-    evaluator = BinaryClassificationEvaluator(labelCol="label_gr",
-                                              rawPredictionCol="probability")
-    auc = evaluator.evaluate(predicts, {evaluator.metricName: "areaUnderROC"})
-
-    print("AUC: %.2f" % (auc * 100.0))
     est.shutdown()
     stop_orca_context()
 
