@@ -252,7 +252,7 @@ class Trainer(pl.Trainer):
                                             timeout=timeout, max_trials=max_trials)
                 if "pytorch" in framework_item:
                     # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
-                    model: nn.Module = pl_model
+                    model: Any = pl_model  # state model to be 'Any' since we may have pl or onnx
                     if isinstance(pl_model, LightningModuleFromTorch):
                         # LightningModuleFromTorch.forward fails to trace in FX
                         # so replace it temporarily
