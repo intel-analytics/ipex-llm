@@ -154,7 +154,13 @@ def exists(path):
             raise ex
         return True
     elif path.startswith("hdfs://"):
-        return callZooFunc("float", "exists", path)
+        import pyarrow as pa
+        host_port = path.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        return fs.exists()
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -181,7 +187,13 @@ def makedirs(path):
         key = "/".join(path_parts)
         return s3_client.put_object(Bucket=bucket, Key=key, Body='')
     elif path.startswith("hdfs://"):
-        callZooFunc("float", "mkdirs", path)
+        import pyarrow as pa
+        host_port = path.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        return fs.mkdir(path)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
