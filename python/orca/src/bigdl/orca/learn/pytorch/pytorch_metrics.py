@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 import torch
-import torchmetrics
+try:
+    import torchmetrics
+except ImportError:
+    raise ImportError("please install torchmetrics: pip install torchmetrics")
+
 from abc import ABC, abstractmethod
 
 
