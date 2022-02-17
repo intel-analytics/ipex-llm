@@ -49,6 +49,7 @@ class AutoTSEstimator:
                  model="lstm",
                  search_space=dict(),
                  metric="mse",
+                 metric_mode=None,
                  loss=None,
                  optimizer="Adam",
                  past_seq_len='auto',
@@ -85,7 +86,14 @@ class AutoTSEstimator:
                parameter. search_space should contain those parameters other than the keyword
                arguments in this constructor in its key. If a 3rd parth model is used, then you
                must set search_space to a dict.
-        :param metric: String. The evaluation metric name to optimize. e.g. "mse"
+        :param metric: String or customized evaluation metric function.
+            If string, metric is the evaluation metric name to optimize, e.g. "mse".
+            If callable function, it signature should be func(y_true, y_pred), where y_true and
+            y_pred are numpy ndarray. The function should return a float value as evaluation result.
+        :param metric_mode: One of ["min", "max"]. "max" means greater metric value is better.
+            You have to specify metric_mode if you use a customized metric function.
+            You don't have to specify metric_mode if you use the built-in metric in
+            bigdl.orca.automl.metrics.Evaluator.
         :param loss: String or pytorch/tf.keras loss instance or pytorch loss creator function. The
                default loss function for pytorch backend is nn.MSELoss().
         :param optimizer: String or pyTorch optimizer creator function or
@@ -142,6 +150,7 @@ class AutoTSEstimator:
                                                   resources_per_trial={"cpu": cpus_per_trial},
                                                   name=name)
             self.metric = metric
+            self.metric_mode = metric_mode
             search_space.update({"past_seq_len": past_seq_len,
                                  "future_seq_len": future_seq_len,
                                  "input_feature_num": input_feature_num,
@@ -157,6 +166,7 @@ class AutoTSEstimator:
                                  "output_target_num": output_target_num,
                                  "loss": loss,
                                  "metric": metric,
+                                 "metric_mode": metric_mode,
                                  "optimizer": optimizer,
                                  "backend": backend,
                                  "logs_dir": logs_dir,
@@ -237,6 +247,7 @@ class AutoTSEstimator:
                 epochs=epochs,
                 validation_data=val_d,
                 metric=self.metric,
+                metric_mode=self.metric_mode,
                 metric_threshold=metric_threshold,
                 n_sampling=n_sampling,
                 search_space=self.search_space,
