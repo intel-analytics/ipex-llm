@@ -277,9 +277,9 @@ class SparkRunner:
                     model.make_train_function()
 
                 try:
-                    model.optimizer.set_weights(self.optimizer_weights)
+                    model.optimizer.set_weights(self.optimizer_weights.value)
                 except Exception as e:
-                    logger.error(str(e))
+                    logger.error("Set optimizer weights error : {}".format(str(e)))
 
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
