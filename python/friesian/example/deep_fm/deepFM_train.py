@@ -21,8 +21,7 @@ from evaluation import uAUC
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy
-
+from bigdl.orca.learn.metrics import Accuracy, AUC
 import argparse
 
 spark_conf = {"spark.network.timeout": "10000000",
@@ -190,7 +189,7 @@ if __name__ == '__main__':
               'lr': args.lr}
 
     est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion,
-                               metrics=[Accuracy()], use_tqdm=True, backend="torch_distributed",
+                               metrics=[Accuracy(), AUC()], use_tqdm=True, backend="torch_distributed",
                                config=config)
     train_stats = est.fit(data=train.df, feature_cols=["feature"], label_cols=["label"],
                           epochs=args.epochs, batch_size=args.batch_size)
@@ -203,8 +202,7 @@ if __name__ == '__main__':
     print("Validation stats: {}".format(valid_stats))
 
     predicts = est.predict(data=test.df, feature_cols=["feature"], batch_size=args.batch_size)
-    predicts = predicts.select("prediction").collect()
-    auc = uAUC(test_labels, predicts, test_user_ids)
-    print("AUC: ", auc)
+    predicts.show(10, False)
+
     est.shutdown()
     stop_orca_context()

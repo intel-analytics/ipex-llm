@@ -14,6 +14,11 @@
 # limitations under the License.
 #
 import torch
+try:
+    import torchmetrics
+except ImportError:
+    raise ImportError("please install torchmetrics: pip install torchmetrics")
+
 from abc import ABC, abstractmethod
 
 
@@ -439,3 +444,15 @@ class Poisson(PytorchMetric):
 
     def compute(self):
         return self.poisson.float() / self.total
+
+
+class AUROC(PytorchMetric):
+    def __init__(self,
+                 dist_sync_on_step: bool = False):
+        self.internalauc = torchmetrics.AUROC(dist_sync_on_step=dist_sync_on_step)
+
+    def __call__(self, preds, targets):
+        self.internalauc.update(preds, targets.to(torch.int64))
+
+    def compute(self):
+        return self.internalauc.compute()

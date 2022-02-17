@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import torch
+import pytest
 
 
 def test_torch_Accuracy():
@@ -172,3 +173,15 @@ def test_torch_Poisson():
     poisson = Poisson()
     poisson(pred, target)
     assert abs(poisson.compute() - 0.49999997) < 1e-6
+
+
+def test_torch_AUC():
+    from bigdl.orca.learn.pytorch.pytorch_metrics import AUROC
+    pred = torch.tensor([0.3, 0.4, 0.2, 0.5, 0.6, 0.7, 0.8])
+    target = torch.tensor([0, 1, 0, 1, 1, 1, 1.0])
+    auc = AUROC()
+    auc(pred, target)
+    assert (auc.compute() - 1.0) < 1e-6
+
+if __name__ == "__main__":
+    pytest.main([__file__])
