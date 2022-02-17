@@ -774,12 +774,12 @@
                 <scala.macros.version>2.1.0</scala.macros.version>
             </properties>
         </profile>
-        <!--<profile>-->
-            <!--<id>all-in-one</id>-->
-            <!--<properties>-->
-                <!--<spark-scope>compile</spark-scope>-->
-            <!--</properties>-->
-        <!--</profile>-->
+        <profile>
+            <id>all-in-one</id>
+            <properties>
+                <spark-scope>compile</spark-scope>
+            </properties>
+        </profile>
         <profile>
             <id>full-build</id>
             <modules>
