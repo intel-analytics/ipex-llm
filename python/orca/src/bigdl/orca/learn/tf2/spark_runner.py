@@ -178,6 +178,7 @@ class SparkRunner:
                  config=None,
                  verbose=False,
                  model_weights=None,
+                 optimizer_weights=None,
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
@@ -202,6 +203,7 @@ class SparkRunner:
         self.epoch = epoch
         self.verbose = verbose
         self.model_weights = model_weights
+        self.optimizer_weights = optimizer_weights
         self.size = size
         self.mode = mode
         self.backend = backend
@@ -267,6 +269,17 @@ class SparkRunner:
             model = self.model_creator(self.config)
             if self.model_weights:
                 model.set_weights(self.model_weights.value)
+            if self.optimizer_weights:
+                # Build train function (to get weight updates).
+                if isinstance(model, tf.keras.Sequential):
+                    model.make_train_function()
+                else:
+                    model.make_train_function()
+
+                try:
+                    model.optimizer.set_weights(self.optimizer_weights)
+                except Exception as e:
+                    logger.error(str(e))
 
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \

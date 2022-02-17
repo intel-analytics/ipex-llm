@@ -24,10 +24,13 @@ import glob
 
 import pickle
 
+import tensorflow as tf
+
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
     get_remote_file_to_local, is_local_path, get_remote_files_with_prefix_to_local, \
-    append_suffix, put_local_file_to_remote, put_local_files_with_prefix_to_remote
+    append_suffix, put_local_file_to_remote, put_local_files_with_prefix_to_remote, \
+    put_local_dir_tree_to_remote, get_remote_dir_tree_to_local
 
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.data.file import exists
@@ -74,6 +77,7 @@ class SparkTFEstimator():
 
         self.model_weights = None
         self.epoch = 0
+        self.optimizer_weights = None
 
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
@@ -127,6 +131,10 @@ class SparkTFEstimator():
             weights = sc.broadcast(self.model_weights)
         else:
             weights = None
+        if self.optimizer_weights:
+            optimizer_weights = sc.broadcast(self.optimizer_weights)
+        else:
+            optimizer_weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -135,6 +143,7 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             model_weights=weights,
+            optimizer_weights=optimizer_weights,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
@@ -202,6 +211,7 @@ class SparkTFEstimator():
                     state = pickle.load(f)
                     self.model_weights = state['weights']
                     self.epoch = state["epoch"]
+                    self.optimizer_weights = state["optimizer_weights"]
             finally:
                 shutil.rmtree(temp_dir)
 
@@ -431,40 +441,112 @@ class SparkTFEstimator():
                     shutil.rmtree(temp_dir)
         self.model_weights = model.get_weights()
 
-    @enable_multi_fs_save
-    def save(self, checkpoint):
+
+    def save(self,
+             filepath,
+             overwrite=True,
+             include_optimizer=True,
+             save_format=None,
+             signatures=None,
+             options=None,
+             save_traces=True):
         """
-        Saves the checkpoint at the provided path.
-        :param checkpoint: (str) Path to the target checkpoint file.
+        Saves the model to Tensorflow SavedModel or a single HDF5 file.
+
+        :param filepath: String, PathLike, path to SavedModel or H5 file to save the
+            model. It can be local/hdfs/s3 filepath
+        :param overwrite: Whether to silently overwrite any existing file at the
+            target location, or provide the user with a manual prompt.
+        :param include_optimizer: If True, save optimizer's state together.
+        :param save_format: Either `'tf'` or `'h5'`, indicating whether to save the
+            model to Tensorflow SavedModel or HDF5. Defaults to 'tf' in TF 2.X,
+            and 'h5' in TF 1.X.
+        :param signatures: Signatures to save with the SavedModel. Applicable to the
+            'tf' format only. Please see the `signatures` argument in
+            `tf.saved_model.save` for details.
+        :param options: (only applies to SavedModel format)
+            `tf.saved_model.SaveOptions` object that specifies options for
+            saving to SavedModel.
+        :param save_traces: (only applies to SavedModel format) When enabled, the
+            SavedModel will store the function traces for each layer. This
+            can be disabled, so that only the configs of each layer are stored.
+            Defaults to `True`. Disabling this will decrease serialization time
+            and reduce file size, but it requires that all custom layers/models
+            implement a `get_config()` method.
         """
+        model = self.model_creator(self.config)
+        if self.model_weights:
+            model.set_weights(self.model_weights)
 
-        # Some model might need to aggregate variables during checkpointing
-        # which requires both the chief and workers to participate in the
-        # allreduce communication protocol.
-        # So we need to call get_state on every remote workers, otherwise
-        # it might get stuck
-        state = {
-            "epoch": self.epoch,
-            "weights": self.model_weights
-        }
+        if self.optimizer_weights:
+            # Build train function (to get weight updates).
+            # if isinstance(model, tf.keras.Sequential):
+            #     model.make_train_function()
+            # else:
+            #     model.make_train_function()
 
-        with open(checkpoint, "wb") as f:
-            pickle.dump(state, f)
+            try:
+                model.optimizer.set_weights(self.optimizer_weights)
+            except Exception as e:
+                logger.error(str(e))
+        if is_local_path(filepath):
+            model.save(filepath, overwrite, include_optimizer, save_format,
+                   signatures, options, save_traces)
+        else:
+            file_name = os.path.basename(filepath)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                model.save(temp_path, overwrite, include_optimizer, save_format,
+                           signatures, options, save_traces)
+                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    # hdf5 format
+                    put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
+                else:
+                    # tf format
+                    put_local_dir_tree_to_remote(temp_path, filepath,
+                                                          over_write=overwrite)
+            finally:
+                shutil.rmtree(temp_dir)
 
-        return checkpoint
-
-    @enable_multi_fs_load
-    def load(self, checkpoint):
+    def load(self, filepath, custom_objects=None, compile=True, options=None):
         """
-        Loads the model from the provided checkpoint.
+        Loads a model saved via `estimator.save()
 
-        :param checkpoint: (str) Path to target checkpoint file.
+        :param filepath: (str) Path of saved model.
+        :param custom_objects: Optional dictionary mapping names
+          (strings) to custom classes or functions to be
+          considered during deserialization.
+        :param compile: Boolean, whether to compile the model after loading.
+        :param options: Optional `tf.saved_model.LoadOptions` object that specifies
+        options for loading from SavedModel.
 
         """
-        with open(checkpoint, "rb") as f:
-            state = pickle.load(f)
-        self.model_weights = state['weights']
-        self.epoch = state['epoch']
+        if is_local_path(filepath):
+            model = tf.keras.models.load_model(filepath,
+                                                   custom_objects=custom_objects,
+                                                   compile=compile,
+                                                   options=options
+                                                   )
+        else:
+            file_name = os.path.basename(filepath)
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+            try:
+                if filepath.endswith('.h5') or filepath.endswith('.keras'):
+                    get_remote_file_to_local(filepath, temp_path)
+                else:
+                    get_remote_dir_tree_to_local(filepath, temp_path)
+
+                model = tf.keras.models.load_model(temp_path,
+                                              custom_objects=custom_objects,
+                                              compile=compile,
+                                              options=options
+                                              )
+            finally:
+                shutil.rmtree(temp_dir)
+        self.model_weights = model.get_weights()
+        self.optimizer_weights = model.optimizer.get_weights()
 
     def get_model(self):
         """
