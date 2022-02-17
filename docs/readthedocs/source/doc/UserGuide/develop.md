@@ -19,7 +19,7 @@ To generate a new [whl](https://pythonwheels.com/) package for pip install, you 
 
 ```bash
 cd BigDL/python/dev
-bash release_default_linux_spark246.sh default true false false  # build on Spark 2.4.6 for linux
+bash release_default_linux_spark246.sh default false false false  # build on Spark 2.4.6 for linux
 # Use release_default_linux_spark312.sh to build on Spark 3.1.2 for linux
 # Use release_default_mac_spark246.sh to build on Spark 2.4.6 for mac
 # Use release_default_mac_spark312.sh to build on Spark 3.1.2 for mac
@@ -61,29 +61,35 @@ cd BigDL/python/serving/src/dist
 pip install bigdl_serving-*.whl
 ```
 
-See [here](./python.md) for more instructions to run BigDL after pip install.
+Remark: See [here](./python.md) for more instructions to run BigDL after pip install.
 
 
 #### **1.2 IDE Setup**
 Any IDE that support Python should be able to run BigDL. PyCharm works fine for us.
 
-You need to do the following preparations before starting the IDE to successfully run an Analytics Zoo Python program in the IDE:
+You need to do the following preparations before starting the IDE to successfully run a BigDL Python program in the IDE:
 
-- Build BigDL; see [here](#21-build) for more instructions.
+- Build BigDL; see [here](#build) for more instructions.
 - Prepare Spark environment by either setting `SPARK_HOME` as the environment variable or pip install `pyspark`. Note that the Spark version should match the one you build BigDL on.
-- Set BIGDL_CLASSPATH:
+- Check the jars under `BigDL/dist/lib` and set BIGDL_CLASSPATH. Modify SPARKVERSION and BIGDLVERSION(Scala) as appropriate:
 ```bash
-export BIGDL_CLASSPATH=analytics-zoo/dist/lib/analytics-zoo-*-jar-with-dependencies.jar
+export BIGDL_CLASSPATH=BigDL/dist/lib/bigdl-dllib-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar:BigDL/dist/lib/bigdl-orca-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar:BigDL/dist/lib/bigdl-friesian-spark_SPARKVERSION-BIGDLVERSION-jar-with-dependencies.jar
+```
+- Add bigdl source files to `PYTHONPATH`:
+
+You can either do this in the IDE by right clicking `BigDL/python/dllib/src` -> __Mark Directory As__ -> __Sources Root__ (also do this for `BigDL/python/nano/src`, `BigDL/python/orca/src`, `BigDL/python/friesian/src`, `BigDL/python/chronos/src`, `BigDL/python/serving/src` if necessary) or adding to the environment variable:
+```bash
+export PYTHONPATH=BigDL/python/dllib/src:BigDL/python/nano/src:BigDL/python/orca/src:BigDL/python/friesian/src:BigDL/python/chronos/src:BigDL/python/serving/src:$PYTHONPATH
 ```
 
-- Prepare BigDL Python environment by either downloading BigDL source code from [GitHub](https://github.com/intel-analytics/BigDL) or pip install `bigdl`. Note that the BigDL version should match the one you build Analytics Zoo on.
-- Add `pyzoo` and `spark-analytics-zoo.conf` to `PYTHONPATH`:
+- Add `spark-analytics-zoo.conf` to `PYTHONPATH`:
 ```bash
-export PYTHONPATH=analytics-zoo/pyzoo:analytics-zoo/dist/conf/spark-analytics-zoo.conf:$PYTHONPATH
+export PYTHONPATH=BigDL/python/dist/conf/spark-bigdl.conf:$PYTHONPATH
 ```
 
-The above environmental variables should be available when running or debugging code in IDE.
+The above environment variables should be available when running or debugging code in IDE.
 * In PyCharm, go to RUN -> Edit Configurations. In the "Run/Debug Configurations" panel, you can update the above environment variables in your configuration.
+
 
 ### **2. Scala**
 
