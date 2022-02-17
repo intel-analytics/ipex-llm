@@ -24,10 +24,10 @@ import tensorflow as tf
 from pyspark import BarrierTaskContext, TaskContext
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.data.file import put_local_dir_tree_to_remote
+from bigdl.orca.data.file import put_local_dir_tree_to_remote, exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_specific_object_from_callbacks, get_replaced_path, get_rank, \
-    process_tensorboard_in_callbacks
+    process_tensorboard_in_callbacks, save_model_to_h5
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
@@ -183,6 +183,7 @@ class SparkRunner:
                  mode="fit",
                  model_dir=None,
                  epoch=0,
+                 application_id=None,
                  need_to_log_to_driver=False,
                  driver_ip=None,
                  driver_port=None
@@ -228,6 +229,7 @@ class SparkRunner:
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed(self.cluster)
         self.model_dir = model_dir
+        self.application_id = application_id
 
     def setup(self):
         import tensorflow as tf
@@ -266,20 +268,13 @@ class SparkRunner:
         runs a training epoch and updates the model parameters
         """
         with self.strategy.scope():
-            model = self.model_creator(self.config)
-            if self.model_weights:
-                model.set_weights(self.model_weights.value)
-            if self.optimizer_weights:
-                # Build train function (to get weight updates).
-                if isinstance(model, tf.keras.Sequential):
-                    model.make_train_function()
-                else:
-                    model.make_train_function()
-
-                try:
-                    model.optimizer.set_weights(self.optimizer_weights.value)
-                except Exception as e:
-                    logger.error("Set optimizer weights error : {}".format(str(e)))
+            if exists(self._model_saved_path):
+                # for continous training
+                model = tf.keras.models.load_model(self._model_saved_path)
+            else:
+                model = self.model_creator(self.config)
+                if self.model_weights:
+                    model.set_weights(self.model_weights.value)
 
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
@@ -366,6 +361,7 @@ class SparkRunner:
                     "optimizer_weights": model.optimizer.get_weights()
                 }
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
+                save_model_to_h5(model, self._model_saved_path)
             if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
@@ -466,3 +462,7 @@ class SparkRunner:
         if self.need_to_log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return new_part
+
+    @property
+    def _model_saved_path(self):
+        return os.path.join(self.model_dir, self.application_id, "model.h5")

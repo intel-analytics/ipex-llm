@@ -18,11 +18,12 @@ from contextlib import closing
 import socket
 import sys
 import tempfile
+import shutil
 
-from bigdl.dllib.utils.file_utils import get_file_list
+from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
-from bigdl.orca.data.file import put_local_dir_tree_to_remote
+from bigdl.orca.data.file import put_local_dir_tree_to_remote, put_local_file_to_remote
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 import numpy as np
 import pickle
@@ -510,3 +511,17 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
         callbacks.append(copy_callback)
         return replaced_log_dir
     return None
+
+
+def save_model_to_h5(model, filepath):
+    if is_local_path(filepath):
+        model.save(filepath, save_format="h5")
+    else:
+        temp_dir = tempfile.mkdtemp()
+        try:
+            filename = os.path.basename(filepath)
+            local_file = os.path.join(temp_dir, filename)
+            model.save(local_file, save_format="h5")
+            put_local_file_to_remote(local_file, filepath)
+        finally:
+            shutil.rmtree(temp_dir)

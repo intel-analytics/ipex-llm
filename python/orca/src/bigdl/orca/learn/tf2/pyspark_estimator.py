@@ -37,7 +37,7 @@ from bigdl.orca.data.file import exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
-    convert_predict_xshards_to_dataframe, make_data_creator
+    convert_predict_xshards_to_dataframe, make_data_creator, save_model_to_h5
 from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
@@ -77,12 +77,17 @@ class SparkTFEstimator():
 
         self.model_weights = None
         self.epoch = 0
-        self.optimizer_weights = None
+        # self.optimizer_weights = None
 
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
         self.model_dir = model_dir
+        master = sc.getConf().get("spark.master")
+        if not master.startswith("local"):
+            logger.info("For cluster mode, make sure to use shared filesystem path as model directory.")
+
+        self.application_id = sc.applicationId
         self.ip = get_node_ip()
         self.port = find_free_port()
         is_local = sc.master.startswith("local")
@@ -131,10 +136,10 @@ class SparkTFEstimator():
             weights = sc.broadcast(self.model_weights)
         else:
             weights = None
-        if self.optimizer_weights:
-            optimizer_weights = sc.broadcast(self.optimizer_weights)
-        else:
-            optimizer_weights = None
+        # if self.optimizer_weights:
+        #     optimizer_weights = sc.broadcast(self.optimizer_weights)
+        # else:
+        #     optimizer_weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -143,11 +148,12 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             model_weights=weights,
-            optimizer_weights=optimizer_weights,
+            # optimizer_weights=optimizer_weights,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
-            epoch=self.epoch,
+            # epoch=self.epoch,
+            application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port
@@ -262,6 +268,8 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc),
+            model_dir=self.model_dir,
+            application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port
@@ -329,6 +337,8 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="predict",
             cluster_info=self._get_cluster_info(sc),
+            model_dir=self.model_dir,
+            application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port
@@ -474,21 +484,33 @@ class SparkTFEstimator():
             and reduce file size, but it requires that all custom layers/models
             implement a `get_config()` method.
         """
-        model = self.model_creator(self.config)
-        if self.model_weights:
-            model.set_weights(self.model_weights)
-
-        if self.optimizer_weights:
-            # Build train function (to get weight updates).
-            # if isinstance(model, tf.keras.Sequential):
-            #     model.make_train_function()
-            # else:
-            #     model.make_train_function()
-
-            try:
-                model.optimizer.set_weights(self.optimizer_weights)
-            except Exception as e:
-                logger.error("Set optimizer weights error : {}".format(str(e)))
+        # model = self.model_creator(self.config)
+        # if self.model_weights:
+        #     model.set_weights(self.model_weights)
+        #
+        # if self.optimizer_weights:
+        #     # Build train function (to get weight updates).
+        #     # if isinstance(model, tf.keras.Sequential):
+        #     #     model.make_train_function()
+        #     # else:
+        #     #     model.make_train_function()
+        #     grad_vars = model.trainable_weights
+        #     # This need not be model.trainable_weights; it must be a correctly-ordered list of
+        #     # grad_vars corresponding to how you usually call the optimizer.
+        #
+        #     zero_grads = [tf.zeros_like(w) for w in grad_vars]
+        #
+        #     # Apply gradients which don't do nothing with Adam
+        #     model.optimizer.apply_gradients(zip(zero_grads, grad_vars))
+        #
+        #     try:
+        #         model.optimizer.set_weights(self.optimizer_weights)
+        #     except Exception as e:
+        #         logger.error("Set optimizer weights error : {}".format(str(e)))
+        if exists(self._model_saved_path):
+            model = tf.keras.models.load_model(self._model_saved_path)
+        else:
+            model = self.model_creator(self.config)
         if is_local_path(filepath):
             model.save(filepath, overwrite, include_optimizer, save_format,
                    signatures, options, save_traces)
@@ -545,8 +567,9 @@ class SparkTFEstimator():
                                               )
             finally:
                 shutil.rmtree(temp_dir)
+        model.save(self._model_saved_path, save_format="h5")
         self.model_weights = model.get_weights()
-        self.optimizer_weights = model.optimizer.get_weights()
+        # self.optimizer_weights = model.optimizer.get_weights()
 
     def get_model(self):
         """
@@ -557,3 +580,8 @@ class SparkTFEstimator():
         model = self.model_creator(self.config)
         model.set_weights(self.model_weights)
         return model
+
+    @property
+    def _model_saved_path(self):
+        return os.path.join(self.model_dir, self.application_id, "model.h5")
+
