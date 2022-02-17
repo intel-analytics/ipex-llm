@@ -206,4 +206,3 @@ if __name__ == '__main__':
 
     est.shutdown()
     stop_orca_context()
-
