@@ -327,8 +327,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     } else None
 
     if (x != null) DataSet.rdd(x, shuffleData = shuffleData, groupSize = groupSize) ->
-      SampleToMiniBatch[T](batchSize, _featurePaddingParam,
-      _labelPaddingParam)
+      SampleToMiniBatch[T](batchSize, _featurePaddingParam, _labelPaddingParam)
     else null
   }
 
@@ -572,33 +571,6 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       featureCols: Array[String],
       labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
     this.fit(x, batchSize, nbEpoch, featureCols, labelCols, null)
-  }
-
-  def df2ImageSet(df: DataFrame, labelCol: String = null,
-                  transformer: ImageProcessing = null):
-  ImageSet = {
-    val labelColIndex = if (labelCol != null) {
-      df.schema.fieldIndex(labelCol)
-    } else -1
-
-    val imfRDD = df.rdd.mapPartitions { rowIter =>
-      rowIter.map { row =>
-        val imf = NNImageSchema.row2IMF(row.get(0).asInstanceOf[Row])
-        if (labelColIndex != -1) {
-          val labelTensor = Tensor[Float](1)
-          labelTensor(Array(1)) = row.getInt(labelColIndex)
-          imf(ImageFeature.label) = labelTensor
-        }
-        imf
-      }
-    }
-
-    val transformeredImf = if (transformer != null) {
-      transformer.apply(imfRDD)
-    } else imfRDD
-
-    val trainData = ImageSet.rdd(transformeredImf)
-    trainData
   }
 
   def fit(
