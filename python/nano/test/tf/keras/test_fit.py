@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+import os
+import pathlib
+from tempfile import TemporaryDirectory
 
 import tensorflow as tf
 from tensorflow.keras import layers
 from bigdl.nano.tf.keras import Sequential
-
-import pathlib
 
 dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
 data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
@@ -65,15 +66,23 @@ model = Sequential([
 ])
 
 model.compile(optimizer='adam',
-                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                  metrics=['accuracy'])
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
 
 
 def test_fit_function():
-    # Case 1: Default
-    with model.fit(train_ds, epochs=3, validation_data=val_ds):
-        model.evaluate(val_ds)
+    model.evaluate(train_ds, verbose=0, steps=1)
+    assert model.compiled_metrics.built
 
-    # Case 2: Add multiple processing argument
-    with model.fit(train_ds, epochs=3, validation_data=train_ds, nprocs=2):
-        model.evaluate(val_ds)
+    with TemporaryDirectory() as temp_dir:
+        model.save(os.path.join(temp_dir, "init_model"))
+
+        # Case 1: Default
+        new_model = tf.keras.models.load_model(os.path.join(temp_dir, "init_model"))
+        history_default = new_model.fit(train_ds, epochs=3, validation_data=val_ds)
+
+        # Case 2: Add multiple processing argument
+        history_multiprocssing = model.fit(train_ds, epochs=3,
+                                           validation_data=val_ds, nprocs=2)
+        assert 1 - (history_default.history['loss']
+                    / history_multiprocssing.history['loss']) <= 0.1
