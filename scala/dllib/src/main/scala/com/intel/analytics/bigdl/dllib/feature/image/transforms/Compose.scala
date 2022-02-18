@@ -22,7 +22,7 @@ object Compose {
   def apply(transforms: Array[ImageProcessing]): ImageProcessing = {
     var chainedPreprocessing = transforms(0)
 
-    for(i <- 1 to transforms.length-1){
+    for(i <- 1 to transforms.length-1) {
       chainedPreprocessing = chainedPreprocessing -> transforms(i)
     }
     chainedPreprocessing
