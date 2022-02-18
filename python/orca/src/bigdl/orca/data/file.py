@@ -341,6 +341,8 @@ def put_local_file_to_remote(local_path, remote_path, filemode=None):
         if remote_path.startswith("file://"):
             remote_path = remote_path[len("file://"):]
         shutil.copy(local_path, remote_path)
+        if filemode:
+            os.chmod(remote_path, filemode)
 
 
 def get_remote_file_to_local(remote_path, local_path):
