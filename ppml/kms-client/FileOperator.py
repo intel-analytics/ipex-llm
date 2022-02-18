@@ -41,7 +41,6 @@ def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path
     fernet = Fernet(data_key)
     for file_name in os.listdir(input_dir):
         input_path = os.path.join(input_dir, file_name)
-        print(input_path)
         encrypted = fernet.encrypt(read_data_file(input_path))
         save_path = os.path.join(save_dir, file_name + '.encrypted')
         write_data_file(save_path, encrypted)
