@@ -42,7 +42,13 @@ RUN cd /opt && \
     rm spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     rm spark/jars/hadoop-common-3.2.0.jar && \
     rm spark/jars/hive-exec-2.3.7-core.jar && \
-    rm spark/jars/slf4j-log4j12-1.7.30.jar
+    rm spark/jars/slf4j-log4j12-1.7.30.jar && \
+    rm spark/jars/log4j-1.2.17.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 
 # spark modification and download test jars
 RUN cd /opt && \

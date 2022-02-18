@@ -57,15 +57,7 @@ RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.${SCA
 RUN cd /opt && \
     wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
     tar -zxvf flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
-    rm flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
-    rm /opt/flink-${FLINK_VERSION}/lib/log4j-1.2-api-2.12.1.jar && \
-    rm /opt/flink-${FLINK_VERSION}/lib/log4j-api-2.12.1.jar && \
-    rm /opt/flink-${FLINK_VERSION}/lib/log4j-core-2.12.1.jar && \
-    rm /opt/flink-${FLINK_VERSION}/lib/log4j-slf4j-impl-2.12.1.jar && \
-    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
-    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
-    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
-    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
+    rm flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
 
 # Download bigdl
 RUN cd /opt && \
