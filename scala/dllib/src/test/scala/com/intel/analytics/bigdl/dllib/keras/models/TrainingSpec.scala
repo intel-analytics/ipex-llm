@@ -437,6 +437,11 @@ class TrainingSpec extends ZooSpecHelper {
     val imgDF =
       NNImageReader.readImages(getClass.getClassLoader.getResource("gray/gray.bmp").getFile, ksc)
     .withColumn("label", lit(1))
+
+    import com.intel.analytics.bigdl.dllib.feature.image
+    val transformers = transforms.Compose(Array(ImageResize(50, 50),
+      ImageMirror()))
+
     val model = Sequential[Float]()
     model.add(Convolution2D[Float](1, 24, 24, activation = "relu",
       inputShape = Shape(1, 50, 50)))
@@ -444,10 +449,10 @@ class TrainingSpec extends ZooSpecHelper {
     model.add(Reshape[Float](Array(169)))
     model.add(Dense[Float](2, activation = "log_softmax"))
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
-    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCol = "label", transformer = null)
-    val predDf = model.predict(imgDF, predictionCol = "predict", transformer = null)
+    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCol = "label", transforms = transformers)
+    val predDf = model.predict(imgDF, predictionCol = "predict", transformer = transformers)
     predDf.show()
-    model.evaluate(imgDF, batchSize = 1, labelCol = "label", transformer = null)
+    model.evaluate(imgDF, batchSize = 1, labelCol = "label", transformer = transformers)
   }
 }
 
