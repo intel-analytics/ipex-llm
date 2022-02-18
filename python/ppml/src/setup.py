@@ -17,9 +17,10 @@
 #
 
 import os
-from shutil import copytree, rmtree
+from shutil import copyfile, copytree, rmtree
 from setuptools import setup
 import fnmatch
+import sys
 
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
@@ -46,6 +47,28 @@ def get_bigdl_packages():
             bigdl_packages.append(package)
             print("including", package)
     return bigdl_packages
+
+
+def init_env():
+    building_error_msg = """
+    If you are packing python API from BigDL source, you must build BigDL first
+    and run sdist.
+        To build BigDL with maven you can run:
+          cd $BigDL_HOME
+          ./make-dist.sh
+        Building the source dist is done in the Python directory:
+          cd python
+          python setup.py sdist
+          pip install dist/*.tar.gz"""
+    print("Start to build PPML distributed package")
+    print("HOME OF BIGDL: " + bigdl_home)
+    dist_source = bigdl_home + "/dist"
+    if not os.path.exists(dist_source):
+        print(building_error_msg)
+        sys.exit(-1)
+    if os.path.exists(TMP_PATH):
+        rmtree(TMP_PATH)
+    copytree(dist_source, TMP_PATH)
 
 
 def setup_package():
