@@ -323,7 +323,7 @@ def put_local_file_to_remote(local_path, remote_path):
         if not fs.exists(remote_dir):
             fs.mkdir(remote_dir)
         with open(os.path.join(local_path), "rb") as f:
-            fs.upload(remote_path)
+            fs.upload(remote_path, f)
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
