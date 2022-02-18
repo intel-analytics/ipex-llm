@@ -27,7 +27,7 @@ from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.data.file import put_local_dir_tree_to_remote, exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_specific_object_from_callbacks, get_replaced_path, get_rank, \
-    process_tensorboard_in_callbacks, save_model_to_h5
+    process_tensorboard_in_callbacks, save_model, load_model
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 logger = logging.getLogger(__name__)
@@ -270,7 +270,7 @@ class SparkRunner:
         with self.strategy.scope():
             if exists(self._model_saved_path):
                 # for continous training
-                model = tf.keras.models.load_model(self._model_saved_path)
+                model = load_model(self._model_saved_path)
             else:
                 model = self.model_creator(self.config)
                 if self.model_weights:
@@ -355,7 +355,7 @@ class SparkRunner:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
             if self.model_dir is not None:
-                save_model_to_h5(model, self._model_saved_path)
+                save_model(model, self._model_saved_path, save_format="h5")
                 model_state = {
                     "epoch": self.epoch,
                     "weights": weights,
@@ -369,7 +369,7 @@ class SparkRunner:
         else:
             temp_dir = tempfile.mkdtemp()
             try:
-                save_model_to_h5(model, os.path.join(temp_dir, "model.h5"))
+                save_model(model, os.path.join(temp_dir, "model.h5"))
             finally:
                 shutil.rmtree(temp_dir)
             if self.need_to_log_to_driver:

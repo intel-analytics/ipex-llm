@@ -29,15 +29,15 @@ import tensorflow as tf
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
     get_remote_file_to_local, is_local_path, get_remote_files_with_prefix_to_local, \
-    append_suffix, put_local_file_to_remote, put_local_files_with_prefix_to_remote, \
-    put_local_dir_tree_to_remote, get_remote_dir_tree_to_local
+    append_suffix, put_local_file_to_remote, put_local_files_with_prefix_to_remote
 
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
-    convert_predict_xshards_to_dataframe, make_data_creator, save_model_to_h5, load_model
+    convert_predict_xshards_to_dataframe, make_data_creator, load_model, \
+    save_model
 from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
@@ -514,25 +514,8 @@ class SparkTFEstimator():
         else:
             model = self.model_creator(self.config)
         # save model
-        if is_local_path(filepath):
-            model.save(filepath, overwrite, include_optimizer, save_format,
+        save_model(model, filepath, overwrite, include_optimizer, save_format,
                    signatures, options, save_traces)
-        else:
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            try:
-                model.save(temp_path, overwrite, include_optimizer, save_format,
-                           signatures, options, save_traces)
-                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                    # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath, over_write=overwrite)
-                else:
-                    # tf format
-                    put_local_dir_tree_to_remote(temp_path, filepath,
-                                                          over_write=overwrite)
-            finally:
-                shutil.rmtree(temp_dir)
 
     def load(self, filepath, custom_objects=None, compile=True, options=None):
         """
@@ -549,7 +532,7 @@ class SparkTFEstimator():
         """
         model = load_model(filepath, custom_objects=custom_objects,
                            compile=compile, options=options)
-        save_model_to_h5(model, self._model_saved_path)
+        save_model(model, self._model_saved_path, save_format="h5")
         self.model_weights = model.get_weights()
         # self.optimizer_weights = model.optimizer.get_weights()
 
