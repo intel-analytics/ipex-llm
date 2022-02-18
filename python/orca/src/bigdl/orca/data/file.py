@@ -310,7 +310,7 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
         copy_tree(local_dir, remote_dir)
 
 
-def put_local_file_to_remote(local_path, remote_path):
+def put_local_file_to_remote(local_path, remote_path, filemode=None):
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
         import pyarrow as pa
         host_port = remote_path.split("://")[1].split("/")[0].split(":")
@@ -323,6 +323,8 @@ def put_local_file_to_remote(local_path, remote_path):
             fs.mkdir(remote_dir)
         with open(os.path.join(local_path), "rb") as f:
             fs.upload(remote_path, f)
+        if filemode:
+            fs.chmod(remote_path, filemode)
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]

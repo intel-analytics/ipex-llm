@@ -557,7 +557,7 @@ def load_model(filepath, custom_objects=None, compile=True, options=None):
 
 
 def save_model(model, filepath, overwrite=True, include_optimizer=True, save_format=None,
-               signatures=None, options=None, save_traces=True):
+               signatures=None, options=None, save_traces=True, filemode=None):
     if is_local_path(filepath):
         model.save(filepath, overwrite, include_optimizer, save_format,
                    signatures, options, save_traces)
@@ -570,7 +570,7 @@ def save_model(model, filepath, overwrite=True, include_optimizer=True, save_for
                        signatures, options, save_traces)
             if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                 # hdf5 format
-                put_local_file_to_remote(temp_path, filepath)
+                put_local_file_to_remote(temp_path, filepath, filemode)
             else:
                 # tf format
                 put_local_dir_tree_to_remote(temp_path, filepath)

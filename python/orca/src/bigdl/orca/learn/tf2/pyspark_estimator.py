@@ -532,7 +532,8 @@ class SparkTFEstimator():
         """
         model = load_model(filepath, custom_objects=custom_objects,
                            compile=compile, options=options)
-        save_model(model, self._model_saved_path, save_format="h5")
+        # update remote model
+        save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
         self.model_weights = model.get_weights()
         # self.optimizer_weights = model.optimizer.get_weights()
 
