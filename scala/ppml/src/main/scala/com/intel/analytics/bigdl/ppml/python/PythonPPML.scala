@@ -7,6 +7,13 @@ import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
 
 import scala.reflect.ClassTag
 
+
+object PythonPPML {
+
+  def ofFloat(): PythonPPML[Float] = new PythonPPML[Float]()
+
+  def ofDouble(): PythonPPML[Double] = new PythonPPML[Double]()
+}
 class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL {
   def initFLContext() = {
     FLContext.initFLContext()

@@ -16,6 +16,6 @@
 from bigdl.dllib.utils.common import *
 
 
-def init_flcontext(bigdl_type="float"):
+def init_fl_context(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initFLContext")
 
