@@ -288,9 +288,9 @@ output:
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import SparseDense
-from zoo.pipeline.api.keras.models import Sequential
-from bigdl.util.common import JTensor
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
+from bigdl.dllib.utils.common import JTensor
 
 model = Sequential()
 model.add(SparseDense(output_dim=2, input_shape=(3, 4)))
@@ -404,8 +404,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import SoftShrink
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(SoftShrink(0.6, input_shape=(2, 3, 4)))
@@ -528,8 +528,9 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import Reshape
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
+
 
 model = Sequential()
 model.add(Reshape(target_shape=(3, 8), input_shape=(2, 3, 4)))
@@ -644,8 +645,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import Merge, InputLayer
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 l1 = InputLayer(input_shape=(3, 4))
@@ -739,8 +740,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import MaxoutDense
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(MaxoutDense(2, input_shape=(3, )))
@@ -814,8 +815,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import Squeeze
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(Squeeze(1, input_shape=(1, 1, 32)))
@@ -929,8 +930,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import BinaryThreshold
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(BinaryThreshold(input_shape=(2, 3, 4)))
@@ -1023,8 +1024,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import Sqrt
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(Sqrt(input_shape=(3, )))
@@ -1107,8 +1108,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import Mul
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(Mul(input_shape=(3, 4)))
@@ -1200,8 +1201,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import MulConstant
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(MulConstant(2.2, input_shape=(3, 4)))
@@ -1282,8 +1283,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import Scale
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import Scale
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(Scale((2, 1), input_shape=(3, )))
@@ -1368,8 +1369,8 @@ NaN     -1.1666392      -0.36804697     -0.72597617
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import Log
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import Log
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(Log(input_shape=(2, 4, 4)))
@@ -1482,8 +1483,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import Identity
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import Identity
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(Identity(input_shape=(4, 4)))
@@ -1587,8 +1588,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
-from zoo.pipeline.api.keras.layers import Select
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import Select
+from bigdl.dllib.keras.models import Sequential
 import numpy as np
 
 model = Sequential()
@@ -1662,8 +1663,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import Dense
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import Dense
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(Dense(5, activation="relu", input_shape=(4, )))
@@ -1736,8 +1737,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
-from zoo.pipeline.api.keras.layers import Negative
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import Negative
+from bigdl.dllib.keras.models import Sequential
 import numpy as np
 
 model = Sequential()
@@ -1824,8 +1825,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
-from zoo.pipeline.api.keras.layers import CAdd
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import CAdd
+from bigdl.dllib.keras.models import Sequential
 import numpy as np
 
 model = Sequential()
@@ -1910,8 +1911,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.layers import RepeatVector
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import RepeatVector
+from bigdl.dllib.keras.models import Sequential
 
 model = Sequential()
 model.add(RepeatVector(4, input_shape=(3, )))
@@ -2009,8 +2010,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.models import Sequential
-from zoo.pipeline.api.keras.layers import GaussianSampler
+from bigdl.dllib.keras.models import Sequential
+from bigdl.dllib.keras.layers import GaussianSampler
 
 model = Sequential()
 model.add(GaussianSampler(input_shape=[(3,),(3,)]))
@@ -2118,8 +2119,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.models import Sequential
-from zoo.pipeline.api.keras.layers import Exp
+from bigdl.dllib.keras.models import Sequential
+from bigdl.dllib.keras.layers import Exp
 
 model = Sequential()
 model.add(Exp(input_shape=(2, 3, 4)))
@@ -2250,8 +2251,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from zoo.pipeline.api.keras.models import Sequential
-from zoo.pipeline.api.keras.layers import Square
+from bigdl.dllib.keras.models import Sequential
+from bigdl.dllib.keras.layers import Square
 
 model = Sequential()
 model.add(Square(input_shape=(2, 3, 4)))
@@ -2359,8 +2360,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
-from zoo.pipeline.api.keras.layers import Power
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import Power
+from bigdl.dllib.keras.models import Sequential
 import numpy as np
 
 model = Sequential()
@@ -2443,8 +2444,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
-from zoo.pipeline.api.keras.layers import AddConstant
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import AddConstant
+from bigdl.dllib.keras.models import Sequential
 import numpy as np
 
 model = Sequential()
@@ -2562,8 +2563,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
-from zoo.pipeline.api.keras.layers import Narrow
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import Narrow
+from bigdl.dllib.keras.models import Sequential
 import numpy as np
 
 model = Sequential()
@@ -2673,8 +2674,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
-from zoo.pipeline.api.keras.layers import Permute
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import Permute
+from bigdl.dllib.keras.models import Sequential
 import numpy as np
 
 model = Sequential()
@@ -2788,8 +2789,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 
 **Python example:**
 ```python
-from zoo.pipeline.api.keras.layers import ResizeBilinear
-from zoo.pipeline.api.keras.models import Sequential
+from bigdl.dllib.keras.layers import ResizeBilinear
+from bigdl.dllib.keras.models import Sequential
 import numpy as np
 
 model = Sequential()
