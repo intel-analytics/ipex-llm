@@ -37,7 +37,7 @@ from bigdl.orca.data.file import exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
-    convert_predict_xshards_to_dataframe, make_data_creator, save_model_to_h5
+    convert_predict_xshards_to_dataframe, make_data_creator, save_model_to_h5, load_model
 from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
@@ -507,10 +507,13 @@ class SparkTFEstimator():
         #         model.optimizer.set_weights(self.optimizer_weights)
         #     except Exception as e:
         #         logger.error("Set optimizer weights error : {}".format(str(e)))
+
+        # get current model
         if exists(self._model_saved_path):
-            model = tf.keras.models.load_model(self._model_saved_path)
+            model = load_model(self._model_saved_path)
         else:
             model = self.model_creator(self.config)
+        # save model
         if is_local_path(filepath):
             model.save(filepath, overwrite, include_optimizer, save_format,
                    signatures, options, save_traces)
@@ -544,30 +547,9 @@ class SparkTFEstimator():
         options for loading from SavedModel.
 
         """
-        if is_local_path(filepath):
-            model = tf.keras.models.load_model(filepath,
-                                                   custom_objects=custom_objects,
-                                                   compile=compile,
-                                                   options=options
-                                                   )
-        else:
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            try:
-                if filepath.endswith('.h5') or filepath.endswith('.keras'):
-                    get_remote_file_to_local(filepath, temp_path)
-                else:
-                    get_remote_dir_tree_to_local(filepath, temp_path)
-
-                model = tf.keras.models.load_model(temp_path,
-                                              custom_objects=custom_objects,
-                                              compile=compile,
-                                              options=options
-                                              )
-            finally:
-                shutil.rmtree(temp_dir)
-        model.save(self._model_saved_path, save_format="h5")
+        model = load_model(filepath, custom_objects=custom_objects,
+                           compile=compile, options=options)
+        save_model_to_h5(model, self._model_saved_path)
         self.model_weights = model.get_weights()
         # self.optimizer_weights = model.optimizer.get_weights()
 
@@ -583,5 +565,5 @@ class SparkTFEstimator():
 
     @property
     def _model_saved_path(self):
-        return os.path.join(self.model_dir, self.application_id, "model.h5")
+        return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))
 

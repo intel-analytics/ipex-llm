@@ -471,4 +471,4 @@ class SparkRunner:
 
     @property
     def _model_saved_path(self):
-        return os.path.join(self.model_dir, self.application_id, "model.h5")
+        return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))

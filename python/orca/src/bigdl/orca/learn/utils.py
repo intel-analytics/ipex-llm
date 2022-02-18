@@ -20,7 +20,8 @@ import sys
 import tempfile
 import shutil
 
-from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
+from bigdl.dllib.utils.file_utils import get_file_list, is_local_path, get_remote_file_to_local,\
+    get_remote_dir_tree_to_local
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
 from bigdl.orca.data.file import put_local_dir_tree_to_remote, put_local_file_to_remote
@@ -525,3 +526,31 @@ def save_model_to_h5(model, filepath):
             put_local_file_to_remote(local_file, filepath)
         finally:
             shutil.rmtree(temp_dir)
+
+
+def load_model(filepath, custom_objects=None, compile=True, options=None):
+    import tensorflow as tf
+    if is_local_path(filepath):
+        model = tf.keras.models.load_model(filepath,
+                                           custom_objects=custom_objects,
+                                           compile=compile,
+                                           options=options
+                                           )
+    else:
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            if filepath.endswith('.h5') or filepath.endswith('.keras'):
+                get_remote_file_to_local(filepath, temp_path)
+            else:
+                get_remote_dir_tree_to_local(filepath, temp_path)
+
+            model = tf.keras.models.load_model(temp_path,
+                                               custom_objects=custom_objects,
+                                               compile=compile,
+                                               options=options
+                                               )
+        finally:
+            shutil.rmtree(temp_dir)
+    return model
