@@ -447,12 +447,160 @@ class Poisson(PytorchMetric):
 
 
 class AUROC(PytorchMetric):
-    def __init__(self,
-                 dist_sync_on_step: bool = False):
-        self.internalauc = torchmetrics.AUROC(dist_sync_on_step=dist_sync_on_step)
+    """Computes the AUROC metric between labels and
+    predictions.
+
+    Usage:
+
+    ```python
+    pred = torch.tensor([0.3, 0.4, 0.2, 0.5, 0.6, 0.7, 0.8])
+    target = torch.tensor([0, 1, 0, 1, 1, 1, 1.0])
+    auc = AUROC()
+    auc(pred, target)
+    assert (auc.compute() - 1.0) < 1e-6
+    ```
+    """
+    def __init__(self):
+        self.internal_auc = torchmetrics.AUROC()
 
     def __call__(self, preds, targets):
-        self.internalauc.update(preds, targets.to(torch.int64))
+        self.internal_auc.update(preds, targets.to(torch.int64))
 
     def compute(self):
-        return self.internalauc.compute()
+        return self.internal_auc.compute()
+
+
+class ROC(PytorchMetric):
+    """Computes the ROC metric between labels and
+    predictions.
+
+    Usage:
+
+   ```python
+    >>> pred = torch.tensor([0.3, 0.6, 0.7, 0.8])
+    >>> target = torch.tensor([0, 1, 1, 1.0])
+    >>> auc = ROC()
+    >>> auc(pred, target)
+    >>> fpr, tpr, thresholds = auc.compute()
+    >>> fpr
+    tensor([0., 0., 0., 0., 1.])
+    >>> tpr
+    tensor([0.0000, 0.3333, 0.6667, 1.0000, 1.0000])
+    >>> thresholds
+    tensor([1.8000, 0.8000, 0.7000, 0.6000, 0.3000])
+    '''
+
+    """
+    def __init__(self):
+        self.internal_roc = torchmetrics.ROC()
+
+    def __call__(self, preds, targets):
+        self.internal_roc.update(preds, targets.to(torch.int64))
+
+    def compute(self):
+        return self.internal_roc.compute()
+
+
+class F1Score(PytorchMetric):
+    """Computes the F1score metric between labels and
+    predictions.
+
+    Usage:
+
+   ```python
+    target = torch.tensor([0, 1, 2, 0, 1, 2])
+    preds = torch.tensor([0, 2, 1, 0, 0, 1])
+    f1 = F1Score()
+    f1(preds, target)
+    ```
+
+    """
+    def __init__(self):
+        self.internal_f1 = torchmetrics.F1Score()
+
+    def __call__(self, preds, targets):
+        self.internal_f1.update(preds, targets.to(torch.int64))
+
+    def compute(self):
+        return self.internal_f1.compute()
+
+
+class Precision(PytorchMetric):
+    """Computes the Precision metric between labels and
+    predictions.
+
+    Usage:
+
+   ```python
+    target = torch.tensor([0, 1, 1, 0, 1, 1])
+    preds = torch.tensor([0, 0.2, 1.0, 0.8, 0.6, 0.5])
+    precision = Precision()
+    precision(preds, target)
+    assert (precision.compute() - 0.75 < 10e-6)
+    ```
+
+    """
+    def __init__(self):
+        self.internal_precision = torchmetrics.Precision()
+
+    def __call__(self, preds, targets):
+        self.internal_precision.update(preds, targets.to(torch.int64))
+
+    def compute(self):
+        return self.internal_precision.compute()
+
+
+class Recall(PytorchMetric):
+    """Computes the Recall metric between labels and
+    predictions.
+
+    Usage:
+
+   ```python
+    target = torch.tensor([0, 1, 1, 0, 1, 1])
+    preds = torch.tensor([0, 0.2, 1.0, 0.8, 0.6, 0.5])
+    recall = Recall()
+    recall(preds, target)
+    assert (recall.compute() - 0.75 < 10e-6)
+    ```
+
+    """
+    def __init__(self):
+        self.internal_recall = torchmetrics.Recall()
+
+    def __call__(self, preds, targets):
+        self.internal_recall.update(preds, targets.to(torch.int64))
+
+    def compute(self):
+        return self.internal_recall.compute()
+
+
+class PrecisionRecallCurve(PytorchMetric):
+    """Computes the PrecisionRecallCurve metric between labels and
+    predictions.
+
+    Usage:
+
+   ```python
+    >>> target = torch.tensor([0, 1, 1, 0, 1, 1])
+    >>> preds = torch.tensor([0, 0.2, 1.0, 0.8, 0.6, 0.5])
+    >>> curve = PrecisionRecallCurve()
+    >>> curve(preds, target)
+    >>> precision, recall, thresholds = curve.compute()
+    >>> precision
+    (tensor([0.8000, 0.7500, 0.6667, 0.5000, 1.0000, 1.0000])
+    >>> recall
+    tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.2500, 0.0000])
+    >>> thresholds
+    tensor([0.2000, 0.5000, 0.6000, 0.8000, 1.0000]))
+    '''
+
+    """
+    def __init__(self):
+        self.internal_curve = torchmetrics.PrecisionRecallCurve()
+
+    def __call__(self, preds, targets):
+        self.internal_curve.update(preds, targets.to(torch.int64))
+
+    def compute(self):
+        return self.internal_curve.compute()

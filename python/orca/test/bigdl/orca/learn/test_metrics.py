@@ -181,7 +181,62 @@ def test_torch_AUC():
     target = torch.tensor([0, 1, 0, 1, 1, 1, 1.0])
     auc = AUROC()
     auc(pred, target)
+    print(auc.compute())
     assert (auc.compute() - 1.0) < 1e-6
+
+
+def test_torch_ROC():
+    from bigdl.orca.learn.pytorch.pytorch_metrics import ROC
+    pred = torch.tensor([0.3, 0.6, 0.7, 0.8])
+    target = torch.tensor([0, 1, 1, 1.0])
+    auc = ROC()
+    auc(pred, target)
+    x, y, z = auc.compute()
+    assert (x[4] == 1.)
+    assert (y[4] == 1.)
+    assert (z[4] - 0.3 < 10e-6)
+
+
+def test_torch_F1Score():
+    from bigdl.orca.learn.pytorch.pytorch_metrics import F1Score
+    target = torch.tensor([0, 1, 2, 0, 1, 2])
+    preds = torch.tensor([0, 2, 1, 0, 0, 1])
+    f1 = F1Score()
+    f1(preds, target)
+    score = f1.compute()
+    assert (score - 0.3332 < 1e-3)
+
+
+def test_torch_Precision():
+    from bigdl.orca.learn.pytorch.pytorch_metrics import Precision
+    target = torch.tensor([0, 1, 1, 0, 1, 1])
+    preds = torch.tensor([0, 0.2, 1.0, 0.8, 0.6, 0.5])
+    precision = Precision()
+    precision(preds, target)
+    assert (precision.compute() - 0.75 < 10e-6)
+
+
+def test_torch_Recall():
+    from bigdl.orca.learn.pytorch.pytorch_metrics import Recall
+    target = torch.tensor([0, 1, 1, 0, 1, 1])
+    preds = torch.tensor([0, 0.2, 1.0, 0.8, 0.6, 0.5])
+    recall = Recall()
+    recall(preds, target)
+    assert (recall.compute() - 0.75 < 10e-6)
+
+
+def test_torch_PrecisionRecallCurve():
+    from bigdl.orca.learn.pytorch.pytorch_metrics import PrecisionRecallCurve
+    target = torch.tensor([0, 1, 1, 0, 1, 1])
+    preds = torch.tensor([0, 0.2, 1.0, 0.8, 0.6, 0.5])
+    curve = PrecisionRecallCurve()
+    curve(preds, target)
+    print(curve.compute())
+    precision, recall, thresholds = curve.compute()
+    assert (precision[0] - 0.8 < 10e-6)
+    assert (recall[0] - 1.0 < 10e-6)
+    assert (thresholds[0] - 0.2 < 10e-6)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

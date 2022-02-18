@@ -98,9 +98,8 @@ class AUC(Metric):
 
     >>> meter = AUC(20)
     """
-    def __init__(self, threshold_num=200, dist_sync_on_step=False):
+    def __init__(self, threshold_num=200):
         self.threshold_num = threshold_num
-        self.dist_sync_on_step = dist_sync_on_step
 
     def get_bigdl_metric(self):
         from bigdl.dllib.keras.metrics import AUC as KerasAUC
@@ -108,7 +107,7 @@ class AUC(Metric):
 
     def get_pytorch_metric(self):
         from bigdl.orca.learn.pytorch import pytorch_metrics
-        return pytorch_metrics.AUROC(self.dist_sync_on_step)
+        return pytorch_metrics.AUROC()
 
     def get_name(self):
         return "AUC"
@@ -342,3 +341,78 @@ class Poisson(Metric):
 
     def get_name(self):
         return "Poisson"
+
+
+class ROC(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = ROC()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.ROC()
+
+    def get_name(self):
+        return "ROC"
+
+
+class F1Score(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = F1Score()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.F1Score()
+
+    def get_name(self):
+        return "F1Score"
+
+
+class Precision(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = Precision()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.Precision()
+
+    def get_name(self):
+        return "Precision"
+
+
+class Recall(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = Recall()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.Recall()
+
+    def get_name(self):
+        return "Recall"
+
+
+class PrecisionRecallCurve(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = PrecisionRecallCurve()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.PrecisionRecallCurve()
+
+    def get_name(self):
+        return "PrecisionRecallCurve"
