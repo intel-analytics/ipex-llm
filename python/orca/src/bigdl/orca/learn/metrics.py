@@ -388,7 +388,6 @@ class Precision(Metric):
         return "Precision"
 
 
-
 class Recall(Metric):
     """
     Metric for binary(0/1) classification
