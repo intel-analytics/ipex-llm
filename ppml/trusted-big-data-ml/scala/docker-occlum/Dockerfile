@@ -41,7 +41,8 @@ RUN cd /opt && \
     rm spark/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     rm spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     rm spark/jars/hadoop-common-3.2.0.jar && \
-    rm spark/jars/hive-exec-2.3.7-core.jar
+    rm spark/jars/hive-exec-2.3.7-core.jar && \
+    rm spark/jars/slf4j-log4j12-1.7.30.jar
 
 # spark modification and download test jars
 RUN cd /opt && \
@@ -203,6 +204,7 @@ COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-qu
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
 ADD ./sqlSuites /opt/sqlSuites
+ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
 
 COPY ./entrypoint.sh /opt/
 
