@@ -343,7 +343,7 @@ def put_local_file_to_remote(local_path, remote_path):
 
 def get_remote_file_to_local(remote_path, local_path):
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
-        cmd = 'hdfs dfs -get -f {} {}'.format(remote_path, local_path)
+        cmd = 'hdfs dfs -get {} {}'.format(remote_path, local_path)
         process = subprocess.Popen(cmd, shell=True)
         return process.wait()
     elif remote_path.startswith("s3"):   # s3://bucket/file_path
@@ -372,7 +372,7 @@ def get_remote_file_to_local(remote_path, local_path):
 
 def get_remote_dir_to_local(remote_dir, local_dir):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        cmd = 'hdfs dfs -get -f {} {}'.format(remote_dir, local_dir)
+        cmd = 'hdfs dfs -get {} {}'.format(remote_dir, local_dir)
         process = subprocess.Popen(cmd, shell=True)
         return process.wait()
     elif remote_dir.startswith("s3"):   # s3://bucket/file_path
