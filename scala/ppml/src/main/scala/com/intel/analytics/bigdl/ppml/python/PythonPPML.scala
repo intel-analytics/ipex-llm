@@ -18,11 +18,38 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   def initFLContext() = {
     FLContext.initFLContext()
   }
+  def createFLServer() = {
+    new FLServer()
+  }
+  def createHflNN() = {
+
+  }
+  def createHflLogisticRegression() = {
+
+  }
+  def createHflLinearRegression() = {
+
+  }
+  def createVflLogisticRegression() = {
+
+  }
+  def createVflLinearRegression() = {
+
+  }
+  def createFGBoostRegression() = {
+
+  }
+  def createFGBoostClassification() = {
+
+  }
   def flServerBuild(flServer: FLServer) = {
     flServer.build()
   }
   def flServerStart(flServer: FLServer) = {
     flServer.start()
+  }
+  def flServerStop(flServer: FLServer) = {
+    flServer.stop()
   }
   def fgBoostFit(model: FGBoostModel) = {
 

@@ -18,12 +18,15 @@ from bigdl.ppml import *
 
 
 class FLServer(JavaValue):
-    def __init__(self, jvalue, *args):
+    def __init__(self, jvalue=None, *args):
         self.bigdl_type = "float"
-        super(JavaValue, self).__init__(jvalue, self.bigdl_type, *args)
+        super().__init__(jvalue, self.bigdl_type, *args)
 
     def build(self):
-        callBigDlFunc(self.bigdl_type, "flServerBuild")
+        callBigDlFunc(self.bigdl_type, "flServerBuild", self.value)
 
     def start(self):
-        callBigDlFunc(self.bigdl_type, "flServerStart")
+        callBigDlFunc(self.bigdl_type, "flServerStart", self.value)
+
+    def stop(self):
+        callBigDlFunc(self.bigdl_type, "flServerStop", self.value)
