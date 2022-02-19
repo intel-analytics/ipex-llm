@@ -475,30 +475,6 @@ class SparkTFEstimator():
             and reduce file size, but it requires that all custom layers/models
             implement a `get_config()` method.
         """
-        # model = self.model_creator(self.config)
-        # if self.model_weights:
-        #     model.set_weights(self.model_weights)
-        #
-        # if self.optimizer_weights:
-        #     # Build train function (to get weight updates).
-        #     # if isinstance(model, tf.keras.Sequential):
-        #     #     model.make_train_function()
-        #     # else:
-        #     #     model.make_train_function()
-        #     grad_vars = model.trainable_weights
-        #     # This need not be model.trainable_weights; it must be a correctly-ordered list of
-        #     # grad_vars corresponding to how you usually call the optimizer.
-        #
-        #     zero_grads = [tf.zeros_like(w) for w in grad_vars]
-        #
-        #     # Apply gradients which don't do nothing with Adam
-        #     model.optimizer.apply_gradients(zip(zero_grads, grad_vars))
-        #
-        #     try:
-        #         model.optimizer.set_weights(self.optimizer_weights)
-        #     except Exception as e:
-        #         logger.error("Set optimizer weights error : {}".format(str(e)))
-
         # get current model
         if exists(self._model_saved_path):
             model = load_model(self._model_saved_path)
@@ -523,9 +499,9 @@ class SparkTFEstimator():
         """
         model = load_model(filepath, custom_objects=custom_objects,
                            compile=compile, options=options)
+        self.model_weights = model.get_weights()
         # update remote model
         save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
-        self.model_weights = model.get_weights()
 
     def get_model(self):
         """
@@ -540,4 +516,3 @@ class SparkTFEstimator():
     @property
     def _model_saved_path(self):
         return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))
-

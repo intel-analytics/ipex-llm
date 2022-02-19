@@ -403,4 +403,3 @@ def get_remote_dir_to_local(remote_dir, local_dir):
             remote_dir = remote_dir[len("file://"):]
         copy_tree(remote_dir, local_dir)
         return 0
-
