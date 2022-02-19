@@ -514,13 +514,12 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
     return None
 
 
-def load_model(filepath, custom_objects=None, compile=True, options=None):
+def load_model(filepath, custom_objects=None, compile=True):
     import tensorflow as tf
     if is_local_path(filepath):
         model = tf.keras.models.load_model(filepath,
                                            custom_objects=custom_objects,
-                                           compile=compile,
-                                           options=options
+                                           compile=compile
                                            )
     else:
         file_name = os.path.basename(filepath)
@@ -534,8 +533,7 @@ def load_model(filepath, custom_objects=None, compile=True, options=None):
 
             model = tf.keras.models.load_model(temp_path,
                                                custom_objects=custom_objects,
-                                               compile=compile,
-                                               options=options
+                                               compile=compile
                                                )
         finally:
             shutil.rmtree(temp_dir)
@@ -543,17 +541,17 @@ def load_model(filepath, custom_objects=None, compile=True, options=None):
 
 
 def save_model(model, filepath, overwrite=True, include_optimizer=True, save_format=None,
-               signatures=None, options=None, save_traces=True, filemode=None):
+               signatures=None, options=None, filemode=None):
     if is_local_path(filepath):
         model.save(filepath, overwrite, include_optimizer, save_format,
-                   signatures, options, save_traces)
+                   signatures, options)
     else:
         file_name = os.path.basename(filepath)
         temp_dir = tempfile.mkdtemp()
         temp_path = os.path.join(temp_dir, file_name)
         try:
             model.save(temp_path, overwrite, include_optimizer, save_format,
-                       signatures, options, save_traces)
+                       signatures, options)
             if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                 # hdf5 format
                 put_local_file_to_remote(temp_path, filepath, filemode)

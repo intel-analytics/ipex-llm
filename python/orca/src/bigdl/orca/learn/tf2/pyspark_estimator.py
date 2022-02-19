@@ -449,8 +449,7 @@ class SparkTFEstimator():
              include_optimizer=True,
              save_format=None,
              signatures=None,
-             options=None,
-             save_traces=True):
+             options=None):
         """
         Saves the model to Tensorflow SavedModel or a single HDF5 file.
 
@@ -468,12 +467,6 @@ class SparkTFEstimator():
         :param options: (only applies to SavedModel format)
             `tf.saved_model.SaveOptions` object that specifies options for
             saving to SavedModel.
-        :param save_traces: (only applies to SavedModel format) When enabled, the
-            SavedModel will store the function traces for each layer. This
-            can be disabled, so that only the configs of each layer are stored.
-            Defaults to `True`. Disabling this will decrease serialization time
-            and reduce file size, but it requires that all custom layers/models
-            implement a `get_config()` method.
         """
         # get current model
         if exists(self._model_saved_path):
@@ -481,10 +474,10 @@ class SparkTFEstimator():
         else:
             model = self.model_creator(self.config)
         # save model
-        save_model(model, filepath, overwrite, include_optimizer, save_format,
-                   signatures, options, save_traces)
+        save_model(model, filepath, overwrite=overwrite, include_optimizer=include_optimizer,
+                   save_format=save_format, signatures=signatures, options=options)
 
-    def load(self, filepath, custom_objects=None, compile=True, options=None):
+    def load(self, filepath, custom_objects=None, compile=True):
         """
         Loads a model saved via `estimator.save()
 
@@ -497,8 +490,7 @@ class SparkTFEstimator():
         options for loading from SavedModel.
 
         """
-        model = load_model(filepath, custom_objects=custom_objects,
-                           compile=compile, options=options)
+        model = load_model(filepath, custom_objects=custom_objects, compile=compile)
         self.model_weights = model.get_weights()
         # update remote model
         save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
