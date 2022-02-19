@@ -373,7 +373,6 @@ def get_remote_file_to_local(remote_path, local_path):
         return 0
 
 
-
 def get_remote_dir_to_local(remote_dir, local_dir):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         cmd = 'hdfs dfs -get {} {}'.format(remote_dir, local_dir)

@@ -83,7 +83,8 @@ class SparkTFEstimator():
         self.model_dir = model_dir
         master = sc.getConf().get("spark.master")
         if not master.startswith("local"):
-            logger.info("For cluster mode, make sure to use shared filesystem path as model directory.")
+            logger.info("For cluster mode, make sure to use shared filesystem path "
+                        "as model directory.")
 
         self.application_id = sc.applicationId
         self.ip = get_node_ip()
@@ -441,7 +442,6 @@ class SparkTFEstimator():
                 finally:
                     shutil.rmtree(temp_dir)
         self.model_weights = model.get_weights()
-
 
     def save(self,
              filepath,
