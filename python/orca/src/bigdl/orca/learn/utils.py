@@ -18,11 +18,13 @@ from contextlib import closing
 import socket
 import sys
 import tempfile
+import shutil
 
-from bigdl.dllib.utils.file_utils import get_file_list
+from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
-from bigdl.orca.data.file import put_local_dir_tree_to_remote
+from bigdl.orca.data.file import put_local_dir_tree_to_remote, put_local_file_to_remote,\
+    get_remote_file_to_local, get_remote_dir_to_local
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 import numpy as np
 import pickle
@@ -510,3 +512,51 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
         callbacks.append(copy_callback)
         return replaced_log_dir
     return None
+
+
+def load_model(filepath, custom_objects=None, compile=True):
+    import tensorflow as tf
+    if is_local_path(filepath):
+        model = tf.keras.models.load_model(filepath,
+                                           custom_objects=custom_objects,
+                                           compile=compile
+                                           )
+    else:
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            if filepath.endswith('.h5') or filepath.endswith('.keras'):
+                get_remote_file_to_local(filepath, temp_path)
+            else:
+                get_remote_dir_to_local(filepath, temp_path)
+
+            model = tf.keras.models.load_model(temp_path,
+                                               custom_objects=custom_objects,
+                                               compile=compile
+                                               )
+        finally:
+            shutil.rmtree(temp_dir)
+    return model
+
+
+def save_model(model, filepath, overwrite=True, include_optimizer=True, save_format=None,
+               signatures=None, options=None, filemode=None):
+    if is_local_path(filepath):
+        model.save(filepath, overwrite=overwrite, include_optimizer=include_optimizer,
+                   save_format=save_format, signatures=signatures, options=options)
+    else:
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            model.save(temp_path, overwrite=overwrite, include_optimizer=include_optimizer,
+                       save_format=save_format, signatures=signatures, options=options)
+            if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                # hdf5 format
+                put_local_file_to_remote(temp_path, filepath, filemode)
+            else:
+                # tf format
+                put_local_dir_tree_to_remote(temp_path, filepath)
+        finally:
+            shutil.rmtree(temp_dir)

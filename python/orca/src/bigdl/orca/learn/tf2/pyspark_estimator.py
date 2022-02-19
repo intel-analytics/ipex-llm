@@ -24,6 +24,8 @@ import glob
 
 import pickle
 
+import tensorflow as tf
+
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
     get_remote_file_to_local, is_local_path, get_remote_files_with_prefix_to_local, \
@@ -34,7 +36,8 @@ from bigdl.orca.data.file import exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
-    convert_predict_xshards_to_dataframe, make_data_creator
+    convert_predict_xshards_to_dataframe, make_data_creator, load_model, \
+    save_model
 from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
@@ -73,12 +76,17 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
-        self.epoch = 0
 
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
         self.model_dir = model_dir
+        master = sc.getConf().get("spark.master")
+        if not master.startswith("local"):
+            logger.info("For cluster mode, make sure to use shared filesystem path "
+                        "as model directory.")
+
+        self.application_id = sc.applicationId
         self.ip = get_node_ip()
         self.port = find_free_port()
         is_local = sc.master.startswith("local")
@@ -91,7 +99,7 @@ class SparkTFEstimator():
         return cluster_info
 
     def fit(self, data, epochs=1, batch_size=32, verbose=1,
-            callbacks=None, validation_data=None, class_weight=None,
+            callbacks=None, validation_data=None, class_weight=None, initial_epoch=0,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
             label_cols=None):
@@ -138,7 +146,7 @@ class SparkTFEstimator():
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
-            epoch=self.epoch,
+            application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port
@@ -150,6 +158,7 @@ class SparkTFEstimator():
             verbose=verbose,
             callbacks=callbacks,
             class_weight=class_weight,
+            initial_epoch=initial_epoch,
             steps_per_epoch=steps_per_epoch,
             validation_steps=validation_steps,
             validation_freq=validation_freq,
@@ -201,7 +210,6 @@ class SparkTFEstimator():
                 with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
                     state = pickle.load(f)
                     self.model_weights = state['weights']
-                    self.epoch = state["epoch"]
             finally:
                 shutil.rmtree(temp_dir)
 
@@ -252,6 +260,8 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="evaluate",
             cluster_info=self._get_cluster_info(sc),
+            model_dir=self.model_dir,
+            application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port
@@ -319,6 +329,8 @@ class SparkTFEstimator():
             model_weights=weights,
             mode="predict",
             cluster_info=self._get_cluster_info(sc),
+            model_dir=self.model_dir,
+            application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
             driver_port=self.port
@@ -431,40 +443,57 @@ class SparkTFEstimator():
                     shutil.rmtree(temp_dir)
         self.model_weights = model.get_weights()
 
-    @enable_multi_fs_save
-    def save(self, checkpoint):
+    def save(self,
+             filepath,
+             overwrite=True,
+             include_optimizer=True,
+             save_format=None,
+             signatures=None,
+             options=None):
         """
-        Saves the checkpoint at the provided path.
-        :param checkpoint: (str) Path to the target checkpoint file.
+        Saves the model to Tensorflow SavedModel or a single HDF5 file.
+
+        :param filepath: String, PathLike, path to SavedModel or H5 file to save the
+            model. It can be local/hdfs/s3 filepath
+        :param overwrite: Whether to silently overwrite any existing file at the
+            target location, or provide the user with a manual prompt.
+        :param include_optimizer: If True, save optimizer's state together.
+        :param save_format: Either `'tf'` or `'h5'`, indicating whether to save the
+            model to Tensorflow SavedModel or HDF5. Defaults to 'tf' in TF 2.X,
+            and 'h5' in TF 1.X.
+        :param signatures: Signatures to save with the SavedModel. Applicable to the
+            'tf' format only. Please see the `signatures` argument in
+            `tf.saved_model.save` for details.
+        :param options: (only applies to SavedModel format)
+            `tf.saved_model.SaveOptions` object that specifies options for
+            saving to SavedModel.
         """
+        # get current model
+        if exists(self._model_saved_path):
+            model = load_model(self._model_saved_path)
+        else:
+            model = self.model_creator(self.config)
+        # save model
+        save_model(model, filepath, overwrite=overwrite, include_optimizer=include_optimizer,
+                   save_format=save_format, signatures=signatures, options=options)
 
-        # Some model might need to aggregate variables during checkpointing
-        # which requires both the chief and workers to participate in the
-        # allreduce communication protocol.
-        # So we need to call get_state on every remote workers, otherwise
-        # it might get stuck
-        state = {
-            "epoch": self.epoch,
-            "weights": self.model_weights
-        }
-
-        with open(checkpoint, "wb") as f:
-            pickle.dump(state, f)
-
-        return checkpoint
-
-    @enable_multi_fs_load
-    def load(self, checkpoint):
+    def load(self, filepath, custom_objects=None, compile=True):
         """
-        Loads the model from the provided checkpoint.
+        Loads a model saved via `estimator.save()
 
-        :param checkpoint: (str) Path to target checkpoint file.
+        :param filepath: (str) Path of saved model.
+        :param custom_objects: Optional dictionary mapping names
+          (strings) to custom classes or functions to be
+          considered during deserialization.
+        :param compile: Boolean, whether to compile the model after loading.
+        :param options: Optional `tf.saved_model.LoadOptions` object that specifies
+        options for loading from SavedModel.
 
         """
-        with open(checkpoint, "rb") as f:
-            state = pickle.load(f)
-        self.model_weights = state['weights']
-        self.epoch = state['epoch']
+        model = load_model(filepath, custom_objects=custom_objects, compile=compile)
+        self.model_weights = model.get_weights()
+        # update remote model
+        save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
 
     def get_model(self):
         """
@@ -475,3 +504,7 @@ class SparkTFEstimator():
         model = self.model_creator(self.config)
         model.set_weights(self.model_weights)
         return model
+
+    @property
+    def _model_saved_path(self):
+        return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))

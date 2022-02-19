@@ -17,6 +17,8 @@
 import os
 import subprocess
 import logging
+import shutil
+from distutils.dir_util import copy_tree
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 
@@ -153,7 +155,13 @@ def exists(path):
             raise ex
         return True
     elif path.startswith("hdfs://"):
-        return callZooFunc("float", "exists", path)
+        import pyarrow as pa
+        host_port = path.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        return fs.exists(path)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -180,7 +188,13 @@ def makedirs(path):
         key = "/".join(path_parts)
         return s3_client.put_object(Bucket=bucket, Key=key, Body='')
     elif path.startswith("hdfs://"):
-        callZooFunc("float", "mkdirs", path)
+        import pyarrow as pa
+        host_port = path.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        return fs.mkdir(path)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -252,7 +266,6 @@ def put_local_dir_to_remote(local_dir, remote_dir):
     else:
         if remote_dir.startswith("file://"):
             remote_dir = remote_dir[len("file://"):]
-        from distutils.dir_util import copy_tree
         copy_tree(local_dir, remote_dir)
 
 
@@ -294,5 +307,98 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
     else:
         if remote_dir.startswith("file://"):
             remote_dir = remote_dir[len("file://"):]
-        from distutils.dir_util import copy_tree
         copy_tree(local_dir, remote_dir)
+
+
+def put_local_file_to_remote(local_path, remote_path, filemode=None):
+    if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
+        import pyarrow as pa
+        host_port = remote_path.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        remote_dir = os.path.dirname(remote_path)
+        if not fs.exists(remote_dir):
+            fs.mkdir(remote_dir)
+        with open(os.path.join(local_path), "rb") as f:
+            fs.upload(remote_path, f)
+        if filemode:
+            fs.chmod(remote_path, filemode)
+    elif remote_path.startswith("s3"):  # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = remote_path.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        prefix = "/".join(path_parts)
+        with open(local_path, "rb") as f:
+            s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix)
+    else:
+        if remote_path.startswith("file://"):
+            remote_path = remote_path[len("file://"):]
+        shutil.copy(local_path, remote_path)
+        if filemode:
+            os.chmod(remote_path, filemode)
+
+
+def get_remote_file_to_local(remote_path, local_path):
+    if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
+        cmd = 'hdfs dfs -get {} {}'.format(remote_path, local_path)
+        process = subprocess.Popen(cmd, shell=True)
+        return process.wait()
+    elif remote_path.startswith("s3"):   # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = remote_path.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        key = "/".join(path_parts)
+        try:
+            s3_client.download_file(bucket, key, local_path)
+            return 0
+        except Exception as e:
+            print(str(e))
+            return -1
+    else:
+        if remote_path.startswith("file://"):
+            remote_path = remote_path[len("file://"):]
+        shutil.copy(remote_path, local_path)
+        return 0
+
+
+def get_remote_dir_to_local(remote_dir, local_dir):
+    if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
+        cmd = 'hdfs dfs -get {} {}'.format(remote_dir, local_dir)
+        process = subprocess.Popen(cmd, shell=True)
+        return process.wait()
+    elif remote_dir.startswith("s3"):   # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = remote_dir.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        prefix = "/".join(path_parts)
+        try:
+            response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix+"/")
+            keys = [item['Key'] for item in response['Contents']]
+            [s3_client.download_file(bucket, key, os.path.join(local_dir, os.path.basename(keys)))
+             for key in keys]
+        except Exception as e:
+            print(str(e))
+            raise e
+        return 0
+    else:
+        if remote_dir.startswith("file://"):
+            remote_dir = remote_dir[len("file://"):]
+        copy_tree(remote_dir, local_dir)
+        return 0
