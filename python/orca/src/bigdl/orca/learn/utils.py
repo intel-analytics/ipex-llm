@@ -543,15 +543,15 @@ def load_model(filepath, custom_objects=None, compile=True):
 def save_model(model, filepath, overwrite=True, include_optimizer=True, save_format=None,
                signatures=None, options=None, filemode=None):
     if is_local_path(filepath):
-        model.save(filepath, overwrite, include_optimizer, save_format,
-                   signatures, options)
+        model.save(filepath, overwrite=overwrite, include_optimizer=include_optimizer,
+                   save_format=save_format, signatures=signatures, options=options)
     else:
         file_name = os.path.basename(filepath)
         temp_dir = tempfile.mkdtemp()
         temp_path = os.path.join(temp_dir, file_name)
         try:
-            model.save(temp_path, overwrite, include_optimizer, save_format,
-                       signatures, options)
+            model.save(temp_path, overwrite=overwrite, include_optimizer=include_optimizer,
+                       save_format=save_format, signatures=signatures, options=options)
             if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                 # hdf5 format
                 put_local_file_to_remote(temp_path, filepath, filemode)
