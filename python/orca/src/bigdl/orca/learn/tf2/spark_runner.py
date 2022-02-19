@@ -182,7 +182,6 @@ class SparkRunner:
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
-                 epoch=0,
                  application_id=None,
                  need_to_log_to_driver=False,
                  driver_ip=None,
@@ -201,7 +200,6 @@ class SparkRunner:
         self.config = {} if config is None else config
         self.inter_op_parallelism = self.config.get("inter_op_parallelism", 1)
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
-        self.epoch = epoch
         self.verbose = verbose
         self.model_weights = model_weights
         self.optimizer_weights = optimizer_weights
@@ -324,8 +322,8 @@ class SparkRunner:
 
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
-             steps_per_epoch=None, validation_steps=None, validation_freq=1,
-             data_config=None):
+             initial_epoch=0, steps_per_epoch=None, validation_steps=None,
+             validation_freq=1, data_config=None):
         """
         Get model training results and new model.
         """
@@ -337,17 +335,16 @@ class SparkRunner:
 
         model, history = self.distributed_train_func(data_creator,
                                                      config,
-                                                     epochs=self.epoch + epochs,
+                                                     epochs=epochs,
                                                      verbose=verbose,
                                                      callbacks=callbacks,
                                                      steps_per_epoch=steps_per_epoch,
                                                      class_weight=class_weight,
-                                                     initial_epoch=self.epoch,
+                                                     initial_epoch=initial_epoch,
                                                      validation_data_creator=val_data_creator,
                                                      validation_steps=validation_steps,
                                                      validation_freq=validation_freq
                                                      )
-        self.epoch += epochs
         weights = model.get_weights()
         if history is None:
             stats = {}
@@ -357,7 +354,6 @@ class SparkRunner:
             if self.model_dir is not None:
                 save_model(model, self._model_saved_path, save_format="h5")
                 model_state = {
-                    "epoch": self.epoch,
                     "weights": weights,
                     "optimizer_weights": model.optimizer.get_weights()
                 }

@@ -76,8 +76,6 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
-        self.epoch = 0
-        # self.optimizer_weights = None
 
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
@@ -100,7 +98,7 @@ class SparkTFEstimator():
         return cluster_info
 
     def fit(self, data, epochs=1, batch_size=32, verbose=1,
-            callbacks=None, validation_data=None, class_weight=None,
+            callbacks=None, validation_data=None, class_weight=None, initial_epoch=0,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
             label_cols=None):
@@ -136,10 +134,6 @@ class SparkTFEstimator():
             weights = sc.broadcast(self.model_weights)
         else:
             weights = None
-        # if self.optimizer_weights:
-        #     optimizer_weights = sc.broadcast(self.optimizer_weights)
-        # else:
-        #     optimizer_weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -148,11 +142,9 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             model_weights=weights,
-            # optimizer_weights=optimizer_weights,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
-            # epoch=self.epoch,
             application_id=self.application_id,
             need_to_log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
@@ -165,6 +157,7 @@ class SparkTFEstimator():
             verbose=verbose,
             callbacks=callbacks,
             class_weight=class_weight,
+            initial_epoch=initial_epoch,
             steps_per_epoch=steps_per_epoch,
             validation_steps=validation_steps,
             validation_freq=validation_freq,
@@ -216,8 +209,6 @@ class SparkTFEstimator():
                 with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
                     state = pickle.load(f)
                     self.model_weights = state['weights']
-                    self.epoch = state["epoch"]
-                    self.optimizer_weights = state["optimizer_weights"]
             finally:
                 shutil.rmtree(temp_dir)
 
@@ -535,7 +526,6 @@ class SparkTFEstimator():
         # update remote model
         save_model(model, self._model_saved_path, save_format="h5", filemode=0o666)
         self.model_weights = model.get_weights()
-        # self.optimizer_weights = model.optimizer.get_weights()
 
     def get_model(self):
         """

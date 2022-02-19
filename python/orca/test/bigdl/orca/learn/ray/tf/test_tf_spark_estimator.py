@@ -439,11 +439,12 @@ class TestTFEstimator(TestCase):
             trainer.save(os.path.join(temp_dir, "saved_model"))
             trainer.load(os.path.join(temp_dir, "saved_model"))
             # continous training
-            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+            res = trainer.fit(df, epochs=10, batch_size=4, steps_per_epoch=25,
                               feature_cols=["feature"],
                               label_cols=["label"],
                               validation_data=df,
-                              validation_steps=1)
+                              validation_steps=1,
+                              initial_epoch=5)
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
             print("validation result: ", res)
