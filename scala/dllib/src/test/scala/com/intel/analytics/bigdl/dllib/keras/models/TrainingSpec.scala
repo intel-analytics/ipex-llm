@@ -449,10 +449,10 @@ class TrainingSpec extends ZooSpecHelper {
     model.add(Reshape[Float](Array(169)))
     model.add(Dense[Float](2, activation = "log_softmax"))
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
-    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCol = "label", transforms = transformers)
-    val predDf = model.predict(imgDF, predictionCol = "predict", transformer = transformers)
+    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCol = "label", transform = transformers)
+    val predDf = model.predict(imgDF, predictionCol = "predict", transform = transformers)
     predDf.show()
-    model.evaluate(imgDF, batchSize = 1, labelCol = "label", transformer = transformers)
+    model.evaluate(imgDF, batchSize = 1, labelCol = "label", transform = transformers)
   }
 }
 

@@ -517,10 +517,10 @@ trait Predictable[T] extends VectorCompatibility{
   }
 
   def predict(x: DataFrame,
-              predictionCol: String,
-              transformer: ImageProcessing,
-              batchPerThread: Int): DataFrame = {
-    val imageset = df2ImageSet(x, null, transformer)
+    predictionCol: String,
+    transform: ImageProcessing,
+    batchPerThread: Int): DataFrame = {
+    val imageset = df2ImageSet(x, null, transform)
     val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
     imageset.transform(transformer2)
     val res = this.predict(imageset, batchPerThread)
@@ -537,9 +537,9 @@ trait Predictable[T] extends VectorCompatibility{
   }
 
   def predict(x: DataFrame,
-              predictionCol: String,
-              transformer: ImageProcessing): DataFrame = {
-    predict(x, predictionCol, transformer, batchPerThread = 4)
+    predictionCol: String,
+    transform: ImageProcessing): DataFrame = {
+    predict(x, predictionCol, transform, batchPerThread = 4)
   }
 
   /**
