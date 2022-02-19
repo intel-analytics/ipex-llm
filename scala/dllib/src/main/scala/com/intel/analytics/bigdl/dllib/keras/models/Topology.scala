@@ -574,18 +574,18 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   }
 
   def fit(
-    x: DataFrame,
-    batchSize: Int,
-    nbEpoch: Int,
-    labelCol: String,
-    transformer: ImageProcessing,
-    valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    val trainData = df2ImageSet(x, labelCol, transformer)
+   x: DataFrame,
+   batchSize: Int,
+   nbEpoch: Int,
+   labelCol: String,
+   transform: ImageProcessing,
+   valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
+    val trainData = df2ImageSet(x, labelCol, transform)
     val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
     trainData.transform(transformer2)
 
     val valData = if (valX != null) {
-      val valSet = df2ImageSet(valX, labelCol, transformer)
+      val valSet = df2ImageSet(valX, labelCol, transform)
       valSet.transform(transformer2)
       valSet
     } else null
@@ -594,12 +594,12 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   }
 
   def fit(
-    x: DataFrame,
-    batchSize: Int,
-    nbEpoch: Int,
-    labelCol: String,
-    transformer: ImageProcessing)(implicit ev: TensorNumeric[T]): Unit = {
-    this.fit(x, batchSize, nbEpoch, labelCol, transformer, null)
+     x: DataFrame,
+     batchSize: Int,
+     nbEpoch: Int,
+     labelCol: String,
+     transform: ImageProcessing)(implicit ev: TensorNumeric[T]): Unit = {
+    this.fit(x, batchSize, nbEpoch, labelCol, transform, null)
   }
 
   /**
@@ -673,10 +673,10 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   def evaluate(
     x: DataFrame,
     labelCol: String,
-    transformer: ImageProcessing,
+    transform: ImageProcessing,
     batchSize: Int)
   (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    val rdd = df2ImageSet(x, labelCol, transformer)
+    val rdd = df2ImageSet(x, labelCol, transform)
     val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
     rdd.transform(transformer2)
     this.evaluate(rdd, batchSize)
