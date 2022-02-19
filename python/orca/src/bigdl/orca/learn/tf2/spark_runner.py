@@ -178,7 +178,6 @@ class SparkRunner:
                  config=None,
                  verbose=False,
                  model_weights=None,
-                 optimizer_weights=None,
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
@@ -202,7 +201,6 @@ class SparkRunner:
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
         self.verbose = verbose
         self.model_weights = model_weights
-        self.optimizer_weights = optimizer_weights
         self.size = size
         self.mode = mode
         self.backend = backend
