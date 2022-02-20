@@ -5,13 +5,13 @@ ARG SCALA_VERSION=2.12
 ARG SCALA_SUB_VERSION_NUM=10
 
 # stage.1 Redis
-FROM occlum/occlum:0.24.0-ubuntu18.04 as redis-tls
+FROM ubuntu:20.04 as redis-tls
 
 WORKDIR /opt
 
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        git build-essential coreutils ca-certificates && \
+        pkg-config git build-essential coreutils ca-certificates && \
     apt-get clean
 
 RUN git clone https://github.com/openssl/openssl.git && \
@@ -29,7 +29,7 @@ RUN git clone https://github.com/redis/redis.git && \
     make -j `getconf _NPROCESSORS_ONLN` BUILD_TLS=yes && make PREFIX=/opt/redis install
 
 # stage. 2 Flink & bigdl & Scala
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 ENV JAVA_HOME				/usr/lib/jvm/java-8-openjdk-amd64
 ARG FLINK_VERSION=1.11.3
 ENV FLINK_VERSION ${FLINK_VERSION}
@@ -57,7 +57,15 @@ RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}.${SCA
 RUN cd /opt && \
     wget https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
     tar -zxvf flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
-    rm flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz
+    rm flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz && \
+    rm /opt/flink-${FLINK_VERSION}/lib/log4j-1.2-api-2.12.1.jar && \
+    rm /opt/flink-${FLINK_VERSION}/lib/log4j-api-2.12.1.jar && \
+    rm /opt/flink-${FLINK_VERSION}/lib/log4j-core-2.12.1.jar && \
+    rm /opt/flink-${FLINK_VERSION}/lib/log4j-slf4j-impl-2.12.1.jar && \
+    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
+    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
+    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
+    wget -P /opt/flink-${FLINK_VERSION}/lib/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 
 # Download bigdl
 RUN cd /opt && \
@@ -77,7 +85,7 @@ RUN cd /opt && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG
 
 # stage.3 az ppml occlum
-FROM ubuntu:18.04 as ppml
+FROM occlum/occlum:0.26.4-ubuntu20.04 as ppml
 
 ARG FLINK_VERSION=1.11.3
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
@@ -109,35 +117,34 @@ RUN mkdir -p ${BIGDL_HOME}
 
 COPY --from=redis-tls /opt/ssl /opt/ssl
 COPY --from=redis-tls /opt/redis /opt/redis
-COPY --from=redis-tls /opt/occlum/glibc /opt/occlum/glibc
 COPY --from=bigdl /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}  /opt/scala-${SCALA_VERSION}.${SCALA_SUB_VERSION_NUM}
 COPY --from=bigdl /opt/flink-${FLINK_VERSION} /opt/flink-${FLINK_VERSION}
 COPY --from=bigdl /opt/resnet50 /opt/resnet50
 COPY --from=bigdl /opt/bigdl-serving*-jar-with-dependencies.jar ${BIGDL_HOME}/bigdl-serving-jar-with-dependencies.jar
 COPY --from=bigdl /opt/bigdl-serving*-http.jar ${BIGDL_HOME}/bigdl-serving-http.jar
 
-RUN apt-get update && \
-    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        build-essential ca-certificates openjdk-11-jdk \
-        curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
-        libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev
+# RUN apt-get update && \
+#     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+#         build-essential ca-certificates openjdk-11-jdk \
+#         curl tzdata wget netcat gnupg2 jq make gdb libfuse-dev libtool \
+#         libprotobuf-c-dev protobuf-c-compiler libcurl4-openssl-dev libprotobuf-dev
 # Add 01.org & key
-RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
-    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
+# RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | tee /etc/apt/sources.list.d/intelsgx.list && \
+#     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
 
-RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
-    wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
+# RUN echo 'deb [arch=amd64] https://occlum.io/occlum-package-repos/debian bionic main' | tee /etc/apt/sources.list.d/occlum.list && \
+#     wget -qO - https://occlum.io/occlum-package-repos/debian/public.key | apt-key add -
 
-RUN apt-get update && \
-    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools \
-        gnupg2 vim jq make gdb libfuse-dev libtool \
-        libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
-        libsgx-dcap-quote-verify-dev \
-        occlum && \
-    apt-get clean
+# RUN apt-get update && \
+#     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+#         build-essential ca-certificates openjdk-11-jdk curl wget netcat net-tools \
+#         gnupg2 vim jq make gdb libfuse-dev libtool \
+#         libsgx-dcap-ql libsgx-epid libsgx-urts libsgx-quote-ex libsgx-uae-service \
+#         libsgx-dcap-quote-verify-dev \
+#         occlum && \
+#     apt-get clean
 
-RUN echo "source /etc/profile" >> $HOME/.bashrc 
+# RUN echo "source /etc/profile" >> $HOME/.bashrc 
 
 
 # Cluster Serving config

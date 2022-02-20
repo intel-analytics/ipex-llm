@@ -90,3 +90,29 @@ f = Forecaster(..., distributed=True)
 f.fit(tsdata_xshards, ...)
 f.predict(test_tsdata_xshards, ...)
 ```
+#### **5. Quantization**
+Quantization refers to processes that enable lower precision inference. In Chronos, post-training quantization is supported relied on [Intel® Neural Compressor](https://intel.github.io/neural-compressor/README.html).
+```python
+# init
+f = Forecaster(...)
+
+# train the forecaster
+f.fit(train_data, ...)
+
+# quantize the forecaster
+f.quantize(train_data, ...)
+
+# predict with int8 model with better inference throughput
+f.predict(test_data, quantize=True)
+
+# predict with fp32
+f.predict(test_data, quantize=False)
+
+# save
+f.save(checkpoint_file="fp32.model"
+       quantize_checkpoint_file="int8.model")
+
+# load
+f.load(checkpoint_file="fp32.model"
+       quantize_checkpoint_file="int8.model")
+```

@@ -479,6 +479,35 @@ class PyTorchPySparkEstimator(BaseEstimator):
         state_dict = torch.load(model_path)
         self.state_dict = state_dict
 
+    def save_checkpoint(self, model_path):
+        """
+        Manually saves the Estimator state (including model and optimizer) to the provided
+        model_path.
+        :param model_path: (str) Path to save the model. Both local and remote path are supported.
+               e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
+        :return: None
+        """
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(model_path):
+            self.save(model_path)
+        else:
+            self.driver_runner.load_state_dict(self.state_dict)
+            self.driver_runner.save_checkpoint(filepath=model_path)
+
+    def load_checkpoint(self, model_path):
+        """
+        Loads the Estimator state (including model and optimizer) from the provided model_path.
+        :param model_path: (str) Path to the existing model. Both local and remote path are
+               supported. e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
+        :return: None
+        """
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(model_path):
+            self.load(model_path)
+        else:
+            self.driver_runner.load_checkpoint(filepath=model_path)
+            self.state_dict = self.driver_runner.get_state_dict()
+
     def _process_stats(self, worker_stats):
         stats = {
             "num_samples": sum(

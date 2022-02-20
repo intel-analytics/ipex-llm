@@ -23,7 +23,8 @@ import shutil
 from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
-from bigdl.orca.data.file import put_local_dir_tree_to_remote, get_remote_dir_to_local
+from bigdl.orca.data.file import put_local_dir_tree_to_remote, put_local_file_to_remote,\
+    get_remote_file_to_local, get_remote_dir_to_local
 from bigdl.dllib.utils.utils import convert_row_to_numpy
 import numpy as np
 import pickle
@@ -445,13 +446,13 @@ def get_class(class_name):
         m = getattr(m, comp)
     return m
 
+
 def replace_specific_object_from_callbacks(callbacks, original_class_type, new_class_type, rank=None):
     for c in callbacks:
         if isinstance(c, original_class_type):
             callbacks.remove(c)
             new_callback = new_class_type(c, rank)
             callbacks.append(new_callback)
-    return None
 
 
 def get_replaced_path(original_filepath):
@@ -460,34 +461,99 @@ def get_replaced_path(original_filepath):
     return os.path.join(temp_dir, base_name)
 
 
-# def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
-#     import tensorflow as tf
-#
-#     tensorboard = get_specific_object_from_callbacks(tf.keras.callbacks.TensorBoard,
-#                                                      callbacks)
-#     if tensorboard:
-#         original_log_dir = tensorboard.log_dir
-#         replaced_log_dir = get_replaced_path(original_log_dir)
-#         tensorboard.log_dir = replaced_log_dir
-#
-#         if tensorboard.update_freq == 'epoch':
-#             # create copy callback for epoch
-#             copy_callback = EpochCopyCallback(replaced_log_dir, original_log_dir, rank)
-#         else:
-#             # to avoid frequent copy, set update freq > 10
-#             update_freq = tensorboard.update_freq if tensorboard.update_freq > 10 \
-#                 else 10
-#             if mode == "fit":
-#                 # create copy callback for batch
-#                 copy_callback = TrainBatchCopyCallback(replaced_log_dir, original_log_dir,
-#                                                        update_freq, rank)
-#             else:
-#                 copy_callback = BatchCopyCallback(replaced_log_dir, original_log_dir,
-#                                                   update_freq, rank)
-#         callbacks.append(copy_callback)
-#         return replaced_log_dir
-#     return None
-#
+def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
+    import tensorflow as tf
+
+    class EpochCopyCallback(tf.keras.callbacks.Callback):
+        def __init__(self, local_dir, remote_dir, rank=None):
+            super(EpochCopyCallback, self).__init__()
+            self.local_dir = local_dir
+            self.remote_dir = remote_dir
+            self.rank = rank
+
+        def on_epoch_end(self, epoch, logs=None):
+            if self.rank is not None:
+                if self.rank == 0:
+                    put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
+
+    class TrainBatchCopyCallback(tf.keras.callbacks.Callback):
+        def __init__(self, local_dir, remote_dir, freq, rank=None):
+            super(TrainBatchCopyCallback, self).__init__()
+            self.local_dir = local_dir
+            self.remote_dir = remote_dir
+            self.freq = freq
+            self.rank = rank
+
+        def on_train_batch_end(self, batch, logs=None):
+            if self.rank is not None:
+                if self.rank == 0:
+                    if batch % self.freq == 0:
+                        put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
+
+    class BatchCopyCallback(tf.keras.callbacks.Callback):
+        def __init__(self, local_dir, remote_dir, freq, rank=None):
+            super(BatchCopyCallback, self).__init__()
+            self.local_dir = local_dir
+            self.remote_dir = remote_dir
+            self.freq = freq
+            self.rank = rank
+
+        def on_test_batch_end(self, batch, logs=None):
+            if self.rank is not None:
+                if self.rank == 0:
+                    if batch % self.freq == 0:
+                        put_local_dir_tree_to_remote(self.local_dir, self.remote_dir)
+
+    tensorboard = get_specific_object_from_callbacks(tf.keras.callbacks.TensorBoard,
+                                                     callbacks)
+    if tensorboard:
+        original_log_dir = tensorboard.log_dir
+        replaced_log_dir = get_replaced_path(original_log_dir)
+        tensorboard.log_dir = replaced_log_dir
+
+        if tensorboard.update_freq == 'epoch':
+            # create copy callback for epoch
+            copy_callback = EpochCopyCallback(replaced_log_dir, original_log_dir, rank)
+        else:
+            # to avoid frequent copy, set update freq > 10
+            update_freq = tensorboard.update_freq if tensorboard.update_freq > 10 \
+                else 10
+            if mode == "fit":
+                # create copy callback for batch
+                copy_callback = TrainBatchCopyCallback(replaced_log_dir, original_log_dir,
+                                                       update_freq, rank)
+            else:
+                copy_callback = BatchCopyCallback(replaced_log_dir, original_log_dir,
+                                                  update_freq, rank)
+        callbacks.append(copy_callback)
+        return replaced_log_dir
+    return None
+
+    tensorboard = get_specific_object_from_callbacks(tf.keras.callbacks.TensorBoard,
+                                                     callbacks)
+    if tensorboard:
+        original_log_dir = tensorboard.log_dir
+        replaced_log_dir = get_replaced_path(original_log_dir)
+        tensorboard.log_dir = replaced_log_dir
+
+        if tensorboard.update_freq == 'epoch':
+            # create copy callback for epoch
+            copy_callback = EpochCopyCallback(replaced_log_dir, original_log_dir, rank)
+        else:
+            # to avoid frequent copy, set update freq > 10
+            update_freq = tensorboard.update_freq if tensorboard.update_freq > 10 \
+                else 10
+            if mode == "fit":
+                # create copy callback for batch
+                copy_callback = TrainBatchCopyCallback(replaced_log_dir, original_log_dir,
+                                                       update_freq, rank)
+            else:
+                copy_callback = BatchCopyCallback(replaced_log_dir, original_log_dir,
+                                                  update_freq, rank)
+        callbacks.append(copy_callback)
+        return replaced_log_dir
+    return None
+
 
 def get_latest_checkpoint(checkpoint_dir):
     import tensorflow as tf
@@ -501,5 +567,53 @@ def get_latest_checkpoint(checkpoint_dir):
             checkpoint_path = tf.train.latest_checkpoint(temp_dir)
             checkpoint_prefix = os.path.basename(checkpoint_path)
             return os.path.join(checkpoint_dir, checkpoint_prefix)
+        finally:
+            shutil.rmtree(temp_dir)
+
+
+def load_model(filepath, custom_objects=None, compile=True):
+    import tensorflow as tf
+    if is_local_path(filepath):
+        model = tf.keras.models.load_model(filepath,
+                                           custom_objects=custom_objects,
+                                           compile=compile
+                                           )
+    else:
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            if filepath.endswith('.h5') or filepath.endswith('.keras'):
+                get_remote_file_to_local(filepath, temp_path)
+            else:
+                get_remote_dir_to_local(filepath, temp_path)
+
+            model = tf.keras.models.load_model(temp_path,
+                                               custom_objects=custom_objects,
+                                               compile=compile
+                                               )
+        finally:
+            shutil.rmtree(temp_dir)
+    return model
+
+
+def save_model(model, filepath, overwrite=True, include_optimizer=True, save_format=None,
+               signatures=None, options=None, filemode=None):
+    if is_local_path(filepath):
+        model.save(filepath, overwrite=overwrite, include_optimizer=include_optimizer,
+                   save_format=save_format, signatures=signatures, options=options)
+    else:
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            model.save(temp_path, overwrite=overwrite, include_optimizer=include_optimizer,
+                       save_format=save_format, signatures=signatures, options=options)
+            if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
+                # hdf5 format
+                put_local_file_to_remote(temp_path, filepath, filemode)
+            else:
+                # tf format
+                put_local_dir_tree_to_remote(temp_path, filepath)
         finally:
             shutil.rmtree(temp_dir)

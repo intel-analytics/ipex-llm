@@ -1,6 +1,6 @@
 FROM krallin/ubuntu-tini AS tini
 
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 
 ARG SPARK_VERSION=3.1.2
 ARG HADOOP_VERSION=3.2.0
@@ -41,7 +41,14 @@ RUN cd /opt && \
     rm spark/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     rm spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     rm spark/jars/hadoop-common-3.2.0.jar && \
-    rm spark/jars/hive-exec-2.3.7-core.jar
+    rm spark/jars/hive-exec-2.3.7-core.jar && \
+    rm spark/jars/slf4j-log4j12-1.7.30.jar && \
+    rm spark/jars/log4j-1.2.17.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 
 # spark modification and download test jars
 RUN cd /opt && \
@@ -134,7 +141,7 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
     sbt package
 
-FROM occlum/occlum:0.26.0-ubuntu18.04 as ppml
+FROM occlum/occlum:0.26.4-ubuntu20.04 as ppml
 
 ARG BIGDL_VERSION=0.14.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
@@ -203,6 +210,7 @@ COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-qu
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
 ADD ./sqlSuites /opt/sqlSuites
+ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
 
 COPY ./entrypoint.sh /opt/
 

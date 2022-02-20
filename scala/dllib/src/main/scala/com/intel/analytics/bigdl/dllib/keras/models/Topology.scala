@@ -44,7 +44,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, Mod
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.dllib.optim.ZooTrigger
 import com.intel.analytics.bigdl.dllib.feature._
-import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.{Net, Predictable}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Lambda, Variable}
@@ -55,6 +55,7 @@ import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.net.NetUtils
 import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
 import com.intel.analytics.bigdl.dllib.feature.common._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.nnframes.NNImageSchema
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
@@ -435,19 +436,19 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    * @param validationData RDD of Sample, or null if validation is not configured. Default is null.
    */
   def fit(
-           x: RDD[Sample[T]],
-           batchSize: Int = 32,
-           nbEpoch: Int = 10,
-           validationData: RDD[Sample[T]] = null,
-           featurePaddingParam: PaddingParam[T] = null,
-           labelPaddingParam: PaddingParam[T] = null,
-           shuffleData: Boolean = true,
-           groupSize: Int = 1)(implicit ev: TensorNumeric[T]): Unit = {
+      x: RDD[Sample[T]],
+      batchSize: Int = 32,
+      nbEpoch: Int = 10,
+      validationData: RDD[Sample[T]] = null,
+      featurePaddingParam: PaddingParam[T] = null,
+      labelPaddingParam: PaddingParam[T] = null,
+      shuffleData: Boolean = true,
+      groupSize: Int = 1)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
     val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam,
       shuffleData, groupSize)
-    val valData = toDataSet(validationData, batchSize, featurePaddingParam,
-      labelPaddingParam, shuffleData, groupSize)
+    val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam,
+      shuffleData, groupSize)
     this.fit(trainData, nbEpoch, valData)
 
     releaseDataSets(Array(trainData, valData))
@@ -572,6 +573,35 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     this.fit(x, batchSize, nbEpoch, featureCols, labelCols, null)
   }
 
+  def fit(
+   x: DataFrame,
+   batchSize: Int,
+   nbEpoch: Int,
+   labelCol: String,
+   transform: ImageProcessing,
+   valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
+    val trainData = df2ImageSet(x, labelCol, transform)
+    val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
+    trainData.transform(transformer2)
+
+    val valData = if (valX != null) {
+      val valSet = df2ImageSet(valX, labelCol, transform)
+      valSet.transform(transformer2)
+      valSet
+    } else null
+
+    this.fit(trainData, batchSize, nbEpoch, valData)
+  }
+
+  def fit(
+     x: DataFrame,
+     batchSize: Int,
+     nbEpoch: Int,
+     labelCol: String,
+     transform: ImageProcessing)(implicit ev: TensorNumeric[T]): Unit = {
+    this.fit(x, batchSize, nbEpoch, labelCol, transform, null)
+  }
+
   /**
    * Train a model for a fixed number of epochs on TextSet.
    *
@@ -638,6 +668,18 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
     require(this.vMethods != null, "Evaluation metrics haven't been set yet")
     evaluateImage(x.toImageFrame(), this.vMethods, Some(batchSize))
+  }
+
+  def evaluate(
+    x: DataFrame,
+    labelCol: String,
+    transform: ImageProcessing,
+    batchSize: Int)
+  (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
+    val rdd = df2ImageSet(x, labelCol, transform)
+    val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
+    rdd.transform(transformer2)
+    this.evaluate(rdd, batchSize)
   }
 
   /**
