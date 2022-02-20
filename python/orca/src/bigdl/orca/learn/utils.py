@@ -563,11 +563,25 @@ def get_latest_checkpoint(checkpoint_dir):
     else:
         try:
             temp_dir = tempfile.mkdtemp()
-            get_remote_dir_to_local(checkpoint_dir, temp_dir)
-            print("list local checkpoint dir {} is: ".format(temp_dir, os.listdir(temp_dir)))
-            checkpoint_path = tf.train.latest_checkpoint(temp_dir)
-            checkpoint_prefix = os.path.basename(checkpoint_path)
-            return os.path.join(checkpoint_dir, checkpoint_prefix)
+            # get checkpoint file
+            remote_checkpoint_file = os.path.join(checkpoint_dir, "checkpoint")
+            local_checkpoint_file = os.path.join(temp_dir, "checkpoint")
+            get_remote_file_to_local(remote_checkpoint_file, local_checkpoint_file)
+            ckpt_name = None
+            with open(local_checkpoint_file) as f:
+                import re
+                new_lines = []
+                lines = f.readlines()
+                # replace model_checkpoint_path and all_model_checkpoint_paths to checkpoint name
+                #  instead of the absolute checkpoint path
+                for line in lines:
+                    m = re.compile("^model_checkpoint_path: \"(.*)\"$").match(line)
+                    if m:
+                        ckpt_name = m.group(1)
+                        break
+            if ckpt_name:
+                return os.path.join(checkpoint_dir, ckpt_name)
+            return None
         finally:
             shutil.rmtree(temp_dir)
 
