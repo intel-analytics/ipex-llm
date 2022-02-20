@@ -564,6 +564,7 @@ def get_latest_checkpoint(checkpoint_dir):
         try:
             temp_dir = tempfile.mkdtemp()
             get_remote_dir_to_local(checkpoint_dir, temp_dir)
+            print("list local checkpoint dir {} is: ".format(temp_dir, os.listdir(temp_dir)))
             checkpoint_path = tf.train.latest_checkpoint(temp_dir)
             checkpoint_prefix = os.path.basename(checkpoint_path)
             return os.path.join(checkpoint_dir, checkpoint_prefix)
