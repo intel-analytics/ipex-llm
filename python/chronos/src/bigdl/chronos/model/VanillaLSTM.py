@@ -16,31 +16,73 @@
 from bigdl.orca.automl.model.base_keras_model import KerasBaseModel
 from collections.abc import Iterable
 import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.layers import LSTM, Reshape, Layer
 
+class Linear(Layer):
+    """y = w.x + b"""
+    def __init__(self, units):
+        super(Linear, self).__init__()
+        self.units = units
+    
+    def build(self, input_feature):
+        self.w = self.add_weight(
+            shape=(input_feature[-1], self.units),
+            initializer="random_normal",
+            trainable=True,
+        )
+        self.b = self.add_weight(
+            shape=(self.units,),
+            initializer="random_normal",
+            trainable=True,
+        )
+
+    def call(self, inputs):
+        return tf.matmul(inputs, self.w) + self.b
+
+class LSTMModel(keras.Model):
+    def __init__(self, input_dim, hidden_dim, layer_num, dropout, output_dim):
+        super(LSTMModel, self).__init__()
+        self.lstm_list = keras.Sequential()
+        for _ in range(layer_num)-1:
+            self.lstm_list.add(LSTM(hidden_dim, return_seqences=True, dropout=dropout))
+        self.lstm_list.add(LSTM(hidden_dim, dropout=dropout))
+        self.fc = Linear(output_dim)
+        # LSTM Only support single Step.
+        self.lstm_shape = Reshape((1, output_dim), shape=(output_dim,))
+    
+    def call(self, input_seq):
+        lstm_out = input_seq
+        out = self.lstm_list(lstm_out)
+        out = self.fc(out)
+        out = self.lstm_shape(out)
+        return out
 
 def model_creator(config):
-    from tensorflow.keras.models import Model
-    from tensorflow.keras.layers import Input, Dense, LSTM, Dropout
-    import tensorflow as tf
-
-    inp = Input(shape=(None, config["input_dim"]))
-    if "lstm_1_units" in config and "lstm_2_units" in config:
-        lstm_units = (config["lstm_1_units"], config["lstm_2_units"])
-    else:
-        lstm_units = config.get("lstm_units", [32, 32])
-    if "dropout_1" in config and "dropout_2" in config:
-        dropout_rates = (config["dropout_1"], config["dropout_2"])
-    else:
-        dropout_rates = config.get("dropouts", 0.2)
-    lstm_units = [lstm_units] if not isinstance(lstm_units, Iterable) else lstm_units
-    for i, unit in enumerate(lstm_units):
-        return_sequences = True if i != len(lstm_units) - 1 else False
-        dropout_rate = dropout_rates[i] if isinstance(dropout_rates, Iterable) else dropout_rates
-        lstm_input = inp if i == 0 else dropout
-        lstm = LSTM(units=unit, return_sequences=return_sequences)(lstm_input)
-        dropout = Dropout(rate=dropout_rate)(lstm)
-    out = Dense(config["output_dim"])(dropout)
-    model = Model(inputs=inp, outputs=out)
+    # inp = Input(shape=(None, config["input_dim"]))
+    # if "lstm_1_units" in config and "lstm_2_units" in config:
+        # lstm_units = (config["lstm_1_units"], config["lstm_2_units"])
+    # else:
+        # lstm_units = config.get("lstm_units", [32, 32])
+    # if "dropout_1" in config and "dropout_2" in config:
+        # dropout_rates = (config["dropout_1"], config["dropout_2"])
+    # else:
+        # dropout_rates = config.get("dropouts", 0.2)
+    # lstm_units = [lstm_units] if not isinstance(lstm_units, Iterable) else lstm_units
+    # for i, unit in enumerate(lstm_units):
+        # return_sequences = True if i != len(lstm_units) - 1 else False
+        # dropout_rate = dropout_rates[i] if isinstance(dropout_rates, Iterable) else dropout_rates
+        # lstm_input = inp if i == 0 else dropout
+        # lstm = LSTM(units=unit, return_sequences=return_sequences)(lstm_input)
+        # dropout = Dropout(rate=dropout_rate)(lstm)
+    # out = Dense(config["output_dim"])(dropout)
+    # model = Model(inputs=inp, outputs=out)
+    model = LSTM(config['input_dim'],
+                 config.get('hidden_dim', [32, 32]),
+                 config.get('layer_num', 2),
+                 config.get('dropout', 0.2),
+                 config['output_dim'])
     model.compile(loss=config.get("loss", "mse"),
                   optimizer=getattr(tf.keras.optimizers, config.get("optim", "Adam"))
                   (learning_rate=config.get("lr", 0.001)),
