@@ -157,8 +157,8 @@ class HPOMixin:
         # NOTE: keep the unused "method" argument so that
         # only the methods which are actually called are created
         if not self._lazymodel:
-            raise ValueError("Model is not actually built yet. " +
-                             "Please call end_search before calling \"" +
-                             name + "\"")
+            raise ValueError(
+                "Model is not actually built yet. Please call \
+                'end_search' before calling '" + name + "'")
         internal_m = getattr(self._lazymodel, name)
         return internal_m(*args, **kwargs)
