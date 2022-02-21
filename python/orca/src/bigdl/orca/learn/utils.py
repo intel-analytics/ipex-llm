@@ -438,14 +438,6 @@ def get_specific_object_from_callbacks(class_type, callbacks):
             return c
     return None
 
-def get_class(class_name):
-    parts = class_name.split('.')
-    module = ".".join(parts[:-1])
-    m = __import__( module )
-    for comp in parts[1:]:
-        m = getattr(m, comp)
-    return m
-
 
 def replace_specific_object_from_callbacks(callbacks, original_class_type, new_class_type, rank=None):
     for c in callbacks:

@@ -313,7 +313,8 @@ def put_local_dir_to_remote(local_dir, remote_dir):
 
 def put_local_dir_tree_to_remote(local_dir, remote_dir):
     if len(os.listdir(local_dir)) == 0:
-        logger.warning()
+        logger.warning("the local dir {} is empty".format(local_dir))
+        return 0
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         test_cmd = 'hdfs dfs -ls {}'.format(remote_dir)
         process = subprocess.Popen(test_cmd, shell=True,

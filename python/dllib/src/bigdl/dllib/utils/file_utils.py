@@ -159,7 +159,7 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
     prefix = os.path.basename(remote_path_prefix)
     # get remote file lists
     file_list = get_file_list(remote_dir)
-    file_list = [file for file in file_list if os.path.basename(file).startswith(prefix + '.')]
+    file_list = [file for file in file_list if os.path.basename(file).startswith(prefix)]
     # get remote files to local
     [get_remote_file_to_local(file, os.path.join(local_dir, os.path.basename(file)))
      for file in file_list]
