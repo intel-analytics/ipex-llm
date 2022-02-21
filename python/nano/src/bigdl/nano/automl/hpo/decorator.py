@@ -10,6 +10,8 @@ import ConfigSpace as CS
 from .space import *
 from .space import _add_hp, _add_cs, _rm_hp, _strip_config_space, SPLITTER
 
+from .mixin import HPOMixin
+
 from .callgraph import update_callgraph
 from bigdl.nano.automl.utils import EasyDict as ezdict
 
@@ -35,11 +37,11 @@ def sample_config(args, config):
                 if SPLITTER in k:
                     continue
                 args_dict[k] = config[k]
-        elif isinstance(v, AutoGluonObject):
+        elif isinstance(v, AutoObject):
             args_dict[k] = v.init()
     return args
 
-class _autogluon_method(object):
+class _automl_method(object):
     SEED = mp.Value('i', 0)
     LOCK = mp.Lock()
     def __init__(self, f):
@@ -112,8 +114,8 @@ class _autogluon_method(object):
         return kw_spaces
 
     def _rand_seed(self):
-        _autogluon_method.SEED.value += 1
-        np.random.seed(_autogluon_method.SEED.value)
+        _automl_method.SEED.value += 1
+        np.random.seed(_automl_method.SEED.value)
 
     def __repr__(self):
         return repr(self.f)
@@ -122,21 +124,18 @@ class _autogluon_method(object):
 def args(default=None, **kwvars):
     """Decorator for a Python training script that registers its arguments as hyperparameters.
        Each hyperparameter takes fixed value or is a searchable space, and the arguments may either be:
-       built-in Python objects (e.g. floats, strings, lists, etc.), AutoGluon objects (see :func:`autogluon.obj`),
-       or AutoGluon search spaces (see :class:`autogluon.space.Int`, :class:`autogluon.space.Real`, etc.).
+       built-in Python objects (e.g. floats, strings, lists, etc.), AutoObject (see :func:`hpo.obj`),
+       or hpo search spaces (see :class:`hpo.space.Int`, :class:`hpo.space.Real`, etc.).
 
     Examples
     --------
-    >>> import autogluon.core as ag
-    >>> @ag.args(batch_size=10, lr=ag.Real(0.01, 0.1))
-    >>> def train_func(args):
-    ...     print('Batch size is {}, LR is {}'.format(args.batch_size, arg.lr))
+    >>>
     """
     if default is None:
         default = dict()
     kwvars['_default_config'] = default
     def registered_func(func):
-        @_autogluon_method
+        @_automl_method
         @functools.wraps(func)
         def wrapper_call(*args, **kwargs):
             return func(*args, **kwargs)
@@ -150,23 +149,18 @@ def args(default=None, **kwvars):
 
 def func(**kwvars):
     """Decorator for a function that registers its arguments as hyperparameters.
-       Each hyperparameter may take a fixed value or be a searchable space (autogluon.space).
+       Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
 
     Returns
     -------
-    Instance of :class:`autogluon.space.AutoGluonObject`:
+    Instance of :class:`hpo.space.AutoObject`:
         A lazily initialized object, which allows for distributed training.
 
     Examples
     --------
-    >>> import autogluon.core as ag
-    >>> from gluoncv.model_zoo import get_model
     >>>
-    >>> @ag.func(pretrained=ag.space.Categorical(True, False))
-    >>> def cifar_resnet(pretrained):
-    ...     return get_model('cifar_resnet20_v1', pretrained=pretrained)
     """
-    def _autogluon_kwargs_func(**kwvars):
+    def _automl_kwargs_func(**kwvars):
         def registered_func(func):
             kwspaces = OrderedDict()
             @functools.wraps(func)
@@ -189,8 +183,8 @@ def func(**kwvars):
         return registered_func
 
     def registered_func(func):
-        class autogluonobject(AutoGluonObject):
-            @_autogluon_kwargs_func(**kwvars)
+        class automlobject(AutoObject):
+            @_automl_kwargs_func(**kwvars)
             def __init__(self, *args, **kwargs):
                 self.func = func
                 self.args = args
@@ -199,7 +193,7 @@ def func(**kwvars):
 
             def sample(self, **config):
                 kwargs = copy.deepcopy(self.kwargs)
-                kwspaces = copy.deepcopy(autogluonobject.kwspaces)
+                kwspaces = copy.deepcopy(automlobject.kwspaces)
                 for k, v in kwargs.items():
                     if k in kwspaces and isinstance(kwspaces[k], NestedSpace):
                         sub_config = _strip_config_space(config, prefix=k)
@@ -213,7 +207,7 @@ def func(**kwvars):
         def wrapper_call(*args, **kwargs):
             _kwvars = copy.deepcopy(kwvars)
             _kwvars.update(kwargs)
-            agobj = autogluonobject(*args, **kwargs)
+            agobj = automlobject(*args, **kwargs)
             agobj.kwvars = _kwvars
             return agobj
         return wrapper_call
@@ -221,25 +215,18 @@ def func(**kwvars):
 
 def obj(**kwvars):
     """Decorator for a Python class that registers its arguments as hyperparameters.
-       Each hyperparameter may take a fixed value or be a searchable space (autogluon.space).
+       Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
 
     Returns
     -------
-    Instance of :class:`autogluon.space.AutoGluonObject`:
+    Instance of :class:`hpo.space.AutoObject`:
         A lazily initialized object, which allows distributed training.
 
     Examples
     --------
-    >>> import autogluon.core as ag
-    >>> from mxnet import optimizer as optim
-    >>> @ag.obj(
-    >>>     learning_rate=ag.space.Real(1e-4, 1e-1, log=True),
-    >>>     wd=ag.space.Real(1e-4, 1e-1),
-    >>> )
-    >>> class Adam(optim.Adam):
-    >>>     pass
+    >>>
     """
-    def _autogluon_kwargs_obj(**kwvars):
+    def _automl_kwargs_obj(**kwvars):
         def registered_func(func):
             kwspaces = OrderedDict()
             @functools.wraps(func)
@@ -262,8 +249,8 @@ def obj(**kwvars):
         return registered_func
 
     def registered_class(Cls):
-        class autogluonobject(AutoGluonObject):
-            @_autogluon_kwargs_obj(**kwvars)
+        class automlobject(AutoObject):
+            @_automl_kwargs_obj(**kwvars)
             def __init__(self, *args, **kwargs):
                 self.args = args
                 self.kwargs = kwargs
@@ -272,7 +259,7 @@ def obj(**kwvars):
 
             def sample(self, **config):
                 kwargs = copy.deepcopy(self.kwargs)
-                kwspaces = copy.deepcopy(autogluonobject.kwspaces)
+                kwspaces = copy.deepcopy(automlobject.kwspaces)
                 for k, v in kwargs.items():
                     if k in kwspaces and isinstance(kwspaces[k], NestedSpace):
                         sub_config = _strip_config_space(config, prefix=k)
@@ -284,7 +271,7 @@ def obj(**kwvars):
                 return Cls(*args, **kwargs)
 
             def __repr__(self):
-                return 'AutoGluonObject -- ' + Cls.__name__
+                return 'AutoObject -- ' + Cls.__name__
 
             def __call__(self, *args, **kwargs):
                 # this is to handle functional API of layers
@@ -298,11 +285,29 @@ def obj(**kwvars):
                 self._callgraph = update_callgraph(inputs, self)
                 return self
 
-        autogluonobject.kwvars = autogluonobject.__init__.kwvars
-        autogluonobject.__doc__ = Cls.__doc__
-        autogluonobject.__name__ = Cls.__name__
-        return autogluonobject
+        automlobject.kwvars = automlobject.__init__.kwvars
+        automlobject.__doc__ = Cls.__doc__
+        automlobject.__name__ = Cls.__name__
+        return automlobject
 
     return registered_class
 
+
+# def model(**kwvars):
+#     def registered_class(Cls):
+#         objCls = obj(kwvars)(Cls)
+#         class AutoMLModel(HPOMixin, objCls):
+#             def __init__(self, **kwargs):
+#                 super().__init__()
+#                 self.kwargs = kwargs
+#                 self._model = None
+#             def _model_build(self, trial):
+#                 #override _model_build to build
+#                 # the model directly instead of using
+#                 # modeld_init and model_compile
+#                 self._lazymodel = objCls(**kwargs)
+
+#         return AutoMLModel
+
+#     return registered_class
 

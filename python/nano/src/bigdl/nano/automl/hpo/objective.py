@@ -17,66 +17,51 @@
 
 from tensorflow.keras.backend import clear_session
 from tensorflow.keras.models import clone_model
+import tensorflow as tf
+import inspect
 
+
+def is_creator(model):
+    return inspect.ismethod(model) or inspect.isfunction(model)
 
 class Objective(object):
     def __init__(self,
-                 model_instance=None,
-                 model_cls=None,
-                 model_initor=None,
-                 model_compiler=None,
+                 model=None,
                  target_metric=None,
                  **kwargs,
                  ):
-        """Init the objective
+        """Init the objective.
 
         Args:
-            model_instance (keras model, optional):  the created model instance. Defaults to None.
-            model_initor (closure, optional):  function to create the input args. Defaults to None
-            model_cls (classtype, optional): model class used with model_initor to create model.
-                            e.g. tf.Keras.Sequential, tf.Keras.Model
-               Either model_instance or model_initor should be a non-None value.
-               if both not None, use model_initor and ignore the other.
-            model_compiler (closure, optional): model compile function. Defaults to None.
+            model (keras model or function): a model instance or creator function. Defaults to None.
+            model_compiler (function, optional): the compiler function. Defaults to None.
+            target_metric (str, optional): target metric to optimize. Defaults to None.
 
         Raises:
-            ValueError: raised when both model_instance and model_initor is None.
+            ValueError: _description_
         """
-        if model_instance is None and model_initor is None:
-            raise ValueError("You should either pass a created model, or \
-                             a model_init to the Tuning objective.")
+        if not is_creator(model) and not isinstance(model, tf.keras.Model) :
+            raise ValueError("You should either pass a Tensorflo Keras model, or \
+                            a model_creator to the Tuning objective.")
 
-        self.model = model_instance
-        self.model_initor = model_initor
-        if self.model is not None and self.model_initor is not None:
-            if model_cls is None:
-                raise ValueError(
-                    "model_cls should also be specified if smodel_initor is specified")
-            self.model = None
-            print("Warn: passed model is ignored when model_init is not null")
-
-        self.model_cls = model_cls
-
-        self.model_compiler = model_compiler
+        self.model_ = model
         self.target_metric = target_metric
-
         self.kwargs = kwargs
+
+
 
     def __call__(self, trial):
         # Clear clutter from previous Keras session graphs.
         clear_session()
         # TODO may add data creator here, e.g. refresh data, reset generators, etc.
         # create model
-        if self.model is not None:
+        if is_creator(self.model_):
+            model = self.model_(trial)
+        else:
             # copy model so that the original model is not changed
             # Need tests to check this path
-            model = clone_model(self.model)
-        else:
-            assert(self.model_cls is not None)
-            model = self.model_cls(**self.model_initor(trial))
+            model = clone_model(self.model_)
 
-        # compile
-        self.model_compiler(model, trial)
         # fit
         hist = model.fit(**self.kwargs)
 

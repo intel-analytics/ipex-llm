@@ -1,6 +1,6 @@
 import networkx as nx
 import tensorflow as tf
-from .space import AutoGluonObject
+from .space import AutoObject
 from .backend import OptunaBackend
 
 def create_callgraph():
@@ -14,7 +14,7 @@ def update_callgraph(inputs, current):
         # Tensor is not hashable so add ref instead
         call_g.add_node(inputs.ref(), tensor=inputs)
         call_g.add_edge(inputs.ref(),current)
-    elif isinstance(inputs, AutoGluonObject):
+    elif isinstance(inputs, AutoObject):
         assert(inputs._callgraph is not None)
         call_g = inputs._callgraph
         call_g.add_edge(inputs,current)
@@ -33,7 +33,7 @@ def exec_callgraph(inputs, outputs, trial):
         #TODO handle parent is a list
         in_tensor = g.nodes[parent]['tensor']
         # layer is an auto object
-        assert(isinstance(autolayer, AutoGluonObject))
+        assert(isinstance(autolayer, AutoObject))
         layer=OptunaBackend.instantiate(trial, autolayer)
         out_tensor = layer(in_tensor)
         g.add_node(autolayer, tensor=out_tensor)

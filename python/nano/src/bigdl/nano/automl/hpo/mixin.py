@@ -47,9 +47,7 @@ class HPOMixin:
         """
         if self.objective is None:
             self.objective = Objective(
-                model_cls=self.__class__.__bases__[1],
-                model_initor=self._model_init_args,
-                model_compiler=self._model_compile,
+                model=self._model_build,
                 target_metric=target_metric,
                 **kwargs,
             )
@@ -108,7 +106,7 @@ class HPOMixin:
         else:
             trial = self.study.trials[use_trial_id]
 
-        self._model_build(trial)
+        self._lazymodel = self._model_build(trial)
         # TODO Next step: support retrive saved model instead of retrain from hparams
         self.tune_end=True
 
@@ -129,7 +127,7 @@ class HPOMixin:
 
     def _model_compile(self, model, trial):
         # for lazy model compile
-        # use backedn to sample compile args
+        # TODO support searable compile args
         # config = OptunaBackend.sample_config(trial, kwspaces)
         model.compile(*self.compile_args, **self.compile_kwargs)
 
@@ -141,8 +139,9 @@ class HPOMixin:
         #self._model_compile(super(), trial)
         # use composition instead of inherited
         modelcls = self.__class__.__bases__[1]
-        self._lazymodel = modelcls(**self._model_init_args(trial))
-        self._model_compile(self._lazymodel, trial)
+        model = modelcls(**self._model_init_args(trial))
+        self._model_compile(model, trial)
+        return model
 
 
     def _proxy(self, name, method, *args, **kwargs):

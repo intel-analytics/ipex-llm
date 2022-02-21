@@ -20,7 +20,7 @@ import copy
 from bigdl.nano.automl.utils.lazyutils import proxy_methods
 from bigdl.nano.automl.hpo.mixin import HPOMixin
 from bigdl.nano.automl.hpo.backend import OptunaBackend
-from bigdl.nano.automl.hpo.space import AutoGluonObject
+from bigdl.nano.automl.hpo.space import AutoObject
 
 
 @proxy_methods
@@ -51,7 +51,7 @@ class Sequential(HPOMixin, tf.keras.Sequential):
         # and construct the actual layers
         instantiated_layers=[]
         for l in self.lazylayers_:
-            if isinstance(l, AutoGluonObject):
+            if isinstance(l, AutoObject):
                 layer = OptunaBackend.instantiate(trial, l)
                 instantiated_layers.append(layer)
             else:

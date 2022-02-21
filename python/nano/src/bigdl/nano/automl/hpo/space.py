@@ -4,7 +4,7 @@ import ConfigSpace as CS
 import ConfigSpace.hyperparameters as CSH
 from bigdl.nano.automl.utils import EasyDict, classproperty
 
-__all__ = ['Space', 'NestedSpace', 'AutoGluonObject', 'List', 'Dict',
+__all__ = ['Space', 'NestedSpace', 'AutoObject', 'List', 'Dict',
            'Categorical','Real', 'Int', 'Bool']
 
 SPLITTER = u'▁'  # Use U+2581 as the special symbol for splitting the space
@@ -93,13 +93,13 @@ class NestedSpace(Space):
         config = self.cs.sample_configuration().get_dictionary()
         return self.sample(**config)
 
-class AutoGluonObject(NestedSpace):
+class AutoObject(NestedSpace):
     r"""Searchable objects,
     created by decorating a custom Python class or function using the
-    :func:`autogluon.obj` or :func:`autogluon.func` decorators.
+    :func:`hpo.obj` or :func:`hpo.func` decorators.
     """
     def __call__(self, *args, **kwargs):
-        """Convenience method for interacting with AutoGluonObject.
+        """Convenience method for interacting with AutoObject.
         """
         if not self._inited:
             self._inited = True
@@ -107,7 +107,7 @@ class AutoGluonObject(NestedSpace):
         return self._instance.__call__(*args, **kwargs)
 
     def init(self):
-        """Instantiate an actual instance of this `AutoGluonObject`.
+        """Instantiate an actual instance of this `AutoObject`.
             In order to interact with such an `object`, you must always first call: `object.init()`.
         """
         config = self.cs.get_default_configuration().get_dictionary()
@@ -140,7 +140,7 @@ class AutoGluonObject(NestedSpace):
         raise NotImplementedError
 
     def __repr__(self):
-        return 'AutoGluonObject'
+        return 'AutoObject'
 
 class List(NestedSpace):
     r"""Nested search space corresponding to an ordered list of hyperparameters.
@@ -339,7 +339,7 @@ class Categorical(NestedSpace):
     Examples
     --------
     a = ag.space.Categorical('a', 'b', 'c', 'd')  # 'a' will be default value tried first during HPO
-    b = ag.space.Categorical('resnet50', autogluon_obj())
+    b = ag.space.Categorical('resnet50', AutoObj())
     """
     def __init__(self, *data):
         self.data = [*data]
@@ -376,7 +376,7 @@ class Categorical(NestedSpace):
         """
         choice = config.pop('choice')
         if isinstance(self.data[choice], NestedSpace):
-            # nested space: Categorical of AutoGluonobjects
+            # nested space: Categorical of AutoObjects
             min_config = _strip_config_space(config, prefix=str(choice))
             return self.data[choice].sample(**min_config)
         else:
