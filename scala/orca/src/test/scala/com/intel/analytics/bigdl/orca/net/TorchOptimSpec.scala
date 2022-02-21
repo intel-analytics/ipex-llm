@@ -47,8 +47,8 @@ class TorchOptimSpec extends ZooSpecHelper{
        |import torch
        |import torch.nn as nn
        |import torch.nn.functional as F
-       |from zoo.util.nest import ptensor_to_numpy
-       |from zoo.pipeline.api.torch import zoo_pickle_module
+       |from bigdl.dllib.utils.nest import ptensor_to_numpy
+       |from bigdl.orca.torch import zoo_pickle_module
        |import io
        |
        |class LeNet(nn.Module):

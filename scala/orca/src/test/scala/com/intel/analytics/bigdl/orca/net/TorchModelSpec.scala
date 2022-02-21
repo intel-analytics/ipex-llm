@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.orca.net
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{Engine, RandomGenerator}
 import com.intel.analytics.bigdl.orca.utils.{PythonInterpreter, PythonInterpreterTest}
 import com.intel.analytics.bigdl.orca.tf.TFNetNative
 import com.intel.analytics.bigdl.orca.utils.ZooSpecHelper
@@ -46,8 +46,8 @@ class TorchModelSpec extends ZooSpecHelper{
        |import torch
        |import torch.nn as nn
        |import torch.nn.functional as F
-       |from zoo.util.nest import ptensor_to_numpy
-       |from zoo.pipeline.api.torch import zoo_pickle_module
+       |from bigdl.dllib.utils.nest import ptensor_to_numpy
+       |from bigdl.orca.torch import zoo_pickle_module
        |import io
        |
        |class LeNet(nn.Module):
@@ -240,14 +240,15 @@ class TorchModelSpec extends ZooSpecHelper{
 
   "SimpleTorchModel" should "predict without error" in {
     ifskipTest()
-    val conf = new SparkConf().setAppName("SimpleTorchModel").setMaster("local[4]")
+    val conf = Engine.createSparkConf()
+      .setAppName("SimpleTorchModel").setMaster("local[4]")
     val sc = initNNContext(conf)
     val tmpname = createTmpFile().getAbsolutePath()
     val code =
       s"""
          |import torch
          |from torch import nn
-         |from zoo.pipeline.api.torch import zoo_pickle_module
+         |from bigdl.orca.torch import zoo_pickle_module
          |if '_data' in locals():
          |  del _data
          |
@@ -284,14 +285,15 @@ class TorchModelSpec extends ZooSpecHelper{
 
   "SimpleTorchModel" should "predict without error with multioutput" in {
     ifskipTest()
-    val conf = new SparkConf().setAppName("SimpleTorchModel").setMaster("local[4]")
+    val conf = Engine.createSparkConf()
+      .setAppName("SimpleTorchModel").setMaster("local[4]")
     val sc = initNNContext(conf)
     val tmpname = createTmpFile().getAbsolutePath()
     val code =
       s"""
          |import torch
          |from torch import nn
-         |from zoo.pipeline.api.torch import zoo_pickle_module
+         |from bigdl.orca.torch import zoo_pickle_module
          |if '_data' in locals():
          |  del _data
          |
