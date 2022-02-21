@@ -127,4 +127,4 @@ class TestQuantizeInference(TestCase):
         train_loader = create_data_loader(data_dir, batch_size,
                                           num_workers, data_transform, subset=200)
         model = trainer.quantize(model, train_loader)
-        assert model.model_size > model.quantized_model_size()
+        assert model.model_size > model.quantized_model_size

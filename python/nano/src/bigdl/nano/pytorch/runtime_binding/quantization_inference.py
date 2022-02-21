@@ -130,7 +130,7 @@ def bind_quantize_methods(pl_model, q_model):
     pl_model._fx_quantize_on_train = partial(_fx_quantize_on_train, pl_model)
     pl_model._fx_quantize_on_fit_start = partial(_fx_quantize_on_fit_start, pl_model)
     pl_model.quantized_state_dict = partial(quantized_state_dict, pl_model)
-    pl_model.quantized_model_size = partial(quantized_model_size, pl_model)
+    pl_model.quantized_model_size = quantized_model_size(pl_model)
     pl_model.load_quantized_state_dict = partial(load_quantized_state_dict, pl_model)
     pl_model.on_save_checkpoint = partial(on_save_checkpoint, pl_model)
 
