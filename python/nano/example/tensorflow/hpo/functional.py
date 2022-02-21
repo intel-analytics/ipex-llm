@@ -19,7 +19,7 @@ x = dense(inputs)
 x = layers.Dense(32, activation="relu")(x)
 outputs = layers.Dense(10)(x)
 
-#print(outputs._callgraph.nodes)
+# print(outputs._callgraph.nodes)
 
 model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
 
@@ -36,23 +36,22 @@ model.compile(
 )
 
 model.search(
-    n_trails = 2,
+    n_trails=2,
     target_metric='accuracy',
     direction="maximize",
-    x = x_train,
-    y = y_train,
-    batch_size = 128,
+    x=x_train,
+    y=y_train,
+    batch_size=128,
     epochs=1,
     validation_split=0.2,
     verbose=False,
 )
 
 history = model.fit(x_train, y_train,
-    batch_size=128, epochs=1, validation_split=0.2)
+                    batch_size=128, epochs=1, validation_split=0.2)
 
 test_scores = model.evaluate(x_test, y_test, verbose=2)
 print("Test loss:", test_scores[0])
 print("Test accuracy:", test_scores[1])
 
 print(model.summary())
-

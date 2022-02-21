@@ -16,9 +16,10 @@
 
 import functools
 
+
 def proxy_method(cls, name):
     # This unbound method will be pulled from the superclass.
-    assert(hasattr(cls,name))
+    assert(hasattr(cls, name))
     proxyed = getattr(cls, name)
     @functools.wraps(proxyed)
     def wrapper(self, *args, **kwargs):

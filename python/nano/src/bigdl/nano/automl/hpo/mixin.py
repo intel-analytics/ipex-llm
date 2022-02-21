@@ -23,11 +23,10 @@ class HPOMixin:
     # these methods are automatically created using "@proxy_methods"
     # details see desriptions in _proxy method
     PROXYED_METHODS = ['predict', 'predict_on_batch',
-            'evaluate', 'test_on_batch',
-            'to_json', 'to_yaml', 'summary',
-            'save', 'save_spec', 'save_weights',
-            'get_layer']
-
+                       'evaluate', 'test_on_batch',
+                       'to_json', 'to_yaml', 'summary',
+                       'save', 'save_spec', 'save_weights',
+                       'get_layer']
 
     def __init__(self, *args, **kwargs):
         super(HPOMixin, self).__init__(*args, **kwargs)
@@ -61,19 +60,22 @@ class HPOMixin:
 
         if self.study is None:
             if not resume:
-                load_if_exists=False
+                load_if_exists = False
                 print("Starting a new tuning")
             else:
-                load_if_exists=True
+                load_if_exists = True
                 print("Resume the last tuning...")
-            create_keys = {'storage', 'sampler', 'pruner', 'study_name','directions'}
+            create_keys = {'storage', 'sampler',
+                           'pruner', 'study_name', 'directions'}
             create_kwargs = self._filter_tuner_args(kwargs, create_keys)
-            self.study = optuna.create_study(direction=direction,  load_if_exists=True, **create_kwargs)
-        optimize_keys = {'timeout', 'n_jobs', 'catch', 'callbacks', 'gc_after_trial', 'show_progress_bar'}
+            self.study = optuna.create_study(
+                direction=direction,  load_if_exists=True, **create_kwargs)
+        optimize_keys = {'timeout', 'n_jobs', 'catch',
+                         'callbacks', 'gc_after_trial', 'show_progress_bar'}
         optimize_kwargs = self._filter_tuner_args(kwargs, optimize_keys)
-        self.study.optimize(self.objective, n_trials=n_trails, **optimize_kwargs)
-        self.tune_end=False
-
+        self.study.optimize(
+            self.objective, n_trials=n_trails, **optimize_kwargs)
+        self.tune_end = False
 
     def search_summary(self):
         """Retrive a summary of trials
@@ -115,17 +117,15 @@ class HPOMixin:
 
         self._lazymodel = self._model_build(trial)
         # TODO Next step: support retrive saved model instead of retrain from hparams
-        self.tune_end=True
-
+        self.tune_end = True
 
     def compile(self, *args, **kwargs):
         self.compile_args = args
         self.compile_kwargs = kwargs
 
-
     def fit(self, *args, **kwargs):
         if not self.tune_end:
-             self.end_search()
+            self.end_search()
         self._lazymodel.fit(*args, **kwargs)
 
     @staticmethod
@@ -142,7 +142,7 @@ class HPOMixin:
         # for lazy model build
         # build model based on searched hyperparams from trial
         # TODO may add data creator here, e.g. refresh data, reset generators, etc.
-        #super().__init__(**self._model_init_args(trial))
+        # super().__init__(**self._model_init_args(trial))
         #self._model_compile(super(), trial)
         # use composition instead of inherited
         modelcls = self.__class__.__bases__[1]
@@ -150,13 +150,12 @@ class HPOMixin:
         self._model_compile(model, trial)
         return model
 
-
     def _proxy(self, name, method, *args, **kwargs):
         # call to keras method is forwarded to internal model
         # NOTE: keep the unused "method" argument so that
         # only the methods which are actually called are created
         if not self._lazymodel:
-            raise ValueError("Model is not actually built yet. "+ \
-                "Please call end_search before calling \""+name+"\"")
+            raise ValueError("Model is not actually built yet. " +
+                             "Please call end_search before calling \""+name+"\"")
         internal_m = getattr(self._lazymodel, name)
         return internal_m(*args, **kwargs)

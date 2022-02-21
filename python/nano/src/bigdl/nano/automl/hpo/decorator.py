@@ -66,9 +66,11 @@ def sample_config(args, config):
             args_dict[k] = v.init()
     return args
 
+
 class _automl_method(object):
     SEED = mp.Value('i', 0)
     LOCK = mp.Lock()
+
     def __init__(self, f):
         self.f = f
         self.args = ezdict()
@@ -79,13 +81,13 @@ class _automl_method(object):
         self._rand_seed()
         args = sample_config(args, new_config)
         #from .reporter import FakeReporter
-        #if 'reporter' not in kwargs:
+        # if 'reporter' not in kwargs:
         #    logger.debug('Creating FakeReporter for test purpose.')
         #    kwargs['reporter'] = FakeReporter()
 
         output = self.f(args, **kwargs)
         #logger.debug('Reporter Done!')
-        #kwargs['reporter'](done=True)
+        # kwargs['reporter'](done=True)
         return output
 
     def register_args(self, default={}, **kwvars):
@@ -159,6 +161,7 @@ def args(default=None, **kwvars):
     if default is None:
         default = dict()
     kwvars['_default_config'] = default
+
     def registered_func(func):
         @_automl_method
         @functools.wraps(func)
@@ -238,6 +241,7 @@ def func(**kwvars):
         return wrapper_call
     return registered_func
 
+
 def obj(**kwvars):
     """Decorator for a Python class that registers its arguments as hyperparameters.
        Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
@@ -280,7 +284,7 @@ def obj(**kwvars):
                 self.args = args
                 self.kwargs = kwargs
                 self._inited = False
-                self._callgraph = None #keep a reference to the call graph
+                self._callgraph = None  # keep a reference to the call graph
 
             def sample(self, **config):
                 kwargs = copy.deepcopy(self.kwargs)
@@ -302,7 +306,7 @@ def obj(**kwvars):
                 # this is to handle functional API of layers
                 self._call_args = args
                 self._call_kwargs = kwargs
-                #get the inputs tensor argument
+                # get the inputs tensor argument
                 if len(args) == 0:
                     inputs = kwargs['inputs']
                 else:
@@ -316,7 +320,6 @@ def obj(**kwvars):
         return automlobject
 
     return registered_class
-
 
 
 def model(**kwvars):
@@ -338,29 +341,28 @@ def model(**kwvars):
         class AutomlModel(HPOMixin, Cls):
             def __init__(self, **kwargs):
                 self.kwargs = kwargs
-                self._lazyobj =objCls(**kwargs)
-                #generate a default config for the super class
+                self._lazyobj = objCls(**kwargs)
+                # generate a default config for the super class
                 default_config = self._lazyobj.cs.get_default_configuration().get_dictionary()
                 super_kwargs = copy.deepcopy(self.kwargs)
                 kwspaces = copy.deepcopy(self._lazyobj.kwspaces)
                 for k, v in super_kwargs.items():
                     if k in kwspaces and isinstance(kwspaces[k], NestedSpace):
-                        sub_config = _strip_config_space(default_config, prefix=k)
+                        sub_config = _strip_config_space(
+                            default_config, prefix=k)
                         super_kwargs[k] = kwspaces[k].sample(**sub_config)
                     elif k in default_config:
                         super_kwargs[k] = default_config[k]
                 super().__init__(**super_kwargs)
 
-
             def _model_build(self, trial):
-                #override _model_build to build
+                # override _model_build to build
                 # the model directly instead of using
                 # modeld_init and model_compile
-                model = OptunaBackend.instantiate(trial,self._lazyobj)
+                model = OptunaBackend.instantiate(trial, self._lazyobj)
                 self._model_compile(model, trial)
                 return model
 
         return AutomlModel
 
     return registered_class
-

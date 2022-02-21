@@ -18,9 +18,10 @@ import importlib
 from bigdl.nano.automl.hpo import obj
 import inspect
 
+
 class DynamicClassGen(object):
 
-    _MODULES=[
+    _MODULES = [
         "tensorflow.keras.layers",
     ]
 
@@ -43,12 +44,11 @@ class DynamicClassGen(object):
         for m in self._MODULES:
             module = importlib.import_module(m)
             all_layers = self.filter_layers(vars(module).items())
-            #TODO check layers
+            # TODO check layers
             for layer_name in all_layers:
-                new_cls = self.create_layer(module,layer_name)
+                new_cls = self.create_layer(module, layer_name)
                 globals()[layer_name] = new_cls
 
 
-d=DynamicClassGen()
+d = DynamicClassGen()
 d.register_layers()
-

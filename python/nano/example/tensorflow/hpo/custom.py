@@ -13,6 +13,7 @@ N_TRAIN_EXAMPLES = 3000
 N_VALID_EXAMPLES = 1000
 CLASSES = 10
 
+
 @hpo.model()
 class MyModel(tf.keras.Model):
 
@@ -37,18 +38,20 @@ if __name__ == "__main__":
 
     (x_train, y_train), (x_valid, y_valid) = mnist.load_data()
     img_x, img_y = x_train.shape[1], x_train.shape[2]
-    x_train = x_train.reshape(-1, img_x, img_y, 1)[:N_TRAIN_EXAMPLES].astype("float32") / 255
-    x_valid = x_valid.reshape(-1, img_x, img_y, 1)[:N_VALID_EXAMPLES].astype("float32") / 255
+    x_train = x_train.reshape(-1, img_x, img_y,
+                              1)[:N_TRAIN_EXAMPLES].astype("float32") / 255
+    x_valid = x_valid.reshape(-1, img_x, img_y,
+                              1)[:N_VALID_EXAMPLES].astype("float32") / 255
     y_train = y_train[:N_TRAIN_EXAMPLES]
     y_valid = y_valid[:N_VALID_EXAMPLES]
     input_shape = (img_x, img_y, 1)
 
     # set search spaces
     model = MyModel(
-            filters=hpo.space.Categorical(32, 64),
-            kernel_size=hpo.space.Categorical(3, 5),
-            strides=hpo.space.Categorical(1, 2),
-            activation=hpo.space.Categorical("relu", "linear")
+        filters=hpo.space.Categorical(32, 64),
+        kernel_size=hpo.space.Categorical(3, 5),
+        strides=hpo.space.Categorical(1, 2),
+        activation=hpo.space.Categorical("relu", "linear")
     )
 
     model.compile(
@@ -58,7 +61,7 @@ if __name__ == "__main__":
     )
 
     model.search(
-        n_trails = 2,
+        n_trails=2,
         target_metric='accuracy',
         direction="maximize",
         x=x_train,
@@ -84,4 +87,4 @@ if __name__ == "__main__":
 
     score = model.evaluate(x_valid, y_valid, verbose=0)
 
-    print("The final score is on validation data is",score[1])
+    print("The final score is on validation data is", score[1])

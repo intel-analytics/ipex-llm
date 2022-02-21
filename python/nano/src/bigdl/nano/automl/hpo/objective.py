@@ -24,8 +24,10 @@ import inspect
 def is_creator(model):
     return inspect.ismethod(model) or inspect.isfunction(model)
 
+
 class Objective(object):
     """The Tuning objective for Optuna"""
+
     def __init__(self,
                  model=None,
                  target_metric=None,
@@ -41,15 +43,13 @@ class Objective(object):
         Raises:
             ValueError: _description_
         """
-        if not is_creator(model) and not isinstance(model, tf.keras.Model) :
+        if not is_creator(model) and not isinstance(model, tf.keras.Model):
             raise ValueError("You should either pass a Tensorflo Keras model, or \
                             a model_creator to the Tuning objective.")
 
         self.model_ = model
         self.target_metric = target_metric
         self.kwargs = kwargs
-
-
 
     def __call__(self, trial):
         # Clear clutter from previous Keras session graphs.

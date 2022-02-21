@@ -20,7 +20,6 @@
 # you may not use this file except in compliance with the License at https://github.com/awslabs/autogluon/blob/master/LICENSE
 
 
-
 import copy
 from collections import OrderedDict
 import ConfigSpace as CS
@@ -28,7 +27,7 @@ import ConfigSpace.hyperparameters as CSH
 from bigdl.nano.automl.utils import EasyDict
 
 __all__ = ['Space', 'NestedSpace', 'AutoObject', 'List', 'Dict',
-           'Categorical','Real', 'Int', 'Bool']
+           'Categorical', 'Real', 'Int', 'Bool']
 
 SPLITTER = u'▁'  # Use U+2581 as the special symbol for splitting the space
 
@@ -36,6 +35,7 @@ SPLITTER = u'▁'  # Use U+2581 as the special symbol for splitting the space
 class classproperty(object):
     def __init__(self, fget):
         self.fget = fget
+
     def __get__(self, owner_self, owner_cls):
         return self.fget(owner_cls)
 
@@ -49,6 +49,7 @@ class Space(object):
 class SimpleSpace(Space):
     """Non-nested search space (i.e. corresponds to a single simple hyperparameter).
     """
+
     def __repr__(self):
         reprstr = self.__class__.__name__
         if hasattr(self, 'lower') and hasattr(self, 'upper'):
@@ -89,9 +90,11 @@ class SimpleSpace(Space):
         cs.add_hyperparameter(self.hp)
         return cs.sample_configuration().get_dictionary()['']
 
+
 class NestedSpace(Space):
     """Nested hyperparameter search space, which is a search space that itself contains multiple search spaces.
     """
+
     def sample(self, **config):
         """Sample a configuration from this search space.
         """
@@ -123,11 +126,13 @@ class NestedSpace(Space):
         config = self.cs.sample_configuration().get_dictionary()
         return self.sample(**config)
 
+
 class AutoObject(NestedSpace):
     r"""Searchable objects,
     created by decorating a custom Python class or function using the
     :func:`hpo.obj` or :func:`hpo.func` decorators.
     """
+
     def __call__(self, *args, **kwargs):
         """Convenience method for interacting with AutoObject.
         """
@@ -172,6 +177,7 @@ class AutoObject(NestedSpace):
     def __repr__(self):
         return 'AutoObject'
 
+
 class List(NestedSpace):
     r"""Nested search space corresponding to an ordered list of hyperparameters.
 
@@ -189,6 +195,7 @@ class List(NestedSpace):
     >>>     ag.space.Categorical('relu', 'sigmoid'),
     >>> )
     """
+
     def __init__(self, *args):
         self.data = [*args]
 
@@ -270,6 +277,7 @@ class List(NestedSpace):
         reprstr = self.__class__.__name__ + str(self.data)
         return reprstr
 
+
 class Dict(NestedSpace):
     """Nested search space for dictionary containing multiple hyperparameters.
 
@@ -281,6 +289,7 @@ class Dict(NestedSpace):
     >>>     )
     >>> print(g)
     """
+
     def __init__(self, **kwargs):
         self.data = EasyDict(kwargs)
 
@@ -371,6 +380,7 @@ class Categorical(NestedSpace):
     a = ag.space.Categorical('a', 'b', 'c', 'd')  # 'a' will be default value tried first during HPO
     b = ag.space.Categorical('resnet50', AutoObj())
     """
+
     def __init__(self, *data):
         self.data = [*data]
 
@@ -394,7 +404,8 @@ class Categorical(NestedSpace):
         cs = CS.ConfigurationSpace()
         if len(self.data) == 0:
             return CS.ConfigurationSpace()
-        hp = CSH.CategoricalHyperparameter(name='choice', choices=range(len(self.data)))
+        hp = CSH.CategoricalHyperparameter(
+            name='choice', choices=range(len(self.data)))
         _add_hp(cs, hp)
         for i, v in enumerate(self.data):
             if isinstance(v, NestedSpace):
@@ -448,6 +459,7 @@ class Real(SimpleSpace):
     --------
     >>> learning_rate = ag.Real(0.01, 0.1, log=True)
     """
+
     def __init__(self, lower, upper, default=None, log=False):
         self.lower = lower
         self.upper = upper
@@ -458,6 +470,7 @@ class Real(SimpleSpace):
 
         return CSH.UniformFloatHyperparameter(name=name, lower=self.lower, upper=self.upper,
                                               default_value=self._default, log=self.log)
+
 
 class Int(SimpleSpace):
     """Search space for numeric hyperparameter that takes integer values.
@@ -476,6 +489,7 @@ class Int(SimpleSpace):
     --------
     >>> range = ag.space.Int(0, 100)
     """
+
     def __init__(self, lower, upper, default=None):
         self.lower = lower
         self.upper = upper
@@ -485,6 +499,7 @@ class Int(SimpleSpace):
         return CSH.UniformIntegerHyperparameter(name=name, lower=self.lower, upper=self.upper,
                                                 default_value=self._default)
 
+
 class Bool(Int):
     """Search space for hyperparameter that is either True or False.
        `ag.Bool()` serves as shorthand for: `ag.space.Categorical(True, False)`
@@ -493,8 +508,10 @@ class Bool(Int):
     --------
     pretrained = ag.space.Bool()
     """
+
     def __init__(self):
         super(Bool, self).__init__(0, 1)
+
 
 def _strip_config_space(config, prefix):
     # filter out the config with the corresponding prefix
@@ -504,11 +521,13 @@ def _strip_config_space(config, prefix):
             new_config[k[len(prefix)+1:]] = v
     return new_config
 
+
 def _add_hp(cs, hp):
     if hp.name in cs._hyperparameters:
         cs._hyperparameters[hp.name] = hp
     else:
         cs.add_hyperparameter(hp)
+
 
 def _add_cs(master_cs, sub_cs, prefix, delimiter='.', parent_hp=None):
     new_parameters = []
@@ -518,14 +537,16 @@ def _add_cs(master_cs, sub_cs, prefix, delimiter='.', parent_hp=None):
         if new_parameter.name == '':
             new_parameter.name = prefix
         elif not prefix == '':
-            new_parameter.name = "{}{}{}".format(prefix, SPLITTER, new_parameter.name)
+            new_parameter.name = "{}{}{}".format(
+                prefix, SPLITTER, new_parameter.name)
         new_parameters.append(new_parameter)
     for hp in new_parameters:
         _add_hp(master_cs, hp)
+
 
 def _rm_hp(cs, k):
     if k in cs._hyperparameters:
         cs._hyperparameters.pop(k)
     for hp in cs.get_hyperparameters():
-        if  hp.name.startswith('{}'.format(k)):
+        if hp.name.startswith('{}'.format(k)):
             cs._hyperparameters.pop(hp.name)

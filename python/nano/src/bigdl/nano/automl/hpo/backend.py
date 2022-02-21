@@ -21,32 +21,37 @@ class OptunaBackend(object):
 
     @staticmethod
     def get_other_args(kwargs, kwspaces):
-        return{ k : kwargs[k] for k in set(kwargs) - set(kwspaces) }
+        return{k: kwargs[k] for k in set(kwargs) - set(kwspaces)}
 
     @staticmethod
     def get_hpo_config(trial, configspace):
         # TODO better ways to map ConfigSpace to optuna spaces
-        hp_ordering = configspace.get_hyperparameter_names() # fix order of hyperparams in configspace.
-        config={}
+        # fix order of hyperparams in configspace.
+        hp_ordering = configspace.get_hyperparameter_names()
+        config = {}
         for hp in hp_ordering:
             hp_obj = configspace.get_hyperparameter(hp)
-            hp_type = str(type(hp_obj)).lower() # type of hyperparam
+            hp_type = str(type(hp_obj)).lower()  # type of hyperparam
             if 'integer' in hp_type:
-                hp_dimension = trial.suggest_int(name=hp, low=int(hp_obj.lower), high=int(hp_obj.upper))
+                hp_dimension = trial.suggest_int(
+                    name=hp, low=int(hp_obj.lower), high=int(hp_obj.upper))
             elif 'float' in hp_type:
-                if hp_obj.log: # log10-scale hyperparmeter
-                    hp_dimension = trial.suggest_loguniform(name=hp, low=float(hp_obj.lower), high=float(hp_obj.upper))
+                if hp_obj.log:  # log10-scale hyperparmeter
+                    hp_dimension = trial.suggest_loguniform(
+                        name=hp, low=float(hp_obj.lower), high=float(hp_obj.upper))
                 else:
-                    hp_dimension = trial.suggest_float(name=hp, low=float(hp_obj.lower), high=float(hp_obj.upper))
+                    hp_dimension = trial.suggest_float(
+                        name=hp, low=float(hp_obj.lower), high=float(hp_obj.upper))
             elif 'categorical' in hp_type:
-                hp_dimension = trial.suggest_categorical(name=hp, choices=hp_obj.choices)
+                hp_dimension = trial.suggest_categorical(
+                    name=hp, choices=hp_obj.choices)
             elif 'ordinal' in hp_type:
-                hp_dimension = trial.suggest_categorical(name=hp, choices = hp_obj.sequence)
+                hp_dimension = trial.suggest_categorical(
+                    name=hp, choices=hp_obj.sequence)
             else:
                 raise ValueError("unknown hyperparameter type: %s" % hp)
             config[hp] = hp_dimension
         return config
-
 
     @staticmethod
     def instantiate(trial, lazyobj):
@@ -57,6 +62,7 @@ class OptunaBackend(object):
     def gen_config(trial, automl_obj):
         configspace = automl_obj.cs
         config = OptunaBackend.get_hpo_config(trial, configspace)
-        other_kwargs=OptunaBackend.get_other_args(automl_obj.kwargs, automl_obj.kwspaces)
+        other_kwargs = OptunaBackend.get_other_args(
+            automl_obj.kwargs, automl_obj.kwspaces)
         config.update(other_kwargs)
         return config

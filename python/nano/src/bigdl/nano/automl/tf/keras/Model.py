@@ -21,6 +21,7 @@ from bigdl.nano.automl.utils import proxy_methods
 from bigdl.nano.automl.hpo.mixin import HPOMixin
 from bigdl.nano.automl.hpo.callgraph import exec_callgraph
 
+
 @proxy_methods
 class Model(HPOMixin, tf.keras.Model):
 
@@ -29,8 +30,8 @@ class Model(HPOMixin, tf.keras.Model):
         # TODO check how args is used
         super().__init__()
         self.kwargs = kwargs
-        self.lazyinputs_ = kwargs.get('inputs',None)
-        self.lazyoutputs_ = kwargs.get('outputs',None)
+        self.lazyinputs_ = kwargs.get('inputs', None)
+        self.lazyoutputs_ = kwargs.get('outputs', None)
 
     def _model_init_args(self, trial):
         # for lazy model init
@@ -40,4 +41,3 @@ class Model(HPOMixin, tf.keras.Model):
         self.kwargs['inputs'] = self.lazyinputs_
         self.kwargs['outputs'] = out_t
         return self.kwargs
-
