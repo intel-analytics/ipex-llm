@@ -64,7 +64,7 @@ class LitResNet18(LightningModule):
         y_hat = self(batch[0])
         loss = self.loss(y_hat, batch[1])
         return loss
-    
+
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters())
 
@@ -120,3 +120,11 @@ class TestQuantizeInference(TestCase):
         model = trainer.quantize(model, train_loader)
         trainer.save_checkpoint("example.ckpt")
         model_load = LitResNet18.load_from_checkpoint("example.ckpt", num_classes=10)
+
+    def test_quantized_model_size(self):
+        model = LitResNet18(10, pretrained=False, include_top=False, freeze=True)
+        trainer = Trainer(max_epochs=1)
+        train_loader = create_data_loader(data_dir, batch_size,
+                                          num_workers, data_transform, subset=200)
+        model = trainer.quantize(model, train_loader)
+        assert model.model_size > model.quantized_model_size()
