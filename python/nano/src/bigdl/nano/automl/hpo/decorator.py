@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 
-# This file is adapted from https://github.com/awslabs/autogluon/blob/v0.3.1/core/src/autogluon/core/decorator.py
-# Copyright The AutoGluon project at https://github.com/awslabs/autogluon/##
+# This file is adapted from https://github.com/awslabs/autogluon/
+# blob/v0.3.1/core/src/autogluon/core/decorator.py
+# Copyright The AutoGluon project at https://github.com/awslabs/autogluon
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License at https://github.com/awslabs/autogluon/blob/master/LICENSE
+# you may not use this file except in compliance with the License at
+# https://github.com/awslabs/autogluon/blob/master/LICENSE
 
 
 import copy
@@ -80,13 +82,13 @@ class _automl_method(object):
         new_config = copy.deepcopy(config)
         self._rand_seed()
         args = sample_config(args, new_config)
-        #from .reporter import FakeReporter
+        # from .reporter import FakeReporter
         # if 'reporter' not in kwargs:
         #    logger.debug('Creating FakeReporter for test purpose.')
         #    kwargs['reporter'] = FakeReporter()
 
         output = self.f(args, **kwargs)
-        #logger.debug('Reporter Done!')
+        # logger.debug('Reporter Done!')
         # kwargs['reporter'](done=True)
         return output
 
@@ -149,10 +151,14 @@ class _automl_method(object):
 
 
 def args(default=None, **kwvars):
-    """Decorator for a Python training script that registers its arguments as hyperparameters.
-       Each hyperparameter takes fixed value or is a searchable space, and the arguments may either be:
-       built-in Python objects (e.g. floats, strings, lists, etc.), AutoObject (see :func:`hpo.obj`),
-       or hpo search spaces (see :class:`hpo.space.Int`, :class:`hpo.space.Real`, etc.).
+    """Decorator for a Python training script that
+       registers its arguments as hyperparameters.
+       Each hyperparameter takes fixed value or is a searchable space,
+       and the arguments may either be:
+       built-in Python objects (e.g. floats, strings, lists, etc.),
+       AutoObject (see :func:`hpo.obj`),
+       or hpo search spaces (see :class:`hpo.space.Int`,
+       :class:`hpo.space.Real`, etc.).
 
     Examples
     --------
@@ -191,6 +197,7 @@ def func(**kwvars):
     def _automl_kwargs_func(**kwvars):
         def registered_func(func):
             kwspaces = OrderedDict()
+
             @functools.wraps(func)
             def wrapper_call(*args, **kwargs):
                 _kwvars = copy.deepcopy(kwvars)
@@ -258,6 +265,7 @@ def obj(**kwvars):
     def _automl_kwargs_obj(**kwvars):
         def registered_func(func):
             kwspaces = OrderedDict()
+
             @functools.wraps(func)
             def wrapper_call(*args, **kwargs):
                 kwvars.update(kwargs)
@@ -337,6 +345,7 @@ def model(**kwvars):
     """
     def registered_class(Cls):
         objCls = obj(**kwvars)(Cls)
+
         @proxy_methods
         class AutomlModel(HPOMixin, Cls):
             def __init__(self, **kwargs):

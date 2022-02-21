@@ -69,7 +69,9 @@ class HPOMixin:
                            'pruner', 'study_name', 'directions'}
             create_kwargs = self._filter_tuner_args(kwargs, create_keys)
             self.study = optuna.create_study(
-                direction=direction,  load_if_exists=True, **create_kwargs)
+                direction=direction,
+                load_if_exists=True,
+                **create_kwargs)
         optimize_keys = {'timeout', 'n_jobs', 'catch',
                          'callbacks', 'gc_after_trial', 'show_progress_bar'}
         optimize_kwargs = self._filter_tuner_args(kwargs, optimize_keys)
@@ -143,7 +145,7 @@ class HPOMixin:
         # build model based on searched hyperparams from trial
         # TODO may add data creator here, e.g. refresh data, reset generators, etc.
         # super().__init__(**self._model_init_args(trial))
-        #self._model_compile(super(), trial)
+        # self._model_compile(super(), trial)
         # use composition instead of inherited
         modelcls = self.__class__.__bases__[1]
         model = modelcls(**self._model_init_args(trial))
@@ -155,7 +157,8 @@ class HPOMixin:
         # NOTE: keep the unused "method" argument so that
         # only the methods which are actually called are created
         if not self._lazymodel:
-            raise ValueError("Model is not actually built yet. " +
-                             "Please call end_search before calling \""+name+"\"")
+            raise ValueError("Model is not actually built yet. "
+                             + "Please call end_search before calling \""
+                             + name + "\"")
         internal_m = getattr(self._lazymodel, name)
         return internal_m(*args, **kwargs)

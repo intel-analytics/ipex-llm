@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 
-# This file is adapted from https://github.com/awslabs/autogluon/blob/0.3.1/core/src/autogluon/core/utils/edict.py
-# Copyright The AutoGluon project at https://github.com/awslabs/autogluon/##
+# This file is adapted from https://github.com/awslabs/autogluon/
+# blob/0.3.1/core/src/autogluon/core/utils/edict.py
+# Copyright The AutoGluon project at https://github.com/awslabs/autogluon
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License at https://github.com/awslabs/autogluon/blob/master/LICENSE
+# you may not use this file except in compliance with the License at
+# https://github.com/awslabs/autogluon/blob/master/LICENSE
 
 
 class EasyDict(dict):
@@ -30,7 +32,8 @@ class EasyDict(dict):
             setattr(self, k, v)
         # Class attributes
         for k in self.__class__.__dict__.keys():
-            if not (k.startswith('__') and k.endswith('__')) and not k in ('update', 'pop'):
+            if not (k.startswith('__') and k.endswith('__')) \
+                    and k not in ('update', 'pop'):
                 setattr(self, k, getattr(self, k))
 
     def __setattr__(self, name, value):

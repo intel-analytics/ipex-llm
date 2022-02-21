@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 
-# This file is adapted from https://github.com/awslabs/autogluon/blob/0.3.1/core/src/autogluon/core/space.py
-# Copyright The AutoGluon project at https://github.com/awslabs/autogluon/##
+# This file is adapted from https://github.com/awslabs/autogluon/
+# blob/0.3.1/core/src/autogluon/core/space.py
+# Copyright The AutoGluon project at https://github.com/awslabs/autogluon
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License at https://github.com/awslabs/autogluon/blob/master/LICENSE
+# you may not use this file except in compliance with the License at
+# https://github.com/awslabs/autogluon/blob/master/LICENSE
 
 
 import copy
@@ -41,13 +43,15 @@ class classproperty(object):
 
 
 class Space(object):
-    """Basic search space describing set of possible candidate values for hyperparameter.
+    """Basic search space describing set of possible
+       candidate values for hyperparameter.
     """
     pass
 
 
 class SimpleSpace(Space):
-    """Non-nested search space (i.e. corresponds to a single simple hyperparameter).
+    """Non-nested search space
+    (i.e. corresponds to a single simple hyperparameter).
     """
 
     def __repr__(self):
@@ -71,14 +75,18 @@ class SimpleSpace(Space):
 
     @property
     def default(self):
-        """Return default value of hyperparameter corresponding to this search space. This value is tried first during hyperparameter optimization.
+        """Return default value of hyperparameter corresponding to
+           this search space. This value is tried first during
+           hyperparameter optimization.
         """
         default = self._default if self._default else self.hp.default_value
         return default
 
     @default.setter
     def default(self, value):
-        """Set default value for hyperparameter corresponding to this search space. The default value is always tried in the first trial of HPO.
+        """Set default value for hyperparameter corresponding to
+           this search space. The default value is always tried
+           in the first trial of HPO.
         """
         self._default = value
 
@@ -92,7 +100,8 @@ class SimpleSpace(Space):
 
 
 class NestedSpace(Space):
-    """Nested hyperparameter search space, which is a search space that itself contains multiple search spaces.
+    """Nested hyperparameter search space, which is a search space that
+       itself contains multiple search spaces.
     """
 
     def sample(self, **config):
@@ -114,7 +123,9 @@ class NestedSpace(Space):
 
     @property
     def default(self):
-        """Return default value for hyperparameter corresponding to this search space. The default value is always tried in the first trial of HPO.
+        """Return default value for hyperparameter corresponding to
+           this search space. The default value is always tried
+           in the first trial of HPO.
         """
         config = self.cs.get_default_configuration().get_dictionary()
         return self.sample(**config)
@@ -143,7 +154,8 @@ class AutoObject(NestedSpace):
 
     def init(self):
         """Instantiate an actual instance of this `AutoObject`.
-            In order to interact with such an `object`, you must always first call: `object.init()`.
+            In order to interact with such an `object`,
+            you must always first call: `object.init()`.
         """
         config = self.cs.get_default_configuration().get_dictionary()
         return self.sample(**config)
@@ -179,7 +191,8 @@ class AutoObject(NestedSpace):
 
 
 class List(NestedSpace):
-    r"""Nested search space corresponding to an ordered list of hyperparameters.
+    r"""Nested search space corresponding to
+        an ordered list of hyperparameters.
 
     Parameters
     ----------
@@ -367,8 +380,10 @@ class Dict(NestedSpace):
 
 
 class Categorical(NestedSpace):
-    """Nested search space for hyperparameters which are categorical. Such a hyperparameter takes one value out of the discrete set of provided options.
-       The first value in the list of options will be the default value that gets tried first during HPO.
+    """Nested search space for hyperparameters which are categorical.
+       Such a hyperparameter takes one value out of the discrete set
+       of provided options. The first value in the list of options
+       will be the default value that gets tried first during HPO.
 
     Parameters
     ----------
@@ -377,7 +392,8 @@ class Categorical(NestedSpace):
 
     Examples
     --------
-    a = ag.space.Categorical('a', 'b', 'c', 'd')  # 'a' will be default value tried first during HPO
+    a = ag.space.Categorical('a', 'b', 'c', 'd')  # 'a' will be default value
+    tried first during HPO
     b = ag.space.Categorical('resnet50', AutoObj())
     """
 
@@ -446,14 +462,17 @@ class Real(SimpleSpace):
     Parameters
     ----------
     lower : float
-        The lower bound of the search space (minimum possible value of hyperparameter)
+        The lower bound of the search space
+        (minimum possible value of hyperparameter)
     upper : float
-        The upper bound of the search space (maximum possible value of hyperparameter)
+        The upper bound of the search space
+        (maximum possible value of hyperparameter)
     default : float (optional)
         Default value tried first during hyperparameter optimization
     log : (True/False)
         Whether to search the values on a logarithmic rather than linear scale.
-        This is useful for numeric hyperparameters (such as learning rates) whose search space spans many orders of magnitude.
+        This is useful for numeric hyperparameters (such as learning rates)
+        whose search space spans many orders of magnitude.
 
     Examples
     --------
@@ -468,8 +487,12 @@ class Real(SimpleSpace):
 
     def get_hp(self, name):
 
-        return CSH.UniformFloatHyperparameter(name=name, lower=self.lower, upper=self.upper,
-                                              default_value=self._default, log=self.log)
+        return CSH.UniformFloatHyperparameter(
+            name=name,
+            lower=self.lower,
+            upper=self.upper,
+            default_value=self._default,
+            log=self.log)
 
 
 class Int(SimpleSpace):
@@ -478,9 +501,11 @@ class Int(SimpleSpace):
     Parameters
     ----------
     lower : int
-        The lower bound of the search space (minimum possible value of hyperparameter)
+        The lower bound of the search space
+        (minimum possible value of hyperparameter)
     upper : int
-        The upper bound of the search space (maximum possible value of hyperparameter)
+        The upper bound of the search space
+        (maximum possible value of hyperparameter)
     default : int (optional)
         Default value tried first during hyperparameter optimization
 
@@ -496,8 +521,11 @@ class Int(SimpleSpace):
         self._default = default
 
     def get_hp(self, name):
-        return CSH.UniformIntegerHyperparameter(name=name, lower=self.lower, upper=self.upper,
-                                                default_value=self._default)
+        return CSH.UniformIntegerHyperparameter(
+            name=name,
+            lower=self.lower,
+            upper=self.upper,
+            default_value=self._default)
 
 
 class Bool(Int):
@@ -518,7 +546,7 @@ def _strip_config_space(config, prefix):
     new_config = {}
     for k, v in config.items():
         if k.startswith(prefix):
-            new_config[k[len(prefix)+1:]] = v
+            new_config[k[len(prefix) + 1:]] = v
     return new_config
 
 

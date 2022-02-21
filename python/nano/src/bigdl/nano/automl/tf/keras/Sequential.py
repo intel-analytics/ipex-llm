@@ -29,8 +29,8 @@ class Sequential(HPOMixin, tf.keras.Sequential):
     def __init__(self, layers=None, name=None):
         super().__init__(layers=None, name=name)
         # TODO add more flexibility for args parsing
-        #self.init_args = args
-        #self.init_kwargs = kwargs
+        # self.init_args = args
+        # self.init_kwargs = kwargs
         self.name_ = name
         self.lazylayers_ = layers if layers is not None else []
 
@@ -44,11 +44,10 @@ class Sequential(HPOMixin, tf.keras.Sequential):
         # use backend to sample model init args
         # and construct the actual layers
         instantiated_layers = []
-        for l in self.lazylayers_:
-            if isinstance(l, AutoObject):
-                layer = OptunaBackend.instantiate(trial, l)
-                instantiated_layers.append(layer)
+        for layer in self.lazylayers_:
+            if isinstance(layer, AutoObject):
+                newl = OptunaBackend.instantiate(trial, layer)
             else:
-                newl = copy.deepcopy(l)
-                instantiated_layers.append(newl)
+                newl = copy.deepcopy(layer)
+            instantiated_layers.append(newl)
         return {'layers': instantiated_layers, 'name': self.name_}
