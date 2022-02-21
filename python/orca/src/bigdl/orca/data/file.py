@@ -272,7 +272,7 @@ def is_file(path):
                                      stdout=subprocess.PIPE).communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
         fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
-        return fs.lsfile(path)
+        return fs.isfile(path)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
