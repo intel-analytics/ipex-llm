@@ -1,6 +1,5 @@
 
 import tensorflow as tf
-from tensorflow.keras.backend import clear_session
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import Dense
@@ -44,7 +43,7 @@ if __name__ == "__main__":
     y_valid = y_valid[:N_VALID_EXAMPLES]
     input_shape = (img_x, img_y, 1)
 
-
+    # set search spaces
     model = MyModel(
             filters=hpo.space.Categorical(32, 64),
             kernel_size=hpo.space.Categorical(3, 5),
@@ -81,8 +80,8 @@ if __name__ == "__main__":
         verbose=True,
     )
 
-print(model.summary())
+    print(model.summary())
 
-score = model.evaluate(x_valid, y_valid, verbose=0)
+    score = model.evaluate(x_valid, y_valid, verbose=0)
 
-print("The final score is on validation data is",score[1])
+    print("The final score is on validation data is",score[1])
