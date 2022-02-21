@@ -437,8 +437,9 @@ class SparkTFEstimator():
             else:
                 temp_dir = tempfile.mkdtemp()
                 try:
-                    local_path = get_remote_files_with_prefix_to_local(filepath, temp_dir)
-                    model.load_weights(local_path, by_name)
+                    prefix = os.path.basename(filepath)
+                    get_remote_files_with_prefix_to_local(filepath, temp_dir)
+                    model.load_weights(os.path.join(temp_dir, prefix), by_name)
                 finally:
                     shutil.rmtree(temp_dir)
         self.model_weights = model.get_weights()
