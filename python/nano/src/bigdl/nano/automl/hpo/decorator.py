@@ -7,6 +7,8 @@ import numpy as np
 import multiprocessing as mp
 import ConfigSpace as CS
 
+from .backend import OptunaBackend
+
 from .space import *
 from .space import _add_hp, _add_cs, _rm_hp, _strip_config_space, SPLITTER
 
@@ -14,8 +16,9 @@ from .mixin import HPOMixin
 
 from .callgraph import update_callgraph
 from bigdl.nano.automl.utils import EasyDict as ezdict
+from bigdl.nano.automl.utils.lazyutils import proxy_methods
 
-__all__ = ['args', 'obj', 'func', 'sample_config']
+__all__ = ['args', 'obj', 'func', 'model', 'sample_config']
 
 logger = logging.getLogger(__name__)
 
@@ -293,21 +296,37 @@ def obj(**kwvars):
     return registered_class
 
 
-# def model(**kwvars):
-#     def registered_class(Cls):
-#         objCls = obj(kwvars)(Cls)
-#         class AutoMLModel(HPOMixin, objCls):
-#             def __init__(self, **kwargs):
-#                 super().__init__()
-#                 self.kwargs = kwargs
-#                 self._model = None
-#             def _model_build(self, trial):
-#                 #override _model_build to build
-#                 # the model directly instead of using
-#                 # modeld_init and model_compile
-#                 self._lazymodel = objCls(**kwargs)
 
-#         return AutoMLModel
+def model(**kwvars):
+    def registered_class(Cls):
+        objCls = obj(**kwvars)(Cls)
+        @proxy_methods
+        class AutomlModel(HPOMixin, Cls):
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+                self._lazyobj =objCls(**kwargs)
+                #generate a default config for the super class
+                default_config = self._lazyobj.cs.get_default_configuration().get_dictionary()
+                super_kwargs = copy.deepcopy(self.kwargs)
+                kwspaces = copy.deepcopy(self._lazyobj.kwspaces)
+                for k, v in super_kwargs.items():
+                    if k in kwspaces and isinstance(kwspaces[k], NestedSpace):
+                        sub_config = _strip_config_space(default_config, prefix=k)
+                        super_kwargs[k] = kwspaces[k].sample(**sub_config)
+                    elif k in default_config:
+                        super_kwargs[k] = default_config[k]
+                super().__init__(**super_kwargs)
 
-#     return registered_class
+
+            def _model_build(self, trial):
+                #override _model_build to build
+                # the model directly instead of using
+                # modeld_init and model_compile
+                model = OptunaBackend.instantiate(trial,self._lazyobj)
+                self._model_compile(model, trial)
+                return model
+
+        return AutomlModel
+
+    return registered_class
 

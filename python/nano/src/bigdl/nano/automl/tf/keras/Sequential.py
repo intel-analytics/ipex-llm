@@ -35,10 +35,6 @@ class Sequential(HPOMixin, tf.keras.Sequential):
         self.name_ = name
         self.lazylayers_ = layers if layers is not None else []
 
-        self.objective = None
-        self.study = None
-        self.tune_end=False
-        self._lazymodel = None
 
     def add(self, layer):
         # just add all layers into a cache

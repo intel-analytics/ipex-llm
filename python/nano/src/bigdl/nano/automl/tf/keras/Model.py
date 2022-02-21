@@ -28,21 +28,15 @@ class Model(HPOMixin, tf.keras.Model):
         # we only take keyword arguments for now
         # TODO check how args is used
         super().__init__()
-        self.objective = None
-        self.study = None
-        self.tune_end = False
-        self._lazymodel = None
-
         self.kwargs = kwargs
-        self.lazyinputs_ = kwargs['inputs']
-        self.lazyoutputs_ = kwargs['outputs']
+        self.lazyinputs_ = kwargs.get('inputs',None)
+        self.lazyoutputs_ = kwargs.get('outputs',None)
 
     def _model_init_args(self, trial):
         # for lazy model init
         # use backend to sample model init args
         # and construct the actual layers
         out_t = exec_callgraph(self.lazyinputs_, self.lazyoutputs_, trial)
-
         self.kwargs['inputs'] = self.lazyinputs_
         self.kwargs['outputs'] = out_t
         return self.kwargs

@@ -29,6 +29,14 @@ class HPOMixin:
             'save', 'save_spec', 'save_weights',
             'get_layer']
 
+
+    def __init__(self, *args, **kwargs):
+        super(HPOMixin, self).__init__(*args, **kwargs)
+        self.objective = None
+        self.study = None
+        self.tune_end = False
+        self._lazymodel = None
+
     def search(
         self,
         n_trails=1,
