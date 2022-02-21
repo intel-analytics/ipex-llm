@@ -522,31 +522,6 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
         return replaced_log_dir
     return None
 
-    tensorboard = get_specific_object_from_callbacks(tf.keras.callbacks.TensorBoard,
-                                                     callbacks)
-    if tensorboard:
-        original_log_dir = tensorboard.log_dir
-        replaced_log_dir = get_replaced_path(original_log_dir)
-        tensorboard.log_dir = replaced_log_dir
-
-        if tensorboard.update_freq == 'epoch':
-            # create copy callback for epoch
-            copy_callback = EpochCopyCallback(replaced_log_dir, original_log_dir, rank)
-        else:
-            # to avoid frequent copy, set update freq > 10
-            update_freq = tensorboard.update_freq if tensorboard.update_freq > 10 \
-                else 10
-            if mode == "fit":
-                # create copy callback for batch
-                copy_callback = TrainBatchCopyCallback(replaced_log_dir, original_log_dir,
-                                                       update_freq, rank)
-            else:
-                copy_callback = BatchCopyCallback(replaced_log_dir, original_log_dir,
-                                                  update_freq, rank)
-        callbacks.append(copy_callback)
-        return replaced_log_dir
-    return None
-
 
 def get_latest_checkpoint(checkpoint_dir):
     import tensorflow as tf
