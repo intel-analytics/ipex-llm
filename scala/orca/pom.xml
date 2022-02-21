@@ -38,7 +38,24 @@
             <groupId>org.tensorflow</groupId>
             <artifactId>libtensorflow</artifactId>
             <version>1.15.0</version>
-
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.16</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.6.2</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.tensorflow</groupId>
