@@ -402,7 +402,7 @@ class SparkTFEstimator():
                 else:
                     # tf format
                     remote_dir = os.path.dirname(filepath)
-                    put_local_files_with_prefix_to_remote(temp_path+".", remote_dir,
+                    put_local_files_with_prefix_to_remote(temp_path, remote_dir,
                                                           over_write=overwrite)
             finally:
                 shutil.rmtree(temp_dir)
@@ -437,7 +437,7 @@ class SparkTFEstimator():
             else:
                 temp_dir = tempfile.mkdtemp()
                 try:
-                    local_path = get_remote_files_with_prefix_to_local(filepath+".", temp_dir)
+                    local_path = get_remote_files_with_prefix_to_local(filepath, temp_dir)
                     model.load_weights(local_path, by_name)
                 finally:
                     shutil.rmtree(temp_dir)
