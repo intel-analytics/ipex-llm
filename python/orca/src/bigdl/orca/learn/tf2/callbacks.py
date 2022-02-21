@@ -19,9 +19,9 @@ import shutil
 import tensorflow as tf
 
 from bigdl.dllib.utils.file_utils import is_local_path
-from bigdl.orca.learn.utils import get_replaced_path, get_latest_checkpoint
-from bigdl.orca.data.file import get_remote_files_with_prefix_to_local,\
-    put_local_files_with_prefix_to_remote, put_local_dir_tree_to_remote, put_local_file_to_remote
+from bigdl.orca.learn.utils import get_replaced_path
+from bigdl.orca.data.file import put_local_files_with_prefix_to_remote, \
+    put_local_dir_tree_to_remote, put_local_file_to_remote
 
 logger = logging.getLogger(__name__)
 

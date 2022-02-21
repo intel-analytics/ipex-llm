@@ -236,6 +236,49 @@ def write_text(path, text):
             return result
 
 
+def is_file(path):
+    """
+
+    Check if a path is file or not. It supports local, hdfs, s3 file systems.
+
+    :param path: path string.
+    :return: if path is a file.
+    """
+    if path.startswith("s3"):  # s3://bucket/file_path
+        access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
+        secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
+        import boto3
+        s3_client = boto3.Session(
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+        path_parts = path.split("://")[1].split('/')
+        bucket = path_parts.pop(0)
+        key = "/".join(path_parts)
+        try:
+            dir_key = key + '/'
+            resp1 = s3_client.list_objects(Bucket=bucket, Prefix=key, Delimiter='/', MaxKeys=1)
+            if 'Contents' in resp1:
+                resp2 = s3_client.list_objects(Bucket=bucket, Prefix=dir_key, Delimiter='/', MaxKeys=1)
+                return not ('Contents' in resp2)
+            else:
+                return False
+        except Exception as ex:
+            raise ex
+    elif path.startswith("hdfs://"):
+        import pyarrow as pa
+        host_port = path.split("://")[1].split("/")[0].split(":")
+        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                     stdout=subprocess.PIPE).communicate()[0]
+        os.environ["CLASSPATH"] = classpath.decode("utf-8")
+        fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
+        return fs.lsfile(path)
+    else:
+        if path.startswith("file://"):
+            path = path[len("file://"):]
+        from pathlib import Path
+        return Path(path).is_file()
+
+
 def put_local_dir_to_remote(local_dir, remote_dir):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         import pyarrow as pa

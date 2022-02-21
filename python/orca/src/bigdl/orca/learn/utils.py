@@ -570,10 +570,7 @@ def get_latest_checkpoint(checkpoint_dir):
             ckpt_name = None
             with open(local_checkpoint_file) as f:
                 import re
-                new_lines = []
                 lines = f.readlines()
-                # replace model_checkpoint_path and all_model_checkpoint_paths to checkpoint name
-                #  instead of the absolute checkpoint path
                 for line in lines:
                     m = re.compile("^model_checkpoint_path: \"(.*)\"$").match(line)
                     if m:
