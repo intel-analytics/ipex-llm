@@ -208,60 +208,6 @@ class Callback(tf.keras.callbacks.Callback):
         self.tf_callback.on_predict_end(logs)
 
 
-class Tensorboard(Callback):
-    def __init__(self,
-                 tf_callback,
-                 rank=None):
-        super(Tensorboard, self).__init__(tf_callback, rank)
-        self.original_log_dir = self.tf_callback.log_dir
-        self.local_log_dir = get_replaced_path(self.tf_callback.log_dir)
-        self.tf_callback.log_dir = self.local_log_dir
-        if self.tf_callback.update_freq != 'epoch':
-            self.copy_freq = self.tf_callback.update_freq if self.tf_callback.update_freq > 10 \
-                else 10
-        self.rank = rank
-        self.copy_return = 0
-
-    def on_train_batch_end(self, batch, logs=None):
-        self.tf_callback.on_train_batch_end(batch, logs)
-        if self.tf_callback.update_freq != 'epoch':
-            if batch % self.copy_freq == 0:
-                self.copy_return = self._save_remote_log("train")
-
-    def on_epoch_end(self, epoch, logs=None):
-        self.tf_callback.on_epoch_end(epoch, logs)
-        self.copy_return = self._save_remote_log("train")
-
-    def on_test_batch_end(self, batch, logs=None):
-        self.tf_callback.on_test_batch_end(batch, logs)
-        if self.tf_callback.update_freq != 'epoch':
-            if batch % self.copy_freq == 0:
-                self.copy_return = self._save_remote_log("val")
-
-    def on_train_end(self, logs=None):
-        print("called train end")
-        self.tf_callback.on_train_end(logs)
-        if self.copy_return == 0:
-            if os.path.exists(os.path.join(self.local_log_dir, "train")):
-                shutil.rmtree(os.path.join(self.local_log_dir, "train"))
-
-    def on_test_end(self, logs=None):
-        print("called test end")
-        self.tf_callback.on_test_end(logs)
-        if self.copy_return == 0:
-            if os.path.exists(os.path.join(self.local_log_dir, "val")):
-                shutil.rmtree(os.path.join(self.local_log_dir, "val"))
-
-    def _save_remote_log(self, mode):
-        if self.rank is not None:
-            if self.rank == 0:
-                return put_local_dir_tree_to_remote(os.path.join(self.local_log_dir, mode),
-                                             os.path.join(self.original_log_dir, mode)
-                                             )
-        else:
-            return 0
-
-
 class ModelCheckpoint(Callback):
     def __init__(self,
                  tf_callback,
@@ -273,21 +219,6 @@ class ModelCheckpoint(Callback):
         self.tf_callback.filepath = self.local_checkpoint_path
         self.rank = rank
         self.copy_return = 0
-
-    # def on_train_begin(self, logs=None):
-    #     if self.tf_callback.load_weights_on_restart:
-    #         filepath_to_load = (
-    #             self._get_most_recently_modified_file_matching_pattern(self.filepath))
-    #         if (filepath_to_load is not None and
-    #                 self._checkpoint_exists(filepath_to_load)):
-    #             try:
-    #                 # `filepath` may contain placeholders such as `{epoch:02d}`, and
-    #                 # thus it attempts to load the most recently modified file with file
-    #                 # name matching the pattern.
-    #                 self.model.load_weights(filepath_to_load)
-    #             except (IOError, ValueError) as e:
-    #                 raise ValueError('Error loading file from {}. Reason: {}'.format(
-    #                     filepath_to_load, e))
 
     def on_train_batch_end(self, batch, logs=None):
         self.tf_callback.on_train_batch_end(batch, logs)

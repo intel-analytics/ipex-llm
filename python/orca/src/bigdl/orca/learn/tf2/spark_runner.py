@@ -24,12 +24,13 @@ import tensorflow as tf
 from pyspark import BarrierTaskContext, TaskContext
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.data.file import put_local_dir_tree_to_remote, exists
+from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_specific_object_from_callbacks, get_replaced_path, get_rank, \
-    replace_specific_object_from_callbacks, save_model, load_model
+    process_tensorboard_in_callbacks, save_model, load_model, \
+    replace_specific_object_from_callbacks
 from bigdl.orca.learn.log_monitor import LogMonitor
-from bigdl.orca.learn.tf2.callbacks import Tensorboard, ModelCheckpoint
+from bigdl.orca.learn.tf2.callbacks import ModelCheckpoint
 
 logger = logging.getLogger(__name__)
 
@@ -281,22 +282,12 @@ class SparkRunner:
                                        steps_per_epoch=steps_per_epoch,
                                        validation_steps=validation_steps)
         if callbacks:
-            # checkpoint = get_specific_object_from_callbacks(tf.keras.callbacks.ModelCheckpoint,
-            #                                                 callbacks)
-            # if checkpoint:
-            #     original_checkpoint_dir = os.path.dirname(checkpoint.filepath)
-            #     replaced_checkpoint_path = get_replaced_path(checkpoint.filepath)
-            #     checkpoint.filepath = replaced_checkpoint_path
-
             replace_specific_object_from_callbacks(callbacks,
                                                    tf.keras.callbacks.ModelCheckpoint,
                                                    ModelCheckpoint,
                                                    self.rank)
 
-            replace_specific_object_from_callbacks(callbacks,
-                                                   tf.keras.callbacks.TensorBoard,
-                                                   Tensorboard,
-                                                   self.rank)
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
 
         history = model.fit(train_dataset,
                             epochs=epochs,
@@ -309,18 +300,9 @@ class SparkRunner:
                             validation_steps=validation_steps,
                             validation_freq=validation_freq)
 
-        # if callbacks:
-        #     if checkpoint:
-        #         checkpoint_copied = False
-        #         try:
-        #             if self.rank == 0:
-        #                 put_local_dir_tree_to_remote(os.path.dirname(replaced_checkpoint_path),
-        #                                              original_checkpoint_dir)
-        #                 checkpoint_copied = True
-        #         except Exception:
-        #             logger.warning("Error when copy local checkpoint {} to {}, "
-        #                            "please get the local checkpoint manually"
-        #                            .format(replaced_checkpoint_path, original_checkpoint_dir))
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
 
         return (model, history)
 
@@ -400,10 +382,7 @@ class SparkRunner:
                                                                 config=config,
                                                                 steps=steps)
         if callbacks:
-            replace_specific_object_from_callbacks(callbacks,
-                                                   tf.keras.callbacks.TensorBoard,
-                                                   Tensorboard,
-                                                   self.rank)
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "evaluate", self.rank)
 
         params = dict(
             verbose=verbose,
@@ -426,6 +405,11 @@ class SparkRunner:
             }
         else:
             stats = {"results": results}
+
+        # clean temporary dir for tensorboard
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
 
         if self.rank == 0:
             if self.need_to_log_to_driver:
