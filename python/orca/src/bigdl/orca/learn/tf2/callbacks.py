@@ -255,13 +255,15 @@ class ModelCheckpoint(Callback):
                 else:
                     if self.tf_callback.save_weights_only:
                         # copy checkpoint data files
-                        put_local_files_with_prefix_to_remote(
+                        ret = put_local_files_with_prefix_to_remote(
                             write_filepath+".", self.original_checkpoint_dir)
-                        # copy "checkpoint" file
-                        put_local_file_to_remote(
-                            os.path.join(os.path.dirname(write_filepath), "checkpoint"),
-                            os.path.join(self.original_checkpoint_dir, "checkpoint")
-                        )
+                        if ret == 0:
+                            # copy "checkpoint" file
+                            return put_local_file_to_remote(
+                                os.path.join(os.path.dirname(write_filepath), "checkpoint"),
+                                os.path.join(self.original_checkpoint_dir, "checkpoint")
+                            )
+                        return ret
 
                     else:
                         return put_local_dir_tree_to_remote(
