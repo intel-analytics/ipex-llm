@@ -96,10 +96,9 @@ class QuantizationINC(Quantization):
                         to the new local class to avoid that.
                         """
                         self.metric = metric
-
                 self.metric = Metric(
                     MyMetric,
-                    name="%s_%s" % (framework_metric.__name__, type(metric).__name__)
+                    name=f"nano_metric_{framework_metric.get_next_metric_id()}"
                 )
 
         quantized = self()
