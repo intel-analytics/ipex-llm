@@ -258,7 +258,8 @@ def is_file(path):
             dir_key = key + '/'
             resp1 = s3_client.list_objects(Bucket=bucket, Prefix=key, Delimiter='/', MaxKeys=1)
             if 'Contents' in resp1:
-                resp2 = s3_client.list_objects(Bucket=bucket, Prefix=dir_key, Delimiter='/', MaxKeys=1)
+                resp2 = s3_client.list_objects(Bucket=bucket, Prefix=dir_key,
+                                               Delimiter='/', MaxKeys=1)
                 return not ('Contents' in resp2)
             else:
                 return False
@@ -351,7 +352,8 @@ def put_local_dir_tree_to_remote(local_dir, remote_dir):
         for file in local_files:
             try:
                 with open(file, "rb") as f:
-                    s3_client.upload_fileobj(f, Bucket=bucket, Key=prefix+'/'+file[len(local_dir)+1:])
+                    s3_client.upload_fileobj(f, Bucket=bucket,
+                                             Key=prefix+'/'+file[len(local_dir)+1:])
             except Exception as e:
                 logger.error('cannot upload file to s3: {}'.format(str(e)))
                 return -1

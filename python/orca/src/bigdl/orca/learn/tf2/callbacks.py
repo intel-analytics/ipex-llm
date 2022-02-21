@@ -25,6 +25,7 @@ from bigdl.orca.data.file import put_local_files_with_prefix_to_remote, \
 
 logger = logging.getLogger(__name__)
 
+
 class Callback(tf.keras.callbacks.Callback):
     def __init__(self, tf_callback, rank=None):
         super(Callback, self).__init__()
@@ -252,18 +253,21 @@ class ModelCheckpoint(Callback):
                                                                  os.path.basename(write_filepath))
                                                     )
                 else:
-                    if self.tf_callback.save_weights_only == True:
+                    if self.tf_callback.save_weights_only:
                         # copy checkpoint data files
-                        put_local_files_with_prefix_to_remote(write_filepath+".",
-                                                              self.original_checkpoint_dir
-                                                              )
+                        put_local_files_with_prefix_to_remote(
+                            write_filepath+".", self.original_checkpoint_dir)
                         # copy "checkpoint" file
-                        put_local_file_to_remote(os.path.join(os.path.dirname(write_filepath), "checkpoint"),
-                                                 os.path.join(self.original_checkpoint_dir, "checkpoint"))
+                        put_local_file_to_remote(
+                            os.path.join(os.path.dirname(write_filepath), "checkpoint"),
+                            os.path.join(self.original_checkpoint_dir, "checkpoint")
+                        )
 
                     else:
-                        return put_local_dir_tree_to_remote(write_filepath,
-                                                            os.path.join(self.original_checkpoint_dir,
-                                                                           os.path.basename(write_filepath))
-                                                            )
+                        return put_local_dir_tree_to_remote(
+                            write_filepath,
+                            os.path.join(self.original_checkpoint_dir,
+                                         os.path.basename(write_filepath)
+                                         )
+                        )
         return 0

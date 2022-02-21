@@ -439,7 +439,8 @@ def get_specific_object_from_callbacks(class_type, callbacks):
     return None
 
 
-def replace_specific_object_from_callbacks(callbacks, original_class_type, new_class_type, rank=None):
+def replace_specific_object_from_callbacks(callbacks, original_class_type,
+                                           new_class_type, rank=None):
     for c in callbacks:
         if isinstance(c, original_class_type):
             callbacks.remove(c)
