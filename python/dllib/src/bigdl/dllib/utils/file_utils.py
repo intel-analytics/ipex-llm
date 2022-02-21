@@ -163,7 +163,6 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
     # get remote files to local
     [get_remote_file_to_local(file, os.path.join(local_dir, os.path.basename(file)))
      for file in file_list]
-    return os.path.join(local_dir, prefix)
 
 
 def get_remote_dir_tree_to_local(remote_dir, local_dir):

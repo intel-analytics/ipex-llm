@@ -439,6 +439,15 @@ def get_specific_object_from_callbacks(class_type, callbacks):
     return None
 
 
+def replace_specific_object_from_callbacks(callbacks, original_class_type,
+                                           new_class_type, rank=None):
+    for c in callbacks:
+        if isinstance(c, original_class_type):
+            callbacks.remove(c)
+            new_callback = new_class_type(c, rank)
+            callbacks.append(new_callback)
+
+
 def get_replaced_path(original_filepath):
     base_name = os.path.basename(original_filepath)
     temp_dir = tempfile.mkdtemp()
@@ -512,6 +521,34 @@ def process_tensorboard_in_callbacks(callbacks, mode="train", rank=None):
         callbacks.append(copy_callback)
         return replaced_log_dir
     return None
+
+
+def get_latest_checkpoint(checkpoint_dir):
+    import tensorflow as tf
+    if is_local_path(checkpoint_dir):
+        checkpoint_path = tf.train.latest_checkpoint(checkpoint_dir)
+        return checkpoint_path
+    else:
+        try:
+            temp_dir = tempfile.mkdtemp()
+            # get checkpoint file
+            remote_checkpoint_file = os.path.join(checkpoint_dir, "checkpoint")
+            local_checkpoint_file = os.path.join(temp_dir, "checkpoint")
+            get_remote_file_to_local(remote_checkpoint_file, local_checkpoint_file)
+            ckpt_name = None
+            with open(local_checkpoint_file) as f:
+                import re
+                lines = f.readlines()
+                for line in lines:
+                    m = re.compile("^model_checkpoint_path: \"(.*)\"$").match(line)
+                    if m:
+                        ckpt_name = m.group(1)
+                        break
+            if ckpt_name:
+                return os.path.join(checkpoint_dir, ckpt_name)
+            return None
+        finally:
+            shutil.rmtree(temp_dir)
 
 
 def load_model(filepath, custom_objects=None, compile=True):

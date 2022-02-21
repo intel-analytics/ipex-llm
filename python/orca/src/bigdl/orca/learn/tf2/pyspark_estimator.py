@@ -32,7 +32,7 @@ from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_s
     append_suffix, put_local_file_to_remote, put_local_files_with_prefix_to_remote
 
 from bigdl.dllib.utils.utils import get_node_ip
-from bigdl.orca.data.file import exists
+from bigdl.orca.data.file import is_file, exists
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
@@ -417,8 +417,8 @@ class SparkTFEstimator():
                TensorFlow format.
         """
         model = self.model_creator(self.config)
-        if exists(filepath):
-            # not tensorflow format
+        if is_file(filepath):
+            # h5 format
             if is_local_path(filepath):
                 model.load_weights(filepath, by_name)
             else:
@@ -437,8 +437,9 @@ class SparkTFEstimator():
             else:
                 temp_dir = tempfile.mkdtemp()
                 try:
-                    local_path = get_remote_files_with_prefix_to_local(filepath, temp_dir)
-                    model.load_weights(local_path, by_name)
+                    prefix = os.path.basename(filepath)
+                    get_remote_files_with_prefix_to_local(filepath, temp_dir)
+                    model.load_weights(os.path.join(temp_dir, prefix), by_name)
                 finally:
                     shutil.rmtree(temp_dir)
         self.model_weights = model.get_weights()
