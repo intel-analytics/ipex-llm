@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.nano.automl.utils.lazyutils import proxy_methods
 from .objective import Objective
 import optuna
 

@@ -1,3 +1,25 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This file is adapted from https://github.com/awslabs/autogluon/blob/v0.3.1/core/src/autogluon/core/decorator.py
+# Copyright The AutoGluon project at https://github.com/awslabs/autogluon/##
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License at https://github.com/awslabs/autogluon/blob/master/LICENSE
+
+
 import copy
 import logging
 import argparse
@@ -16,7 +38,7 @@ from .mixin import HPOMixin
 
 from .callgraph import update_callgraph
 from bigdl.nano.automl.utils import EasyDict as ezdict
-from bigdl.nano.automl.utils.lazyutils import proxy_methods
+from bigdl.nano.automl.utils import proxy_methods
 
 __all__ = ['args', 'obj', 'func', 'model', 'sample_config']
 
@@ -298,6 +320,18 @@ def obj(**kwvars):
 
 
 def model(**kwvars):
+    """Decorator for a custom model that registers its arguments as hyperparameters.
+       Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+
+    Returns
+    -------
+    Instance of :class:`hpo.space.AutomlModel`:
+        It contains a lazily initialized object.
+
+    Examples
+    --------
+    >>>
+    """
     def registered_class(Cls):
         objCls = obj(**kwvars)(Cls)
         @proxy_methods

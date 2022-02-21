@@ -25,6 +25,7 @@ def is_creator(model):
     return inspect.ismethod(model) or inspect.isfunction(model)
 
 class Objective(object):
+    """The Tuning objective for Optuna"""
     def __init__(self,
                  model=None,
                  target_metric=None,

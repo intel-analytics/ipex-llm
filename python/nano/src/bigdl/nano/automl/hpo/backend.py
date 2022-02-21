@@ -25,6 +25,7 @@ class OptunaBackend(object):
 
     @staticmethod
     def get_hpo_config(trial, configspace):
+        # TODO better ways to map ConfigSpace to optuna spaces
         hp_ordering = configspace.get_hyperparameter_names() # fix order of hyperparams in configspace.
         config={}
         for hp in hp_ordering:

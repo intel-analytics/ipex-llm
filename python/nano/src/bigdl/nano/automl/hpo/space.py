@@ -1,13 +1,43 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This file is adapted from https://github.com/awslabs/autogluon/blob/0.3.1/core/src/autogluon/core/space.py
+# Copyright The AutoGluon project at https://github.com/awslabs/autogluon/##
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License at https://github.com/awslabs/autogluon/blob/master/LICENSE
+
+
+
 import copy
 from collections import OrderedDict
 import ConfigSpace as CS
 import ConfigSpace.hyperparameters as CSH
-from bigdl.nano.automl.utils import EasyDict, classproperty
+from bigdl.nano.automl.utils import EasyDict
 
 __all__ = ['Space', 'NestedSpace', 'AutoObject', 'List', 'Dict',
            'Categorical','Real', 'Int', 'Bool']
 
 SPLITTER = u'▁'  # Use U+2581 as the special symbol for splitting the space
+
+
+class classproperty(object):
+    def __init__(self, fget):
+        self.fget = fget
+    def __get__(self, owner_self, owner_cls):
+        return self.fget(owner_cls)
 
 
 class Space(object):

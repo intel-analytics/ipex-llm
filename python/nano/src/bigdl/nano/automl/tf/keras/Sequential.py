@@ -17,7 +17,7 @@
 import tensorflow as tf
 import copy
 
-from bigdl.nano.automl.utils.lazyutils import proxy_methods
+from bigdl.nano.automl.utils import proxy_methods
 from bigdl.nano.automl.hpo.mixin import HPOMixin
 from bigdl.nano.automl.hpo.backend import OptunaBackend
 from bigdl.nano.automl.hpo.space import AutoObject
