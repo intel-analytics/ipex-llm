@@ -232,7 +232,6 @@ class ModelCheckpoint(Callback):
             self.copy_return = self._save_remote_checkpoint()
 
     def on_train_end(self, logs=None):
-        print("called train end")
         self.tf_callback.on_train_end(logs)
         if self.copy_return == 0:
             if os.path.exists(os.path.dirname(self.local_checkpoint_path)):
@@ -246,7 +245,6 @@ class ModelCheckpoint(Callback):
         if self.rank is not None:
             if self.rank == 0:
                 write_filepath = self.tf_callback._write_filepath
-                print("write filepath is: ", write_filepath)
                 if write_filepath.endswith(".h5") or write_filepath.endswith(".keras"):
                     return put_local_file_to_remote(write_filepath,
                                                     os.path.join(self.original_checkpoint_dir,
