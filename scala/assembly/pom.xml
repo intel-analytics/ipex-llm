@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.intel.analytics.bigdl</groupId>
         <artifactId>bigdl-parent-spark_${spark.version}</artifactId>
-        <version>0.14.0-SNAPSHOT</version>
+        <version>2.0.0-RC1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,7 +16,7 @@
       <dependency>
         <groupId>com.intel.analytics.bigdl</groupId>
         <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
-        <version>0.14.0-SNAPSHOT</version>
+        <version>2.0.0-RC1</version>
         <exclusions>
             <exclusion>
                  <groupId>org.apache.spark</groupId>
@@ -31,12 +31,12 @@
       <dependency>
         <groupId>com.intel.analytics.bigdl</groupId>
         <artifactId>bigdl-friesian-spark_${spark.version}</artifactId>
-        <version>0.14.0-SNAPSHOT</version>
+        <version>2.0.0-RC1</version>
       </dependency>
       <dependency>
         <groupId>com.intel.analytics.bigdl</groupId>
         <artifactId>bigdl-orca-spark_${spark.version}</artifactId>
-        <version>0.14.0-SNAPSHOT</version>
+        <version>2.0.0-RC1</version>
         <exclusions>
             <exclusion>
                  <groupId>org.apache.spark</groupId>
@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-ppml-spark_${spark.version}</artifactId>
-            <version>0.14.0-SNAPSHOT</version>
+            <version>2.0.0-RC1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
@@ -66,7 +66,7 @@
       <dependency>
         <groupId>com.intel.analytics.bigdl</groupId>
         <artifactId>bigdl-serving-spark_${spark.version}</artifactId>
-        <version>0.14.0-SNAPSHOT</version>
+        <version>2.0.0-RC1</version>
         <exclusions>
             <exclusion>
                  <groupId>org.apache.spark</groupId>
