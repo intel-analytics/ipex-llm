@@ -181,7 +181,7 @@ class TestOnnx(TestCase):
         # save the quantized model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, ".onnx")
-            pl_model.to_quantize_onnx(ckpt_name)
+            pl_model.to_quantized_onnx(ckpt_name)
 
 
 if __name__ == '__main__':

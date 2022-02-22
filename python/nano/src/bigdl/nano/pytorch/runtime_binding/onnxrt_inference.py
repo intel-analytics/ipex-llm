@@ -34,7 +34,7 @@ ONNXRT_BINDED_COMPONENTS = ['_ortsess_up_to_date',
                             '_build_ortsess',
                             'update_ortsess',
                             '_forward_onnx',
-                            'to_quantize_onnx'
+                            'to_quantized_onnx'
                             ]
 
 
@@ -128,7 +128,7 @@ def _onnx_on_train(self, mode=True):
     self._quantized_ortsess = None
 
 
-def to_quantize_onnx(self, file_path):
+def to_quantized_onnx(self, file_path):
     if self._quantized_ortsess_up_to_date:
         onnx.save(self._q_onnx_model, file_path)
     else:
@@ -250,6 +250,6 @@ def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_optio
     pl_model.exit_onnx = partial(exit_onnx, pl_model)
     pl_model._onnx_on_train = partial(_onnx_on_train, pl_model)
     pl_model._forward_onnx_quantized = partial(_forward_onnx_quantized, pl_model)
-    pl_model.to_quantize_onnx = partial(to_quantize_onnx, pl_model)
+    pl_model.to_quantized_onnx = partial(to_quantized_onnx, pl_model)
 
     return pl_model
