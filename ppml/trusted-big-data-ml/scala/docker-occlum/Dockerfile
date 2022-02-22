@@ -69,7 +69,6 @@ RUN cd /opt && \
     mv spark-$SPARK_VERSION spark-source && \
     cd spark-source && \
     cp -r /opt/spark/bin . && \
-    git checkout "v$SPARK_VERSION" && \
     cd /opt/spark && \
     mkdir /opt/spark/test-jars && \
     cd /opt/spark/test-jars && \
