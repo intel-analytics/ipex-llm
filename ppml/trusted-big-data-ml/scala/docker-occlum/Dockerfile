@@ -63,9 +63,10 @@ RUN cd /opt && \
 
 # prepare spark source code and jars for unit test
 RUN cd /opt && \
-    wget https://github.com/apache/spark/archive/refs/tags/v3.1.2.zip \
-    unzip -d spark-source v3.1.2.zip && \
-    rm v3.1.2.zip && \
+    wget https://github.com/apache/spark/archive/refs/tags/v$SPARK_VERSION.zip \
+    unzip v$SPARK_VERSION.zip && \
+    rm v$SPARK_VERSION.zip && \
+    mv spark-$SPARK_VERSION spark-source && \
     cd spark-source && \
     cp -r /opt/spark/bin . && \
     git checkout "v$SPARK_VERSION" && \
