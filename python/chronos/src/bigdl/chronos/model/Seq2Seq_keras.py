@@ -14,15 +14,66 @@
 # limitations under the License.
 #
 import pickle
+from keras import backend as K
 import numpy as np
 
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, LSTM, Dense
-import tensorflow.keras as keras
+from bigdl.nano.tf.keras import Model
+from keras.layers import Input, LSTM, Dense, Lambda
+from bigdl.nano.tf import keras
 
 from bigdl.orca.automl.model.abstract import BaseModel
 from bigdl.orca.automl.metrics import Evaluator
 
+
+class Seq2SeqModel(Model):
+    def __init__(self,
+                 input_feature_num,
+                 future_seq_len,
+                 output_feature_num,
+                 lstm_hidden_dim,
+                 lstm_layer_num,
+                 dropout,
+                 teacher_forcing):
+        super(Seq2SeqModel, self).__init__()
+        self.lstm_hidden_dim = lstm_hidden_dim
+        self.lstm_layer_num = lstm_layer_num
+        self.future_seq_len = future_seq_len
+        self.output_feature_num = output_feature_num
+        self.input_feature_num = input_feature_num
+        self.dropout = dropout
+        self.teacher_forcing = teacher_forcing
+
+        self.encoder_lstm = LSTM(self.lstm_hidden_dim,
+                                 return_sequences=True,
+                                 return_state=True,
+                                 dropout=self.dropout)
+        self.decoder_lstm = LSTM(self.lstm_hidden_dim,
+                                 return_sequences=True,
+                                 return_state=True,
+                                 dropout=self.dropout)
+        self.fc = Dense(self.output_feature_num, activation="linear")
+
+    def call(self, input_seq, target_seq=None):
+        # dropiut encoder_outputs
+        _, state_h, state_c = self.encoder_lstm(input_seq)
+        states_value = [state_h, state_c]
+        decoder_inputs = input_seq[:, -1, :self.output_feature_num]
+        decoder_inputs = K.reshape(decoder_inputs, shape=(len(input_seq), 1, decoder_inputs.shape[-1]))
+        all_outputs = []
+        for i in range(self.future_seq_len):
+            decoded_output, h, c = self.decoder_lstm(decoder_inputs, initial_state=states_value)
+            decoded_output = self.fc(decoded_output)
+            # Update states
+            states_value = [h, c]
+            all_outputs.append(decoded_output)
+            if not self.teacher_forcing or target_seq is None:
+                # no teaching force
+                decoder_inputs = decoded_output
+            else:
+                # with teaching force
+                decoder_inputs = target_seq[:, i:i+1, :]
+        decoded_seq = Lambda(lambda x: K.concatenate(x, axis=1))(all_outputs)
+        return decoded_seq
 
 class LSTMSeq2Seq(BaseModel):
 
