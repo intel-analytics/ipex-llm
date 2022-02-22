@@ -225,16 +225,16 @@ run_spark_xgboost() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx30g -Xms30g org.apache.spark.deploy.SparkSubmit \
+                -Xmx18g -Xms18g org.apache.spark.deploy.SparkSubmit \
                 --master local[16] \
                 --conf spark.task.cpus=8 \
                 --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
-                --num-executors 8 \
+                --num-executors 2 \
                 --executor-cores 2 \
-                --executor-memory 2G \
-                --driver-memory 10G \
+                --executor-memory 9G \
+                --driver-memory 2G \
                 /bin/jars/bigdl-dllib-spark_3.1.2-0.14.0-SNAPSHOT.jar \
-                /host/data /host/data/model 8 100 2
+                /host/data /host/data/model 2 100 2
 }
 
 
