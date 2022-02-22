@@ -74,6 +74,7 @@ class BasePytorchAutomodel:
             epochs=epochs,
             validation_data=validation_data,
             metric=self.metric,
+            metric_mode=self.metric_mode,
             metric_threshold=metric_threshold,
             n_sampling=n_sampling,
             search_space=self.search_space,

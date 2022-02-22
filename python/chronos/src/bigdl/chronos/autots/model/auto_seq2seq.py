@@ -29,6 +29,7 @@ class AutoSeq2Seq(BasePytorchAutomodel):
                  optimizer,
                  loss,
                  metric,
+                 metric_mode=None,
                  lr=0.001,
                  lstm_hidden_dim=128,
                  lstm_layer_num=2,
@@ -50,7 +51,14 @@ class AutoSeq2Seq(BasePytorchAutomodel):
         :param optimizer: String or pyTorch optimizer creator function or
                tf.keras optimizer instance.
         :param loss: String or pytorch/tf.keras loss instance or pytorch loss creator function.
-        :param metric: String. The evaluation metric name to optimize. e.g. "mse"
+        :param metric: String or customized evaluation metric function.
+            If string, metric is the evaluation metric name to optimize, e.g. "mse".
+            If callable function, it signature should be func(y_true, y_pred), where y_true and
+            y_pred are numpy ndarray. The function should return a float value as evaluation result.
+        :param metric_mode: One of ["min", "max"]. "max" means greater metric value is better.
+            You have to specify metric_mode if you use a customized metric function.
+            You don't have to specify metric_mode if you use the built-in metric in
+            bigdl.orca.automl.metrics.Evaluator.
         :param lr: float or hp sampling function from a float space. Learning rate.
                e.g. hp.choice([0.001, 0.003, 0.01])
         :param lstm_hidden_dim: LSTM hidden channel for decoder and encoder.
@@ -87,6 +95,7 @@ class AutoSeq2Seq(BasePytorchAutomodel):
             teacher_forcing=teacher_forcing
         )
         self.metric = metric
+        self.metric_mode = metric_mode
         model_builder = PytorchModelBuilder(model_creator=model_creator,
                                             optimizer_creator=optimizer,
                                             loss_creator=loss,
