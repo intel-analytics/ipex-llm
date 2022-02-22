@@ -18,9 +18,9 @@
 # physically located elsewhere.
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
-#
+
 # This is from https://github.com/keras-team/keras-io/blob/master/examples/vision/mnist_convnet.py
-#
+
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
