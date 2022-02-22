@@ -39,7 +39,6 @@ from time import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchmetrics import Accuracy
 import torchvision
 from pytorch_lightning import LightningModule, seed_everything
 from bigdl.nano.pytorch.trainer import Trainer
@@ -47,7 +46,6 @@ from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.optim.lr_scheduler import OneCycleLR
 from torchmetrics.functional import accuracy
-from torchmetrics import Accuracy
 
 from pl_bolts.datamodules import CIFAR10DataModule
 from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
