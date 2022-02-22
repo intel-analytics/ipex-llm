@@ -50,7 +50,7 @@ RUN cd /opt && \
     wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
     wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 
-# spark modification and download test jars
+# spark modification
 RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
@@ -59,12 +59,19 @@ RUN cd /opt && \
     mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark/jars/spark-core_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
-    mv /opt/pyspark.zip /opt/spark/python/lib/pyspark.zip && \
+    mv /opt/pyspark.zip /opt/spark/python/lib/pyspark.zip
+
+# prepare spark source code and jars for unit test
+RUN cd /opt && \
+    git clone https://github.com/apache/spark.git spark-source && \
+    cd spark-source && \
+    cp -r /opt/spark/bin . && \
+    git checkout "v$SPARK_VERSION" && \
+    cd /opt/spark && \
     mkdir /opt/spark/test-jars && \
     cd /opt/spark/test-jars && \
     wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION-tests.jar && \
     wget $SPARK_JAR_REPO_URL/spark-catalyst_2.12-$SPARK_VERSION-tests.jar && \
-    wget $SPARK_JAR_REPO_URL/spark-sql_2.12-$SPARK_VERSION-tests.jar && \
     wget https://repo1.maven.org/maven2/org/scalactic/scalactic_2.12/3.1.4/scalactic_2.12-3.1.4.jar && \
     wget https://repo1.maven.org/maven2/org/scalatest/scalatest_2.12/3.1.4/scalatest_2.12-3.1.4.jar && \
     wget https://repo1.maven.org/maven2/org/mockito/mockito-core/3.4.6/mockito-core-3.4.6.jar && \
@@ -75,7 +82,11 @@ RUN cd /opt && \
     wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.6/postgresql-42.2.6.jar && \
     wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-mockito_2.12/1.0.0-SNAP5/scalatestplus-mockito_2.12-1.0.0-SNAP5.jar && \
     wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-scalacheck_2.12/3.1.0.0-RC2/scalatestplus-scalacheck_2.12-3.1.0.0-RC2.jar
-    
+    mkdir /opt/spark/test-classes && \
+    cd /opt/spark/test-classes && \
+    wget $SPARK_JAR_REPO_URL/spark-sql_2.12-$SPARK_VERSION-tests.jar && \
+    jar xvf spark-sql_2.12-$SPARK_VERSION-tests.jar && \
+    rm spark-sql_2.12-$SPARK_VERSION-tests.jar
 
 RUN mkdir -p /opt/src
 

@@ -69,6 +69,7 @@ build_spark() {
     # Prepare BigDL
     mkdir -p image/bin/jars
     cp -f $BIGDL_HOME/jars/* image/bin/jars
+    cp -rf /opt/spark-source image/opt/
     occlum build
 }
 
@@ -106,16 +107,16 @@ run_spark_unittest_only() {
 		-Djdk.lang.Process.launchMechanism=posix_spawn \
 		-XX:MaxMetaspaceSize=256m \
 	        -Dspark.testing=true \
-	        -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-branch-3.1.2 \
-	        -Dspark.sql.warehouse.dir=hdfs://localhost:9000/111-spark-warehouse \
+	        -Dspark.test.home=/opt/spark-source \
 	        -Dspark.python.use.daemon=false \
 	        -Dspark.python.worker.reuse=false \
-	        -Dspark.driver.host=192.168.0.111 \
-	        -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*"  \
+	        -Dspark.driver.host=127.0.0.1 \
+	        -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/test-classes/"  \
 	        org.scalatest.tools.Runner \
 	        -s ${suite} \
 	        -fF /host/data/olog/${suite}.txt
     done
+	        #-Dspark.sql.warehouse.dir=hdfs://localhost:9000/111-spark-warehouse \
     occlum stop
 }
 
@@ -275,4 +276,3 @@ case "$arg" in
         cd ../
         ;;
 esac
-
