@@ -34,7 +34,7 @@ object ImageClassification {
   def buildMode(inputShape: Shape): Sequential[Float] = {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val model = Sequential()
-    model.add(Conv2D(32, 3, 3, inputShape=inputShape))
+    model.add(Conv2D(32, 3, 3, inputShape = inputShape))
     model.add(Activation("relu"))
     model.add(MaxPooling2D(poolSize = (2, 2)))
 
