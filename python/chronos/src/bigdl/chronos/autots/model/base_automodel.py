@@ -194,7 +194,10 @@ class BasePytorchAutomodel:
                future_seq_len and output_target_num.
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
-        :param metrics: a list stated the metric names to be evaluated.
+        :param metrics: list of string or callable. e.g. ['mse'] or [customized_metrics]
+               If callable function, it signature should be func(y_true, y_pred), where y_true and
+               y_pred are numpy ndarray. The function should return a float value as evaluation
+               result.
         :param dirname: The directory to save onnx model file. This value defaults
                to None for no saving file.
         :param multioutput: Defines aggregating of multiple output values.
