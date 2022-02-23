@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_nyc_taxi_tsdataset_forecaster] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_nyc_taxi_tsdataset_forecaster]
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_nyc_taxi_tsdataset_forecaster_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_nyc_taxi_tsdataset_forecaster]
 
 ---
 
@@ -88,4 +88,5 @@ forecaster.save("nyc_taxi.fxt")
 forecaster.restore("nyc_taxi.fxt")
 ```
 
-[chronos_nyc_taxi_tsdataset_forecaster]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb>
+[chronos_nyc_taxi_tsdataset_forecaster_colab]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb>
+[chronos_nyc_taxi_tsdataset_forecaster]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb>

@@ -167,18 +167,18 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
     - [Network Traffic Forecasting with Customized Model][network_traffic_autots_customized_model]
 
 <!--Reference links in article-->
-[autolstm_nyc_taxi]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autolstm_nyc_taxi.py>
-[autoprophet_nyc_taxi]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autoprophet_nyc_taxi.py>
-[run_electricity]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/tcmf/run_electricity.py>
-[distributed_training_network_traffic]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/distributed/distributed_training_network_traffic.py>
-[onnx_autotsestimator_nyc_taxi]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/onnx/onnx_autotsestimator_nyc_taxi.py>
-[onnx_forecaster_network_traffic]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/onnx/onnx_forecaster_network_traffic.py>
-[simulator]:<https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/simulator>
-[AIOps_anomaly_detect_unsupervised]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb>
-[AIOps_anomaly_detect_unsupervised_forecast_based]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb>
-[stock_prediction]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction.ipynb>
-[stock_prediction_prophet]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb>
-[network_traffic_autots_forecasting]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb>
-[network_traffic_model_forecasting]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb>
-[network_traffic_multivariate_multistep_tcnforecaster]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb>
-[network_traffic_autots_customized_model]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb>
+[autolstm_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autolstm_nyc_taxi.py>
+[autoprophet_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autoprophet_nyc_taxi.py>
+[run_electricity]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/tcmf/run_electricity.py>
+[distributed_training_network_traffic]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/distributed/distributed_training_network_traffic.py>
+[onnx_autotsestimator_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/onnx/onnx_autotsestimator_nyc_taxi.py>
+[onnx_forecaster_network_traffic]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/onnx/onnx_forecaster_network_traffic.py>
+[simulator]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/simulator>
+[AIOps_anomaly_detect_unsupervised]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb>
+[AIOps_anomaly_detect_unsupervised_forecast_based]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb>
+[stock_prediction]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction.ipynb>
+[stock_prediction_prophet]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb>
+[network_traffic_autots_forecasting]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb>
+[network_traffic_model_forecasting]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb>
+[network_traffic_multivariate_multistep_tcnforecaster]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb>
+[network_traffic_autots_customized_model]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb>

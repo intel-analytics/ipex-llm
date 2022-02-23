@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_minn_traffic_anomaly_detector] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_minn_traffic_anomaly_detector]
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_minn_traffic_anomaly_detector_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_minn_traffic_anomaly_detector]
 
 ---
 
@@ -46,4 +46,5 @@ ad.fit(df['value'].to_numpy())
 anomaly_indexes = ad.anomaly_indexes()
 ```
 
-[chronos_minn_traffic_anomaly_detector]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb>
+[chronos_minn_traffic_anomaly_detector_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb>
+[chronos_minn_traffic_anomaly_detector]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb>

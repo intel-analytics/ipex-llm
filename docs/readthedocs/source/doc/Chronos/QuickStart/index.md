@@ -2,7 +2,7 @@
 
 - [**Predict Number of Taxi Passengers with Chronos Forecaster**](./chronos-tsdataset-forecaster-quickstart.html)
 
-    > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_nyc_taxi_tsdataset_forecaster] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_nyc_taxi_tsdataset_forecaster]
+    > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_nyc_taxi_tsdataset_forecaster_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_nyc_taxi_tsdataset_forecaster]
 
     In this guide we will demonstrate how to use _Chronos TSDataset_ and _Chronos Forecaster_ for time series processing and predict number of taxi passengers.
 
@@ -10,7 +10,7 @@
 
 - [**Tune a Forecasting Task Automatically**](./chronos-autotsest-quickstart.html)
 
-    > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_autots_nyc_taxi] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_autots_nyc_taxi]
+    > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_autots_nyc_taxi_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_autots_nyc_taxi]
 
     In this guide we will demonstrate how to use _Chronos AutoTSEstimator_ and _Chronos TSPipeline_ to auto tune a time seires forecasting task and handle the whole model development process easily.
 
@@ -18,7 +18,7 @@
 
 - [**Detect Anomaly Point in Real Time Traffic Data**](./chronos-anomaly-detector.html)
 
-    > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_minn_traffic_anomaly_detector] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_minn_traffic_anomaly_detector]
+    > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_minn_traffic_anomaly_detector_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_minn_traffic_anomaly_detector]
 
     In this guide we will demonstrate how to use _Chronos Anomaly Detector_ for real time traffic data from the Twin Cities Metro area in Minnesota anomaly detection.
 
@@ -95,14 +95,17 @@
 [AE]: <../../PythonAPI/Chronos/anomaly_detectors.html#aedetector>
 [Threshold]: <../../PythonAPI/Chronos/anomaly_detectors.html#thresholddetector>
 [chronos]: <https://github.com/intel-analytics/bigdl/tree/main/python/chronos/src/bigdl/chronos>
-[chronos_nyc_taxi_tsdataset_forecaster]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb>
-[chronos_autots_nyc_taxi]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb>
-[chronos_minn_traffic_anomaly_detector]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb>
-[network_traffic_autots_customized_model]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb>
-[network_traffic_autots_forecasting]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb>
-[network_traffic_model_forecasting]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb>
-[network_traffic_multivariate_multistep_tcnforecaster]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb>
-[stock_prediction]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction.ipynb>
-[stock_prediction_prophet]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb>
-[AIOps_anomaly_detect_unsupervised]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb>
-[AIOps_anomaly_detect_unsupervised_forecast_based]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb>
+[chronos_nyc_taxi_tsdataset_forecaster_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb>
+[chronos_nyc_taxi_tsdataset_forecaster]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb>
+[chronos_autots_nyc_taxi_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb>
+[chronos_autots_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb>
+[chronos_minn_traffic_anomaly_detector_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb>
+[chronos_minn_traffic_anomaly_detector]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb>
+[network_traffic_autots_customized_model]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb>
+[network_traffic_autots_forecasting]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb>
+[network_traffic_model_forecasting]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb>
+[network_traffic_multivariate_multistep_tcnforecaster]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb>
+[stock_prediction]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction.ipynb>
+[stock_prediction_prophet]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb>
+[AIOps_anomaly_detect_unsupervised]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb>
+[AIOps_anomaly_detect_unsupervised_forecast_based]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb>

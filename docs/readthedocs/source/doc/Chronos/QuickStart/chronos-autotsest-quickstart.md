@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_autots_nyc_taxi] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_autots_nyc_taxi]
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_autots_nyc_taxi_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_autots_nyc_taxi]
 
 ---
 
@@ -115,4 +115,5 @@ To view the evaluation result of "not chosen" trails and find some insight or ev
 ```
 Detailed information please refer to [Visualization](../Overview/useful_functionalities.html#automl-visualization).
 
-[chronos_autots_nyc_taxi]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb>
+[chronos_autots_nyc_taxi_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb>
+[chronos_autots_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb>
