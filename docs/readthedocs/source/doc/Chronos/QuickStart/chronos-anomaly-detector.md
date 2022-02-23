@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_minn_traffic_anomaly_detector] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_minn_traffic_anomaly_detector]
 
 ---
 
@@ -36,7 +36,7 @@ df = tsdata.resample("5min")\
 ```
 
 ## Step 2: Use Chronos Anomaly Detector
-Chronos provides many anomaly detector for anomaly detection, here we use DBScan as an example. More anomaly detector can be found [here](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/anomaly_detectors.html).
+Chronos provides many anomaly detector for anomaly detection, here we use DBScan as an example. More anomaly detector can be found [here](../../PythonAPI/Chronos/anomaly_detectors.html).
 
 ```python
 from bigdl.chronos.detector.anomaly import DBScanDetector
@@ -46,4 +46,4 @@ ad.fit(df['value'].to_numpy())
 anomaly_indexes = ad.anomaly_indexes()
 ```
 
-
+[chronos_minn_traffic_anomaly_detector]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_minn_traffic_anomaly_detector.ipynb>

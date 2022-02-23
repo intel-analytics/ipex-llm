@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_nyc_taxi_tsdataset_forecaster] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_nyc_taxi_tsdataset_forecaster]
 
 ---
 
@@ -20,7 +20,7 @@ pip install bigdl-chronos[all]
 
 ### Step 1: Data transformation and feature engineering using Chronos TSDataset
 
-[TSDataset](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/data_processing_feature_engineering.html) is our abstract of time series dataset for data transformation and feature engineering. Here we use it to preprocess the data.
+[TSDataset](../Overview/data_processing_feature_engineering.html) is our abstract of time series dataset for data transformation and feature engineering. Here we use it to preprocess the data.
 
 Initialize train, valid and test tsdataset from raw pandas dataframe.
 
@@ -54,7 +54,7 @@ for tsdata in [tsdata_train, tsdata_valid, tsdata_test]:
 
 ### Step 2: Time series forecasting using Chronos Forecaster
 
-After preprocessing the datasets. We can use [Chronos Forecaster](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#use-standalone-forecaster-pipeline) to handle the forecasting tasks.
+After preprocessing the datasets. We can use [Chronos Forecaster](../Overview/forecasting.html#use-standalone-forecaster-pipeline) to handle the forecasting tasks.
 
 Transform TSDataset to sampled numpy ndarray and feed them to forecaster.
 
@@ -87,3 +87,5 @@ Save & restore the forecaster.
 forecaster.save("nyc_taxi.fxt")
 forecaster.restore("nyc_taxi.fxt")
 ```
+
+[chronos_nyc_taxi_tsdataset_forecaster]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_nyc_taxi_tsdataset_forecaster.ipynb>

@@ -2,7 +2,7 @@
 
 ---
 
-![](../../../../image/colab_logo_32px.png)[Run in Google Colab](https://colab.research.google.com/github/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb) &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb)
+![](../../../../image/colab_logo_32px.png)[Run in Google Colab][chronos_autots_nyc_taxi] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][chronos_autots_nyc_taxi]
 
 ---
 
@@ -56,7 +56,7 @@ There is no need to call `.roll()` or `.to_torch_data_loader()` in this step, wh
 
 Please call `.gen_dt_feature()`(recommended), `.gen_rolling_feature()`, and `gen_global_feature()` to generate all candidate features to be selected by `AutoTSEstimator` as well as your input extra feature.
 
-Detailed information please refer to [TSDataset API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html) and [Time series data basic concepts](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/data_processing_feature_engineering.html).
+Detailed information please refer to [TSDataset API doc](../../PythonAPI/Chronos/tsdataset.html) and [Time series data basic concepts](../Overview/data_processing_feature_engineering.html).
 
 ### **Step 3: Create an AutoTSEstimator**
 
@@ -72,7 +72,7 @@ We prebuild three defualt search space for each build-in model, which you can us
 
 `past_seq_len` can be set as a hp sample function, the proper range is highly related to your data. A range between 0.5 cycle and 3 cycle is reasonable.
 
-Detailed information please refer to [AutoTSEstimator API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autotsestimator.html#autotsestimator) and basic concepts [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/forecasting.html#use-autots-pipeline).
+Detailed information please refer to [AutoTSEstimator API doc](../../PythonAPI/Chronos/autotsestimator.html#autotsestimator) and basic concepts [here](../Overview/forecasting.html#use-autots-pipeline).
 
 ### **Step 4: Fit with AutoTSEstimator**
 ```python
@@ -81,7 +81,7 @@ ts_pipeline = auto_estimator.fit(data=tsdata_train, # train dataset
                                  validation_data=tsdata_val, # validation dataset
                                  epochs=5) # number of epochs to train in each trial
 ```
-Detailed information please refer to [AutoTSEstimator API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autotsestimator.html#autotsestimator).
+Detailed information please refer to [AutoTSEstimator API doc](../../PythonAPI/Chronos/autotsestimator.html#autotsestimator).
 ### **Step 5: Further deployment with TSPipeline**
 The `TSPipeline` will reply the same preprcessing and corresponding postprocessing operations on the test data. You may carry out predict, evaluate or save/load for further development.
 ```python
@@ -104,7 +104,7 @@ ts_pipeline.save(my_ppl_file_path)
 from bigdl.chronos.autots import TSPipeline
 loaded_ppl = TSPipeline.load(my_ppl_file_path)
 ```
-Detailed information please refer to [TSPipeline API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html).
+Detailed information please refer to [TSPipeline API doc](../../PythonAPI/Chronos/tsdataset.html).
 
 ### **Optional: Examine the leaderboard visualization**
 To view the evaluation result of "not chosen" trails and find some insight or even possibly improve you search space for a new autotuning task. We provide a leaderboard through tensorboard.
@@ -113,4 +113,6 @@ To view the evaluation result of "not chosen" trails and find some insight or ev
 %load_ext tensorboard
 %tensorboard --logdir /tmp/autots_estimator/autots_estimator_leaderboard/
 ```
-Detailed information please refer to [Visualization](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/useful_functionalities.html#automl-visualization).
+Detailed information please refer to [Visualization](../Overview/useful_functionalities.html#automl-visualization).
+
+[chronos_autots_nyc_taxi]:<https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/chronos/colab-notebook/chronos_autots_nyc_taxi.ipynb>
