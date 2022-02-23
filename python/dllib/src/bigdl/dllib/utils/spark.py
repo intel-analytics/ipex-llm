@@ -243,7 +243,7 @@ class SparkRunner:
                 python_location if python_location else detect_python_location()
         if not master:
             pyspark_home = os.path.abspath(pyspark.__file__ + "/../")
-            zoo_standalone_home = os.path.abspath(__file__ + "/../../share/bin/standalone")
+            zoo_standalone_home = os.path.abspath(__file__ + "/../../../share/dllib/bin/standalone")
             node_ip = get_node_ip()
             SparkRunner.standalone_env = {
                 "SPARK_HOME": pyspark_home,
