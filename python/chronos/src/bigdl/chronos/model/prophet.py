@@ -44,6 +44,7 @@ class ProphetModel:
         seasonality_mode = config.get('seasonality_mode', 'additive')
         changepoint_range = config.get('changepoint_range', 0.8)
         self.metric = config.get('metric', self.metric)
+        self.metric_func = config.get('metric_func', None)
 
         self.model = Prophet(changepoint_prior_scale=changepoint_prior_scale,
                              seasonality_prior_scale=seasonality_prior_scale,
@@ -93,9 +94,16 @@ class ProphetModel:
 
         # normal validation process
         if validation_data is not None:
-            val_metric = self.evaluate(target=validation_data,
-                                       metrics=[self.metric])[0].item()
-            return {self.metric: val_metric}
+            if self.metric_func:
+                val_metric = self.evaluate(target=validation_data,
+                                        metrics=[self.metric_func])[0].item()
+            else:
+                val_metric = self.evaluate(target=validation_data,
+                                        metrics=[self.metric])[0].item()
+            if self.metric_func:
+                return {self.metric_func.__name__: val_metric}
+            else:
+                return {self.metric: val_metric}
 
     def _eval_cross_validation(self, expected_horizon):
         df_cv = cross_validation(self.model, horizon=expected_horizon)
@@ -130,7 +138,10 @@ class ProphetModel:
             So data should be None as it is not used.
         :param target: target for evaluation. A dataframe with 2 columns, where column 'ds'
                indicating date and column 'y' indicating target.
-        :param metrics: a list of metrics in string format
+        :param metrics: a list of metrics in string format or callable function with format
+               it signature should be func(y_true, y_pred), where y_true and y_pred are numpy
+               ndarray. The function should return a float value as evaluation result.
+
         :return: a list of metric evaluation results
         """
         if data is not None:

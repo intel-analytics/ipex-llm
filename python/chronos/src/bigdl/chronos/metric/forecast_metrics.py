@@ -37,16 +37,17 @@ def _standard_input(metrics, y_true, y_pred):
     check the ndim of y_pred and y_true,
     converting 1-3 dim y_true and y_pred to 2 dim.
     """
-    if isinstance(metrics, str):
+    if not isinstance(metrics, list):
         metrics = [metrics]
-    metrics = list(map(lambda x: x.lower(), metrics))
-    assert all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),\
-        f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()}, "\
-        f"but get {metrics}."
-    assert type(y_true) is type(y_pred) and isinstance(y_pred, ndarray),\
-        "y_pred and y_true type must be numpy.ndarray, "\
-        f"but found {type(y_pred)} and {type(y_true)}."
-    y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
+    if isinstance(metrics[0], str):
+        metrics = list(map(lambda x: x.lower(), metrics))
+        assert all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),\
+            f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()}, "\
+            f"but get {metrics}."
+        assert type(y_true) is type(y_pred) and isinstance(y_pred, ndarray),\
+            "y_pred and y_true type must be numpy.ndarray, "\
+            f"but found {type(y_pred)} and {type(y_true)}."
+        y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
 
     assert y_true.shape == y_pred.shape,\
         "y_true and y_pred should have the same shape, "\
@@ -75,7 +76,9 @@ class Evaluator(object):
         """
         Evaluate a specific metrics for y_true and y_pred.
 
-        :param metrics: String or list in ['mae', 'mse', 'rmse', 'r2', 'mape', 'smape']
+        :param metrics: String or list in ['mae', 'mse', 'rmse', 'r2', 'mape', 'smape'] for built-in
+               metrics. If callable function, it signature should be func(y_true, y_pred), where
+               y_true and y_pred are numpy ndarray.
         :param y_true: Array-like of shape = (n_samples, \*). Ground truth (correct) target values.
         :param y_pred: Array-like of shape = (n_samples, \*). Estimated target values.
         :param aggregate: aggregation method. Currently, "mean" and None are supported,
@@ -90,12 +93,23 @@ class Evaluator(object):
 
         res_list = []
         for metric in metrics:
+            if callable(metric):
+                metric_func = metric
+            else:
+                metric_func = TORCHMETRICS_REGRESSION_MAP[metric]
             if len(original_shape) in [2, 3] and aggregate is None:
                 res = torch.zeros(y_true.shape[-1])
                 for i in range(y_true.shape[-1]):
-                    res[i] = TORCHMETRICS_REGRESSION_MAP[metric](y_pred[..., i], y_true[..., i])
+                    if callable(metric):
+                        res[i] = metric_func(y_true[..., i], y_pred[..., i])
+                    else:
+                        res[i] = metric_func(y_pred[..., i], y_true[..., i])
                 res = res.reshape(original_shape[1:])
             else:
-                res = TORCHMETRICS_REGRESSION_MAP[metric](y_pred, y_true)
-            res_list.append(res.numpy())
+                if callable(metric):
+                    res = metric_func(y_true, y_pred)
+                    res_list.append(res)
+                else:
+                    res = metric_func(y_pred, y_true)
+                    res_list.append(res.numpy())
         return res_list
