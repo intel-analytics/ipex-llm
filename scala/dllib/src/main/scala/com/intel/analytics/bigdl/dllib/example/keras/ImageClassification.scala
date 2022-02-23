@@ -36,15 +36,15 @@ object ImageClassification {
     val model = Sequential()
     model.add(Conv2D(32, 3, 3, inputShape=inputShape))
     model.add(Activation("relu"))
-    model.add(MaxPooling2D(poolSize=(2, 2)))
+    model.add(MaxPooling2D(poolSize = (2, 2)))
 
     model.add(Conv2D(32, 3, 3))
     model.add(Activation("relu"))
-    model.add(MaxPooling2D(poolSize=(2, 2)))
+    model.add(MaxPooling2D(poolSize = (2, 2)))
 
     model.add(Conv2D(64, 3, 3))
     model.add(Activation("relu"))
-    model.add(MaxPooling2D(poolSize=(2, 2)))
+    model.add(MaxPooling2D(poolSize = (2, 2)))
 
     model.add(Flatten())
     model.add(Dense(64))
@@ -63,7 +63,8 @@ object ImageClassification {
       val createLabel = udf { row: Row =>
         if (new Path(row.getString(0)).getName.contains("cat")) 1 else 2
       }
-      val imgDF = NNImageReader.readImages(param.folder, sc, resizeH = 150, resizeW = 150).withColumn("label", createLabel(col("image")))
+      val imgDF = NNImageReader.readImages(param.folder, sc, resizeH = 150, resizeW = 150)
+        .withColumn("label", createLabel(col("image")))
       val Array(validationDF, trainingDF) = imgDF.randomSplit(Array(0.1, 0.9), seed = 42L)
 
       val transformers = ImageChannelNormalize(0, 0, 0, 255, 255, 255)
