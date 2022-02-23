@@ -24,8 +24,6 @@ from bigdl.nano.common.multiprocessing.backend import Backend
 
 
 class MultiprocessingBackend(Backend):
-    def __init__(self):
-        self._pool = None
 
     def setup(self) -> None:
         pass
