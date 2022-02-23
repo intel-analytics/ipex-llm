@@ -158,7 +158,7 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
     - [Generate synthetic data with DPGANSimulator in a data-driven fashion][simulator]
 - Use cases
     - [Unsupervised Anomaly Detection][AIOps_anomaly_detect_unsupervised]
-    - [Unsupervised Anom]aly Detection based on Forecasts][AIOps_anomaly_detect_unsupervised_forecast_based]
+    - [Unsupervised Anomaly Detection based on Forecasts][AIOps_anomaly_detect_unsupervised_forecast_based]
     - [Stock Price Prediction with LSTM][stock_prediction]
     - [Stock Price Prediction with ProphetForecaster and AutoProphet][stock_prediction_prophet]
     - [Network Traffic Forecasting with AutoTSEstimator][network_traffic_autots_forecasting]
