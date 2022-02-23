@@ -161,7 +161,7 @@ def eval_onnx(self, input_sample=None, file_path="model.onnx",
     '''
     This method change the `forward` method to an onnxruntime backed forwarding.
 
-    >>> model.eval_onnx()
+    >>> model.eval_onnx(quantize=True/False)
     >>> pred = model(x)  # onnxruntime forwarding
     >>> model.exit_onnx()
 
