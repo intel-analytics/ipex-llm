@@ -86,4 +86,4 @@ rm -rf result
 
 echo "#1 two tower train time used: $time1 seconds"
 echo "#2 wnd train time used: $time2 seconds"
-echo "#3 xgboost train time used: $time3 seconds""
+echo "#3 xgboost train time used: $time3 seconds"
