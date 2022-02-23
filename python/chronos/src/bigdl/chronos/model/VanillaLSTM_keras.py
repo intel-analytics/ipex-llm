@@ -13,11 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.orca.automl.model.base_keras_model import KerasBaseModel
-from collections.abc import Iterable
-import numpy as np
+
 import tensorflow as tf
-from bigdl.nano.tf import keras
 from bigdl.nano.tf.keras import Sequential, Model
 from keras.layers import LSTM, Reshape, Dense, Input
 
@@ -40,7 +37,6 @@ class LSTMModel(Model):
                                 name="lstm_" + str(self.layer_num)))
         self.fc = Dense(output_dim)
         self.out_shape = Reshape((1, output_dim), input_shape=(output_dim,))
-
 
     def call(self, input_seq):
         lstm_out = input_seq
@@ -76,42 +72,3 @@ def model_creator(config):
                   optimizer=optimizer,
                   metrics=[config.get("metric", "mse")])
     return model
-
-
-class VanillaLSTM(KerasBaseModel):
-    def __init__(self, check_optional_config=False, future_seq_len=1):
-        super(VanillaLSTM, self).__init__(model_creator=model_creator,
-                                          check_optional_config=check_optional_config)
-
-    def _check_config(self, **config):
-        super()._check_config(**config)
-        assert isinstance(config["input_dim"], int), "'input_dim' should be int"
-        assert isinstance(config["output_dim"], int), "'output_dim' should be int"
-        lstm_name = "lstm_units"
-        dropout_name = "dropouts"
-        if lstm_name in config:
-            if not check_iter_type(config[lstm_name], (int, np.integer)):
-                raise ValueError(f"{lstm_name} should be int or an list/tuple of ints. "
-                                 f"Got {config[lstm_name]}")
-        if dropout_name in config:
-            if not check_iter_type(config[dropout_name], (float, np.float)):
-                raise ValueError(f"{dropout_name} should be float or a list/tuple of floats. "
-                                 f"Got {config[dropout_name]}")
-        if lstm_name in config and dropout_name in config:
-            if (isinstance(config[lstm_name], int) and isinstance(config[dropout_name], Iterable)) \
-                or (isinstance(config[lstm_name], Iterable) and
-                    isinstance(config[dropout_name], Iterable) and
-                    len(config[lstm_name]) != len(config[dropout_name])):
-                raise ValueError(f"{lstm_name} should have the same elements num as {dropout_name}")
-
-    def _get_required_parameters(self):
-        return {"input_dim",
-                "output_dim"
-                } | super()._get_required_parameters()
-
-    def _get_optional_parameters(self):
-        return {"lstm_units",
-                "dropouts",
-                "optim",
-                "lr"
-                } | super()._get_optional_parameters()
