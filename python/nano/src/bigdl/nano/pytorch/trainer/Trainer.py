@@ -192,7 +192,8 @@ class Trainer(pl.Trainer):
         :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
-        :param framework:   'pytorch', 'pytorch_fx', 'pytorch_ipex'. Default: 'pytorch_fx'.
+        :param framework:   string or list, [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
+                            {'onnxrt_integerops'|'onnxrt_qlinearops'}]. Default: 'pytorch_fx'.
                             Consistent with Intel Neural Compressor.
         :param approach:    'static' or 'dynamic'.
                             'static': post_training_static_quant,
@@ -214,6 +215,22 @@ class Trainer(pl.Trainer):
                             returned. If set to False, a pytorch lightning module will be returned.
         :return:            A GraphModule. If there is no model found, return None.
         """
+        has_pytorch = False
+        has_onnx = False
+        for framework_item in framework:
+            if "pytorch" in framework_item:
+                if has_pytorch:
+                    raise RuntimeError("You should choose one from "
+                                       "{'pytorch'|'pytorch_fx'|'pytorch_ipex'}")
+                has_pytorch = True
+                continue
+            if "onnx" in framework_item:
+                if has_onnx:
+                    raise RuntimeError("You should choose one from "
+                                       "{'onnxrt_integerops'|'onnxrt_qlinearops'}")
+                has_onnx = True
+                continue
+
         if backend == 'inc':
             from bigdl.nano.quantization.neural_compressor import QuantizationINC
 
@@ -226,25 +243,62 @@ class Trainer(pl.Trainer):
             }
             approach = approach_map.get(approach)
 
-            quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
-                                        tuning_strategy=tuning_strategy,
-                                        accuracy_criterion=accuracy_criterion,
-                                        timeout=timeout, max_trials=max_trials)
-            model: nn.Module = pl_model
-            if isinstance(pl_model, LightningModuleFromTorch):
-                # LightningModuleFromTorch.forward fails to trace in FX, so replace it temporarily
-                model = pl_model.model
-
-            quantized = quantizer.post_training_quantize(model, calib_dataloader, val_dataloader,
-                                                         metric)
+            framework = [framework] if isinstance(framework, str) else framework
+            quantized_models = []
+            for framework_item in framework:
+                quantizer = QuantizationINC(framework=framework_item, conf=conf, approach=approach,
+                                            tuning_strategy=tuning_strategy,
+                                            accuracy_criterion=accuracy_criterion,
+                                            timeout=timeout, max_trials=max_trials)
+                if "pytorch" in framework_item:
+                    # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
+                    model: Any = pl_model  # state model to be 'Any' since we may have pl or onnx
+                    if isinstance(pl_model, LightningModuleFromTorch):
+                        # LightningModuleFromTorch.forward fails to trace in FX
+                        # so replace it temporarily
+                        model = pl_model.model
+                else:
+                    # for 'onnxrt_integerops'|'onnxrt_qlinearops'
+                    from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
+                        bind_onnxrt_methods
+                    pl_model = bind_onnxrt_methods(pl_model)
+                    if approach == "post_training_static_quant":
+                        assert calib_dataloader, \
+                            "calib_calib_dataloader must not be None when approach is " \
+                            "post-training static quantization."
+                        pl_model.update_ortsess(input_sample=tuple(next(iter(
+                            calib_dataloader))[:-1]),
+                            file_path="model.onnx")
+                        model = pl_model._onnx_graph
+                    else:
+                        assert pl_model._ortsess_up_to_date, \
+                            "Please call `update_ortsess` on model to " \
+                            "update/build your onnx structure."
+                        model = pl_model._onnx_graph
+                quantized_models.append(quantizer.post_training_quantize(model, calib_dataloader,
+                                                                         val_dataloader, metric))
             if raw_return:
-                return quantized.model
+                if len(quantized_models) == 1:
+                    return quantized_models[0].model
+                else:
+                    return quantized_models[0].model, quantized_models[1].model
             else:
+                quantized_pytorch_model = None
+                quantized_onnx_model = None
+                for i, framework_item in enumerate(framework):
+                    if "pytorch" in framework_item:
+                        quantized_pytorch_model = quantized_models[i].model
+                    else:
+                        quantized_onnx_model = quantized_models[i].model
                 from bigdl.nano.pytorch.runtime_binding.base_inference import \
                     bind_base_inference_rt_methods
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
                     bind_quantize_methods
-                return bind_quantize_methods(
-                    bind_base_inference_rt_methods(pl_model), quantized.model)
+                from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import \
+                    bind_onnxrt_methods
+                return bind_onnxrt_methods(
+                    bind_quantize_methods(
+                        bind_base_inference_rt_methods(pl_model), quantized_pytorch_model),
+                    quantized_onnx_model)
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))

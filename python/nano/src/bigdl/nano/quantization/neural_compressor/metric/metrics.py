@@ -38,3 +38,20 @@ class TensorflowINCMetric(INCMetric):
 
     def to_scalar(self, tensor):
         return tensor.numpy()
+
+
+class ONNXRuntimeINCMetic(INCMetric):
+    '''
+    ONNXRuntime will use numpy as data type.
+    ONNXRuntime quantization in torch will use torchmetrics
+    '''
+    def stack(self, preds, labels):
+        import torch
+        import numpy as np
+        # calculate accuracy
+        preds = torch.from_numpy(np.concatenate(preds))
+        labels = torch.from_numpy(np.concatenate(labels))
+        return preds, labels
+
+    def to_scalar(self, tensor):
+        return tensor.item()

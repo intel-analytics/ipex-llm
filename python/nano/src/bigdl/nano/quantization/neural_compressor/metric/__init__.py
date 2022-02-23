@@ -18,5 +18,6 @@ from .metrics import *
 
 METRICS = {
     'pytorch': PytorchINCMetric,
-    'tensorflow': TensorflowINCMetric
+    'tensorflow': TensorflowINCMetric,
+    'onnx': ONNXRuntimeINCMetic
 }
