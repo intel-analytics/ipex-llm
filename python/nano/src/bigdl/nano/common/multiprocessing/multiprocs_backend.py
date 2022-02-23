@@ -34,10 +34,6 @@ class MultiprocessingBackend(Backend):
         pass
 
     def run(self, target, args=..., nprocs=1, envs=None) -> None:
-        self.run_pool(target, args=args, nprocs=nprocs, envs=envs)
-        # self.run_process(target, args=args, nprocs=nprocs, envs=envs)
-
-    def run_process(self, target, args=..., nprocs=1, envs=None) -> None:
         if envs is not None:
             if isinstance(envs, list):
                 assert nprocs == len(envs), "envs must have the same length with nprocs"
@@ -46,58 +42,40 @@ class MultiprocessingBackend(Backend):
             else:
                 raise ValueError("envs must be a dict or a list of dict")
 
-        proc_list = []
+        return self.run_subprocess(target, args=args, nprocs=nprocs, envs=envs)
+
+    def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> None:
+        import pickle
+        import subprocess
+        import sys
+
+        temp_dir = args[0]
+        with open(os.path.join(temp_dir, "train_ds_def.pkl"), 'wb') as f:
+            pickle.dump(args[1], f)
+        with open(os.path.join(temp_dir, "train_elem_spec.pkl"), 'wb') as f:
+            pickle.dump(args[2], f)
+        with open(os.path.join(temp_dir, "val_ds_def.pkl"), 'wb') as f:
+            pickle.dump(args[3], f)
+        with open(os.path.join(temp_dir, "val_elem_spec.pkl"), 'wb') as f:
+            pickle.dump(args[4], f)
+        with open(os.path.join(temp_dir, "fit_kwargs.pkl"), 'wb') as f:
+            pickle.dump(args[5], f)
+        with open(os.path.join(temp_dir, "target.pkl"), 'wb') as f:
+            pickle.dump(target, f)
+
+        ex_list = []
+        cwd_path = os.path.split(os.path.realpath(__file__))[0]
         for i in range(nprocs):
-            env_back, env_del_list = dict(), list()
-            for key, value in envs[i].items():
-                if key in os.environ:
-                    env_back[key] = os.environ[key]
-                else:
-                    env_del_list.append(key)
-                os.environ[key] = value
+            for key, val in os.environ.items():
+                if key not in envs[i]:
+                    envs[i][key] = val
+            ex_list.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py", temp_dir],
+                                            env=envs[i]))
+        for _, ex in enumerate(ex_list):
+            ex.wait()
 
-            p = Process(target=target, args=args)
-            p.start()
-            proc_list.append(p)
-
-        for p in proc_list:
-            p.join()
-            print(f"process {i} exitcode: {p.exitcode}")
-            for key, value in env_back.items():
-                os.environ[key] = value
-            for _, key in enumerate(env_del_list):
-                del os.environ[key]
-
-    def run_pool(self, target, args=..., nprocs=1, envs=None) -> None:
-        self._pool = Pool(processes=nprocs)
-
-        if envs is not None:
-            if isinstance(envs, list):
-                assert nprocs == len(envs), "envs must have the same length with nprocs"
-            elif isinstance(envs, dict):
-                envs = [envs] * nprocs
-            else:
-                raise ValueError("envs must be a dict or a list of dict")
-
-        result = []
+        results = []
         for i in range(nprocs):
-            env_back, env_del_list = dict(), list()
-            for key, value in envs[i].items():
-                if key in os.environ:
-                    env_back[key] = os.environ[key]
-                else:
-                    env_del_list.append(key)
-                os.environ[key] = value
-
-            res = self._pool.apply_async(func=target, args=list(args)+[envs[i]])
-            result.append(res)
-
-            for key, value in env_back.items():
-                os.environ[key] = value
-            for _, key in enumerate(env_del_list):
-                del os.environ[key]
-
-        self._pool.close()
-        self._pool.join()
-        for res in result:
-            print(res.get())
+            with open(os.path.join(temp_dir, f"history_{i}"), "rb") as f:
+                results.append(pickle.load(f))
+        return results
