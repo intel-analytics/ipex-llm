@@ -15,3 +15,6 @@
 #
 
 from bigdl.nano.tf.keras.layers.embeddings import Embedding
+
+from bigdl.nano.tf.keras.layers.genlayers import register_layers
+register_layers(globals())

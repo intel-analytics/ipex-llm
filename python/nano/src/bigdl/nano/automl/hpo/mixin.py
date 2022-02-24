@@ -29,7 +29,7 @@ class HPOMixin:
                        'get_layer']
 
     def __init__(self, *args, **kwargs):
-        super(HPOMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.objective = None
         self.study = None
         self.tune_end = False
