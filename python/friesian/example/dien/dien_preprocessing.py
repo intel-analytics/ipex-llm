@@ -37,7 +37,6 @@ conf = {"spark.network.timeout": "10000000",
 
 def _parse_args():
     parser = ArgumentParser()
-
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn, standalone or spark-submit.')
     parser.add_argument('--master', type=str, default=None,
@@ -46,21 +45,17 @@ def _parse_args():
                         help='The executor core number.')
     parser.add_argument('--executor_memory', type=str, default="160g",
                         help='The executor memory.')
-    parser.add_argument('--num_executor', type=int, default=8,
-                        help='The number of executor.')
+    parser.add_argument('--num_executors', type=int, default=8,
+                        help='The number of executors.')
     parser.add_argument('--driver_cores', type=int, default=4,
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--input_transaction', type=str,
+    parser.add_argument('--input_transaction', type=str, required=True,
                         help="transaction files.")
-    parser.add_argument('--input_meta', type=str,
+    parser.add_argument('--input_meta', type=str, required=True,
                         help="item metadata file")
-    parser.add_argument('--output', default=".")
-    parser.add_argument(
-        '--write_mode',
-        choices=['overwrite', 'errorifexists'],
-        default='overwrite')
+    parser.add_argument('--output', default="./")
 
     args = parser.parse_args()
     return args
@@ -71,13 +66,13 @@ if __name__ == "__main__":
         init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
         init_orca_context("standalone", master=args.master,
-                          cores=args.executor_cores, num_nodes=args.num_executor,
+                          cores=args.executor_cores, num_nodes=args.num_executors,
                           memory=args.executor_memory,
                           driver_cores=args.driver_cores,
                           driver_memory=args.driver_memory, conf=conf)
     elif args.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=args.executor_cores,
-                          num_nodes=args.num_executor, memory=args.executor_memory,
+                          num_nodes=args.num_executors, memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           conf=conf)
     elif args.cluster_mode == "spark-submit":
@@ -89,12 +84,12 @@ if __name__ == "__main__":
         .rename({'reviewerID': 'user', 'asin': 'item', 'unixReviewTime': 'time'}) \
         .dropna(columns=['user', 'item'])
     transaction_tbl.cache()
-    print("transaction_tbl, ", transaction_tbl.size())
+    print("Total number of transactions: ", transaction_tbl.size())
 
     item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
         .apply("category", "category", lambda x: x.lower() if x is not None else "default")
     item_tbl.cache()
-    print("item_tbl, ", item_tbl.size())
+    print("Total number of items: ", item_tbl.size())
 
     user_index = transaction_tbl.gen_string_idx('user', freq_limit=1)
     item_cat_indices = item_tbl.gen_string_idx(["item", "category"], freq_limit=1)
@@ -110,18 +105,18 @@ if __name__ == "__main__":
         .add_neg_hist_seq(item_size, 'item_hist_seq', neg_num=5)\
         .add_negative_samples(item_size, item_col='item', neg_num=1)\
         .add_value_features(columns=["item", "item_hist_seq", "neg_item_hist_seq"],
-                            dict_tbl=item_tbl, key="item", value="category")\
+                            dict_tbl=item_tbl, key="item", value="category") \
+        .apply("item_hist_seq", "item_hist_seq_len", len, "int") \
         .pad(cols=['item_hist_seq', 'category_hist_seq',
              'neg_item_hist_seq', 'neg_category_hist_seq'],
              seq_len=100,
              mask_cols=['item_hist_seq']) \
-        .apply("item_hist_seq", "item_hist_seq_len", len, "int") \
         .apply("label", "label", lambda x: [1 - float(x), float(x)], "array<float>")
 
     # write out
-    user_index.write_parquet(args.output + "user_index")
-    item_cat_indices[0].write_parquet(args.output + "item_index")
-    item_cat_indices[1].write_parquet(args.output + "category_index")
+    user_index.write_parquet(args.output)
+    item_cat_indices[0].write_parquet(args.output)
+    item_cat_indices[1].write_parquet(args.output)
     item_tbl.write_parquet(args.output + "item2cat")
     full_tbl.write_parquet(args.output + "data")
 
