@@ -252,6 +252,48 @@ class KerasNet(ZooKerasLayer):
                         val_x,
                         val_y)
 
+    def fit(self, x, feature_cols, label_cols, batch_size=32, nb_epoch=10, validation_data=None):
+        """
+        Train a model for a fixed number of epochs on a spark dataframe.
+
+        # Arguments
+        x: Input data. A Spark DataFrame.
+        featureCols: A list of feature columns.
+        labelCols: A list of label columns.
+        batch_size: Number of samples per gradient update.
+        nb_epoch: Number of iterations to train.
+        validation_data: Spark DataFrame. Default is None if no validation is involved.
+        """
+        callBigDlFunc(self.bigdl_type, "zooFit",
+                      self.value,
+                      x,
+                      batch_size,
+                      nb_epoch,
+                      feature_cols,
+                      label_cols,
+                      validation_data)
+
+    def fit(self, x, label_cols, batch_size=32, nb_epoch=10, transform=None, validation_data=None):
+        """
+        Train a model for a fixed number of epochs on a spark dataframe.
+
+        # Arguments
+        x: Input data. A Spark DataFrame.
+        featureCols: A list of feature columns.
+        labelCols: A list of label columns.
+        batch_size: Number of samples per gradient update.
+        nb_epoch: Number of iterations to train.
+        validation_data: Spark DataFrame. Default is None if no validation is involved.
+        """
+        callBigDlFunc(self.bigdl_type, "zooFit",
+                      self.value,
+                      x,
+                      batch_size,
+                      nb_epoch,
+                      label_cols,
+                      transform,
+                      validation_data)
+
     def evaluate(self, x, y=None, batch_size=32):
         """
         Evaluate a model on a given dataset in distributed mode.

@@ -32,7 +32,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.dllib.nn.{BatchNormalization => BNBatchNormalization}
 import com.intel.analytics.bigdl.dllib.utils.{Shape, Table}
-import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.feature.image.{ImageProcessing, ImageSet}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Constant, _}
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, _}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
@@ -44,6 +44,7 @@ import com.intel.analytics.bigdl.dllib.keras.optimizers.{Adam, AdamWeightDecay, 
 import org.apache.spark.api.java.JavaRDD
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.text.TextSet
+import org.apache.spark.sql._
 // import com.intel.analytics.zoo.models.common.ZooModel
 // import com.intel.analytics.zoo.models.seq2seq.{Bridge, RNNDecoder, RNNEncoder}
 import com.intel.analytics.bigdl.dllib.keras.Net
@@ -141,6 +142,30 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       batching(DataSet.array(valArray), batchSize)
     } else null
     module.fit(trainData, nbEpoch, valData)
+  }
+
+  def fit(
+     module: KerasNet[T],
+     x: DataFrame,
+     batchSize: Int,
+     epochs: Int,
+     featureCols: Array[String],
+     labelCols: Array[String],
+     validationData: DataFrame = null): Unit = {
+    module.fit(x, batchSize, epochs, featureCols, labelCols,
+      if (validationData == null) null else validationData)
+  }
+
+  def fit(
+     module: KerasNet[T],
+     x: DataFrame,
+     batchSize: Int,
+     epochs: Int,
+     labelCols: Array[String],
+     transform: ImageProcessing,
+     validationData: DataFrame = null): Unit = {
+    module.fit(x, batchSize, epochs, labelCols.head, transform,
+      if (validationData == null) null else validationData)
   }
 
   private def processEvaluateResult(
