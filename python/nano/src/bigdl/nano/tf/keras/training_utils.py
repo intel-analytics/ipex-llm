@@ -39,7 +39,8 @@ class TrainingUtils:
             max_queue_size=10,
             workers=1,
             use_multiprocessing=False,
-            nprocs=None):
+            nprocs=None,
+            backend="multiprocessing"):
 
         fit_kwargs = dict(
             x=x,
@@ -70,13 +71,19 @@ class TrainingUtils:
             msg = "x must be a tf.data.Dataset for multi-process training"
             assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
 
-            from bigdl.nano.common.multiprocessing.ray_backend import RayBackend
+            if backend == "multiprocessing":
+                from bigdl.nano.common.multiprocessing.multiprocs_backend import MultiprocessingBackend
+                _backend = MultiprocessingBackend()
+            elif backend == "ray":
+                from bigdl.nano.common.multiprocessing.ray_backend import RayBackend
+                _backend = RayBackend()
+            else:
+                raise NotImplementedError("Backend {} is not implemented.".format(backend))
 
-            history = distributed_train_keras(RayBackend(),
+            history = distributed_train_keras(_backend,
                                               model=self,
                                               nprocs=nprocs,
                                               fit_kwargs=fit_kwargs)
             return history
-
         else:
             return super().fit(**fit_kwargs)
