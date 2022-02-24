@@ -52,15 +52,13 @@ def _parse_args():
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--input_transaction', type=str,
+    parser.add_argument('--input_transaction', type=str, required=True,
                         help="transaction files.")
-    parser.add_argument('--input_meta', type=str,
+    parser.add_argument('--input_meta', type=str, required=True,
                         help="item metadata file")
     parser.add_argument('--output', default=".")
-    parser.add_argument(
-        '--write_mode',
-        choices=['overwrite', 'errorifexists'],
-        default='overwrite')
+    parser.add_argument('--write_mode', choices=['overwrite', 'errorifexists'],
+                        default='overwrite')
 
     args = parser.parse_args()
     return args
@@ -89,12 +87,12 @@ if __name__ == "__main__":
         .rename({'reviewerID': 'user', 'asin': 'item', 'unixReviewTime': 'time'}) \
         .dropna(columns=['user', 'item'])
     transaction_tbl.cache()
-    print("transaction_tbl, ", transaction_tbl.size())
+    print("Total number of transactions: ", transaction_tbl.size())
 
     item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
         .apply("category", "category", lambda x: x.lower() if x is not None else "default")
     item_tbl.cache()
-    print("item_tbl, ", item_tbl.size())
+    print("Total number of items: ", item_tbl.size())
 
     user_index = transaction_tbl.gen_string_idx('user', freq_limit=1)
     item_cat_indices = item_tbl.gen_string_idx(["item", "category"], freq_limit=1)
