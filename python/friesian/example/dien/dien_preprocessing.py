@@ -37,7 +37,6 @@ conf = {"spark.network.timeout": "10000000",
 
 def _parse_args():
     parser = ArgumentParser()
-
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn, standalone or spark-submit.')
     parser.add_argument('--master', type=str, default=None,
@@ -57,8 +56,6 @@ def _parse_args():
     parser.add_argument('--input_meta', type=str, required=True,
                         help="item metadata file")
     parser.add_argument('--output', default="./")
-    parser.add_argument('--write_mode', choices=['overwrite', 'errorifexists'],
-                        default='overwrite')
 
     args = parser.parse_args()
     return args
