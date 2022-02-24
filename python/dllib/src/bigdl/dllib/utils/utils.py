@@ -186,7 +186,8 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
                     result.append(np.array(row[name]).astype(np.float32))    
                 elif isinstance(feature_type, df_types.IntegerType):
                     result.append(np.array(row[name]).astype(np.int32))    
-                else: result.append(np.array(row[name]))
+                else: 
+                    result.append(np.array(row[name]))
             elif isinstance(feature_type, df_types.ArrayType):
                 result.append(np.array(row[name]).astype(np.float32))
             elif isinstance(row[name], DenseVector):
