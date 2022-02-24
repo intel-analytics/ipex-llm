@@ -56,7 +56,7 @@ def _parse_args():
                         help="transaction files.")
     parser.add_argument('--input_meta', type=str, required=True,
                         help="item metadata file")
-    parser.add_argument('--output', default=".")
+    parser.add_argument('--output', default="./")
     parser.add_argument('--write_mode', choices=['overwrite', 'errorifexists'],
                         default='overwrite')
 
@@ -108,18 +108,18 @@ if __name__ == "__main__":
         .add_neg_hist_seq(item_size, 'item_hist_seq', neg_num=5)\
         .add_negative_samples(item_size, item_col='item', neg_num=1)\
         .add_value_features(columns=["item", "item_hist_seq", "neg_item_hist_seq"],
-                            dict_tbl=item_tbl, key="item", value="category")\
+                            dict_tbl=item_tbl, key="item", value="category") \
+        .apply("item_hist_seq", "item_hist_seq_len", len, "int") \
         .pad(cols=['item_hist_seq', 'category_hist_seq',
              'neg_item_hist_seq', 'neg_category_hist_seq'],
              seq_len=100,
              mask_cols=['item_hist_seq']) \
-        .apply("item_hist_seq", "item_hist_seq_len", len, "int") \
         .apply("label", "label", lambda x: [1 - float(x), float(x)], "array<float>")
 
     # write out
-    user_index.write_parquet(args.output + "user_index")
-    item_cat_indices[0].write_parquet(args.output + "item_index")
-    item_cat_indices[1].write_parquet(args.output + "category_index")
+    user_index.write_parquet(args.output)
+    item_cat_indices[0].write_parquet(args.output)
+    item_cat_indices[1].write_parquet(args.output)
     item_tbl.write_parquet(args.output + "item2cat")
     full_tbl.write_parquet(args.output + "data")
 
