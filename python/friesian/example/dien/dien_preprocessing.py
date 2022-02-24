@@ -77,6 +77,10 @@ if __name__ == "__main__":
                           conf=conf)
     elif args.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
+            ", but got " + args.cluster_mode)
 
     begin = time.time()
     transaction_tbl = FeatureTable.read_json(args.input_transaction).select(

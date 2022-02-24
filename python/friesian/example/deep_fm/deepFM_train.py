@@ -126,6 +126,10 @@ if __name__ == '__main__':
                                extra_python_lib="evaluation.py")
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit", object_store_memory="40g")
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn' and 'spark-submit'"
+            ", but got " + args.cluster_mode)
 
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
