@@ -38,7 +38,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
     val testSources = Source.fromFile(testPath, "utf-8").getLines()
     val rowkeyName = "Id"
     val labelName = "SalePrice"
-    val (trainFeatures, testFeatures, trainLabels) =
+    val (trainFeatures, testFeatures, trainLabels, flattenHeaders) =
       TmpUtils.preprocessing(sources, testSources, rowkeyName, labelName)
     val trainFeatureArray = trainFeatures.map(tensor => tensor.toArray()).flatten
     val testFeatureArray = testFeatures.map(tensor => tensor.toArray()).flatten
@@ -95,13 +95,13 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       val testPath = getClass.getClassLoader.getResource("house-prices-test.csv").getPath
       val sources = Source.fromFile(dataPath, "utf-8").getLines()
       val testSources = Source.fromFile(testPath, "utf-8").getLines()
-      val (trainFeatures, testFeatures, trainLabels) = TmpUtils.preprocessing(sources, testSources, rowkeyName, labelName)
+      val (trainFeatures, testFeatures, trainLabels, flattenHeaders) = TmpUtils.preprocessing(sources, testSources, rowkeyName, labelName)
 
       flServer.build()
       flServer.start()
       FLContext.initFLContext()
       val fGBoostRegression = new FGBoostRegression(
-        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
+        learningRate = 0.1f, maxDepth = 7, minChildSize = 5, flattenHeaders)
       fGBoostRegression.fit(trainFeatures, trainLabels, 100)
       val fGBoostResult = fGBoostRegression.predict(testFeatures).map(tensor => tensor.value())
         .map(math.exp(_))
@@ -140,7 +140,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       val testPath = getClass.getClassLoader.getResource("house-prices-test.csv-1.csv").getPath
       val sources = Source.fromFile(dataPath, "utf-8").getLines()
       val testSources = Source.fromFile(testPath, "utf-8").getLines()
-      val (trainFeatures, testFeatures, trainLabels) =
+      val (trainFeatures, testFeatures, trainLabels, flattenHeaders) =
         TmpUtils.preprocessing(sources, testSources, rowkeyName, labelName)
 
       flServer.setClientNum(2)
@@ -153,7 +153,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
         rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
       mockClient.start()
       val fGBoostRegression = new FGBoostRegression(
-        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
+        learningRate = 0.1f, maxDepth = 7, minChildSize = 5, flattenHeaders)
       logger.debug(s"Client1 calling fit...")
       fGBoostRegression.fit(trainFeatures, trainLabels, 100)
       val fGBoostResult = fGBoostRegression.predict(testFeatures).map(tensor => tensor.value())

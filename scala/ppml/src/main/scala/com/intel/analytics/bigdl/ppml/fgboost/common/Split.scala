@@ -32,9 +32,10 @@ class Split (
   val logger = LogManager.getLogger(this.getClass)
 
   protected var clientID = "";
-
+  protected var featureName = "";
   def getClientID: String= clientID
 
+  def setFeatureName(featureName: String) = this.featureName = featureName
   def setClientID(clientID: String): this.type = {
     this.clientID = clientID
     this

@@ -35,7 +35,8 @@ abstract class FGBoostModel(continuous: Boolean,
                             learningRate: Float = 0.005f,
                             maxDepth: Int = 6,
                             minChildSize: Int = 1,
-                            validationMethods: Array[ValidationMethod[Float]] = null) {
+                            validationMethods: Array[ValidationMethod[Float]] = null,
+                            flattenHeaders: Array[String] = null) {
   val logger = LogManager.getLogger(getClass)
   var flClient = FLContext.getClient()
 
@@ -146,7 +147,7 @@ abstract class FGBoostModel(continuous: Boolean,
     for (i <- 0 until totalRound) {
       logger.debug(s"Training regression tree boost round: $i")
       val grads = downloadGrad(i)
-      val currTree = RegressionTree(dataSet, indices, grads, i.toString)
+      val currTree = RegressionTree(dataSet, indices, grads, i.toString, flattenHeaders = flattenHeaders)
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return

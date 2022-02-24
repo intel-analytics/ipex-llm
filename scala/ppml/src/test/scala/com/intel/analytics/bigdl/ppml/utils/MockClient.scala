@@ -41,10 +41,10 @@ class MockClient(dataPath: String,
     val testSources = if (testPath != null) {
       Source.fromFile(testPath, "utf-8").getLines()
     } else null
-    val (trainFeatures, testFeatures, trainLabels) =
+    val (trainFeatures, testFeatures, trainLabels, flattenHeaders) =
       TmpUtils.preprocessing(sources, testSources, rowKeyName, labelName)
     val fgBoostRegression = new FGBoostRegression(
-      learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
+      learningRate = 0.1f, maxDepth = 7, minChildSize = 5, flattenHeaders)
     val testFlContext= new FlContextForTest()
     testFlContext.initFLContext()
     fgBoostRegression.flClient = testFlContext.getClient()

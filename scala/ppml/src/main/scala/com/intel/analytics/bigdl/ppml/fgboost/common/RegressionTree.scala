@@ -37,7 +37,8 @@ class RegressionTree(
                       val minInstancesPerNode: Int = 8,
                       val numFeaturesPerNode: Int = 1,
                       val minInfoGain: Float = 0,
-                      val lambda: Float = 1f
+                      val lambda: Float = 1f,
+                      val flattenHeaders: Array[String] = null
                     ) extends Serializable {
 
 
@@ -178,6 +179,7 @@ class RegressionTree(
       logger.info(split)
     }
     val parentNode = nodes(split.nodeID)
+    split.setFeatureName(flattenHeaders(split.featureID))
     parentNode.splitInfo = split
     val newNodes = splitToNodes(split, parentNode)
     parentNode.leftChild = newNodes._1
@@ -253,9 +255,11 @@ object RegressionTree {
 
   def apply(dataset: Array[Tensor[Float]],
             sortedIndex: Array[Array[Int]],
-            grads: Array[Array[Float]], treeID: String): RegressionTree = {
+            grads: Array[Array[Float]],
+            treeID: String,
+            flattenHeaders: Array[String] = null): RegressionTree = {
     new RegressionTree(dataset,
-      sortedIndex, grads, treeID)
+      sortedIndex, grads, treeID, flattenHeaders = flattenHeaders)
   }
 
 }

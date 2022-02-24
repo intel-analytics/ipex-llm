@@ -18,13 +18,15 @@ package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 
+import scala.collection.mutable.ArrayBuffer
+
 // TODO: would be removed if only Spark DataFrame API is needed
 object TmpUtils {
   def preprocessing(
                      sources: Iterator[String],
                      testSources: Iterator[String],
                      rowkeyName: String,
-                     labelName: String): (Array[Tensor[Float]], Array[Tensor[Float]], Array[Float]) = {
+                     labelName: String) = {
     val headers = sources.next().split(",").map(_.trim)
     val trainHeaders = headers.toBuffer
     val testHeaders = testSources.next()
@@ -67,13 +69,16 @@ object TmpUtils {
       o.toArray
     }
 
+    val flattenHeader = new ArrayBuffer[String]()
     // replace NA with average for number column
     val msSubClassIndex = trainHeaders.indexOf("MSSubClass")
     val features = trainHeaders.indices.map { col =>
+      // Do preprocess column-wise
       val features = data.map(_ (col))
       val testFeatures = testData.map(_ (col))
       val noneNaFeatures = features.filter(_ != "NA")
       if (noneNaFeatures.length.toFloat / features.length <= 0.6f) {
+        // Too many NA features, ignore this column
         (col, -1, features.map(_ => Array[Float]()),
           testFeatures.map(_ => Array[Float]()))
       } else {
@@ -85,7 +90,8 @@ object TmpUtils {
           scala.util.Try(noneNaFeatures.head.toFloat).isSuccess
         }
         if (isNum) {
-          // fill NA to average
+          // fill NA to average, an array for a column
+          flattenHeader.append(trainHeaders(col))
           val avg = (noneNaFeatures.map(_.toFloat).sum / noneNaFeatures.length)
           val trainNumFeatures = features.map { d =>
             if (d == "NA") avg else d.toFloat
@@ -98,6 +104,7 @@ object TmpUtils {
           (col, 0, trainNumFeatures.map(v => Array((v - avg) / std)),
             testNumFeatures.map(v => Array((v - avg) / std)))
         } else {
+          // fill NA to max occur, an 2-d array for a column, last dim is one-hot
           val grouped = features.groupBy(v => v).mapValues(_.length)
           val fkeys = grouped.toArray.map(_._1).filter(_ != "NA").sorted
           val default = fkeys.indexOf(grouped.toArray.maxBy(_._2)._1)
@@ -107,6 +114,8 @@ object TmpUtils {
             oneHot(indx) = 1f
             oneHot
           }
+          val colPrefix = trainHeaders(col)
+          fkeys.indices.foreach(i => flattenHeader.append(s"${colPrefix}_$i"))
           val testCateFeatures = testFeatures.map { feature =>
             val indx = if (feature == "NA") default else fkeys.indexOf(feature)
             val oneHot = new Array[Float](fkeys.length)
@@ -140,6 +149,6 @@ object TmpUtils {
       val f = (cateF ++ numF).toArray.flatten
       Tensor[Float](Storage[Float](f))
     }.toArray
-    (trainFeatures, testFeatures, trainLabels)
+    (trainFeatures, testFeatures, trainLabels, flattenHeader.toArray)
   }
 }
