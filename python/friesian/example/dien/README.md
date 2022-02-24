@@ -64,8 +64,8 @@ __Options:__
 * `num_executors`: The number of nodes to use in the cluster. 
 * `driver_cores`: The number of cores to use for the driver. 
 * `driver_memory`: The amount of memory to allocate for the driver.
-* `input_meta`: The path to `meta_Books.csv`, either a local path or an HDFS path.
-* `input_transaction`: The path to `reviews_Books.json`, either a local path or an HDFS path.
+* `input_meta`: __Required.__ The path to `meta_Books.csv`, either a local path or an HDFS path.
+* `input_transaction`: __Required.__ The path to `reviews_Books.json`, either a local path or an HDFS path.
 * `output`: The path to save the preprocessed data to parquet files. HDFS path is recommended.
 
 ## Train DIEN
