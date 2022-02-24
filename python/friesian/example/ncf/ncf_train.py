@@ -104,6 +104,10 @@ if __name__ == '__main__':
                                init_ray_on_spark=True)
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
+            ", but got " + args.cluster_mode)
 
     movielens_data = movielens.get_id_ratings("/tmp/movielens/")
     pddf = pd.DataFrame(movielens_data, columns=["user", "item", "label"])

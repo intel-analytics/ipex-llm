@@ -199,6 +199,10 @@ if __name__ == '__main__':
                           num_nodes=args.num_executor, memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           conf=conf)
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn' and 'standalone'"
+            ", but got " + args.cluster_mode)
 
     start = time()
     train_paths = [os.path.join(args.input_train_folder, 'part-%05d.parquet' % i)
