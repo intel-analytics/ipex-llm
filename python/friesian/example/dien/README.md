@@ -75,7 +75,7 @@ python dien_train.py \
     --executor_cores 8 \
     --executor_memory 50g \
     --batch_size 128 \
-    --data_dir /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --data_dir /path/to/the/folder/to/save/preprocessed/parquet/files \
     --model_dir /path/to/the/folder/to/save/trained/model 
 ```
 
@@ -88,7 +88,7 @@ python dien_train.py \
     --executor_memory 50g \
     --num_executors 8 \
     --batch_size 128 \
-    --data_dir /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --data_dir /path/to/the/folder/to/save/preprocessed/parquet/files \
     --model_dir /path/to/the/folder/to/save/trained/model 
 ```
 
@@ -100,7 +100,7 @@ python dien_train.py \
     --executor_memory 50g \
     --num_executors 8 \
     --batch_size 128 \
-    --data_dir /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --data_dir /path/to/the/folder/to/save/preprocessed/parquet/files \
     --model_dir /path/to/the/folder/to/save/trained/model 
 ```
 
