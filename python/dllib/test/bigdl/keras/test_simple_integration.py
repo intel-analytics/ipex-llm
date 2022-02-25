@@ -272,9 +272,16 @@ class TestSimpleIntegration(ZooTestCase):
         model.evaluate(df, batch_size=4, feature_cols=["features"], label_cols=["label"])
 
     def test_training_with_dataframe_image(self):
+        from bigdl.dllib.nncontext import *
+        self.sc.stop()
+        sparkConf = init_spark_conf().setMaster("local[1]")
+        self.sc = init_nncontext(sparkConf)
+        self.sqlContext = SQLContext(self.sc)
+
         from pyspark.sql.functions import lit
         from bigdl.dllib.nnframes import *
-        image_path = os.path.join(self.resource_path, "gray/gray.bmp")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
+        image_path = os.path.join(resource_path, "gray/gray.bmp")
         image_df = NNImageReader.readImages(image_path, self.sc).withColumn("label", lit(1))
 
         model = Sequential()
