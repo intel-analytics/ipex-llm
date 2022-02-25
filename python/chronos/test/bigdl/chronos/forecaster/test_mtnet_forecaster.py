@@ -42,6 +42,12 @@ class TestChronosModelMTNetForecaster(TestCase):
             mask = (mask_x == 1) & (mask_y == 1)
             return output_x[mask], output_y[mask]
 
+        def gen_test_sample(data, past_seq_len):
+            test_data = pd.DataFrame(data).values
+            output_x, mask_x = roll_data(test_data, past_seq_len)
+            mask = (mask_x == 1)
+            return output_x[mask]
+
         def roll_data(data, seq_len):
             result = []
             mask = []
@@ -54,11 +60,6 @@ class TestChronosModelMTNetForecaster(TestCase):
                     mask.append(1)
 
             return np.asarray(result), np.asarray(mask)
-
-        def gen_test_sample(data, past_seq_len):
-            test_data = pd.DataFrame(data)
-            x = self.ft._roll_test(test_data, past_seq_len=past_seq_len)
-            return x
 
         self.long_num = 4
         self.time_step = 1

@@ -60,7 +60,7 @@ class TestMTNetKeras(ZooTestCase):
             output_x, mask_x = roll_data(test_data, past_seq_len)
             mask = (mask_x == 1)
             return output_x[mask]
-        
+
         def roll_data(data, seq_len):
             result = []
             mask = []
