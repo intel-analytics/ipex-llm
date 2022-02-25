@@ -19,7 +19,6 @@ import pytest
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.model.MTNet_keras import MTNetKeras
-from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 import pandas as pd
 import numpy as np
 import tensorflow as tf
@@ -30,7 +29,6 @@ class TestMTNetKeras(ZooTestCase):
 
     def setup_method(self, method):
         tf.keras.backend.clear_session()
-        self.ft = TimeSequenceFeatureTransformer()
         self.create_data()
         self.model = MTNetKeras()
         self.config = {"long_num": self.long_num,
@@ -47,16 +45,34 @@ class TestMTNetKeras(ZooTestCase):
     def create_data(self):
         def gen_train_sample(data, past_seq_len, future_seq_len):
             data = pd.DataFrame(data)
-            x, y = self.ft._roll_train(data,
-                                       past_seq_len=past_seq_len,
-                                       future_seq_len=future_seq_len
-                                       )
-            return x, y
+            # train_data
+            x = data[0:-future_seq_len].values
+            y = data.iloc[past_seq_len:, 0].values
+
+            result_x, mask_x = roll_data(x, past_seq_len)
+            result_y, mask_y = roll_data(y, future_seq_len)
+            mask = (mask_x == 1) & (mask_y == 1)
+            return result_x[mask], result_y[mask]
 
         def gen_test_sample(data, past_seq_len):
-            test_data = pd.DataFrame(data)
-            x = self.ft._roll_test(test_data, past_seq_len=past_seq_len)
-            return x
+            test_data = pd.DataFrame(data).values
+
+            output_x, mask_x = roll_data(test_data, past_seq_len)
+            mask = (mask_x == 1)
+            return output_x[mask]
+        
+        def roll_data(data, seq_len):
+            result = []
+            mask = []
+
+            for i in range(len(data) - seq_len + 1):
+                result.append(data[i: i + seq_len])
+
+                if pd.isna(data[i: i + seq_len]).any(axis=None):
+                    mask.append(0)
+                else:
+                    mask.append(1)
+            return np.asarray(result), np.asarray(mask)
 
         self.long_num = 2
         self.time_step = 1

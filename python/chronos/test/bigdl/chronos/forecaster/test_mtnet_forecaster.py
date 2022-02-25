@@ -37,11 +37,25 @@ class TestChronosModelMTNetForecaster(TestCase):
     def create_data(self):
         def gen_train_sample(data, past_seq_len, future_seq_len):
             data = pd.DataFrame(data)
-            x, y = self.ft._roll_train(data,
-                                       past_seq_len=past_seq_len,
-                                       future_seq_len=future_seq_len
-                                       )
-            return x, y
+            x = data[0:-future_seq_len].values
+            y = data.iloc[past_seq_len:, 0].values
+            output_x, mask_x = roll_data(x, past_seq_len)
+            output_y, mask_y = roll_data(y, future_seq_len)
+            mask = (mask_x == 1) & (mask_y == 1)
+            return output_x[mask], output_y[mask]
+
+        def roll_data(data, seq_len):
+            result = []
+            mask = []
+            for i in range(len(data) - seq_len + 1):
+                result.append(data[i: i + seq_len])
+
+                if pd.isna(data[i: i + seq_len]).any(axis=None):
+                    mask.append(0)
+                else:
+                    mask.append(1)
+
+            return np.asarray(result), np.asarray(mask)
 
         def gen_test_sample(data, past_seq_len):
             test_data = pd.DataFrame(data)
