@@ -16,7 +16,6 @@
 
 import pytest
 import numpy as np
-from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 import tensorflow as tf
 import pandas as pd
 
@@ -28,7 +27,6 @@ class TestChronosModelMTNetForecaster(TestCase):
 
     def setUp(self):
         tf.keras.backend.clear_session()
-        self.ft = TimeSequenceFeatureTransformer()
         self.create_data()
 
     def tearDown(self):
