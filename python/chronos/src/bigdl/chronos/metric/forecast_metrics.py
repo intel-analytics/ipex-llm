@@ -101,10 +101,11 @@ class Evaluator(object):
                 res = torch.zeros(y_true.shape[-1])
                 for i in range(y_true.shape[-1]):
                     if callable(metric):
-                        res[i] = metric_func(y_true[..., i], y_pred[..., i])
+                        res[i] = torch.from_numpy(metric_func(y_true[..., i], y_pred[..., i]))
                     else:
                         res[i] = metric_func(y_pred[..., i], y_true[..., i])
                 res = res.reshape(original_shape[1:])
+                res_list.append(res.numpy())
             else:
                 if callable(metric):
                     res = metric_func(y_true, y_pred)
