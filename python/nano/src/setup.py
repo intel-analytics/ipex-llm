@@ -153,7 +153,5 @@ if __name__ == '__main__':
                          f"--plat-name should be one of {valid_plat_names}"
                          f" but got {verbose_plat_name}")
     plat_name = verbose_plat_name
-    sys.argv.remove(sys.argv[idx+1])
-    sys.argv.remove(sys.argv[idx])
 
     setup_package(plat_name)
