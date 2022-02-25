@@ -33,5 +33,5 @@ if __name__ == '__main__':
     tf_config = json.loads(os.environ["TF_CONFIG"])
 
     with open(os.path.join(temp_dir, 
-                           f"history_{tf_config['task']['index']}"),"wb") as f:
+                           f"history_{tf_config['task']['index']}"), "wb") as f:
         pickle.dump(history, f)
