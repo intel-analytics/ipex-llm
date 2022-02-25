@@ -453,7 +453,7 @@ class TrainingSpec extends ZooSpecHelper {
       transform = transformers)
     val predDf = model.predict(imgDF, predictionCol = "predict", transform = transformers)
     predDf.show()
-    model.evaluate(imgDF, batchSize = 1, labelCol = "label", transform = transformers)
+    model.evaluate(imgDF, batchSize = 1, labelCols = Array("label"), transform = transformers)
   }
 }
 
