@@ -90,10 +90,3 @@ def test_fit_function():
                                                   validation_data=val_ds, nprocs=2, backend="multiprocessing")
     assert 1 - (history_default.history['loss'][-1]
                 / history_multiprocess.history['loss'][-1]) <= 0.1
-
-    # Case 2.2: ray backend
-    # model_ray = model_init(num_classes)
-    # history_ray = model_ray.fit(train_ds, epochs=3,
-    #                             validation_data=val_ds, nprocs=2, backend="multiprocessing")
-    # assert 1 - (history_default.history['loss'][-1]
-    #             / history_ray.history['loss'][-1]) <= 0.1
