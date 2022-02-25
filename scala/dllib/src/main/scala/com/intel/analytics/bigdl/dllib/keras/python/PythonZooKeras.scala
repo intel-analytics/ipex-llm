@@ -161,10 +161,10 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
      x: DataFrame,
      batchSize: Int,
      epochs: Int,
-     labelCols: Array[String],
+     labelCols: JList[String],
      transform: ImageProcessing,
      validationData: DataFrame): Unit = {
-    module.fit(x, batchSize, epochs, labelCols.head, transform,
+    module.fit(x, batchSize, epochs, labelCols.asScala.toArray, transform,
       if (validationData == null) null else validationData)
   }
 
@@ -218,7 +218,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
                    batchSize: Int
                    ): JList[Float] = {
     val resultArray = module.evaluate(x,
-      labelCols.asScala.toArray.head, transform, batchSize)
+      labelCols.asScala.toArray, transform, batchSize)
     processEvaluateResult(resultArray)
   }
 

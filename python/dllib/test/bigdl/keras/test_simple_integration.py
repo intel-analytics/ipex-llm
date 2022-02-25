@@ -272,6 +272,8 @@ class TestSimpleIntegration(ZooTestCase):
         model.evaluate(df, batch_size=4, feature_cols=["features"], label_cols=["label"])
 
     def test_training_with_dataframe_image(self):
+        from pyspark.sql.functions import lit
+        from bigdl.dllib.nnframes import *
         image_path = os.path.join(self.resource_path, "gray/gray.bmp")
         image_df = NNImageReader.readImages(image_path, self.sc).withColumn("label", lit(1))
 
@@ -284,9 +286,9 @@ class TestSimpleIntegration(ZooTestCase):
                       loss="sparse_categorical_crossentropy")
         model.fit(image_df, label_cols=["label"], batch_size=1, nb_epoch=1)
 
-        predDf = model.predict(image_df, predictionCol=["predict"])
+        predDf = model.predict(image_df, prediction_col="predict")
         predDf.show()
-        model.evaluate(image_df, batch_size=1, labelCols=["label"])
+        model.evaluate(image_df, batch_size=1, label_cols=["label"])
 
 if __name__ == "__main__":
     pytest.main([__file__])
