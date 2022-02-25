@@ -673,11 +673,11 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
 
   def evaluate(
     x: DataFrame,
-    labelCol: String,
+    labelCols: Array[String],
     transform: ImageProcessing,
     batchSize: Int)
   (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    val rdd = df2ImageSet(x, labelCol, transform)
+    val rdd = df2ImageSet(x, labelCols.head, transform)
     val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
     rdd.transform(transformer2)
     this.evaluate(rdd, batchSize)
