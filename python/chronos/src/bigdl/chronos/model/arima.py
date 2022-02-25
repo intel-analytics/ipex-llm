@@ -79,10 +79,10 @@ class ARIMAModel:
         self.model.fit(data)
         if self.metric_func:
             val_metric = self.evaluate(x=None, target=validation_data,
-                                    metrics=[self.metric_func])[0].item()
+                                       metrics=[self.metric_func])[0].item()
         else:
             val_metric = self.evaluate(x=None, target=validation_data,
-                                    metrics=[self.metric])[0].item()
+                                       metrics=[self.metric])[0].item()
         if self.metric_func:
             return {self.metric_func.__name__: val_metric}
         else:

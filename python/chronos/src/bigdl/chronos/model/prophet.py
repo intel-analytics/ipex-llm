@@ -96,10 +96,10 @@ class ProphetModel:
         if validation_data is not None:
             if self.metric_func:
                 val_metric = self.evaluate(target=validation_data,
-                                        metrics=[self.metric_func])[0].item()
+                                           metrics=[self.metric_func])[0].item()
             else:
                 val_metric = self.evaluate(target=validation_data,
-                                        metrics=[self.metric])[0].item()
+                                           metrics=[self.metric])[0].item()
             if self.metric_func:
                 return {self.metric_func.__name__: val_metric}
             else:
