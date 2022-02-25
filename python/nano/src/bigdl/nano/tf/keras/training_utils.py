@@ -72,7 +72,8 @@ class TrainingUtils:
             assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
 
             if backend == "multiprocessing":
-                from bigdl.nano.common.multiprocessing.multiprocs_backend import MultiprocessingBackend
+                from bigdl.nano.common.multiprocessing.multiprocs_backend \
+                    import MultiprocessingBackend
                 _backend = MultiprocessingBackend()
             elif backend == "ray":
                 from bigdl.nano.common.multiprocessing.ray_backend import RayBackend
