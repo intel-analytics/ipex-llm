@@ -144,26 +144,26 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     module.fit(trainData, nbEpoch, valData)
   }
 
-  def fit(
+  def zooFit(
      module: KerasNet[T],
      x: DataFrame,
      batchSize: Int,
      epochs: Int,
-     featureCols: Array[String],
-     labelCols: Array[String],
-     validationData: DataFrame = null): Unit = {
-    module.fit(x, batchSize, epochs, featureCols, labelCols,
+     featureCols: JList[String],
+     labelCols: JList[String],
+     validationData: DataFrame): Unit = {
+    module.fit(x, batchSize, epochs, featureCols.asScala.toArray, labelCols.asScala.toArray,
       if (validationData == null) null else validationData)
   }
 
-  def fit(
+  def zooFitImage(
      module: KerasNet[T],
      x: DataFrame,
      batchSize: Int,
      epochs: Int,
      labelCols: Array[String],
      transform: ImageProcessing,
-     validationData: DataFrame = null): Unit = {
+     validationData: DataFrame): Unit = {
     module.fit(x, batchSize, epochs, labelCols.head, transform,
       if (validationData == null) null else validationData)
   }
@@ -196,6 +196,29 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       x: TextSet,
       batchSize: Int): JList[Float] = {
     val resultArray = module.evaluate(x, batchSize)
+    processEvaluateResult(resultArray)
+  }
+
+  def zooEvaluate(
+       module: KerasNet[T],
+       x: DataFrame,
+       batchSize: Int,
+       featureCols: JList[String],
+       labelCols: JList[String]): JList[Float] = {
+    val resultArray = module.evaluate(x, batchSize, featureCols.asScala.toArray,
+      labelCols.asScala.toArray)
+    processEvaluateResult(resultArray)
+  }
+
+  def zooEvaluateImage(
+                   module: KerasNet[T],
+                   x: DataFrame,
+                   labelCols: JList[String],
+                   transform: ImageProcessing,
+                   batchSize: Int
+                   ): JList[Float] = {
+    val resultArray = module.evaluate(x,
+      labelCols.asScala.toArray.head, transform, batchSize)
     processEvaluateResult(resultArray)
   }
 

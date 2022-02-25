@@ -249,18 +249,44 @@ class TestSimpleIntegration(ZooTestCase):
         model.fit(X_train, y_train, validation_data=(X_test, y_test))
 
     def test_training_with_dataframe(self):
+        from pyspark.sql.types import *
+        data = self.sc.parallelize([
+            ((2.0, 1.0, 3.0, 4.0, 2.0, 1.0), 0.0),
+            ((4.0, 3.0, 1.0, 2.0, 3.0, 5.0), 1.0),
+            ((2.0, 3.0, 2.0, 1.0, 1.0, 3.0), 1.0),
+            ((1.0, 2.0, 4.0, 3.0, 2.0, 5.0), 1.0)])
+
+        schema = StructType([
+            StructField("features", ArrayType(DoubleType(), False), False),
+            StructField("label", DoubleType(), False)])
+        df = self.sqlContext.createDataFrame(data, schema)
+
         model = Sequential()
-        model.add(Dense(8, input_shape=(32, 32, )))
-        model.add(Flatten())
-        model.add(Dense(4, activation="softmax"))
-        X_train = np.random.random([200, 32, 32])
-        y_train = np.random.randint(4, size=(200, ))
-        X_test = np.random.random([40, 32, 32])
-        y_test = np.random.randint(4, size=(40, ))
-        model.compile(optimizer="adam",
-                      loss="sparse_categorical_crossentropy",
-                      metrics=['accuracy', 'loss'])
-        model.fit(X_train, y_train, validation_data=(X_test, y_test))
+        model.add(Dense(2, activation="sigmoid", input_shape=(6,)))
+        model.compile(optimizer="sgd",
+                      loss="sparse_categorical_crossentropy")
+        model.fit(df, feature_cols=["features"], label_cols=["label"], batch_size=4, nb_epoch=1)
+
+        predDf = model.predict(df, feature_cols=["features"], prediction_col="predict")
+        predDf.show()
+        model.evaluate(df, batch_size=4, feature_cols=["features"], label_cols=["label"])
+
+    def test_training_with_dataframe_image(self):
+        image_path = os.path.join(self.resource_path, "gray/gray.bmp")
+        image_df = NNImageReader.readImages(image_path, self.sc).withColumn("label", lit(1))
+
+        model = Sequential()
+        model.add(Convolution2D(1, 24, 24, activation="relu", input_shape=(1, 50, 50)))
+        model.add(MaxPooling2D())
+        model.add(Reshape([169]))
+        model.add(Dense(2, activation="log_softmax"))
+        model.compile(optimizer="sgd",
+                      loss="sparse_categorical_crossentropy")
+        model.fit(image_df, label_cols=["label"], batch_size=1, nb_epoch=1)
+
+        predDf = model.predict(image_df, predictionCol=["predict"])
+        predDf.show()
+        model.evaluate(image_df, batch_size=1, labelCols=["label"])
 
 if __name__ == "__main__":
     pytest.main([__file__])
