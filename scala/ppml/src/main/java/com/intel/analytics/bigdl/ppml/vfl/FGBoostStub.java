@@ -59,7 +59,7 @@ public class FGBoostStub {
         UploadResponse uploadResponse = stub.uploadLabel(uploadRequest);
         return uploadResponse;
     }
-    public SplitResponse split(DataSplit ds, int version) {
+    public SplitResponse split(DataSplit ds) {
         SplitRequest uploadRequest = SplitRequest
                 .newBuilder()
                 .setSplit(ds)

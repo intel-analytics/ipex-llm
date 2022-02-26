@@ -76,7 +76,7 @@ class Split (
       .setGain(gain)
       .setSetLength(itemSet.size())
       .setClientUid(clientID)
-      .setFeatureName(featureName)
+
       .addAllItemSet(itemSet).build
   }
 }
