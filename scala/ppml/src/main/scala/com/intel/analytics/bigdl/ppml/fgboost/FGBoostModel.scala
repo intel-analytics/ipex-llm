@@ -83,13 +83,17 @@ abstract class FGBoostModel(continuous: Boolean,
     }
     val booleanOnePredict = localPredicts.head.values.map(_.length).sum
     // message may be too large, split by group to send to FLServer
-    val messageSize = 2 * 1e6
-    val groupedSize = Math.ceil(messageSize / booleanOnePredict).toInt
-    val result = localPredicts.grouped(groupedSize).flatMap{ groupedPredicts =>
-      val boostEvals = toBoostEvals(groupedPredicts)
-      val response = flClient.fgbostStub.predict(boostEvals.asJava)
-      toArrayFloat(response)
-    }.toArray
+//    val messageSize = 2 * 1e6
+//    val groupedSize = Math.ceil(messageSize / booleanOnePredict).toInt
+//    val result = localPredicts.grouped(groupedSize).flatMap{ groupedPredicts =>
+//      val boostEvals = toBoostEvals(groupedPredicts)
+//      val response = flClient.fgbostStub.predict(boostEvals.asJava)
+//      toArrayFloat(response)
+//    }.toArray
+
+    val boostEvals = toBoostEvals(localPredicts)
+    val response = flClient.fgbostStub.predict(boostEvals.asJava)
+    val result = toArrayFloat(response)
     result
   }
   /**
@@ -149,6 +153,9 @@ abstract class FGBoostModel(continuous: Boolean,
       val grads = downloadGrad(i)
       val currTree = RegressionTree(dataSet, indices, grads, i.toString, flattenHeaders = flattenHeaders)
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
+      if (i == 2) {
+        println("hi")
+      }
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return
     }
@@ -170,14 +177,16 @@ abstract class FGBoostModel(continuous: Boolean,
     }
   }
   def buildTree(tree: RegressionTree, continuous: Boolean) = {
+    var splitVersion = 0
     while (tree.canGrow && tree.depth < maxDepth) {
       // Find best split in curr tree
       var st = System.currentTimeMillis()
       val bestLocalSplit = tree.findBestSplit()
-      logger.debug(s"Find best split cost ${(System.currentTimeMillis() - st) / 1000f} s")
+      logger.debug(s"${flClient.getClientUUID} get split: $bestLocalSplit")
+//      logger.debug(s"Find best split cost ${(System.currentTimeMillis() - st) / 1000f} s")
       st = System.currentTimeMillis()
-      val bestSplit = getBestSplitFromServer(bestLocalSplit)
-      logger.debug(s"Sync split cost ${(System.currentTimeMillis() - st) / 1000f} s")
+      val bestSplit = getBestSplitFromServer(bestLocalSplit, splitVersion)
+//      logger.debug(s"Sync split cost ${(System.currentTimeMillis() - st) / 1000f} s")
       st = System.currentTimeMillis()
       val isLocalSplit = bestLocalSplit.getClientID == bestSplit.getClientID
       // If this split is in local dataset
@@ -237,7 +246,7 @@ abstract class FGBoostModel(continuous: Boolean,
     Array(grad, hess)
   }
 
-  def getBestSplitFromServer(split: Split): Split = {
+  def getBestSplitFromServer(split: Split, version: Int): Split = {
     split.setClientID(flClient.getClientUUID)
     val dataSplit = flClient.fgbostStub.split(split.toDataSplit()).getSplit
 

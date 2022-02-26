@@ -49,7 +49,7 @@ class MockClient(dataPath: String,
     testFlContext.initFLContext()
     fgBoostRegression.flClient = testFlContext.getClient()
     logger.debug(s"Client2 calling fit...")
-    fgBoostRegression.fit(trainFeatures, trainLabels, 100)
+    fgBoostRegression.fit(trainFeatures, trainLabels, 15)
     fgBoostRegression.predict(testFeatures)
   }
 }

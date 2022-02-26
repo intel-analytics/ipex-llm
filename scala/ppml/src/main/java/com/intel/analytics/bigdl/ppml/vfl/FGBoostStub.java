@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 public class FGBoostStub {
-    private static final Logger logger = LoggerFactory.getLogger(NNStub.class);
+    private static final Logger logger = LoggerFactory.getLogger(FGBoostStub.class);
     private static FGBoostServiceGrpc.FGBoostServiceBlockingStub stub;
     String clientID;
     public FGBoostStub(Channel channel, String clientID) {
@@ -50,16 +50,16 @@ public class FGBoostStub {
                 .setClientuuid(clientID)
                 .build();
 
-        logger.info("Upload the following data:");
-        logger.info("Upload Data Name:" + data.getMetaData().getName());
-        logger.info("Upload Data Version:" + data.getMetaData().getVersion());
-        logger.debug("Upload Data" + data.getTensorsMap());
+//        logger.info("Upload the following data:");
+//        logger.info("Upload Data Name:" + data.getMetaData().getName());
+//        logger.info("Upload Data Version:" + data.getMetaData().getVersion());
+//        logger.debug("Upload Data" + data.getTensorsMap());
 //        logger.info("Upload" + data.getTensorsMap().get("weights").getTensorList().subList(0, 5));
 
         UploadResponse uploadResponse = stub.uploadLabel(uploadRequest);
         return uploadResponse;
     }
-    public SplitResponse split(DataSplit ds) {
+    public SplitResponse split(DataSplit ds, int version) {
         SplitRequest uploadRequest = SplitRequest
                 .newBuilder()
                 .setSplit(ds)

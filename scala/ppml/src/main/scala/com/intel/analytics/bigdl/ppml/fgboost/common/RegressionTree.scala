@@ -142,7 +142,7 @@ class RegressionTree(
         bestGain,
         leftSet.map(int2Integer).toList.asJava
       )
-      bestS.setFeatureName(flattenHeaders(fIndex))
+//      bestS.setFeatureName(flattenHeaders(fIndex))
       logger.info("Best local split on node " + treeNode.nodeID + " is " + bestS.toString)
       bestS
     } else {
