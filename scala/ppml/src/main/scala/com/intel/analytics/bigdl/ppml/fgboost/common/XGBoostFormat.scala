@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer
 
 case class XGBoostFormatNode(nodeid: Int,
                              depth: Int,
-                             split: Int,
+                             split: String,
                              split_condition: Float,
                              leaf: Float,
                              yes: Int,
@@ -47,7 +47,7 @@ object XGBoostFormatSerializer {
         require(treeNode.rightChild != null, "???")
         XGBoostFormatNode(treeNode.nodeID.toInt,
           treeNode.depth,
-          treeNode.splitInfo.featureID,
+          treeNode.splitInfo.getFeatureName(),
           treeNode.splitInfo.splitValue,
           0,
           treeNode.leftChild.nodeID.toInt,
@@ -59,7 +59,7 @@ object XGBoostFormatSerializer {
       }
       else {
         // leaf node
-        XGBoostFormatNode(treeNode.nodeID.toInt, 0, 0, 0, treeNode.similarScore,
+        XGBoostFormatNode(treeNode.nodeID.toInt, 0, "", 0, treeNode.similarScore,
           0, 0, 0, null)
       }
     }

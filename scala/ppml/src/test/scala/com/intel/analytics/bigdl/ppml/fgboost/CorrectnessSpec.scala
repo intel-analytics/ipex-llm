@@ -38,8 +38,10 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
     val testSources = Source.fromFile(testPath, "utf-8").getLines()
     val rowkeyName = "Id"
     val labelName = "SalePrice"
-    val (trainFeatures, testFeatures, trainLabels, flattenHeaders) =
+    val (trainFeatures, testFeatures, trainLabels, flattenHeaders) = {
       TmpUtils.preprocessing(sources, testSources, rowkeyName, labelName)
+    }
+    XGBoostFormatValidator.setFlattenHeaders(flattenHeaders)
     val trainFeatureArray = trainFeatures.map(tensor => tensor.toArray()).flatten
     val testFeatureArray = testFeatures.map(tensor => tensor.toArray()).flatten
     val trainDMat = new DMatrix(trainFeatureArray, trainFeatures.length,
@@ -114,7 +116,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       val fgBoostTreeInFormat = fGBoostRegression.trees.toArray.map(
         fTree => XGBoostFormatSerializer(fTree))
       // The tree structure validation
-      XGBoostFormatValidator(fgBoostTreeInFormat, xgBoostFormatNodes)
+      XGBoostFormatValidator(xgBoostFormatNodes, fgBoostTreeInFormat)
       logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
       require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
     } catch {
@@ -163,6 +165,10 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
         val diffAllow = math.min(fGBoostResult(i), xGBoostResults(i)) * 0.05
         if (math.abs(fGBoostResult(i) - xGBoostResults(i)) < diffAllow) cnt += 1
       })
+      val fgBoostTreeInFormat = fGBoostRegression.trees.toArray.map(
+        fTree => XGBoostFormatSerializer(fTree))
+      // The tree structure validation
+      XGBoostFormatValidator(xgBoostFormatNodes, fgBoostTreeInFormat)
       logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
       require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
     } catch {

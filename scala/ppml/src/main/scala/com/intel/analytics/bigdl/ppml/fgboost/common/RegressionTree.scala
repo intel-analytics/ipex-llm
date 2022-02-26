@@ -142,6 +142,7 @@ class RegressionTree(
         bestGain,
         leftSet.map(int2Integer).toList.asJava
       )
+      bestS.setFeatureName(flattenHeaders(fIndex))
       logger.info("Best local split on node " + treeNode.nodeID + " is " + bestS.toString)
       bestS
     } else {
@@ -179,7 +180,6 @@ class RegressionTree(
       logger.info(split)
     }
     val parentNode = nodes(split.nodeID)
-    split.setFeatureName(flattenHeaders(split.featureID))
     parentNode.splitInfo = split
     val newNodes = splitToNodes(split, parentNode)
     parentNode.leftChild = newNodes._1
