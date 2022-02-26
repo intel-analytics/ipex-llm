@@ -36,7 +36,10 @@ class Split (
   def getClientID: String= clientID
 
   def getFeatureName() = featureName
-  def setFeatureName(featureName: String) = this.featureName = featureName
+  def setFeatureName(featureName: String) = {
+    this.featureName = featureName
+    this
+  }
   def setClientID(clientID: String): this.type = {
     this.clientID = clientID
     this
@@ -73,6 +76,7 @@ class Split (
       .setGain(gain)
       .setSetLength(itemSet.size())
       .setClientUid(clientID)
+      .setFeatureName(featureName)
       .addAllItemSet(itemSet).build
   }
 }

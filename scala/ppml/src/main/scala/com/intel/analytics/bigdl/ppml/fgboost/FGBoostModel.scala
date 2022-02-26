@@ -248,6 +248,6 @@ abstract class FGBoostModel(continuous: Boolean,
       dataSplit.getSplitValue,
       dataSplit.getGain,
       dataSplit.getItemSetList
-    ).setClientID(dataSplit.getClientUid)
+    ).setClientID(dataSplit.getClientUid).setFeatureName(dataSplit.getFeatureName)
   }
 }
