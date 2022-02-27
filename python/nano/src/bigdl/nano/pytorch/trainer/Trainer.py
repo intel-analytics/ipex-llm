@@ -179,7 +179,7 @@ class Trainer(pl.Trainer):
                  accuracy_criterion: dict = None,
                  timeout=0,
                  max_trials=1,
-                 raw_return=False
+                 return_pl=True
                  ):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
@@ -211,7 +211,7 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :param raw_return:  Decide which type to return. If set to True, a GraphModule will be
+        :param return_pl:   Decide which type to return. If set to True, a GraphModule will be
                             returned. If set to False, a pytorch lightning module will be returned.
         :return:            A GraphModule. If there is no model found, return None.
         """
@@ -277,7 +277,7 @@ class Trainer(pl.Trainer):
                         model = pl_model._onnx_graph
                 quantized_models.append(quantizer.post_training_quantize(model, calib_dataloader,
                                                                          val_dataloader, metric))
-            if raw_return:
+            if not return_pl:
                 if len(quantized_models) == 1:
                     return quantized_models[0].model
                 else:

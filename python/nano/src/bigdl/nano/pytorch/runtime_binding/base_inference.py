@@ -45,7 +45,7 @@ def train(self, mode=True):
     return self._train_old(mode)
 
 
-def eval(self, quantize=False):
+def eval(self, quantize=None):
     # Note: this order should not be changed
     # 1. run original .eval()
     self._eval_old()
@@ -54,6 +54,7 @@ def eval(self, quantize=False):
         self.exit_onnx()
     # 3. apply quantized model if applied
     if "_fx_quantize_eval" in self.__dict__:
+        quantize = self._default_inference_quantize if quantize is None else quantize
         self._fx_quantize_eval(quantize)
 
 
@@ -63,7 +64,7 @@ def inference(self,
               batch_size=None,
               sess_options=None,
               backend="onnx",
-              quantize=False,
+              quantize=None,
               **kwargs):
     '''
     Inference with/without onnxruntime.
@@ -92,6 +93,7 @@ def inference(self,
         input_sample_list = [input_data]
 
     if backend == "onnx":
+        quantize = quantize if quantize is not None else self._default_ortsess_inference_quantize
         if not quantize:
             if not self._ortsess_up_to_date:
                 warnings.warn("Onnxruntime session will be built implicitly,"
@@ -138,6 +140,7 @@ def inference(self,
             return yhat
     else:
         # inference w/o onnxruntime (fallback to pytorch native forward)
+        quantize = self._default_inference_quantize if quantize is None else quantize
         self.eval(quantize=quantize)
         with torch.no_grad():
             yhat_list = []
