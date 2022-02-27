@@ -81,6 +81,7 @@ class TestQuantizeInference(TestCase):
         train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
+        nonquantized_loss = trainer.test(pl_model, train_loader)  # fp32
         pl_model = trainer.quantize(pl_model, train_loader)
         print(pl_model._quantized_model_up_to_date)
 
@@ -92,6 +93,9 @@ class TestQuantizeInference(TestCase):
             assert pl_model._quantized_model_up_to_date is True  # qmodel is up-to-date while inferencing
             np.testing.assert_almost_equal(quantized_res, forward_res, decimal=5)  # same result
         
+        quantized_loss = trainer.test(pl_model, train_loader)  # quantized
+        assert abs(nonquantized_loss[0]['test/loss'] - quantized_loss[0]['test/loss']) > 1e-5
+
         trainer.fit(pl_model, train_loader)
         assert pl_model._quantized_model_up_to_date is False  # qmodel is not up-to-date after training
 
@@ -107,7 +111,7 @@ class TestQuantizeInference(TestCase):
             pl_model_load.load_quantized_state_dict(torch.load(ckpt_name))
         
         for x, y in train_loader:
-            quantized_res = pl_model.inference(x, backend=None, quantize=True).numpy()  # quantized
+            quantized_res = pl_model.inference(x, backend=None).numpy()  # quantized
             quantized_res_load = pl_model_load.inference(x, backend=None, quantize=True).numpy()  # quantized
             np.testing.assert_almost_equal(quantized_res, quantized_res_load, decimal=5)  # same result
 
