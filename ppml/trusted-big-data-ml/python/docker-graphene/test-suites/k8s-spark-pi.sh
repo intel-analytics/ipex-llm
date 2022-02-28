@@ -28,7 +28,7 @@ if [ $status_1_k8s_spark_pi -ne 0 ]; then
     --total-executor-cores 16 \
     --executor-memory 64G \
     --jars /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar \
-    --properties-file /ppml/trusted-big-data-ml/work/bigdl-0.14.0-SNAPSHOT/conf/spark-bigdl.conf \
+    --properties-file /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/conf/spark-bigdl.conf \
     --conf spark.kubernetes.sgx.enabled=true \
     --conf spark.kubernetes.sgx.mem=32g \
     --conf spark.kubernetes.sgx.jvm.mem=16g \
