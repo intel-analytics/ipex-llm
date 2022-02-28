@@ -284,6 +284,8 @@ class TestSimpleIntegration(ZooTestCase):
         image_path = os.path.join(resource_path, "gray/gray.bmp")
         image_df = NNImageReader.readImages(image_path, self.sc).withColumn("label", lit(1))
 
+        from bigdl.dllib.feature.image import transforms
+        transformers = transforms.Compose([ImageResize(50, 50), ImageMirror()])
         model = Sequential()
         model.add(Convolution2D(1, 24, 24, activation="relu", input_shape=(1, 50, 50)))
         model.add(MaxPooling2D())
@@ -291,11 +293,11 @@ class TestSimpleIntegration(ZooTestCase):
         model.add(Dense(2, activation="log_softmax"))
         model.compile(optimizer="sgd",
                       loss="sparse_categorical_crossentropy")
-        model.fit(image_df, label_cols=["label"], batch_size=1, nb_epoch=1)
+        model.fit(image_df, label_cols=["label"], batch_size=1, nb_epoch=1, transform=transformers)
 
-        predDf = model.predict(image_df, prediction_col="predict")
+        predDf = model.predict(image_df, prediction_col="predict", transform=transformers)
         predDf.show()
-        model.evaluate(image_df, batch_size=1, label_cols=["label"])
+        model.evaluate(image_df, batch_size=1, label_cols=["label"], transform=transformers)
 
 if __name__ == "__main__":
     pytest.main([__file__])
