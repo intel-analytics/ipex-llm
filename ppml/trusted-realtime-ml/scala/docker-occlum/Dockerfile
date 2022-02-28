@@ -146,6 +146,11 @@ COPY --from=bigdl /opt/bigdl-serving*-http.jar ${BIGDL_HOME}/bigdl-serving-http.
 
 # RUN echo "source /etc/profile" >> $HOME/.bashrc 
 
+RUN apt-get update && \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+        build-essential ca-certificates openjdk-11-jdk \
+        curl wget netcat net-tools && \
+    apt-get clean
 
 # Cluster Serving config
 ADD ./cluster-serving-config.yaml /opt/config.yaml
