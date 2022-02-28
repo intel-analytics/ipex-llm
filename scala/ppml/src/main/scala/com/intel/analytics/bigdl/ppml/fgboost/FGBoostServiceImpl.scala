@@ -34,13 +34,12 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     logger.debug(s"Server received downloadLabel request of version: $version")
     synchronized {
       if (aggregator.getLabelStorage().version != version) {
-        logger.debug(s"Server version is ${aggregator.getLabelStorage().version}, waiting")
+        logger.debug(s"Download label: server version is ${aggregator.getLabelStorage().version}, waiting")
         wait()
       } else {
         notifyAll()
       }
     }
-
     val data = aggregator.getLabelStorage().serverData
     if (data == null) {
       val response = "Your required data doesn't exist"
@@ -131,6 +130,16 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
                         responseObserver: StreamObserver[EvaluateResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
+    val version = request.getBsVersion
+    logger.debug(s"Server received Evaluate request of version: $version")
+    synchronized {
+      if (aggregator.getEvalStorage().version != version) {
+        logger.debug(s"Evaluate: server version is ${aggregator.getEvalStorage().version}, waiting")
+        wait()
+      } else {
+        notifyAll()
+      }
+    }
     try {
       aggregator.putClientData(FLPhase.EVAL, clientUUID, request.getBsVersion, new DataHolder(predicts))
       val result = aggregator.getResultStorage().serverData

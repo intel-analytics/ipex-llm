@@ -122,8 +122,8 @@ abstract class FGBoostModel(continuous: Boolean,
     val treeLeaves = currTree.leaves.toArray
     val treeIndexes = treeLeaves.map(_.nodeID.toInt).map(int2Integer).toList.asJava
     val treeOutput = treeLeaves.map(_.similarScore).map(float2Float).toList.asJava
-    flClient.fgbostStub.uploadTreeLeaf(i.toString, treeIndexes, treeOutput, treeLeafVersion)
-    treeLeafVersion += 1
+    flClient.fgbostStub.uploadTreeLeaf(i.toString, treeIndexes, treeOutput, evaluateVersion)
+    evaluateVersion += 1
     trees.enqueue(currTree)
     // Evaluate tree and update residual and grads (g and h)
     uploadResidual(tree.dataset)
@@ -142,7 +142,6 @@ abstract class FGBoostModel(continuous: Boolean,
     val boostEvals = toBoostEvals(lastTreePredict)
     // TODO: add grouped sending message
     flClient.fgbostStub.evaluate(boostEvals.asJava, evaluateVersion)
-    evaluateVersion += 1
   }
 
 
@@ -152,9 +151,6 @@ abstract class FGBoostModel(continuous: Boolean,
       val grads = downloadGrad(i)
       val currTree = RegressionTree(dataSet, indices, grads, i.toString, flattenHeaders = flattenHeaders)
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
-      if (i == 2) {
-        println("hi")
-      }
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return
     }

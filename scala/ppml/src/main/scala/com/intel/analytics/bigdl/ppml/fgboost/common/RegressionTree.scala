@@ -128,6 +128,9 @@ class RegressionTree(
       (fBestGain, fIndex, rBestIndex, sortedFeatureIndex)
     }
     val (bestGain, fIndex, rIndex, sortedFeatureIndex) = bestGainByFeature.maxBy(_._1)
+    if (fIndex == 133) {
+      println("hi")
+    }
     if (bestGain > minInfoGain) {
       require(rIndex > 0, s"best rIndex should greater than 0, but got ${rIndex}.")
       val leftSet = sortedFeatureIndex.slice(0, rIndex)
@@ -143,7 +146,7 @@ class RegressionTree(
         leftSet.map(int2Integer).toList.asJava
       )
 //      bestS.setFeatureName(flattenHeaders(fIndex))
-      logger.info("Best local split on node " + treeNode.nodeID + " is " + bestS.toString)
+      logger.info(s"Best local split: ${flattenHeaders(fIndex)}" + " => " + bestS.toString)
       bestS
     } else {
       logger.info("Failed to find local split on node " + treeNode.nodeID)
