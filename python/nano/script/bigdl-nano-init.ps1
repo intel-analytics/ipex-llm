@@ -13,9 +13,11 @@ else {
 }
 $env:KMP_BLOCKTIME=1
 $env:TF_ENABLE_ONEDNN_OPTS=1
+$env:NANO_TF_INTER_OP=1
 Write-Host "==================Environment Variables================="
 Write-Host "OMP_NUM_THREADS=${env:OMP_NUM_THREADS}"
 Write-Host "KMP_AFFINITY=${env:KMP_AFFINITY}"
 Write-Host "KMP_BLOCKTIME=${env:KMP_BLOCKTIME}"
 Write-Host "TF_ENABLE_ONEDNN_OPTS=${env:TF_ENABLE_ONEDNN_OPTS}"
+Write-Host "NANO_TF_INTER_OP=${env:NANO_TF_INTER_OP}"
 Write-Host "========================================================="

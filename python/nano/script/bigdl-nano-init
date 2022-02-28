@@ -136,8 +136,10 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 	if [ -z "${ENABLE_TF_OPTS:-}" ]; then
 		echo "Setting OMP_NUM_THREADS specified for pytorch..."
 		export OMP_NUM_THREADS=$((cores_per_socket*sockets_))
+		export NANO_TF_INTER_OP=1
 	else
 		export OMP_NUM_THREADS=${cores_per_socket}
+		export NANO_TF_INTER_OP=$sockets_
 	fi
 
 	echo "Setting KMP_AFFINITY..."
@@ -226,6 +228,7 @@ echo "KMP_AFFINITY=${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME=${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS=${TF_ENABLE_ONEDNN_OPTS}"
 echo "ENABLE_TF_OPTS=${ENABLE_TF_OPTS}"
+echo "NANO_TF_INTER_OP"=${sockets_}
 echo "+++++++++++++++++++++++++"
 # Run the commands after bigdl-nano-init
 echo "Complete."
