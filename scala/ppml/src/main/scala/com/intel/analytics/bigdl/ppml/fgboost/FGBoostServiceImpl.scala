@@ -123,7 +123,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
     try {
-      aggregator.putClientData(FLPhase.EVAL, clientUUID, -1, new DataHolder(predicts))
+      aggregator.putClientData(FLPhase.EVAL, clientUUID, request.getBsVersion, new DataHolder(predicts))
       val result = aggregator.getResultStorage().serverData
       if (result == null) {
         val response = "Your required data doesn't exist"
@@ -151,7 +151,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
     try {
-      aggregator.putClientData(FLPhase.PREDICT, clientUUID, -1, new DataHolder(predicts))
+      aggregator.putClientData(FLPhase.PREDICT, clientUUID, request.getBsVersion, new DataHolder(predicts))
       val result = aggregator.getResultStorage().serverData
       if (result == null) {
         val response = "Your required data doesn't exist"

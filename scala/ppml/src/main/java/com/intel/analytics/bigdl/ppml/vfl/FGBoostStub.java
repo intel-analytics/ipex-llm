@@ -71,22 +71,24 @@ public class FGBoostStub {
 
 
     public EvaluateResponse evaluate(
-            List<BoostEval> boostEval) {
+            List<BoostEval> boostEval, int version) {
         EvaluateRequest evaluateRequest = EvaluateRequest
                 .newBuilder()
                 .setClientuuid(clientID)
                 .addAllTreeEval(boostEval)
+                .setBsVersion(version)
                 .build();
 
         return stub.evaluate(evaluateRequest);
     }
 
     public PredictResponse predict(
-            List<BoostEval> boostEval) {
+            List<BoostEval> boostEval, int version) {
         PredictRequest request = PredictRequest
                 .newBuilder()
                 .setClientuuid(clientID)
                 .addAllTreeEval(boostEval)
+                .setBsVersion(version)
                 .build();
 
         return stub.predict(request);

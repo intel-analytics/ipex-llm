@@ -305,6 +305,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       .setMetaData(metaData)
       .putTensors("predictResult", toFloatTensor(newPredict)).build()
     tableStorage.clearClientAndUpdateServer(aggResult)
+    getPredictStorage().version += 1
   }
 }
 

@@ -41,7 +41,8 @@ abstract class FGBoostModel(continuous: Boolean,
   var flClient = FLContext.getClient()
   var splitVersion = 0
   var treeLeafVersion = 0
-  var treeEvalVersion = 0
+  var evaluateVersion = 0
+  var predictVersion = 0
   protected val evaluateResults: mutable.Map[String, ArrayBuffer[Float]] = null
   val trees = new mutable.Queue[RegressionTree]()
   def fit(feature: Array[Tensor[Float]],
@@ -94,7 +95,8 @@ abstract class FGBoostModel(continuous: Boolean,
 //    }.toArray
 
     val boostEvals = toBoostEvals(localPredicts)
-    val response = flClient.fgbostStub.predict(boostEvals.asJava)
+    val response = flClient.fgbostStub.predict(boostEvals.asJava, predictVersion)
+    predictVersion += 1
     val result = toArrayFloat(response)
     result
   }
@@ -139,8 +141,8 @@ abstract class FGBoostModel(continuous: Boolean,
     }
     val boostEvals = toBoostEvals(lastTreePredict)
     // TODO: add grouped sending message
-    flClient.fgbostStub.evaluate(boostEvals.asJava)
-    treeEvalVersion += 1
+    flClient.fgbostStub.evaluate(boostEvals.asJava, evaluateVersion)
+    evaluateVersion += 1
   }
 
 
