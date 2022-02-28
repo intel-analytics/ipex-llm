@@ -16,6 +16,7 @@
 
 import os
 from tempfile import TemporaryDirectory
+from typing import Any
 
 from bigdl.nano.common.multiprocessing.backend import Backend
 
@@ -28,7 +29,7 @@ class MultiprocessingBackend(Backend):
     def shutdown(self) -> None:
         pass
 
-    def run(self, target, args=..., nprocs=1, envs=None) -> None:
+    def run(self, target, args=..., nprocs=1, envs=None) -> Any:
         if envs is not None:
             if isinstance(envs, list):
                 assert nprocs == len(envs), "envs must have the same length with nprocs"
@@ -39,7 +40,7 @@ class MultiprocessingBackend(Backend):
 
         return self.run_subprocess(target, args=args, nprocs=nprocs, envs=envs)
 
-    def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> None:
+    def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> Any:
         import pickle
         import subprocess
         import sys
@@ -65,4 +66,4 @@ class MultiprocessingBackend(Backend):
             for i in range(nprocs):
                 with open(os.path.join(temp_dir, f"history_{i}"), "rb") as f:
                     results.append(pickle.load(f))
-        return results
+        return results[0]
