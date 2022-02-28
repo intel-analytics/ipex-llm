@@ -175,11 +175,17 @@ class AutoObject(NestedSpace):
                 _rm_hp(cs, k)
         return cs
 
-    @classproperty
-    def kwspaces(cls):
+    @property
+    def kwspaces(self):
         """ OrderedDict representation of this search space.
         """
-        return cls.__init__.kwspaces
+        raise NotImplementedError
+
+    # @classproperty
+    # def kwspaces(cls):
+    #     """ OrderedDict representation of this search space.
+    #     """
+    #     return cls.__init__.kwspaces
 
     def sample(self):
         """Sample a configuration from this search space.

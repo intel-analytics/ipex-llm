@@ -262,41 +262,44 @@ def obj(**kwvars):
     --------
     >>>
     """
-    def _automl_kwargs_obj(**kwvars):
-        def registered_func(func):
-            kwspaces = OrderedDict()
-
-            @functools.wraps(func)
-            def wrapper_call(*args, **kwargs):
-                kwvars.update(kwargs)
-                for k, v in kwvars.items():
-                    if isinstance(v, NestedSpace):
-                        kwspaces[k] = v
-                        kwargs[k] = v
-                    elif isinstance(v, Space):
-                        kwspaces[k] = v
-                        hp = v.get_hp(name=k)
-                        kwargs[k] = hp.default_value
-                    else:
-                        kwargs[k] = v
-                return func(*args, **kwargs)
-            wrapper_call.kwspaces = kwspaces
-            wrapper_call.kwvars = kwvars
-            return wrapper_call
-        return registered_func
+    # def _automl_kwargs_obj(**kwvars):
+    #     def registered_func(func):
+    #         kwspaces = OrderedDict()
+    #         @functools.wraps(func)
+    #         def wrapper_call(*args, **kwargs):
+    #             kwvars.update(kwargs)
+    #             for k, v in kwvars.items():
+    #                 if isinstance(v, NestedSpace):
+    #                     kwspaces[k] = v
+    #                     kwargs[k] = v
+    #                 elif isinstance(v, Space):
+    #                     kwspaces[k] = v
+    #                     hp = v.get_hp(name=k)
+    #                     kwargs[k] = hp.default_value
+    #                 else:
+    #                     kwargs[k] = v
+    #             return func(*args, **kwargs)
+    #         wrapper_call.kwspaces = kwspaces
+    #         wrapper_call.kwvars = kwvars
+    #         return wrapper_call
+    #     return registered_func
 
     def registered_class(Cls):
         class automlobject(AutoObject):
-            @_automl_kwargs_obj(**kwvars)
+            #@_automl_kwargs_obj(**kwvars)
             def __init__(self, *args, **kwargs):
                 self.args = args
                 self.kwargs = kwargs
                 self._inited = False
+                self.kwspaces_ = OrderedDict()
+                self.kwvars = dict()
+                self._update_kw()
                 self._callgraph = None  # keep a reference to the call graph
 
             def sample(self, **config):
                 kwargs = copy.deepcopy(self.kwargs)
-                kwspaces = copy.deepcopy(automlobject.kwspaces)
+                #kwspaces = copy.deepcopy(automlobject.kwspaces)
+                kwspaces = copy.deepcopy(self.kwspaces_)
                 for k, v in kwargs.items():
                     if k in kwspaces and isinstance(kwspaces[k], NestedSpace):
                         sub_config = _strip_config_space(config, prefix=k)
@@ -307,10 +310,28 @@ def obj(**kwvars):
                 args = self.args
                 return Cls(*args, **kwargs)
 
+            @property
+            def kwspaces(self):
+                return self.kwspaces_
+
+            def _update_kw(self):
+                self.kwvars.update(self.kwargs)
+                for k, v in self.kwvars.items():
+                    if isinstance(v, NestedSpace):
+                        self.kwspaces_[k] = v
+                        self.kwargs[k] = v
+                    elif isinstance(v, Space):
+                        self.kwspaces_[k] = v
+                        hp = v.get_hp(name=k)
+                        self.kwargs[k] = hp.default_value
+                    else:
+                        self.kwargs[k] = v
+
             def __repr__(self):
                 return 'AutoObject -- ' + Cls.__name__
 
             def __call__(self, *args, **kwargs):
+                #super.__call__(*args, **kwargs)
                 # this is to handle functional API of layers
                 self._call_args = args
                 self._call_kwargs = kwargs
@@ -322,7 +343,7 @@ def obj(**kwvars):
                 self._callgraph = update_callgraph(inputs, self)
                 return self
 
-        automlobject.kwvars = automlobject.__init__.kwvars
+        #automlobject.kwvars = automlobject.__init__.kwvars
         automlobject.__doc__ = Cls.__doc__
         automlobject.__name__ = Cls.__name__
         return automlobject

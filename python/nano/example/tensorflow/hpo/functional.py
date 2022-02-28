@@ -1,25 +1,22 @@
-from select import epoll
-import numpy as np
 
+import tensorflow as tf
 from tensorflow import keras
-from bigdl.nano.tf.keras import layers
+from bigdl.nano.tf.keras.layers import Dense
 from bigdl.nano.automl.tf.keras import Model
 import bigdl.nano.automl.hpo.space as space
 
-#from tensorflow.keras import layers
-#from tensorflow.keras import Model
 
 inputs = keras.Input(shape=(784,))
 
 # Just for demonstration purposes.
 img_inputs = keras.Input(shape=(32, 32, 3))
 
-dense = layers.Dense(32, activation="relu")
-x = dense(inputs)
-x = layers.Dense(32, activation="relu")(x)
-outputs = layers.Dense(10)(x)
+x = Dense(units=space.Categorical(8,16), activation="relu")(inputs)
+x = Dense(units=space.Categorical(32,64), activation="relu")(x)
+outputs = Dense(units=10)(x)
 
-# print(outputs._callgraph.nodes)
+from bigdl.nano.automl.hpo.callgraph import plot_callgraph
+plot_callgraph(outputs._callgraph)
 
 model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
 

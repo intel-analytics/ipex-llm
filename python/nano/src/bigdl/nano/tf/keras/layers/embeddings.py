@@ -17,8 +17,9 @@
 import tensorflow as tf
 import warnings
 from tensorflow.keras.layers import Embedding as TFEmbedding
+import bigdl.nano.automl.hpo as hpo
 
-
+@hpo.obj()
 class Embedding(TFEmbedding):
 
     def __init__(self,
