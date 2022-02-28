@@ -387,8 +387,7 @@ class SparkRunner:
                 os.remove(penv_archive)
         return sc
 
-
-def init_spark_on_k8s_cluster(self,
+    def init_spark_on_k8s_cluster(self,
                                   master,
                                   container_image,
                                   num_executors,
