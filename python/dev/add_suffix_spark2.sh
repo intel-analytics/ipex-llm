@@ -35,6 +35,8 @@ sed -i "s/dist\/bigdl_dllib-/dist\/bigdl_dllib_spark2-/g" ${file}
 sed -i "s/dist\/bigdl_dllib_spark3-/dist\/bigdl_dllib_spark2-/g" ${file}
 sed -i "s/dist\/bigdl-dllib-/dist\/bigdl-dllib-spark2-/g" ${file}
 sed -i "s/dist\/bigdl-dllib-spark3-/dist\/bigdl-dllib-spark2-/g" ${file}
+sed -i "s/bigdl_dllib.egg-info/bigdl_dllib_spark2.egg-info/g" ${file}
+sed -i "s/bigdl_dllib_spark3.egg-info/bigdl_dllib_spark2.egg-info/g" ${file}
 
 sed -i "s/bigdl-orca==/bigdl-orca-spark2==/g" ${file}
 sed -i "s/bigdl-orca-spark3==/bigdl-orca-spark2==/g" ${file}
@@ -46,6 +48,8 @@ sed -i "s/dist\/bigdl-orca-/dist\/bigdl-orca-spark2-/g" ${file}
 sed -i "s/dist\/bigdl-orca-spark3-/dist\/bigdl-orca-spark2-/g" ${file}
 sed -i "s/bigdl-orca\[ray\]/bigdl-orca-spark2\[ray\]/g" ${file}
 sed -i "s/bigdl-orca-spark3\[ray\]/bigdl-orca-spark2\[ray\]/g" ${file}
+sed -i "s/bigdl_orca.egg-info/bigdl_orca_spark2.egg-info/g" ${file}
+sed -i "s/bigdl_orca_spark3.egg-info/bigdl_orca_spark2.egg-info/g" ${file}
 
 sed -i "s/bigdl-chronos==/bigdl-chronos-spark2==/g" ${file}
 sed -i "s/bigdl-chronos-spark3==/bigdl-chronos-spark2==/g" ${file}
@@ -55,6 +59,8 @@ sed -i "s/dist\/bigdl_chronos-/dist\/bigdl_chronos_spark2-/g" ${file}
 sed -i "s/dist\/bigdl_chronos_spark3-/dist\/bigdl_chronos_spark2-/g" ${file}
 sed -i "s/dist\/bigdl-chronos-/dist\/bigdl-chronos-spark2-/g" ${file}
 sed -i "s/dist\/bigdl-chronos-spark3-/dist\/bigdl-chronos-spark2-/g" ${file}
+sed -i "s/bigdl_chronos.egg-info/bigdl_chronos_spark2.egg-info/g" ${file}
+sed -i "s/bigdl_chronos_spark3.egg-info/bigdl_chronos_spark2.egg-info/g" ${file}
 
 sed -i "s/bigdl-friesian==/bigdl-friesian-spark2==/g" ${file}
 sed -i "s/bigdl-friesian-spark3==/bigdl-friesian-spark2==/g" ${file}
@@ -64,3 +70,5 @@ sed -i "s/dist\/bigdl_friesian-/dist\/bigdl_friesian_spark2-/g" ${file}
 sed -i "s/dist\/bigdl_friesian_spark3-/dist\/bigdl_friesian_spark2-/g" ${file}
 sed -i "s/dist\/bigdl-friesian-/dist\/bigdl-friesian-spark2-/g" ${file}
 sed -i "s/dist\/bigdl-friesian-spark3-/dist\/bigdl-friesian-spark2-/g" ${file}
+sed -i "s/bigdl_friesian.egg-info/bigdl_friesian_spark2.egg-info/g" ${file}
+sed -i "s/bigdl_friesian_spark3.egg-info/bigdl_friesian_spark2.egg-info/g" ${file}
