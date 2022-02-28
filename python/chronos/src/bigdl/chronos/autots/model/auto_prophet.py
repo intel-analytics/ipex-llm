@@ -33,6 +33,7 @@ class AutoProphet:
                  seasonality_mode=None,
                  changepoint_range=None,
                  metric='mse',
+                 metric_mode=None,
                  logs_dir="/tmp/auto_prophet_logs",
                  cpus_per_trial=1,
                  name="auto_prophet",
@@ -62,7 +63,14 @@ class AutoProphet:
         :param changepoint_range: hyperparameter changepoint_range for the
             Prophet model.
             e.g. hp.uniform(0.8, 0.95).
-        :param metric: String. The evaluation metric name to optimize. e.g. "mse"
+        :param metric: String or customized evaluation metric function.
+            If string, metric is the evaluation metric name to optimize, e.g. "mse".
+            If callable function, it signature should be func(y_true, y_pred), where y_true and
+            y_pred are numpy ndarray. The function should return a float value as evaluation result.
+        :param metric_mode: One of ["min", "max"]. "max" means greater metric value is better.
+            You have to specify metric_mode if you use a customized metric function.
+            You don't have to specify metric_mode if you use the built-in metric in
+            bigdl.orca.automl.metrics.Evaluator.
         :param logs_dir: Local directory to save logs and results. It defaults to
             "/tmp/auto_prophet_logs"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
@@ -99,6 +107,7 @@ class AutoProphet:
             }
             self.search_space.update(prophet_config)  # update other configs
             self.metric = metric
+            self.metric_mode = metric_mode
             model_builder = ProphetBuilder()
             self.auto_est = AutoEstimator(model_builder=model_builder,
                                           logs_dir=logs_dir,
@@ -171,6 +180,7 @@ class AutoProphet:
         self.auto_est.fit(data=train_data,
                           validation_data=validation_data,
                           metric=self.metric,
+                          metric_mode=self.metric_mode,
                           metric_threshold=metric_threshold,
                           n_sampling=n_sampling,
                           search_space=self.search_space,
@@ -205,7 +215,10 @@ class AutoProphet:
         :param data: evaluation data, a pandas dataframe with Td rows,
             and 2 columns, with column 'ds' indicating date and column 'y' indicating value
             and Td is the time dimension
-        :param metrics: A list contains metrics for test/valid data.
+        :param metrics: list of string or callable. e.g. ['mse'] or [customized_metrics]
+               If callable function, it signature should be func(y_true, y_pred), where y_true and
+               y_pred are numpy ndarray. The function should return a float value as evaluation
+               result.
         """
         if data is None:
             raise ValueError("Input invalid data of None")
