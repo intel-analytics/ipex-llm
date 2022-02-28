@@ -33,21 +33,26 @@ class LocalStore:
     def __init__(self):
         self.partitions = {}
 
-    def upload_shards(self, part_shard_id, shard):
+    def upload_shards(self, part_shard_id, shard_ref_list):
         partition_idx, shard_idx = part_shard_id
         if partition_idx not in self.partitions:
             self.partitions[partition_idx] = {}
-        self.partitions[partition_idx][shard_idx] = shard
+        shard_ref = shard_ref_list[0]
+        self.partitions[partition_idx][shard_idx] = shard_ref
         return 0
 
-    def upload_partition(self, partition_id, partition):
-        self.partitions[partition_id] = partition
+    def upload_partition(self, partition_id, partition_ref_list):
+        self.partitions[partition_id] = partition_ref_list
+        return 0
 
     def get_shards(self, part_shard_id):
         partition_idx, shard_idx = part_shard_id
         return self.partitions[part_shard_id][shard_idx]
 
     def get_partition(self, partition_id):
+        """
+        return a list of object_refs
+        """
         part = self.partitions[partition_id]
         if isinstance(part, dict):
             partition = []
@@ -59,6 +64,9 @@ class LocalStore:
             return part
 
     def get_partitions(self):
+        """
+        return a dictionary of partitions, each partition is a list of object_refs
+        """
         result = {}
         for k in self.partitions.keys():
             result[k] = self.get_partition(k)
@@ -95,12 +103,13 @@ def write_to_ray(idx, partition, redis_address, redis_password, partition_store_
     # eligible for deletion.
     result = []
     for shard_id, shard in enumerate(partition):
-        shard_ref = ray.put(shard)
-        result.append(local_store.upload_shards.remote((idx, shard_id), shard_ref))
+        shard_ref = ray.put(shard, _owner=local_store)
+        result.append(local_store.upload_shards.remote((idx, shard_id), [shard_ref]))
+
     is_empty = len(result) == 0
     if is_empty:
-        partition_ref = ray.put([])
-        result.append(local_store.upload_partition.remote(idx, partition_ref))
+        partition_ref = ray.put([], _owner=local_store)
+        result.append(local_store.upload_partition.remote(idx, [partition_ref]))
         logger.warning(f"Partition {idx} is empty.")
     ray.get(result)
 
@@ -137,19 +146,22 @@ class RayXShards(XShards):
         return data
 
     def get_partition_refs(self):
-        part_refs = [local_store.get_partitions.remote()
-                     for local_store in self.partition_stores.values()]
-        return part_refs
-
-    def collect_partitions(self):
-        # return a list of partitions, each partition is a list of shards
-        part_refs = self.get_partition_refs()
-        partitions = ray.get(part_refs)
-
+        """
+        Get a list of partition_refs, each partition_refs is a list of shard_refs, each shard_ref
+        is a Ray ObjectRef.
+        """
+        # part_shard_refs is a list of partitions, each partition is a dictionary,
+        # with key of partition index and value of list of shard_refs
+        part_shard_refs = ray.get([local_store.get_partitions.remote()
+                                   for local_store in self.partition_stores.values()])
         result = {}
-        for part in partitions:
+        for part in part_shard_refs:
             result.update(part)
         return [result[idx] for idx in range(self.num_partitions())]
+
+    def collect_partitions(self):
+        part_refs = self.get_partition_refs()
+        return [ray.get(part_ref) for part_ref in part_refs]
 
     def to_spark_xshards(self):
         from bigdl.orca.data import SparkXShards
