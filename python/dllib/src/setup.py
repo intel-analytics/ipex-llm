@@ -23,34 +23,37 @@ from shutil import copyfile, copytree, rmtree
 from setuptools import setup
 
 TEMP_PATH = "bigdl/share/dllib"
-bigdl_home = os.path.abspath(__file__ + "/../../../..")
+dllib_src_path = os.path.abspath(__file__ + "/..")
 
-VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
+try:
+    exec(open(dllib_src_path + "/bigdl/dllib/version.py").read())
+except IOError:
+    print("Failed to load bigdl-dllib version file for packaging. "
+          "You need to run the release script instead.")
+    sys.exit(-1)
+
+VERSION = __version__  # noqa
 
 building_error_msg = """
-If you are packing python API from BigDL source, you must build BigDL first
-and run sdist.
-    To build BigDL with maven you can run:
-      cd $BigDL_HOME
-      ./make-dist.sh
-    Building the source dist is done in the Python directory:
-      cd python
-      python setup.py sdist
-      pip install dist/*.tar.gz"""
+If you are packing python API from BigDL source, you should use the release script:
+    cd $BigDL_HOME/python/dllib/dev/release
+    ./release.sh platform version quick_build upload mvn_parameters(if any)
+After the build:
+    cd $BigDL_HOME/python/dllib/src/dist
+    pip install *.tar.gz
+"""
 
 
-def build_from_source():
-    code_path = bigdl_home + "/python/dllib/src/bigdl/dllib/utils/common.py"
-    print("Checking: %s to see if build from source" % code_path)
-    if os.path.exists(code_path):
-        return True
-    return False
+if os.path.exists(dllib_src_path + "/bigdl_dllib.egg-info"):
+    build_from_source = False
+else:
+    build_from_source = True
 
 
 def init_env():
-    if build_from_source():
+    if build_from_source:
         print("Start to build distributed package")
-        print("HOME OF BIGDL: " + bigdl_home)
+        bigdl_home = os.path.abspath(dllib_src_path + "/../../../")
         dist_source = bigdl_home + "/dist"
         if not os.path.exists(dist_source):
             print(building_error_msg)
@@ -58,17 +61,16 @@ def init_env():
         if os.path.exists(TEMP_PATH):
             rmtree(TEMP_PATH)
         copytree(dist_source, TEMP_PATH)
-        copyfile(bigdl_home + "/python/dllib/src/bigdl/dllib/nn/__init__.py",
+        copyfile(dllib_src_path + "/bigdl/dllib/nn/__init__.py",
                  TEMP_PATH + "/__init__.py")
     else:
         print("Do nothing for release installation")
 
 
 def get_bigdl_packages():
-    bigdl_python_home = os.path.abspath(__file__)[:-8]
     bigdl_packages = ['bigdl.share.dllib']
-    for dirpath, dirs, files in os.walk(bigdl_python_home + "bigdl"):
-        package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
+    for dirpath, dirs, files in os.walk(dllib_src_path + "/bigdl"):
+        package = dirpath.split(dllib_src_path + "/")[1].replace('/', '.')
         if "__pycache__" not in package:
             bigdl_packages.append(package)
     print("=========================bigdl packages=========================")
@@ -78,10 +80,12 @@ def get_bigdl_packages():
 
 
 def setup_package():
-    SCRIPTS_TARGET = os.path.join("../../../", "scripts/")
+    SCRIPTS_TARGET = "bigdl/scripts/"
     script_names = ["pyspark-with-dllib", "spark-submit-with-dllib"]
     scripts = list(map(lambda script: os.path.join(
         SCRIPTS_TARGET, script), script_names))
+    copyfile(dllib_src_path + "/bigdl/dllib/nn/__init__.py",
+             SCRIPTS_TARGET + "__init__.py")
     metadata = dict(
         name='bigdl-dllib',
         version=VERSION,
@@ -96,7 +100,8 @@ def setup_package():
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
         package_data={"bigdl.share.dllib": ['lib/bigdl-dllib*.jar', 'conf/*',
-                                            'bin/standalone/*', 'bin/standalone/sbin/*']},
+                                            'bin/standalone/*', 'bin/standalone/sbin/*'],
+                      "bigdl.scripts": script_names},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
@@ -116,5 +121,5 @@ if __name__ == '__main__':
     except Exception as e:
         raise e
     finally:
-        if build_from_source() and os.path.exists(TEMP_PATH):
+        if build_from_source and os.path.exists(TEMP_PATH):
             rmtree(TEMP_PATH)
