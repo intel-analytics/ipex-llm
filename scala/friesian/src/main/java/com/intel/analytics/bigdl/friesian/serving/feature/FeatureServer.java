@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.friesian.serving.feature;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.MetricAttribute;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
@@ -48,6 +50,7 @@ import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
 import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 enum ServiceType {
@@ -144,6 +147,18 @@ public class FeatureServer extends GrpcServerBase {
                 if (userModel == null && itemModel == null) {
                     throw new Exception("Either userModelPath or itemModelPath should be provided.");
                 }
+            }
+
+            if (Utils.helper().logInterval() > 0) {
+                MetricAttribute[] disAttr = {MetricAttribute.STDDEV, MetricAttribute.P75,
+                        MetricAttribute.P999, MetricAttribute.P98, MetricAttribute.M5_RATE,
+                        MetricAttribute.M15_RATE};
+                ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
+                        .convertRatesTo(TimeUnit.SECONDS)
+                        .convertDurationsTo(TimeUnit.MILLISECONDS)
+                        .disabledMetricAttributes(new HashSet<>(Arrays.asList(disAttr)))
+                        .build();
+                reporter.start(Utils.helper().logInterval(), TimeUnit.MINUTES);
             }
         }
 

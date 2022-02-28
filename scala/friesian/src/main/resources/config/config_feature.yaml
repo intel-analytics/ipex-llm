@@ -3,11 +3,11 @@
 ### Basic setting
 
 # Default: 8082, which port to create the server
-# servicePort: 8082
+servicePort: 8082
 
 # Default: null, open a port for prometheus monitoring tool, if set, user can check the
 # performance using prometheus
-monitorPort: 1235
+# monitorPort: 1235
 
 # 'kv', 'inference' or 'kv, inference' default: kv
 serviceType: kv
@@ -16,7 +16,7 @@ serviceType: kv
 redisKeyPrefix:
 
 # default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
-redisClusterItemSlotType: 2
+# redisClusterItemSlotType: 2
 
 # default: null, if serviceType='kv,inference', userFeatureColumns must be provided
 # userFeatureColumns: enaging_user_follower_count, enaging_user_following_count, enaging_user_is_verified
@@ -45,4 +45,4 @@ redisUrl: 10.239.158.177:6379,10.239.158.177:6380
 # redisPoolMaxTotal:
 
 # default: 2, The redis log emit interval in minutes
-logInterval: 3
+logInterval: 2

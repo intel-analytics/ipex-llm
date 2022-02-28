@@ -43,21 +43,29 @@ public class LettuceUtils {
         if (Utils.helper() != null) {
             logInterval = Utils.helper().logInterval();
         }
-        ClientResources res = DefaultClientResources.builder()
-                .commandLatencyPublisherOptions(
-                        DefaultEventPublisherOptions.builder()
-                                .eventEmitInterval(Duration.ofSeconds(2)).build())
-                .commandLatencyRecorder(
-                        new DefaultCommandLatencyCollector(
-                                DefaultCommandLatencyCollectorOptions.builder()
-                                        .targetPercentiles(new double[]{50.0, 95.0, 99.0}).build()))
-                .build();
+        ClientResources res;
+        if (logInterval > 0) {
+            res = DefaultClientResources.builder()
+                    .commandLatencyPublisherOptions(
+                            DefaultEventPublisherOptions.builder()
+                                    .eventEmitInterval(Duration.ofMinutes(logInterval)).build())
+                    .commandLatencyRecorder(
+                            new DefaultCommandLatencyCollector(
+                                    DefaultCommandLatencyCollectorOptions.builder()
+                                            .targetPercentiles(new double[]{50.0, 95.0, 99.0}).build()))
+                    .build();
+        } else {
+            res = DefaultClientResources.builder().build();
+        }
+
         redisClient = RedisClient.create(res);
-        EventBus eventBus = redisClient.getResources().eventBus();
-        eventBus.get()
-                .filter(redisEvent -> redisEvent instanceof CommandLatencyEvent)
-                .cast(CommandLatencyEvent.class)
-                .subscribe(e -> logger.info(e.getLatencies()));
+        if (logInterval > 0) {
+            EventBus eventBus = redisClient.getResources().eventBus();
+            eventBus.get()
+                    .filter(redisEvent -> redisEvent instanceof CommandLatencyEvent)
+                    .cast(CommandLatencyEvent.class)
+                    .subscribe(e -> logger.info(e.getLatencies()));
+        }
         List<RedisURI> nodes = new ArrayList<>(redisHostPort.size());
         for (int i = 0; i < redisHostPort.size(); i++) {
             nodes.add(RedisURI.create(redisHostPort.get(i)._1, redisHostPort.get(i)._2));
