@@ -56,12 +56,12 @@ class TestMTNetKeras(ZooTestCase):
 
     def setup_method(self, method):
         tf.keras.backend.clear_session()
-        train_data, data = create_data()
+        train_data, test_data = create_data()
         self.x_train, y_train = train_data.to_numpy()
-        self.y_train = y_train[:, :, 0].reshape(y_train.shape[0], 1)
-        self.x_val, y_val = data.to_numpy()
-        self.y_test = self.y_val = y_val[:, :, 0].reshape(y_val.shape[0], 1)
-        self.x_test, _ = data.to_numpy()
+        self.y_train = y_train[:, :, 0]
+        self.x_val, y_val = test_data.to_numpy()
+        self.y_val = y_val[:, :, 0]
+        self.x_test, _ = test_data.to_numpy()
         self.model = MTNetKeras()
         self.config = {"long_num": 2,
                        "time_step": 1,
