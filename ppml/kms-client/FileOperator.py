@@ -1,13 +1,15 @@
 from KeyManager import retrieve_data_key_plaintext
 from cryptography.fernet import Fernet
-import os, sqlite3, csv
+import os, sqlite3, csv, base64
 
 def read_data_file(data_file_path):
     with open(data_file_path, 'rb') as file:
         original = file.read()
     return original
 
-def write_data_file(data_file_path, content):
+def write_data_file(data_file_path, content, is_ciphertext=False):
+    if is_ciphertext:
+        content = base64.b64decode(content)
     with open(data_file_path, 'wb') as file:
         file.write(content)
 
@@ -17,7 +19,7 @@ def encrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encr
     encrypted = fernet.encrypt(read_data_file(data_file_path))
     if save_path is None:
         save_path = data_file_path + '.encrypted'
-    write_data_file(data_file_path, encrypted)
+    write_data_file(data_file_path, encrypted, True)
     print('[INFO] Encrypt Successfully! Encrypted Output Is ' + save_path)
 
 def decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path, save_path=None):
@@ -25,8 +27,8 @@ def decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encr
     fernet = Fernet(data_key)
     decrypted = fernet.decrypt(read_data_file(data_file_path))
     if save_path is None:
-        save_path = encrypted_file_path + '.decrypted'
-    write_data_file(data_file_path, decrypted)
+        save_path = data_file_path + '.decrypted'
+    write_data_file(save_path, decrypted)
     print('[INFO] Decrypt Successfully! Decrypted Output Is ' + save_path)
 
 def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path, encrypted_data_key_path, save_dir):
@@ -43,7 +45,7 @@ def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path
         input_path = os.path.join(input_dir, file_name)
         encrypted = fernet.encrypt(read_data_file(input_path))
         save_path = os.path.join(save_dir, file_name + '.encrypted')
-        write_data_file(save_path, encrypted)
+        write_data_file(save_path, encrypted, True)
         print('[INFO] Encrypt Successfully! Encrypted Output Is ' + save_path)
     print('[INFO] Encrypted Files.')
 
