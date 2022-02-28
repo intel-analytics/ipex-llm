@@ -567,4 +567,4 @@ class BasePytorchForecaster(Forecaster):
                                               accuracy_criterion=accuracy_criterion,
                                               timeout=timeout,
                                               max_trials=max_trials,
-                                              raw_return=False)
+                                              return_pl=True)

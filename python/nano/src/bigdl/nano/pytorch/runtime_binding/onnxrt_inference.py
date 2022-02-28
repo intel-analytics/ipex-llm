@@ -239,6 +239,7 @@ def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_optio
     # additional attributes
     pl_model._ortsess_up_to_date = False  # indicate if we need to build ortsess again
     pl_model._ortsess = None  # ortsess instance
+    pl_model._default_ortsess_inference_quantize = False
     pl_model._onnx_graph = None  # onnx graph for quantization
     if isinstance(pl_model, LightningModuleFromTorch):  # forward param list for compiled model
         pl_model._forward_args = inspect.getfullargspec(pl_model.model.forward).args[1:]

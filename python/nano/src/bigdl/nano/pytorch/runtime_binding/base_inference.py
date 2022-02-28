@@ -166,6 +166,7 @@ def bind_base_inference_rt_methods(pl_model):
     pl_model._train_old = pl_model.train
     pl_model._torch_forward = pl_model.forward
     pl_model._eval_old = pl_model.eval
+    pl_model._default_inference_quantize = False
 
     pl_model.eval = partial(eval, pl_model)
     pl_model.on_fit_start = partial(on_fit_start, pl_model)
