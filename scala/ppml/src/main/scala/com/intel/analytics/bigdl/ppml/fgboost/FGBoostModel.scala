@@ -107,12 +107,8 @@ abstract class FGBoostModel(continuous: Boolean,
   def boostRound(roundId: Int,
                  tree: RegressionTree): Boolean = {
     val i = roundId
-    var st = System.currentTimeMillis()
     val currTree = tree
-    logger.info("Tree Boost " + i.toString)
     buildTree(currTree, continuous = continuous)
-    st = System.currentTimeMillis()
-    logger.debug(s"Build tree cost ${(System.currentTimeMillis() - st) / 1000f} s")
     currTree.cleanup()
     // Add this tree into tree list
     logger.info(s"Built Tree_${i}" + currTree.toString)
