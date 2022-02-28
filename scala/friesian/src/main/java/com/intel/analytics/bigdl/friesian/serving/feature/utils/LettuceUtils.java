@@ -1,9 +1,13 @@
 package com.intel.analytics.bigdl.friesian.serving.feature.utils;
 
 import io.lettuce.core.*;
-import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import io.lettuce.core.api.sync.RedisStringCommands;
+import io.lettuce.core.cluster.ClusterClientOptions;
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions;
+import io.lettuce.core.cluster.RedisClusterClient;
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection;
+import io.lettuce.core.cluster.api.sync.RedisAdvancedClusterCommands;
 import io.lettuce.core.codec.StringCodec;
 import io.lettuce.core.event.DefaultEventPublisherOptions;
 import io.lettuce.core.event.EventBus;
@@ -19,29 +23,37 @@ import org.apache.logging.log4j.Logger;
 import scala.Tuple2;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
 
+enum RedisType {
+    STANDALONE, SENTINEL, CLUSTER
+}
+
 public class LettuceUtils {
     private static final Logger logger = LogManager.getLogger(LettuceUtils.class.getName());
     private static LettuceUtils instance = null;
-    private static StatefulRedisMasterReplicaConnection<String, String> conn = null;
-    // private static StatefulRedisConnection<String, String> conn2 = null;
-    private static RedisClient redisClient;
+    private static StatefulRedisMasterReplicaConnection<String, String> standaloneConn = null;
+    private static StatefulRedisClusterConnection<String, String> clusterConn = null;
+    private static AbstractRedisClient redisClient;
     private String redisKeyPrefix;
+    private RedisType redisType;
 
     private LettuceUtils(ArrayList<Tuple2<String, Integer>> redisHostPort,
-                       String redisPrefix) {
+                       String redisPrefix, String sentinelMasterUrl, String sentinelMasterName) {
         int logInterval = 2;
+        redisType = RedisType.STANDALONE;
         if (Utils.helper() != null) {
             logInterval = Utils.helper().logInterval();
+            if (Utils.helper().redisType().equals("sentinel")) {
+                redisType = RedisType.SENTINEL;
+            } else if (Utils.helper().redisType().equals("cluster")) {
+                redisType = RedisType.CLUSTER;
+            }
         }
         ClientResources res;
         if (logInterval > 0) {
@@ -58,7 +70,44 @@ public class LettuceUtils {
             res = DefaultClientResources.builder().build();
         }
 
-        redisClient = RedisClient.create(res);
+        List<RedisURI> nodes = new ArrayList<>(redisHostPort.size());
+        if (redisType == RedisType.SENTINEL || redisType == RedisType.STANDALONE) {
+            RedisClient redisStandaloneClient = RedisClient.create(res);
+            redisClient = redisStandaloneClient;
+            if (redisType == RedisType.STANDALONE) {
+                for (Tuple2<String, Integer> stringIntegerTuple2 : redisHostPort) {
+                    nodes.add(RedisURI.create(stringIntegerTuple2._1, stringIntegerTuple2._2));
+                }
+            } else {
+                String[] sentinelUrl = sentinelMasterUrl.split(":");
+                assert sentinelUrl.length == 2;
+                nodes.add(RedisURI.Builder.sentinel(sentinelUrl[0].trim(), Integer.parseInt(sentinelUrl[1].trim()),
+                        sentinelMasterName).build());
+            }
+            standaloneConn = MasterReplica.connect(redisStandaloneClient, StringCodec.UTF8, nodes);
+            if (redisHostPort.size() == 1) {
+                standaloneConn.setReadFrom(ReadFrom.ANY);
+            } else {
+                standaloneConn.setReadFrom(ReadFrom.ANY_REPLICA);
+            }
+        } else {
+            for (Tuple2<String, Integer> stringIntegerTuple2 : redisHostPort) {
+                nodes.add(RedisURI.create(stringIntegerTuple2._1, stringIntegerTuple2._2));
+            }
+            RedisClusterClient redisClusterClient = RedisClusterClient.create(nodes);
+            ClusterTopologyRefreshOptions topologyRefreshOptions =
+                    ClusterTopologyRefreshOptions.builder()
+                            .enableAdaptiveRefreshTrigger(ClusterTopologyRefreshOptions.RefreshTrigger.MOVED_REDIRECT,
+                                    ClusterTopologyRefreshOptions.RefreshTrigger.PERSISTENT_RECONNECTS)
+                            .adaptiveRefreshTriggersTimeout(Duration.ofSeconds(30)).build();
+            redisClusterClient.setOptions(ClusterClientOptions.builder()
+                            .topologyRefreshOptions(topologyRefreshOptions).build());
+            clusterConn = redisClusterClient.connect();
+        }
+
+        logger.info("Connected to Redis");
+        redisKeyPrefix = redisPrefix;
+
         if (logInterval > 0) {
             EventBus eventBus = redisClient.getResources().eventBus();
             eventBus.get()
@@ -66,17 +115,10 @@ public class LettuceUtils {
                     .cast(CommandLatencyEvent.class)
                     .subscribe(e -> logger.info(e.getLatencies()));
         }
-        List<RedisURI> nodes = new ArrayList<>(redisHostPort.size());
-        for (int i = 0; i < redisHostPort.size(); i++) {
-            nodes.add(RedisURI.create(redisHostPort.get(i)._1, redisHostPort.get(i)._2));
-        }
-        conn = MasterReplica.connect(redisClient, StringCodec.UTF8, nodes);
-        conn.setReadFrom(ReadFrom.ANY_REPLICA);
-        logger.info("Connected to Redis");
-        redisKeyPrefix = redisPrefix;
+
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (conn != null) {
-                conn.close();
+            if (standaloneConn != null) {
+                standaloneConn.close();
             }
             if (redisClient != null) {
                 redisClient.shutdown();
@@ -87,17 +129,33 @@ public class LettuceUtils {
     public static LettuceUtils getInstance(ArrayList<Tuple2<String, Integer>> redisHostPort,
                                            String redisPrefix) {
         if (instance == null) {
-            instance = new LettuceUtils(redisHostPort, redisPrefix);
+            instance = new LettuceUtils(redisHostPort, redisPrefix, null, null);
+        }
+        return instance;
+    }
+
+    public static LettuceUtils getInstance(String redisPrefix, String sentinelMasterURL, String sentinelMasterName) {
+        if (instance == null) {
+            instance = new LettuceUtils(null, redisPrefix, sentinelMasterURL, sentinelMasterName);
         }
         return instance;
     }
 
     public RedisStringCommands<String, String> getSync() {
-        return conn.sync();
+        if (redisType == RedisType.CLUSTER) {
+            return clusterConn.sync();
+        } else {
+            return standaloneConn.sync();
+        }
     }
 
     public RedisAsyncCommands<String, String> getAsync() {
-        return conn.async();
+        if (redisType == RedisType.CLUSTER) {
+            // TODO: fix
+            return (RedisAsyncCommands<String, String>) clusterConn.async();
+        } else {
+            return standaloneConn.async();
+        }
     }
 
     public String get(String key) {
@@ -155,9 +213,9 @@ public class LettuceUtils {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException, TimeoutException {
         ArrayList<Tuple2<String, Integer>> hostPort = new ArrayList<>();
-//        hostPort.add(new Tuple2<>("localhost", 6379));
-        hostPort.add(new Tuple2<>("10.239.158.177", 6380));
-        hostPort.add(new Tuple2<>("localhost", 6381));
+        hostPort.add(new Tuple2<>("localhost", 6379));
+//        hostPort.add(new Tuple2<>("10.239.158.177", 6380));
+//        hostPort.add(new Tuple2<>("localhost", 6381));
         LettuceUtils utils = LettuceUtils.getInstance(hostPort, "");
 //        RedisStringCommands<String, String> sync = utils.getSync();
 
@@ -167,10 +225,10 @@ public class LettuceUtils {
         Map<String, String> keyValue = new HashMap<>();
         keyValue.put("c", "c");
         keyValue.put("b", "b");
-//        for (int  i = 1; i < 100000; i ++) {
-////            RedisAsyncCommands<String, String> async = utils.getAsync();
-//            async.mset(keyValue);
-//        }
+        for (int  i = 1; i < 100000; i ++) {
+//            RedisAsyncCommands<String, String> async = utils.getAsync();
+            async.mset(keyValue);
+        }
         for (int  i = 1; i < 100000; i ++) {
 //            RedisAsyncCommands<String, String> async = utils.getAsync();
             RedisFuture<List<KeyValue<String, String>>> future = async.mget("a", "2tower_user", "b", "c");
