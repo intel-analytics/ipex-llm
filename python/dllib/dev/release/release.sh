@@ -46,6 +46,8 @@ fi
 bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 echo "The effective version is: ${bigdl_version}"
 
+echo "__version__ = '"$bigdl_version"'" > $BIGDL_PYTHON_DIR/bigdl/dllib/version.py
+
 cd ${BIGDL_DIR}/scala
 if [ "$platform" ==  "mac" ]; then
     echo "Building bigdl for mac system"
@@ -68,11 +70,6 @@ else
     $bigdl_build_command
 fi
 
-cd $BIGDL_PYTHON_DIR
-sdist_command="python setup.py sdist"
-echo "Packing source code: ${sdist_command}"
-$sdist_command
-
 if [ -d "${BIGDL_DIR}/python/dllib/src/build" ]; then
    rm -r ${BIGDL_DIR}/python/dllib/src/build
 fi
@@ -85,12 +82,23 @@ if [ -d "${BIGDL_DIR}/python/dllib/src/bigdl_dllib.egg-info" ]; then
    rm -r ${BIGDL_DIR}/python/dllib/src/bigdl_dllib.egg-info
 fi
 
-wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
-echo "Packing python distribution: $wheel_command"
+if [ -d "${BIGDL_DIR}/python/dllib/src/bigdl/scripts" ]; then
+   rm -r ${BIGDL_DIR}/python/dllib/src/bigdl/scripts
+fi
+cp -r ${BIGDL_DIR}/scripts/ ${BIGDL_DIR}/python/dllib/src/bigdl/scripts
+
+cd $BIGDL_PYTHON_DIR
+wheel_command="python setup.py sdist bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
+echo "Packing python source code and distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl_dllib-${bigdl_version}-py3-none-${verbose_pname}.whl"
-    echo "Please manually upload with this command: $upload_command"
-    $upload_command
+    upload_wheel_command="twine upload dist/bigdl_dllib-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    echo "Uploading wheel with this command: $upload_wheel_command"
+    $upload_wheel_command
+    if [ "$platform" == "linux" ]; then
+        upload_source_command="twine upload dist/bigdl-dllib-${bigdl_version}.tar.gz"
+        echo "Uploading source with this command: $upload_source_command"
+        $upload_source_command
+    fi
 fi
