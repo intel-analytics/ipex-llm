@@ -42,16 +42,16 @@ class LocalStore:
         return 0
 
     def upload_partition(self, partition_id, partition_ref_list):
-        self.partitions[partition_id] = partition_ref_list
+        self.partitions[partition_id] = partition_ref_list[0]
         return 0
 
     def get_shards(self, part_shard_id):
         partition_idx, shard_idx = part_shard_id
         return self.partitions[part_shard_id][shard_idx]
 
-    def get_partition(self, partition_id):
+    def get_partition_ref(self, partition_id):
         """
-        return a list of object_refs
+        return a list of shard_refs or a part_ref
         """
         part = self.partitions[partition_id]
         if isinstance(part, dict):
@@ -63,13 +63,19 @@ class LocalStore:
         else:
             return part
 
-    def get_partitions(self):
+    def get_partition(self, partition_id):
         """
-        return a dictionary of partitions, each partition is a list of object_refs
+        return partition_data
+        """
+        return ray.get(self.get_partition_ref(partition_id))
+
+    def get_partitions_refs(self):
+        """
+        return a dictionary of partitions, each partition is a list of shard_refs or a part_ref
         """
         result = {}
         for k in self.partitions.keys():
-            result[k] = self.get_partition(k)
+            result[k] = self.get_partition_ref(k)
         return result
 
 
@@ -147,12 +153,11 @@ class RayXShards(XShards):
 
     def get_partition_refs(self):
         """
-        Get a list of partition_refs, each partition_refs is a list of shard_refs, each shard_ref
-        is a Ray ObjectRef.
+        Get a list of partition_refs, each partition_ref is a list of shard_refs or a partition_ref
         """
         # part_shard_refs is a list of partitions, each partition is a dictionary,
-        # with key of partition index and value of list of shard_refs
-        part_shard_refs = ray.get([local_store.get_partitions.remote()
+        # with key of partition index and value of (list of shard_refs or part_ref)
+        part_shard_refs = ray.get([local_store.get_partitions_refs.remote()
                                    for local_store in self.partition_stores.values()])
         result = {}
         for part in part_shard_refs:
@@ -362,7 +367,7 @@ class RayXShards(XShards):
                 .options(name=name).remote()
             partition_stores[name] = store
             for idx in part_ids:
-                result.append(store.upload_partition.remote(idx, part_id2ref[idx]))
+                result.append(store.upload_partition.remote(idx, [part_id2ref[idx]]))
                 id2store_name[idx] = name
                 part_id2ip[idx] = node
         ray.get(result)
@@ -404,7 +409,7 @@ class RayXShards(XShards):
             partition_stores[name] = store
 
         # actor creation is aync, this is to make sure they all have been started
-        ray.get([v.get_partitions.remote() for v in partition_stores.values()])
+        ray.get([v.get_partitions_refs.remote() for v in partition_stores.values()])
         partition_store_names = list(partition_stores.keys())
         result_rdd = spark_xshards.rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
             idx, part, address, password, partition_store_names)).cache()
