@@ -66,4 +66,4 @@ class MultiprocessingBackend(Backend):
             for i in range(nprocs):
                 with open(os.path.join(temp_dir, f"history_{i}"), "rb") as f:
                     results.append(pickle.load(f))
-        return results[0]
+        return results
