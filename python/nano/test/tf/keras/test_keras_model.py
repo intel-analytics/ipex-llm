@@ -18,19 +18,19 @@
 import pytest
 from unittest import TestCase
 import tensorflow as tf
-from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 import numpy as np
 from bigdl.nano.tf.keras import Model
 
 
 class TestKerasModel(TestCase):
     def test_model_quantize_ptq(self):
-        model = VGG16(weights=None, input_shape=[224, 224, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                       loss=tf.keras.losses.BinaryCrossentropy(),
                       metrics=[tf.keras.metrics.CategoricalAccuracy()],)
-        train_examples = np.random.random((100, 224, 224, 3))
+        train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
         train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
         # Case 1: Default
