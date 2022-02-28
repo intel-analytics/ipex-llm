@@ -27,7 +27,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.io.Source
 
-class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   // This is a full-dataset validation so we disable debug log
   val logger = LogManager.getLogger(getClass)
   var xGBoostResults: Array[Double] = null
