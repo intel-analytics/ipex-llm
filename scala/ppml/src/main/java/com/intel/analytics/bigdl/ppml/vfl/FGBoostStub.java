@@ -96,13 +96,15 @@ public class FGBoostStub {
     public UploadResponse uploadTreeLeaf(
             String treeID,
             List<Integer> treeIndexes,
-            List<Float> treeOutput
+            List<Float> treeOutput,
+            int version
     ) {
         TreeLeaf treeLeaf = TreeLeaf
                 .newBuilder()
                 .setTreeID(treeID)
                 .addAllLeafIndex(treeIndexes)
                 .addAllLeafOutput(treeOutput)
+                .setVersion(version)
                 .build();
         UploadTreeLeafRequest uploadTreeLeafRequest = UploadTreeLeafRequest
                 .newBuilder()

@@ -45,6 +45,9 @@ class StorageHolder(flDataType: FLDataType) {
   }
   def getVersion(): Int = {
     if (tensorMapStorage != null) tensorMapStorage.version
+    else if (treeSplitStorage != null) treeSplitStorage.version
+    else if (treeLeafStorage != null) treeLeafStorage.version
+    else if (treeEvalStorage != null) treeEvalStorage.version
     else throw new NotImplementedError()
   }
 

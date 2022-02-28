@@ -147,6 +147,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     val targetProto = getLabelStorage().serverData
     // Compute new residual
     updateGradient(newPredict)
+    getEvalStorage().version += 1
   }
 
   def predictWithEncoding(encoding: Array[java.lang.Boolean], treeID: Int): Float = {
@@ -199,6 +200,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     // Add new tree leaves to server
     serverTreeLeaf += treeLeaf
     leafMap.clear()
+    getTreeLeafStorage().version += 1
   }
 
   def updateGradient(newPredict: Array[Float]): Unit = {
@@ -254,6 +256,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       splitMap.clear()
       bestSplit.notifyAll()
     }
+    getSplitStorage().version += 1
   }
 
   def aggregatePredict(flPhase: FLPhase): Array[Array[(String, Array[java.lang.Boolean])]] = {

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.ppml.common.FLPhase
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.{FGBoostServiceGrpc, FGBoostServiceProto}
 import io.grpc.stub.StreamObserver
+import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
 
 class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
@@ -66,28 +67,28 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
 
   }
 
-  override def split(request: SplitRequest, responseObserver: StreamObserver[SplitResponse]): Unit = {
+  override def split(request: SplitRequest,
+                     responseObserver: StreamObserver[SplitResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val split = request.getSplit
-
-    val version = -1 // version is not needed in fgboost
     try {
-      aggregator.putClientData(FLPhase.SPLIT, clientUUID, version, new DataHolder(split))
+      aggregator.putClientData(FLPhase.SPLIT, clientUUID, split.getVersion, new DataHolder(split))
       val bestSplit = aggregator.getBestSplit(split.getTreeID, split.getNodeID)
       if (bestSplit == null) {
         val response = "Your required bestSplit data doesn't exist"
-        responseObserver.onNext(SplitResponse.newBuilder.setResponse(response).setCode(0).build)
+        responseObserver.onNext(SplitResponse.newBuilder.setResponse(response).setCode(1).build)
         responseObserver.onCompleted()
       }
       else {
-        val response = "Split node successfully"
-        responseObserver.onNext(
-          SplitResponse.newBuilder.setResponse(response).setSplit(bestSplit).setCode(1).build)
+        val response = SplitResponse.newBuilder
+          .setResponse("Split success").setSplit(bestSplit).setCode(0).build
+        responseObserver.onNext(response)
         responseObserver.onCompleted()
       }
     } catch {
       case e: Exception =>
-        val response = SplitResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        val errorMsg = ExceptionUtils.getStackTrace(e)
+        val response = SplitResponse.newBuilder.setResponse(errorMsg).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {
@@ -97,14 +98,13 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   }
 
   override def uploadTreeLeaf(request: UploadTreeLeafRequest,
-                                responseObserver: StreamObserver[UploadResponse]): Unit = {
+                              responseObserver: StreamObserver[UploadResponse]): Unit = {
     val clientUUID = request.getClientuuid
-    val leaves = request.getTreeLeaf
+    val treeLeaf = request.getTreeLeaf
 
-    val version = -1 // TODO: need to modify proto
     try {
-      aggregator.putClientData(FLPhase.TREE_LEAF, clientUUID, version, new DataHolder(leaves))
-      val response = s"Tree leaves uploaded to server at clientID: $clientUUID, version: $version"
+      val response = "Upload tree leaf successfully"
+      aggregator.putClientData(FLPhase.TREE_LEAF, clientUUID, treeLeaf.getVersion, new DataHolder(treeLeaf))
       responseObserver.onNext(UploadResponse.newBuilder.setResponse(response).setCode(0).build)
       responseObserver.onCompleted()
     } catch {
