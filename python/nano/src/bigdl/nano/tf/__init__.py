@@ -21,11 +21,13 @@ if platform.system() != "Darwin":
     if "NANO_TF_INTER_OP" in os.environ:
         tf.config.threading.set_inter_op_parallelism_threads(int(os.environ["NANO_TF_INTER_OP"]))
     else:
-        warnings.warn("NANO_TF_INTER_OP not found the in os.environ, please run `source bigdl-nano-init`")
+        warnings.warn("NANO_TF_INTER_OP not found the in os.environ, "
+                      "please run `source bigdl-nano-init`")
 
     if "OMP_NUM_THREADS" in os.environ:
-        tf.config.threading.set_inter_op_parallelism_threads(int(os.environ["OMP_NUM_THREADS"]))
+        tf.config.threading.set_intra_op_parallelism_threads(int(os.environ["OMP_NUM_THREADS"]))
     else:
-        warnings.warn("OMP_NUM_THREADS not found the in os.environ, please run `source bigdl-nano-init`")
+        warnings.warn("OMP_NUM_THREADS not found the in os.environ, "
+                      "please run `source bigdl-nano-init`")
 
     tf.config.set_soft_device_placement(enabled=True)
