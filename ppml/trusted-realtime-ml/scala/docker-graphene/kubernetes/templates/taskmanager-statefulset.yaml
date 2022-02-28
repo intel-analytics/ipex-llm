@@ -84,9 +84,9 @@ spec:
               configMapKeyRef:
                 name: flink-config
                 key: sgx.mode
-         ports:
-        - containerPort: 6125
-          name: rpc
+        ports:
+          - containerPort: 6125
+            name: rpc
 #        resources:
 #          requests:
 #            cpu: 10
