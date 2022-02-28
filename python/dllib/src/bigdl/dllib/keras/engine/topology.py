@@ -281,7 +281,8 @@ class KerasNet(ZooKerasLayer):
                         val_x,
                         val_y)
 
-    def evaluate(self, x, y=None, batch_size=32, feature_cols=None, label_cols=None, transform=None):
+    def evaluate(self, x, y=None, batch_size=32, feature_cols=None,
+                 label_cols=None, transform=None):
         """
         Evaluate a model on a given dataset in distributed mode.
 
@@ -304,18 +305,18 @@ class KerasNet(ZooKerasLayer):
                 if not feature_cols:
                     raise TypeError("Please set feature_cols")
                 return callBigDlFunc(self.bigdl_type, "zooEvaluate",
-                              self.value,
-                              x,
-                              batch_size,
-                              feature_cols,
-                              label_cols)
+                                     self.value,
+                                     x,
+                                     batch_size,
+                                     feature_cols,
+                                     label_cols)
             else:
                 return callBigDlFunc(self.bigdl_type, "zooEvaluateImage",
-                              self.value,
-                              x,
-                              label_cols,
-                              transform,
-                              batch_size)
+                                     self.value,
+                                     x,
+                                     label_cols,
+                                     transform,
+                                     batch_size)
         else:
             raise TypeError("Unsupported evaluation data type: %s" % type(x))
         return callZooFunc(self.bigdl_type, "zooEvaluate",
