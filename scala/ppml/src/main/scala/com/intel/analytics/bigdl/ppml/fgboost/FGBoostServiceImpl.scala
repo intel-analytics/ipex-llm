@@ -32,6 +32,15 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
     val version = request.getMetaData.getVersion
     logger.debug(s"Server received downloadLabel request of version: $version")
+    synchronized {
+      if (aggregator.getLabelStorage().version != version) {
+        logger.debug(s"Server version is ${aggregator.getLabelStorage().version}, waiting")
+        wait()
+      } else {
+        notifyAll()
+      }
+    }
+
     val data = aggregator.getLabelStorage().serverData
     if (data == null) {
       val response = "Your required data doesn't exist"

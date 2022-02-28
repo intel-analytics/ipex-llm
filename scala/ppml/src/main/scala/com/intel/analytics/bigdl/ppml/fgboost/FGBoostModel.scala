@@ -183,9 +183,8 @@ abstract class FGBoostModel(continuous: Boolean,
 
       bestLocalSplit.setVersion(splitVersion)
       splitVersion += 1
-      logger.debug(s"${flClient.getClientUUID} get split: $bestLocalSplit")
       val bestSplit = getBestSplitFromServer(bestLocalSplit)
-//      logger.debug(s"Sync split cost ${(System.currentTimeMillis() - st) / 1000f} s")
+      logger.debug(s"Best split $bestSplit")
       val isLocalSplit = bestLocalSplit.getClientID == bestSplit.getClientID
       // If this split is in local dataset
       val updateCondition = if (continuous) {
@@ -233,7 +232,7 @@ abstract class FGBoostModel(continuous: Boolean,
   def downloadGrad(treeID: Int): Array[Array[Float]] = {
     // Note that g may be related to Y
     // H = 1 in regression
-    val response = flClient.fgbostStub.downloadLabel("xgboost_grad", treeID - 1)
+    val response = flClient.fgbostStub.downloadLabel("xgboost_grad", treeID)
     logger.info("Downloaded grads from FLServer")
     val gradTable = response.getData
     val grad = getTensor("grad", gradTable).toArray
