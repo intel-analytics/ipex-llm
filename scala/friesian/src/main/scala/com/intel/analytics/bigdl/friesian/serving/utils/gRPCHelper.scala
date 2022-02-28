@@ -40,6 +40,9 @@ class gRPCHelper extends Serializable {
   @BeanProperty var redisMaxMemory = "4g"
   @BeanProperty var redisTimeout = 5000
   @BeanProperty var redisPoolMaxTotal = 256
+  @BeanProperty var redisType = "standalone"
+  @BeanProperty var redisSentinelMasterName: String = _
+  @BeanProperty var redisSentinelMasterURL = "localhost:26379"
 
   // feature service attributes
   @BeanProperty var serviceType = "kv"
@@ -109,6 +112,10 @@ class gRPCHelper extends Serializable {
       0
     } else {
       redisClusterItemSlotType
+    }
+
+    if (redisType == "sentinel") {
+      assert(redisSentinelMasterName != null, "redisSentinelMasterName should not be null when redisType=sentinel")
     }
   }
 
