@@ -93,10 +93,12 @@ echo "Packing python source code and distribution: $wheel_command"
 ${wheel_command}
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl_dllib-${bigdl_version}-py3-none-${verbose_pname}.whl"
-    echo "Please manually upload with this command: $upload_command"
-    $upload_command
-    upload_command2="twine upload dist/bigdl-dllib-${bigdl_version}.tar.gz"
-    echo "Please manually upload with this command: $upload_command2"
-    $upload_command2
+    upload_wheel_command="twine upload dist/bigdl_dllib-${bigdl_version}-py3-none-${verbose_pname}.whl"
+    echo "Uploading wheel with this command: $upload_wheel_command"
+    $upload_wheel_command
+    if [ "$platform" == "linux" ]; then
+        upload_source_command="twine upload dist/bigdl-dllib-${bigdl_version}.tar.gz"
+        echo "Uploading source with this command: $upload_source_command"
+        $upload_source_command
+    fi
 fi
