@@ -221,7 +221,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     // Compute loss
     val loss = obj.getLoss(predict, label)
 
-    logger.info(s"========Loss ${loss} =======")
+    logger.info(s"New predict loss: ${loss}")
 //    logger.debug("New Predict" + predict.mkString("Array(", ", ", ")"))
 //    logger.debug("New Grad" + gradients(0).mkString("Array(", ", ", ")"))
 
@@ -260,10 +260,12 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
 
   def aggregatePredict(flPhase: FLPhase): Array[Array[(String, Array[java.lang.Boolean])]] = {
     // get proto and convert to scala object
-    logger.info("Aggregate Predict")
+//    logger.info("Aggregate Predict")
     val boostEvalBranchMap = flPhase match {
-      case FLPhase.EVAL => getEvalStorage().clientData
-      case FLPhase.PREDICT => getPredictStorage().clientData
+      case FLPhase.EVAL =>
+        getEvalStorage().clientData
+      case FLPhase.PREDICT =>
+        getPredictStorage().clientData
       case _ => throw new IllegalArgumentException()
     }
     val evalResults = boostEvalBranchMap.mapValues { list =>
@@ -285,6 +287,13 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
           }
         }
       }
+    }
+    flPhase match {
+      case FLPhase.EVAL =>
+        getEvalStorage().clientData.clear()
+      case FLPhase.PREDICT =>
+        getPredictStorage().clientData.clear()
+      case _ => throw new IllegalArgumentException()
     }
     result
   }

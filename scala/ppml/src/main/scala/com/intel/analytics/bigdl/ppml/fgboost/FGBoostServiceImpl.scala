@@ -156,7 +156,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
       }
     } catch {
       case e: Exception =>
-        val response = EvaluateResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        val errorMsg = ExceptionUtils.getStackTrace(e)
+        val response = EvaluateResponse.newBuilder.setResponse(errorMsg).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {

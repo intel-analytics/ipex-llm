@@ -35,7 +35,7 @@ public class FGBoostStub {
         stub = FGBoostServiceGrpc.newBlockingStub(channel);
     }
     public DownloadResponse downloadLabel(String modelName, int flVersion) {
-        logger.info("Download the following data:");
+//        logger.info("Download the following data:");
         MetaData metadata = MetaData.newBuilder()
                 .setName(modelName).setVersion(flVersion + 1).build();
         DownloadLabelRequest downloadRequest = DownloadLabelRequest.newBuilder().setMetaData(metadata).build();

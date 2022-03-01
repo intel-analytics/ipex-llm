@@ -80,7 +80,60 @@ object TmpUtils {
       if (noneNaFeatures.length.toFloat / features.length <= 0.6f) {
         // Too many NA features, ignore this column
         (col, -1, features.map(_ => Array[Float]()),
-          testFeatures.map(_ => Array[Float]()))
+          testFeatures.map(_ => Array[Float]()), trainHeaders(col))
+      } else {
+        val isNum = if (col == msSubClassIndex) {
+          // Since the numerical-like column MSSubClass is actually categorical,
+          // we need to convert it from numerical to string.
+          false
+        } else {
+          scala.util.Try(noneNaFeatures.head.toFloat).isSuccess
+        }
+        if (isNum) {
+          // fill NA to average, an array for a column
+          val avg = (noneNaFeatures.map(_.toFloat).sum / noneNaFeatures.length)
+          val trainNumFeatures = features.map { d =>
+            if (d == "NA") avg else d.toFloat
+          }
+          val testNumFeatures = testFeatures.map { t =>
+            if (t == "NA") avg else t.toFloat
+          }
+          val std = Math.sqrt(trainNumFeatures.map(v =>
+            Math.pow(v - avg, 2)).sum / trainNumFeatures.length).toFloat
+          (col, 0, trainNumFeatures.map(v => Array((v - avg) / std)),
+            testNumFeatures.map(v => Array((v - avg) / std)), trainHeaders(col))
+        } else {
+          // fill NA to max occur, an 2-d array for a column, last dim is one-hot
+          val grouped = features.groupBy(v => v).mapValues(_.length)
+          val fkeys = grouped.toArray.map(_._1).filter(_ != "NA").sorted
+          val default = fkeys.indexOf(grouped.toArray.maxBy(_._2)._1)
+          val trainCateFeatures = features.map { feature =>
+            val indx = if (feature == "NA") default else fkeys.indexOf(feature)
+            val oneHot = new Array[Float](fkeys.length)
+            oneHot(indx) = 1f
+            oneHot
+          }
+          val colPrefix = trainHeaders(col)
+          fkeys.indices.foreach(i => flattenHeader.append(s"${colPrefix}_$i"))
+          val testCateFeatures = testFeatures.map { feature =>
+            val indx = if (feature == "NA") default else fkeys.indexOf(feature)
+            val oneHot = new Array[Float](fkeys.length)
+            if (indx != -1) oneHot(indx) = 1f
+            oneHot
+          }
+          (col, 1, trainCateFeatures, testCateFeatures, trainHeaders(col))
+        }
+      }
+    }
+    trainHeaders.indices.foreach { col =>
+      // Do preprocess column-wise
+      val features = data.map(_ (col))
+      val testFeatures = testData.map(_ (col))
+      val noneNaFeatures = features.filter(_ != "NA")
+      if (noneNaFeatures.length.toFloat / features.length <= 0.6f) {
+        // Too many NA features, ignore this column
+        (col, -1, features.map(_ => Array[Float]()),
+          testFeatures.map(_ => Array[Float]()), trainHeaders(col))
       } else {
         val isNum = if (col == msSubClassIndex) {
           // Since the numerical-like column MSSubClass is actually categorical,
@@ -102,27 +155,7 @@ object TmpUtils {
           val std = Math.sqrt(trainNumFeatures.map(v =>
             Math.pow(v - avg, 2)).sum / trainNumFeatures.length).toFloat
           (col, 0, trainNumFeatures.map(v => Array((v - avg) / std)),
-            testNumFeatures.map(v => Array((v - avg) / std)))
-        } else {
-          // fill NA to max occur, an 2-d array for a column, last dim is one-hot
-          val grouped = features.groupBy(v => v).mapValues(_.length)
-          val fkeys = grouped.toArray.map(_._1).filter(_ != "NA").sorted
-          val default = fkeys.indexOf(grouped.toArray.maxBy(_._2)._1)
-          val trainCateFeatures = features.map { feature =>
-            val indx = if (feature == "NA") default else fkeys.indexOf(feature)
-            val oneHot = new Array[Float](fkeys.length)
-            oneHot(indx) = 1f
-            oneHot
-          }
-          val colPrefix = trainHeaders(col)
-          fkeys.indices.foreach(i => flattenHeader.append(s"${colPrefix}_$i"))
-          val testCateFeatures = testFeatures.map { feature =>
-            val indx = if (feature == "NA") default else fkeys.indexOf(feature)
-            val oneHot = new Array[Float](fkeys.length)
-            if (indx != -1) oneHot(indx) = 1f
-            oneHot
-          }
-          (col, 1, trainCateFeatures, testCateFeatures)
+            testNumFeatures.map(v => Array((v - avg) / std)), trainHeaders(col))
         }
       }
     }
@@ -135,6 +168,7 @@ object TmpUtils {
     features.filter(_._2 == 1).foreach { f =>
       print(trainHeaders(f._1) + ",")
     }
+
 
     val trainFeatures = data.indices.map { row =>
       val numF = features.filter(_._2 == 0).map(_._3(row))

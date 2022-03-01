@@ -113,7 +113,7 @@ abstract class FGBoostModel(continuous: Boolean,
     buildTree(currTree, continuous = continuous)
     currTree.cleanup()
     // Add this tree into tree list
-    logger.info(s"Built Tree_${i}" + currTree.toString)
+//    logger.info(s"Built Tree_${i}" + currTree.toString)
     if (currTree.leaves.isEmpty) {
       logger.info("No leaves could be expanded, early Stop boosting.")
       return false
@@ -147,10 +147,13 @@ abstract class FGBoostModel(continuous: Boolean,
 
   def trainRegressionTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int): Unit = {
     for (i <- 0 until totalRound) {
-      logger.debug(s"Training regression tree boost round: $i")
+      logger.debug(s"========Boosting round: $i========")
       val grads = downloadGrad(i)
       val currTree = RegressionTree(dataSet, indices, grads, i.toString, flattenHeaders = flattenHeaders)
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
+      if (i == 4) {
+        println("hi")
+      }
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return
     }
@@ -158,7 +161,7 @@ abstract class FGBoostModel(continuous: Boolean,
   def trainClassificationTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int) = {
     val labelEarlyStop = new Array[Boolean](nLabel)
     for (i <- 0 until totalRound) {
-      logger.debug(s"Training classification tree boost round: $i")
+      logger.debug(s"========Boosting round: $i========")
       val grads = downloadGrad(i)
       val nGrads = TreeUtils.expandGrads(grads, dataSet.length, nLabel)
       for (gID <- 0 until nLabel) {
@@ -180,17 +183,20 @@ abstract class FGBoostModel(continuous: Boolean,
       bestLocalSplit.setVersion(splitVersion)
       splitVersion += 1
       val bestSplit = getBestSplitFromServer(bestLocalSplit)
-      logger.debug(s"Best split $bestSplit")
+      if (bestSplit.gain != 0) {
+        logger.debug(s"Global best split: $bestSplit")
+      }
+
       val isLocalSplit = bestLocalSplit.getClientID == bestSplit.getClientID
       // If this split is in local dataset
       val updateCondition = if (continuous) {
         bestSplit.featureID == -1 || bestSplit.gain < 1e-6f
       } else  bestSplit.featureID == -1
       if (updateCondition) {
-        logger.warn("Fail to split on current node")
-        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
+        logger.warn(s"Set ${bestSplit.nodeID} as leaf")
+//        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
         // Add current node to leaf
-        logger.info(s"Tree node size: ${tree.nodes.size}, bestSplit at node ${bestSplit.nodeID}")
+//        logger.info(s"Tree node size: ${tree.nodes.size}, bestSplit at node ${bestSplit.nodeID}")
         tree.setLeaf(tree.nodes(bestSplit.nodeID))
       } else {
         // update bestSplit from server to local tree

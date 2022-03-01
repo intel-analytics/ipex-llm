@@ -69,10 +69,10 @@ public abstract class Aggregator {
         StorageHolder storageHolder = aggregateTypeMap.get(flPhase);
         synchronized (this) {
             storageHolder.putClientData(clientUUID, dataHolder);
-            logger.debug(clientUUID + "uploaded. Server received: " + flPhase + " " +
+            logger.debug(clientUUID + " uploaded. Server received: " + flPhase + " " +
                     storageHolder.getClientDataSize() + "/" + clientNum);
             if (storageHolder.getClientDataSize() >= clientNum) {
-                logger.debug("Server received all client data, start aggregate.");
+                logger.debug("Server start aggregate: " + flPhase);
                 aggregate(flPhase);
                 notifyAll();
             } else {

@@ -80,7 +80,7 @@ class RegressionTree(
   }
 
   def findBestSplit(): Split = {
-    logger.debug("Try to find best local split")
+//    logger.debug("Try to find best local split")
     val firstNode = expandQueue.dequeue()
     val bestLocalSplit = findBestSplitValue(firstNode)
     bestLocalSplit
@@ -125,10 +125,10 @@ class RegressionTree(
           rEndIndex += 1
         }
       }
-      (fBestGain, fIndex, rBestIndex, sortedFeatureIndex)
+      (fBestGain, fIndex, rBestIndex, sortedFeatureIndex, flattenHeaders(fIndex))
     }
-    val (bestGain, fIndex, rIndex, sortedFeatureIndex) = bestGainByFeature.maxBy(_._1)
-    if (fIndex == 133) {
+    val (bestGain, fIndex, rIndex, sortedFeatureIndex, featureName) = bestGainByFeature.maxBy(_._1)
+    if (math.abs(bestGain - 14.3125.toFloat) < 0.1) {
       println("hi")
     }
     if (bestGain > minInfoGain) {
@@ -145,6 +145,7 @@ class RegressionTree(
         bestGain,
         leftSet.map(int2Integer).toList.asJava
       )
+      bestS.setFeatureName(featureName)
 //      bestS.setFeatureName(flattenHeaders(fIndex))
       logger.info(s"Best local split: ${flattenHeaders(fIndex)}" + " => " + bestS.toString)
       bestS
