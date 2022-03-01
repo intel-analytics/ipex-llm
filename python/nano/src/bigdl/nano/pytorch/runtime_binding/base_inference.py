@@ -140,7 +140,7 @@ def inference(self,
             return yhat
     else:
         # inference w/o onnxruntime (fallback to pytorch native forward)
-        quantize = self._default_inference_quantize if quantize is None else quantize
+        quantize = quantize if quantize is not None else self._default_inference_quantize
         self.eval(quantize=quantize)
         with torch.no_grad():
             yhat_list = []
