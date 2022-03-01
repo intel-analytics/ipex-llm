@@ -332,6 +332,7 @@ def get_size(x):
             "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
             " or a list of ndarrays, please check your input")
 
+
 def spark_df_to_pd_sparkxshards(df):
     def to_pandas(iter, columns, batch_size=None):
         import pandas as pd
