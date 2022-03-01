@@ -27,7 +27,8 @@ from pytorch_lightning import LightningModule
 
 import numpy as np
 
-from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
+from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform,\
+    create_test_data_loader, test_data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
@@ -80,8 +81,10 @@ class TestQuantizeInference(TestCase):
         pl_model = Trainer.compile(model, loss, optimizer)
         train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
-        trainer.fit(pl_model, train_loader)
-        nonquantized_loss = trainer.test(pl_model, train_loader)  # fp32
+        test_loader = create_test_data_loader(data_dir, batch_size, \
+                                              num_workers, test_data_transform, subset=200)
+        trainer.fit(pl_model, test_loader)
+        nonquantized_loss = trainer.test(pl_model, test_loader)  # fp32
         assert pl_model._default_inference_quantize is False
         pl_model = trainer.quantize(pl_model, train_loader)
 
@@ -94,7 +97,7 @@ class TestQuantizeInference(TestCase):
             np.testing.assert_almost_equal(quantized_res, forward_res, decimal=5)  # same result
 
         assert pl_model._default_inference_quantize is True
-        quantized_loss = trainer.test(pl_model, train_loader)  # quantized
+        quantized_loss = trainer.test(pl_model, test_loader)  # quantized
         print(nonquantized_loss[0]['test/loss'], quantized_loss[0]['test/loss'])
         assert abs(nonquantized_loss[0]['test/loss'] - quantized_loss[0]['test/loss']) > 1e-5
 
