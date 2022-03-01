@@ -68,10 +68,10 @@ public class NNStub {
     }
 
     private void logDebugMessage(TensorMap data) {
-        logger.debug("Upload the following data:");
-        logger.debug("Upload Data Name:" + data.getMetaData().getName());
-        logger.debug("Upload Data Version:" + data.getMetaData().getVersion());
-        logger.debug("Upload Data:");
-        logger.debug(data.getTensorsMap().toString());
+//        logger.debug("Upload the following data:");
+//        logger.debug("Upload Data Name:" + data.getMetaData().getName());
+//        logger.debug("Upload Data Version:" + data.getMetaData().getVersion());
+//        logger.debug("Upload Data:");
+//        logger.debug(data.getTensorsMap().toString());
     }
 }
