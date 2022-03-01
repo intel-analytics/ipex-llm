@@ -65,7 +65,7 @@ def quantized_state_dict(self):
 
 
 def quantized_model_size(self):
-    if self._quantized_model_up_to_date:
+    if self._quantized_model:
         """
         This part is from https://github.com/PyTorchLightning/pytorch-lightning/blob
         /master/pytorch_lightning/utilities/memory.py
@@ -77,12 +77,10 @@ def quantized_model_size(self):
         """
         # TODO when pytorch-lightning is upgraded to 1.5, we can refactor this part
         model_size = BytesIO()
-        torch.save(self._quantized_model.state_dict(), model_size)
+        torch.save(self.quantized_state_dict(), model_size)
         size_mb = model_size.getbuffer().nbytes / 1e6
         return size_mb
-    else:
-        raise RuntimeError("Please call trainer.quantize again since the quantized model is"
-                           " not up-to-date.")
+    return
 
 
 def load_quantized_state_dict(self, state_dict):
