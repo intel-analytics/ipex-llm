@@ -79,13 +79,13 @@ RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-network-common_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-examples_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/pyspark.zip && \
-    wget $SPARK_JAR_REPO_URL/spark-encrypt-io-0.1-SNAPSHOT.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-encrypt-io-0.2-SNAPSHOT.jar && \
     mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-examples_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
     mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip && \
-    mv /opt/spark-encrypt-io-0.1-SNAPSHOT.jar /opt/spark-${SPARK_VERSION}/examples/jars && \
+    mv /opt/spark-encrypt-io-0.2-SNAPSHOT.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-encrypt-io.jar && \
     sed -i 's/\#\!\/usr\/bin\/env bash/\#\!\/usr\/bin\/env bash\nset \-x/' /opt/spark-${SPARK_VERSION}/bin/spark-class && \
     rm -f /opt/spark-${SPARK_VERSION}/jars/log4j-1.2.17.jar && \
     rm -f /opt/spark-${SPARK_VERSION}/jars/slf4j-log4j12-1.7.16.jar && \
