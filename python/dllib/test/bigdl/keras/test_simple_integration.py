@@ -21,6 +21,7 @@ from pyspark.sql.types import *
 from pyspark.sql.functions import lit
 
 from bigdl.dllib.feature.common import ChainedPreprocessing
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.keras.models import *
@@ -275,7 +276,6 @@ class TestSimpleIntegration(ZooTestCase):
         model.evaluate(df, batch_size=4, feature_cols=["features"], label_cols=["label"])
 
     def test_training_with_dataframe_image(self):
-        from bigdl.dllib.nncontext import *
         self.sc.stop()
         sparkConf = init_spark_conf().setMaster("local[1]")
         self.sc = init_nncontext(sparkConf)
