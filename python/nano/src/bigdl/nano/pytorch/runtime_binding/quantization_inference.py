@@ -26,6 +26,7 @@ QUANTIZATION_BINDED_COMPONENTS = ['_quantized_model',
 
 
 def _forward_fx_quantize(self, *args):
+    print("DDDDDDDDDDDDDDDDDDDDDDD I AM CALLED _forward_fx_quantize")
     return self._quantized_model(*args)
 
 
