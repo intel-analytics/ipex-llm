@@ -151,9 +151,6 @@ abstract class FGBoostModel(continuous: Boolean,
       val grads = downloadGrad(i)
       val currTree = RegressionTree(dataSet, indices, grads, i.toString, flattenHeaders = flattenHeaders)
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
-      if (i == 4) {
-        println("hi")
-      }
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return
     }

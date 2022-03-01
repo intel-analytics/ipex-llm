@@ -128,9 +128,6 @@ class RegressionTree(
       (fBestGain, fIndex, rBestIndex, sortedFeatureIndex, flattenHeaders(fIndex))
     }
     val (bestGain, fIndex, rIndex, sortedFeatureIndex, featureName) = bestGainByFeature.maxBy(_._1)
-    if (math.abs(bestGain - 14.3125.toFloat) < 0.1) {
-      println("hi")
-    }
     if (bestGain > minInfoGain) {
       require(rIndex > 0, s"best rIndex should greater than 0, but got ${rIndex}.")
       val leftSet = sortedFeatureIndex.slice(0, rIndex)
