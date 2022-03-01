@@ -17,10 +17,14 @@
 import pytest
 import shutil
 
+from pyspark.sql.types import *
+from pyspark.sql.functions import lit
+
 from bigdl.dllib.feature.common import ChainedPreprocessing
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.keras.models import *
+from bigdl.dllib.nnframes import *
 from test.bigdl.test_zoo_utils import ZooTestCase
 
 np.random.seed(1337)  # for reproducibility
@@ -249,7 +253,6 @@ class TestSimpleIntegration(ZooTestCase):
         model.fit(X_train, y_train, validation_data=(X_test, y_test))
 
     def test_training_with_dataframe(self):
-        from pyspark.sql.types import *
         data = self.sc.parallelize([
             ((2.0, 1.0, 3.0, 4.0, 2.0, 1.0), 0.0),
             ((4.0, 3.0, 1.0, 2.0, 3.0, 5.0), 1.0),
@@ -276,10 +279,7 @@ class TestSimpleIntegration(ZooTestCase):
         self.sc.stop()
         sparkConf = init_spark_conf().setMaster("local[1]")
         self.sc = init_nncontext(sparkConf)
-        self.sqlContext = SQLContext(self.sc)
 
-        from pyspark.sql.functions import lit
-        from bigdl.dllib.nnframes import *
         resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
         image_path = os.path.join(resource_path, "gray/gray.bmp")
         image_df = NNImageReader.readImages(image_path, self.sc).withColumn("label", lit(1))
