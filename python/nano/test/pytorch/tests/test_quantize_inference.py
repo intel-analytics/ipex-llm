@@ -82,8 +82,8 @@ class TestQuantizeInference(TestCase):
                                           num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
         nonquantized_loss = trainer.test(pl_model, train_loader)  # fp32
+        assert pl_model._default_inference_quantize is False
         pl_model = trainer.quantize(pl_model, train_loader)
-        print(pl_model._quantized_model_up_to_date)
 
         for x, y in train_loader:
             quantized_res = pl_model.inference(x, backend=None, quantize=True).numpy()  # quantized
@@ -92,8 +92,10 @@ class TestQuantizeInference(TestCase):
                 forward_res = pl_model(x).numpy()
             assert pl_model._quantized_model_up_to_date is True  # qmodel is up-to-date while inferencing
             np.testing.assert_almost_equal(quantized_res, forward_res, decimal=5)  # same result
-        
+
+        assert pl_model._default_inference_quantize is True
         quantized_loss = trainer.test(pl_model, train_loader)  # quantized
+        print(nonquantized_loss[0]['test/loss'], quantized_loss[0]['test/loss'])
         assert abs(nonquantized_loss[0]['test/loss'] - quantized_loss[0]['test/loss']) > 1e-5
 
         trainer.fit(pl_model, train_loader)
