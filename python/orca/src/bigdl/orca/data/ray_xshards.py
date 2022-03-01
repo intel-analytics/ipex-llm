@@ -164,6 +164,13 @@ class RayXShards(XShards):
             result.update(part)
         return [result[idx] for idx in range(self.num_partitions())]
 
+    def get_refs(self):
+        """
+        Flatten get_partition_refs. Get a list of partition_refs or shard_refs
+        """
+        partition_refs = self.get_partition_refs()
+        return [ref for partition_ref in partition_refs for ref in partition_ref]
+
     def collect_partitions(self):
         part_refs = self.get_partition_refs()
         return [ray.get(part_ref) for part_ref in part_refs]
