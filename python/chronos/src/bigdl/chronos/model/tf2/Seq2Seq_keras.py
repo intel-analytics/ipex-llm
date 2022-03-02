@@ -17,8 +17,7 @@
 import tensorflow as tf
 from keras import backend as K
 from bigdl.nano.tf.keras import Model
-from keras.layers import LSTM, Dense, Lambda
-
+from keras.layers import LSTM, Dense, Lambda, Reshape
 
 class LSTMSeq2Seq(Model):
     def __init__(self,
@@ -49,33 +48,49 @@ class LSTMSeq2Seq(Model):
                                      return_state=True,
                                      dropout=self.dropout,
                                      name="decoder_lstm_"+str(i)))
+        self.decoder_inputs = Reshape((1, self.output_feature_num),
+                                      input_shape=(self.output_feature_num,))
         self.fc = Dense(self.output_feature_num, activation="linear")
+        self.target_seq_fc = Dense(self.output_feature_num, activation="linear")
 
     def call(self, input_seq, target_seq=None):
-        states_value = None
+        states_values = None
         for encoder_layers in self.encoder:
-            _, *states_value = encoder_layers(input_seq,
-                                              initial_state=states_value)
+            _, *states_values = encoder_layers(input_seq,
+                                               initial_state=states_values)
         decoder_inputs = input_seq[:, -1, :self.output_feature_num]
-        decoder_inputs = K.reshape(decoder_inputs,
-                                   shape=(len(input_seq), 1, decoder_inputs.shape[-1]))
+        decoder_inputs = self.decoder_inputs(decoder_inputs)
         all_outputs = []
         for i in range(self.future_seq_len):
             for decoder_layers in self.decoder:
-                decoder_outputs, *states_value = decoder_layers(decoder_inputs,
-                                                                initial_state=states_value)
-                decoder_inputs = decoder_outputs
-            decoder_outputs = self.fc(decoder_outputs)
+                outputs, *states_values = decoder_layers(decoder_inputs,
+                                                         initial_state=states_values)
+                decoder_inputs = outputs
+            decoder_outputs = self.fc(outputs)
             # Update states
             all_outputs.append(decoder_outputs)
-            if not self.teacher_forcing or target_seq is None:
+            if not self.teacher_forcing:
                 # no teaching force
                 decoder_inputs = decoder_outputs
             else:
                 # with teaching force
-                decoder_inputs = target_seq[:, i:i+1, :]
+                # TODO function not completed.
+                decoder_inputs = self.target_seq_fc(target_seq[:, i:i+1, :])
         decoded_seq = Lambda(lambda x: K.concatenate(x, axis=1))(all_outputs)
         return decoded_seq
+
+    def get_config(self):
+        return {"lstm_hidden_dim": self.lstm_hidden_dim,
+                "lstm_layer_num": self.lstm_layer_num,
+                "future_seq_len": self.future_seq_len,
+                "output_feature_num": self.output_feature_num,
+                "input_feature_num": self.input_feature_num,
+                "dropout": self.dropout,
+                "teacher_forcing": self.teacher_forcing}
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
 
 
 def model_creator(config):
