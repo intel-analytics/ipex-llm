@@ -278,14 +278,13 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 data_creator = partition_ray_dataset_to_creator(data_shard, label_cols)
                 return self._train_epochs(
                     data_creator, epochs, batch_size, profile, info, False, callbacks)
-            
+
             trainer = Trainer(backend="torch", num_workers=self.num_workers)
             trainer.start()
 
-            success, worker_stats = trainer.run(
-                train_func=train_func,
-                config=None,
-                dataset=data)
+            success, worker_stats = trainer.run(train_func=train_func,
+                                                config=None,
+                                                dataset=data)
         else:
             assert isinstance(data, types.FunctionType), \
                 "data should be either an instance of SparkXShards or a callable function, but " \
