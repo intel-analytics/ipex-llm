@@ -28,12 +28,12 @@ public class RedisUtils {
 
         if (redisHostPort.size() == 1) {
             jedisPool = new JedisPool(jedisPoolConfig, redisHostPort.get(0)._1,
-                    (int) redisHostPort.get(0)._2, 30000);
+                    redisHostPort.get(0)._2, 30000);
         } else {
             Set<HostAndPort> hps = new HashSet<HostAndPort>();
             for (int i = 0; i < redisHostPort.size(); i++) {
                 HostAndPort hp = new HostAndPort(redisHostPort.get(i)._1,
-                        (int) redisHostPort.get(i)._2);
+                        redisHostPort.get(i)._2);
                 hps.add(hp);
             }
             // default maxAttempt=5, service likely to down, increase to 20

@@ -22,6 +22,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
 import com.intel.analytics.bigdl.friesian.serving.feature.utils.LettuceUtils;
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisType;
 import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc;
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
@@ -129,8 +130,9 @@ public class FeatureServer extends GrpcServerBase {
             colNamesMap = new HashMap<>();
             parseServiceType();
             if (serviceType.contains(ServiceType.KV)) {
-                redis = LettuceUtils.getInstance(Utils.helper().redisHostPort(),
-                        Utils.helper().getRedisKeyPrefix());
+                redis = LettuceUtils.getInstance(Utils.helper().redisTypeEnum(), Utils.helper().redisHostPort(),
+                        Utils.helper().getRedisKeyPrefix(), Utils.helper().redisSentinelMasterURL(),
+                        Utils.helper().redisSentinelMasterName(), Utils.helper().itemSlotType());
             }
 
             if (serviceType.contains(ServiceType.INFERENCE)) {

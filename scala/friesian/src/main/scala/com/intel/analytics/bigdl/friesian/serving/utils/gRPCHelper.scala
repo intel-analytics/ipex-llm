@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.friesian.serving.utils
 
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisType
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 
 import java.nio.file.Files
@@ -77,6 +78,7 @@ class gRPCHelper extends Serializable {
   var inferenceColArr: Array[String] = _
   var itemModel: InferenceModel = _
   var itemSlotType: Int = 0
+  var redisTypeEnum: RedisType = RedisType.STANDALONE
 
   val logger: Logger = LogManager.getLogger(getClass)
 
@@ -114,8 +116,12 @@ class gRPCHelper extends Serializable {
       redisClusterItemSlotType
     }
 
+    redisType = redisType.toLowerCase.trim
     if (redisType == "sentinel") {
       assert(redisSentinelMasterName != null, "redisSentinelMasterName should not be null when redisType=sentinel")
+      redisTypeEnum = RedisType.SENTINEL
+    } else if (redisType == "cluster") {
+      redisTypeEnum = RedisType.CLUSTER
     }
   }
 
