@@ -88,19 +88,6 @@ def partition_refs_to_creator(partition_refs):
     return data_creator
 
 
-def partition_ray_dataset_to_creator(data_shard, label):
-    from torch.utils.data import DataLoader
-    def data_creator(config, batch_size):
-        torch_dataset = data_shard.to_torch(
-                label_column=label,
-                batch_size=batch_size)      
-        for batch_idx, data in enumerate(torch_dataset):
-            dataloader = DataLoader(data, 
-                                    batch_size=batch_size)
-        return dataloader
-
-    return data_creator
-
 class PyTorchRayEstimator(OrcaRayEstimator):
     def __init__(
             self,
@@ -247,6 +234,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 when creating the Estimator.
         """
         from bigdl.orca.data import SparkXShards
+        from ray.data import Dataset
 
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
@@ -269,22 +257,41 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
-        elif isinstance(data, ray.data.Dataset):
-            from ray import train
-            from ray.train import Trainer
+        elif isinstance(data, Dataset):
+            @ray.remote
+            class TrainingWorker:
+                def __init__(self, rank: int, shard: Dataset):
+                    self.rank = rank
+                    self.shard = shard
+                
+                def get_shard(self):
+                    return self.shard
+                
+                def get_rank(self):
+                    return self.rank
 
-            def train_func(config):
-                data_shard = train.get_dataset_shard()
-                data_creator = partition_ray_dataset_to_creator(data_shard, label_cols)
-                return self._train_epochs(
-                    data_creator, epochs, batch_size, profile, info, False, callbacks)
+            shards = data.split(n=self.num_workers)
+            actors = [TrainingWorker.remote(rank, shard) for rank, shard in enumerate(shards)]
+            
+            def data_creator(config, batch_size):
+                torch_datashard = ray.get(actors[rank].get_shard.remote()).to_torch(
+                    label_column=label_cols,
+                    batch_size=batch_size)
+                for batch_idx, data in enumerate(torch_datashard):
+                    dataloader = torch.utils.data.DataLoader(data, batch_size=32)
+                return dataloader
 
-            trainer = Trainer(backend="torch", num_workers=self.num_workers)
-            trainer.start()
-
-            success, worker_stats = trainer.run(train_func=train_func,
-                                                config=None,
-                                                dataset=data)
+            remote_worker_stats = []
+            for rank, worker in enumerate(self.remote_workers):
+                stats = worker.train_epochs.remote(data_creator, epochs, batch_size, profile, 
+                                                   info, False, callbacks)
+                remote_worker_stats.append(stats)
+            success = check_for_failure(remote_worker_stats)
+            if success:
+                worker_stats = ray.get(remote_worker_stats)
+                return worker_stats
+            else:
+                return success, None
         else:
             assert isinstance(data, types.FunctionType), \
                 "data should be either an instance of SparkXShards or a callable function, but " \
