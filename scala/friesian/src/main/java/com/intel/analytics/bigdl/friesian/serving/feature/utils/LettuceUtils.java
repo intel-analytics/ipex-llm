@@ -243,37 +243,4 @@ public class LettuceUtils {
         }
         return values;
     }
-
-    public static void main(String[] args) throws ExecutionException, InterruptedException, TimeoutException {
-        ArrayList<Tuple2<String, Integer>> hostPort = new ArrayList<>();
-//        hostPort.add(new Tuple2<>("localhost", 6379));
-//        hostPort.add(new Tuple2<>("10.239.158.177", 6380));
-//        hostPort.add(new Tuple2<>("localhost", 6381));
-//        LettuceUtils utils = LettuceUtils.getInstance(hostPort, "");
-        LettuceUtils utils = LettuceUtils.getInstance(RedisType.SENTINEL, null,
-                "2t", "localhost:26379", "mymaster", 0);
-//        RedisStringCommands<String, String> sync = utils.getSync();
-
-//        List<KeyValue<String, String>> value = sync.mget("a", "2tower_user", "d");
-//        sync.set("b", "2");
-        RedisStringAsyncCommands<String, String> async = utils.getAsync();
-//        Map<String, String> keyValue = new HashMap<>();
-//        keyValue.put("c", "c");
-//        keyValue.put("b", "b");
-        String[][] dataList = new String[2][2];
-        dataList[0] = new String[]{"c", "c"};
-        dataList[1] = new String[]{"b", "b"};
-
-        for (int  i = 1; i < 100000; i ++) {
-//            RedisAsyncCommands<String, String> async = utils.getAsync();
-            utils.MSet("", dataList);
-        }
-        for (int  i = 1; i < 100000; i ++) {
-//            RedisAsyncCommands<String, String> async = utils.getAsync();
-            String[] keys = new String[]{"a", "2tower_user", "b", "c"};
-            List<String> result = utils.MGet("", keys);
-            System.out.println(result.get(2));
-        }
-        System.out.println("a");
-    }
 }

@@ -87,9 +87,9 @@ class FriesianRedisSpec extends ZooSpecHelper {
       Array("6", "26"), Array("7", "27"), Array("8", "28"), Array("9", "29"), Array("10", "210"), Array("64", "24"))
     utils.MSet("item", data)
     utils.MSet("user2", data)
-    val keys = Array("a", "2tower_user", "1", "2")
+    val keys = Array("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
     val result = utils.MGet("item", keys)
-    assert(result.size() == 4)
-    assert(result.get(0) == "" && result.get(2) == "21" && result.get(3) == "22")
+    assert(result.size() == 10)
+    assert(result.get(0) == "21" && result.get(2) == "23" && result.get(3) == "24")
   }
 }
