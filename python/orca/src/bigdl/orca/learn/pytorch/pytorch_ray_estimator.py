@@ -88,6 +88,19 @@ def partition_refs_to_creator(partition_refs):
     return data_creator
 
 
+def partition_ray_dataset_to_creator(data_shard, label):
+    from torch.utils.data import DataLoader
+    def data_creator(config, batch_size):
+        torch_dataset = data_shard.to_torch(
+                label_column=label,
+                batch_size=batch_size)      
+        for batch_idx, data in enumerate(torch_dataset):
+            dataloader = DataLoader(data, 
+                                    batch_size=batch_size)
+        return dataloader
+
+    return data_creator
+
 class PyTorchRayEstimator(OrcaRayEstimator):
     def __init__(
             self,
@@ -256,6 +269,23 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
+        elif isinstance(data, ray.data.Dataset):
+            from ray import train
+            from ray.train import Trainer
+
+            def train_func(config):
+                data_shard = train.get_dataset_shard()
+                data_creator = partition_ray_dataset_to_creator(data_shard, label_cols)
+                return self._train_epochs(
+                    data_creator, epochs, batch_size, profile, info, False, callbacks)
+            
+            trainer = Trainer(backend="torch", num_workers=self.num_workers)
+            trainer.start()
+
+            success, worker_stats = trainer.run(
+                train_func=train_func,
+                config=None,
+                dataset=data)
         else:
             assert isinstance(data, types.FunctionType), \
                 "data should be either an instance of SparkXShards or a callable function, but " \
