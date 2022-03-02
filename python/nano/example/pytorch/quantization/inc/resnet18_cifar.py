@@ -56,7 +56,7 @@ seed_everything(7)
 
 PATH_DATASETS = os.path.dirname(os.path.abspath(__file__))
 BATCH_SIZE = 64
-NUM_WORKERS = 0  # Multi-thread run sometimes raise quantization error
+NUM_WORKERS = int(os.cpu_count() / 2)
 
 
 train_transforms = torchvision.transforms.Compose(
