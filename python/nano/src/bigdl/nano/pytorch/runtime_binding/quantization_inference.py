@@ -31,12 +31,14 @@ def _forward_fx_quantize(self, *args):
 
 def _fx_quantize_on_train(self, mode=True):
     self._quantized_model_up_to_date = False
+    self._default_inference_quantize = False
     self._quantized_model = None
     self.forward = self._torch_forward
 
 
 def _fx_quantize_on_fit_start(self):
     self._quantized_model_up_to_date = False
+    self._default_inference_quantize = False
     self._quantized_model = None
     self.forward = self._torch_forward
 
@@ -100,6 +102,10 @@ def bind_quantize_methods(pl_model, q_model):
 
     pl_model._quantized_model = q_model
     pl_model._quantized_model_up_to_date = True
+    if q_model:
+        pl_model._default_inference_quantize = True
+    else:
+        pl_model._default_inference_quantize = False
     pl_model._forward_fx_quantize = partial(_forward_fx_quantize, pl_model)
     pl_model._fx_quantize_eval = partial(_fx_quantize_eval, pl_model)
     pl_model._fx_quantize_on_train = partial(_fx_quantize_on_train, pl_model)

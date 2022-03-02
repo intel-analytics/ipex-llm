@@ -27,7 +27,8 @@ from pytorch_lightning import LightningModule
 
 import numpy as np
 
-from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
+from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform,\
+    create_test_data_loader, test_data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
@@ -80,9 +81,12 @@ class TestQuantizeInference(TestCase):
         pl_model = Trainer.compile(model, loss, optimizer)
         train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
-        trainer.fit(pl_model, train_loader)
+        test_loader = create_test_data_loader(data_dir, batch_size, \
+                                              num_workers, test_data_transform, subset=200)
+        trainer.fit(pl_model, test_loader)
+        nonquantized_loss = trainer.test(pl_model, test_loader)  # fp32
+        assert pl_model._default_inference_quantize is False
         pl_model = trainer.quantize(pl_model, train_loader)
-        print(pl_model._quantized_model_up_to_date)
 
         for x, y in train_loader:
             quantized_res = pl_model.inference(x, backend=None, quantize=True).numpy()  # quantized
@@ -91,7 +95,12 @@ class TestQuantizeInference(TestCase):
                 forward_res = pl_model(x).numpy()
             assert pl_model._quantized_model_up_to_date is True  # qmodel is up-to-date while inferencing
             np.testing.assert_almost_equal(quantized_res, forward_res, decimal=5)  # same result
-        
+
+        assert pl_model._default_inference_quantize is True
+        quantized_loss = trainer.test(pl_model, test_loader)  # quantized
+        print(nonquantized_loss[0]['test/loss'], quantized_loss[0]['test/loss'])
+        assert abs(nonquantized_loss[0]['test/loss'] - quantized_loss[0]['test/loss']) > 1e-5
+
         trainer.fit(pl_model, train_loader)
         assert pl_model._quantized_model_up_to_date is False  # qmodel is not up-to-date after training
 
@@ -107,7 +116,7 @@ class TestQuantizeInference(TestCase):
             pl_model_load.load_quantized_state_dict(torch.load(ckpt_name))
         
         for x, y in train_loader:
-            quantized_res = pl_model.inference(x, backend=None, quantize=True).numpy()  # quantized
+            quantized_res = pl_model.inference(x, backend=None).numpy()  # quantized
             quantized_res_load = pl_model_load.inference(x, backend=None, quantize=True).numpy()  # quantized
             np.testing.assert_almost_equal(quantized_res, quantized_res_load, decimal=5)  # same result
 

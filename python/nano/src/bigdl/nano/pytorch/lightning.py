@@ -46,7 +46,7 @@ class LightningModuleFromTorch(LightningModule):
     def _forward(self, batch):
         # Handle different numbers of input for various models
         nargs = self.model.forward.__code__.co_argcount
-        return self.model(*(batch[:nargs - 1]))
+        return self(*(batch[:nargs - 1]))
 
     def training_step(self, batch, batch_idx):
         y_hat = self._forward(batch)
