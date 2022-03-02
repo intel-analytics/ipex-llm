@@ -40,7 +40,8 @@ class BaseTF2Forecaster(Forecaster):
         :params validation_data:
         :params epochs: Number of epochs you want to train. The value defaults to 1.
         :params batch_size: Number of batch size you want to train. The value defaults to 32.
-        :params shuffle: 
+        :params shuffle: whether to shuffle the training data before each epoch.
+                The value defaults to True.
         """
 
         self.internal.fit(x=data[0], y=data[1],
@@ -108,4 +109,4 @@ class BaseTF2Forecaster(Forecaster):
         :params checkpoint_file: The checkpoint file location you want to load the forecaster.
         """
         self.internal = keras.models.load_model(checkpoint_file)
-        self.fitted=True
+        self.fitted = True
