@@ -388,6 +388,11 @@ class BasePytorchForecaster(Forecaster):
             self.fitted = True
             if quantize_checkpoint_file:
                 self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
+            # This trainer is only for quantization, once the user call `fit`, it will be
+            # replaced according to the new training config
+            self.trainer = Trainer(logger=False, max_epochs=1,
+                                   checkpoint_callback=self.checkpoint_callback,
+                                   num_processes=self.num_processes, use_ipex=self.use_ipex)
 
     def to_local(self):
         """
