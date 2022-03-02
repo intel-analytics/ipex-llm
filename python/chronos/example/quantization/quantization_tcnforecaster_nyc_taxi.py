@@ -89,6 +89,6 @@ if __name__ == "__main__":
 
     print("Pytorch Quantization helps increase inference throughput by", round(fp32_pytorch_time/int8_pytorch_time*100-100, 2), "%")
     print("Onnx Quantization helps decrease inference latency by", round((np.median(fp32_pytorch_latency)-np.median(int8_onnx_latency))/np.median(fp32_pytorch_latency)*100, 2), "%")
-    print("fp32 pytorch smape:", avg_smape_fp32_pytorch)
-    print("int8 pytorch smape:", avgr_smape_int8_pytorch)
-    print("int8 onnx smape:", avgr_smape_int8_onnx)
+    print("fp32 pytorch smape:", round(float(avg_smape_fp32_pytorch), 2))
+    print("int8 pytorch smape:", round(float(avgr_smape_int8_pytorch), 2))
+    print("int8 onnx smape:", round(float(avgr_smape_int8_onnx), 2))
