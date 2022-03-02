@@ -47,6 +47,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from torch.optim.lr_scheduler import OneCycleLR
 from torchmetrics.functional import accuracy
 
+
 from pl_bolts.datamodules import CIFAR10DataModule
 from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
 
@@ -160,30 +161,33 @@ trainer = Trainer(
 
 trainer.fit(model, cifar10_dm)
 
-fp32_model = model
 # FP32 testing
 start = time()
-outputs = trainer.test(fp32_model, datamodule=cifar10_dm)
-time1 = time() - start
-log_dict = outputs[0]
-print("FP32 model size: %.3f MB" % fp32_model.model_size)
-print("Throughput: %d s" % time1)
-print("Accuracy: %.2f%%" % (log_dict['test_acc'] * 100))
+outputs = trainer.test(model, datamodule=cifar10_dm)
+fp32_infer_time = time() - start
+fp32_acc = outputs[0]['test_acc'] * 100
 
 # Run post-training quantization
-int8_model = trainer.quantize(fp32_model,
-                              calib_dataloader=cifar10_dm.train_dataloader())
+i8_model = trainer.quantize(model,
+                            calib_dataloader=cifar10_dm.train_dataloader())
 
 # Testing on quantized INT8 model
 start = time()
-outputs = trainer.test(int8_model, cifar10_dm)
-time2 = time() - start
-log_dict = outputs[0]
-print("INT8 model size: %.3f MB" % int8_model.model_size)
-print("Throughput: %d s" % time2)
-print("Accuracy: %.2f%%" % (log_dict['test/Accuracy'] * 100))
+outputs = trainer.test(i8_model, cifar10_dm)
+i8_infer_time = time() - start
+i8_acc = outputs[0]['test_acc'] * 100
 
-print("After quantization, the model size reduces %d%%, throughput improves %d%%" % (
-    (fp32_model.model_size - int8_model.model_size) / fp32_model.model_size * 100,
-    (time1 - time2) / time1 * 100
-))
+summary = """
+|    Precision   | Inference Time(s) | Model Size(MB) | Accuracy(%) |
+|      FP32      |       {:5.2f}       |      {:5.2f}     |    {:5.2f}    |
+|      INT8      |       {:5.2f}       |      {:5.2f}     |    {:5.2f}    |
+| Improvement(%) |       {:5.2f}       |      {:5.2f}     |    {:5.2f}    |
+"""
+summary = summary.format(
+    fp32_infer_time, model.model_size, fp32_acc,
+    i8_infer_time, i8_model.quantized_model_size, i8_acc,
+    (1 - i8_infer_time / fp32_infer_time) * 100,
+    (1 - i8_model.quantized_model_size / model.model_size) * 100,
+    i8_acc - fp32_acc
+)
+print(summary)
