@@ -8,7 +8,7 @@ You may pull a Docker image from the  [Docker Hub](https://hub.docker.com/r/inte
 
 To pull the nightly build version, use
 ```bash
-sudo docker pull intelanalytics/bigdl:0.14.0-SNAPSHOT
+sudo docker pull intelanalytics/bigdl:2.1.0-SNAPSHOT
 ```
 
 To pull other versions, please refer to [BigDL Docker Hub Tags](https://hub.docker.com/r/intelanalytics/bigdl/tags?page=1&ordering=last_updated), select a tag and use
@@ -52,7 +52,7 @@ sudo docker run -it --rm --net=host \
     -e NOTEBOOK_TOKEN="your-token" \
     -e http_proxy=http://your-proxy-host:your-proxy-port \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
-    intelanalytics/bigdl:0.14.0-SNAPSHOT bash
+    intelanalytics/bigdl:2.1.0-SNAPSHOT bash
 ```
 
 * The value 12345 is a user specified port number.
@@ -85,7 +85,7 @@ In the `/opt/work` directory, run this command line to start the Jupyter Noteboo
 
 You will see the output message like below. This means the Jupyter Notebook service has started successfully within the container.
 ```
-[I 07:40:39.354 NotebookApp] Serving notebooks from local directory: /opt/work/bigdl-0.14.0-SNAPSHOT/apps
+[I 07:40:39.354 NotebookApp] Serving notebooks from local directory: /opt/work/bigdl-2.1.0-SNAPSHOT/apps
 [I 07:40:39.355 NotebookApp] Jupyter Notebook 6.4.6 is running at:
 [I 07:40:39.355 NotebookApp] http://(the-host-name):12345/?token=...
 [I 07:40:39.355 NotebookApp]  or http://127.0.0.1:12345/?token=...
@@ -134,7 +134,7 @@ sudo docker ps
 2. You will see your docker containers:
 ```
 CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
-40de2cdad025        intelanalytics/bigdl:0.14.0-SNAPSHOT         "/opt/work/start-n..."   3 hours ago         Up 3 hours                              upbeat_al
+40de2cdad025        intelanalytics/bigdl:2.1.0-SNAPSHOT         "/opt/work/start-n..."   3 hours ago         Up 3 hours                              upbeat_al
 ```
 
 3. Shut down the corresponding docker container by its ID:
