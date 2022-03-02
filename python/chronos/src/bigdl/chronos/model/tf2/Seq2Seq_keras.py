@@ -19,6 +19,7 @@ from keras import backend as K
 from bigdl.nano.tf.keras import Model
 from keras.layers import LSTM, Dense, Lambda, Reshape
 
+
 class LSTMSeq2Seq(Model):
     def __init__(self,
                  input_feature_num,
