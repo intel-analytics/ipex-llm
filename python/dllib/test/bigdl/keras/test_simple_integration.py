@@ -56,7 +56,7 @@ class TestSimpleIntegration(ZooTestCase):
 
     def test_training_with_tensorboard_checkpoint_gradientclipping(self):
         model = Sequential()
-        model.add(Dense(8, input_shape=(32, 32, )))
+        model.add(Dense(8, input_shape=(32, 32, ), name="dense1"))
         model.add(Flatten())
         model.add(Dense(4, activation="softmax"))
         X_train = np.random.random([200, 32, 32])
@@ -72,8 +72,10 @@ class TestSimpleIntegration(ZooTestCase):
         model.set_tensorboard(tmp_log_dir, "training_test")
         model.set_checkpoint(tmp_checkpoint_path)
         model.set_constant_gradient_clipping(0.01, 0.03)
+        model.freeze("dense1")
         model.fit(X_train, y_train, batch_size=112, nb_epoch=2, validation_data=(X_test, y_test))
         model.clear_gradient_clipping()
+        model.unfreeze("dense1")
         model.fit(X_train, y_train, batch_size=112, nb_epoch=2, validation_data=(X_test, y_test))
         model.set_gradient_clipping_by_l2_norm(0.2)
         model.fit(X_train, y_train, batch_size=112, nb_epoch=2, validation_data=(X_test, y_test))
