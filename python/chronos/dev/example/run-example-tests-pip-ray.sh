@@ -79,6 +79,7 @@ if [ ! -f ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv ]; then
   mv ~/.chronos/dataset/nyc_taxi/nyc_taxi.csv ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv
 fi
 
+sed -i 's/epochs=10/epochs=1/' "${BIGDL_ROOT}/python/chronos/example/quantization/quantization_tcnforecaster_nyc_taxi.py"
 execute_ray_test quantization_tcnforecaster_nyc_taxi "${BIGDL_ROOT}/python/chronos/example/quantization/quantization_tcnforecaster_nyc_taxi.py"
 time7=$?
 
