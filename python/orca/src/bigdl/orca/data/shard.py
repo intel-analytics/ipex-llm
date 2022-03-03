@@ -486,7 +486,8 @@ class SharedValue(object):
 
 def spark_df_to_ray_dataset(df):
     """
-    Convert a Spark DataFrame to Ray Dataset.
+    Convert a Spark DataFrame to Ray Dataset. The block number of ray datasets equals to the
+    partition number of the input DataFrame.
     :param df: A Spark dataframe.
     :return: A Ray Dataset holding Arrow records read from the dataframe.
     """
