@@ -23,6 +23,51 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 
 
+def data_process(df):
+    df = df.withColumnRenamed(" FIPS", "FIPS")\
+        .withColumnRenamed("Age-Adjusted Incidence Rate(Ê) - cases per 100,000",
+                           "Age-Adjusted Incidence Rate") \
+        .withColumnRenamed("Recent 5-Year Trend () in Incidence Rates", "Recent 5-Year Trend") \
+        .withColumnRenamed("Lower 95% Confidence Interval3", "Lower 95% Confidence Interval") \
+        .withColumnRenamed("Upper 95% Confidence Interval4", "Upper 95% Confidence Interval") \
+        .cache()
+
+    # removes rows with cell value _, # or *
+    df = df.where(~(col('Age-Adjusted Incidence Rate').contains('_') | col(
+        'Age-Adjusted Incidence Rate').contains('#') | col('Recent Trend').contains('*')))
+
+    df = df.withColumn("FIPS", df["FIPS"].cast("long")) \
+        .withColumn("Lower 95% Confidence Interval",
+                    df["Lower 95% Confidence Interval"].cast("double")) \
+        .withColumn("Upper 95% Confidence Interval",
+                    df["Upper 95% Confidence Interval"].cast("double")) \
+        .withColumn("Average Annual Count", df["Average Annual Count"].cast("double")) \
+        .withColumn("Recent 5-Year Trend", df["Recent 5-Year Trend"].cast("double")) \
+        .withColumn("Age-Adjusted Incidence Rate",
+                    df["Age-Adjusted Incidence Rate"].cast("double")) \
+        .cache()
+
+    feature_cols = [
+        "FIPS",
+        "Lower 95% Confidence Interval",
+        "Upper 95% Confidence Interval",
+        "Average Annual Count",
+        "Recent 5-Year Trend"]
+    target_col = "Age-Adjusted Incidence Rate"
+
+    useful_columns = feature_cols + [target_col]
+    df = df.select(useful_columns)
+
+    splits = df.randomSplit([0.8, 0.2], seed=24)
+    train_df = splits[0]
+    test_df = splits[1]
+
+    print("Number of records in train_df", train_df.count())
+    print("Number of records in test_df", test_df.count())
+
+    return train_df, test_df, feature_cols, target_col
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='AutoXGBRegressor example')
@@ -56,43 +101,7 @@ if __name__ == '__main__':
     spark = SparkSession(sc)
     df = spark.read.option('encoding', 'ISO-8859-1').csv(opt.path, header=True).cache()
 
-    df = df.withColumnRenamed(" FIPS", "FIPS")\
-        .withColumnRenamed("Age-Adjusted Incidence Rate(Ê) - cases per 100,000",
-                           "Age-Adjusted Incidence Rate") \
-        .withColumnRenamed("Recent 5-Year Trend () in Incidence Rates", "Recent 5-Year Trend") \
-        .withColumnRenamed("Lower 95% Confidence Interval3", "Lower 95% Confidence Interval") \
-        .withColumnRenamed("Upper 95% Confidence Interval4", "Upper 95% Confidence Interval") \
-
-    # removes rows with cell value _, # or *
-    df = df.where(~(col('Age-Adjusted Incidence Rate').contains('_') | col(
-        'Age-Adjusted Incidence Rate').contains('#') | col('Recent Trend').contains('*')))
-
-    df = df.withColumn("FIPS", df["FIPS"].cast("long")) \
-        .withColumn("Lower 95% Confidence Interval",
-                    df["Lower 95% Confidence Interval"].cast("double")) \
-        .withColumn("Upper 95% Confidence Interval",
-                    df["Upper 95% Confidence Interval"].cast("double")) \
-        .withColumn("Average Annual Count", df["Average Annual Count"].cast("double")) \
-        .withColumn("Recent 5-Year Trend", df["Recent 5-Year Trend"].cast("double")) \
-        .withColumn("Age-Adjusted Incidence Rate",
-                    df["Age-Adjusted Incidence Rate"].cast("double")) \
-        .cache()
-
-    num_rows_train = 1500  # number of rows to be used in this notebook; max: 2593 - num_rows_test
-    df = df.limit(num_rows_train)
-    splits = df.randomSplit([0.8, 0.2], seed=24)
-    train_df = splits[0]
-    test_df = splits[1]
-    print("Number of records in train_df", train_df.count())
-    print("Number of records in test_df", test_df.count())
-
-    feature_cols = [
-        "FIPS",
-        "Lower 95% Confidence Interval",
-        "Upper 95% Confidence Interval",
-        "Average Annual Count",
-        "Recent 5-Year Trend"]
-    target_col = "Age-Adjusted Incidence Rate"
+    train_df, test_df, feature_cols, target_col = data_process(df)
 
     config = {'random_state': 2}
 
