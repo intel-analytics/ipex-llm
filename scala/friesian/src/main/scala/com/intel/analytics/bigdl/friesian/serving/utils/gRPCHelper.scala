@@ -119,7 +119,8 @@ class gRPCHelper extends Serializable {
     assert(redisType != null, "redisType should not be null")
     redisType = redisType.toLowerCase.trim
     if (redisType == "sentinel") {
-      assert(redisSentinelMasterName != null, "redisSentinelMasterName should not be null when redisType=sentinel")
+      assert(redisSentinelMasterName != null,
+        "redisSentinelMasterName should not be null when redisType=sentinel")
       redisTypeEnum = RedisType.SENTINEL
     } else if (redisType == "cluster") {
       redisTypeEnum = RedisType.CLUSTER
