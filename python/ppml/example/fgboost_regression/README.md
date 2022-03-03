@@ -40,7 +40,7 @@ The client to interact with FLServer is inside FLContext, to use it, initialize 
 init_fl_context()
 ```
 ### Run Algorithm
-Then create a `FGBoostRegression` instance to apply Federal Gradient Boosting Regression algorithm, and call train and predict on dummy data.
+Then create a `FGBoostRegression` instance to apply Federated Gradient Boosting Regression algorithm, and call train and predict on dummy data.
 ```python
 fgboost_regression = FGBoostRegression()
 fgboost_regression.fit(x, y)
