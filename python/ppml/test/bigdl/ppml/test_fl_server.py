@@ -18,6 +18,7 @@ import unittest
 from bigdl.ppml import FLServer
 
 
+
 class TestFLServer(unittest.TestCase):
     def test_fl_server_default_config(self):
         fl_server = FLServer()

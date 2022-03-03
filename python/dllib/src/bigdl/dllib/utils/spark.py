@@ -243,7 +243,7 @@ class SparkRunner:
                 python_location if python_location else detect_python_location()
         if not master:
             pyspark_home = os.path.abspath(pyspark.__file__ + "/../")
-            zoo_standalone_home = os.path.abspath(__file__ + "/../../share/bin/standalone")
+            zoo_standalone_home = os.path.abspath(__file__ + "/../../../share/dllib/bin/standalone")
             node_ip = get_node_ip()
             SparkRunner.standalone_env = {
                 "SPARK_HOME": pyspark_home,
@@ -293,7 +293,8 @@ class SparkRunner:
             "spark.cores.max": num_executors * executor_cores,
             "spark.executorEnv.PYTHONHOME": "/".join(detect_python_location().split("/")[:-2])
         })
-        zoo_bigdl_jar_path = ":".join(list(get_zoo_bigdl_classpath_on_driver()))
+        # Driver and executor are assumed to have the same Python environment
+        zoo_bigdl_jar_path = get_zoo_bigdl_classpath_on_driver()
         if "spark.executor.extraClassPath" in conf:
             conf["spark.executor.extraClassPath"] = "{}:{}".format(
                 zoo_bigdl_jar_path, conf["spark.executor.extraClassPath"])

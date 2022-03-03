@@ -56,19 +56,18 @@ java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar
 ## Before running code
 
 ### Prepare Docker Image
-#### Build jar from Source
+Pull image from dockerhub.
 
 ```bash
-cd ../.. && bash make-dist.sh -DskipTests -Pspark_3.x
-mv ppml/target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar ppml/demo
-cd ppml/demo
+docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:0.14.0-SNAPSHOT
 ```
 
-#### Build Image
-Modify your `http_proxy` in `build-image.sh` then run:
+Also, you can build image with `build-image.sh`. Configure environment variables in `build-image.sh`.
 
-```bash
-./build-image.sh
+Build the docker image:
+
+``` bash
+bash build-image.sh
 ```
 
 ### Prepare the Key

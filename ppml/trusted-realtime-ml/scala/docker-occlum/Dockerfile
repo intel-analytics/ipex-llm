@@ -1,4 +1,4 @@
-ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ARG BIGDL_VERSION=2.0.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.2
 ARG FLINK_VERSION=1.11.3
 ARG SCALA_VERSION=2.12
@@ -34,7 +34,7 @@ ENV JAVA_HOME				/usr/lib/jvm/java-8-openjdk-amd64
 ARG FLINK_VERSION=1.11.3
 ENV FLINK_VERSION ${FLINK_VERSION}
 ENV FLINK_HOME				/opt/flink-${FLINK_VERSION}
-ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ARG BIGDL_VERSION=2.0.0-SNAPSHOT
 ENV BIGDL_VERSION=${BIGDL_VERSION}
 ARG SPARK_VERSION=3.1.2
 ARG SCALA_VERSION=2.12
@@ -88,7 +88,7 @@ RUN cd /opt && \
 FROM occlum/occlum:0.26.4-ubuntu20.04 as ppml
 
 ARG FLINK_VERSION=1.11.3
-ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ARG BIGDL_VERSION=2.0.0-SNAPSHOT
 ARG SCALA_VERSION=2.12
 ARG SCALA_SUB_VERSION_NUM=10
 
@@ -146,6 +146,11 @@ COPY --from=bigdl /opt/bigdl-serving*-http.jar ${BIGDL_HOME}/bigdl-serving-http.
 
 # RUN echo "source /etc/profile" >> $HOME/.bashrc 
 
+RUN apt-get update && \
+    DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
+        build-essential ca-certificates openjdk-11-jdk \
+        curl wget netcat net-tools && \
+    apt-get clean
 
 # Cluster Serving config
 ADD ./cluster-serving-config.yaml /opt/config.yaml

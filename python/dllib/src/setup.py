@@ -95,7 +95,8 @@ def setup_package():
         install_requires=['numpy>=1.19.5', 'pyspark==2.4.6', 'six>=1.10.0'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
-        package_data={"bigdl.share.dllib": ['lib/bigdl-dllib*.jar', 'conf/*']},
+        package_data={"bigdl.share.dllib": ['lib/bigdl-dllib*.jar', 'conf/*',
+                                            'bin/standalone/*', 'bin/standalone/sbin/*']},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',

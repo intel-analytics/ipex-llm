@@ -1,5 +1,6 @@
 package com.intel.analytics.bigdl.ppml.python
 
+
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.python.api.{JTensor, PythonBigDL}
@@ -10,6 +11,7 @@ import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
 
 import java.util.{List => JList}
 import scala.collection.JavaConverters._
+
 import scala.reflect.ClassTag
 
 
@@ -41,6 +43,7 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   def createVflLinearRegression() = {
 
   }
+
   def createFGBoostRegression(learningRate: Double, maxDepth: Int, minChildSize: Int) = {
     new FGBoostRegression(learningRate.toFloat, maxDepth, minChildSize)
   }
@@ -56,6 +59,7 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   def flServerStop(flServer: FLServer) = {
     flServer.stop()
   }
+
   def flServerSetClientNum(flServer: FLServer, clientNum: Int) = {
     flServer.setClientNum(clientNum)
   }

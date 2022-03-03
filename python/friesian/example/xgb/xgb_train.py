@@ -34,7 +34,7 @@ spark_conf = {"spark.network.timeout": "10000000",
               "spark.task.cpus": "4",
               "spark.executor.heartbeatInterval": "200s",
               "spark.driver.maxResultSize": "40G",
-              "spark.eventLog.enabled": "true",
+              "spark.eventLog.enabled": "false",
               "spark.app.name": "recsys-xgb"}
 
 if __name__ == '__main__':
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                         help='The number of executor.')
     parser.add_argument('--driver_cores', type=int, default=4,
                         help='The driver core number.')
-    parser.add_argument('--dricver_memory', type=str, default="36g",
+    parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='nativeModel directory name (default: nativeModel)')
@@ -68,6 +68,10 @@ if __name__ == '__main__':
                                conf=spark_conf)
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn' and 'spark-submit'"
+            ", but got " + args.cluster_mode)
 
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",

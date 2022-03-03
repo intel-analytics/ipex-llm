@@ -169,7 +169,7 @@ Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://gith
 .resource_limits.max_num_of_threads = 4096 |
 .process.default_heap_size = "32GB" |
 .resource_limits.kernel_space_heap_size="2GB" |
-.process.default_mmap_size = "36GB" |
+.process.default_mmap_size = "24GB" |
 ```
 
 Then build the docker image:
@@ -185,7 +185,7 @@ You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.cri
 ```
 Enlarge SGX memory in `start-spark-local.sh` to:
 ```
-	-e SGX_MEM_SIZE=70GB \
+	-e SGX_MEM_SIZE=58GB \
 ```
 
 Start run BigDL Spark XGBoost example:

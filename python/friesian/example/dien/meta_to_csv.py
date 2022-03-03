@@ -1,5 +1,5 @@
 #
-# Copyright 2021 The BigDL Authors.
+# Copyright 2016 The BigDL Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,17 @@
 # limitations under the License.
 #
 
-from bigdl.dllib.utils.common import JavaValue
+from argparse import ArgumentParser
 
+parser = ArgumentParser()
+parser.add_argument('--input_meta', type=str, required=True,
+                    help="item metadata file")
 
-class FGBoostClassification(JavaValue):
-    def __init__(self, jvalue, *args):
-        bigdl_type = "float"
-        super(JavaValue, self).__init__(jvalue, bigdl_type, *args)
-
-    def fit(self, x, y, num_round):
-        pass
-
-    def evaluate(self, x, y):
-        pass
-
-    def predict(self, x):
-        pass
+args = parser.parse_args()
+fi = open(args.input_meta, "r")
+out_file = args.input_meta.split(".json")[0] + ".csv"
+fo = open(out_file, "w")
+for line in fi:
+    obj = eval(line)
+    cat = obj["categories"][0][-1]
+    print(obj["asin"] + "\t" + cat, file=fo)

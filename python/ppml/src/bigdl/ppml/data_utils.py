@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+<<<<<<< HEAD
 
 import pandas as pd
 import numpy as np
@@ -33,16 +34,37 @@ def get_input_type(x, y=None):
         raise ValueError(f"Supported argument types: DataFrame, NdArray, but got {type(x)}")
 
 def convert_to_numpy(x, y=None, feature_columns=None, label_columns=None):
+=======
+import pandas as pd
+import numpy as np
+
+
+def convert_to_numpy(x, dataframe_columns=None):
+>>>>>>> upstream/branch-2.0
     """
     :param x: The input to convert
     :param dataframe_columns: applicable if x is pandas.DataFrame, the column to convert
     :return: the converted numpy.ndarray
     """
+<<<<<<< HEAD
     arg_type = get_input_type(x, y)
     if arg_type == "DataFrame":
         x = [x[col] for col in feature_columns]
         y = [y[col] for col in label_columns] if y else None
     return JTensor.from_ndarray(x), JTensor.from_ndarray(y)
 
+=======
+    if isinstance(x, pd.DataFrame):
+        return [x[col] for col in dataframe_columns]
+    elif isinstance(x, np.ndarray):
+        return [x]
+    elif isinstance(x, list):
+        for e in x:
+            if not isinstance(x, np.ndarray):
+                raise Exception("only NdArray type is supported for list input")
+        return x
+    else:
+        raise Exception("Input could be Pandas DataFrame or Numpy NDArray or list of NDArray, but got", type(x))
+>>>>>>> upstream/branch-2.0
 
 

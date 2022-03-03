@@ -14,19 +14,13 @@
 # limitations under the License.
 #
 
-from bigdl.dllib.utils.common import JavaValue
+import unittest
 
 
-class FGBoostClassification(JavaValue):
-    def __init__(self, jvalue, *args):
-        bigdl_type = "float"
-        super(JavaValue, self).__init__(jvalue, bigdl_type, *args)
+class MyTestCase(unittest.TestCase):
+    def test_something(self):
+        self.assertEqual(True, False)
 
-    def fit(self, x, y, num_round):
-        pass
 
-    def evaluate(self, x, y):
-        pass
-
-    def predict(self, x):
-        pass
+if __name__ == '__main__':
+    unittest.main()

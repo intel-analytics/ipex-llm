@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.models
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.dllib.optim.{Loss, SGD, Top1Accuracy, Top5Accuracy}
+import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
@@ -32,7 +32,7 @@ import com.intel.analytics.bigdl.dllib.keras.{Sequential, ZooSpecHelper}
 import com.intel.analytics.bigdl.dllib.keras.layers._
 import com.intel.analytics.bigdl.dllib.keras.models.Sequential
 import com.intel.analytics.bigdl.dllib.keras.models.Model
-import com.intel.analytics.bigdl.dllib.keras.objectives.ZooClassNLLCriterion
+import com.intel.analytics.bigdl.dllib.keras.objectives.{BinaryCrossEntropy, ZooClassNLLCriterion}
 import com.intel.analytics.bigdl.dllib.keras.python.PythonZooKeras
 import com.intel.analytics.bigdl.dllib.nn.{CosineEmbeddingCriterion, MSECriterion, MarginRankingCriterion, ParallelCriterion}
 import com.intel.analytics.bigdl.dllib.nnframes.{NNEstimatorSpec, NNImageReader}
@@ -449,10 +449,11 @@ class TrainingSpec extends ZooSpecHelper {
     model.add(Reshape[Float](Array(169)))
     model.add(Dense[Float](2, activation = "log_softmax"))
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
-    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCol = "label", transform = transformers)
+    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCols = Array("label"),
+      transform = transformers)
     val predDf = model.predict(imgDF, predictionCol = "predict", transform = transformers)
     predDf.show()
-    model.evaluate(imgDF, batchSize = 1, labelCol = "label", transform = transformers)
+    model.evaluate(imgDF, batchSize = 1, labelCols = Array("label"), transform = transformers)
   }
 }
 

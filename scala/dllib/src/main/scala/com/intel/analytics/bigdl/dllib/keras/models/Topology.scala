@@ -577,15 +577,16 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    x: DataFrame,
    batchSize: Int,
    nbEpoch: Int,
-   labelCol: String,
+   labelCols: Array[String],
    transform: ImageProcessing,
    valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    val trainData = df2ImageSet(x, labelCol, transform)
+    require(labelCols.length == 1, "current only support one label for dataframe of image")
+    val trainData = df2ImageSet(x, labelCols.head, transform)
     val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
     trainData.transform(transformer2)
 
     val valData = if (valX != null) {
-      val valSet = df2ImageSet(valX, labelCol, transform)
+      val valSet = df2ImageSet(valX, labelCols.head, transform)
       valSet.transform(transformer2)
       valSet
     } else null
@@ -597,9 +598,9 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
      x: DataFrame,
      batchSize: Int,
      nbEpoch: Int,
-     labelCol: String,
+     labelCols: Array[String],
      transform: ImageProcessing)(implicit ev: TensorNumeric[T]): Unit = {
-    this.fit(x, batchSize, nbEpoch, labelCol, transform, null)
+    this.fit(x, batchSize, nbEpoch, labelCols, transform, null)
   }
 
   /**
@@ -672,11 +673,11 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
 
   def evaluate(
     x: DataFrame,
-    labelCol: String,
+    labelCols: Array[String],
     transform: ImageProcessing,
     batchSize: Int)
   (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    val rdd = df2ImageSet(x, labelCol, transform)
+    val rdd = df2ImageSet(x, labelCols.head, transform)
     val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
     rdd.transform(transformer2)
     this.evaluate(rdd, batchSize)

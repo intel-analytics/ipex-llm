@@ -115,6 +115,10 @@ if __name__ == '__main__':
                           conf=conf)
     elif args.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
+            ", but got " + args.cluster_mode)
 
     time_start = time()
     paths = [os.path.join(args.input_folder, 'day_%d.parquet' % i) for i in args.day_range]
