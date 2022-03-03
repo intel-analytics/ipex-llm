@@ -201,7 +201,7 @@ class BasePytorchForecaster(Forecaster):
                 yhat = np_to_xshard(yhat, prefix="prediction")
             return yhat
 
-    def predict_with_onnx(self, data, batch_size=32):
+    def predict_with_onnx(self, data, batch_size=32, quantize=False):
         """
         Predict using a trained forecaster with onnxruntime. The method can only be
         used when forecaster is a non-distributed version.
@@ -218,6 +218,7 @@ class BasePytorchForecaster(Forecaster):
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
                to 32. None for all-data-single-time inference.
+        :param quantize: if use the quantized onnx model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
@@ -227,7 +228,7 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling predict!")
-        return self.internal.inference(data, batch_size=batch_size)
+        return self.internal.inference(data, batch_size=batch_size, quantize=quantize)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
@@ -291,7 +292,8 @@ class BasePytorchForecaster(Forecaster):
 
     def evaluate_with_onnx(self, data,
                            batch_size=32,
-                           multioutput="raw_values"):
+                           multioutput="raw_values",
+                           quantize=False):
         """
         Evaluate using a trained forecaster with onnxruntime. The method can only be
         used when forecaster is a non-distributed version.
@@ -322,6 +324,7 @@ class BasePytorchForecaster(Forecaster):
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.
+        :param quantize: if use the quantized onnx model to evaluate.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
@@ -331,7 +334,7 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
-        yhat = self.internal.inference(data[0], batch_size=batch_size)
+        yhat = self.internal.inference(data[0], batch_size=batch_size, quantize=quantize)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
@@ -385,6 +388,11 @@ class BasePytorchForecaster(Forecaster):
             self.fitted = True
             if quantize_checkpoint_file:
                 self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
+            # This trainer is only for quantization, once the user call `fit`, it will be
+            # replaced according to the new training config
+            self.trainer = Trainer(logger=False, max_epochs=1,
+                                   checkpoint_callback=self.checkpoint_callback,
+                                   num_processes=self.num_processes, use_ipex=self.use_ipex)
 
     def to_local(self):
         """
@@ -470,7 +478,7 @@ class BasePytorchForecaster(Forecaster):
         self.internal.update_ortsess(dummy_input,
                                      sess_options=sess_options)
 
-    def export_onnx_file(self, dirname="model.onnx"):
+    def export_onnx_file(self, dirname="model.onnx", quantized_dirname="qmodel.onnx"):
         """
         Save the onnx model file to the disk.
 
@@ -482,8 +490,11 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.internal.update_ortsess(dummy_input,
-                                     dirname=dirname)
+        if quantized_dirname:
+            self.internal.to_quantized_onnx(quantized_dirname)
+        if dirname:
+            self.internal.update_ortsess(dummy_input,
+                                         file_path=dirname)
 
     def quantize(self, calib_data,
                  val_data=None,
@@ -506,7 +517,8 @@ class BasePytorchForecaster(Forecaster):
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
                using default config.
-        :param framework: 'pytorch' or 'pytorch_fx', Default to 'pytorch_fx'.
+        :param framework: string or list, [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
+               {'onnxrt_integerops'|'onnxrt_qlinearops'}]. Default: 'pytorch_fx'.
                Consistent with Intel Neural Compressor.
         :param approach: str, 'static' or 'dynamic'. Default to 'static'.
         :param tuning_strategy: str, 'bayesian', 'basic', 'mse' or 'sigopt'. Default to 'bayesian'.
