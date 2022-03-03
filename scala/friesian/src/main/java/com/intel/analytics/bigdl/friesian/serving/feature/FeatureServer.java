@@ -268,9 +268,7 @@ public class FeatureServer extends GrpcServerBase {
         }
 
         private Features getFeaturesFromRedis(IDs msg, SearchType searchType) {
-            String keyPrefix =
-                    Utils.helper().getRedisKeyPrefix() +
-                            (searchType == SearchType.USER ? "user": "item");
+            String keyPrefix = searchType == SearchType.USER ? "user": "item";
             List<Integer> ids = msg.getIDList();
 
             Features.Builder featureBuilder = Features.newBuilder();
