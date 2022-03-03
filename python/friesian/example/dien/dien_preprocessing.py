@@ -18,7 +18,7 @@ import time
 from argparse import ArgumentParser
 
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.friesian.feature import FeatureTable
+from bigdl.friesian.feature import FeatureTable, StringIndex
 
 
 conf = {"spark.network.timeout": "10000000",
@@ -88,39 +88,29 @@ if __name__ == "__main__":
         .rename({'reviewerID': 'user', 'asin': 'item', 'unixReviewTime': 'time'}) \
         .dropna(columns=['user', 'item'])
     transaction_tbl.cache()
-    print("Total number of transactions: ", transaction_tbl.size())
 
     item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
         .apply("category", "category", lambda x: x.lower() if x is not None else "default")
     item_tbl.cache()
-    print("Total number of items: ", item_tbl.size())
 
-    user_index = transaction_tbl.gen_string_idx('user', freq_limit=1)
-    item_cat_indices = item_tbl.gen_string_idx(["item", "category"], freq_limit=1)
-    item_size = item_cat_indices[0].size()
+    user_index = StringIndex.read_parquet(args.output + "user.parquet")
+    item_index = StringIndex.read_parquet(args.output + "item.parquet")
+    category_index = StringIndex.read_parquet(args.output + "category.parquet")
+    item_size = item_index.size()
 
     item_tbl = item_tbl\
-        .encode_string(["item", "category"], item_cat_indices)
+        .encode_string(["item", "category"], [item_index, category_index])
 
     full_tbl = transaction_tbl\
-        .encode_string(['user', 'item'], [user_index, item_cat_indices[0]])\
+        .encode_string(['user', 'item'], [user_index, item_index])\
         .add_hist_seq(cols=['item'], user_col="user",
                       sort_col='time', min_len=1, max_len=100, num_seqs=1)\
         .add_neg_hist_seq(item_size, 'item_hist_seq', neg_num=5)\
         .add_negative_samples(item_size, item_col='item', neg_num=1)\
         .add_value_features(columns=["item", "item_hist_seq", "neg_item_hist_seq"],
-                            dict_tbl=item_tbl, key="item", value="category") \
-        .apply("item_hist_seq", "item_hist_seq_len", len, "int") \
-        .pad(cols=['item_hist_seq', 'category_hist_seq',
-             'neg_item_hist_seq', 'neg_category_hist_seq'],
-             seq_len=100,
-             mask_cols=['item_hist_seq']) \
-        .apply("label", "label", lambda x: [1 - float(x), float(x)], "array<float>")
+                            dict_tbl=item_tbl, key="item", value="category")
 
     # write out
-    user_index.write_parquet(args.output)
-    item_cat_indices[0].write_parquet(args.output)
-    item_cat_indices[1].write_parquet(args.output)
     item_tbl.write_parquet(args.output + "item2cat")
     full_tbl.write_parquet(args.output + "data")
 
