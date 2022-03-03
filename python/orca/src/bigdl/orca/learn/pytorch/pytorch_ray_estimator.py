@@ -289,9 +289,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             success = check_for_failure(remote_worker_stats)
             if success:
                 worker_stats = ray.get(remote_worker_stats)
-                return worker_stats
             else:
-                return success, None
+                worker_stats = None
         else:
             assert isinstance(data, types.FunctionType), \
                 "data should be either an instance of SparkXShards or a callable function, but " \
