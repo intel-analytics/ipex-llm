@@ -259,6 +259,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                                                     transform_func)
         elif isinstance(data, Dataset):
             shards = data.split(n=self.num_workers)
+
             def data_creator(config, batch_size):
                 torch_datashard = shards[i].to_torch(label_column=label_cols,
                                                      batch_size=batch_size)
