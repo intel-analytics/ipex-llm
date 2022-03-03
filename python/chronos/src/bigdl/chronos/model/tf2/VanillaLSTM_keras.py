@@ -61,9 +61,9 @@ class LSTMModel(Model):
 
 
 def model_creator(config):
+    hidden_dim = config.get('hidden_dim', 32)
+    dropout = config.get('dropout', 0.2)
     layer_num = config.get('layer_num', 2)
-    hidden_dim = config.get('hidden_dim', [32, 16])
-    dropout = config.get('dropout', [0.2, 0.1])
     if isinstance(hidden_dim, list):
         assert len(hidden_dim) == layer_num, \
             "length of hidden_dim should be equal to layer_num"

@@ -20,7 +20,7 @@ import keras
 import pytest
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
-from bigdl.chronos.model.Seq2Seq_keras import LSTMSeq2Seq
+from bigdl.chronos.model.Seq2Seq_keras import model_creator
 import numpy as np
 
 
@@ -44,14 +44,12 @@ def create_data():
 class TestSeq2Seq(ZooTestCase):
 
     train_data, test_data = create_data()
-    model = LSTMSeq2Seq(input_feature_num=10,
-                        future_seq_len=train_data[-1].shape[1],
-                        output_feature_num=2,
-                        lstm_hidden_dim=32,
-                        lstm_layer_num=2,
-                        dropout=0.2,
-                        teacher_forcing=False)
-    model.compile(optimizer="Adam", loss="mse", metrics=["mse"])
+    model = model_creator(config={
+        "input_feature_num": 10,
+        "output_feature_num": 2,
+        "future_seq_len": test_data[-1].shape[1],
+        "lstm_hidden_dim": 32
+    })
 
     def test_seq2seq_fit_predict_evaluate(self):
         self.model.fit(self.train_data[0],
@@ -60,7 +58,7 @@ class TestSeq2Seq(ZooTestCase):
                        validation_data=self.test_data)
         yhat = self.model.predict(self.test_data[0])
         self.model.evaluate(self.test_data[0], self.test_data[1])
-        assert yhat.shape == (400, self.train_data[-1].shape[1], 2)
+        assert yhat.shape == self.test_data[1].shape
 
     def test_seq2seq_save_load(self):
         checkpoint_file = tempfile.TemporaryDirectory().name

@@ -16,7 +16,7 @@
 
 import pytest
 from unittest import TestCase
-from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel
+from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator, LSTMModel
 import keras
 import numpy as np
 import tempfile
@@ -30,11 +30,11 @@ def create_data():
     input_time_steps = 7
     input_feature_dim = 4
     output_time_steps = 1
-    output_dim = np.random.randint(1, 5)
+    output_feature_dim = np.random.randint(1, 5)
 
     def get_x_y(num_samples):
         x = np.random.randn(num_samples, input_time_steps, input_feature_dim)
-        y = np.random.randn(num_samples, output_time_steps, output_dim)
+        y = np.random.randn(num_samples, output_time_steps, output_feature_dim)
         return x, y
 
     train_data = get_x_y(num_train_samples)
@@ -45,12 +45,10 @@ def create_data():
 
 class TestVanillaLSTM(TestCase):
     train_data, val_data, test_data = create_data()
-    model = LSTMModel(input_dim=4,
-                  hidden_dim=[32, 32],
-                  layer_num=2,
-                  dropout=[0.2, 0.2],
-                  output_dim=train_data[-1].shape[-1])
-    model.compile(optimizer="Adam", loss="mse", metrics=['mse'])
+    model = model_creator(config={
+        'input_dim': 4,
+        'output_dim': test_data[-1].shape[-1]
+    })
 
     def test_lstm_fit_predict_evaluate(self):
         self.model.fit(self.train_data[0],
@@ -59,7 +57,7 @@ class TestVanillaLSTM(TestCase):
                        validation_data=self.val_data)
         yhat = self.model.predict(self.test_data[0])
         self.model.evaluate(self.test_data[0], self.test_data[1])
-        assert yhat.shape == (400, 1, self.test_data[1].shape[-1])
+        assert yhat.shape == self.test_data[1].shape
 
     def test_lstm_save_load(self):
         checkpoint_file = tempfile.TemporaryDirectory().name

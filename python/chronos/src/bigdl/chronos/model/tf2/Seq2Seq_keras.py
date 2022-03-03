@@ -25,10 +25,10 @@ class LSTMSeq2Seq(Model):
                  input_feature_num,
                  future_seq_len,
                  output_feature_num,
-                 lstm_hidden_dim,
-                 lstm_layer_num,
-                 dropout,
-                 teacher_forcing):
+                 lstm_hidden_dim=128,
+                 lstm_layer_num=2,
+                 dropout=0.2,
+                 teacher_forcing=False):
         super(LSTMSeq2Seq, self).__init__()
         self.lstm_hidden_dim = lstm_hidden_dim
         self.lstm_layer_num = lstm_layer_num
@@ -52,7 +52,6 @@ class LSTMSeq2Seq(Model):
         self.decoder_inputs = Reshape((1, self.output_feature_num),
                                       input_shape=(self.output_feature_num,))
         self.fc = Dense(self.output_feature_num, activation="linear")
-        self.target_seq_fc = Dense(self.output_feature_num, activation="linear")
 
     def call(self, input_seq, target_seq=None):
         states_values = None
@@ -76,7 +75,7 @@ class LSTMSeq2Seq(Model):
             else:
                 # with teaching force
                 # TODO function not completed.
-                decoder_inputs = self.target_seq_fc(target_seq[:, i:i+1, :])
+                decoder_inputs = target_seq[:, i:i+1, :]
         decoded_seq = Lambda(lambda x: K.concatenate(x, axis=1))(all_outputs)
         return decoded_seq
 
