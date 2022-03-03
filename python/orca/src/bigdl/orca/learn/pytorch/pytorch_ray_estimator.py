@@ -263,9 +263,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             def data_creator(config, batch_size):
                 torch_datashard = shards[i].to_torch(label_column=label_cols,
                                                      batch_size=batch_size)
-                for batch_idx, data in enumerate(torch_datashard):
-                    dataloader = torch.utils.data.DataLoader(data, batch_size=batch_size)
-                return dataloader
+                return torch_datashard
 
             remote_worker_stats = []
             for i, worker in enumerate(self.remote_workers):
