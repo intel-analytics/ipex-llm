@@ -173,14 +173,88 @@ def dataset_apply():
 
 
 def dataset_flat_map():
-    train_examples1, train_labels1 = generate_samples_labels()
-    train_examples2, train_labels2 = generate_samples_labels()
-    train_examples = tf.data.Dataset.from_tensor_slices([train_examples1, train_examples2])
-    train_labels = tf.data.Dataset.from_tensor_slices([train_labels1, train_labels2])
-    train_ds = train_examples.flat_map(lambda x: tf.data.Dataset.from_tensor_slices(x)).batch(BATCH_SIZE).prefetch(AUTOTUNE)
-    train_label = train_labels.flat_map(lambda x: tf.data.Dataset.from_tensor_slices(x)).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    train_examples = tf.data.Dataset.from_tensor_slices((generate_samples_labels(), generate_samples_labels()))
 
-    return train_ds.as_numpy_iterator(), train_label.as_numpy_iterator()
+    def flat_fn(x, y):
+        train_examples = tf.stack((x[0], y[0]), axis=0)
+        train_labels = tf.stack((x[1], y[1]), axis=0)
+        return tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+
+    train_examples = train_examples.flat_map(flat_fn).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    return train_examples
+
+
+def dataset_group_by_window():
+    window_size = 32
+    train_examples, train_labels = generate_samples_labels()
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+
+    train_dataset.group_by_window(
+        key_func=lambda x, y: tf.argmax(y, axis=1) % 2,
+        reduce_func=lambda key, dataset: dataset.batch(window_size),
+        window_size=window_size
+    )
+
+    return train_dataset.batch(BATCH_SIZE).prefetch(AUTOTUNE)
+
+
+def dataset_padded_batch():
+    train_examples, train_labels = generate_samples_labels()
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+    train_dataset = train_dataset.padded_batch(BATCH_SIZE)
+    return train_dataset.prefetch(AUTOTUNE)
+
+
+def sample_from_dataset():
+    train_examples, train_labels = generate_samples_labels()
+    train_dataset1 = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+    train_dataset2 = tf.data.Dataset.from_tensor_slices(generate_samples_labels())
+
+    return tf.data.Dataset.sample_from_datasets(
+        [train_dataset1, train_dataset2], weights=[0.5, 0.5]
+    ).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+
+
+def dataset_shard():
+    train_examples, train_labels = generate_samples_labels()
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+    return train_dataset.shard(num_shards=2, index=0).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+
+
+def dataset_interleave():
+    train_examples, train_labels = generate_samples_labels()
+    train_examples = tf.data.Dataset.from_tensor_slices(train_examples)
+    train_labels = tf.data.Dataset.from_tensor_slices(train_labels)
+
+    def dataset_fn(x):
+        return tf.data.Dataset.from_tensors(x)
+
+    train_examples = train_examples.interleave(dataset_fn, num_parallel_calls=AUTOTUNE
+                                               ).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    train_labels = train_labels.interleave(dataset_fn, num_parallel_calls=AUTOTUNE
+                                           ).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    return tf.data.Dataset.zip((train_examples, train_labels))
+
+
+def dataset_snapshot():
+    train_examples, train_labels = generate_samples_labels()
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+
+    def user_reader_func(datasets):
+        return datasets.interleave(lambda x: x, num_parallel_calls=AUTOTUNE)
+
+    return train_dataset.snapshot("~/.keras/snapshot",
+                                  reader_func=user_reader_func
+                                  ).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+
+
+def dataset_with_options():
+    train_examples, train_labels = generate_samples_labels()
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+    options = tf.data.Options()
+    options.deterministic = False
+    return train_dataset.with_options(options).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+
 
 def model_design(img_height, img_width):
     model = Sequential([
@@ -204,115 +278,28 @@ def model_design(img_height, img_width):
 
 if __name__ == '__main__':
     result = {}
-    def test_from_generator():
-        dataset = dataset_from_generator()
-        model = model_design(IMG_HEIGHT, IMG_WIDTH)
+    func_name_list = ["dataset_apply", "dataset_choice_dataset",
+                      "dataset_concatenate", "dataset_filter",
+                      "dataset_flat_map", "dataset_use_py_function",
+                      "dataset_use_np_function", "dataset_from_generator",
+                      "dataset_from_tensor_slices", "dataset_group_by_window",
+                      "dataset_interleave", "dataset_padded_batch",
+                      "sample_from_dataset", "dataset_shard",
+                      "dataset_snapshot", "dataset_with_options"]
 
+    def test(func_name):
+        dataset = eval(func_name)()
+        model = model_design(IMG_HEIGHT, IMG_WIDTH)
         try:
             history = model.fit(dataset, epochs=1, steps_per_epoch=20, nprocs=2)
         except:
-            result["generator"] = False
+            result[func_name] = False
         else:
-            result["generator"] = True
+            result[func_name] = True
 
+    for func_name in func_name_list:
+        test(func_name)
 
-    def test_from_tensor_slices():
-        dataset = dataset_from_tensor_slices()
-        model = model_design(IMG_HEIGHT, IMG_WIDTH)
-
-        try:
-            history = model.fit(dataset, epochs=1, steps_per_epoch=20, nprocs=2)
-        except:
-            result["tensor_slice"] = False
-        else:
-            result["tensor_slice"] = True
-
-    def test_map_py_function():
-        dataset = dataset_use_py_function()
-        model = model_design(IMG_HEIGHT, IMG_WIDTH)
-
-        try:
-            history = model.fit(dataset, epochs=1, steps_per_epoch=20, nprocs=2)
-        except:
-            result["py_function"] = False
-        else:
-            result["py_function"] = True
-
-    def test_map_np_function():
-        dataset = dataset_use_np_function()
-        model = model_design(IMG_HEIGHT, IMG_WIDTH)
-
-        try:
-            history = model.fit(dataset, epochs=1, steps_per_epoch=20, nprocs=2)
-        except:
-            result["numpy_function"] = False
-        else:
-            result["numpy_function"] = True
-
-    def test_choice_dataset():
-        dataset = dataset_choice_dataset()
-        model = model_design(IMG_HEIGHT, IMG_WIDTH)
-
-        try:
-            history = model.fit(dataset, epochs=1, steps_per_epoch=20, nprocs=2)
-        except:
-            result["choice_dataset"] = False
-        else:
-            result["choice_dataset"] = True
-
-    def test_concatenate():
-        dataset = dataset_concatenate()
-        model = model_design(IMG_HEIGHT, IMG_WIDTH)
-
-        try:
-            history = model.fit(dataset, epochs=1, steps_per_epoch=20, nprocs=2)
-        except:
-            result["concatenate"] = False
-        else:
-            result["concatenate"] = True
-
-    def test_apply():
-        dataset = dataset_apply()
-        model = model_design(IMG_HEIGHT, IMG_WIDTH)
-
-        try:
-            history = model.fit(dataset, epochs=1, steps_per_epoch=20, nprocs=2)
-        except:
-            result["apply"] = False
-        else:
-            result["apply"] = True
-
-    def test_filter():
-        dataset = dataset_filter()
-        model = model_design(IMG_HEIGHT, IMG_WIDTH)
-
-        try:
-            history = model.fit(dataset, epochs=1, steps_per_epoch=20, nprocs=2)
-        except:
-            result["filter"] = False
-        else:
-            result["filter"] = True
-
-    def test_flat_map():
-        dataset = dataset_flat_map()
-        model = model_design(IMG_HEIGHT, IMG_WIDTH)
-
-        try:
-            history = model.fit(dataset, epochs=1, steps_per_epoch=20, nprocs=2)
-        except:
-            result["flat_map"] = False
-        else:
-            result["flat_map"] = True
-
-    test_from_generator()
-    test_from_tensor_slices()
-    test_map_py_function()
-    test_map_np_function()
-    test_filter()
-    test_concatenate()
-    test_apply()
-    test_choice_dataset()
-    # test_flat_map()
     print("===================Test Results=======================")
     for key, val in result.items():
         print(f"{key}: {val}")
