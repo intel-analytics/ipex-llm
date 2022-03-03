@@ -266,13 +266,13 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
                 def get_shard(self):
                     return self.shard
-                
+
                 def get_rank(self):
                     return self.rank
 
             shards = data.split(n=self.num_workers)
             actors = [TrainingWorker.remote(rank, shard) for rank, shard in enumerate(shards)]
-            
+
             def data_creator(config, batch_size):
                 torch_datashard = ray.get(actors[rank].get_shard.remote()).to_torch(
                     label_column=label_cols,
