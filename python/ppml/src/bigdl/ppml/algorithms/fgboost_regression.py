@@ -26,13 +26,13 @@ class FGBoostRegression(JavaValue):
         super().__init__(jvalue, self.bigdl_type, learning_rate, max_depth, min_child_size)
 
     def fit(self, x, y, num_round=5, **kargs):
-        x, y = convert_to_numpy(x, y, **kargs)
+        x, y = convert_to_jtensor(x, y, **kargs)
         return callBigDlFunc(self.bigdl_type, "fgBoostFit", self.value, x, y, num_round)
 
     def evaluate(self, x, y, **kargs):
-        x, y = convert_to_numpy(x, y, **kargs)
+        x, y = convert_to_jtensor(x, y, **kargs)
         return callBigDlFunc(self.bigdl_type, "fgBoostEvaluate", self.value, x, y)
 
     def predict(self, x, **kargs):
-        x, _ = convert_to_numpy(x, **kargs)
+        x, _ = convert_to_jtensor(x, **kargs)
         return callBigDlFunc(self.bigdl_type, "fgBoostPredict", self.value, x).to_ndarray()
