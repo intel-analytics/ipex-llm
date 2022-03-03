@@ -135,6 +135,21 @@ python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --back
 
 now=$(date "+%s")
 time11=$((now-start))
+
+
+echo "#12 Start autoxgboost example"
+if [ -f ${BIGDL_ROOT}/data/incd.csv ]
+then
+    echo "incd.csv already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/incd.csv -P ${BIGDL_ROOT}/data/
+fi
+
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor_spark_df.py -p ${BIGDL_ROOT}/data/incd.csv
+now=$(date "+%s")
+time12=$((now-start))
+
 echo "Ray example tests finished"
 
 echo "#1 auto-estimator-pytorch time used:$time1 seconds"
@@ -148,3 +163,4 @@ echo "#8 mxnet_lenet time used:$time8 seconds"
 echo "#9 fashion-mnist time used:$time9 seconds"
 echo "#10 orca super-resolution example time used:$time10 seconds"
 echo "#11 orca cifar10 example time used:$time11 seconds"
+echo "#12 auto-xgboost-regressor-spark-df example time used:$time12 seconds"
