@@ -15,17 +15,29 @@
 #
 
 import unittest
+import numpy as np
+
 from bigdl.ppml import FLServer
+from bigdl.ppml.algorithms.fgboost_regression import FGBoostRegression
+from bigdl.ppml.utils import init_fl_context
 
 
-class TestFLServer(unittest.TestCase):
-    def test_fl_server_default_config(self):
-        fl_server = FLServer()
-        fl_server.build()
-        fl_server.start()
+class TestFGBoostRegression(unittest.TestCase):
+    def setUp(self) -> None:
+        self.fl_server = FLServer()
+        self.fl_server.build()
+        self.fl_server.start()
+        init_fl_context()
 
-    def test_fl_server_custom_config(self):
-        pass
+    def tearDown(self) -> None:
+        self.fl_server.stop()
+
+    def test_dummy_data(self):
+        x, y = np.ones([2, 3]), np.ones([2])
+        fgboost_regression = FGBoostRegression()
+        fgboost_regression.fit(x, y)
+        result = fgboost_regression.predict(x)
+        result
 
 
 if __name__ == '__main__':

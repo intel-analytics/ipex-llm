@@ -15,18 +15,24 @@
 #
 
 from bigdl.dllib.utils.common import JavaValue
+from bigdl.ppml.fgboost.fgboost_model import FGBoostModel
 
 
-class FGBoostClassification(JavaValue):
-    def __init__(self, jvalue, *args):
-        bigdl_type = "float"
-        super(JavaValue, self).__init__(jvalue, bigdl_type, *args)
+class FGBoostClassification(FGBoostModel):
+    def __init__(self, jvalue=None, *args):
+        self.bigdl_type = "float"
+        super().__init__(jvalue, self.bigdl_type, *args)
 
-    def fit(self, x, y, num_round):
-        pass
+    def fit(self, x, y, num_round, feature_cols="features", label_cols="label"):
+        x = convert_to_numpy(x, feature_cols)
+        y = convert_to_numpy(y, label_cols)
+        return callBigDlFunc(self.bigdl_type, "fgBoostFit", x, y, num_round)
 
     def evaluate(self, x, y):
-        pass
+        x = convert_to_numpy(x)
+        y = convert_to_numpy(y)
+        return callBigDlFunc(self.bigdl_type, "fgBoostEvaluate", x, y)
 
     def predict(self, x):
-        pass
+        x = convert_to_numpy(x)
+        return callBigDlFunc(self.bigdl_type, "fgBoostPredict", x)

@@ -1,10 +1,15 @@
 package com.intel.analytics.bigdl.ppml.python
 
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
+import com.intel.analytics.bigdl.dllib.utils.python.api.{JTensor, PythonBigDL}
+import com.intel.analytics.bigdl.ppml.algorithms.PSI
+import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.{FLContext, FLModel, FLServer}
 import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
 
+import java.util.{List => JList}
+import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
 
@@ -36,8 +41,8 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   def createVflLinearRegression() = {
 
   }
-  def createFGBoostRegression() = {
-
+  def createFGBoostRegression(learningRate: Double, maxDepth: Int, minChildSize: Int) = {
+    new FGBoostRegression(learningRate.toFloat, maxDepth, minChildSize)
   }
   def createFGBoostClassification() = {
 
@@ -51,14 +56,42 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   def flServerStop(flServer: FLServer) = {
     flServer.stop()
   }
-  def fgBoostFit(model: FGBoostModel) = {
-
+  def flServerSetClientNum(flServer: FLServer, clientNum: Int) = {
+    flServer.setClientNum(clientNum)
   }
-  def fgBoostEvaluate(model: FGBoostModel) = {
-
+  def createPSI() = {
+    new PSI()
   }
-  def fgBoostPredict(model: FGBoostModel) = {
-
+  def psiGetSalt(psi: PSI, secureCode: String = ""): String = {
+    psi.getSalt(secureCode)
+  }
+  def psiUploadSet(psi: PSI, ids: JList[String], salt: String) = {
+    psi.uploadSet(ids, salt)
+  }
+  def psiDownloadIntersection(psi: PSI, maxtry: Int = 100, retry: Int = 3000) = {
+    psi.downloadIntersection(maxtry, retry)
+  }
+  def jTensorToTensorArray(jTensor: JTensor) = {
+    require(jTensor.shape.length == 2, "FGBoost only support 2D input")
+    val featureNum = jTensor.shape(1)
+    jTensor.storage.grouped(featureNum).map(array => {
+      Tensor[Float](array, Array(array.length))
+    }).toArray
+  }
+  def fgBoostFit(model: FGBoostModel, feature: JTensor, label: JTensor, boostRound: Int) = {
+    val tensorArray = jTensorToTensorArray(feature)
+    val labelArray = label.storage
+    model.fit(tensorArray, labelArray, boostRound)
+  }
+  def fgBoostEvaluate(model: FGBoostModel, feature: JTensor, label: JTensor) = {
+    val tensorArray = jTensorToTensorArray(feature)
+    val labelArray = label.storage
+    model.evaluate(tensorArray, labelArray)
+  }
+  def fgBoostPredict(model: FGBoostModel, feature: JTensor) = {
+    val tensorArray = jTensorToTensorArray(feature)
+    val result = model.predict(tensorArray).map(_.storage().array())
+    JTensor(result.flatten, Array(result.length, result(0).length), bigdlType = "float")
   }
   def nnFit(model: FLModel) = {
 
