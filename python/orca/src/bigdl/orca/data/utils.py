@@ -331,3 +331,37 @@ def get_size(x):
         raise ValueError(
             "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
             " or a list of ndarrays, please check your input")
+
+
+def spark_df_to_pd_sparkxshards(df):
+    def to_pandas(iter, columns, batch_size=None):
+        import pandas as pd
+        counter = 0
+        data = []
+        for row in iter:
+            counter += 1
+            data.append(row)
+            if batch_size and counter % batch_size == 0:
+                yield pd.DataFrame(data, columns=columns)
+                data = []
+        if data:
+            yield pd.DataFrame(data, columns=columns)
+
+    from bigdl.orca.data import SparkXShards
+    from bigdl.orca import OrcaContext
+    columns = df.columns
+    shard_size = OrcaContext._shard_size
+    pd_rdd = df.rdd.mapPartitions(lambda iter: to_pandas(iter, columns, shard_size))
+    spark_xshards = SparkXShards(pd_rdd)
+    return spark_xshards
+
+
+def spark_xshards_to_ray_dataset(spark_xshards):
+    from bigdl.orca.data.ray_xshards import RayXShards
+    import ray
+
+    ray_xshards = RayXShards.from_spark_xshards(spark_xshards)
+    partition_refs = ray_xshards.get_refs()
+
+    ray_dataset = ray.data.from_pandas_refs(partition_refs)
+    return ray_dataset
