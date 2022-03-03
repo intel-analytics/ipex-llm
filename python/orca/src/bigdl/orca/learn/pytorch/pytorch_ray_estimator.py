@@ -263,7 +263,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 def __init__(self, rank: int, shard: Dataset):
                     self.rank = rank
                     self.shard = shard
-                
+
                 def get_shard(self):
                     return self.shard
                 
@@ -283,7 +283,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             remote_worker_stats = []
             for rank, worker in enumerate(self.remote_workers):
-                stats = worker.train_epochs.remote(data_creator, epochs, batch_size, profile, 
+                stats = worker.train_epochs.remote(data_creator, epochs, batch_size, profile,
                                                    info, False, callbacks)
                 remote_worker_stats.append(stats)
             success = check_for_failure(remote_worker_stats)
