@@ -277,8 +277,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 worker_stats = None
         else:
             assert isinstance(data, types.FunctionType), \
-                "data should be either an instance of SparkXShards or a callable function, but " \
-                "got type: {}".format(type(data))
+                "data should be either an instance of SparkXShards, Ray Dataset " \
+                "or a callable function, but got type: {}".format(type(data))
 
             success, worker_stats = self._train_epochs(data,
                                                        epochs=epochs,
