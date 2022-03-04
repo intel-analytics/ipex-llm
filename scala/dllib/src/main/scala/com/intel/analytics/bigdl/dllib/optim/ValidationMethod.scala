@@ -1081,15 +1081,38 @@ class Loss[@specialized(Float, Double)T: ClassTag](
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
   if (criterion == null) criterion = ClassNLLCriterion[T]()
   override def apply(output: Activity, target: Activity): LossResult = {
-    val _target = target.asInstanceOf[Tensor[T]]
-    val _output = if (output.toTensor[T].nDimension() != 1 &&
-      output.toTensor[T].size().head != _target.size().head) {
-      output.toTensor[T].narrow(1, 1, _target.size().head)
+    val (pOutput, pTarget) = if (output.isTensor) {
+      val _target = target.asInstanceOf[Tensor[T]]
+      val _output = if (output.toTensor[T].nDimension() != 1 &&
+        output.toTensor[T].size().head != _target.size().head) {
+        output.toTensor[T].narrow(1, 1, _target.size().head)
+      } else {
+        output.toTensor[T]
+      }
+      (_output, _target)
     } else {
-      output.toTensor[T]
+      val _output = output.toTable
+      val _target = output.toTable
+
+      for (i <- 1 to _output.length()) {
+        _output(i) = if (_output(i).asInstanceOf[Tensor[T]].nDimension() != 1 &&
+          _output(i).asInstanceOf[Tensor[T]].size().head !=
+            _target(i).asInstanceOf[Tensor[T]].size().head) {
+          _output(i).asInstanceOf[Tensor[T]].narrow(1, 1, _target(i)
+            .asInstanceOf[Tensor[T]].size().head)
+        } else {
+          _output(i).asInstanceOf[Tensor[T]]
+        }
+      }
+      (_output, _target)
     }
-    val loss = ev.toType[Float](criterion.forward(_output, _target))
-    val count = _target.size().head
+
+    val loss = ev.toType[Float](criterion.forward(pOutput, pTarget))
+    val count = if (pTarget.isTensor) {
+      pTarget.toTensor.size().head
+    } else {
+      pTarget.toTable(1).asInstanceOf[Tensor[T]].size().head
+    }
 
     new LossResult(loss * count, count)
   }
