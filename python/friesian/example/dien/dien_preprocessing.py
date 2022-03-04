@@ -104,10 +104,9 @@ if __name__ == "__main__":
     full_tbl = transaction_tbl\
         .encode_string(['user', 'item'], [user_index, item_index])\
         .add_hist_seq(cols=['item'], user_col="user",
-                      sort_col='time', min_len=1, max_len=100, num_seqs=1)\
-        .add_neg_hist_seq(item_size, 'item_hist_seq', neg_num=5)\
+                      sort_col='time', min_len=2, max_len=100, num_seqs=1)\
         .add_negative_samples(item_size, item_col='item', neg_num=1)\
-        .add_value_features(columns=["item", "item_hist_seq", "neg_item_hist_seq"],
+        .add_value_features(columns=["item", "item_hist_seq"],
                             dict_tbl=item_tbl, key="item", value="category")
 
     # write out
