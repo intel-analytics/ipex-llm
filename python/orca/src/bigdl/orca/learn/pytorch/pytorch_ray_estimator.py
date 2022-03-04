@@ -224,7 +224,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
-        :param label_cols: label column names if data is Spark DataFrame and Ray Dataset.
+        :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
         :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
