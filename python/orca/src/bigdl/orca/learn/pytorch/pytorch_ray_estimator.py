@@ -206,8 +206,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
         underneath the hood.
 
-        :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-               takes config and batch_size as argument and returns a PyTorch DataLoader for
+        :param data: An instance of SparkXShards, a Ray Dataset, a Spark DataFrame or a function
+               that takes config and batch_size as argument and returns a PyTorch DataLoader or
+               a PyTorch IterableDataset (when the data is an instance of a Ray Dataset) for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
@@ -224,7 +225,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
-        :param label_cols: label column names if data is Spark DataFrame.
+        :param label_cols: label column names if data is Spark DataFrame and Ray Dataset.
         :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
