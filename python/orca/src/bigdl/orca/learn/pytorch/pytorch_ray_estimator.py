@@ -207,8 +207,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         underneath the hood.
 
         :param data: An instance of SparkXShards, a Ray Dataset, a Spark DataFrame or a function
-               that takes config and batch_size as argument and returns a PyTorch DataLoader or
-               a PyTorch IterableDataset (when the data is an instance of a Ray Dataset) for
+               that takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
