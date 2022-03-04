@@ -223,7 +223,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
-        :param feature_cols: feature column names if data is Spark DataFrame.
+        :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
         :param callbacks: A list for all callbacks.
 
@@ -262,6 +262,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             def data_creator(config, batch_size):
                 torch_datashard = shard.to_torch(label_column=label_cols,
+                                                 feature_column=feature_cols,
                                                  batch_size=batch_size)
                 return torch_datashard
 
