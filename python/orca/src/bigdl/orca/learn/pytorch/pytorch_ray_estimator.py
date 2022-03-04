@@ -258,15 +258,15 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
         elif isinstance(data, Dataset):
-            shards = data.split(n=self.num_workers)
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
             def data_creator(config, batch_size):
-                torch_datashard = shards[i].to_torch(label_column=label_cols,
+                torch_datashard = shard.to_torch(label_column=label_cols,
                                                      batch_size=batch_size)
                 return torch_datashard
 
             remote_worker_stats = []
-            for i, worker in enumerate(self.remote_workers):
+            for shard, worker in zip(shards, self.remote_workers):
                 stats = worker.train_epochs.remote(data_creator, epochs, batch_size, profile,
                                                    info, False, callbacks)
                 remote_worker_stats.append(stats)
