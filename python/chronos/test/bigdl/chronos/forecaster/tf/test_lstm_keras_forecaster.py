@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.nano.pytorch.runtime_binding.base_inference import train
 import pytest
 import os
 import tempfile

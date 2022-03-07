@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.nano.pytorch.runtime_binding.base_inference import train
 import pytest
 import os
 import tempfile
@@ -80,3 +79,6 @@ class TestSeq2SeqModel(TestCase):
         yhat = forecaster.predict(test_data[0])
         assert yhat.shape == (400, 2, 2)
 
+
+if __name__ == '__main__':
+    pytest.main([__file__])

@@ -16,7 +16,6 @@
 
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from keras import backend as K
 import keras
 
 
@@ -25,7 +24,8 @@ class BaseTF2Forecaster(Forecaster):
         self.fitted = False
         self.internal = self.model_creator({**self.model_config})
 
-    def fit(self, data, validation_data=None, epochs=1, batch_size=32, shuffle=True):
+    def fit(self, data, validation_data=None, epochs=1,
+            batch_size=32, shuffle=True, verbose='auto'):
         """
         Fit(Train) the forecaster.
 
@@ -37,21 +37,27 @@ class BaseTF2Forecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
 
-        :params validation_data:
+        :params validation_data: Data on which to evaluate the loss and any model metrics
+                at the end of each epoch. The model will not be trained on this data.
         :params epochs: Number of epochs you want to train. The value defaults to 1.
         :params batch_size: Number of batch size you want to train. The value defaults to 32.
         :params shuffle: whether to shuffle the training data before each epoch.
+                This argument is ignored when x is a generator or an object of tf.data.Dataset.
                 The value defaults to True.
+        :params verbose: 'auto', 0, 1, or 2. Verbosity mode.  0 = silent, 1 = progress bar,
+                2 = one line per epoch. 'auto' defaults to 1 for most cases,
+                The value defaults to 'auto'.
         """
 
         self.internal.fit(x=data[0], y=data[1],
                           validation_data=validation_data,
                           epochs=epochs,
                           batch_size=batch_size,
-                          shuffle=shuffle)
+                          shuffle=shuffle,
+                          verbose=verbose)
         self.fitted = True
 
-    def predict(self, data, batch_size=32):
+    def predict(self, data, batch_size=32, quantize=False):
         """
         :params data: The data support following formats:
 
@@ -61,6 +67,7 @@ class BaseTF2Forecaster(Forecaster):
 
         :params batch_size: predict batch size. The value will not affect evaluate
                 result but will affect resources cost(e.g. memory and time).
+        :params quantize: # TODO will support.
         """
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling predict!")
@@ -87,10 +94,12 @@ class BaseTF2Forecaster(Forecaster):
                 String in ['raw_values', 'uniform_average']. The value defaults to
                 'raw_values'.The param is only effective when the forecaster is a
                 non-distribtued version.
+        :params quantize: # TODO will support.
         """
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling predict!")
         yhat = self.internal.predict(data[0], batch_size=batch_size)
+
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
 
@@ -99,7 +108,10 @@ class BaseTF2Forecaster(Forecaster):
         Save the forecaster.
 
         :params checkpoint_file: The location you want to save the forecaster.
+        :params quantize_checkpoint_file: # TODO will support.
         """
+        if not self.fitted:
+            raise RuntimeError("You must call fit or restore first before calling predict!")
         self.internal.save(checkpoint_file)
 
     def load(self, checkpoint_file, quantize_checkpoint_file=None):
@@ -107,6 +119,7 @@ class BaseTF2Forecaster(Forecaster):
         Load the forecaster.
 
         :params checkpoint_file: The checkpoint file location you want to load the forecaster.
+        :params quantize_checkpoint_file: # TODO will support.
         """
         self.internal = keras.models.load_model(checkpoint_file)
         self.fitted = True

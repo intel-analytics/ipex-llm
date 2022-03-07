@@ -36,7 +36,7 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="torch_distributed"):
+                 distributed_backend="tf_distributed"):
         """
         Build a Seq2Seq Forecast Model.
 
@@ -69,13 +69,13 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.
-               If False, the internal model will use a pytorch model. The value
+               If False, the internal model will use a Keras model. The value
                defaults to False.
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "torch_distributed" or
-               "horovod". The value defaults to "torch_distributed".
+        :param distributed_backend: str, select from "tf_distributed" or
+               "horovod". The value defaults to "tf_distributed".
         """
         # config setting
         self.model_config = {
