@@ -42,11 +42,13 @@ class LSTMSeq2Seq(Model):
             self.encoder.append(LSTM(self.lstm_hidden_dim,
                                      return_sequences=True,
                                      return_state=True,
+                                     activation="linear",
                                      dropout=self.dropout,
                                      name="encoder_lstm_"+str(i)))
             self.decoder.append(LSTM(self.lstm_hidden_dim,
                                      return_sequences=True,
                                      return_state=True,
+                                     activation="linear",
                                      dropout=self.dropout,
                                      name="decoder_lstm_"+str(i)))
         self.decoder_inputs = Reshape((1, self.output_feature_num),

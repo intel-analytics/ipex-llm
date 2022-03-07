@@ -20,7 +20,7 @@ import tempfile
 import pytest
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
-from bigdl.chronos.model.tf_1_model.Seq2Seq_kears_tf1 import LSTMSeq2Seq
+from bigdl.chronos.model.tf1_model._Seq2Seq_kears import LSTMSeq2Seq
 from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
