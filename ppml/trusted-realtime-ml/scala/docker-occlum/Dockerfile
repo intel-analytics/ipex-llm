@@ -85,7 +85,7 @@ RUN cd /opt && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG
 
 # stage.3 az ppml occlum
-FROM occlum/occlum:0.26.4-ubuntu20.04 as ppml
+FROM occlum/occlum:0.27.0-ubuntu20.04 as ppml
 
 ARG FLINK_VERSION=1.11.3
 ARG BIGDL_VERSION=2.0.1-SNAPSHOT
