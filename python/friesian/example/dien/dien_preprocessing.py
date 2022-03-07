@@ -102,17 +102,19 @@ if __name__ == "__main__":
         .encode_string(["item", "category"], [item_index, category_index])
 
     full_tbl = transaction_tbl\
-        .encode_string(['user', 'item'], [user_index, item_index])\
+        .encode_string(['item'], [item_index])\
         .add_hist_seq(cols=['item'], user_col="user",
                       sort_col='time', min_len=2, max_len=100, num_seqs=1)\
-        .add_negative_samples(item_size, item_col='item', neg_num=1)\
         .add_value_features(columns=["item", "item_hist_seq"],
-                            dict_tbl=item_tbl, key="item", value="category")
+                            dict_tbl=item_tbl, key="item", value="category")\
+        .encode_string(['user'], [user_index])\
+        .add_negative_samples(item_size, item_col='item', neg_num=1)
 
     # write out
     item_tbl.write_parquet(args.output + "item2cat")
     full_tbl.write_parquet(args.output + "data")
 
     end = time.time()
-    stop_orca_context()
     print(f"DIEN preprocessing time: {(end - begin):.2f}s")
+    full_tbl.show(5)
+    stop_orca_context()
