@@ -1,6 +1,7 @@
 import torch
 from pytorch_lightning import Callback
 
+
 def _check_data_type(data):
     if isinstance(data, torch.Tensor):
         return
@@ -35,7 +36,7 @@ def _check_loaders(loaders):
 
 class DataLoaderCallback(Callback):
     def setup(self, trainer, pl_module, stage=None):
-        _check_loaders(pl_module.train_dataloader())
-        _check_loaders(pl_module.val_dataloader())
-        _check_loaders(pl_module.test_dataloader())
         _check_loaders(pl_module.predict_dataloader())
+        _check_loaders(pl_module.test_dataloader())
+        _check_loaders(pl_module.val_dataloader())
+        _check_loaders(pl_module.train_dataloader())
