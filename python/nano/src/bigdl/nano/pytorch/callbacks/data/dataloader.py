@@ -19,7 +19,7 @@ def _check_loader(loader):
         _check_data_type(y)
     except ValueError:
         raise ValueError(
-            "DataLoader in Nano can only support following format:\n"
+            "A legal Dataloader should yield data in format below:\n"
             "- torch.Tensor, torch.Tensor\n"
             "- Tuple(torch.Tensor), Tuple(torch.Tensor)\n"
         )
@@ -35,8 +35,7 @@ def _check_loaders(loaders):
 
 class DataLoaderCallback(Callback):
     def setup(self, trainer, pl_module, stage=None):
-        _check_loaders(trainer.train_dataloader)
-        _check_loaders(trainer.val_dataloaders)
-        _check_loaders(trainer.test_dataloaders)
-        if hasattr(trainer, 'predict_dataloaders'):
-            _check_loaders(trainer.predict_dataloaders)
+        _check_loaders(pl_module.train_dataloader())
+        _check_loaders(pl_module.val_dataloader())
+        _check_loaders(pl_module.test_dataloader())
+        _check_loaders(pl_module.predict_dataloader())
