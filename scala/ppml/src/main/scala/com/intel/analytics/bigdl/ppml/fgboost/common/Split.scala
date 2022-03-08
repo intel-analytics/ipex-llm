@@ -30,20 +30,11 @@ class Split (
               val itemSet: util.List[Integer]
             ) extends Serializable {
   val logger = LogManager.getLogger(this.getClass)
-  protected var version = -1
+
   protected var clientID = "";
-  protected var featureName = "";
+
   def getClientID: String= clientID
 
-  def setVersion(version: Int) = {
-    this.version = version
-    this
-  }
-  def getFeatureName() = featureName
-  def setFeatureName(featureName: String) = {
-    this.featureName = featureName
-    this
-  }
   def setClientID(clientID: String): this.type = {
     this.clientID = clientID
     this
@@ -80,7 +71,6 @@ class Split (
       .setGain(gain)
       .setSetLength(itemSet.size())
       .setClientUid(clientID)
-      .setVersion(version)
       .addAllItemSet(itemSet).build
   }
 }
@@ -92,24 +82,20 @@ object Split {
       dataSplit.getFeatureID,
       dataSplit.getSplitValue,
       dataSplit.getGain,
-      dataSplit.getItemSetList,
-      dataSplit.getVersion).setClientID(dataSplit.getClientUid)
+      dataSplit.getItemSetList).setClientID(dataSplit.getClientUid)
   }
 
   def leaf(treeID: String,
            nodeID: String): Split = {
-    apply(treeID, nodeID, -1, -1, 0, new util.ArrayList[Integer](), 0)
+    apply(treeID, nodeID, -1, -1, 0, new util.ArrayList[Integer]())
   }
 
   def apply(treeID: String,
             nodeID: String,
             featureID: Int,
             splitValue: Float,
-            gain: Float,
-            bitSet: util.List[Integer],
-            version: Int = -1): Split = {
-    new Split(treeID, nodeID, featureID, splitValue, gain, bitSet).setVersion(version)
-
+            gain: Float, bitSet: util.List[Integer]): Split = {
+    new Split(treeID, nodeID, featureID, splitValue, gain, bitSet)
   }
 }
 

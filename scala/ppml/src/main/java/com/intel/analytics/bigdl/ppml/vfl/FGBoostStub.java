@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 public class FGBoostStub {
-    private static final Logger logger = LoggerFactory.getLogger(FGBoostStub.class);
+    private static final Logger logger = LoggerFactory.getLogger(NNStub.class);
     private static FGBoostServiceGrpc.FGBoostServiceBlockingStub stub;
     String clientID;
     public FGBoostStub(Channel channel, String clientID) {
@@ -35,7 +35,7 @@ public class FGBoostStub {
         stub = FGBoostServiceGrpc.newBlockingStub(channel);
     }
     public DownloadResponse downloadLabel(String modelName, int flVersion) {
-//        logger.info("Download the following data:");
+        logger.info("Download the following data:");
         MetaData metadata = MetaData.newBuilder()
                 .setName(modelName).setVersion(flVersion + 1).build();
         DownloadLabelRequest downloadRequest = DownloadLabelRequest.newBuilder().setMetaData(metadata).build();
@@ -50,10 +50,10 @@ public class FGBoostStub {
                 .setClientuuid(clientID)
                 .build();
 
-//        logger.info("Upload the following data:");
-//        logger.info("Upload Data Name:" + data.getMetaData().getName());
-//        logger.info("Upload Data Version:" + data.getMetaData().getVersion());
-//        logger.debug("Upload Data" + data.getTensorsMap());
+        logger.info("Upload the following data:");
+        logger.info("Upload Data Name:" + data.getMetaData().getName());
+        logger.info("Upload Data Version:" + data.getMetaData().getVersion());
+        logger.debug("Upload Data" + data.getTensorsMap());
 //        logger.info("Upload" + data.getTensorsMap().get("weights").getTensorList().subList(0, 5));
 
         UploadResponse uploadResponse = stub.uploadLabel(uploadRequest);
@@ -71,24 +71,22 @@ public class FGBoostStub {
 
 
     public EvaluateResponse evaluate(
-            List<BoostEval> boostEval, int version) {
+            List<BoostEval> boostEval) {
         EvaluateRequest evaluateRequest = EvaluateRequest
                 .newBuilder()
                 .setClientuuid(clientID)
                 .addAllTreeEval(boostEval)
-                .setBsVersion(version)
                 .build();
 
         return stub.evaluate(evaluateRequest);
     }
 
     public PredictResponse predict(
-            List<BoostEval> boostEval, int version) {
+            List<BoostEval> boostEval) {
         PredictRequest request = PredictRequest
                 .newBuilder()
                 .setClientuuid(clientID)
                 .addAllTreeEval(boostEval)
-                .setBsVersion(version)
                 .build();
 
         return stub.predict(request);
@@ -98,15 +96,13 @@ public class FGBoostStub {
     public UploadResponse uploadTreeLeaf(
             String treeID,
             List<Integer> treeIndexes,
-            List<Float> treeOutput,
-            int version
+            List<Float> treeOutput
     ) {
         TreeLeaf treeLeaf = TreeLeaf
                 .newBuilder()
                 .setTreeID(treeID)
                 .addAllLeafIndex(treeIndexes)
                 .addAllLeafOutput(treeOutput)
-                .setVersion(version)
                 .build();
         UploadTreeLeafRequest uploadTreeLeafRequest = UploadTreeLeafRequest
                 .newBuilder()

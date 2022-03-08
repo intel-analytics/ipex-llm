@@ -59,7 +59,7 @@ object XGBoostFormatSerializer {
       }
       else {
         // leaf node
-        XGBoostFormatNode(treeNode.nodeID.toInt, 0, -1, 0, treeNode.similarScore,
+        XGBoostFormatNode(treeNode.nodeID.toInt, 0, 0, 0, treeNode.similarScore,
           0, 0, 0, null)
       }
     }

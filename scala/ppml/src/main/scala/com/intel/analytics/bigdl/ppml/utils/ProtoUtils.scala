@@ -26,8 +26,7 @@ import com.intel.analytics.bigdl.ppml.common.{FLPhase, Storage}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import com.intel.analytics.bigdl.dllib.utils.{Table => DllibTable}
-import com.intel.analytics.bigdl.ppml.fgboost.common.Split
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, DataSplit, PredictResponse, TreePredict}
+import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, PredictResponse, TreePredict}
 import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag

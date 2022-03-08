@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.ppml.common.FLPhase
 import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.generated.{FGBoostServiceGrpc, FGBoostServiceProto}
 import io.grpc.stub.StreamObserver
-import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
 
 class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
@@ -32,14 +31,6 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
     val version = request.getMetaData.getVersion
     logger.debug(s"Server received downloadLabel request of version: $version")
-    synchronized {
-      if (aggregator.getLabelStorage().version != version) {
-        logger.debug(s"Download label: server version is ${aggregator.getLabelStorage().version}, waiting")
-        wait()
-      } else {
-        notifyAll()
-      }
-    }
     val data = aggregator.getLabelStorage().serverData
     if (data == null) {
       val response = "Your required data doesn't exist"
@@ -75,28 +66,28 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
 
   }
 
-  override def split(request: SplitRequest,
-                     responseObserver: StreamObserver[SplitResponse]): Unit = {
+  override def split(request: SplitRequest, responseObserver: StreamObserver[SplitResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val split = request.getSplit
+
+    val version = -1 // version is not needed in fgboost
     try {
-      aggregator.putClientData(FLPhase.SPLIT, clientUUID, split.getVersion, new DataHolder(split))
+      aggregator.putClientData(FLPhase.SPLIT, clientUUID, version, new DataHolder(split))
       val bestSplit = aggregator.getBestSplit(split.getTreeID, split.getNodeID)
       if (bestSplit == null) {
         val response = "Your required bestSplit data doesn't exist"
-        responseObserver.onNext(SplitResponse.newBuilder.setResponse(response).setCode(1).build)
+        responseObserver.onNext(SplitResponse.newBuilder.setResponse(response).setCode(0).build)
         responseObserver.onCompleted()
       }
       else {
-        val response = SplitResponse.newBuilder
-          .setResponse("Split success").setSplit(bestSplit).setCode(0).build
-        responseObserver.onNext(response)
+        val response = "Split node successfully"
+        responseObserver.onNext(
+          SplitResponse.newBuilder.setResponse(response).setSplit(bestSplit).setCode(1).build)
         responseObserver.onCompleted()
       }
     } catch {
       case e: Exception =>
-        val errorMsg = ExceptionUtils.getStackTrace(e)
-        val response = SplitResponse.newBuilder.setResponse(errorMsg).setCode(1).build
+        val response = SplitResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {
@@ -106,13 +97,14 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   }
 
   override def uploadTreeLeaf(request: UploadTreeLeafRequest,
-                              responseObserver: StreamObserver[UploadResponse]): Unit = {
+                                responseObserver: StreamObserver[UploadResponse]): Unit = {
     val clientUUID = request.getClientuuid
-    val treeLeaf = request.getTreeLeaf
+    val leaves = request.getTreeLeaf
 
+    val version = -1 // TODO: need to modify proto
     try {
-      val response = "Upload tree leaf successfully"
-      aggregator.putClientData(FLPhase.TREE_LEAF, clientUUID, treeLeaf.getVersion, new DataHolder(treeLeaf))
+      aggregator.putClientData(FLPhase.TREE_LEAF, clientUUID, version, new DataHolder(leaves))
+      val response = s"Tree leaves uploaded to server at clientID: $clientUUID, version: $version"
       responseObserver.onNext(UploadResponse.newBuilder.setResponse(response).setCode(0).build)
       responseObserver.onCompleted()
     } catch {
@@ -130,18 +122,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
                         responseObserver: StreamObserver[EvaluateResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
-    val version = request.getBsVersion
-    logger.debug(s"Server received Evaluate request of version: $version")
-    synchronized {
-      if (aggregator.getEvalStorage().version != version) {
-        logger.debug(s"Evaluate: server version is ${aggregator.getEvalStorage().version}, waiting")
-        wait()
-      } else {
-        notifyAll()
-      }
-    }
     try {
-      aggregator.putClientData(FLPhase.EVAL, clientUUID, request.getBsVersion, new DataHolder(predicts))
+      aggregator.putClientData(FLPhase.EVAL, clientUUID, -1, new DataHolder(predicts))
       val result = aggregator.getResultStorage().serverData
       if (result == null) {
         val response = "Your required data doesn't exist"
@@ -156,8 +138,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
       }
     } catch {
       case e: Exception =>
-        val errorMsg = ExceptionUtils.getStackTrace(e)
-        val response = EvaluateResponse.newBuilder.setResponse(errorMsg).setCode(1).build
+        val response = EvaluateResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {
@@ -170,7 +151,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
     try {
-      aggregator.putClientData(FLPhase.PREDICT, clientUUID, request.getBsVersion, new DataHolder(predicts))
+      aggregator.putClientData(FLPhase.PREDICT, clientUUID, -1, new DataHolder(predicts))
       val result = aggregator.getResultStorage().serverData
       if (result == null) {
         val response = "Your required data doesn't exist"

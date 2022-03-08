@@ -45,9 +45,6 @@ class StorageHolder(flDataType: FLDataType) {
   }
   def getVersion(): Int = {
     if (tensorMapStorage != null) tensorMapStorage.version
-    else if (treeSplitStorage != null) treeSplitStorage.version
-    else if (treeLeafStorage != null) treeLeafStorage.version
-    else if (treeEvalStorage != null) treeEvalStorage.version
     else throw new NotImplementedError()
   }
 
@@ -57,15 +54,19 @@ class StorageHolder(flDataType: FLDataType) {
     if (dataHolder.tensorMap != null) {
       tensorMapStorage.clientData.put(clientID, dataHolder.tensorMap)
       clientDataSize = tensorMapStorage.clientData.size()
+      logger.debug(s"Put Table into client data map, current size: $clientDataSize")
     } else if (dataHolder.split != null) {
       treeSplitStorage.clientData.put(clientID, dataHolder.split)
       clientDataSize = treeSplitStorage.clientData.size()
+      logger.debug(s"Put Split into client data map, current size: $clientDataSize")
     } else if (dataHolder.treeLeaf != null) {
       treeLeafStorage.clientData.put(clientID, dataHolder.treeLeaf)
       clientDataSize = treeLeafStorage.clientData.size()
+      logger.debug(s"Put TreeLeaf into client data map, current size: $clientDataSize")
     } else if (dataHolder.boostEval != null) {
       treeEvalStorage.clientData.put(clientID, dataHolder.boostEval)
       clientDataSize = treeEvalStorage.clientData.size()
+      logger.debug(s"Put TreeEval into client data map, current size: $clientDataSize")
     } else {
       throw new IllegalArgumentException("Data is empty, could not uploaded to server.")
     }
