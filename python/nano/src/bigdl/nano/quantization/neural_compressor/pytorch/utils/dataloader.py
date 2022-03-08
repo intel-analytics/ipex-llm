@@ -35,7 +35,7 @@ def _check_loader(loader):
         _check_data_type(y)
     except ValueError:
         raise ValueError(
-            "A legal Dataloader should yield data in format below:\n"
+            "Dataloader for quantization in INC should yield data in format below:\n"
             "- torch.Tensor, torch.Tensor\n"
             "- Tuple(torch.Tensor), Tuple(torch.Tensor)\n"
         )

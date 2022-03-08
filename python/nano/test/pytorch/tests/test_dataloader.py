@@ -75,10 +75,7 @@ class TestDataloader(TestCase):
         (x1, x2), (y1, y2) = next(iter(loader))
         assert isinstance(x1, torch.Tensor) and isinstance(x2, torch.Tensor) \
                and isinstance(y1, torch.Tensor) and isinstance(y2, torch.Tensor)
-        trainer.fit(model, loader)
-        trainer.validate(model, loader)
-        trainer.test(model, loader)
-        trainer.predict(model, loader)
+
         trainer.quantize(model, loader)
 
     def test_illegal_data_format(self):
@@ -88,19 +85,8 @@ class TestDataloader(TestCase):
         trainer = Trainer()
         model = ModelWithMultipleInputs()
         model = trainer.compile(model)
-        with pytest.raises(ValueError, match="A legal Dataloader should yield data *"):
-            trainer.fit(model, dataloader)
 
-        with pytest.raises(ValueError, match="A legal Dataloader should yield data *"):
-            trainer.validate(model, dataloader)
-
-        with pytest.raises(ValueError, match="A legal Dataloader should yield data *"):
-            trainer.test(model, dataloader)
-
-        with pytest.raises(ValueError, match="A legal Dataloader should yield data *"):
-            trainer.predict(model, dataloader)
-
-        with pytest.raises(ValueError, match="A legal Dataloader should yield data *"):
+        with pytest.raises(ValueError, match="Dataloader for quantization in INC *"):
             trainer.quantize(model, dataloader)
 
 
