@@ -19,18 +19,11 @@ import pandas as pd
 from bigdl.ppml.data_utils import *
 
 
-class TestDataUtils(unittest.TestCase):
-    def test_pandas_api(self):
+class MyTestCase(unittest.TestCase):
+    def test_pandas_to_numpy(self):
         df = pd.DataFrame({"f1": [1, 2], "f2": [3, 4]})
-        array, _ = convert_to_jtensor(df, feature_columns=["f1"])
-        self.assert_(isinstance(array, JTensor))
-        self.assertEqual(array.storage.shape, (2, 2))
-
-    def test_numpy_api(self):
-        array = np.array([[1, 2], [3, 4]])
-        array, _ = convert_to_jtensor(array)
-        self.assert_(isinstance(array, JTensor))
-        self.assertEqual(array.storage.shape, (2, 2))
+        array = convert_to_numpy(df)
+        array
 
 
 if __name__ == '__main__':

@@ -13,34 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import pandas as pd
 import numpy as np
-from bigdl.ppml import *
 
 
-def get_input_type(x, y=None):
+def convert_to_numpy(x, dataframe_columns=None):
+    """
+    :param x: The input to convert
+    :param dataframe_columns: applicable if x is pandas.DataFrame, the column to convert
+    :return: the converted numpy.ndarray
+    """
     if isinstance(x, pd.DataFrame):
-        if y is not None and not isinstance(y, pd.DataFrame):
-            raise ValueError(f"Feature is DataFrame, label should be DataFrame, but got {type(y)}")
-        return "DataFrame"
+        return [x[col] for col in dataframe_columns]
     elif isinstance(x, np.ndarray):
-        if y is not None and not isinstance(y, np.ndarray):
-            raise ValueError(
-                f"Feature is Numpy NdArray, label should be Numpy NdArray, but got {type(y)}")
-        return "NdArray"
+        return [x]
+    elif isinstance(x, list):
+        for e in x:
+            if not isinstance(x, np.ndarray):
+                raise Exception("only NdArray type is supported for list input")
+        return x
     else:
-        raise ValueError(f"Supported argument types: DataFrame, NdArray, but got {type(x)}")
-
-def convert_to_jtensor(x, y=None, feature_columns=None, label_columns=None):
-    arg_type = get_input_type(x, y)
-    if arg_type == "DataFrame":
-        if feature_columns is None or (y is not None and label_columns is None):
-            raise ValueError("Input DataFrame type must have feature_columns and label_columns")
-        x = x.to_numpy()
-        y = y.to_numpy() if y else None
-    return JTensor.from_ndarray(x), JTensor.from_ndarray(y)
-
-
+        raise Exception("Input could be Pandas DataFrame or Numpy NDArray or list of NDArray, but got", type(x))
 
 
