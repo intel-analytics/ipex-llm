@@ -65,8 +65,13 @@ class TemporalBlock(tf.keras.Model):
         return self.ac3(prev_x + x)            # skip connection
 
 class TemporalConvNet(tf.keras.Model):
-    def __init__(self, future_seq_len, output_feature_num, num_channels, \
-        kernel_size=3, dropout=0.1, repo_initialization=True):
+    def __init__(self, 
+	             future_seq_len, 
+	             output_feature_num, 
+	             num_channels, 
+                 kernel_size=3, 
+				 dropout=0.1, 
+				 repo_initialization=True):
         # num_channels is a list contains hidden sizes of Conv1D
         super(TemporalConvNet, self).__init__()
         num_channels.append(output_feature_num)
