@@ -2285,44 +2285,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def erf(): Tensor[T] = {
-    if (MKL.isMKLLoaded && this.isContiguous()) {
-      ev.getType() match {
-        case FloatType =>
-          val value = this.storage().array().asInstanceOf[Array[Float]]
-          MKL.vsErf(this.nElement(), value, this.storageOffset() - 1,
-            value, this.storageOffset() - 1)
-        case DoubleType =>
-          val value = this.storage().array().asInstanceOf[Array[Double]]
-          MKL.vdErf(this.nElement(), value, this.storageOffset() - 1,
-            value, this.storageOffset() - 1)
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
-      }
-      this
-    } else {
-      this.apply1(a => ev.erf(a))
-    }
-  }
-
-  override def erf(y: Tensor[T]): Tensor[T] = {
-    require(this.isSameSizeAs(y), "erf: tensors' size don't match.")
-    if (MKL.isMKLLoaded && this.isContiguous()) {
-      ev.getType() match {
-        case FloatType =>
-          val value = this.storage().array().asInstanceOf[Array[Float]]
-          val yValue = y.storage().array().asInstanceOf[Array[Float]]
-          MKL.vsErf(this.nElement(), yValue, y.storageOffset() - 1,
-            value, this.storageOffset() - 1)
-        case DoubleType =>
-          val value = this.storage().array().asInstanceOf[Array[Double]]
-          val yValue = y.storage().array().asInstanceOf[Array[Double]]
-          MKL.vdErf(this.nElement(), yValue, y.storageOffset() - 1,
-            value, this.storageOffset() - 1)
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
-      }
-      this
-    } else {
-      this.copy(y).erf()
-    }
+    this.apply1(a => ev.erf(a))
   }
 
   override def erfc(): Tensor[T] = {

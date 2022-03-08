@@ -1027,22 +1027,4 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
     s should be (70)
   }
-
-  "mkl erf" should "equal to apache erf" in {
-    val x = Tensor[Float](Storage(Array[Float](1, 2, 3, 4)), 1, Array(2, 2))
-    val exceptedOutput = x.clone().apply1(org.apache.commons.math3.special.Erf.erf(_).toFloat)
-    x.erf()
-
-    x should be (exceptedOutput)
-  }
-
-  "mkl erf y" should "equal to apache erf" in {
-    val x = Tensor[Float](Storage(Array[Float](1, 2, 3, 4)), 1, Array(2, 2))
-    val exceptedOutput = x.clone().apply1(org.apache.commons.math3.special.Erf.erf(_).toFloat)
-    val y = Tensor[Float](2, 2)
-    y.erf(x)
-
-    y should be (exceptedOutput)
-  }
-
 }

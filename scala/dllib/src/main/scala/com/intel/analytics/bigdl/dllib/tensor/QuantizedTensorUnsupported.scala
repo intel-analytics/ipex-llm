@@ -1443,9 +1443,6 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
   override def erf(): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
-  override def erf(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
-
   override def erfc(): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
