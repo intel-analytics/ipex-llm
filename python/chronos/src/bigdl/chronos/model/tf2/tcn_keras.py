@@ -34,14 +34,14 @@ class TemporalBlock(tf.keras.Model):
 		self.batch1 = layers.BatchNormalization(axis=-1)
 		self.ac1 = layers.Activation('relu')
 		self.drop1 = layers.Dropout(rate=dropout_rate)
-		
+
 		# block2
 		self.conv2 = layers.Conv1D(filters=nb_filters, kernel_size=kernel_size, strides = strides,
 						           dilation_rate=dilation_rate, padding=padding, kernel_initializer=init)
 		self.batch2 = layers.BatchNormalization(axis=-1)		
 		self.ac2 = layers.Activation('relu')
 		self.drop2 = layers.Dropout(rate=dropout_rate)
-  
+
 		self.downsample = layers.Conv1D(filters=nb_filters, kernel_size=1, 
 									    padding='same', kernel_initializer=init)
 		self.ac3 = layers.Activation('relu')
@@ -81,7 +81,7 @@ class TemporalConvNet(tf.keras.Model):
             init = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.01)
         else:
             init = tf.keras.initializers.HeUniform()
-        
+
         # initialize model
         model = tf.keras.Sequential()
 
@@ -91,7 +91,7 @@ class TemporalConvNet(tf.keras.Model):
             dilation_rate = 2 ** i
             model.add(TemporalBlock(dilation_rate, num_channels[i], kernel_size, 
                       padding='causal', dropout_rate=dropout))
-        
+
         self.network = model
         self.linear = tf.keras.layers.Dense(future_seq_len, kernel_initializer=init)
         self.permute = tf.keras.layers.Permute((2, 1))
