@@ -75,20 +75,21 @@ class SpatialConvolution[T: ClassTag](
   extends TensorModule[T] with Initializable with MklInt8Convertible {
 
 
-  require(nOutputPlane % nGroup == 0, s"Number of input channels " +
+  Log4Error.invalidInputError(nOutputPlane % nGroup == 0, s"Number of input channels " +
     s"should be multiples of group " +
     s"number of input channels ${nInputPlane}, " +
     s"group ${nGroup}.")
-  require(nOutputPlane % nGroup == 0,
+  Log4Error.invalidInputError(nOutputPlane % nGroup == 0,
     "Number of output channels " +
       "should be multiples of group " +
       s"(number of output channels ${nOutputPlane}, " +
       s"group ${nGroup}).")
 
   if (nGroup != 1) {
-    require(format == DataFormat.NCHW, "group convolution is not supported in NHWC format " )
+    Log4Error.invalidInputError(format == DataFormat.NCHW,
+      "group convolution is not supported in NHWC format " )
   }
-  require((padW >= 0 && padH >= 0) || (padW == -1 && padH == -1),
+  Log4Error.invalidInputError((padW >= 0 && padH >= 0) || (padW == -1 && padH == -1),
     s"Illegal padding configuration (padW: $padW, padH: $padH)")
 
   private val weightShape = format match {
@@ -177,11 +178,10 @@ class SpatialConvolution[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4,
+    Log4Error.invalidInputError(input.length == 4,
       s"Convolution2D requires 4D input, but got input dim ${input.length}")
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.length)
-    require(input(channelDim -1) == nInputPlane, s"input channel size " +
-      s"${input(channelDim -1)} is not the same as nInputPlane $nInputPlane")
+    Log4Error.invalidInputError(input(channelDim -1) == nInputPlane, s"input channel size " +      s"${input(channelDim -1)} is not the same as nInputPlane $nInputPlane")
     val inputWidth = input(dimWidth -1)
     val inputHeight = input(dimHeight -1)
     val sizes =
@@ -193,7 +193,7 @@ class SpatialConvolution[T: ClassTag](
       }
     val outputHeight = sizes(4)
     val outputWidth = sizes(5)
-    require(outputWidth >= 1 && outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
     val outputShape = getOutputShape(outputHeight, outputWidth, input(0))
     Shape(outputShape)
@@ -252,7 +252,7 @@ class SpatialConvolution[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4,
+    Log4Error.invalidInputError(input.dim() == 3 || input.dim() == 4,
       "SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
@@ -261,7 +261,7 @@ class SpatialConvolution[T: ClassTag](
     }
 
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.dim())
-    require(input.size(channelDim) == nInputPlane, s"input channel size " +
+    Log4Error.invalidInputError(input.size(channelDim) == nInputPlane, s"input channel size " +
       s"${input.size(channelDim)} is not the same as nInputPlane $nInputPlane")
 
     val inputWidth = input.size(dimWidth)
@@ -282,7 +282,7 @@ class SpatialConvolution[T: ClassTag](
     val outputHeight = sizes(4)
     val outputWidth = sizes(5)
 
-    require(outputWidth >= 1 && outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
 
     if (withBias && (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth)) {
@@ -376,7 +376,7 @@ class SpatialConvolution[T: ClassTag](
 
     val (padTop, padBottom, padLeft, padRight) = getPadding(inputHeight, inputWidth)
 
-    require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
+    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     gradInput.resizeAs(input)
     if (_1x1) {
       fGradInput.set(gradInput)
@@ -434,7 +434,7 @@ class SpatialConvolution[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(input.nDimension() == 3 || input.nDimension() == 4,
+    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4,
       "Only support 3D or 4D input," +
         s"but input has ${input.nDimension()} dimensions")
     require(gradOutput.isContiguous())

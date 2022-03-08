@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -153,7 +153,7 @@ class Attention[T: ClassTag](val hiddenSize: Int, val numHeads: Int, val attenti
     output
   }
   override def updateOutput(input: Activity): Activity = {
-    require(input.toTable.length() == 3,
+    Log4Error.invalidInputError(input.toTable.length() == 3,
       s"only support 3 inputs, but get ${input.toTable.length()}")
 
     val cache = input.toTable.apply[Activity](3)

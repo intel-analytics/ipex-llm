@@ -21,8 +21,7 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -82,7 +81,7 @@ class LookupTable[T: ClassTag]
     require(weight.isContiguous(), "LookupTable: weight must be contiguous")
     require(normBuffer.isContiguous(), "LookupTable: input must be contiguous")
     require(normBuffer.nDimension() == 1, "LookupTable: idx must be a vector")
-    require(normType > 0, "LookupTable: non-positive-norm not supported")
+    Log4Error.invalidInputError(normType > 0, "LookupTable: non-positive-norm not supported")
 
     val rowIdx = normBuffer.storage().array()
     val rowOffset = normBuffer.storageOffset() - 1

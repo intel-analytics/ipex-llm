@@ -17,8 +17,9 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+
 import scala.reflect.ClassTag
 
 /**
@@ -32,8 +33,8 @@ abstract class Pooling1D[T: ClassTag](
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends LayerWrapperByForward[T](KerasUtils.addBatch(inputShape)) {
   if (borderMode!=null) {
-    require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
-      s"Pooling1D: $borderMode")
+    Log4Error.invalidInputError(borderMode == "valid" || borderMode == "same",
+      s"Invalid border mode for Pooling1D: $borderMode")
   }
   val strideValue: Int = if (stride == -1) poolLength else stride
 }

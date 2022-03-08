@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -51,7 +51,8 @@ class Squeeze[T: ClassTag](
 
   if (dims != null) {
     for (dim <- dims) {
-      require(dim >= 0, s"Invalid squeeze dim: $dim, dim should be equal to or greater than 0")
+      Log4Error.invalidInputError(dim >= 0,
+        s"Invalid squeeze dim: $dim, dim should be equal to or greater than 0")
     }
   }
 
@@ -59,9 +60,10 @@ class Squeeze[T: ClassTag](
     val output = inputShape.toSingle().toArray.toBuffer
     if (dims != null) {
       for (dim <- dims.sortWith(_>_)) {
-        require(output(dim) == 1, s"Invalid squeeze dim: $dim which has size ${output(dim)}, " +
+        Log4Error.invalidInputError(output(dim) == 1,
+          s"Invalid squeeze dim: $dim which has size ${output(dim)}, " +
           s"cannot squeeze a non-singleton dimension")
-        require(dim <= output.length -1,
+        Log4Error.invalidInputError(dim <= output.length -1,
           s"Invalid squeeze dim: $dim, dim should be within range (0, ${output.length - 1}]")
         output.remove(dim)
       }

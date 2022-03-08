@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.dllib.feature.image
 
 import java.io.File
-
 import java.nio.ByteBuffer
 
 import com.intel.analytics.bigdl.DataSet
@@ -37,7 +36,7 @@ import scala.collection.JavaConverters._
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 import org.apache.hadoop.fs.Path
 
 /**
@@ -266,8 +265,11 @@ object ImageSet {
       }.toMap
       val images = sc.binaryFiles(newPathsString, minPartitions).map { case (p, stream) =>
         val rawFilePath = new Path(p).toUri.getRawPath
-        assert(rawFilePath.startsWith(dirPath),
-          s"directory path: $dirPath does not match file path $rawFilePath")
+        if (!rawFilePath.startsWith(dirPath)) {
+          Log4Error.invalidInputError(s"directory path: $dirPath does not match file path" +
+            s" $rawFilePath")
+        }
+
         val classStr = rawFilePath
           .substring(dirPath.length + 1).split(File.separator)(0)
         val label = labelMap(classStr)

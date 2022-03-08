@@ -26,14 +26,12 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.{COCODataset
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame, RoiImageInfo}
-import com.intel.analytics.bigdl.dllib.utils.T
-import com.intel.analytics.bigdl.dllib.utils.Engine
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, RandomGenerator, T}
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.io.ByteArrayInputStream
-
 import javax.imageio.ImageIO
+
 import org.apache.hadoop.io.{BytesWritable, Text}
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.SparkContext
@@ -508,7 +506,8 @@ object DataSet {
       logger.info(s"Read sequence files folder $path")
       val buffer: Array[LocalSeqFilePath] = findFiles(path)
       logger.info(s"Find ${buffer.length} sequence files")
-      require(buffer.length > 0, s"Can't find any sequence files under $path")
+      Log4Error.invalidInputError(buffer.length > 0, s"Can't find any sequence" +
+        s" files under $path")
       new LocalArrayDataSet[LocalSeqFilePath](buffer) {
         override def size(): Long = {
           totalSize
@@ -537,7 +536,8 @@ object DataSet {
      */
     def readName(data: Text): String = {
       val dataArr = data.toString.split("\n")
-      require(dataArr.length >= 2, "key in seq file only contains label, no name")
+      Log4Error.invalidInputError(dataArr.length >= 2,
+        "key in seq file only contains label, no name")
       dataArr(0)
     }
 
@@ -659,10 +659,13 @@ object DataSet {
             Array(anno.length, 4))
           val isCrowd = Tensor(anno.map(ann => if (ann.isCrowd) 1f else 0f), Array(anno.length))
           val masks = anno.map(ann => ann.masks)
-          require(metaBytes.getInt == COCODataset.MAGIC_NUM, "Corrupted metadata")
+          Log4Error.invalidInputError(metaBytes.getInt == COCODataset.MAGIC_NUM,
+            "Corrupted metadata")
 
           val rawdata = decodeRawImageToBGR(data._2.getBytes)
-          require(rawdata.length == height * width * 3)
+          Log4Error.invalidInputError(rawdata.length == height * width * 3,
+          s"The image doesn't match the metadata. There are ${rawdata.length} bytes" +
+            s" while the height * width * 3 is ${height} * ${width} * 3")
           val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
           imf(ImageFeature.originalSize) = (height, width, 3)
           imf(RoiImageInfo.ISCROWD) = isCrowd

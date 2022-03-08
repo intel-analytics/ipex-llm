@@ -21,7 +21,7 @@
  import com.intel.analytics.bigdl.{Criterion, Module}
  import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, ValidationMethod, ValidationResult}
  import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
- import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, ThreadPool}
+ import com.intel.analytics.bigdl.dllib.utils.{Log4Error, RandomGenerator, ThreadPool}
  import org.slf4j.LoggerFactory
 
  import scala.reflect.ClassTag
@@ -262,10 +262,11 @@
 
   private def retrieveParameters(model: Module[Float]) = {
     val (weightParameters, gradParameters) = model.parameters()
-    require(weightParameters != null && weightParameters.length > 0,
+    Log4Error.invalidInputError(weightParameters != null && weightParameters.length > 0,
       s"model ${model.getName()} doesn't have any trainable parameters.")
-    require(weightParameters.size == gradParameters.size,
+    Log4Error.invalidInputError(weightParameters.size == gradParameters.size,
       "weights and gradient number are not match")
+
     weightParameters.zip(gradParameters).foreach { case (w, g) => g.resizeAs(w) }
     (Module.flatten[Float](weightParameters), Module.flatten[Float](gradParameters))
   }

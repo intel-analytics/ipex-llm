@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.optim.LocalPredictor
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
-import com.intel.analytics.bigdl.dllib.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, T, Table}
 import com.intel.analytics.bigdl.dllib.feature.image.{ImageMatToTensor, ImageProcessing, ImageSet, ImageSetToSample}
 import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
@@ -169,8 +169,8 @@ object Predictor {
     val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext, model)
     val partitionNum = dataSet.partitions.length
     val totalBatch = if (batchSize > 0) {
-      require(batchSize % partitionNum == 0, s"Predictor.predict: total batch size $batchSize " +
-        s"should be divided by partitionNum ${partitionNum}")
+      Log4Error.invalidInputError(batchSize % partitionNum == 0, s"Predictor.predict:" +
+        s" total batch size $batchSize should be divided by partitionNum ${partitionNum}")
       batchSize
     } else {
       batchPerPartition * partitionNum
@@ -225,7 +225,7 @@ object Predictor {
     result.mapPartitions { partition =>
       partition.map(output => {
         val _output = output.toTensor[T]
-        require(_output.dim() == 1, s"Predictor.predictClass:" +
+        Log4Error.invalidInputError(_output.dim() == 1, s"Predictor.predictClass:" +
           s"Only support one sample has one label, but got ${_output.dim()} label")
         ev.toType[Int](_output.max(1)._2.valueAt(1))
       })

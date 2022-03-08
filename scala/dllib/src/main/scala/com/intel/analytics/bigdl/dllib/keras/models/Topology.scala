@@ -360,11 +360,12 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: DataSet[MiniBatch[T]],
       nbEpoch: Int,
       validationData: DataSet[MiniBatch[T]])(implicit ev: TensorNumeric[T]): Unit = {
-    require(this.optimMethod != null && this.criterion != null,
+    Log4Error.invalidInputError(this.optimMethod != null && this.criterion != null,
       "compile must be called before fit")
     this.internalOptimizer = this.getOrCreateOptimizer(x)
     if (validationData != null) {
-      require(this.vMethods != null, "Validation metrics haven't been set yet")
+      Log4Error.invalidInputError(this.vMethods != null,
+        "Validation metrics haven't been set yet")
       if (this.tensorBoardLogDir != null && this.tensorBoardAppName != null) {
         this.validationSummary = ValidationSummary(tensorBoardLogDir, tensorBoardAppName)
         internalOptimizer.setValidationSummary(this.validationSummary)
@@ -580,7 +581,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    labelCols: Array[String],
    transform: ImageProcessing,
    valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    require(labelCols.length == 1, "current only support one label for dataframe of image")
+    Log4Error.invalidInputError(labelCols.length == 1,
+      "current only support one label for dataframe of image")
     val trainData = df2ImageSet(x, labelCols.head, transform)
     val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
     trainData.transform(transformer2)
@@ -642,7 +644,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: RDD[Sample[T]],
       batchSize: Int)
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     this.evaluate(x, this.vMethods, Some(batchSize))
   }
 
@@ -653,7 +656,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    */
   def evaluate(x: LocalDataSet[MiniBatch[T]])
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     this.evaluate(x, this.vMethods)
   }
 
@@ -667,7 +671,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: ImageSet,
       batchSize: Int)
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     evaluateImage(x.toImageFrame(), this.vMethods, Some(batchSize))
   }
 
@@ -692,7 +697,9 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   def evaluate(
       x: TextSet,
       batchSize: Int): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+
+      "Evaluation metrics haven't been set yet")
     x match {
       case distributed: DistributedTextSet =>
         val rdd = distributed.rdd.map(_.getSample).filter(_ != null)
@@ -708,7 +715,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
      batchSize: Int,
      featureCols: Array[String],
      labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     val valX = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
     val xRDD = valX.toDistributed().data(false)
     evaluate(xRDD, this.vMethods)
@@ -987,7 +995,8 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
     logger.info(s"${model} isTorch is ${model.isPyTorch()}")
     val torchOptimize = model.isPyTorch()
     val modelPerExecutor = if (torchOptimize) {
-      require(EngineRef.getEngineType() != MklDnn, "torch model shouldn't use MKLDNN engine.")
+      Log4Error.invalidInputError(EngineRef.getEngineType() != MklDnn,
+        "torch model shouldn't use MKLDNN engine.")
       val numOmpThread = distDataset.originRDD().sparkContext
         .getConf.get("spark.executorEnv.OMP_NUM_THREADS").toInt
       logger.info(s"torch model will use ${numOmpThread} OMP threads.")
