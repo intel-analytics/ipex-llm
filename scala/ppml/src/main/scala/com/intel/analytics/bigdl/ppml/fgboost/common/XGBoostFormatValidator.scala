@@ -67,14 +67,16 @@ object XGBoostFormatValidator {
         val xGBoostFeature = xGBoostHeaders(t1.split.toInt)
         var matchFlag = false
         fGBoostHeaders.foreach(onePartyFeature => {
-          if (onePartyFeature(t2.split) == xGBoostFeature) {
+          if (t2.split < onePartyFeature.length && onePartyFeature(t2.split) == xGBoostFeature) {
             matchFlag = true
           }
         })
         if (!matchFlag) {
           logger.error(s"could not find ${xGBoostFeature} in all party features, features:")
           fGBoostHeaders.foreach(onePartyFeature => {
-            logger.error(onePartyFeature(t2.split))
+            if (t2.split < onePartyFeature.length) {
+              logger.error(onePartyFeature(t2.split))
+            }
           })
           return false
         }
