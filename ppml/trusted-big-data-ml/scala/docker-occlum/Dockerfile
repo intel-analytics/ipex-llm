@@ -68,9 +68,9 @@ RUN cd /opt && \
     wget https://github.com/apache/spark/archive/refs/tags/v$SPARK_VERSION.zip && \
     unzip v$SPARK_VERSION.zip && \
     rm v$SPARK_VERSION.zip && \
-    mv spark-$SPARK_VERSION spark-source && \
-    cd spark-source && \
-    cp -r /opt/spark/bin . && \
+    mv /opt/spark-$SPARK_VERSION /opt/spark-source && \
+    cp -r /opt/spark/bin /opt/spark-source && \
+    ls /opt/spark-source && \
     cd /opt/spark && \
     mkdir /opt/spark/test-jars && \
     cd /opt/spark/test-jars && \
