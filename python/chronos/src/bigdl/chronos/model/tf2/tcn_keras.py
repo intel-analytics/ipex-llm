@@ -102,4 +102,3 @@ class TemporalConvNet(tf.keras.Model):
         y = self.linear(y)
         y = self.permute(y)
         return y
-		
