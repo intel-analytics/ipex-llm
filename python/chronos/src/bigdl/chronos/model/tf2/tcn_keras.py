@@ -93,7 +93,7 @@ class TemporalConvNet(tf.keras.Model):
                       padding='causal', dropout_rate=dropout))
         
         self.network = model
-        self.linear = tf.keras.layers.Dense(future_seq_len, kernel_initializer = init)
+        self.linear = tf.keras.layers.Dense(future_seq_len, kernel_initializer=init)
         self.permute = tf.keras.layers.Permute((2, 1))
 
     def call(self, x, training):
