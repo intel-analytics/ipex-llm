@@ -590,12 +590,6 @@ trait TensorMath[T] {
   def erf(): Tensor[T]
 
   /**
-   * Replaces all elements in-place the reciprocal of tensor y
-   * @return
-   */
-  def erf(y: Tensor[T]): Tensor[T]
-
-  /**
    * Computes the reciprocal of this tensor element-wise and update the content inplace
    * @return
    */
