@@ -19,33 +19,35 @@ import tensorflow as tf
 
 layers = tf.keras.layers
 
+
 class TemporalBlock(tf.keras.Model):
     def __init__(self, dilation_rate, nb_filters, kernel_size=1, strides=1,
-        padding='same', dropout_rate=0.0, repo_initialization=True):
+                 padding='same', dropout_rate=0.0, repo_initialization=True):
         super(TemporalBlock, self).__init__()
         if repo_initialization:
             init = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.01)
         else:
             init = tf.keras.initializers.HeUniform()
 
-		# block1
-        self.conv1 = layers.Conv1D(filters=nb_filters, kernel_size=kernel_size, strides = strides,
-				                   dilation_rate=dilation_rate, padding=padding, kernel_initializer=init)
+        # block1
+        self.conv1 = layers.Conv1D(filters=nb_filters, kernel_size=kernel_size, strides=strides,
+                                   dilation_rate=dilation_rate, padding=padding,
+                                   kernel_initializer=init)
         self.batch1 = layers.BatchNormalization(axis=-1)
-        self.ac1 = layers.Activation('relu') 
+        self.ac1 = layers.Activation('relu')
         self.drop1 = layers.Dropout(rate=dropout_rate)
 
-		# block2
-        self.conv2 = layers.Conv1D(filters=nb_filters, kernel_size=kernel_size, strides = strides,
-						           dilation_rate=dilation_rate, padding=padding, kernel_initializer=init)
-        self.batch2 = layers.BatchNormalization(axis=-1)		
+        # block2
+        self.conv2 = layers.Conv1D(filters=nb_filters, kernel_size=kernel_size, strides=strides,
+                                   dilation_rate=dilation_rate, padding=padding,
+                                   kernel_initializer=init)
+        self.batch2 = layers.BatchNormalization(axis=-1)
         self.ac2 = layers.Activation('relu')
         self.drop2 = layers.Dropout(rate=dropout_rate)
 
-        self.downsample = layers.Conv1D(filters=nb_filters, kernel_size=1, 
-									    padding='same', kernel_initializer=init)
+        self.downsample = layers.Conv1D(filters=nb_filters, kernel_size=1,
+                                        padding='same', kernel_initializer=init)
         self.ac3 = layers.Activation('relu')
-
 
     def call(self, x, training):
         prev_x = x
@@ -64,14 +66,15 @@ class TemporalBlock(tf.keras.Model):
 
         return self.ac3(prev_x + x)            # skip connection
 
+
 class TemporalConvNet(tf.keras.Model):
-    def __init__(self, 
-	             future_seq_len, 
-	             output_feature_num, 
-	             num_channels, 
-                 kernel_size=3, 
-				 dropout=0.1, 
-				 repo_initialization=True):
+    def __init__(self,
+                 future_seq_len,
+                 output_feature_num,
+                 num_channels,
+                 kernel_size=3,
+                 dropout=0.1,
+                 repo_initialization=True):
 
         # num_channels is a list contains hidden sizes of Conv1D
         super(TemporalConvNet, self).__init__()
