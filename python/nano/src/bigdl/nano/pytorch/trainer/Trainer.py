@@ -29,7 +29,6 @@ from torchmetrics.metric import Metric
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-from bigdl.nano.pytorch.utils.data.dataloader import DataLoaderCallback
 
 distributed_backends = ["spawn", "ray"]
 
@@ -67,11 +66,6 @@ class Trainer(pl.Trainer):
                 raise ValueError(f"The length of `cpu_for_each_process` ("
                                  f"{len(cpu_for_each_process)}) is not equal to the number of"
                                  f" processes {num_processes}.")
-
-        if 'callbacks' in kwargs:
-            kwargs['callbacks'] += [DataLoaderCallback()]
-        else:
-            kwargs['callbacks'] = [DataLoaderCallback()]
 
         # Initialize trainer
         if use_ipex and not check_avx512():
@@ -239,6 +233,10 @@ class Trainer(pl.Trainer):
 
         if backend == 'inc':
             from bigdl.nano.quantization.neural_compressor import QuantizationINC
+            from bigdl.nano.quantization.neural_compressor.pytorch.dataloader import check_loaders
+
+            # check if dataloader is of legal format
+            check_loaders([calib_dataloader, val_dataloader])
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "

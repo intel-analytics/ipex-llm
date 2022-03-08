@@ -41,17 +41,9 @@ def _check_loader(loader):
         )
 
 
-def _check_loaders(loaders):
+def check_loaders(loaders):
     if isinstance(loaders, list):
         for loader in loaders:
             _check_loader(loader)
     else:
         _check_loader(loaders)
-
-
-class DataLoaderCallback(Callback):
-    def setup(self, trainer, pl_module, stage=None):
-        _check_loaders(pl_module.predict_dataloader())
-        _check_loaders(pl_module.test_dataloader())
-        _check_loaders(pl_module.val_dataloader())
-        _check_loaders(pl_module.train_dataloader())
