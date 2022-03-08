@@ -18,12 +18,34 @@ package com.intel.analytics.bigdl.ppml.fgboost.common
 
 import org.apache.log4j.LogManager
 
+import scala.collection.mutable.ArrayBuffer
+
 
 class XGBoostFormatValidator {
 
 }
 object XGBoostFormatValidator {
   val logger = LogManager.getLogger(getClass)
+  var fGBoostHeaders: ArrayBuffer[Array[String]] = new ArrayBuffer[Array[String]]()
+  var xGBoostHeaders: Array[String] = _
+  def setXGBoostHeaders(headers: Array[String]) = {
+    xGBoostHeaders = headers
+  }
+  def clearHeaders() = {
+    fGBoostHeaders.clear()
+  }
+  def addHeaders(headers: Array[String]) = {
+    fGBoostHeaders.append(headers)
+  }
+
+  /**
+   * To validate two trees in [[XGBoostFormatNode]] format.
+   * Note that the order of two args could not be swapped.
+   * XGBoost is a non-distributed algorithm and it would not record the feature names
+   * FGBoost is distributed, so the feature ID would be re-ordered, will record feature names
+   * @param treeArray1 The XGBoost result in format, the feature would be represented in int
+   * @param treeArray2 The FGBoost result in format, the feature would be represented in string
+   */
   def apply(treeArray1: Array[XGBoostFormatNode], treeArray2: Array[XGBoostFormatNode]) = {
     def validateTreeEquality(t1: XGBoostFormatNode, t2: XGBoostFormatNode): Boolean = {
       def almostEqual(a: Float, b: Float) = {
@@ -42,9 +64,24 @@ object XGBoostFormatValidator {
       } else {
         require(t1.children.tail.size == 1 && t2.children.tail.size == 1, "???")
         // validate meta info
-        if (t1.split != t2.split || t1.depth != t2.depth) {
-          logger.error(s"t1->split:${t1.split}, depth:${t1.depth}, " +
-            s"t2->split:${t2.split}, depth:${t2.depth}")
+        val xGBoostFeature = xGBoostHeaders(t1.split.toInt)
+        var matchFlag = false
+        fGBoostHeaders.foreach(onePartyFeature => {
+          if (onePartyFeature(t2.split) == xGBoostFeature) {
+            matchFlag = true
+          }
+        })
+        if (!matchFlag) {
+          logger.error(s"could not find ${xGBoostFeature} in all party features, features:")
+          fGBoostHeaders.foreach(onePartyFeature => {
+            logger.error(onePartyFeature(t2.split))
+          })
+          return false
+        }
+
+        if (t1.depth != t2.depth) {
+          logger.error(s"t1 depth:${t1.depth}, " +
+            s"t2- depth:${t2.depth}")
           return false
         }
         validateTreeEquality(t1.children.head, t2.children.head) &&

@@ -35,10 +35,14 @@ abstract class FGBoostModel(continuous: Boolean,
                             learningRate: Float = 0.005f,
                             maxDepth: Int = 6,
                             minChildSize: Int = 1,
-                            validationMethods: Array[ValidationMethod[Float]] = null) {
+                            validationMethods: Array[ValidationMethod[Float]] = null,
+                            flattenHeaders: Array[String] = null) {
   val logger = LogManager.getLogger(getClass)
   var flClient = FLContext.getClient()
-
+  var splitVersion = 0
+  var treeLeafVersion = 0
+  var evaluateVersion = 0
+  var predictVersion = 0
   protected val evaluateResults: mutable.Map[String, ArrayBuffer[Float]] = null
   val trees = new mutable.Queue[RegressionTree]()
   def fit(feature: Array[Tensor[Float]],
@@ -82,13 +86,18 @@ abstract class FGBoostModel(continuous: Boolean,
     }
     val booleanOnePredict = localPredicts.head.values.map(_.length).sum
     // message may be too large, split by group to send to FLServer
-    val messageSize = 2 * 1e6
-    val groupedSize = Math.ceil(messageSize / booleanOnePredict).toInt
-    val result = localPredicts.grouped(groupedSize).flatMap{ groupedPredicts =>
-      val boostEvals = toBoostEvals(groupedPredicts)
-      val response = flClient.fgbostStub.predict(boostEvals.asJava)
-      toArrayFloat(response)
-    }.toArray
+//    val messageSize = 2 * 1e6
+//    val groupedSize = Math.ceil(messageSize / booleanOnePredict).toInt
+//    val result = localPredicts.grouped(groupedSize).flatMap{ groupedPredicts =>
+//      val boostEvals = toBoostEvals(groupedPredicts)
+//      val response = flClient.fgbostStub.predict(boostEvals.asJava)
+//      toArrayFloat(response)
+//    }.toArray
+
+    val boostEvals = toBoostEvals(localPredicts)
+    val response = flClient.fgbostStub.predict(boostEvals.asJava, predictVersion)
+    predictVersion += 1
+    val result = toArrayFloat(response)
     result
   }
   /**
@@ -100,15 +109,11 @@ abstract class FGBoostModel(continuous: Boolean,
   def boostRound(roundId: Int,
                  tree: RegressionTree): Boolean = {
     val i = roundId
-    var st = System.currentTimeMillis()
     val currTree = tree
-    logger.info("Tree Boost " + i.toString)
     buildTree(currTree, continuous = continuous)
-    st = System.currentTimeMillis()
-    logger.debug(s"Build tree cost ${(System.currentTimeMillis() - st) / 1000f} s")
     currTree.cleanup()
     // Add this tree into tree list
-    logger.info(s"Built Tree_${i}" + currTree.toString)
+//    logger.info(s"Built Tree_${i}" + currTree.toString)
     if (currTree.leaves.isEmpty) {
       logger.info("No leaves could be expanded, early Stop boosting.")
       return false
@@ -117,13 +122,11 @@ abstract class FGBoostModel(continuous: Boolean,
     val treeLeaves = currTree.leaves.toArray
     val treeIndexes = treeLeaves.map(_.nodeID.toInt).map(int2Integer).toList.asJava
     val treeOutput = treeLeaves.map(_.similarScore).map(float2Float).toList.asJava
-    flClient.fgbostStub.uploadTreeLeaf(i.toString, treeIndexes, treeOutput)
-    logger.debug(s"Update tree leaves ${(System.currentTimeMillis() - st) / 1000f} s")
-    st = System.currentTimeMillis()
+    flClient.fgbostStub.uploadTreeLeaf(i.toString, treeIndexes, treeOutput, evaluateVersion)
+    evaluateVersion += 1
     trees.enqueue(currTree)
     // Evaluate tree and update residual and grads (g and h)
     uploadResidual(tree.dataset)
-    logger.debug(s"Upload residual of last tree ${(System.currentTimeMillis() - st) / 1000f} s")
     true
   }
 
@@ -138,15 +141,15 @@ abstract class FGBoostModel(continuous: Boolean,
     }
     val boostEvals = toBoostEvals(lastTreePredict)
     // TODO: add grouped sending message
-    flClient.fgbostStub.evaluate(boostEvals.asJava)
+    flClient.fgbostStub.evaluate(boostEvals.asJava, evaluateVersion)
   }
 
 
   def trainRegressionTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int): Unit = {
     for (i <- 0 until totalRound) {
-      logger.debug(s"Training regression tree boost round: $i")
+      logger.debug(s"========Boosting round: $i========")
       val grads = downloadGrad(i)
-      val currTree = RegressionTree(dataSet, indices, grads, i.toString)
+      val currTree = RegressionTree(dataSet, indices, grads, i.toString, flattenHeaders = flattenHeaders)
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return
@@ -155,7 +158,7 @@ abstract class FGBoostModel(continuous: Boolean,
   def trainClassificationTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int) = {
     val labelEarlyStop = new Array[Boolean](nLabel)
     for (i <- 0 until totalRound) {
-      logger.debug(s"Training classification tree boost round: $i")
+      logger.debug(s"========Boosting round: $i========")
       val grads = downloadGrad(i)
       val nGrads = TreeUtils.expandGrads(grads, dataSet.length, nLabel)
       for (gID <- 0 until nLabel) {
@@ -169,32 +172,32 @@ abstract class FGBoostModel(continuous: Boolean,
     }
   }
   def buildTree(tree: RegressionTree, continuous: Boolean) = {
+
     while (tree.canGrow && tree.depth < maxDepth) {
       // Find best split in curr tree
-      var st = System.currentTimeMillis()
       val bestLocalSplit = tree.findBestSplit()
-      logger.debug(s"Find best split cost ${(System.currentTimeMillis() - st) / 1000f} s")
-      st = System.currentTimeMillis()
+
+      bestLocalSplit.setVersion(splitVersion)
+      splitVersion += 1
       val bestSplit = getBestSplitFromServer(bestLocalSplit)
-      logger.debug(s"Sync split cost ${(System.currentTimeMillis() - st) / 1000f} s")
-      st = System.currentTimeMillis()
+      if (bestSplit.gain != 0) {
+        logger.debug(s"Global best split: $bestSplit")
+      }
+
       val isLocalSplit = bestLocalSplit.getClientID == bestSplit.getClientID
       // If this split is in local dataset
       val updateCondition = if (continuous) {
         bestSplit.featureID == -1 || bestSplit.gain < 1e-6f
       } else  bestSplit.featureID == -1
       if (updateCondition) {
-        logger.warn("Fail to split on current node")
-        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
+        logger.warn(s"Set ${bestSplit.nodeID} as leaf")
+//        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
         // Add current node to leaf
+//        logger.info(s"Tree node size: ${tree.nodes.size}, bestSplit at node ${bestSplit.nodeID}")
         tree.setLeaf(tree.nodes(bestSplit.nodeID))
-        logger.debug(s"Set leaf ${(System.currentTimeMillis() - st) / 1000f} s")
-        st = System.currentTimeMillis()
       } else {
         // update bestSplit from server to local tree
         tree.updateTree(bestSplit, isLocalSplit)
-        logger.debug(s"Update tree ${(System.currentTimeMillis() - st) / 1000f} s")
-        st = System.currentTimeMillis()
       }
     }
   }
@@ -228,7 +231,7 @@ abstract class FGBoostModel(continuous: Boolean,
   def downloadGrad(treeID: Int): Array[Array[Float]] = {
     // Note that g may be related to Y
     // H = 1 in regression
-    val response = flClient.fgbostStub.downloadLabel("xgboost_grad", treeID - 1)
+    val response = flClient.fgbostStub.downloadLabel("xgboost_grad", treeID)
     logger.info("Downloaded grads from FLServer")
     val gradTable = response.getData
     val grad = getTensor("grad", gradTable).toArray
@@ -238,15 +241,23 @@ abstract class FGBoostModel(continuous: Boolean,
 
   def getBestSplitFromServer(split: Split): Split = {
     split.setClientID(flClient.getClientUUID)
-    val dataSplit = flClient.fgbostStub.split(split.toDataSplit()).getSplit
+    val response = flClient.fgbostStub.split(split.toDataSplit())
+    if (response.getCode == 1) {
+      logger.error(response.getResponse)
+      throw new Exception("split failed, please check the log.")
+    }
+    else {
+      val dataSplit = response.getSplit
+      Split(
+        dataSplit.getTreeID,
+        dataSplit.getNodeID,
+        dataSplit.getFeatureID,
+        dataSplit.getSplitValue,
+        dataSplit.getGain,
+        dataSplit.getItemSetList,
+        dataSplit.getVersion
+      ).setClientID(dataSplit.getClientUid)
+    }
 
-    Split(
-      dataSplit.getTreeID,
-      dataSplit.getNodeID,
-      dataSplit.getFeatureID,
-      dataSplit.getSplitValue,
-      dataSplit.getGain,
-      dataSplit.getItemSetList
-    ).setClientID(dataSplit.getClientUid)
   }
 }
