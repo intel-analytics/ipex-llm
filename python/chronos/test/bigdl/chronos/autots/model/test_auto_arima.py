@@ -55,3 +55,26 @@ class TestAutoARIMA(TestCase):
                        n_sampling=1,
                        )
         best_model = auto_arima.get_best_model()
+
+    def test_fit_metric(self):
+        data, validation_data = get_data()
+        from torchmetrics.functional import mean_squared_error
+        import torch
+        def customized_metric(y_true, y_pred):
+            return mean_squared_error(torch.from_numpy(y_pred),
+                                      torch.from_numpy(y_true)).numpy()
+        auto_arima = AutoARIMA(metric=customized_metric,
+                               metric_mode="min",
+                               p=hp.randint(0, 4),
+                               q=hp.randint(0, 4),
+                               seasonality_mode=hp.choice([True, False]),
+                               P=hp.randint(5, 12),
+                               Q=hp.randint(5, 12),
+                               m=hp.choice([4, 7])
+                               )
+        auto_arima.fit(data=data,
+                       validation_data=validation_data,
+                       epochs=1,
+                       n_sampling=1,
+                       )
+        best_model = auto_arima.get_best_model()

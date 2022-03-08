@@ -3,9 +3,9 @@ name: code style checking
 # Controls when the action will run. 
 on:
   push:
-    branches: [ branch-2.0 ]
+    branches: [ main ]
   pull_request:
-    branches: [ branch-2.0 ]
+    branches: [ main ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:

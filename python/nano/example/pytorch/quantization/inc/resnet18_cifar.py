@@ -34,12 +34,14 @@
 
 # mypy: ignore-errors
 import os
+from time import time
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-from pytorch_lightning import LightningModule, Trainer, seed_everything
+from pytorch_lightning import LightningModule, seed_everything
+from bigdl.nano.pytorch.trainer import Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.optim.lr_scheduler import OneCycleLR
@@ -52,7 +54,7 @@ from pl_bolts.transforms.dataset_normalizations import cifar10_normalization
 
 seed_everything(7)
 
-PATH_DATASETS = os.environ.get("PATH_DATASETS", ".")
+PATH_DATASETS = os.path.dirname(os.path.abspath(__file__))
 BATCH_SIZE = 64
 NUM_WORKERS = int(os.cpu_count() / 2)
 
@@ -158,4 +160,34 @@ trainer = Trainer(
 )
 
 trainer.fit(model, cifar10_dm)
-trainer.test(model, datamodule=cifar10_dm)
+
+# FP32 testing
+start = time()
+outputs = trainer.test(model, datamodule=cifar10_dm)
+fp32_infer_time = time() - start
+fp32_acc = outputs[0]['test_acc'] * 100
+
+# Run post-training quantization
+i8_model = trainer.quantize(model,
+                            calib_dataloader=cifar10_dm.train_dataloader())
+
+# Testing on quantized INT8 model
+start = time()
+outputs = trainer.test(i8_model, cifar10_dm)
+i8_infer_time = time() - start
+i8_acc = outputs[0]['test_acc'] * 100
+
+summary = """
+|    Precision   | Inference Time(s) | Model Size(MB) | Accuracy(%) |
+|      FP32      |       {:5.2f}       |      {:5.2f}     |    {:5.2f}    |
+|      INT8      |       {:5.2f}       |      {:5.2f}     |    {:5.2f}    |
+| Improvement(%) |       {:5.2f}       |      {:5.2f}     |    {:5.2f}    |
+"""
+summary = summary.format(
+    fp32_infer_time, model.model_size, fp32_acc,
+    i8_infer_time, i8_model.quantized_model_size, i8_acc,
+    (1 - i8_infer_time / fp32_infer_time) * 100,
+    (1 - i8_model.quantized_model_size / model.model_size) * 100,
+    i8_acc - fp32_acc
+)
+print(summary)

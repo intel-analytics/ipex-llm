@@ -192,6 +192,40 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
+    def test_fit_customized_metrics(self):
+        from sklearn.preprocessing import StandardScaler
+        from torchmetrics.functional import mean_squared_error
+        import random
+
+        scaler = StandardScaler()
+        tsdata_train = get_tsdataset().gen_dt_feature().scale(scaler, fit=True)
+        tsdata_valid = get_tsdataset().gen_dt_feature().scale(scaler, fit=False)
+
+        def customized_metric(y_true, y_pred):
+            return mean_squared_error(torch.from_numpy(y_pred),
+                                      torch.from_numpy(y_true)).numpy()
+
+        auto_estimator = AutoTSEstimator(model=random.choice(['tcn', 'lstm', 'seq2seq']),
+                                         search_space="minimal",
+                                         past_seq_len=hp.randint(4, 6),
+                                         future_seq_len=1,
+                                         selected_features="auto",
+                                         metric=customized_metric,
+                                         metric_mode="min",
+                                         optimizer="Adam",
+                                         loss=torch.nn.MSELoss(),
+                                         logs_dir="/tmp/auto_trainer",
+                                         cpus_per_trial=2,
+                                         name="auto_trainer")
+        ts_pipeline = auto_estimator.fit(data=tsdata_train,
+                                         epochs=1,
+                                         batch_size=hp.choice([32, 64]),
+                                         validation_data=tsdata_valid,
+                                         n_sampling=1)
+        best_config = auto_estimator.get_best_config()
+        best_model = auto_estimator._get_best_automl_model()
+        assert 4 <= best_config["past_seq_len"] <= 6
+
     def test_fit_lstm_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()

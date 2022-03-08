@@ -32,6 +32,7 @@ class AutoARIMA:
                  Q=1,
                  m=7,
                  metric='mse',
+                 metric_mode=None,
                  logs_dir="/tmp/auto_arima_logs",
                  cpus_per_trial=1,
                  name="auto_arima",
@@ -65,7 +66,14 @@ class AutoARIMA:
         :param m: Int or hp sampling function from an integer space for hyperparameter p
                of the ARIMA model.
                e.g. hp.choice([4, 7, 12, 24, 365]).
-        :param metric: String. The evaluation metric name to optimize. e.g. "mse"
+        :param metric: String or customized evaluation metric function.
+            If string, metric is the evaluation metric name to optimize, e.g. "mse".
+            If callable function, it signature should be func(y_true, y_pred), where y_true and
+            y_pred are numpy ndarray. The function should return a float value as evaluation result.
+        :param metric_mode: One of ["min", "max"]. "max" means greater metric value is better.
+            You have to specify metric_mode if you use a customized metric function.
+            You don't have to specify metric_mode if you use the built-in metric in
+            bigdl.orca.automl.metrics.Evaluator.
         :param logs_dir: Local directory to save logs and results. It defaults to
                "/tmp/auto_arima_logs"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
@@ -90,6 +98,7 @@ class AutoARIMA:
                 "m": m,
             }
             self.metric = metric
+            self.metric_mode = metric_mode
             model_builder = ARIMABuilder()
             self.auto_est = AutoEstimator(model_builder=model_builder,
                                           logs_dir=logs_dir,
@@ -139,6 +148,7 @@ class AutoARIMA:
         self.auto_est.fit(data=data,
                           validation_data=validation_data,
                           metric=self.metric,
+                          metric_mode=self.metric_mode,
                           metric_threshold=metric_threshold,
                           n_sampling=n_sampling,
                           search_space=self.search_space,

@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 from neural_compressor.conf.config import Quantization_Conf
-from neural_compressor.experimental import Quantization
+from neural_compressor.experimental import Quantization, common
 from neural_compressor.experimental.common import Metric
+
 
 from .metric import METRICS
 
@@ -75,15 +76,43 @@ class QuantizationINC(Quantization):
     def post_training_quantize(self, model, calib_dataloader=None, val_dataloader=None,
                                metric=None):
         self.check(calib_dataloader, val_dataloader, metric)
-        self.model = model
+        self.model = common.Model(model)
+
+        def func(data):
+            # TODO: only x, y are supported here for onnx quantization
+            import torch
+            x, y = zip(*data)
+            if isinstance(x[0], torch.Tensor):
+                x = torch.stack(x, dim=0).numpy()
+            if isinstance(y[0], torch.Tensor):
+                y = torch.stack(y, dim=0).numpy()
+            return x, y
         if calib_dataloader:
-            self.calib_dataloader = calib_dataloader
+            if "pytorch" in self.cfg.model.framework or "tensorflow" in self.cfg.model.framework:
+                self.calib_dataloader = calib_dataloader
+            if "onnx" in self.cfg.model.framework:
+                import torch
+                assert isinstance(calib_dataloader, torch.utils.data.DataLoader), \
+                    "Only torch dataloader is supported for onnx quantization."
+                # add a collate_fn to transform torch dataloader to a numpy dataloader
+                calib_dataloader.collate_fn = func
+                self.calib_dataloader = calib_dataloader
         if val_dataloader:
-            self.eval_dataloader = val_dataloader
+            if "pytorch" in self.cfg.model.framework or "tensorflow" in self.cfg.model.framework:
+                self.eval_dataloader = val_dataloader
+            if "onnx" in self.cfg.model.framework:
+                import torch
+                assert isinstance(val_dataloader, torch.utils.data.DataLoader), \
+                    "Only torch dataloader is supported for onnx quantization."
+                # add a collate_fn to transform torch dataloader to a numpy dataloader
+                val_dataloader.collate_fn = func
+                self.eval_dataloader = val_dataloader
             if metric:
                 framework = self.cfg.model.framework
                 if 'pytorch' in framework:
                     framework_metric = METRICS['pytorch']
+                elif 'onnx' in framework:
+                    framework_metric = METRICS['onnx']
                 else:
                     framework_metric = METRICS[framework]
 
@@ -104,6 +133,16 @@ class QuantizationINC(Quantization):
                 )
 
         quantized = self()
+
+        # unset the collate_fn and set back to default_collate
+        # TODO: use users' original collate function
+        if "onnx" in self.cfg.model.framework:
+            from torch.utils.data.dataloader import default_collate
+            if calib_dataloader:
+                calib_dataloader.collate_fn = default_collate
+            if val_dataloader:
+                val_dataloader.collate_fn = default_collate
+
         if quantized:
             return quantized
         else:

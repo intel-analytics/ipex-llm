@@ -85,6 +85,16 @@ class TestTSPipeline(TestCase):
         assert tsppl_seq2seq._best_config['batch_size'] == 64
         assert smape < 2.0
 
+        # evaluate with customized metrics
+        from torchmetrics.functional import mean_squared_error
+        def customized_metric(y_true, y_pred):
+            return mean_squared_error(torch.from_numpy(y_pred),
+                                      torch.from_numpy(y_true)).numpy()
+        tsppl_seq2seq.evaluate(valid_data_creator,
+                               metrics=[customized_metric],
+                               batch_size=16)
+        assert tsppl_seq2seq._best_config['batch_size'] == 16
+
         with pytest.raises(RuntimeError):
             tsppl_seq2seq.predict(torch.randn(1000,
                                   config['past_seq_len'],

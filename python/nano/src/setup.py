@@ -73,9 +73,9 @@ def setup_package(plat_name):
         install_requires = []
 
     if plat_name != "macosx_10_11_x86_64":
-        tensorflow_requires = ["intel-tensorflow==2.6.0",
-                               "keras==2.6.0",
-                               "tensorflow-estimator==2.6.0"]
+        tensorflow_requires = ["intel-tensorflow==2.7.0",
+                               "keras==2.7.0",
+                               "tensorflow-estimator==2.7.0"]
         pytorch_requires = ["torch==1.9.0",
                             "torchvision==0.10.0",
                             "pytorch_lightning==1.4.2",
@@ -85,9 +85,9 @@ def setup_package(plat_name):
                             "onnx",
                             "onnxruntime"]
     else:
-        tensorflow_requires = ["tensorflow==2.6.0",
-                               "keras==2.6.0",
-                               "tensorflow-estimator==2.6.0"]
+        tensorflow_requires = ["tensorflow==2.7.0",
+                               "keras==2.7.0",
+                               "tensorflow-estimator==2.7.0"]
 
         pytorch_requires = []
 
@@ -132,7 +132,6 @@ def setup_package(plat_name):
 
         packages=get_nano_packages(),
     )
-
     setup(**metadata)
 
 

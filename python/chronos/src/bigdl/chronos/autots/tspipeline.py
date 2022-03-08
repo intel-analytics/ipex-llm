@@ -74,7 +74,10 @@ class TSPipeline:
         :param data: data can be a TSDataset or data creator.
                The TSDataset should follow the same operations as the training
                TSDataset used in AutoTSEstimator.fit.
-        :param metrics: list. The evaluation metric name to optimize. e.g. ["mse"]
+        :param metrics: list of string or callable. e.g. ['mse'] or [customized_metrics]
+               If callable function, it signature should be func(y_true, y_pred), where y_true and
+               y_pred are numpy ndarray. The function should return a float value as evaluation
+               result.
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'uniform_average'.
@@ -117,7 +120,10 @@ class TSPipeline:
         :param data: data can be a TSDataset or data creator.
                The TSDataset should follow the same operations as the training
                TSDataset used in AutoTSEstimator.fit.
-        :param metrics: list. The evaluation metric name to optimize. e.g. ["mse"]
+        :param metrics: list of string or callable. e.g. ['mse'] or [customized_metrics]
+               If callable function, it signature should be func(y_true, y_pred), where y_true and
+               y_pred are numpy ndarray. The function should return a float value as evaluation
+               result.
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'uniform_average'.

@@ -1,5 +1,9 @@
 #
+<<<<<<< HEAD
 # Copyright 2021 The BigDL Authors.
+=======
+# Copyright 2016 The BigDL Authors.
+>>>>>>> e7467572f8032567954e0976268e6356d814accd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
