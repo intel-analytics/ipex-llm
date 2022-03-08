@@ -425,6 +425,7 @@ object DnnTensor {
     override def ceil(): Tensor[T] = ???
     override def inv(): Tensor[T] = ???
     override def erf(): Tensor[T] = ???
+    override def erf(y: Tensor[T]): Tensor[T] = ???
     override def erfc(): Tensor[T] = ???
     override def logGamma(): Tensor[T] = ???
     override def digamma(): Tensor[T] = ???
