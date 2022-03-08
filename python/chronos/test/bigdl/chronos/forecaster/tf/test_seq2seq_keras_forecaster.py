@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 import pytest
-import os
 import tempfile
 
 from bigdl.chronos.forecaster.tf.seq2seq_forecaster import Seq2SeqForecaster
+from bigdl.nano.tf.keras import Model
 from unittest import TestCase
 import numpy as np
 
@@ -55,7 +55,6 @@ class TestSeq2SeqModel(TestCase):
                                        input_feature_num=10,
                                        output_feature_num=2)
         forecaster.fit(train_data,
-                       validation_data=test_data,
                        epochs=2,
                        batch_size=32)
         yhat = forecaster.predict(test_data[0])
@@ -70,14 +69,16 @@ class TestSeq2SeqModel(TestCase):
                                        input_feature_num=10,
                                        output_feature_num=2)
         forecaster.fit(train_data,
-                       validation_data=test_data,
                        epochs=2,
                        batch_size=32)
+        yhat = forecaster.predict(test_data[0])
         with tempfile.TemporaryDirectory() as checkpoint_file:
             forecaster.save(checkpoint_file)
             forecaster.load(checkpoint_file)
-        yhat = forecaster.predict(test_data[0])
+            assert isinstance(forecaster.internal, Model)
+        load_model_yhat = forecaster.predict(test_data[0])
         assert yhat.shape == (400, 2, 2)
+        np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
 
 if __name__ == '__main__':

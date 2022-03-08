@@ -19,6 +19,20 @@ from bigdl.chronos.model.Seq2Seq_keras import model_creator
 
 
 class Seq2SeqForecaster(BaseTF2Forecaster):
+    """
+        Example:
+            >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+            >>> forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                               future_seq_len=2,
+                                               input_feature_num=1,
+                                               output_feature_num=1,
+                                               ...)
+            >>> forecaster.fit((x_train, y_train))
+            >>> test_pred = forecaster.predict(x_test)
+            >>> test_eval = forecaster.evaluate((x_test, y_test))
+            >>> forecaster.save({ckpt_dir_name})
+            >>> forecaster.load({ckpt_dir_name})
+    """
 
     def __init__(self,
                  past_seq_len,
@@ -99,6 +113,10 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         # self.distributed = distributed
         # self.distributed_backend = distributed_backend
         # self.workers_per_node = workers_per_node
+        if distributed:
+            raise NotImplementedError("We will add distributed support in subsequent releases, "
+                                      "the feature is currently unavailable, "
+                                      "Please set distributed=False.")
 
         # other settings
         self.lr = lr

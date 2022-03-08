@@ -15,10 +15,10 @@
 #
 
 import pytest
-import os
 import tempfile
 
 from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster
+from bigdl.nano.tf.keras import Model
 from unittest import TestCase
 import numpy as np
 
@@ -53,7 +53,6 @@ class TestLSTMForecaster(TestCase):
                                     input_feature_num=10,
                                     output_feature_num=2)
         forecaster.fit(train_data,
-                       validation_data=test_data,
                        epochs=2,
                        batch_size=32)
         yhat = forecaster.predict(test_data[0],
@@ -67,15 +66,17 @@ class TestLSTMForecaster(TestCase):
     def test_lstm_forecaster_save_load(self):
         train_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=10,
-                            input_feature_num=10,
-                            output_feature_num=2)
-        forecaster.fit(train_data)
+                                    input_feature_num=10,
+                                    output_feature_num=2)
+        forecaster.fit(train_data, epochs=2)
+        yhat = forecaster.predict(test_data[0])
         with tempfile.TemporaryDirectory() as checkpoint_file:
             forecaster.save(checkpoint_file)
             forecaster.load(checkpoint_file)
-        yhat = forecaster.predict(test_data[0], batch_size=32)
+            assert isinstance(forecaster.internal, Model)
+        load_model_yhat = forecaster.predict(test_data[0])
         assert yhat.shape == (400, 1, 2)
-
+        np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
 if __name__ == '__main__':
     pytest.main([__file__])
